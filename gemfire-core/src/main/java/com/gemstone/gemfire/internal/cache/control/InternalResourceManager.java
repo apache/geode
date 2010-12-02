@@ -89,7 +89,7 @@ public class InternalResourceManager implements ResourceManager {
 
   final GemFireCacheImpl cache;
   
-  private final LoadProbe loadProbe;
+  private LoadProbe loadProbe;
   
   private final ResourceManagerStats stats;
   private final ResourceAdvisor resourceAdvisor;
@@ -543,6 +543,15 @@ public class InternalResourceManager implements ResourceManager {
 
   public LoadProbe getLoadProbe() {
     return this.loadProbe;
+  }
+
+  /**
+   * This method is test purposes only.
+   */
+  public LoadProbe setLoadProbe(LoadProbe probe) {
+    LoadProbe old = this.loadProbe;
+    this.loadProbe = probe;
+    return old;
   }
 
   /* (non-Javadoc)
