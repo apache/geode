@@ -1,0 +1,260 @@
+== Abstract ==
+Groovy is an object-oriented programming language for the Java platform. It is a language with features similar to those of Python, Ruby, Java, Perl, and Smalltalk.
+Groovy, if accepted by Incubator, will be a first major programming language developed under the umbrella of Apache Software Foundation.
+
+== Proposal ==
+Groovy is a programming language for the Java platform. It is a primarily dynamic language with features similar to those of Python, Ruby, Perl, and Smalltalk. It also has optional static type checking and static compilation facilities. It can be used as a scripting language for the Java Platform or to write complete applications, is compiled to Java Virtual Machine (JVM) bytecode, and interoperates with other Java code and libraries. Groovy uses a Java-like curly-bracket syntax. Most Java code is also syntactically valid Groovy, although semantics may be different. Groovy has long been developed under an Apache License v2.0 under an open governance community management process. However, so far Groovy has been a project mostly sponsored by a single company. This proposal aims at bringing Groovy community under the umbrella of the Apache Software Foundation.
+
+It must be explicitly noted, that a few sister projects such as Groovy Eclipse and others (some of them hosted under https://github.com/groovy and listed at http://groovy-lang.org/ecosystem.html) are not covered by this proposal. It is possible that these other projects will be joining ASF either independently or as sub-projects of Apache Groovy in the future. For now, we are only proposing groovy-core.
+
+== Background ==
+Groovy 1.0 was released on January 2, 2007, and Groovy 2.0 in July, 2012. Groovy 2.5 is planned for release in 2015. Groovy 3.0 is planned for release in 2016, with support for a new Meta Object Protocol. Since version 2, Groovy can also be compiled statically, offering type inference and performance very close to that of Java. Groovy 2.4 will be the last major release under Pivotal Software's sponsorship, which is scheduled to end on March 31, 2015.
+
+== Rationale ==
+Groovy is a pretty mature language. After 12 years of development, it has grown from being primarily a dynamic scripting language on the JVM to an optionally statically compiled language allowing the same performance level as Java applications. With the release of Groovy 2.4, the language targets the largest pool of mobile developers with native Android support. Groovy has been integrated in a large number of applications, including well known open-source projects like Jenkins, Gradle, ElasticSearch, Spring and more.
+
+There are multiple alternative languages on the JVM: Scala, Clojure, Ceylon, Kotlin, JRuby, Golo and others but Groovy is the only one which has proved to be very easy to integrate with Java in both ways: Groovy code using Java code, but also Java code using Groovy code. Groovy even provides a joint compiler which allows interdependent Java and Groovy classes to compile together. Groovy also supports dynamic code generation, that is to say classes at runtime, making it a perfect fit for scripting. With a very lightweight and malleable syntax, it is also easy to build internal Domain Specific Languages (DSLs) which integrate smoothly within applications.
+
+Groovy provides a number of unique features, like builders (Java 8 has lambdas but still has syntactic overhead and no notion of delegate), AST transformations (compile-time metaprogramming) or type checking extensions (which allows the developer to bring the compiler to levels of type checking and type inference that go far beyond what other languages do). Groovy also provides powerful integration options and customizations which set it apart from other languages. Groovy is also unique in the way it allows the developer to choose between various paradigms without compromise: functional vs object-oriented, statically compiled vs dynamic, scripting vs applications, etc.
+
+Despite all those advantages, and the fact that Groovy is widely adopted (4.5 million downloads in 2014 for Groovy alone), only a few Apache projects include Groovy and not a lot of them leverage its full power. Some developers tend to choose Scala for example to build DSLs without even knowing that the learning curve is much easier with Groovy, or that they can leverage powerful type inference in their own DSLs.
+
+Android development is also a domain where the weight of Java and old-style APIs is heavy. Groovy 2.4 has proved that Android development could benefit from its closures, extension methods and static compilation to build applications which are as fast as Java, but with code which is much more maintainable and decoupled from Android APIs. Code generation libraries like SwissKnife illustrate what Groovy can offer for Android development. However, without full-time development on this topic, Groovy has a very tough competition with languages like Kotlin being intensively (and privately) sponsored to target this platform. With Groovy joining Apache, we hope that more developers would be able to join the effort and help reduce the footprint of the language, build libraries that leverage the full power of Groovy while fostering the long-term future of the language.
+
+
+== Initial Goals ==
+The initial goals of the Groovy transition under the ASF umbrella are to establish a new home for an already fully functioning project and also make sure that the entire development community governs itself in the "Apache Way". 
+
+Please note that a sister project of Groovy -- Grails -- is not part of this proposal. If Grails community makes a decision to join ASF it will do so as an independent, albeit related, project. 
+
+== Current Status ==
+Currently Groovy provides a fully functional implementation licensed under ALv2. The project home is at http://groovy-lang.org/ and the majority of development is coordinated via GitHub https://github.com/groovy. The project sports a very mature documentation and ecosystem of projects leveraging it. In fact, quite a few existing ASF project have various plugins or subsystems written in Groovy (Bigtop, CloudStack, etc.).
+
+=== Meritocracy ===
+Groovy, up to this, has been run by a few core project members with a lot of
+contributions coming from a wide community of participants in the project.
+
+We want to expand our diverse developer and user community and run the Groovy project in 
+the Apache way clearly signaling not only the licensing, but also the governance choice.
+
+Users and new contributors will be treated with respect and welcomed; they will earn 
+merit in the project by providing quality patches and support that move the project forward.  
+
+Those with a proven support and quality patch track record will be encouraged to become committers.
+
+=== Community ===
+There are just a few core team members with over a hundred contributors to the project. If Groovy is accepted 
+by the Incubator, transitioning the community to embrace the Apache Way of governance would be a primary initial goal.
+We would solicit major existing contributors to become committers on the project from the get go.
+
+=== Core Developers ===
+
+Core developers include folks who are extremely skilled in working in the openly
+governed communities on code bases license under the ALv2. The core developers are
+NOT currently affiliated with the ASF, although quite a few contributors are.
+
+=== Alignment ===
+
+Groovy has been integrated into Apache Bigtop, Apache CloudStack, Apache Ofbiz and quite a few other projects.
+
+== Known Risks ==
+As noted above, development has been sponsored mostly by a single company and coordinated
+mostly by the core team so far.
+
+For Groovy to fully transition to an "Apache Way" governance model it needs to
+start embracing the meritocracy-centric way of growing the community of contributors
+while balancing it with the needs for extreme stability and coherency of the core
+language implementation.
+
+Groovy has historically been hosted at Codehaus. While the project has started
+to migrate off the Codehaus infrastructure, some critical tools of the project are
+still hosted there: JIRA, the mailing-list, and the deprecated wiki. Codehaus has
+announced end-of-support for mid-April, making the migration critical.
+
+=== Orphaned products ===
+
+The community proposing Groovy for incubation is a strong and vibrant open source
+project. Even though the sponsorship of the core team by Pivotal is ending on March 31st,
+the sheer size and diversity of the community is a guarantee against
+the project being orphaned.
+
+=== Inexperience with Open Source ===
+The majority of the proposers here have day jobs that has them working near 
+full-time on open source projects. A few of us have helped carry 
+other projects through the Incubator.  Groovy to date has been developed as 
+an open source project.
+
+=== Homogeneous Developers ===
+Now that Pivotal is ending its sponsorship, the initial group of committers 
+is going to be extremely heterogeneous when it comes to corporate affiliations.
+The Groovy community is also extremely diverse in terms of geography and
+backgrounds of developers.
+
+=== Reliance on Salaried Developers ===
+Most of the contributors are paid to work in the Java ecosystem.  
+While we might wander from our current employers, we probably won’t 
+go far from the Java family tree.
+
+=== Relationships with Other Apache Products ===
+Groovy currently has a few ASF projects as optional dependencies but otherwise doesn't depend on any ASF projects. A few
+ASF projects already depend on Groovy.
+
+=== An Excessive Fascination with the Apache Brand ===
+While we intend to leverage the Apache ‘branding’ when talking to other 
+projects as testament of our project’s ‘neutrality’, we have no plans 
+for making use of Apache brand in press releases nor posting billboards 
+advertising acceptance of Groovy into Apache Incubator. 
+
+
+== Documentation ==
+See [[http://www.groovy-lang.org/documentation.html|documentation]] for the current state of the Groovy 
+documentation.
+
+A mature project website is also available at [[http://www.groovy-lang.org/|groovy-lang.org]].
+
+== Initial Source ==
+Initial source is available on GitHub under the ALv2 [[https://github.com/groovy/groovy-core|groovy-core]]
+ 
+
+== Source and Intellectual Property Submission Plan ==
+We know of no legal encumberments in the way of transfer of source to Apache. In fact, given the
+series of corporate due diligence procedures performed on the source code during two of the
+acquisitions we expect the code base to be squeaky clean from an IP perspective.
+
+== External Dependencies ==
+Embedded dependencies (relocated):
+
+   * Antlr 2, ANTLR 2 License (development branch includes Antlr4 using BSD license)
+   * ASM, BSD
+   * Openbeans (ALv2)
+   * Apache Commons CLI (ALv2)
+
+Module or optional dependencies:
+
+   * Apache Ant (ALv2)
+   * Apache Commons BSF (ALv2)
+   * Apache Commons Logging (ALv2)
+   * Apache Ivy (ALv2)
+   * Apache Log4j (ALv2)
+   * Apache Log4j 2 (ALv2)
+   * JAnsi (ALv2)
+   * JCommander (ALv2)
+   * JLine 2 (BSD)
+   * JUnit (EPL 1.0)
+   * Logback (EPL 1.0)
+   * QDox (ALv2)
+   * SLF4J (MIT)
+   * TestNG (ALv2)
+
+Build only dependencies:
+
+   * bnd (ALv2)
+   * jarjar (ALv2)
+   * Checkstyle (LGPL)
+   * Cobertura (GPL)
+   * Gradle (ALv2)
+   * Asciidoctor (MIT)
+   * Simian (http://www.harukizaemon.com/simian/get_it_now.html)
+
+Test only dependencies:
+
+   * Apache Commons HTTP Client (ALv2)
+   * Apache Lucene (ALv2)
+   * Eclipse OSGi (EPL 1.0)
+   * GPars (ALv2)
+   * HSQLDB (BSD)
+   * JMock (jMock Project License)
+   * OpenEJB (ALv2)
+   * Spock (ALv2)
+   * XMLUnit 1 (BSD)
+   * XStream (BSD)
+
+Cryptography
+N/A
+
+== Required Resources ==
+
+=== Mailing lists ===
+  * private@groovy.incubator.apache.org (moderated subscriptions)
+  * commits@groovy.incubator.apache.org
+  * dev@groovy.incubator.apache.org
+  * issues@groovy.incubator.apache.org
+  * user@groovy.incubator.apache.org        
+
+=== Git Repository ===
+https://git-wip-us.apache.org/repos/asf/incubator-groovy.git
+
+=== Issue Tracking ===
+JIRA Groovy (GROOVY)
+
+=== Other Resources ===
+
+A build server is currently sponsored by Jetbrains (TeamCity): http://ci.groovy-lang.org?guest=1 
+The CI server has a number of build plans including multiple JDKs (5 to 9), 3rd party joint builds and integration with the Groovy website (automatic deployment upon push).
+
+Means of setting up regular builds for Groovy on builds.apache.org
+
+== Initial Committers ==
+  * upthewaterspout
+  * gesterzhou
+  * ashvina
+  * vfordpivotal
+  * pivotal-eshu
+  * jhuynh1
+  * Jags Ramnarayan
+  * Sudhir Menon
+  * Anthony Baker
+  * Michael Schubert
+  * Catherine Johnson
+  * Greg Chase
+  * Mark Bretl  
+  * Edin Zulich
+  * Kirk Lund
+  * Darrel Schneider
+  * Severine Tymon
+  * David Yozie
+  * Dick Cavender
+  * Gideon Low
+  * Randy May
+  * Udo Kohlmeyer
+  * Stuart Williams
+  * Lyndon Adams
+  * Anilkumar Gingade
+  * Lise Storc
+  * Lynn Gallinat
+  * S. Lynn Hughes-Godfrey
+  * Swapnil Bawaskar
+  * John Blum
+  * Jacob Barrett
+  * Christian Tzolov
+  * Roman Shaposhnik
+  * Henry Saputra
+  * Chip Childers
+  * Justin Erenkrantz
+  * Konstantin Boudnik
+  * Jan I
+  * William A. Rowe Jr.
+
+== Affiliations ==
+  * Pivotal:
+  * WANDisco
+  * Bloomberg LP
+  * Cloud Foundry Foundation
+
+== Sponsors ==
+
+=== Champion ===
+Roman Shaposhnik
+
+=== Nominated Mentors ===
+  * Chip Childers - Apache Member, Cloud Foundry Foundation
+  * Justin Erenkrantz - Apache Member, Bloomberg LP
+  * Konstantin Boudnik - IPMC Member, WANDisco
+  * Jan I - Apache Member, Self employed
+  * William A. Rowe Jr. - Apache Member, Pivotal
+  * Henry Saputra - Apache Member, Pivotal
+  * Roman Shaposhnik - Apache Member, Pivotal
+  
+
+=== Sponsoring Entity ===
+We would like to propose Apache incubator to sponsor this project.
