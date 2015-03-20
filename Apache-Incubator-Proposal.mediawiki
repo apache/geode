@@ -45,14 +45,20 @@ Core developers include some of the folks who are extremely skilled in working i
 governed communities on code bases license under the ALv2. Most of the core developers are
 currently NOT affiliated with the ASF and would require new ICLAs to be filed.
 
+FIXME: please provide short introductions of the few members of the team who you would expect
+to be mostly active driving open source community agenda. 
+
 === Alignment ===
 
 The following existing ASF projects can be considered when reviewing FireBunny
    * Apache Ignite (incubating)
+   * Apache Cassandra
    * Apache Hadoop
    * Apache Storm
    * Apache Spark
    * Apache Kafka and Samza
+
+FIXME: please provide short compare-n-contrast with all of the above
 
 == Known Risks ==
 As noted above, development has been sponsored mostly by a single company and coordinated
@@ -77,18 +83,19 @@ Pivotal cutting support to developers working on the proposed project is minimal
 On top of that, the proposers have a vested interest in making FireBunny succeed, driving its development and its integration with sister ASF projects thereby reducing the risk of an orphaned product even further.
 
 === Inexperience with Open Source ===
-XXXXX
+While most of the initial committers haven't been exposed to developing 100% community-driven, open source projects as their day job there are a few veteran ASF folks (ASF members, committers and PMC members) included in this proposal. The project will rely on their guidance and the collective wisdom of its mentors to quickly transition the entire team of initial committers to practicing the "Apache Way".
 
 === Homogeneous Developers ===
-
+While most of the initial committers are employed by a single company, we have seen a health level of interest from our existing customers and partners already. We hope to convert that interest in direct participation and will be investing in activities around recruiting additional committers from other companies.
 
 === Reliance on Salaried Developers ===
 Most of the contributors are paid to work in the big data space.  
 While we might wander from our current employers, we probably won’t 
-go far from the Java family tree.
+go far from our core expertise and thus will continue being engaged
+with the project regardless of the current employer.
 
 === Relationships with Other Apache Products ===
-XXXX
+As mentioned in the Alignment section, FireBunny may consider varies degrees of integration and code exchange with Apache Ignite (incubating), Apache Hadoop, Apache Storm, Apache Spark and Apache Kafka/Samza. Given the success that GemFire product enjoyed being used as an embedded service we would expect integration points to be inside and outside of the project. In general, we look forward to collaborating with those communities, as well as other Apache communities.
 
 === An Excessive Fascination with the Apache Brand ===
 While we intend to leverage the Apache ‘branding’ when talking to other 
@@ -112,6 +119,8 @@ series of corporate due diligence procedures performed on the source code during
 acquisitions we expect the code base to be squeaky clean from an IP perspective.
 
 == External Dependencies ==
+FIXME: you guys need to fill out all of these sections
+
 Embedded dependencies (relocated):
    * XXX
 
