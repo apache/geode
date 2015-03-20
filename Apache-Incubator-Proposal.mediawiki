@@ -194,6 +194,7 @@ Means of setting up regular builds for FireBunny on builds.apache.org
   * Vinesh Prasanna Manoharan
   * Luke Shannon
   * Adib Saikali
+  * Stephane Maldini
   * Jianxia Chen
   * Christian Tzolov
   * Roman Shaposhnik
