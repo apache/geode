@@ -75,6 +75,8 @@ thus we don't anticipate any on-boarding pains. Same goes for migration from its
 github.com location. There wasn't much of a project accumulated there to worry about
 transition costs.
 
+Portions of the projects currently include a derivative of jgroups software version 2.2.9 (available at http://www.jgroups.org). This software was originally released under the LGPL license and since has been re-licenced under ALv2 (see http://www.jgroups.org/license.html). We plan to work with the licensor to make sure that the derivate work included in this project is re-licensed under ALv2 as well. For as long as this licensing issues hasn't been sorted out, the project will refrain from making releases, but will otherwise function as a normal Incubating project
+
 === Orphaned products ===
 Pivotal is fully committed to delivering GemFire product based on technology developed as part of
 FireBunny project. Given the strategic importance of a successful GemFire product the risk of
