@@ -187,6 +187,7 @@ Means of setting up regular builds for FireBunny on builds.apache.org
   * Swapnil Bawaskar
   * John Blum
   * Jacob Barrett
+  * Wes Williams
   * Christian Tzolov
   * Roman Shaposhnik
   * Henry Saputra
