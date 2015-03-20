@@ -9,11 +9,11 @@ that you *absolutely* need to keep in mind:
 # The GemFire team is busily working on clean separation between open and closed. There will be ongoing movement of functionality between the two. Keep track of it.
 
 # Start playing with the code available to you on GH, but please keep in mind that:
-  ## It’s a temporary repo for legal review that will be deleted by the end of March.
-  ## It contains code and history that we don’t intend to make public and should not be exposed outside of pivotal.
-  ## It’s essentially a mirror of our internal dev branch where we’re making pretty extensive build changes on a daily basis.Expect things to be broken and updated irregularly.
-  ## One thing to note is that there are two separate builds: open/ vs. closed/ even though the closed side includes subprojects from the open/ dirs.  Eventually (soon) these will be split into two separate repos entirely.
-  ## Most of the tests are located in closed/gemfire-tests.  These will be  moved into gemfire-core over time.  We will split out and open source the hydra framework but leave the regression tests themselves private. The *-assembly subprojects assemble the product tree and tarballs.
+  * It’s a temporary repo for legal review that will be deleted by the end of March.
+  * It contains code and history that we don’t intend to make public and should not be exposed outside of pivotal.
+  * It’s essentially a mirror of our internal dev branch where we’re making pretty extensive build changes on a daily basis.Expect things to be broken and updated irregularly.
+  * One thing to note is that there are two separate builds: open/ vs. closed/ even though the closed side includes subprojects from the open/ dirs.  Eventually (soon) these will be split into two separate repos entirely.
+  * Most of the tests are located in closed/gemfire-tests.  These will be  moved into gemfire-core over time.  We will split out and open source the hydra framework but leave the regression tests themselves private. The *-assembly subprojects assemble the product tree and tarballs.
 
 # Don't hesitate to provide feedback on gemfire-asf or send PRs!
 
