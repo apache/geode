@@ -182,6 +182,7 @@ Means of setting up regular builds for FireBunny on builds.apache.org
   * Udo Kohlmeyer
   * Stuart Williams
   * Lyndon Adams
+  * Suyog Bhokare
   * Anilkumar Gingade
   * Lise Storc
   * Lynn Gallinat
