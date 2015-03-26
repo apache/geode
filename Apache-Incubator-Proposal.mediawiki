@@ -128,7 +128,7 @@ Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
   * ashvina
   * vfordpivotal
   * pivotal-eshu
-  * jhuynh1
+  * Jason Huynh
   * Jags Ramnarayan
   * Sudhir Menon
   * Anthony Baker
