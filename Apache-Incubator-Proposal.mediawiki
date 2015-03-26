@@ -1,124 +1,89 @@
 == Abstract ==
-FireBunny is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
+[OSS_PROJET_NAME] is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
 
-FireBunny pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, FireBunny is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
+[OSS_PROJET_NAME] pools memory (along with CPU, network and optionally local disk) across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques for high availability, improved performance, scalability, and fault tolerance. [OSS_PROJET_NAME] is both a distributed data container and an in-memory data management system providing reliable asynchronous event notifications and guaranteed message delivery.
 
 == Proposal ==
-This proposal aims at bringing existing Pivotal GemFire codebase under the governance model of the Apache Software Foundation with the goal of building a vibrant, diverse and self-governed open source community around the technology. Pivotal will keep marketing and selling a product called "GemFire" which is expected to be based on the released versions of FireBunny. The project and Pivotal product are expected to be managed in a fully independent way. The artifacts covered by this proposal are: source code (mostly Java), documentation, and website currently available on GitHub under the ALv2.
+The goal of this proposal is to bring the core of Pivotal Software, Inc.’s (Pivotal) PIVOTAL GEMFIREⓇ codebase into the Apache Software Foundation (ASF) in order to build a vibrant, diverse and self-governed open source community around the technology. Pivotal will continue to market and sell PIVOTAL GEMFIRE based on [OSS_PROJET_NAME]. [OSS_PROJET_NAME] and PIVOTAL GEMFIRE will be managed separately. This proposal covers the [OSS_PROJET_NAME] source code (mainly written in Java), [OSS_PROJET_NAME] documentation and other materials currently available on GitHub.
+
+While [OSS_PROJET_NAME] is our primary choice for a name of the project, in order to facilitate PODLINGNAMESEARCH we have come up with two alternatives:
+  * Haptic
+  * FIG
 
 == Background ==
-GemFire is an extremely mature and robust product that can trace its legacy all the way back to one of the first original Object Databases for Smalltalk: GemStone. For all these years, GemFire code base has been maintained by the same group of engineers as a closed source project. The original company developing GemStone and GemFire was acquired by VMWare in 2010 and later spun off as part of Pivotal Software in 2013. Today GemFire is used by over XXX production deployments managing YYYY Tb of data in an average deployment.
+GemFire is an extremely mature and robust product that can trace its legacy all the way back to one of the first original Object Databases for Smalltalk: GemStone. For all these years, GemFire code base has been maintained by the same group of engineers as a closed source project. The original company developing GemStone and GemFire was acquired by VMWare in 2010 and later spun off as part of Pivotal Software in 2013. Today GemFire is used by over [FIXME: xxx] production deployments managing [FIXME: yyy] Tb of data in an average deployment.
 
 == Rationale ==
-Modern day datacenter architectures require a robust in-memory data grid (IDG) technology to handle variety of usecases ranging from enterprise-wide Caching all the way to real-time transactional applications at scale. In addition to that, the trajectory of hardware evolution in enterprise datacenters (with memory size and network bandwidth growth far outpacing disk) suggests that the importance of managing large pools of RAM at scale will only increase with time. Thus it is vital to stay on the bleeding edge of innovation and our conviction is that it is only possible as part of a vibrant, diverse, self-governed community innovating around a robust codebase while at the same cross-pollinating with various other data management communities. Today, the only place that allows for that is Apache Software Foundation.
+Modern-day datacenter architectures require a robust in-memory data grid solution to handle a variety of use cases, ranging from enterprise-wide caching to real-time transactional applications at scale. In addition, as memory size and network bandwidth growth continues to outpace those of disk, the importance of managing large pools of RAM at scale increases. It is essential to innovate at the same pace and Pivotal strongly believes that in the Big Data space, this can be optimally achieved through a vibrant, diverse, self-governed community collectively innovating around a single codebase while at the same time cross-pollinating with various other data management communities. ASF is the ideal place to meet these ambitious goals.
 
 == Initial Goals ==
-The initial goals of the GemFire transition under the ASF umbrella are focused on moving the internal engineering processes out in the open and fostering the collaborative development model according to the "Apache Way". We expect to invest a lot of resources into not only developing new functionality in the open and community-governed way, but also into refactoring of the existing internal build, test and release processes.
+Our initial goals are to bring [OSS_PROJET_NAME] into the ASF, transition internal engineering processes into the open, and foster a collaborative development model according to the "Apache Way." Pivotal plans to develop new functionality in an open, community-driven way. To get there, the existing internal build, test and release processes will be refactored to support open development.
 
 == Current Status ==
-Currently the project code base is licensed under ALv2 and it is available in a public github.com repository (http://github.com/pivotal/fire-bunny). The same repository hosts documentation and wiki pages. 
+Currently, the project code base is licensed for evaluation purposes and is available in a public GitHub repository (http://github.com/pivotal/OSS_PROJECT_NAME). The documentation and wiki pages are also available on the public GitHub repository. Although PIVOTAL GEMFIRE was developed as a proprietary, closed-source product, the internal engineering practices adopted by the development team lend themselves well to an open, collaborative and meritocratic environment.
 
-Even though so far the project has been developed as a proprietary, close-source product, the internal engineering practices adopted by the development team lend themselves easily to the open, collaborative and meritocratic environment. 
-
-Being predominantly API-driven, developer-centric product, there's been a considerable effort around building a robust end user community of paying and non-paying customers. Our existing investment in documentation, StackOverflow, etc. are expected to facilitate conversions of some of our existing users into active community members and developers. 
+The PIVOTAL GEMFIRE team has always focused on building a robust end user community of paying and non-paying customers. The existing documentation along with StackOverflow and other similar forums are expected to facilitate conversions between our existing users so as to transform them into an active community of [OSS_PROJET_NAME] members, stakeholders and developers.
 
 === Meritocracy ===
-The proposed list of initial committers on the project include the original GemFire R&D team, Pivotal Field Engineers and a few existing customers and partners. This group will form a base for the much broader community that we will be inviting to collaborate on the existing code base.
-
-We want to radically expand that initial developer and user community by running the project in 
-accordance with the "Apache Way" clearly signaling not only the licensing, but also the governance 
-choice.
-
-Users and new contributors will be treated with respect and welcomed; they will earn 
-merit in the project by providing quality patches and support that move the project forward.
-They also will be encouraged to provide non-code contributions (documentation, events,
-community management, etc.) and will gain merit for doing so.
-
-Those with a proven support and quality track record will be encouraged to become committers.
+Our proposed list of initial committers include the current GemFire R&D team, Pivotal Field Engineers, and several existing customers and partners. This group will form a base for the broader community we will invite to collaborate on the codebase. We intend to radically expand the initial developer and user community by running the project in accordance with the Apache Way. Users and new contributors will be treated with respect and welcomed. By participating in the community and providing quality patches/support that move the project forward, they will earn merit. They also will be encouraged to provide non-code contributions (documentation, events, community management, etc.) and will gain merit for doing so. Those with a proven support and quality track record will be encouraged to become committers.
 
 === Community ===
-If FireBunny is accepted by the Incubator, transitioning the core community to embrace the Apache Way of governance would be a primary initial goal. We would solicit major existing contributors to become committers on the project from the get go.
+If [OSS_PROJET_NAME] is accepted for incubation, the primary initial goal will be transitioning the core community towards embracing the Apache Way of project governance. We would solicit major existing contributors to become committers on the project from the start.
 
 === Core Developers ===
 
-Core developers include some of the folks who are extremely skilled in working in the openly
-governed communities on code bases license under the ALv2. Most of the core developers are
-currently NOT affiliated with the ASF and would require new ICLAs to be filed.
+Core developers include some skilled in working in openly governed Apache-licensed communities. Most of the core developers are currently NOT affiliated with the ASF and would require new ICLAs before committing to the project.
 
-FIXME: please provide short introductions of the few members of the team who you would expect
-to be mostly active driving open source community agenda. 
+[FIXME: please provide short introductions of the few members of the team who you would expect to be mostly active driving open source community agenda.]
 
 === Alignment ===
-
-The following existing ASF projects can be considered when reviewing FireBunny
+The following existing ASF projects can be considered when reviewing [OSS_PROJET_NAME] proposal:
    * Apache Ignite (incubating)
-   * Apache Cassandra
-   * Apache Hadoop
+   * Apache CassandraTM
+   * Apache HadoopⓇ
    * Apache Storm
-   * Apache Spark
+   * Apache SparkTM
    * Apache Kafka and Samza
-
-FIXME: please provide short compare-n-contrast with all of the above
+[FIXME: please provide short compare-n-contrast with all of the above]
 
 == Known Risks ==
-As noted above, development has been sponsored mostly by a single company and coordinated
-mostly by the core team so far.
+Development has been sponsored mostly by a single company (or its predecessors) thus far and coordinated mainly by the core PIVOTAL GEMFIRE team.
 
-For the project to fully transition to an "Apache Way" governance model it needs to
-start embracing the meritocracy-centric way of growing the community of contributors
-while balancing it with the needs for extreme stability and coherency of the core
-implementation.
+For the project to fully transition to the Apache Way governance model, development must shift towards the meritocracy-centric model of growing a community of contributors balanced with the needs for extreme stability and core implementation coherency.
 
-The tools and development practices that were in place for development of the closed-source
-GemFire product are mostly compatible with the ones offered by the ASF infrastructure and
-thus we don't anticipate any on-boarding pains. Same goes for migration from its current
-github.com location. There wasn't much of a project accumulated there to worry about
-transition costs.
+The tools and development practices in place for the PIVOTAL GEMFIRE product are compatible with the ASF infrastructure and thus we do not anticipate any on-boarding pains. Migration from the current GitHub repository is also expected to be straightforward.
 
-Portions of the projects currently include a derivative of jgroups software version 2.2.9 (available at http://www.jgroups.org). This software was originally released under the LGPL license and since has been re-licenced under ALv2 (see http://www.jgroups.org/license.html). We plan to work with the licensor to make sure that the derivate work included in this project is re-licensed under ALv2 as well. For as long as this licensing issues hasn't been sorted out, the project will refrain from making releases, but will otherwise function as a normal Incubating project
+The project currently includes a modified version of the jGroups software toolkit. jGroups was initially released under the LGPL license. Although we have complied with the terms of the LGPL by making the modified source available, LGPL is classified as an incompatible license by the ASF.  The jGroups project has since been re-licenced under ALv2 (see http://www.jgroups.org/license.html) and we plan to engage with the licensor to overcome this license incompatibility. If the license incompatibility cannot be overcome through our discussions with the licensor, we will need to rework this portion of the project based upon a newer version of the jGroups toolkit or via other alternative development efforts.
 
 === Orphaned products ===
-Pivotal is fully committed to delivering GemFire product based on technology developed as part of
-FireBunny project. Given the strategic importance of a successful GemFire product the risk of
-Pivotal cutting support to developers working on the proposed project is minimal.
+Pivotal is fully committed to PIVOTAL GEMFIRE and the product will continue to be based on the [OSS_PROJET_NAME] project. Moreover, Pivotal has a vested interest in making [OSS_PROJET_NAME] succeed by driving its close integration with sister ASF projects. We expect this to further reduces the risk of orphaning the product.
 
-On top of that, the proposers have a vested interest in making FireBunny succeed, driving its development and its integration with sister ASF projects thereby reducing the risk of an orphaned product even further.
 
 === Inexperience with Open Source ===
-While most of the initial committers haven't been exposed to developing 100% community-driven, open source projects as their day job there are a few veteran ASF folks (ASF members, committers and PMC members) included in this proposal. The project will rely on their guidance and the collective wisdom of its mentors to quickly transition the entire team of initial committers to practicing the "Apache Way".
+Pivotal has embraced open source software since its formation by employing contributors/committers and by shepherding open source projects like Cloud Foundry, Spring, RabbitMQ and MADlib. Pivotal also supports other open source projects such as Redis, Chorus, Groovy and Grails. We have experience with the formation of vibrant communities around open technologies with the Cloud Foundry Foundation.  Although some of the initial committers have not been developers on an entirely open source, community-driven project, we expect to bring to bear the open development practices that have proven successful on longstanding Pivotal open source projects to the [OSS_PROJET_NAME] project.  Additionally, there are several ASF veterans (members, committers and PMC members such as proposal Champion Roman Shaposhnik) involved and included in this proposal. The project will rely on their guidance and collective wisdom to quickly transition the entire team of initial committers towards practicing the Apache Way.
 
 === Homogeneous Developers ===
-While most of the initial committers are employed by a single company, we have seen a health level of interest from our existing customers and partners already. We hope to convert that interest in direct participation and will be investing in activities around recruiting additional committers from other companies.
+While most of the initial committers are employed by Pivotal, we have already seen a healthy level of interest from our existing customers and partners. We intend to convert that interest directly into participation and will be investing in activities to recruit additional committers from other companies.
 
 === Reliance on Salaried Developers ===
-Most of the contributors are paid to work in the big data space.  
-While we might wander from our current employers, we probably won’t 
-go far from our core expertise and thus will continue being engaged
-with the project regardless of the current employer.
+Most of the contributors are paid to work in the Big Data space. While they might wander from their current employers, they are unlikely to venture far from their core expertises and thus will continue to be engaged with the project regardless of their current employers.
 
 === Relationships with Other Apache Products ===
-As mentioned in the Alignment section, FireBunny may consider varies degrees of integration and code exchange with Apache Ignite (incubating), Apache Hadoop, Apache Storm, Apache Spark and Apache Kafka/Samza. Given the success that GemFire product enjoyed being used as an embedded service we would expect integration points to be inside and outside of the project. In general, we look forward to collaborating with those communities, as well as other Apache communities.
+As mentioned in the Alignment section, [OSS_PROJET_NAME] may consider various degrees of integration and code exchange with Apache Ignite (incubating), Apache Hadoop, Apache Storm, Apache Spark and Apache Kafka/Samza. Given the success that the PIVOTAL GEMFIRE product enjoyed as an embedded service, we expect integration points to be inside and outside the project. We look forward to collaborating with these communities as well as other communities under the Apache umbrella.
 
 === An Excessive Fascination with the Apache Brand ===
-While we intend to leverage the Apache ‘branding’ when talking to other 
-projects as testament of our project’s ‘neutrality’, we have no plans 
-for making use of Apache brand in press releases nor posting billboards 
-advertising acceptance of FireBunny into Apache Incubator. 
+While we intend to leverage the Apache ‘branding’ when talking to other projects as testament of our project’s ‘neutrality’, we have no plans for making use of Apache brand in press releases nor posting billboards advertising acceptance of [OSS_PROJET_NAME] into Apache Incubator.
 
 == Documentation ==
-See [[http://XXXX|documentation]] for the current state of the project 
-documentation.
+See documentation for the current state of the project documentation available as part of the GitHub repository at the following URL FIXME
 
-A mature project website is also available at [[http://XXXX/|FireBunnyHome]].
+A mature project website is also available at PIVOTAL GEMFIREⓇ documentation website.
 
 == Initial Source ==
-Initial source is available on GitHub under the ALv2 [[https://github.com/groovy/groovy-core|groovy-core]]
- 
+Initial source is available on GitHub under [a]the [LICENSE_TBD] at [OSS_PROJET_NAME] 
 
 == Source and Intellectual Property Submission Plan ==
-We know of no legal encumberments in the way of transfer of source to Apache. In fact, given the
-series of corporate due diligence procedures performed on the source code during two of the
-acquisitions we expect the code base to be squeaky clean from an IP perspective.
+We know of no legal encumberments that would inhibit the transfer of source code to the ASF.
 
 == External Dependencies ==
 FIXME: you guys need to fill out all of these sections
@@ -141,21 +106,21 @@ N/A
 == Required Resources ==
 
 === Mailing lists ===
-  * private@firebunny.incubator.apache.org (moderated subscriptions)
-  * commits@firebunny.incubator.apache.org
-  * dev@firebunny.incubator.apache.org
-  * issues@firebunny.incubator.apache.org
-  * user@firebunny.incubator.apache.org        
+  * private@[OSS_PROJECT_NAME].incubator.apache.org (moderated subscriptions)
+  * commits@[OSS_PROJECT_NAME].incubator.apache.org
+  * dev@[OSS_PROJECT_NAME].incubator.apache.org
+  * issues@[OSS_PROJECT_NAME].incubator.apache.org
+  * user@[OSS_PROJECT_NAME].incubator.apache.org        
 
 === Git Repository ===
-https://git-wip-us.apache.org/repos/asf/incubator-firebunny.git
+https://git-wip-us.apache.org/repos/asf/incubator-[OSS_PROJECT_NAME].git
 
 === Issue Tracking ===
-JIRA FireBunny (FIREBUNNY)
+JIRA [OSS_PROJECT_NAME] ([OSS_PROJECT_NAME])
 
 === Other Resources ===
 
-Means of setting up regular builds for FireBunny on builds.apache.org
+Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
 
 == Initial Committers ==
   * upthewaterspout
@@ -228,6 +193,5 @@ Roman Shaposhnik
   * Roman Shaposhnik - Apache Member, Pivotal
   * Chris Mattmann - Apache Member, NASA JPL
   
-
 === Sponsoring Entity ===
 We would like to propose Apache incubator to sponsor this project.
