@@ -155,6 +155,7 @@ Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
   * Swapnil Bawaskar
   * John Blum
   * Jacob Barrett
+  * William Markito
   * Wes Williams
   * Will Schipp
   * Vinesh Prasanna Manoharan
