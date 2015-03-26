@@ -186,7 +186,6 @@ Roman Shaposhnik
 === Nominated Mentors ===
 
 The initial mentors are listed below: 
-  * fffff
   * Chip Childers - Apache Member, Cloud Foundry Foundation
   * Justin Erenkrantz - Apache Member, Bloomberg LP
   * Konstantin Boudnik - IPMC Member, WANDisco
