@@ -53,7 +53,7 @@ For the project to fully transition to the Apache Way governance model, developm
 
 The tools and development practices in place for the PIVOTAL GEMFIRE product are compatible with the ASF infrastructure and thus we do not anticipate any on-boarding pains. Migration from the current GitHub repository is also expected to be straightforward.
 
-The project currently includes a modified version of the jGroups software toolkit. jGroups was initially released under the LGPL license. Although we have complied with the terms of the LGPL by making the modified source available, LGPL is classified as an incompatible license by the ASF.  The jGroups project has since been re-licenced under ALv2 (see http://www.jgroups.org/license.html) and we plan to engage with the licensor to overcome this license incompatibility. If the license incompatibility cannot be overcome through our discussions with the licensor, we will need to rework this portion of the project based upon a newer version of the jGroups toolkit or via other alternative development efforts.
+The project currently includes a modified version of the JGroups software toolkit. JGroups was initially released under the LGPL license. Although we have complied with the terms of the LGPL by making the modified source available, LGPL is classified as an incompatible license by the ASF.  The JGroups project has since been re-licenced under ALv2 (see http://www.jgroups.org/license.html) and we plan to engage with the licensor to overcome this license incompatibility. If the license incompatibility cannot be overcome through our discussions with the licensor, we will need to rework this portion of the project based upon a newer version of the JGroups toolkit or via other alternative development efforts.
 
 === Orphaned products ===
 Pivotal is fully committed to PIVOTAL GEMFIRE and the product will continue to be based on the [OSS_PROJET_NAME] project. Moreover, Pivotal has a vested interest in making [OSS_PROJET_NAME] succeed by driving its close integration with sister ASF projects. We expect this to further reduces the risk of orphaning the product.
@@ -123,11 +123,11 @@ JIRA [OSS_PROJECT_NAME] ([OSS_PROJECT_NAME])
 Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
 
 == Initial Committers ==
-  * upthewaterspout
-  * gesterzhou
-  * ashvina
-  * vfordpivotal
-  * pivotal-eshu
+  * Dan Smith
+  * Xiaojian Zhou
+  * Ashvin Agrawal
+  * Vince Ford
+  * Eric Shu
   * Jason Huynh
   * Jags Ramnarayan
   * Sudhir Menon
