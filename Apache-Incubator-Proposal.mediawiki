@@ -186,15 +186,7 @@ Roman Shaposhnik
 === Nominated Mentors ===
 
 The initial mentors are listed below: 
+  * fffff
 
-  * Chip Childers - Apache Member, Cloud Foundry Foundation
-  * Justin Erenkrantz - Apache Member, Bloomberg LP
-  * Konstantin Boudnik - IPMC Member, WANDisco
-  * Jan I - Apache Member, Self employed
-  * William A. Rowe Jr. - Apache Member, Pivotal
-  * Henry Saputra - Apache Member, Pivotal
-  * Roman Shaposhnik - Apache Member, Pivotal
-  * Chris Mattmann - Apache Member, NASA JPL
-  
 === Sponsoring Entity ===
 We would like to propose Apache incubator to sponsor this project.
