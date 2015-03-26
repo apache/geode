@@ -190,6 +190,8 @@ The initial mentors are listed below:
   * Chip Childers - Apache Member, Cloud Foundry Foundation
   * Justin Erenkrantz - Apache Member, Bloomberg LP
   * Konstantin Boudnik - IPMC Member, WANDisco
+  * Jan Iversen - Apache Member, Self employed
+  * William A. Rowe Jr. - Apache Member, Pivotal
 
 === Sponsoring Entity ===
 We would like to propose Apache incubator to sponsor this project.
