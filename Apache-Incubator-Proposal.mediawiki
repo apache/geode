@@ -187,6 +187,9 @@ Roman Shaposhnik
 
 The initial mentors are listed below: 
   * fffff
+  * Chip Childers - Apache Member, Cloud Foundry Foundation
+  * Justin Erenkrantz - Apache Member, Bloomberg LP
+  * Konstantin Boudnik - IPMC Member, WANDisco
 
 === Sponsoring Entity ===
 We would like to propose Apache incubator to sponsor this project.
