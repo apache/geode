@@ -184,6 +184,7 @@ Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
 Roman Shaposhnik
 
 === Nominated Mentors ===
+
   * Chip Childers - Apache Member, Cloud Foundry Foundation
   * Justin Erenkrantz - Apache Member, Bloomberg LP
   * Konstantin Boudnik - IPMC Member, WANDisco
