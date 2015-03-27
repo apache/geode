@@ -1,13 +1,10 @@
-
 GemFire provides APIs to capture a handful of events in a distributed system providing extensive documentation on how to implement listeners and callbacks for processing those synchronously or asynchronously.
-
-## Event Model
-
-<IMG>
 
 This document covers `CacheWriter` and `CacheListener` best practices for handling CacheEvents.
 
-<IMG>
+## Event Model
+
+![Event Model](https://wmarkito.files.wordpress.com/2015/03/07-events_pptx.png)
 
 ## Cache Writers
 
@@ -59,7 +56,7 @@ Available events and callbacks:
 
 ## General recommendations
 
-When dealing with callbacks in general, there are some operations that should be avoided or used with extra attention. They are:
+When dealing with GemFire callbacks there are some operations that should be avoided or used with extra attention. They are:
 
 * Do not perform distributed operations, such as using using the _Distributed Lock service_
 * Avoid calling Region methods, particularly on non-colocated partitioned regions
@@ -76,4 +73,6 @@ When using transactions:
 * With global transactions, `EntryEvent.getTransactionId()` will return the current internal transaction ID
 * Use the same transactional data source and make sure it’s JTA enabled, so database operations inside a `CacheWriter` can be rolled back and participate in the same global transaction
 
-When dealing with transactions always consider using `TransactionListener` or `TransactionWriter` for handling transaction events, but do notice that they’re cache-wide handlers
+When dealing with transactions always consider using `TransactionListener` or `TransactionWriter` for handling transaction events, but do notice that they’re cache-wide handlers.
+
+![Listener Model](https://wmarkito.files.wordpress.com/2015/03/gf_listener.png)
