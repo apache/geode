@@ -27,7 +27,7 @@ Available events and callbacks:
     beforeRegionClear(RegionEvent event) - Invoked before a region is cleared.
     beforeRegionDestroy(RegionEvent event) - Invoked before a region is destroyed.
 
-It is not recommended to perform long running operations inside a `CacheWriter` within the current thread. If such a long running operation is needed consider processing it asynchronously through an AsyncEventListener for example. Using an `ExecutorService` to delegate that execution to a different thread is possible, but considered an anti-pattern, since it breaks the fail-fast and happens-before concept of this callback.
+It is not recommended to perform long running operations inside a `CacheWriter` within the current thread. If such a long running operation is needed consider processing it asynchronously through an `AsyncEventListener` for example. Using an `ExecutorService` to delegate that execution to a different thread is possible, but considered an anti-pattern, since it breaks the fail-fast and happens-before concept of this callback.
 
 ## Cache Listeners
 
