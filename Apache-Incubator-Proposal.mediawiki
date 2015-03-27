@@ -123,55 +123,80 @@ JIRA [OSS_PROJECT_NAME] ([OSS_PROJECT_NAME])
 Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
 
 == Initial Committers ==
-  * Dan Smith
-  * Xiaojian Zhou
-  * Ashvin Agrawal
-  * Vince Ford
-  * Eric Shu
-  * Jason Huynh
-  * Jags Ramnarayan
-  * Sudhir Menon
+  * Adib Saikali
+  * Amogh Shetkar
+  * Anil Gingade
+  * Anilkumar Gingade
   * Anthony Baker
-  * Michael Schubert
+  * Ashvin Agrawal
+  * Asif Shahid
+  * Avinash Dongre
+  * Barry Oglesby
+  * Bruce Schuchardt
   * Catherine Johnson
-  * Greg Chase
-  * Mark Bretl  
-  * Edin Zulich
-  * Kirk Lund
+  * Chip Childers
+  * Christian Tzolov
+  * Dan Smith
   * Darrel Schneider
-  * Severine Tymon
   * David Yozie
   * Dick Cavender
+  * Edin Zulich
+  * Eric Shu
   * Gideon Low
-  * Randy May
-  * Udo Kohlmeyer
-  * Stuart Williams
-  * Lyndon Adams
-  * Suyog Bhokare
-  * Anilkumar Gingade
-  * Lise Storc
-  * Lynn Gallinat
-  * S. Lynn Hughes-Godfrey
-  * Swapnil Bawaskar
-  * John Blum
-  * Jacob Barrett
-  * William Markito
-  * Wes Williams
-  * Will Schipp
-  * Vinesh Prasanna Manoharan
-  * Bruce Schuchardt
-  * Luke Shannon
-  * Adib Saikali
-  * Stephane Maldini
-  * Jianxia Chen
-  * Christian Tzolov
-  * Roman Shaposhnik
+  * Greg Chase
+  * Hemant Bhanawat
   * Henry Saputra
-  * Chip Childers
-  * Justin Erenkrantz
-  * Konstantin Boudnik
+  * Hitesh Khamesra
+  * Jacob Barrett
+  * Jags Ramnarayan
   * Jan I
+  * Jason Huynh
+  * Jens Deppe
+  * Jianxia Chen
+  * John Blum
+  * Justin Erenkrantz
+  * Ketan Deshpande
+  * Kirk Lund
+  * Kishor Bachhav
+  * Konstantin Boudnik
+  * Lise Storc
+  * Luke Shannon
+  * Lyndon Adams
+  * Lynn Gallinat
+  * Lynn Hughes-Godfrey
+  * Mark Bretl
+  * Michael Schubert
+  * Namrata Thanvi
+  * Neeraj Kumar
+  * Qihong Chen
+  * Rahul Diyewar
+  * Randy May
+  * Roman Shaposhnik
+  * Severine Tymon
+  * Shatarupa Nandi
+  * Shirish Deshmukh
+  * Sonal Agarwal
+  * Soubhik Chakraborty
+  * Sourabh Bansod
+  * Stephane Maldini
+  * Stuart Williams
+  * Sudhir Menon
+  * Supriya Pillai
+  * Suranjan Kumar
+  * Suyog Bhokare
+  * Swapnil Bawaskar
+  * Swati Sawant
+  * Tushar Khairnar
+  * Udo Kohlmeyer
+  * Vince Ford
+  * Vinesh Prasanna Manoharan
+  * Vivek Bhaskar
+  * Wes Williams
   * William A. Rowe Jr.
+  * William Markito
+  * Will Schipp
+  * Xiaojian Zhou
+  * Yogesh Mahajan
 
 == Affiliations ==
   * Pivotal:
