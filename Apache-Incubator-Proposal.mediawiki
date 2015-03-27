@@ -123,6 +123,7 @@ JIRA [OSS_PROJECT_NAME] ([OSS_PROJECT_NAME])
 Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
 
 == Initial Committers ==
+  * Amey Barve
   * Adib Saikali
   * Amogh Shetkar
   * Anil Gingade
@@ -168,6 +169,7 @@ Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
   * Michael Schubert
   * Namrata Thanvi
   * Neeraj Kumar
+  * Nilkanth Patel
   * Qihong Chen
   * Rahul Diyewar
   * Randy May
@@ -181,6 +183,7 @@ Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
   * Stephane Maldini
   * Stuart Williams
   * Sudhir Menon
+  * Sunil Jigyasu
   * Supriya Pillai
   * Suranjan Kumar
   * Suyog Bhokare
