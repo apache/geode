@@ -1,6 +1,6 @@
 GemFire provides APIs to capture a handful of events in a distributed system providing extensive documentation on how to implement listeners and callbacks for processing those synchronously or asynchronously.
 
-This document covers `CacheWriter` and `CacheListener` best practices for handling CacheEvents.
+This document covers `CacheWriter` and `CacheListener` best practices for handling `CacheEvents`.
 
 ## Event Model
 
