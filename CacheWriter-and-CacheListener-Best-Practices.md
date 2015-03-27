@@ -35,12 +35,12 @@ A `CacheListener` is an event handler that synchronously respond to events after
 
 #### Basic rules:
 
-* You can install multiple CacheListeners in the same region
+* You can install multiple `CacheListener` in the same region
 * When multiple listeners are installed, they will be executed in the same order they’re registered in the system. One at a time.
 * For partitioned regions, only the listeners in the event’s primary node me will be executed;
 * For replicated regions, only the first node to successfully execute the listeners will be called.
 * For local regions, only local listener (if defined) will be called.
-* For long running or batch processing consider using an Asynchronous Event Listener
+* For long running or batch processing consider using an `AsynchronousEventListener`
 
 Available events and callbacks:
 
