@@ -214,7 +214,7 @@ Roman Shaposhnik
 The initial mentors are listed below: 
   * Chip Childers - Apache Member, Cloud Foundry Foundation
   * Justin Erenkrantz - Apache Member, Bloomberg LP
-  * Konstantin Boudnik - IPMC Member, WANDisco
+  * Konstantin Boudnik - Apache Member, WANDisco
   * Jan Iversen - Apache Member, Self employed
   * William A. Rowe Jr. - Apache Member, Pivotal
   * Henry Saputra - Apache Member, Pivotal
