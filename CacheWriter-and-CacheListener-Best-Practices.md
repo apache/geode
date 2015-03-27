@@ -31,7 +31,7 @@ It is not recommended to perform long running operations inside a `CacheWriter` 
 
 ## Cache Listeners
 
-A cache listener is an event handler that synchronously respond to events after modifications occurred in the system. The main use cases for cache listeners are synchronous write-behind and notifications, triggering actions after certain modifications occur on a region or on the system. It can handle cache events related to entries (`EntryEvent`) and regions (`RegionEvent`) but events can be processed in a different order than the order they’re applied in the region.
+A `CacheListener` is an event handler that synchronously respond to events after modifications occurred in the system. The main use cases for a `CacheListener` are synchronous write-behind and notifications, triggering actions after certain modifications occur on a region or on the system. It can handle cache events related to entries (`EntryEvent`) and regions (`RegionEvent`) but events can be processed in a different order than the order they’re applied in the region.
 
 #### Basic rules:
 
