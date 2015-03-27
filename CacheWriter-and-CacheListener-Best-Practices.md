@@ -12,12 +12,13 @@ A `CacheWriter` is an event handler that synchronously handles “_happens-befor
 
 #### Basic rules:
 
-* For partitioned regions, only the writer in the event’s primary node me will be executed.
+* There can be only **one** `CacheWriter` per Region.
+* For partitioned regions, only the writer in the event’s primary node will be executed.
 * For replicated regions, only the first node to successfully execute the writer will be called.
 * For local regions, only local writer (if defined) will be called.
 * Unlike cache listeners, you can only install one cache writer in a region for each member.
-* `CacheWriter` can abort operations (fail-fast) and will propagate the `CacheWriterException` back to the caller
-* Being a synchronous callback, it will block the current execution until it completes
+* `CacheWriter` can abort operations (fail-fast) and will propagate the `CacheWriterException` back to the caller.
+* Being a synchronous callback, it will block the current execution until it completes.
 
 Available events and callbacks:
 
@@ -31,16 +32,16 @@ It is not recommended to perform long running operations inside a `CacheWriter` 
 
 ## Cache Listeners
 
-A `CacheListener` is an event handler that synchronously respond to events after modifications occurred in the system. The main use cases for a `CacheListener` are synchronous write-behind and notifications, triggering actions after certain modifications occur on a region or on the system. It can handle cache events related to entries (`EntryEvent`) and regions (`RegionEvent`) but events can be processed in a different order than the order they’re applied in the region.
+A `CacheListener` is an event handler that synchronously responds to events after modifications occurred in the system. The main use cases for a `CacheListener` are synchronous write-behind and notifications, triggering actions after certain modifications occur on a region or on the system. It can handle cache events related to entries (`EntryEvent`) and regions (`RegionEvent`) but events can be processed in a different order than the order they’re applied in the region.
 
 #### Basic rules:
 
-* You can install multiple `CacheListener` in the same region
+* You can install **multiple** `CacheListener` in the same region.
 * When multiple listeners are installed, they will be executed in the same order they’re registered in the system. One at a time.
-* For partitioned regions, only the listeners in the event’s primary node me will be executed;
+* For partitioned regions, only the listeners in the event’s primary node will be executed.
 * For replicated regions, only the first node to successfully execute the listeners will be called.
 * For local regions, only local listener (if defined) will be called.
-* For long running or batch processing consider using an `AsynchronousEventListener`
+* For long running or batch processing consider using an `AsynchronousEventListener`.
 
 Available events and callbacks:
 
@@ -58,11 +59,12 @@ Available events and callbacks:
 
 When dealing with GemFire callbacks there are some operations that should be avoided or used with extra attention. They are:
 
-* Do not perform distributed operations, such as using using the _Distributed Lock service_
-* Avoid calling Region methods, particularly on non-colocated partitioned regions
-* Avoid calling functions through `FunctionService`, since they share the same socket
-* Do not modify region attributes, since those messages will have priority and can cause blocks
-* Avoid configurations where listeners or writers are deployed in a few nodes of the distributed system. Prefer a cluster-wide installation where every node can process the callback
+* Do not perform distributed operations, such as using using the _Distributed Lock service_ 
+* Avoid calling Region methods, particularly on non-colocated partitioned regions.
+* Avoid calling functions through `FunctionService`, since they can cause distributed deadlocks.
+* Do not use any GemFire APIs inside a `CacheWriter` in case you have _conserve-sockets_ set to true.
+* Do not modify region attributes, since those messages will have priority and can cause blocks.
+* Avoid configurations where listeners or writers are deployed in a few nodes of the distributed system. Prefer a cluster-wide installation where every node can process the callback.
 
 When using transactions:
 * `CacheWriter` should not start transactions;
