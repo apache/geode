@@ -86,19 +86,55 @@ Initial source is available on GitHub under [a]the [LICENSE_TBD] at [OSS_PROJET_
 We know of no legal encumberments that would inhibit the transfer of source code to the ASF.
 
 == External Dependencies ==
-FIXME: you guys need to fill out all of these sections
 
 Embedded dependencies (relocated):
-   * XXX
+   * json
+   * jgroups
+   * joptsimple
+
+Runtime dependencies:
+   * antlr
+   * classmate
+   * commons-fileupload
+   * commons-io
+   * commons-lang
+   * commons-modeler
+   * fastutil
+   * findbugs annotations
+   * guava
+   * jackson
+   * jansi
+   * javax.activation
+   * javax.mail-api
+   * javax.resource-api
+   * javax.servlet-api
+   * javax.transaction-api
+   * jetty
+   * jline
+   * jna
+   * json4s
+   * log4j
+   * mx4j
+   * paranamer
+   * scala
+   * slf4j
+   * snappy-java
+   * spring
+   * swagger
 
 Module or optional dependencies:
-   * YYY
+   * None
 
 Build only dependencies:
-   * ZZZ
+   * None
 
 Test only dependencies:
-   * BBB
+   * cglib
+   * hamcrest
+   * jmock
+   * junit
+   * multithreadedtc
+   * objenesis
 
 Cryptography
 N/A
