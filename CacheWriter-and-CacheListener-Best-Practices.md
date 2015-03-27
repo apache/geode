@@ -8,7 +8,7 @@ This document covers `CacheWriter` and `CacheListener` best practices for handli
 
 ## Cache Writers
 
-A `CacheWriter` is an event handler that synchronously handles “happens-before” events (`CacheEvent`) in an ordered fashion. It is mostly used for data validation and in some cases data synchronization with external data sources, offering a write-through capability for regions handling events that can be local, within the same JVM, or remote, in the case of replicated or partitioned region.
+A `CacheWriter` is an event handler that synchronously handles “_happens-before_” events (`CacheEvent`) in an ordered fashion. It is mostly used for data validation and in some cases data synchronization with external data sources, offering a write-through capability for regions handling events that can be local, within the same JVM, or remote, in the case of replicated or partitioned region.
 
 #### Basic rules:
 
