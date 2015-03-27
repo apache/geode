@@ -67,7 +67,7 @@ When dealing with GemFire callbacks there are some operations that should be avo
 When using transactions:
 * `CacheWriter` should not start transactions;
 * `CacheWriter` and `CacheListener` will receive all individual operations part of a transaction, unlike their transactional counterparts TransactionWriter and TransactionListener;
-* When a rollback or commit happens, a CacheWriters can only be notified by a `TransactionWriter` and should handle rollback or failures properly;
+* When a rollback or commit happens, a `CacheWriter` can only be notified by a `TransactionWriter` and should handle rollback or failures properly;
 * `CacheWriterException` is still propagated to the application and it should handle the failures in the context of the transaction by continuing or aborting;  JTA is the recommended alternative
 * In most cases when dealing with transactions, consider using a `TransactionWriter` instead of a `CacheWriter`
 * With global transactions, `EntryEvent.getTransactionId()` will return the current internal transaction ID
