@@ -13,9 +13,9 @@ A `CacheWriter` is an event handler that synchronously handles “_happens-befor
 #### Basic rules:
 
 * There can be only **one** `CacheWriter` per Region.
-* For partitioned regions, only the writer in the event’s primary node will be executed.
-* For replicated regions, only the first node to successfully execute the writer will be called.
-* For local regions, only local writer (if defined) will be called.
+* For partitioned regions, only the writer in the event’s primary node will process the event.
+* For replicated regions, only the first node to successfully execute the writer will process the event.
+* For local regions, only local writer (if defined) will process the event.
 * Unlike cache listeners, you can only install one cache writer in a region for each member.
 * `CacheWriter` can abort operations (fail-fast) and will propagate the `CacheWriterException` back to the caller.
 * Being a synchronous callback, it will block the current execution until it completes.
@@ -38,9 +38,9 @@ A `CacheListener` is an event handler that synchronously responds to events afte
 
 * You can install **multiple** `CacheListener` in the same region.
 * When multiple listeners are installed, they will be executed in the same order they’re registered in the system. One at a time.
-* For partitioned regions, only the listeners in the event’s primary node will be executed.
-* For replicated regions, only the first node to successfully execute the listeners will be called.
-* For local regions, only local listener (if defined) will be called.
+* For partitioned regions, only the listeners in the event’s primary node will process the event.
+* For replicated regions, all nodes with the listener installed will process the event.
+* For local regions, only local listener (if defined) will process the event.
 * For long running or batch processing consider using an `AsynchronousEventListener`.
 
 Available events and callbacks:
