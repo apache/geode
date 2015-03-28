@@ -1,4 +1,4 @@
 Example:
-* [What to do about an unresponsive member](What to do about an unresponsive member)
+* [PDX Serialization Internals](PDX Serialization Internals)
 * [CacheWriter and CacheListener Best Practices](CacheWriter and CacheListener Best Practices)
 * [Sizing](Sizing)
