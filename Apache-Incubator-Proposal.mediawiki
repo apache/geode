@@ -238,10 +238,12 @@ Means of setting up regular builds for [OSS_PROJECT_NAME] on builds.apache.org
   * Yogesh Mahajan
 
 == Affiliations ==
-  * Pivotal:
-  * WANDisco
-  * Bloomberg LP
-  * Cloud Foundry Foundation
+  * WANDisco: Konstantin Boudnik
+  * Bloomberg LP: Justin Erenkrantz
+  * Cloud Foundry Foundation: Chip Childers
+  * NASA JPL: Chris Mattmann
+  * Unaffiliated: Jan Iversen
+  * Pivotal: everyone else on this proposal
 
 == Sponsors ==
 
