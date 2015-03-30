@@ -66,6 +66,7 @@ When dealing with GemFire callbacks there are some operations that should be avo
 * Do not use any GemFire APIs inside a `CacheListener` if you have _conserve-sockets_ set to true.
 * Do not modify region attributes, since those messages will have priority and can cause blocks.
 * Avoid configurations where listeners or writers are deployed in a few nodes of the distributed system. Prefer a cluster-wide installation where every node can process the callback.
+* Any exceptions thrown are caught and logged, so users can troubleshoot using GemFire logs.
 * Operations inside a `CacheListener` or a `CacheWriter` are thread-safe and entries are locked for the current thread.
 
 When using transactions:
