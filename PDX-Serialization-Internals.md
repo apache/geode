@@ -1,6 +1,6 @@
 **Work in progress**
 
-PDX serialization is the preferred serialization format for storing objects in gemfire. PDX serialization is designed serialize data as compactly as possible, while still providing the capability to read individual fields in a serialized object for query processing. PDX is also designed for ease of use and backwards and forwards compatibility between different versions of your objects.
+PDX serialization is the preferred serialization format for storing objects in gemfire. PDX serialization is designed to serialize data as compactly as possible, while still providing the capability to read individual fields in a serialized object for query processing. PDX is also designed for ease of use and backwards and forwards compatibility between different versions of your objects.
 
 Bruce Schuchardt wrote up a excellent article on using PDX on the pivotal blog: [Data Serialization: How to Run Multiple Big Data Apps on a Single Data Store with GemFire](http://blog.pivotal.io/pivotal/products/data-serialization-how-to-run-multiple-big-data-apps-at-once-with-gemfire). In this article, we're going to dive behind the scenes and look at how PDX implements these features.
 
@@ -14,8 +14,26 @@ PDX takes the approach of schema exchange and cranks it up a notch by taking adv
 
 # A typical type
 
-TODO: Show serialization format, querying capability.
+PDX objects are optimized for size, but also for random access to individual fields. A serialized byte array in PDX format looks something like this
 
+    | 1 byte | 4 bytes |   1  |    3    | variable |  variable       |
+    | HEADER | length  | DSID | Type Id |  fields  |  field offsets  |
+
+
+ * **HEADER**   - this is just a magic number to tell gemfire this is a PDX object as opposed to an object serialized in some other format (java serialization, DataSerializable, etc.)
+ * **DSID**     - the distributed system id for the system that generated this type
+ * **Type ID**  - An id that uniquely identifies what PDX type is used to deserialize this data.
+ * **fields**   - The actual data. Fixed sized fields are written in the number of bytes needed for the field, for example an int takes 4 bytes. Variable length fields (eg a string) are written with a length followed by field data.
+ * **offsets**  - The offsets to each _variable_ length field (except for the first one). Offsets to fixed length fields are not included here because those are stored in the PDX types. The size of each offset is based on the size of the overall serialized data. For example a byte array < 32K in size would have 2 byte offsets.
+
+The PDX type associated with a given type ID has
+ * The type id
+ * The name of the Java (or C#, or C++) class to create when deserializing this blob.
+ * A map of fieldName -> PdxField, which contains the location of the nearest variable length offset (in the serialized blob), and a relative offset from that point to the location of the field.
+
+You may observe that the serialized data could potentially be encoded slightly more compactly, for example by using something like varints used in [protobuf](https://developers.google.com/protocol-buffers/docs/encoding) to encode an integer in 1-5 bytes. PDX trades off this potential space savings for the ability to read a single field quickly. 
+
+To see how this works, imagine reading a single field 'price' using PdxInstance. PDX will look up the field based on the name, read the variable length offset for that field from the serialized bytes, and then seek to the location of the the field and read the single field. This capability to read individual fields is used extensively in the querying system to avoid deserializing more than necessary while evaluating a query.
 
 # How types get around
 
@@ -37,3 +55,5 @@ The PDX system will fill in missing fields with a default value. For *extra* fie
 [Image here](image here)
 
 One interesting consequence of this behavior is that the actual serialized object contains the *union* of all of the fields from different versions of a class. For example if two client applications are interacting with a Person object, and one application adds a twitter handle and the other adds facebook id, the resulting Person will have both fields in the serialized data, even though *neither* application has both fields on the class. Because PDX automatically generates a type ID for any new object description it sees, it happily generates a new type id for this new hybrid Person object with both fields.
+
+PDX is an easy to use serialization system that is fast for serialization, deserialization, and random field access. I hope this behind the scenes look helps you understand some of the design goals and capabilities of PDX. 
