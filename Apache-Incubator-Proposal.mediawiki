@@ -4,7 +4,7 @@
 [OSS_PROJET_NAME] pools memory (along with CPU, network and optionally local disk) across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques for high availability, improved performance, scalability, and fault tolerance. [OSS_PROJET_NAME] is both a distributed data container and an in-memory data management system providing reliable asynchronous event notifications and guaranteed message delivery.
 
 == Proposal ==
-The goal of this proposal is to bring the core of Pivotal Software, Inc.’s (Pivotal) PIVOTAL GEMFIREⓇ codebase into the Apache Software Foundation (ASF) in order to build a vibrant, diverse and self-governed open source community around the technology. Pivotal will continue to market and sell PIVOTAL GEMFIRE based on [OSS_PROJET_NAME]. [OSS_PROJET_NAME] and PIVOTAL GEMFIRE will be managed separately. This proposal covers the [OSS_PROJET_NAME] source code (mainly written in Java), [OSS_PROJET_NAME] documentation and other materials currently available on GitHub.
+The goal of this proposal is to bring the core of Pivotal Software, Inc.’s (Pivotal) Pivotal GemFireⓇ codebase into the Apache Software Foundation (ASF) in order to build a vibrant, diverse and self-governed open source community around the technology. Pivotal will continue to market and sell Pivotal GemFire based on [OSS_PROJET_NAME]. [OSS_PROJET_NAME] and Pivotal GemFire will be managed separately. This proposal covers the [OSS_PROJET_NAME] source code (mainly written in Java), [OSS_PROJET_NAME] documentation and other materials currently available on GitHub.
 
 While [OSS_PROJET_NAME] is our primary choice for a name of the project, in order to facilitate PODLINGNAMESEARCH we have come up with two alternatives:
   * Haptic
@@ -20,9 +20,9 @@ Modern-day data management architectures require a robust in-memory data grid so
 Our initial goals are to bring [OSS_PROJET_NAME] into the ASF, transition internal engineering processes into the open, and foster a collaborative development model according to the "Apache Way." Pivotal plans to develop new functionality in an open, community-driven way. To get there, the existing internal build, test and release processes will be refactored to support open development.
 
 == Current Status ==
-Currently, the project code base is licensed for evaluation purposes and is available in a public GitHub repository (http://github.com/pivotal/OSS_PROJECT_NAME). The documentation and wiki pages are also available on the public GitHub repository. Although PIVOTAL GEMFIRE was developed as a proprietary, closed-source product, the internal engineering practices adopted by the development team lend themselves well to an open, collaborative and meritocratic environment.
+Currently, the project code base is licensed for evaluation purposes and is available in a public GitHub repository (http://github.com/pivotal/OSS_PROJECT_NAME). The documentation and wiki pages are also available on the public GitHub repository. Although Pivotal GemFire was developed as a proprietary, closed-source product, the internal engineering practices adopted by the development team lend themselves well to an open, collaborative and meritocratic environment.
 
-The PIVOTAL GEMFIRE team has always focused on building a robust end user community of paying and non-paying customers. The existing documentation along with StackOverflow and other similar forums are expected to facilitate conversions between our existing users so as to transform them into an active community of [OSS_PROJET_NAME] members, stakeholders and developers.
+The Pivotal GemFire team has always focused on building a robust end user community of paying and non-paying customers. The existing documentation along with StackOverflow and other similar forums are expected to facilitate conversions between our existing users so as to transform them into an active community of [OSS_PROJET_NAME] members, stakeholders and developers.
 
 === Meritocracy ===
 Our proposed list of initial committers include the current GemFire R&D team, Pivotal Field Engineers, and several existing customers and partners. This group will form a base for the broader community we will invite to collaborate on the codebase. We intend to radically expand the initial developer and user community by running the project in accordance with the Apache Way. Users and new contributors will be treated with respect and welcomed. By participating in the community and providing quality patches/support that move the project forward, they will earn merit. They also will be encouraged to provide non-code contributions (documentation, events, community management, etc.) and will gain merit for doing so. Those with a proven support and quality track record will be encouraged to become committers.
@@ -47,16 +47,16 @@ The following existing ASF projects can be considered when reviewing [OSS_PROJET
 [FIXME: please provide short compare-n-contrast with all of the above]
 
 == Known Risks ==
-Development has been sponsored mostly by a single company (or its predecessors) thus far and coordinated mainly by the core PIVOTAL GEMFIRE team.
+Development has been sponsored mostly by a single company (or its predecessors) thus far and coordinated mainly by the core Pivotal GemFire team.
 
 For the project to fully transition to the Apache Way governance model, development must shift towards the meritocracy-centric model of growing a community of contributors balanced with the needs for extreme stability and core implementation coherency.
 
-The tools and development practices in place for the PIVOTAL GEMFIRE product are compatible with the ASF infrastructure and thus we do not anticipate any on-boarding pains. Migration from the current GitHub repository is also expected to be straightforward.
+The tools and development practices in place for the Pivotal GemFire product are compatible with the ASF infrastructure and thus we do not anticipate any on-boarding pains. Migration from the current GitHub repository is also expected to be straightforward.
 
 The project currently includes a modified version of the JGroups software toolkit. JGroups was initially released under the LGPL license. Although we have complied with the terms of the LGPL by making the modified source available, LGPL is classified as an incompatible license by the ASF.  The JGroups project has since been re-licenced under ALv2 (see http://www.jgroups.org/license.html) and we plan to engage with the licensor to overcome this license incompatibility. If the license incompatibility cannot be overcome through our discussions with the licensor, we will need to rework this portion of the project based upon a newer version of the JGroups toolkit or via other alternative development efforts.
 
 === Orphaned products ===
-Pivotal is fully committed to PIVOTAL GEMFIRE and the product will continue to be based on the [OSS_PROJET_NAME] project. Moreover, Pivotal has a vested interest in making [OSS_PROJET_NAME] succeed by driving its close integration with sister ASF projects. We expect this to further reduces the risk of orphaning the product.
+Pivotal is fully committed to Pivotal GemFire and the product will continue to be based on the [OSS_PROJET_NAME] project. Moreover, Pivotal has a vested interest in making [OSS_PROJET_NAME] succeed by driving its close integration with sister ASF projects. We expect this to further reduces the risk of orphaning the product.
 
 
 === Inexperience with Open Source ===
@@ -69,7 +69,7 @@ While most of the initial committers are employed by Pivotal, we have already se
 Most of the contributors are paid to work in the Big Data space. While they might wander from their current employers, they are unlikely to venture far from their core expertises and thus will continue to be engaged with the project regardless of their current employers.
 
 === Relationships with Other Apache Products ===
-As mentioned in the Alignment section, [OSS_PROJET_NAME] may consider various degrees of integration and code exchange with Apache Ignite (incubating), Apache Hadoop, Apache Storm, Apache Spark and Apache Kafka/Samza. Given the success that the PIVOTAL GEMFIRE product enjoyed as an embedded service, we expect integration points to be inside and outside the project. We look forward to collaborating with these communities as well as other communities under the Apache umbrella.
+As mentioned in the Alignment section, [OSS_PROJET_NAME] may consider various degrees of integration and code exchange with Apache Ignite (incubating), Apache Hadoop, Apache Storm, Apache Spark and Apache Kafka/Samza. Given the success that the Pivotal GemFire product enjoyed as an embedded service, we expect integration points to be inside and outside the project. We look forward to collaborating with these communities as well as other communities under the Apache umbrella.
 
 === An Excessive Fascination with the Apache Brand ===
 While we intend to leverage the Apache ‘branding’ when talking to other projects as testament of our project’s ‘neutrality’, we have no plans for making use of Apache brand in press releases nor posting billboards advertising acceptance of [OSS_PROJET_NAME] into Apache Incubator.
@@ -77,7 +77,7 @@ While we intend to leverage the Apache ‘branding’ when talking to other proj
 == Documentation ==
 See documentation for the current state of the project documentation available as part of the GitHub repository at the following URL FIXME
 
-A mature project website is also available at PIVOTAL GEMFIREⓇ documentation website.
+A mature project website is also available at Pivotal GemFire documentation website.
 
 == Initial Source ==
 Initial source is available on GitHub under [a]the [LICENSE_TBD] at [OSS_PROJET_NAME] 
