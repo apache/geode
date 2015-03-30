@@ -42,7 +42,7 @@ A `CacheListener` is an event handler that synchronously responds to events afte
 * For replicated regions, all nodes with the listener installed will process the event.
 * For local regions, only local listener (if defined) will process the event.
 * For long running or batch processing consider using an `AsynchronousEventListener`.
-* Operations inside a `CacheListener` are thread-safe and entries are locked for the current thread.
+* Being a synchronous callback, it will block the current execution until it completes.
 
 Available events and callbacks:
 
@@ -66,7 +66,7 @@ When dealing with GemFire callbacks there are some operations that should be avo
 * Do not use any GemFire APIs inside a `CacheListener` if you have _conserve-sockets_ set to true.
 * Do not modify region attributes, since those messages will have priority and can cause blocks.
 * Avoid configurations where listeners or writers are deployed in a few nodes of the distributed system. Prefer a cluster-wide installation where every node can process the callback.
-* Operations inside a `CacheListener` are thread-safe and entries are locked for the current thread.
+* Operations inside a `CacheListener` or a `CacheWriter` are thread-safe and entries are locked for the current thread.
 
 When using transactions:
 * `CacheWriter` should not start transactions;
