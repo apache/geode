@@ -58,7 +58,7 @@ Available events and callbacks:
 
 ## General recommendations
 
-When dealing with GemFire callbacks there are some operations that should be avoided or used with extra attention. They are:
+When dealing with GemFire callbacks there are some operations that should be avoided or used with extra attention. Some general recommendations are:
 
 * Do not perform distributed operations, such as using using the _Distributed Lock service_ 
 * Avoid calling Region methods, particularly on non-colocated partitioned regions.
@@ -67,6 +67,7 @@ When dealing with GemFire callbacks there are some operations that should be avo
 * Do not modify region attributes, since those messages will have priority and can cause blocks.
 * Avoid configurations where listeners or writers are deployed in a few nodes of the distributed system. Prefer a cluster-wide installation where every node can process the callback.
 * Any exceptions thrown are caught and logged, so users can troubleshoot using GemFire logs.
+* `EntryEvent.getNewValue()` or `EntryEvent.getOldValue` can result in deserializations unless **PDX** and `read-serialized=true` are used.
 * Operations inside a `CacheListener` or a `CacheWriter` are thread-safe and entries are locked for the current thread.
 
 When using transactions:
