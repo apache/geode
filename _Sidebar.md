@@ -16,22 +16,22 @@
 
 ***
 ## **Articles**
-### Developers
-  * [[CacheWriter and CacheListener Best Practices]]
-  * [[Function best practices]]
-  * [[REST API usage]]
-  * [[Persistence best practices]]
-  * [[OQL]]
-### Architects
-  * [[Data Architecture in GemFire]]
-  * [[Embedded architecture]]
-  * [[GemFire for PCF]]
-  * [[Moving from memcached to gemcached]]
-  * [[Client server Architecture]]
-  * [[OLTP]]
-* Administrators
-  * [[Sizing]]
-  * [[What to monitor]]
-  * [[Network configuration]]
+#### Developers
+* [[CacheWriter and CacheListener Best Practices]]
+* [[Function best practices]]
+* [[REST API usage]]
+* [[Persistence best practices]]
+* [[OQL]]
+#### Architects
+* [[Data Architecture in GemFire]]
+* [[Embedded architecture]]
+* [[GemFire for PCF]]
+* [[Moving from memcached to gemcached]]
+* [[Client server Architecture]]
+* [[OLTP]]
+#### Administrators
+* [[Sizing]]
+* [[What to monitor]]
+* [[Network configuration]]
 
 
