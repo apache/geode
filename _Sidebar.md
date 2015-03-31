@@ -15,7 +15,7 @@
   * [[Criteria for Code Submissions]]
 
 ***
-**Articles**
+## **Articles**
 ### Developers
   * [[CacheWriter and CacheListener Best Practices]]
   * [[Function best practices]]
