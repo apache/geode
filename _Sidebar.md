@@ -5,7 +5,7 @@
 **[[Apache Incubator Proposal]]**
 * [[Project Committers]]
 
-**Developers**
+**Contributors**
 * [[How to Contribute]]
 * [[Getting Started for GemFire Developers]]
 * [[Building and Running GemFire from Source]]
