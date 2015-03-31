@@ -44,7 +44,8 @@ Set the file encoding to UTF-8
 
 Set the editors to insert spaces instead of tabs
 
-    Window > Preferences > General > Editors > Text Editors > Check "Insert Spaces for tabs"
+    Window > Preferences > General > 
+        Editors > Text Editors > Check "Insert Spaces for tabs"
 
 Import newline/brace/indentation settings from etc/eclipseCodingConventions.xml.  This will create a new formatter profile which you should activate when working with project source files.
 
