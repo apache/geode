@@ -17,7 +17,7 @@
 ***
 **Articles**
 * Developers
-  * [[Cache Writer and Listener Best Practices]]
+  * [[CacheWriter and CacheListener Best Practices]]
   * [[Function best practices]]
   * [[REST API usage]]
   * [[Persistence best practices]]
