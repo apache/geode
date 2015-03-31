@@ -4,7 +4,7 @@ Java code for the GemFire project was originally
 developed using conventions based on
 +The Elements of Java Style+, by A. Vermeulen, S. Ambler, _et. al_. 
 
-As an Apache project we are following the 
+As an open-source project we are following the 
 [Google Java Style](http://google-styleguide.googlecode.com/svn/trunk/javaguide.html) 
 guide, emphasizing a few of the more important points in this page.
 
