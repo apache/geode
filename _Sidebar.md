@@ -1,9 +1,11 @@
 **About GemFire**
 * [Documentation](http://gemfire.docs.pivotal.io)
 * [[Getting Started]]
+
 ***
 **[[Apache Incubator Proposal]]**
 * [[Project Committers]]
+
 ***
 **Contributors**
 * [[How to Contribute]]
