@@ -4,7 +4,7 @@ This document covers `CacheWriter` and `CacheListener` best practices for handli
 
 ## Event Model
 
-![Event Model](https://wmarkito.files.wordpress.com/2015/03/07-events_pptx.png)
+![Event Model](https://github.com/gemfire/apache-gemfire-staging/wiki/images/events.png)
 
 ## Cache Writers
 
