@@ -16,13 +16,13 @@
 
 ***
 **Articles**
-* Developers
+### Developers
   * [[CacheWriter and CacheListener Best Practices]]
   * [[Function best practices]]
   * [[REST API usage]]
   * [[Persistence best practices]]
   * [[OQL]]
-* Architects
+### Architects
   * [[Data Architecture in GemFire]]
   * [[Embedded architecture]]
   * [[GemFire for PCF]]
