@@ -14,7 +14,6 @@
 * [[Code Style Guide]]
   * [[Criteria for Code Submissions]]
 
-***
 ## **Articles**
 #### Developers
 * [[CacheWriter and CacheListener Best Practices]]
