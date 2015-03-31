@@ -47,18 +47,18 @@ Set the editors to insert spaces instead of tabs
     Window > Preferences > General > 
         Editors > Text Editors > Check "Insert Spaces for tabs"
 
-Import newline/brace/indentation settings from etc/eclipseCodingConventions.xml.  This will create a new formatter profile which you should activate when working with project source files.
+Import newline/brace/indentation formatter settings.  This will create a new formatter profile which you should activate when working with project source files.
 
     Window > Preferences > Java > 
         Code Style > Formatter > Import > 
-            Import eclipseCodingConventions.xml
+            Import etc/eclipseFormatterProfile.xml
 
 Avoid using Eclipse Auto-formatting - "Ctrl + Shift + F" for entire file while changing a part of the file. Especially for an existing file as it makes it difficult to know the exact difference by comparing revisions.
 
 
 *IntelliJ*
 
-    TBD
+IntelliJ code style settings can be imported from etc/intellijIdeaCodeStyle.xml
 
 ### File encoding
 
@@ -115,4 +115,5 @@ applies to each of the various Java definition and control constructs.
     do {
       ...
     } while (...)
+
 
