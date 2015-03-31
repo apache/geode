@@ -1,4 +1,4 @@
-** About GemFire
+**About GemFire**
 * [Documentation](gemfire.docs.pivotal.io)
 * [[Getting Started]]
 
