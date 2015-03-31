@@ -1,20 +1,18 @@
-**About GemFire**
+## About GemFire
 * [Documentation](http://gemfire.docs.pivotal.io)
 * [[Getting Started]]
 
-***
-**[[Apache Incubator Proposal]]**
+## [[Apache Incubator Proposal]]
 * [[Project Committers]]
 
-***
-**Contributors**
+## Contributors
 * [[How to Contribute]]
 * [[Getting Started for GemFire Developers]]
 * [[Building and Running GemFire from Source]]
 * [[Code Style Guide]]
-  * [[Criteria for Code Submissions]]
+* [[Criteria for Code Submissions]]
 
-## **Articles**
+## Articles
 #### Developers
 * [[CacheWriter and CacheListener Best Practices]]
 * [[Function best practices]]
@@ -22,7 +20,7 @@
 * [[Persistence best practices]]
 * [[OQL]]
 
-#### Architects
+### Architects
 * [[Data Architecture in GemFire]]
 * [[Embedded architecture]]
 * [[GemFire for PCF]]
@@ -30,7 +28,7 @@
 * [[Client server Architecture]]
 * [[OLTP]]
 
-#### Administrators
+### Administrators
 * [[Sizing]]
 * [[What to monitor]]
 * [[Network configuration]]
