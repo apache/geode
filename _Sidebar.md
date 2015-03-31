@@ -1,24 +1,35 @@
+** About GemFire
+* [Documentation](gemfire.docs.pivotal.io)
+* [[Getting Started]]
+
+**[[Apache Incubator Proposal]]**
+* [[Project Committers]]
+
+**Developers**
+* [[How to Contribute]]
+* [[Getting Started for GemFire Developers]]
+* [[Building and Running GemFire from Source]]
+* [[Code Style Guide]]
+  * [[Criteria for Code Submissions]]
+
 **Articles**
-* [[Data Architecture in GemFire]]
-* [[Cache Writer/Listener best practices]]
-* [[Function best practices]]
-* [[GemFire for PCF]]
-* [[REST API usage]]
-* [[Moving from memcached to gemcached]]
-* [[client server architecture]]
-* [[Embedded architecture]]
-* [[Sizing]]
-* [[What to monitor]]
-* [[Persistence best practices]]
-* [[Network configuration]]
-* [[PDX]]
-* [[GemFire VM]]
-* [[sliding window protocol in WAN]]
-* [[multisite architecture]]
-* [[How do I debug]]
-* [[Federated JMX Architecutre]]
-* [[Native client Excel plugin]]
-* [[When objects]]
-* [[cluster configuration]]
-* [[OLTP]]
-* [[OQL]]
+* For Developers
+  * [[Cache Writer and Listener Best Practices]]
+  * [[Function best practices]]
+  * [[REST API usage]]
+  * [[Persistence best practices]]
+  * [[OQL]]
+* For Architects
+  * [[Data Architecture in GemFire]]
+  * [[Embedded architecture]]
+  * [[GemFire for PCF]]
+  * [[Moving from memcached to gemcached]]
+  * [[Client server Architecture]]
+  * [[OLTP]]
+* For Administrators
+  * [[Sizing]]
+  * [[What to monitor]]
+  * [[Network configuration]]
+
+
+
