@@ -1,5 +1,5 @@
 **About GemFire**
-* [Documentation](gemfire.docs.pivotal.io)
+* [Documentation](http://gemfire.docs.pivotal.io)
 * [[Getting Started]]
 
 **[[Apache Incubator Proposal]]**
