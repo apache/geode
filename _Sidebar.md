@@ -22,6 +22,7 @@
 * [[REST API usage]]
 * [[Persistence best practices]]
 * [[OQL]]
+
 #### Architects
 * [[Data Architecture in GemFire]]
 * [[Embedded architecture]]
@@ -29,6 +30,7 @@
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
 * [[OLTP]]
+
 #### Administrators
 * [[Sizing]]
 * [[What to monitor]]
