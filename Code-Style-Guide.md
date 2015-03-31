@@ -37,8 +37,10 @@ are covered first, followed by more detailed descriptions.
 
 Set the file encoding to UTF-8
 
-    Window > Preferences > General > Workspace > Text file encoding > Set explicitly to "UTF-8"
-    Window > Preferences > General > Workspace > New Text file line delimiter > Set explicitly to "Unix"
+    Window > Preferences > General >
+        Workspace > Text file encoding > Set explicitly to "UTF-8"
+    Window > Preferences > General > 
+        Workspace > New Text file line delimiter > Set explicitly to "Unix"
 
 Set the editors to insert spaces instead of tabs
 
