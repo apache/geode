@@ -2,9 +2,11 @@
 * [Documentation](http://gemfire.docs.pivotal.io)
 * [[Getting Started]]
 
+***
 **[[Apache Incubator Proposal]]**
 * [[Project Committers]]
 
+***
 **Contributors**
 * [[How to Contribute]]
 * [[Getting Started for GemFire Developers]]
@@ -12,6 +14,7 @@
 * [[Code Style Guide]]
   * [[Criteria for Code Submissions]]
 
+***
 **Articles**
 * Developers
   * [[Cache Writer and Listener Best Practices]]
@@ -30,6 +33,5 @@
   * [[Sizing]]
   * [[What to monitor]]
   * [[Network configuration]]
-
 
 
