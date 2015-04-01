@@ -27,11 +27,12 @@
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
 * [[OLTP]]
-* [[Troubleshooting CPU]]
 
 ### Administrators
 * [[Sizing]]
 * [[What to monitor]]
 * [[Network configuration]]
+* [[Troubleshooting CPU]]
+* [[Troubleshooting Heap]]
 
 
