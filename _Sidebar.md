@@ -34,5 +34,6 @@
 * [[Network configuration]]
 * [[Troubleshooting CPU]]
 * [[Troubleshooting Heap]]
+* [[Troubleshooting Load Average]]
 
 
