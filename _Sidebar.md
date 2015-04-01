@@ -16,6 +16,7 @@
 #### Developers
 * [[CacheWriter and CacheListener Best Practices]]
 * [[Function best practices]]
+* [[Debugging GemFire Applications]]
 * [[REST API usage]]
 * [[Persistence best practices]]
 * [[OQL]]
