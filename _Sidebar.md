@@ -19,7 +19,8 @@
 * [[REST API usage]]
 * [[Persistence best practices]]
 * [[OQL]]
-* [[Troubleshooting CPU]]
+* [[Troubleshooting]]
+** [[Troubleshooting CPU]]
 
 ### Architects
 * [[Data Architecture in GemFire]]
