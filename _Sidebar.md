@@ -2,6 +2,7 @@
 * [[Apache Incubator Proposal]]
 * [Documentation](http://gemfire.docs.pivotal.io)
 * [[Getting Started]]
+* [[Roadmap]]
 
 ## Contributors
 * [[How to Contribute]]
