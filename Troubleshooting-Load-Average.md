@@ -30,5 +30,5 @@ The top output shows, among other things, load average, CPU usage percentages an
 	 22698 user1  15   0 1102M 1.1G 18068 R     1.4 14.1   0:10   0 java
 	 19286 user1  15   0 1100M 1.1G 18080 R     0.5 14.1   0:25   0 java
  
-In this case, the high load is due to CPU. See the Action section of the [Troubleshooting CPU](Troubleshooting-CPU.md) document for actions that can help alleviate CPU issues. If the I/O wait percentage was high, then the high load might be related to disk I/O. See the GemFire documentation for actions that can help alleviate disk issues for persistent regions.
+In this case, the high load is due to CPU. See the Action section of the [[Troubleshooting CPU]] document for actions that can help alleviate CPU issues. If the I/O wait percentage was high, then the high load might be related to disk I/O. See the GemFire documentation for actions that can help alleviate disk issues for persistent regions.
 
