@@ -5,6 +5,7 @@ This guide is for people interested in working on the GemFire code itself. It as
 GemFire is built with gradle. See [[Building and running|Building-and-Running-GemFire-from-Source]] For basic instructions on how to build.
 
 GemFire uses the standard gradle lifecycle. Execute this to build and run all tests:
+
     ./gradlew clean build
 
 GemFire has quite a few tests, so this will take several hours.  The tests are broken into the following categories
