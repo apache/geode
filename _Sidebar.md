@@ -29,7 +29,7 @@
 * [[OLTP]]
 
 ### Administrators
-* [[Sizing]]
+* [[Sizing a GemFire Cluster]]
 * [[What to monitor]]
 * [[Network configuration]]
 * [[Troubleshooting CPU]]
