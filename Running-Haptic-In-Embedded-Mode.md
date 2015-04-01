@@ -1,4 +1,5 @@
 #Solving the problem of poorly performing Web Applications
+---------need to put images in here from original document [here](https://docs.google.com/a/pivotal.io/document/d/1vR1f40lD6qYJ-3DrNOhJOkMpKtxij36Pz9Bjax7OT1s/edit#heading=h.fa8ah6dp3ymu)
 
 #####Joshua Davis Senior Solutions Architect, Pivotal
 
