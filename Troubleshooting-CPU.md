@@ -40,7 +40,7 @@ The *vsd* chart below shows *LinuxSystemStats cpuActive* values contained in a g
 The vsd chart below shows VMStats processCpuTime value contained in a given GemFire statistics archive.
 ![VMStats](images/troubleshooting_cpu_image002.gif)
 ###gfsh
-The *gfsh show metrics* command can also be used to show the active CPU of a member or members. An example is:
+The *gfsh show metrics* command can be used to show the cpuUsage of a member. An example is:
 
 	show metrics --member=server1 --categories=member
 	
