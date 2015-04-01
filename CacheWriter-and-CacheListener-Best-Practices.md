@@ -4,7 +4,7 @@ This document covers `CacheWriter` and `CacheListener` best practices for handli
 
 ## Event Model
 
-![Event Model](https://github.com/gemfire/apache-gemfire-staging/wiki/images/events.png)
+[[images/events.png]]
 
 ## Cache Writers
 
@@ -81,4 +81,4 @@ When using transactions:
 
 When dealing with transactions always consider using `TransactionListener` or `TransactionWriter` for handling transaction events, but do notice that they’re cache-wide handlers.
 
-![Listener Model](https://wmarkito.files.wordpress.com/2015/03/gf_listener.png)
+[[images/cwclflow.png]]
