@@ -11,17 +11,15 @@ This article provides some practical suggestions for debugging GemFire Applicati
 ## Additional information which can be obtained from a running system
 * Stack dumps - When debugging, it is best to get stack dumps for all VMs in the Distributed System.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.  The following command prints the stacks for all threads in <pid1> to STDOUT (so these should be redirected to files named for each specific vm or pid).
 ``` $ kill -3 <pid1>```
-
 * [jhat -   A web based application fro analysis of heap dumps created by hprof](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html)
-
 * [Eclipse Memory Analyzer](https://eclipse.org/mat/)
 
 ## General Guidelines
-1 Know your environment - Machine (O/S and System settings), JDK, JVM properties (-Xmx -Xms), GC parameters
-1 Know your configuration - Draw out a diagram of your system topology (servers, clients) and make a note of Listeners, Writers and other plug-ins.  
-1 Know your application - On your system topology diagram, add notes on the initialization and other processing being done in different classes of members.
-1 Verify your cache and region configuration
-1 Confirm your system properties (in system log)
+1. Know your environment - Machine (O/S and System settings), JDK, JVM properties (-Xmx -Xms), GC parameters
+1. Know your configuration - Draw out a diagram of your system topology (servers, clients) and make a note of Listeners, Writers and other plug-ins.  
+1. Know your application - On your system topology diagram, add notes on the initialization and other processing being done in different classes of members.
+1. Verify your cache and region configuration
+1. Confirm your system properties (in system log)
 
 ## Hangs between Peers
 
