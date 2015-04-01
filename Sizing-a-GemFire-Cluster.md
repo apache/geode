@@ -1,4 +1,4 @@
-# Overview
+## Overview
 
 
 Sizing a GemFire deployment is a process that involves some number crunching, as well as experimentation and testing. To arrive at reasonably accurate values for the key sizing parameters that will work well in practice, some experimentation and testing is required involving representative data and workload, starting at a very small scale. 
@@ -11,7 +11,7 @@ In a nutshell, the sizing is done by deploying a small representative data set a
 
 For large scale deployments involving large data volumes, the rule of thumb is to scale vertically as much as possible (how much may well depend on the desired SLA around node failure), in order to fit as much data as possible in a single GemFire instance. That helps keep the cluster size down. 
 
-# Requirements and Assumptions
+## Requirements and Assumptions
 
 To do the sizing as accurately as possible, and avoid surprises in production, you will need to run some tests to characterize the memory and other resource usage under a representative workload. That will require the following:
 * A subset of representative data, the more closely matching the real data the better. 
@@ -22,17 +22,17 @@ It is assumed that the documented best practices will be followed, such as the J
 
 Familiarity with key GemFire concepts and features, such as partitioned regions, serialization,  and so on, is also assumed.  
 
-# Architectural and Design Considerations
+## Architectural and Design Considerations
 
 Before a sizing effort can start, the overarching architectural decisions have to be made, such as what GemFire regions to use for different types of data, and what redundancy level. Perhaps, some of the architectural and design decisions can be made based on the results of sizing. In other words, sizing can inform architectural and design decisions for which multiple options are possible. 
 
-## Serialization
+#### Serialization
 
 One particularly interesting topic in this context is the choice of serialization, as it can make a big difference in the per-entry data overhead in memory, and subsequently in the overall memory requirements. GemFire’s PDX serialization is worth mentioning here, as it is a serialization format that keeps data in a usable serialized form. It allows most operations on data entries without having to deserialize them, resulting in both space and performance benefits. These qualities make the PDX serialization the recommended serialization approach for most use cases.  
 
 DataSerializable is another GemFire serialization mechanism, and it is also worth mentioning as it is more space efficient than either PDX or Java Serializable. However, unlike PDX, it requires deserialization on any kind of access.  
 
-## Per-entry Memory Overhead
+#### Per-entry Memory Overhead
 
 Listed below are factors that can have significant impact on the memory overhead for data on a per entry basis, as well as performance:
 * Choice of GemFire region type. Different regions have different per entry overhead. This overhead is documented (see below), and is also included in the sizing spreadsheet.
@@ -44,29 +44,29 @@ The section [Memory Requirements for Cached Data](http://gemfire.docs.pivotal.io
 
 If the data value objects are small, but great in number, the per-entry overhead can add up to a significant memory requirement. This overhead can be reduced by grouping multiple data values into a single entry or by using containment relationships. For instance, you may choose to have your Order objects contain their line items instead of having a separate OrderLineItems region. If this option is available, it is worth considering as it may yield performance improvements in addition to space savings. 
 
-## Partition Region Scalability
+#### Partition Region Scalability
 
 GemFire partitioned regions scale out by rebalancing their data buckets (partitions) in order to distribute the data evenly across all available nodes in a cluster. When new nodes are added to the cluster, rebalancing causes some buckets to move from the old to the new nodes such that the data is evenly balanced across all the nodes. For this to work well, so that the end result is a well balanced cluster, for each partitioned region there should be at least one order of magnitude more buckets than data nodes. In general, the more buckets the better the data distribution. However, since the number of buckets cannot be changed dynamically, without downtime, it has to be chosen with the projected horizontal scale-out taken into account. Otherwise, over time as the system scales out, the data may become less evenly distributed. In the extreme case, when the number of nodes exceeds the number of buckets, adding new nodes has no effect; the ability to scale out is lost.
 
 Related to this is the choice of data partitioning scheme, the goal of which is to yield even data and workload distribution in the cluster. If there is a problem with the partitioning scheme the data (and likely the workload) will not be evenly balanced, and the scalability will be lost.
 
-## Redundancy 
+#### Redundancy 
 
 Choice of redundancy may be driven by data size, and whether data can be retrieved from some other backing store or GemFire is the only store. Other considerations might go into that decision as well. For instance, GemFire can be deployed in an active/active configuration in two data centers such that each can take on the entire load, but only will do so only if necessitated by a failure. In deployments like that typically there are 4 live copies of the data at any time, 2 in each datacenter.  A failure of 2 nodes in a single datacenter would cause data loss in that datacenter, but the other datacenter would take over the entire workload until those 2 nodes can be restored. Another possibility might be to set redundancy to 2 (for a total of 3 copies of data) in order to have high availability even in case of a single node failure, and avoid paying the price of rebalancing when a single node fails. Instead of rebalancing, a failed node is restarted, and in the meantime there are still 2 copies of data.
 
-## Relationship between horizontal and vertical scale
+#### Relationship between horizontal and vertical scale
 
 For deployments that can grow very large, it is important to allow for the growth by taking advantage of not just horizontal scalability, but also the ability to store as much data as possible in a single node. GemFire has been deployed in clusters of over 100 nodes. However, smaller clusters are easier to manage. So, as a general rule, it is recommended to store as much data as possible in a single node while maintaining a comfortable data movement requirement for re-establishing the redundancy SLA after a single point of failure. GemFire has been used with heaps of well over 64GB in size, and this trend is on the rise. 
 
 One thing to consider when deciding on the JVM size (and VM size in virtualized deployments) is the Non-Uniform Memory Architecture (NUMA) memory boundaries. Most modern CPUs implement this kind of architecture where memory is carved up across the CPUs such that memory directly connected to the bus of each CPU has very fast access whereas memory accesses by that same CPU on the other portions of memory (directly connected to the other CPUs) can pay a serious (as much as 2X slower) wait-state penalty for accessing data. An example is a system that has 4 CPUs with 8 cores each and a Non-Uniform Memory Architecture that assigns each CPU its own portion of the memory. Lets say that the total memory on the machine is 256GB. This means that each NUMA node is 64GB. Growing a JVM larger than 64GB on such a machine will cause wait-states to be induced when the CPUs need to cross NUMA node boundaries to access memory within the heap. For optimal performance, GemFire JVMs should be sized to fit within a single NUMA node. 
 
-## GemFire Queues
+#### GemFire Queues
 
 If any GemFire queueing is used, such as for WAN distribution, client subscription, or asynchronous event listeners, it is important to consider the queues’ capacity in the context of the desired SLA. For example, for how long should gateway or client subscription queues be able to keep queueing events when the connection is lost? Given that, how large should the queues have to grow? The best way to find out is by watching the queues’ growth during sizing experiments, using GemFire statistics (more on this in Vertical Sizing section of The Sizing Process, below) .
 
 For WAN distribution it is important to consider the distribution volume requirements, and ensure adequate network bandwidth sizing. If sites connected via the WAN gateway may be down for extended periods of time such as days or weeks it will mean that you will need to overflow the gateway queues to disk, and ensure you have plenty of disk space for those queues. If you don’t have plenty of disk you may have to shut off the Gateway senders to prevent running out of disk. 
 
-# The Sizing Process
+## The Sizing Process
 
 The following are the steps in the sizing process:
 
@@ -78,7 +78,7 @@ The following are the steps in the sizing process:
 
 The following sections go into the details of each step.
 
-## Domain Object Sizing
+#### Domain Object Sizing
 
 Before any other estimates can be made, the size of the domain objects to be stored in the cluster has to be estimated. A good way to size a domain object is by running a single instance GemFire test with GemFire statistics enabled, in which each domain object to be sized is stored in a dedicated partitioned region. The test just loads a number of instances of each domain object, making sure they all stay in memory (no overflow). After running the test, load the statistics file from it into VSD and examine _dataStoreBytesInUse_ and _dataStoreEntryCount_ partition region stats for each partitioned region. Dividing the value of _dataStoreBytesInUse_ by the value of _dataStoreEntryCount_ will be as good an estimate for the average value size as you can get. Note that this estimate doesn’t include the key size and entry overhead, just the value itself.
 
@@ -86,11 +86,11 @@ Another approach is to use a heap histogram. In this approach it’s best to run
 
 Data sizing can also be done using [Data Sizer Java Utility](https://communities.vmware.com/docs/DOC-20695).
 
-## Estimating Total Memory Requirements Using the Sizing Spreadsheet
+#### Estimating Total Memory Requirements Using the Sizing Spreadsheet
 
 Total memory and system requirements can be approximated using the sizing spreadsheet, which calculates in all the GemFire region related per-entry overhead, and takes into account the desired memory headroom. The spreadsheet formulas are rough approximations that serve to inform a very high level estimate, as they do not account for any other overhead (buffers, threads, queues, application workload, etc). In addition, the results obtained from the spreadsheet do not have any performance context. For this reason, the next step is to take the results for memory allocation per server obtained from the spreadsheet and use them as the starting point for  the vertical sizing. 
 
-## Vertical Sizing
+#### Vertical Sizing
 
 This part of the sizing process is the most involved and most important. 
 
@@ -110,11 +110,11 @@ Upon each test run, the latency metrics collected by the application are examine
 
 One of the objectives of vertical sizing is to determine the headroom required to accomplish the desired performance. This might take several tests, in order to tune the headroom to no more and no less than needed. A much larger headroom than needed could amount to a significant waste of resources. A smaller headroom could cause higher GC activity and CPU usage and hurt performance.
 
-### Locator Sizing
+###### Locator Sizing
 
 Locator JVM sizing may be necessary when JMX Manager is running in the locator JVM, and JMX is used for monitoring. The easiest way to do this is to set the locator heap to 0.5G, and watch it during the scale-out. 
 
-### Notes on GC
+###### Notes on GC
 
 When it comes to GC, the most important goal is to avoid full GC’s, as they cause stop the world pauses, which can cause a GemFire data node to be unresponsive, and as a result expelled from the cluster. 
 The permanent generation space can trigger a full GC as well, which happens when it fills up. It should be sized to avoid this. In addition, the JVM can be instructed to garbage collect the permanent generation space along with CMS GC using the following option: 
@@ -132,7 +132,7 @@ If minor GC pauses are too long, reducing the young generation might help. On th
       
         -XX:+UnlockDiagnosticVMOptions XX:ParGCCardsPerStrideChunk=32768
 
-## Scale-out Validation
+#### Scale-out Validation
 
 During this step, the initial three node cluster is scaled out at least a couple of times, adding at least a couple of nodes each time. The client hosts should be scaled out accordingly as well, in order to be able to create adequate workload at each step. It is important to remember to increase the workload proportionally to the scale-out. There is no hard rule about how much to increase the cluster size, or in what increments. Often, this is dictated by available hardware resources.
 
@@ -140,6 +140,7 @@ The goal of this step is to validate the building block configuration and capaci
 
 If JMX is used for monitoring, watch the heap usage of the locator running the JMX Manager. 
 
-## Projection to Full Scale
+#### Projection to Full Scale
 
 Once the scale-out validation is done, and any adjustments have been made, we have everything we need to determine the total cluster size. We know the storage and workload capacity of a single node, and we know that we can scale horizontally to meet the full requirements. In addition, in the process we have tuned the cluster configuration to meet the demands of the application workload.
+
