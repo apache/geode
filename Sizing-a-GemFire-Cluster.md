@@ -144,3 +144,24 @@ If JMX is used for monitoring, watch the heap usage of the locator running the J
 
 Once the scale-out validation is done, and any adjustments have been made, we have everything we need to determine the total cluster size. We know the storage and workload capacity of a single node, and we know that we can scale horizontally to meet the full requirements. In addition, in the process we have tuned the cluster configuration to meet the demands of the application workload.
 
+## Sizing Quick Reference
+
+General recommendations that should be considered as the starting point in capacity planning and sizing:
+
+
+|  **Data Node Heap Size** | **Use**  |
+|:----:|:----:|
+| Up to 32GB  | Smaller data volumes (up to a few hundred GB); very low latency required  |
+| 64GB+  |  Larger data volumes (500GB+) |
+| **CPU Cores per Data Node** |  **Use**   |
+| 2 to 4  |  Development; smaller heaps |
+| 6 to 8  |  Production; performance/system testing; larger heaps |
+| **Network Bandwidth**  | **Use**  |
+|  1GbE |  Development |
+|  High bandwidth (e.g. 10GbE) |  Production; performance/system testing |
+|  **Disk Storage** | **Use** |
+| DAS, or SAN | Always |
+| NAS | Do not use; performance and resilience issues |
+
+* **Memory/CPU relationship**: mind the NUMA boundary
+* **Virtualization**: Do not oversubscribe resources (memory, CPU, storage). Run a single GemFire data node JVM per VM.
