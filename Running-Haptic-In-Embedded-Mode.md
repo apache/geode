@@ -39,6 +39,8 @@ In certain cases if the application relies on databases, application services or
 
 Using an embedded in-memory database such as GemFire is a great way of mitigating issues around Application performance.
 
+
+
 <ul>
 <li>It is a simple solution that can be placed into your application “in-between” your existing front end user interface and your back end database.</li>
 
