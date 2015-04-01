@@ -22,7 +22,7 @@
 
 ### Architects
 * [[Data Architecture in GemFire]]
-* [[Embedded architecture]]
+* [Embedded architecture](https://github.com/gemfire/apache-gemfire-staging/wiki/Running-Haptic-In-Embedded-Mode)
 * [[GemFire for PCF]]
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
