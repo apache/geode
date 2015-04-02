@@ -67,7 +67,54 @@ whose current membership list is: [[10.138.44.112(dataStoregemfire4_w1-gst-dev12
 
 If the request is never satisfied (there is no corresponding ```wait for replies completed```), look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.  
 
-There can also be distributed deadlocks between members.  This requires following the ```15 seconds have elapsed``` warnings to the remote vms and looking at the stack dumps.  Searching for ```waiting to lock``` in the stack dumps can also help to identify the problem.  
+There can also be distributed deadlocks between members.  This requires following the ```15 seconds have elapsed``` warnings to the remote vms and looking at the stack dumps.  Searching for ```waiting to lock``` in the stack dumps can also help to identify the problem.  Once found in a non-responsive member, find the thread in that vm that holds the lock and determine what prevents it from releasing the lock.    
+
+This example shows the outstanding request from the system log and the relevant stack dumps from the non-responding vm.
+    ```
+*** there is an outstanding ManageBucket (rebalance/recovery) request ***
+dataStoregemfire1_12659/system.log:[warning 2014/03/04 08:18:27.954 PST dataStoregemfire1_w1-gst-dev25_12659 <ResourceManagerRecoveryThread> tid=0x60] 15 seconds have elapsed while waiting for replies: <ManageBucketMessage$NodeResponse 6407 waiting for 1 replies from [10.138.44.125(dataStoregemfire3_w1-gst-dev25_12706:12706)<v315>:2225]> on 10.138.44.125(dataStoregemfire1_w1-gst-dev25_12659:12659)<v314>:55872 whose current membership list is: [[10.138.44.125(dataStoregemfire2_w1-gst-dev25_12480:12480)<v312>:24218, 10.138.44.125(locatorgemfire1_w1-gst-dev25_22478:22478:locator)<ec><v0>:13070, 10.138.44.125(accessorgemfire3_w1-gst-dev25_12501:12501)<v313>:18675, 10.138.44.125(dataStoregemfire1_w1-gst-dev25_12659:12659)<v314>:55872, 10.138.44.125(dataStoregemfire5_w1-gst-dev25_12483:12483)<v312>:27445, 10.138.44.125(accessorgemfire1_w1-gst-dev25_12607:12607)<v315>:46692, 10.138.44.125(dataStoregemfire4_w1-gst-dev25_12500:12500)<v312>:48232, 10.138.44.125(accessorgemfire2_w1-gst-dev25_12705:12705)<v316>:11732, 10.138.44.125(dataStoregemfire3_w1-gst-dev25_12706:12706)<v315>:2225]]
+
+*** bg*12706.log ***
+"Pooled Waiting Message Processor 12" daemon prio=10 tid=0xdf040000 nid=0x383f waiting for monitor entry [0xd960b000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+        at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.grabFreeBucket(PartitionedRegionDataStore.java:424)
+        - waiting to lock <0xe47a7fa8> (a com.gemstone.gemfire.internal.cache.ProxyBucketRegion)
+        at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.grabBucket(PartitionedRegionDataStore.java:2940)
+        at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.handleManageBucketRequest(PartitionedRegionDataStore.java:1032)
+        at com.gemstone.gemfire.internal.cache.partitioned.ManageBucketMessage.operateOnPartitionedRegion(ManageBucketMessage.java:123)
+        at com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage.process(PartitionMessage.java:297)
+        at com.gemstone.gemfire.distributed.internal.DistributionMessage.scheduleAction(DistributionMessage.java:357)
+        at com.gemstone.gemfire.distributed.internal.DistributionMessage$1.run(DistributionMessage.java:420)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+        at com.gemstone.gemfire.distributed.internal.DistributionManager.runUntilShutdown(DistributionManager.java:720)
+        at com.gemstone.gemfire.distributed.internal.DistributionManager$6$1.run(DistributionManager.java:1057)
+        at java.lang.Thread.run(Thread.java:662)
+
+... this thread holds the lock ...
+"Recovery thread for bucket _B__PR__1_46" daemon prio=10 tid=0xdc965400 nid=0x36dd in Object.wait() [0xdb3b7000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+        at java.lang.Object.wait(Native Method)
+        at com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisorImpl$MembershipChangeListener.waitForChange(PersistenceAdvisorImpl.java:1047)
+        - locked <0xe6223758> (a com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisorImpl$MembershipChangeListener)
+        at com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisorImpl.getInitialImageAdvice(PersistenceAdvisorImpl.java:820)
+        at com.gemstone.gemfire.internal.cache.persistence.CreatePersistentRegionProcessor.getInitialImageAdvice(CreatePersistentRegionProcessor.java:47)
+        at com.gemstone.gemfire.internal.cache.DistributedRegion.getInitialImageAndRecovery(DistributedRegion.java:1377)
+        at com.gemstone.gemfire.internal.cache.DistributedRegion.initialize(DistributedRegion.java:1196)
+        at com.gemstone.gemfire.internal.cache.BucketRegion.initialize(BucketRegion.java:264)
+        at com.gemstone.gemfire.internal.cache.LocalRegion.createSubregion(LocalRegion.java:1229)
+        at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.createBucketRegion(PartitionedRegionDataStore.java:742)
+        at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.grabFreeBucket(PartitionedRegionDataStore.java:451)
+        - locked <0xe47a7fa8> (a com.gemstone.gemfire.internal.cache.ProxyBucketRegion)
+        at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.grabFreeBucketRecursively(PartitionedRegionDataStore.java:301)
+        at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.grabBucket(PartitionedRegionDataStore.java:2956)
+        at com.gemstone.gemfire.internal.cache.ProxyBucketRegion.recoverFromDisk(ProxyBucketRegion.java:417)
+        at com.gemstone.gemfire.internal.cache.ProxyBucketRegion.recoverFromDiskRecursively(ProxyBucketRegion.java:386)
+        at com.gemstone.gemfire.internal.cache.PRHARedundancyProvider$5.run2(PRHARedundancyProvider.java:1934)
+        at com.gemstone.gemfire.internal.cache.PRHARedundancyProvider$RecoveryRunnable.run(PRHARedundancyProvider.java:2243)
+        at com.gemstone.gemfire.internal.cache.PRHARedundancyProvider$5.run(PRHARedundancyProvider.java:1926)
+        at java.lang.Thread.run(Thread.java:662)
+    ```
 
 ## Clients fail with ServerConnectivityExceptions
 This can occur if servers are too busy to process client requests (for example with GC or distributed deadlocks).
