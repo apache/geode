@@ -9,13 +9,13 @@ One way to know that there is a heap memory issue is when an **OutOfMemoryError*
 ###vsd
 Another way to determine whether there is a heap memory issue is to use *vsd* to display free, used and maximum heap memory values contained in a given GemFire statistics archive. There are several categories that contain the used and maximum heap memory values. The most useful are the **VMMemoryUsageStats-vmHeapMemoryStats maxMemory** and **usedMemory** values, the **VMMemoryPoolStats-CMSOldGen-Heapmemory maxMemory** and **usedMemory** values and the **VMStats freeMemory** value.
 ####vmHeapMemoryStats
-The *vsd* chart below shows **VMMemoryUsageStats-vmHeapMemoryStats maxMemory** and **usedMemory** values.
+The chart below shows **VMMemoryUsageStats-vmHeapMemoryStats maxMemory** and **usedMemory** values.
 ![VMMemoryUsageStats](images/troubleshooting_heap_image001.gif)
 ####CMS Old Gen-Heap memory
-The *vsd* chart below shows **VMMemoryPoolStats-CMSOldGen-Heapmemory currentMaxMemory** and **currentUsedMemory** values.
+The chart below shows **VMMemoryPoolStats-CMSOldGen-Heapmemory currentMaxMemory** and **currentUsedMemory** values.
 ![VMMemoryPoolStats](images/troubleshooting_heap_image002.gif)
 ####VMStats
-The *vsd* chart below shows the **VMStats freeMemory** values.
+The chart below shows the **VMStats freeMemory** values.
 ![VMStats](images/troubleshooting_heap_image003.gif)
 ###gfsh
 The *gfsh show metrics* command can be used to show the **currentHeapSize** and **maximumHeapSize** of a member. An example is:
