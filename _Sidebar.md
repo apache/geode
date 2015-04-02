@@ -9,6 +9,7 @@
 * [[Getting Started for GemFire Developers]]
 * [[Building and Running GemFire from Source]]
 * [[Criteria for Code Submissions]]
+* [[Packages in GemFire]]
 
 ## Articles
 #### Developers
