@@ -34,10 +34,10 @@ The *top* output shows, among other things, CPU usage percentage. The output bel
 ###vsd
 Another way to determine whether a machine or process is CPU-bound is to use *vsd* to display active CPU and process CPU time values contained in a given GemFire statistics archive. The *LinuxProcessStats* category contains the active CPU statistic, and the *VMStats* category contains the process CPU time statistic.
 ####LinuxSystemStats
-The *vsd* chart below shows *LinuxSystemStats cpuActive* values contained in a given GemFire statistics archive. This process is CPU-bound.
+The *vsd* chart below shows *LinuxSystemStats cpuActive* values. This process is CPU-bound.
 ![LinuxSystemStats](images/troubleshooting_cpu_image001.gif)
 ####VMStats
-The vsd chart below shows VMStats processCpuTime value contained in a given GemFire statistics archive.
+The vsd chart below shows VMStats processCpuTime values.
 ![VMStats](images/troubleshooting_cpu_image002.gif)
 ###gfsh
 The *gfsh show metrics* command can be used to show the cpuUsage of a member. An example is:
