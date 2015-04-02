@@ -51,7 +51,7 @@ Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/
 
 1. Search the stack dumps for ```Java-level deadlock```.  Dumping the stacks using [jstack](https://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/hangloop.html) or the Linux command ```kill -3 <pid>``` will highlight any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.   
 
-1. Search the system logs for any ```15 seconds have elapsed``` messages which don't have corresponding ```wait for replies has completed``` logs.  You can match these log messages together via the thread id or native thread id.
+1. Search the system logs for any ```15 seconds have elapsed``` messages which don't have corresponding ```wait for replies has completed``` logs.  You can match these log messages together via the thread id or native thread id.  Note that these messages are only logged between peers in the Distributed System.  See "Special Considerations for Clients" for messages specific to GemFire clients.
 In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.    
 
     ```
@@ -121,12 +121,15 @@ The stack dumps from 12706 show the ```waiting to lock <monitor>``` and ```locke
         at java.lang.Thread.run(Thread.java:662)
 ```
 
-## Clients fail with ServerConnectivityExceptions
-This can occur if servers are too busy to process client requests (for example with GC or distributed deadlocks).
-* client connections expiration/timeout
-* readTimeouts
+## Special considerations for GemFire clients
+GemFire clients can sometime fails with ServerConnectivityExceptions when the servers are too busy to handle client requests.  For example, with large GC pauses or distributed deadlocks).  
+
+Look for ```is being terminated because its client timeout``` messages in the server system logs and to determine whether or not this is occurring in your application.  If so, review the server side system logs, stack dumps and statistics to determine the cause.
 ```
-TBD
+[warning 2015/03/14 06:00:15.062 PDT bridgegemfire_1_3_w1-gst-dev08_25525 <ClientHealthMonitor Thread> tid=0x54] 
+Server connection from [identity(w1-gst-dev08(edgegemfire_1_1_w1-gst-dev08_25635:25635:loner):39198:65125d18:edgegemfire_1_1_w1-gst-dev08_25635,connection=1; port=49383] 
+is being terminated because its client timeout of 30,000 has expired.
+
 ```
 
 ## Tips for improving ability to debug during development
