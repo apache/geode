@@ -1,4 +1,4 @@
-The dunit framework is an extension of junit. You should be familiar with writing junit tests. GemFire currently is using junit 4.  dunit tests may be run via gradle (distributedTest task) or in your IDE (run as a junit test).
+The dunit framework is an extension of junit. You should be familiar with writing junit tests. GemFire currently is using junit 4.  Dunit tests may be run via gradle (distributedTest and integrationTest tasks) or in your IDE (run as a junit test).
 
 The base class for all dunit tests is DistributedTestCase. However the most common way to write a dunit test is to extend CacheTestCase, which provides helper methods to create a cache.
 
@@ -19,7 +19,8 @@ Here's a sample test with some comments describing what each part of the tests d
 
     public void testSimplePut() {
         
-        // This is how we access the other vms. The framework has already launched these vms
+        // This is how we access the other vms, of which there are usually 4.
+        // The framework has already launched these vms.
         // Now, we fetch VM objects from the host singleton. The VM object is an RMI stub
         // which lets us execute code in that vm.
         Host host = Host.getHost(0);
@@ -41,8 +42,8 @@ Here's a sample test with some comments describing what each part of the tests d
         } };
         
         // By calling invoke on the RM stub, the framework ships the callable to the remote VM
-        // and executes the code
-        // By executing this code in three VMs, we are creating the cache and region in each of the VMs
+        // and executes the code.
+        // By executing this code in three VMs, we are creating the cache and region in each of the VMs.
         // These caches will be part of the same distributed system because the framework has taken care
         // of setting up the connection to the distributed system.
         vm1.invoke(createRegion);
