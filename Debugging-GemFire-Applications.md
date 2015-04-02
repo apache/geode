@@ -79,7 +79,7 @@ waiting for 1 replies from [10.138.44.125(dataStoregemfire3_w1-gst-dev25_12706:1
 whose current membership list is: [[10.138.44.125(dataStoregemfire2_w1-gst-dev25_12480:12480)<v312>:24218, 10.138.44.125(locatorgemfire1_w1-gst-dev25_22478:22478:locator)<ec><v0>:13070, 10.138.44.125(accessorgemfire3_w1-gst-dev25_12501:12501)<v313>:18675, 10.138.44.125(dataStoregemfire1_w1-gst-dev25_12659:12659)<v314>:55872, 10.138.44.125(dataStoregemfire5_w1-gst-dev25_12483:12483)<v312>:27445, 10.138.44.125(accessorgemfire1_w1-gst-dev25_12607:12607)<v315>:46692, 10.138.44.125(dataStoregemfire4_w1-gst-dev25_12500:12500)<v312>:48232, 10.138.44.125(accessorgemfire2_w1-gst-dev25_12705:12705)<v316>:11732, 10.138.44.125(dataStoregemfire3_w1-gst-dev25_12706:12706)<v315>:2225]]
 ```
 
-The stack dumps from 12706 show the waiting to lock <monitor> and locked <monitor> in the stack dumps  
+The stack dumps from 12706 show the ```waiting to lock <monitor>``` and ```locked <monitor>``` in the stack dumps  
 ```
 "Pooled Waiting Message Processor 12" daemon prio=10 tid=0xdf040000 nid=0x383f waiting for monitor entry [0xd960b000]
    java.lang.Thread.State: BLOCKED (on object monitor)
