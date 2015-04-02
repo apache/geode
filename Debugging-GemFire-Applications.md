@@ -24,21 +24,28 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 1. If you are debugging a specific interaction, draw a sequence diagram.
 
 ## Scan the system logs for suspect strings that can guide you to specific vms and potential problems
-1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).
-1. Search the system logs for warning, error or severe messages
-1. Search the system logs for any underlying Exceptions (perhaps thrown from user supplied plug-ins).  For example: ConcurrentModificationException, NullPointerException, SerializationException.
+1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).  
+
+1. Search the system logs for warning, error or severe messages  
+
+1. Search the system logs for any underlying Exceptions (perhaps thrown from user supplied plug-ins).  For example: ConcurrentModificationException, NullPointerException, SerializationException.  
+
 1. Search the system logs for warnings about resources causing delays in statistics sampling.  If found, use VSD to investigate further.    
 
     ```
     [warning 2015/03/29 04:47:23.028 PDT gemfire1_w1-gst-dev26_15651 <Thread-5 StatSampler> tid=0x55] Statistics 
 sampling thread detected a wakeup delay of 8,310 ms, indicating a possible resource issue. Check the GC,
 memory, and CPU statistics.
-    ```
+    ```  
+
 1. Verify there are no HotSpot (hs_err_pid.log files) indicating a HotSpot error in the JVM
-Refer to the [Oracle Troubleshooting Guide](http://www.oracle.com/technetwork/java/javase/crashes-137240.html) for more details.
+Refer to the [Oracle Troubleshooting Guide](http://www.oracle.com/technetwork/java/javase/crashes-137240.html) for more details.  
+
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
-Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html) and [Eclipse Memory Analyzer](https://eclipse.org/mat/) can provide heap histograms and leak suspects.
-1. Search the stack dumps for "Java-level deadlock".  Dumping the stacks using ```jstack <pid>``` or ```kill -3 <pid>``` will highlight any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison. 
+Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html) and [Eclipse Memory Analyzer](https://eclipse.org/mat/) can provide heap histograms and leak suspects.  
+
+1. Search the stack dumps for "Java-level deadlock".  Dumping the stacks using ```jstack <pid>``` or ```kill -3 <pid>``` will highlight any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.   
+
 1. Search the system logs for any "15 seconds have elapsed messages" which don't have corresponding "wait for replies has completed" logs.  You can match these log messages together via the thread id or native thread id.
 In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.    
 
@@ -52,7 +59,7 @@ whose current membership list is: [[10.138.44.112(dataStoregemfire4_w1-gst-dev12
     [info 2014/07/26 02:03:00.437 PDT dataStoregemfire5_w1-gst-dev12_25904 <Pooled Waiting Message Processor 11> tid=0xb5] 
     DeposePrimaryBucketMessage$DeposePrimaryBucketResponse wait for replies completed
     ```
-If the request is never satisfied (there is no corresponding 'wait for replies completed' message') as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.
+If the request is never satisfied (there is no corresponding ```wait for replies completed``` message') as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.
 ```
 TBD 
 ```
