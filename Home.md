@@ -4,7 +4,7 @@ TBD...marketing blurb
 
 # GemFire in 5 minutes
 
-Clone the repository and build from source (note: currently GemFire supports Java 7):
+Clone the repository and build from source (note: currently GemFire supports jdk1.7.75):
 
     $ git clone git@github.com:gemfire/apache-gemfire-staging.git
     $ cd gemfire/
