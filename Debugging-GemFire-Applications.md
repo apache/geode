@@ -48,7 +48,7 @@ In this example, we can see that the request did complete, so while we should be
 ```
 TBD
 ```
-If the request is never satisfied (there is no 'wait for replies completed' message' as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.
+If the request is never satisfied (there is no corresponding 'wait for replies completed' message') as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.
 ```
 TBD 
 ```
@@ -58,7 +58,7 @@ TBD
 ```
 
 ## Clients fail with ServerConnectivityExceptions
-This can occur if servers are too busy to process client requests (for example with GC or distributed deadlocks)
+This can occur if servers are too busy to process client requests (for example with GC or distributed deadlocks).
 * client connections expiration/timeout
 * readTimeouts
 ```
