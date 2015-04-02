@@ -66,9 +66,16 @@ TBD
 ```
 
 ## Tips for improving ability to debug during development
-Example TBD
+
 ### pass in the vm and thread id as arguments (to be logged) during Function Execution
+```
 Example TBD
+```
 ### Use of CacheListeners to log events as they are processed
+```
 Example TBD
+```
 ### Use of CacheListeners in clients to trace server side processing
+```
+Example TBD
+```
