@@ -159,11 +159,67 @@ Log these values within the function to help with tracing during development.
     }
     System.out.println(aStr);
 ```
-### Use of CacheListeners to log events as they are processed
+### Events
+Since GemFire supports multiple CacheListeners, consider adding a LogListener which simply logs the relevant portion of the events as they are processed.  This provides another way to enable traceability in your application during the early stages of development.  For client/server applications, it can help to identify the originating member of an operation and the server that forwarded that event to a specific client.
+
+If you are not using the CallbackArgument for your application, use the the callbackArgument to encode information about the caller or the data, which you can log in your LogListener.  
+
+Events which are logged by the calling thread, are logged by the calling thread as shown below:
 ```
-Example TBD
+[info 2014/05/30 14:04:10.674 PDT <vm_10_thr_10_edge4_w1-gst-dev18_10648> tid=0x51] Calling remove with key Object_395 value null, containsKey true, containsKeyOnServer true
+
+[info 2014/05/30 14:04:10.674 PDT <vm_10_thr_10_edge4_w1-gst-dev18_10648> tid=0x51] Invoked util.SilenceListener for key Object_395: afterDestroy in edge4 event=EntryEventImpl[op=DESTROY;key=Object_395;oldValue=null;newValue=null;callbackArg=null;originRemote=false;originMember=w1-gst-dev18(edgegemfire4_w1-gst-dev18_10648:10648:loner):9766:1aa5f04e:edgegemfire4_w1-gst-dev18_10648;callbacksInvoked;version={v3; rv5; mbr=b90d31569c3243e8-8a2bcb43babe154a; ds=1; time=1401483850674; remote};id=EventID[threadID=2;sequenceID=0]]
+     whereIWasRegistered: 10648
+     event.getKey(): Object_395
+     event.getOldValue(): null
+     event.getNewValue(): null
+     event.isLoad(): false
+     event.isLocalLoad(): false
+     event.isNetLoad(): false
+     event.isNetSearch(): false
+     event.isConcurrencyConflict(): false
+     event.getDistributedMember(): w1-gst-dev18(edgegemfire4_w1-gst-dev18_10648:10648:loner):9766:1aa5f04e:edgegemfire4_w1-gst-dev18_10648
+     event.getCallbackArgument(): null
+     event.getRegion(): /testRegion
+     event.isDistributed(): true
+     event.isExpiration(): false
+     event.isOriginRemote(): false
+     Operation: DESTROY
+     Operation.isLoad(): false
+     Operation.isLocalLoad(): false
+     Operation.isNetLoad(): false
+     Operation.isNetSearch(): false
+     Operation.isPutAll(): false
+     Operation.isDistributed(): true
+     Operation.isExpiration(): false
+
+[info 2014/05/30 14:04:10.674 PDT <vm_10_thr_10_edge4_w1-gst-dev18_10648> tid=0x51] Done calling remove with key Object_395 value null, return value is true
+```  
+
+Events fired in remote members are fired on asynchronous threads.  In the case of clients, this asynchronous thread provides the identify of the server hosting the client's HARegionQueue.  In this case bridgegemfire5_w1_gst_dev18_79056.
 ```
-### Use of CacheListeners in clients to trace server side processing
-```
-Example TBD
+[info 2014/05/30 14:04:10.674 PDT <Cache Client Updater Thread  on w1-gst-dev18(bridgegemfire5_w1-gst-dev18_79056:79056)<v60>:3080 port 27043> tid=0x26] Invoked util.SilenceListener for key Object_395: afterDestroy in edge3 event=EntryEventImpl[op=DESTROY;key=Object_395;oldValue=null;newValue=null;callbackArg=null;originRemote=true;originMember=w1-gst-dev18(:loner):9766:1aa5f04e;callbacksInvoked;version={v3; rv5; mbr=b90d31569c3243e8-8a2bcb43babe154a; ds=1; time=1401483850674; remote};id=EventID[threadID=2;sequenceID=0];isFromServer]
+     whereIWasRegistered: 53128
+     event.getKey(): Object_395
+     event.getOldValue(): null
+     event.getNewValue(): null
+     event.isLoad(): false
+     event.isLocalLoad(): false
+     event.isNetLoad(): false
+     event.isNetSearch(): false
+     event.isConcurrencyConflict(): false
+     event.getDistributedMember(): w1-gst-dev18(:loner):9766:1aa5f04e
+     event.getCallbackArgument(): null
+     event.getRegion(): /testRegion
+     event.isDistributed(): true
+     event.isExpiration(): false
+     event.isOriginRemote(): true
+     Operation: DESTROY
+     Operation.isLoad(): false
+     Operation.isLocalLoad(): false
+     Operation.isNetLoad(): false
+     Operation.isNetSearch(): false
+     Operation.isPutAll(): false
+     Operation.isDistributed(): true
+     Operation.isExpiration(): false
 ```
