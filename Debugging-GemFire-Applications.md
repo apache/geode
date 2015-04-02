@@ -44,7 +44,7 @@ $ jstack <pid>
 1. Verify there are no hotspot (hs_err*.log files) indicating a HotSpot error in the JVM
 These are readable files that provide details about the HotSpot Error.
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
-Tools such as jhat and Eclipse MemoryAnalyzer can provide heap histograms and leak suspects.
+Tools such as ```jhat``` and ```Eclipse MemoryAnalyzer``` can provide heap histograms and leak suspects.
 1. Search the stack dumps for "Java-level deadlock".  Dumping the stacks using jstack or ```kill -3 <pid>``` will also show you any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.
 1. Search the system logs for any "15 seconds have elapsed messages" which don't have corresponding "wait for replies has completed" logs.  You can match these log messages together via the thread id or native thread id.
 In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.
