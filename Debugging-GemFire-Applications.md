@@ -136,7 +136,7 @@ is being terminated because its client timeout of 30,000 has expired.
 ## Tips for improving ability to debug during development
 
 ### Function Execution
-To trace function execution from the initiator to the vm executing the function, pass the initiating thread id to the function using ```withArgs``` and log in both vms.  Of course, this could easily be a string containing the DistributedMemberId or any other identifying information for your application.
+To trace function execution from the initiator to the vm executing the function, pass the initiating thread id to the function using ```withArgs``` and log in both vms.  Of course, this could easily be a string containing the pid, DistributedMemberId or any other identifying information for your application.
 ```
     ArrayList aList = new ArrayList();
     aList.add("myFunctionOperation");
@@ -165,7 +165,7 @@ Since GemFire supports multiple CacheListeners, consider adding a LogListener wh
 
 If you are not using the CallbackArgument for your application, use the the callbackArgument to encode information about the caller or the data, which you can log in your LogListener.  
 
-Events which are logged by the calling thread, are logged by the calling thread as shown below:
+Events for operations initiated in the local vm are logged by the calling thread as shown below.  In this case vm_1_thr_10_edge4_w1-gst-dev18_10648.
 ```
 [info 2014/05/30 14:04:10.674 PDT <vm_10_thr_10_edge4_w1-gst-dev18_10648> tid=0x51] Calling remove with key Object_395 value null, containsKey true, containsKeyOnServer true
 
@@ -197,7 +197,7 @@ Events which are logged by the calling thread, are logged by the calling thread 
 [info 2014/05/30 14:04:10.674 PDT <vm_10_thr_10_edge4_w1-gst-dev18_10648> tid=0x51] Done calling remove with key Object_395 value null, return value is true
 ```  
 
-Events fired in remote members are fired on asynchronous threads.  In the case of clients, this asynchronous thread provides the identify of the server hosting the client's HARegionQueue.  In this case bridgegemfire5_w1_gst_dev18_79056.
+Events fired in remote members are fired on asynchronous threads.  In the case of clients, this asynchronous thread provides the identity of the server hosting the client's HARegionQueue.  In this case bridgegemfire5_w1_gst_dev18_79056.
 ```
 [info 2014/05/30 14:04:10.674 PDT <Cache Client Updater Thread  on w1-gst-dev18(bridgegemfire5_w1-gst-dev18_79056:79056)<v60>:3080 port 27043> tid=0x26] Invoked util.SilenceListener for key Object_395: afterDestroy in edge3 event=EntryEventImpl[op=DESTROY;key=Object_395;oldValue=null;newValue=null;callbackArg=null;originRemote=true;originMember=w1-gst-dev18(:loner):9766:1aa5f04e;callbacksInvoked;version={v3; rv5; mbr=b90d31569c3243e8-8a2bcb43babe154a; ds=1; time=1401483850674; remote};id=EventID[threadID=2;sequenceID=0];isFromServer]
      whereIWasRegistered: 53128
