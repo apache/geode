@@ -1,5 +1,6 @@
 [TBD: include pointers to "good" unit tests in the project]
-[TBD: distributed unit tests]
+
+GemFire is tested with a combination of junit, dunit (distributed unit) and regression tests.  Junit tests are written as with any other project while dunit tests use a multi-JVM environment (see [[Distributed Unit Tests|dunit---Distributed-Unit-Tests]]).
 
 Always write unit tests for new functionality and always ensure that all unit tests pass before submitting a pull request.
 
