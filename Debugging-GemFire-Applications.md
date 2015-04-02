@@ -27,7 +27,8 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).
 1. Search the system logs for warning, error or severe messages
 1. Search the system logs for any underlying Exceptions (perhaps thrown from user supplied plug-ins).  For example: ConcurrentModificationException, NullPointerException, SerializationException.
-1. Search the system logs for warnings about resources causing delays in statistics sampling.  If found, use VSD to investigate further. 
+1. Search the system logs for warnings about resources causing delays in statistics sampling.  If found, use VSD to investigate further.    
+
     ```
     [warning 2015/03/29 04:47:23.028 PDT gemfire1_w1-gst-dev26_15651 <Thread-5 StatSampler> tid=0x55] Statistics 
 sampling thread detected a wakeup delay of 8,310 ms, indicating a possible resource issue. Check the GC,
