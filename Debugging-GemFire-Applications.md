@@ -36,15 +36,29 @@ $ kill -3 <pid>
 1. Search the system logs for any underlying Exceptions (perhaps thrown from user supplied plug-ins).  For example: ConcurrentModificationException, NullPointerException, SerializationException.
 1. Search the system logs for any "15 seconds have elapsed messages" which don't have corresponding "wait for replies has completed".  You can match these log messages together via the thread id or native thread id.
 ```
+Here's an example where the outstanding request completed:
+
+[warning 2015/03/29 04:47:53.276 PDT gemfire2_w1-gst-dev26_15688 <Pooled Waiting Message Processor 1> tid=0x69] 15 seconds have elapsed while waiting for replies: <com.gemstone.gemfire.internal.cache.InitialImageOperation$ImageProcessor 19 waiting for 1 replies from [w1-gst-dev26(gemfire1_w1-gst-dev26_15656:15656)<v1>:10999]; waiting for 0 messages in-flight; region=/EventRegion; abort=false> on w1-gst-dev26(gemfire2_w1-gst-dev26_15688:15688)<v1>:40297 whose current membership list is: [[w1-gst-dev26(gemfire1_w1-gst-dev26_15656:15656)<v1>:10999, w1-gst-dev26(gemfire3_w1-gst-dev26_15708:15708)<v1>:47053, w1-gst-dev26(gemfire2_w1-gst-dev26_15661:15661)<v2>:19359, w1-gst-dev26(gemfire1_w1-gst-dev26_15651:15651)<v2>:50688, w1-gst-dev26(14716:locator)<v0>:38397, w1-gst-dev26(gemfire3_w1-gst-dev26_15727:15727)<v2>:39128, w1-gst-dev26(gemfire2_w1-gst-dev26_15665:15665)<v2>:13324, w1-gst-dev26(gemfire2_w1-gst-dev26_15688:15688)<v1>:40297, w1-gst-dev26(gemfire1_w1-gst-dev26_15647:15647)<v1>:44539]]
+
+[info 2015/03/29 04:48:51.565 PDT gemfire2_w1-gst-dev26_15688 <Pooled Waiting Message Processor 1> tid=0x69] InitialImageOperation$ImageProcessor wait for replies completed
+
+```
+
+If the request is never satisfied, look at the stack dumps for the non-responsive member
+```
+*** system log ***
+
+
 
 ```
 1. Search the system logs for warnings about resources causing delays in statistics sampling
 ```
-[warning 2015/03/29 04:47:23.028 PDT gemfire1_w1-gst-dev
-26_15651 <Thread-5 StatSampler> tid=0x55] Statistics sampling thread detected a wakeup delay of 8,310 ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.
+[warning 2015/03/29 04:47:23.028 PDT gemfire1_w1-gst-dev26_15651 <Thread-5 StatSampler> tid=0x55] Statistics sampling thread detected a wakeup delay of 8,310 ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.
 ```
 1. Verify there are no hotspot (hs_err*.log files) indicating a HotSpot error in the JVM
-1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors
+These are readable files that provide details about the HotSpot Error.
+1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
+Tools like **jhat** and **Eclipse MemoryAnalyzer** can provide heap histograms and leak suspects.
 
 
 ## Hangs between Peers
