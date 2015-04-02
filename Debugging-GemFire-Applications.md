@@ -17,9 +17,10 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 * show dead-locks
 
 ### Stack dumps
-When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.  The following command prints the stacks for all threads in the given pid to STDOUT (so these should be redirected to files named for each specific vm or pid).
+When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.  The following commands print the stacks for all threads in the given pid to STDOUT (so these should be redirected to files named for each specific vm or pid).
 ``` 
 $ kill -3 <pid>
+$ jstack <pid>
 ```
 ### Memory Analyzers
 * [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html)
