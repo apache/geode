@@ -16,11 +16,16 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 * show dead-locks
 
 ## General Guidelines
-1. Check your environment - Machine (O/S and System settings), JDK, JVM properties (-Xmx -Xms), GC parameters
+1. Check your environment - Machine (O/S and System settings), JDK, JVM properties (-Xmx -Xms), GC parameters  
+
 1. Draw out a diagram of your system topology (servers, clients) and make a note of Listeners, Writers and other plug-ins.  
-1. Verify your cache and region configuration
-1. Confirm your system properties (Review properties files and display in system log)
-1. On your system topology diagram, add notes on the initialization and processing being done in various members or classes of members.  
+
+1. Verify your cache and region configuration  
+
+1. Confirm your system properties (Review properties files and display in system log)  
+
+1. On your system topology diagram, add notes on the initialization and processing being done in various members or classes of members.    
+
 1. If you are debugging a specific interaction, draw a sequence diagram.
 
 ## Specific search strings and patterns
@@ -59,7 +64,7 @@ whose current membership list is: [[10.138.44.112(dataStoregemfire4_w1-gst-dev12
     [info 2014/07/26 02:03:00.437 PDT dataStoregemfire5_w1-gst-dev12_25904 <Pooled Waiting Message Processor 11> tid=0xb5] 
     DeposePrimaryBucketMessage$DeposePrimaryBucketResponse wait for replies completed
     ```
-If the request is never satisfied (there is no corresponding ```wait for replies completed``` message') as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.
+If the request is never satisfied (there is no corresponding ```wait for replies completed```) as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.
 ```
 TBD 
 ```
