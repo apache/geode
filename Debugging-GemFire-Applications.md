@@ -23,7 +23,7 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 1. On your system topology diagram, add notes on the initialization and processing being done in various members or classes of members.  
 1. If you are debugging a specific interaction, draw a sequence diagram.
 
-## Scan the system logs for suspect strings that can guide you to specific vms and potential problems
+## Specific search strings and patterns
 1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).  
 
 1. Search the system logs for warning, error or severe messages  
@@ -44,9 +44,9 @@ Refer to the [Oracle Troubleshooting Guide](http://www.oracle.com/technetwork/ja
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
 Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html) and [Eclipse Memory Analyzer](https://eclipse.org/mat/) can provide heap histograms and leak suspects.  
 
-1. Search the stack dumps for "Java-level deadlock".  Dumping the stacks using ```jstack <pid>``` or ```kill -3 <pid>``` will highlight any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.   
+1. Search the stack dumps for ```Java-level deadlock```.  Dumping the stacks using ```jstack <pid>``` or ```kill -3 <pid>``` will highlight any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.   
 
-1. Search the system logs for any "15 seconds have elapsed messages" which don't have corresponding "wait for replies has completed" logs.  You can match these log messages together via the thread id or native thread id.
+1. Search the system logs for any ```15 seconds have elapsed``` messages which don't have corresponding ```wait for replies has completed``` logs.  You can match these log messages together via the thread id or native thread id.
 In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.    
 
     ```
@@ -63,7 +63,7 @@ If the request is never satisfied (there is no corresponding ```wait for replies
 ```
 TBD 
 ```
-There can also be distributed deadlocks between members.  This requires following the "15 seconds have elapsed" warnings to the remote vms and looking at the stack dumps.  Searching for "waiting to lock" in the stack dumps can also lead you to the culprit
+There can also be distributed deadlocks between members.  This requires following the ```15 seconds have elapsed``` warnings to the remote vms and looking at the stack dumps.  Searching for ```waiting to lock``` in the stack dumps can also lead you to the culprit
 ```
 TBD
 ```
