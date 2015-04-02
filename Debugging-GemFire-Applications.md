@@ -80,7 +80,7 @@ whose current membership list is: [[10.138.44.125(dataStoregemfire2_w1-gst-dev25
 ```
 
 The stack dumps from 12706 show the waiting to lock <monitor> and locked <monitor> in the stack dumps  
-<
+```
 "Pooled Waiting Message Processor 12" daemon prio=10 tid=0xdf040000 nid=0x383f waiting for monitor entry [0xd960b000]
    java.lang.Thread.State: BLOCKED (on object monitor)
         at com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.grabFreeBucket(PartitionedRegionDataStore.java:424)
@@ -119,7 +119,7 @@ The stack dumps from 12706 show the waiting to lock <monitor> and locked <monito
         at com.gemstone.gemfire.internal.cache.PRHARedundancyProvider$RecoveryRunnable.run(PRHARedundancyProvider.java:2243)
         at com.gemstone.gemfire.internal.cache.PRHARedundancyProvider$5.run(PRHARedundancyProvider.java:1926)
         at java.lang.Thread.run(Thread.java:662)
->
+```
 
 ## Clients fail with ServerConnectivityExceptions
 This can occur if servers are too busy to process client requests (for example with GC or distributed deadlocks).
