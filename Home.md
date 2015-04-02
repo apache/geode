@@ -52,9 +52,10 @@ Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-d
 
 #Application Development
 
-GemFire applications can written from a number of client technologies:
+GemFire applications can written in a number of client technologies:
 
-* Java using the GemFire client API
+* Java using the GemFire client API or embedded using the GemFire peer API
 * [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
+* REST
 * [[memcached|Moving from memcached to gemcached]]
