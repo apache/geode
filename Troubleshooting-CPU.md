@@ -40,7 +40,7 @@ The chart below shows **LinuxSystemStats cpuActive** values. This process is CPU
 The chart below shows **VMStats processCpuTime** values.
 ![VMStats](images/troubleshooting_cpu_image002.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the cpuUsage of a member. An example is:
+The *gfsh show metrics* command can be used to show the active CPU (*cpuUsage*) of a member. An example is:
 
 	show metrics --member=server1 --categories=member
 	
@@ -55,7 +55,7 @@ The *gfsh show metrics* command can be used to show the cpuUsage of a member. An
 
 ##Action
 Determining that there is a CPU issue is one thing. Finding the source of the issue is another.
-One thing that can be done is to dump the Java VM threads using the linux operating system *'kill -3'* command as shown below. These dumps will show you how many threads there are and what each thread is doing. Often, you'll find application issues by examining these thread dumps. Note that the *'-3'* signal will not terminate the VM; it just dumps the thread stacks.
+One thing that can be done is to dump the JVM threads using the operating system *'kill -3'* command as shown below. These dumps will show you how many threads there are and what each thread is doing. Often, you'll find application issues by examining these thread dumps. Note that the *'-3'* signal will not terminate the VM; it just dumps the thread stacks.
 
 	kill -3 22523
 	 
@@ -98,7 +98,7 @@ One thing that can be done is to dump the Java VM threads using the linux operat
  
 If the thread dumps show mostly active GemFire threads, one action would be to reduce the number of processing threads by one or more of the following methods:
 
-* By setting the maximum number of threads (*max-threads*) processing client requests
+* By setting or reducing the maximum number of threads (*max-threads*) processing client requests
 * By reducing the number of GemFire selector threads 
 * By setting the number of sockets between processes to 1 (*conserve-sockets=true*) 
 * By reducing the maximum number of GemFire threads processing distribution messages by setting one or more of the following Java system properties (although these properties should only be set on the recommendation of GemFire Support): 

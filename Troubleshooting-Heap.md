@@ -2,7 +2,7 @@
 ## Description
 Java application VMs allocate objects on the heap. The heap includes both live and dead objects. It is configured using the -Xms and -Xmx VM arguments. When the heap becomes close to full, GCs occur which cause application pauses.
 ## Determination
-One way to know that there is a heap memory issue is when an **OutOfMemoryError** with the message *'Java heap space'* is thrown either by GemFire or the application. The error must contain the *'Java heap space'* message and not the *'unable to create new native thread'* message (see the Native Memory Issue page for details on that issue). An example is shown below.
+One way to know that there is a heap memory issue is when an **OutOfMemoryError** with the message *'Java heap space'* is thrown either by GemFire or the application. The error must contain the *'Java heap space'* message and not the *'unable to create new native thread'* message (see [[Troubleshooting Native Memory]] for details on that issue). An example is shown below.
 
 	[severe 2009/02/23 19:38:48.293 UTC <Gateway Event Processor> tid=0xbd] Uncaught exception in thread <Gateway Processor>
 	 java.lang.OutOfMemoryError: Java heap space

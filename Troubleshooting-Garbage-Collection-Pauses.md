@@ -47,10 +47,6 @@ The chart below shows the **StatSampler jvmPauses** values. This statistic shows
 It is also accompanied by a warning message in the GemFire log like:
 
 	[warning 2014/09/29 00:37:57.792 PDT server <Thread-10 StatSampler> tid=0xb8] Statistics sampling thread detected a wakeup delay of 20,995 ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.
-###gfsh
-The *gfsh show metrics* command can be used to show the JVM statistics (including GCs) of a member. An example is:
-
-	show metrics --member=server1 --categories=jvm
 
 ##Action
 GC tuning can be difficult. The most important thing is to berify adequate heap headroom using the threshold JVM argument. Anywhere between 35% and 50% headroom is recommended to prevent heap fragmentation.

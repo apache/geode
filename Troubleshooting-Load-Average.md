@@ -3,7 +3,7 @@
 Load average shows how many processes are waiting in the run queue for a system resource (usually a processor). The higher the load average, the more processes are waiting.
 ## Determination
 One way to determine whether a machine has high load average is to use an operating system command such as uptime or top while the application is running.
-### The uptime Command
+### uptime
 The uptime output below shows that the load average is 0.40, 0.46, 0.43 over the last 1, 5 and 15 minutes, respectively.
 
 	uptime
