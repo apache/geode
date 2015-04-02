@@ -33,6 +33,7 @@
 * [[What to monitor]]
 * [[Network configuration]]
 * [[Troubleshooting CPU]]
+* [[Troubleshooting Garbage Collection Pauses]]
 * [[Troubleshooting Heap]]
 * [[Troubleshooting Load Average]]
 
