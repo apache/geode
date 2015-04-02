@@ -22,7 +22,7 @@ When debugging, it is best to get stack dumps for all VMs.  To determine if prog
 ``` 
 $ kill -3 <pid>
 ```
-### Tools to inspect hprof files and provide heap histograms and leak suspects
+### Memory Analyzers
 * [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html)
 * [Eclipse Memory Analyzer](https://eclipse.org/mat/)
 
