@@ -6,21 +6,6 @@ GemFire pools memory, CPU, network resources, and optionally local disk across m
 
 GemFire is an extremely mature and robust product that can trace its legacy all the way back to one of the first Object Databases for Smalltalk: GemStone. GemFire was first deployed in the financial sector as the transactional, low-latency data engine used by multiple Wall Stree trading platforms.  Today GemFire is used by over 600 enterprise customers for high-scale, 24x7 business critical applications. An example deployment includes [China National Railways](http://pivotal.io/big-data/case-study/scaling-online-sales-for-the-largest-railway-in-the-world-china-railway-corporation) that uses Pivotal GemFire to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 gigabytes "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
 
-GemFire includes the following features:
-* Combines redundancy, and a "shared nothing" persistence architecture to deliver fail-safe reliability and performance.
-* Horizontally scalable to thousands of cache members, with multiple cache topologies to meet different enterprise needs. The cache can be distributed across multiple computers.
-* Asynchronous and synchronous cache update propagation.
-* Delta propagation distributes only the difference between old and new versions of an object (delta) instead of the entire object, resulting in significant distribution cost savings.
-* Reliable asynchronous event notifications and guaranteed message delivery through optimized, low latency distribution layer.
-* Applications run 4 to 40 times faster with no additional hardware.
-* Data awareness and real-time business intelligence. If data changes as you retrieve it, you see the changes immediately.
-* Integration with Spring Framework to speed and simplify the development of scalable, transactional enterprise applications.
-* JTA compliant transaction support.
-* Cluster-wide configurations that can be persisted and exported to other clusters.
-* Remote cluster management through HTTP.
-* REST APIs for REST-enabled application development.
-* Rolling upgrade between major version releases.
-
 # Main Concepts and Components
 
 _Caches_ are an abstraction that describe a node in a GemFire distributed system.
