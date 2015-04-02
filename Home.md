@@ -1,6 +1,18 @@
 # Overview
 
-TBD...marketing blurb
+GemFire is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.  
+
+GemFire pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Pivotal GemFire is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
+
+GemFire is an extremely mature and robust product that can trace its legacy all the way back to one of the first Object Databases for Smalltalk: GemStone. GemFire was first deployed in the financial sector as the transactional, low-latency data engine used by multiple Wall Stree trading platforms.  Today GemFire is used by over 600 enterprise customers for high-scale, 24x7 business critical applications. An example deployment includes [China National Railways](http://pivotal.io/big-data/case-study/scaling-online-sales-for-the-largest-railway-in-the-world-china-railway-corporation) that uses Pivotal GemFire to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 gigabytes "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
+
+# Main Concepts and Components
+
+_Caches_ are an abstraction that describe a node in a GemFire distributed system.
+
+Within each cache, you define data _regions_. Data regions are analogous to tables in a relational database and manage data in a distributed fashion as name/value pairs. A _replicated_ region stores identical copies of the data on each cache member of a distributed system. A _partitioned_ region spreads the data among cache members. After the system is configured, client applications can access the distributed data in regions without knowledge of the underlying system architecture. You can define listeners to create notifications about when data has changed, and you can define expiration criteria to delete obsolete data in a region.
+
+_Locators_ provide both discovery and load balancing services. You configure clients with a list of locator services and the locators maintain a dynamic list of member servers. By default, GemFire clients and servers use port 40404 and multicast to discover each other.
 
 # GemFire in 5 minutes
 
