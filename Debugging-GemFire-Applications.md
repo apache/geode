@@ -20,7 +20,8 @@ gfsh> show dead-locks
 ``` 
 $ kill -3 <pid>
 ```
-* [jhat - A web based application fro analysis of heap dumps created by hprof](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html)
+### Tools to inspect hprof files and provide heap histograms and leak suspects
+* [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html)
 * [Eclipse Memory Analyzer](https://eclipse.org/mat/)
 
 ## General Guidelines
@@ -41,7 +42,7 @@ $ kill -3 <pid>
 1. Verify there are no hotspot (hs_err*.log files) indicating a HotSpot error in the JVM
 These are readable files that provide details about the HotSpot Error.
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
-Tools like **jhat** and **Eclipse MemoryAnalyzer** can provide heap histograms and leak suspects.
+Tools such as jhat and Eclipse MemoryAnalyzer can provide heap histograms and leak suspects.
 1. Search the system logs for any "15 seconds have elapsed messages" which don't have corresponding "wait for replies has completed" logs.  You can match these log messages together via the thread id or native thread id.
 In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.
 ```
