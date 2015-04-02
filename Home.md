@@ -49,3 +49,12 @@ Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-d
 
     javac -cp /some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld.java
     java -cp .:/some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld
+
+= Application Development=
+
+GemFire applications can written from a number of client technologies:
+
+* Java using the GemFire client API
+* [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
+* [Python](https://github.com/gemfire/py-gemfire-rest)
+* [[memcached][Moving from memcached to gemcached]]
