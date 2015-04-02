@@ -21,7 +21,7 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 1. Verify your cache and region configuration
 1. Confirm your system properties (Review properties files and display in system log)
 1. On your system topology diagram, add notes on the initialization and other processing being done in different classes of members.  
-1. If you are debugging a specific interaction between systems, draw a sequence diagram.
+1. If you are debugging a specific interaction, draw a sequence diagram.
 
 ## Scan the system logs for suspect strings that can guide you to specific vms and potential problems
 1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).
