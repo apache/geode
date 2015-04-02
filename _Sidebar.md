@@ -1,6 +1,6 @@
 ## About GemFire
 * [[Apache Incubator Proposal]]
-* [GemFire in 5 minutes](#gemfire-in-5-minutes)
+* [GemFire in 5 minutes](./#gemfire-in-5-minutes)
 * [Documentation](http://gemfire.docs.pivotal.io)
 * [[Roadmap]]
 
