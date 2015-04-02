@@ -33,8 +33,8 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 sampling thread detected a wakeup delay of 8,310 ms, indicating a possible resource issue. Check the GC,
 memory, and CPU statistics.
 ```
-1. Verify there are no hotspot (hs_err*.log files) indicating a HotSpot error in the JVM
-These are readable files that provide details about the HotSpot Error.
+1. Verify there are no hotspot (hs_err_pid.log files) indicating a HotSpot error in the JVM
+Refer to the [Oracle Troubleshooting Guide](http://www.oracle.com/technetwork/java/javase/crashes-137240.html) for more details.
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
 Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html) and [Eclipse Memory Analyzer](https://eclipse.org/mat/) can provide heap histograms and leak suspects.
 1. Search the stack dumps for "Java-level deadlock".  Dumping the stacks using ```jstack <pid>``` or ```kill -3 <pid>``` will dump any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison. 
