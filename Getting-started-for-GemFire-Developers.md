@@ -18,7 +18,7 @@ _Note - The Pivotal GemFire engineering team is still in the process of migratin
 
 To run an individual test, run the test in your IDE or specify the sub-project and test type like so:
 
-    ./gradlew -D_testType_.single=_testName_ _project_:_testType_
+    ./gradlew -Dtest[Type].single=testName [project:]test[Type]
 
 For example:
     ./gradlew -DintegrationTest.single=ArrayUtilsJUnitTest integrationTest
