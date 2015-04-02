@@ -12,7 +12,7 @@ Clone the repository and build from source:
 
 Start a locator and server:
 
-    $ cd gemfire-assembly/build/install/gemfire
+    $ cd gemfire-assembly/build/install/apache-gemfire
     $ ./bin/gfsh
     gfsh> start locator --name=locator
     gfsh> start server --name=server
