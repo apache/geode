@@ -64,14 +64,9 @@ whose current membership list is: [[10.138.44.112(dataStoregemfire4_w1-gst-dev12
     [info 2014/07/26 02:03:00.437 PDT dataStoregemfire5_w1-gst-dev12_25904 <Pooled Waiting Message Processor 11> tid=0xb5] 
     DeposePrimaryBucketMessage$DeposePrimaryBucketResponse wait for replies completed
     ```
-If the request is never satisfied (there is no corresponding ```wait for replies completed```) as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.
-```
-TBD 
-```
-There can also be distributed deadlocks between members.  This requires following the ```15 seconds have elapsed``` warnings to the remote vms and looking at the stack dumps.  Searching for ```waiting to lock``` in the stack dumps can also lead you to the culprit
-```
-TBD
-```
+If the request is never satisfied (there is no corresponding ```wait for replies completed```) as in the example below, look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.  
+
+There can also be distributed deadlocks between members.  This requires following the ```15 seconds have elapsed``` warnings to the remote vms and looking at the stack dumps.  Searching for ```waiting to lock``` in the stack dumps can also help to identify the problem.  
 
 ## Clients fail with ServerConnectivityExceptions
 This can occur if servers are too busy to process client requests (for example with GC or distributed deadlocks).
