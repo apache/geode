@@ -19,7 +19,7 @@ Start a locator and server:
 
 Create a region:
 
-    gfsh> create region --name=region
+    gfsh> create region --name=region --type=REPLICATE
 
 Write a client application:
 
