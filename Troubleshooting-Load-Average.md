@@ -10,7 +10,7 @@ The uptime output below shows that the load average is 0.40, 0.46, 0.43 over the
 	15:37:27  up 107 days,  2:24, 32 users,  load average: 0.40, 0.46, 0.43
 
 ### vsd
-Another way to determine whether a machine has high load average is to use *vsd* to display the load average values contained in a given GemFire statistics archive. The *LinuxSystemStats* category contains the *loadAverage1*, *loadAverage5* and *loadAverage15* values.
+Another way to determine whether a machine has high load average is to use *vsd* to display the load average values contained in a given GemFire statistics archive. The char below shows the **LinuxSystemStats loadAverage1**, **loadAverage5** and **loadAverage15** values.
 ![LinuxSystemStats](images/troubleshooting_load_average_image001.gif)
 
 ## Action
