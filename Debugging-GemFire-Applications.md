@@ -68,7 +68,7 @@ whose current membership list is: [[10.138.44.112(dataStoregemfire4_w1-gst-dev12
 
 If the request is never satisfied (there is no corresponding ```wait for replies completed```), look at the stack dumps for the non-responsive member.  There could be a Java-level deadlock within that vm.  
 
-There can also be distributed deadlocks between members.  This requires following the ```15 seconds have elapsed``` warnings to the remote vms and looking at the stack dumps.  Searching for ```waiting to lock``` in the stack dumps can also help to identify the problem.  Once found in a non-responsive member, find the thread in that vm that holds the lock and determine what prevents it from releasing the lock.    
+There can also be distributed deadlocks between members.  This requires following the ```15 seconds have elapsed``` warnings to the remote vms and looking at the stack dumps.  Searching for ```waiting to lock``` in the stack dumps can also help to identify the problematic vm.  Once found in a non-responsive member, find the thread in that vm that holds the lock and determine what prevents it from releasing the lock.    
 
 This example shows the outstanding request from the system log and the relevant stack dumps from the non-responding vm.
 
