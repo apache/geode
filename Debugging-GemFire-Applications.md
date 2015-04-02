@@ -135,52 +135,29 @@ is being terminated because its client timeout of 30,000 has expired.
 ## Tips for improving ability to debug during development
 
 ### Function Execution
-To trace function execution from the initiator to the vm executing the function, pass in the vm and thread id as arguments to the function.  In this example, we are passing in the DistributedMemberId, but this could be any identifying information in your application.
+To trace function execution from the initiator to the vm executing the function, pass the initiating thread id to the function using ```withArgs``` and log in both vms.  Of course, this could easily be a string containing the DistributedMemberId or any other identifying information for your application.
 ```
-  /** Execute the specified operation with (key, value) provided
-   *  on the given region.
-   */
-  protected Object executeOp(Region aRegion, String opName, Object key, Object value, String callback) {
-
-    Log.getLogWriter().info("Invoking ExecuteOp with " + opName + "(" + key + ", " + value + ")");
-    Function f = FunctionService.getFunction("parReg.tx.ExecuteOp");
-    DistributedSystem ds = CacheHelper.getCache().getDistributedSystem();
-    DistributedMember dm = ds.getDistributedMember();
-
-    // target appropriate VM
-    Set filter = new HashSet();
-    filter.add(key);
-
-    // build args ArrayList (op: key, value) 
     ArrayList aList = new ArrayList();
-    aList.add(dm.toString());
-    aList.add(opName);
-    aList.add(key);
-    aList.add(value);
-    aList.add(callback);
-    Execution e = FunctionService.onRegion(aRegion).withArgs(aList).withFilter(filter);
-
-    Log.getLogWriter().info("executing " + f.getId() + " with filter " + filter);
-    ResultCollector rc = e.execute(f.getId());
-    Log.getLogWriter().info("executed " + f.getId());
-
-    List result = (List)(rc.getResult());
-    BaseValueHolder vh = (BaseValueHolder)(result.get(0));
-    return(vh);
-  }
-}
+    aList.add("myFunctionOperation");
+    aList.add(Thread.currentThread().getId());
+    System.out.println("Executing " + aList.get(0) + " from " + aList.get(1));
+    ResultCollector drc = dataSet.withFilter(keySet).withArgs(aList)
+        .execute(myFunction.getId());
+    }
 ```
 
-Log these values within the function to help with tracing during development
+Log these values within the function to help with tracing during development.
 ```
-        Log.getLogWriter().info("executing " + this.getClass().getName() + " in member " + dm + ", invoked from " + forDM + " with filter " + regionContext.getFilter());
-        StringBuffer aStr = new StringBuffer();
-        aStr.append("ExecuteOp args: ");
-        aStr.append("dm = " + forDM + ", ");
-        aStr.append("opName = " + opName + ", ");
-        aStr.append("value = " + value + ", ");
-        aStr.append("callback = " + callback);
-        Log.getLogWriter().info(aStr.toString());
+  public void execute(FunctionContext context) {
+    ArrayList arguments = (ArrayList)(context.getArguments());
+    String operation = (String)arguments.get(0);
+    Object initiatingThreadID = arguments.get(1);
+    String aStr = "In execute with context " + context + " and operation " + operation +
+      " initiated by thread thr_" + initiatingThreadID + "_";
+    for (int i = 2; i < arguments.size(); i++) {
+      aStr = aStr + " additional arg: " + arguments.get(i);
+    }
+    System.out.println(aStr);
 ```
 ### Use of CacheListeners to log events as they are processed
 ```
