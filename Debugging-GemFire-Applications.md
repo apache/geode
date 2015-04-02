@@ -10,12 +10,11 @@ This article provides some practical suggestions for debugging GemFire Applicati
 
 ## Gathering additional information
 ### gfsh
-GemFire gfsh provides a command-line interface from which you can launch, manage, and monitor GemFire processes, data, and applications.  The shell provides commands useful in debugging (to bring all the information to one location) such as:
+GemFire gfsh provides a command-line interface from which you can launch, manage, and monitor GemFire processes, data, and applications.  The shell provides commands useful in debugging (to bring all the information to one location).  _These commands require first executing the gfsh ```connect``` command to establish the connection to the locator or JMX Manager of the distributed system._
 * export logs
 * export stack-traces
 * show log
 * show dead-locks
-_Note that the commands above require executing the gfsh ```connect``` command to establish the connection to the locator or JMX Manager of the distributed system._
 
 ### Stack dumps
 When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.  The following command prints the stacks for all threads in the given pid to STDOUT (so these should be redirected to files named for each specific vm or pid).
