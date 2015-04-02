@@ -33,7 +33,7 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 
 1. Search the system logs for warning, error or severe messages  
 
-1. Search the system logs for any underlying Exceptions (perhaps thrown from user supplied plug-ins).  For example: ConcurrentModificationException, NullPointerException, SerializationException.  
+1. Search the system logs for any underlying Exceptions.  For example: ConcurrentModificationException, NullPointerException, SerializationException.  
 
 1. Search the system logs for warnings about resources causing delays in statistics sampling.  If found, use VSD to investigate further.    
 
