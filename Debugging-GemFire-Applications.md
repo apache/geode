@@ -134,9 +134,53 @@ is being terminated because its client timeout of 30,000 has expired.
 
 ## Tips for improving ability to debug during development
 
-### pass in the vm and thread id as arguments (to be logged) during Function Execution
+### Function Execution
+To trace function execution from the initiator to the vm executing the function, pass in the vm and thread id as arguments to the function.  In this example, we are passing in the DistributedMemberId, but this could be any identifying information in your application.
 ```
-Example TBD
+  /** Execute the specified operation with (key, value) provided
+   *  on the given region.
+   */
+  protected Object executeOp(Region aRegion, String opName, Object key, Object value, String callback) {
+
+    Log.getLogWriter().info("Invoking ExecuteOp with " + opName + "(" + key + ", " + value + ")");
+    Function f = FunctionService.getFunction("parReg.tx.ExecuteOp");
+    DistributedSystem ds = CacheHelper.getCache().getDistributedSystem();
+    DistributedMember dm = ds.getDistributedMember();
+
+    // target appropriate VM
+    Set filter = new HashSet();
+    filter.add(key);
+
+    // build args ArrayList (op: key, value) 
+    ArrayList aList = new ArrayList();
+    aList.add(dm.toString());
+    aList.add(opName);
+    aList.add(key);
+    aList.add(value);
+    aList.add(callback);
+    Execution e = FunctionService.onRegion(aRegion).withArgs(aList).withFilter(filter);
+
+    Log.getLogWriter().info("executing " + f.getId() + " with filter " + filter);
+    ResultCollector rc = e.execute(f.getId());
+    Log.getLogWriter().info("executed " + f.getId());
+
+    List result = (List)(rc.getResult());
+    BaseValueHolder vh = (BaseValueHolder)(result.get(0));
+    return(vh);
+  }
+}
+```
+
+Log these values within the function to help with tracing during development
+```
+        Log.getLogWriter().info("executing " + this.getClass().getName() + " in member " + dm + ", invoked from " + forDM + " with filter " + regionContext.getFilter());
+        StringBuffer aStr = new StringBuffer();
+        aStr.append("ExecuteOp args: ");
+        aStr.append("dm = " + forDM + ", ");
+        aStr.append("opName = " + opName + ", ");
+        aStr.append("value = " + value + ", ");
+        aStr.append("callback = " + callback);
+        Log.getLogWriter().info(aStr.toString());
 ```
 ### Use of CacheListeners to log events as they are processed
 ```
