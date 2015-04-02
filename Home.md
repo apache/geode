@@ -1,6 +1,6 @@
 # Overview
 
-<marketing blurb>
+TBD...marketing blurb
 
 # GemFire in 5 minutes
 
