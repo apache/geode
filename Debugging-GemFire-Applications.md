@@ -133,7 +133,7 @@ is being terminated because its client timeout of 30,000 has expired.
 
 ```
 
-## Tips for improving ability to debug during development
+## Improving traceability during initial development
 
 ### Function Execution
 To trace function execution from the initiator to the vm executing the function, pass the initiating thread id to the function using ```withArgs``` and log in both vms.  Of course, this could easily be a string containing the pid, DistributedMemberId or any other identifying information for your application.
