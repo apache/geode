@@ -27,16 +27,9 @@ For example:
 GemFire uses gradle plugins to generate your IDE configuration files.
 
 ### Eclipse
-Run 
 
-    ./gradlew eclipse
+Invoking `./gradlew eclipse` will generate the project and classpath files for all subprojects.  Import all projects into eclipse.
 
-This will generate a .classath and .project for all subprojects. Import all projects into eclipse.
+### IntelliJ
 
-### Intellij
-
-Run
-
-    ./gradlew idea
-
-Import the resulting projects.
+Invoking `/gradlew idea` will generate project files for IntelliJ.  Import the resulting project files.
