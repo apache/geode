@@ -8,7 +8,6 @@
 * [[How to Contribute]]
 * [[Getting Started for GemFire Developers]]
 * [[Building and Running GemFire from Source]]
-* [[Code Style Guide]]
 * [[Criteria for Code Submissions]]
 
 ## Articles
