@@ -51,7 +51,8 @@ Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/
 
 1. Search the stack dumps for ```Java-level deadlock```.  Dumping the stacks using [jstack](https://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/hangloop.html) or the Linux command ```kill -3 <pid>``` will highlight any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all VMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.   
 
-1. Search the system logs for any ```15 seconds have elapsed``` messages which don't have corresponding ```wait for replies has completed``` logs.  You can match these log messages together via the thread id or native thread id.  Note that these messages are only logged between peers in the Distributed System.  See "Special Considerations for Clients" for messages specific to GemFire clients.
+1. Search the system logs for any ```15 seconds have elapsed``` messages which don't have corresponding ```wait for replies has completed``` logs.  You can match these log messages together via the thread id or native thread id.  Note that these messages are only logged between peers in the Distributed System.  See "Special Considerations for Clients" for messages specific to GemFire clients.  
+
 In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.    
 
     ```
