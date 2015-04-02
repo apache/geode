@@ -53,7 +53,7 @@ Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/
 
 1. Search the system logs for any ```15 seconds have elapsed``` messages which don't have corresponding ```wait for replies has completed``` logs.  You can match these log messages together via the thread id or native thread id.  Note that these messages are only logged between peers in the Distributed System.  See "Special Considerations for Clients" for messages specific to GemFire clients.  
 
-In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.    
+    In this example, we can see that the request did complete, so while we should be concerned (and possibly check stats in vsd to see what system resources are causing this delay), it will not be the cause of our hang.    
 
     ```
     [warning 2014/07/26 02:02:54.384 PDT dataStoregemfire5_w1-gst-dev12_25904 <Pooled Waiting Message Processor 11> tid=0xb5] 
