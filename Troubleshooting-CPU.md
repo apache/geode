@@ -40,7 +40,7 @@ The chart below shows **LinuxSystemStats cpuActive** values. This process is CPU
 The chart below shows **VMStats processCpuTime** values.
 ![VMStats](images/troubleshooting_cpu_image002.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the active CPU (*cpuUsage*) of a member. An example is:
+The *gfsh show metrics* command can be used to show the active CPU (**cpuUsage**) of a member. An example is:
 
 	show metrics --member=server1 --categories=member
 	

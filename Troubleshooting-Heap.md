@@ -18,7 +18,7 @@ The chart below shows **VMMemoryPoolStats-CMSOldGen-Heapmemory currentMaxMemory*
 The chart below shows the **VMStats freeMemory** values.
 ![VMStats](images/troubleshooting_heap_image003.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the **currentHeapSize** and **maximumHeapSize** of a member. An example is:
+The *gfsh show metrics* command can be used to show the current (**currentHeapSize**) and maximum (**maximumHeapSize**) heap sizes of a member. An example is:
 	show metrics --member=server1 --categories=member
 	
 	Member Metrics

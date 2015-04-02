@@ -10,8 +10,17 @@ Native memory issues are generally caused by one of two things, namely
 * configuring too low of a maximum for user processes
 
 ## Determination
-One way to determine whether there is a native memory issue is to use an OS command such as *free* or *top* to see the available free memory. If the free memory looks ok, then use an OS command like *ulimit* to see the maximum user processes. 
-###free
+A native memory issue will manifest in the GemFire log file as an **OutOfMemoryError** with the message *'unable to create new native thread'* thrown either by a GemFire thread or an application thread. The error must contain the *'unable to create new native thread'* message and not the *'Java heap space'* message (see [[Troubleshooting Heap]] for details on that issue). An example of the error is shown below.
+
+	[severe 2008/09/29 10:56:12.919 EDT <Message Dispatcher for 127.0.0.1:2879> tid=0x56f]
+	 Uncaught exception in thread <Message Dispatcher for 127.0.0.1:2879>
+	 Caused by: java.lang.OutOfMemoryError: unable to create new native thread
+	         at java.lang.Thread.start0(Native Method)
+	         at java.lang.Thread.start(Thread.java:597)
+
+###Free Memory
+One way to determine whether there is a native memory issue is to use an OS command such as *free* or *top* to see the available free memory.
+####free
 The *free* command shows the amount of free and used memory on the machine. The *free* output below shows ~48GB total memory with ~11GB used and ~37GB free.
 
 	free -m
@@ -20,13 +29,14 @@ The *free* command shows the amount of free and used memory on the machine. The 
 	-/+ buffers/cache:      10413      37838
 	Swap:        98303          0      98303
 
-###top
+####top
 The *top* command shows, among other things, the amount of free and used memory on the machine as well individual processes. The *top* output below is a different view of the *free* output. It below shows the same 48GB total memory with ~11GB used and ~37GB free. It also shows the JVM using most of that memory.
 
 	Mem:  49409536k total, 11254756k used, 38154780k free,    13416k buffers
 	 9024 user1     20   0 45.5g 9.4g  15m S  9.3 20.0   5:46.14 java               
-
-###ulimit
+###User Processes
+If the free memory looks ok, then the issue might be caused by the configured maximum user processes being set too low. Use an OS command like *ulimit* to see the maximum user processes. 
+####ulimit
 The *ulimit* command shows the resource limits allowed to a user (like files and processes). The *ulimit* output below shows the soft limits.
 
 	ulimit -Sa
@@ -47,7 +57,7 @@ The *ulimit* command shows the resource limits allowed to a user (like files and
 	virtual memory          (kbytes, -v) unlimited
 	file locks                      (-x) unlimited
 
-The **max user processes** value is the one of interest for native memory issues.
+The **max user processes** value is the one of interest for native memory issues. In this case, the soft limit of 501408 is fine.
 
 In addition, you can see the limits for a specific running process in linux by *cat*ting the limits file for that process. The limits for the process with *pid* 7360 are shown below.
 
@@ -70,15 +80,7 @@ In addition, you can see the limits for a specific running process in linux by *
 	Max realtime priority     0                    0                    
 	Max realtime timeout      unlimited            unlimited            us        
 
-The **Max processes** value is the one of interest for native memory issues.
-
-A native memory issue will manifest as an **OutOfMemoryError** with the message *'unable to create new native thread'* thrown either by GemFire thread or an application thread. The error must contain the *'unable to create new native thread'* message and not the *'Java heap space'* message (see [[Troubleshooting Heap]] for details on that issue). An example of the error is shown below.
-
-	[severe 2008/09/29 10:56:12.919 EDT <Message Dispatcher for 127.0.0.1:2879> tid=0x56f]
-	 Uncaught exception in thread <Message Dispatcher for 127.0.0.1:2879>
-	 Caused by: java.lang.OutOfMemoryError: unable to create new native thread
-	         at java.lang.Thread.start0(Native Method)
-	         at java.lang.Thread.start(Thread.java:597)
+The **Max processes** value is the one of interest for native memory issues. In this case, soft limit of 1024 is too low.
 ###vsd
 Another way to check whether there is a native memory issue is to use *vsd* to display the free memory and number of threads contained in a given GemFire statistics archive. The **VMStats threads** statistic shows the number of threads in the JVM. The **LinuxSystemStats freeMemory** shows the available free memory in the OS.
 ####VMStats
@@ -93,7 +95,7 @@ The chart below shows healthy **LinuxSystemStats freeMemory** values.
 The chart below shows unhealthy **LinuxSystemStats freeMemory** values. It also shows that the JVM heap is the source of the memory usage.
 ![VMStats](images/troubleshooting_native_memory_image004.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the number of threads (*jvmThreads*) of a member. An example is:
+The *gfsh show metrics* command can be used to show the number of threads (**jvmThreads**) of a member. An example is:
 
 	show metrics --member=server1 --categories=jvm
 	
@@ -106,7 +108,7 @@ The *gfsh show metrics* command can be used to show the number of threads (*jvmT
 	         | totalFileDescriptorOpen | 75
 
 ##Action
-There are several actions that can prevent native memory issues.
+There are several actions that can help prevent native memory issues.
 
 If there is not enough available RAM:
 
