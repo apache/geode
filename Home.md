@@ -2,7 +2,7 @@
 
 <marketing blurb>
 
-# GemFire in 10 minutes
+# GemFire in 5 minutes
 
 Clone the repository and build from source:
 
