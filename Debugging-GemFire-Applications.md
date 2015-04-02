@@ -33,7 +33,7 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 sampling thread detected a wakeup delay of 8,310 ms, indicating a possible resource issue. Check the GC,
 memory, and CPU statistics.
 ```
-1. Verify there are no hotspot (hs_err_pid.log files) indicating a HotSpot error in the JVM
+1. Verify there are no HotSpot (hs_err_pid.log files) indicating a HotSpot error in the JVM
 Refer to the [Oracle Troubleshooting Guide](http://www.oracle.com/technetwork/java/javase/crashes-137240.html) for more details.
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
 Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html) and [Eclipse Memory Analyzer](https://eclipse.org/mat/) can provide heap histograms and leak suspects.
