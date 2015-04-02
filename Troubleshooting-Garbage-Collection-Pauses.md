@@ -21,7 +21,7 @@ In addition, the -XX:+PrintGCDetails VM argument also shows pauses as shown belo
 ### vsd
 Another way to see GC pauses is to use *vsd* to display the **VMGCStats collections** and **collectionTime** values as well as the **StatSampler delayDuration** and **jvmPauses** values contained in a given GemFire statistics archive.
 ####VMGCStats
-The *vsd* chart below shows the **VMGCStats CMS collectionTime** values.
+The chart below shows the **VMGCStats CMS collectionTime** values.
 ![VMMemoryPoolStats](images/troubleshooting_gc_pauses_image001.gif)
 
 Logging the delta between the bottom left and bottom right of the line where it touches 0 shows a 23 second GC pause.
@@ -38,10 +38,10 @@ Logging the delta between the bottom left and bottom right of the line where it 
 	    the average is: 329.318181818
 	    the stddev is:  570.395822765
 ####StatSampler
-The *vsd* chart below shows the **StatSampler delayDuration** values. This statistic is set when the statistic sampler thread wakes up to sample statistics. It should be a fairly straight line at the statistic sampling interval. Spikes indicate that the thread didn't wake up at the normal time. This can be due to a number of things including high CPU, low memory and GC pauses. In this case, it spikes to >20 seconds.
+The chart below shows the **StatSampler delayDuration** values. This statistic is set when the statistic sampler thread wakes up to sample statistics. It should be a fairly straight line at the statistic sampling interval. Spikes indicate that the thread didn't wake up at the normal time. This can be due to a number of things including high CPU, low memory and GC pauses. In this case, it spikes to >20 seconds.
 ![VMMemoryPoolStats](images/troubleshooting_gc_pauses_image002.gif)
 
-The *vsd* chart below shows the **StatSampler jvmPauses** values. This statistic shows the **delayDuration** in a different way. Any time the **dalayDuration** is >3 seconds, this statistic is incremented.
+The chart below shows the **StatSampler jvmPauses** values. This statistic shows the **delayDuration** in a different way. Any time the **dalayDuration** is >3 seconds, this statistic is incremented.
 ![VMMemoryPoolStats](images/troubleshooting_gc_pauses_image003.gif)
 
 It is also accompanied by a warning message in the GemFire log like:
