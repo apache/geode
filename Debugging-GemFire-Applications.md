@@ -28,11 +28,11 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 1. Search the system logs for warning, error or severe messages
 1. Search the system logs for any underlying Exceptions (perhaps thrown from user supplied plug-ins).  For example: ConcurrentModificationException, NullPointerException, SerializationException.
 1. Search the system logs for warnings about resources causing delays in statistics sampling.  If found, use VSD to investigate further. 
-```
-[warning 2015/03/29 04:47:23.028 PDT gemfire1_w1-gst-dev26_15651 <Thread-5 StatSampler> tid=0x55] Statistics 
+    ```
+    [warning 2015/03/29 04:47:23.028 PDT gemfire1_w1-gst-dev26_15651 <Thread-5 StatSampler> tid=0x55] Statistics 
 sampling thread detected a wakeup delay of 8,310 ms, indicating a possible resource issue. Check the GC,
 memory, and CPU statistics.
-```
+    ```
 1. Verify there are no HotSpot (hs_err_pid.log files) indicating a HotSpot error in the JVM
 Refer to the [Oracle Troubleshooting Guide](http://www.oracle.com/technetwork/java/javase/crashes-137240.html) for more details.
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
