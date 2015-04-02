@@ -1,4 +1,4 @@
-# Debugging GemFire Applications (Work in Progress, please ignore me)
+# Debugging GemFire Applications
 
 This article provides some practical suggestions for debugging GemFire Applications.
 
