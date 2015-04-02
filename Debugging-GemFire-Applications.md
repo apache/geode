@@ -123,7 +123,7 @@ The stack dumps from 12706 show the ```waiting to lock <monitor>``` and ```locke
 ```
 
 ## Special considerations for GemFire clients
-GemFire clients can sometime fails with ServerConnectivityExceptions when the servers are too busy to handle client requests.  For example, with large GC pauses or distributed deadlocks.  
+GemFire clients can fail with ServerConnectivityExceptions when the servers are too busy to handle client requests.  For example, with large GC pauses or distributed deadlocks.  
 
 Look for ```is being terminated because its client timeout``` messages in the server system logs and to determine whether or not this is occurring in your application.  If so, review the server side system logs, stack dumps and statistics to determine the cause.
 ```
