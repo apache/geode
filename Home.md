@@ -45,7 +45,7 @@ _HelloWorld.java_
       }
     }
 
-Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-dependencies.jar`.  Note: this example uses Java8 syntax.
+Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-dependencies.jar`.  Note: this example uses Java 8 syntax.
 
     javac -cp /some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld.java
     java -cp .:/some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld
