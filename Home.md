@@ -50,7 +50,7 @@ Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-d
     javac -cp /some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld.java
     java -cp .:/some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld
 
-= Application Development=
+#Application Development
 
 GemFire applications can written from a number of client technologies:
 
