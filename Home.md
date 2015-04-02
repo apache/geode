@@ -4,7 +4,7 @@ TBD...marketing blurb
 
 # GemFire in 5 minutes
 
-Clone the repository and build from source:
+Clone the repository and build from source (note: currently GemFire supports Java 7):
 
     $ git clone git@github.com:gemfire/apache-gemfire-staging.git
     $ cd gemfire/
@@ -25,27 +25,30 @@ Write a client application:
 
 _HelloWorld.java_
 
+    import java.util.Map;
     import com.gemstone.gemfire.cache.Region;
     import com.gemstone.gemfire.cache.client.*;
-
+    
     public class HelloWorld {
       public static void main(String[] args) throws Exception {
         ClientCache cache = new ClientCacheFactory()
           .addPoolLocator("localhost", 10334)
           .create();
-        Region region = cache
-          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+        Region<String, String> region = cache
+          .<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
           .create("region");
-
+    
         region.put("1", "Hello");
         region.put("2", "World");
-    
-        region.forEach((k, v) -> System.out.format("key = %s, value = %s\n", k, v));
+        
+        for (Map.Entry<String, String>  entry : region.entrySet()) {
+          System.out.format("key = %s, value = %s\n", entry.getKey(), entry.getValue());
+        }
         cache.close();
       }
     }
 
-Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-dependencies.jar`.  Note: this example uses Java 8 syntax.
+Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-dependencies.jar`.
 
     javac -cp /some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld.java
     java -cp .:/some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld
