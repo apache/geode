@@ -57,4 +57,4 @@ GemFire applications can written from a number of client technologies:
 * Java using the GemFire client API
 * [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
-* [[memcached][Moving from memcached to gemcached]]
+* [[memcached|Moving from memcached to gemcached]]
