@@ -335,11 +335,18 @@ For instance, any generated state as the function is being executed should be st
 GemFire captures several statistics on each member to allow monitoring application behavior on data nodes.
 
 **functionExecutionsCompleted** :Total number of completed function.execute() calls
+
 **functionExecutionsCompletedProcessingTime** :Total time consumed for all completed invocations
+
 **functionExecutionsRunning** :A guage indicating the number of currently running invocations
+
 **resultsSentToResultCollector** :Total number of results sent to the ResultCollector
+
 **functionExecutionCalls** :Total number of FunctionService...execute() calls
+
 **functionExecutionsHasResultCompletedProcessingTime** :Total time consumed for all completed execute() calls where hasResult() returns true
+
 **functionExecutionsHasResultRunning**:A gauge indicating the number of currently active execute() calls for functions where hasResult() returns true
+
 **functionExecutionsExceptions** :Total number of Exceptions Occured while executing function
 resultsReceived :Total number of results sent to the ResultCollector
