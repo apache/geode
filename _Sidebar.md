@@ -33,6 +33,7 @@
 * [[What to monitor]]
 * [[Network configuration]]
 * [[Troubleshooting CPU]]
+* [[Troubleshooting Disk-Space]]
 * [[Troubleshooting File Descriptors]]
 * [[Troubleshooting Garbage Collection Pauses]]
 * [[Troubleshooting Heap]]
