@@ -1,4 +1,4 @@
-## About GemFire
+## About Geode
 * [[Apache Incubator Proposal]]
 * [GemFire in 5 minutes](https://github.com/gemfire/apache-gemfire-staging/wiki#gemfire-in-5-minutes)
 * [Documentation](http://gemfire.docs.pivotal.io)
