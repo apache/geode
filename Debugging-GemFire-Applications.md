@@ -16,6 +16,26 @@ Please refer to the GemFire documentation for more details.
 * show log
 * show dead-locks
 
+## GemFire MergeLogFiles
+Use  GemFire MergeLogFiles (/gemfire-core/src/main/java/com/gemstone/gemfire/internal/logging/MergeLogFiles.java) to merge your log files based on timestamps.
+
+```
+$ java -classpath $CLASSPATH -Xmx1200M com.gemstone.gemfire.internal.logging.MergeLogFiles
+
+Usage: java MergeLogFiles [(directory | logFile)]+
+-dirCount n      Number of parent dirs to print
+-mergeFile file  File in which to put merged logs
+-pids            Search for PIDs in file names and use them to identify files
+-align           Align non-timestamped lines with others
+-noblanks        Suppress output of blank lines
+-threaded        Use multithreading to take advantage of multiple CPUs
+
+Merges multiple GemFire log files and sorts them by timestamp.
+The merged log file is written to System.out (or a file).
+
+If a directory is specified, all .log files in that directory are merged.
+```
+
 ## General Guidelines
 1. Check your environment - Machine (e.g. ulimit settings), JDK, JVM properties (-Xmx -Xms), GC parameters  
 
@@ -31,23 +51,6 @@ Please refer to the GemFire documentation for more details.
 
 ## Specific search strings and patterns
 1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).  
-
-1. Use MergeLogFiles (/gemfire-core/src/main/java/com/gemstone/gemfire/internal/logging/MergeLogFiles.java) to merge your log files based on timestamps.
-
-```
-Usage: java MergeLogFiles [(directory | logFile)]+
--dirCount n      Number of parent dirs to print
--mergeFile file  File in which to put merged logs
--pids            Search for PIDs in file names and use them to identify files
--align           Align non-timestamped lines with others
--noblanks        Suppress output of blank lines
--threaded        Use multithreading to take advantage of multiple CPUs
-
-Merges multiple GemFire log files and sorts them by timestamp.
-The merged log file is written to System.out (or a file).
-
-If a directory is specified, all .log files in that directory are merged.
-```
 
 1. Search the system logs for warning, error or severe messages  
 
