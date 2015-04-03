@@ -26,6 +26,7 @@
 * [[Client server Architecture]]
 * [[Sizing a Geode Cluster]]
 * [[Network configuration]]
+* [[Geode Security Framework]]
 
 ### Troubleshoot
 
