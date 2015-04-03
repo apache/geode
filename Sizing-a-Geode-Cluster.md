@@ -94,7 +94,7 @@ Total memory and system requirements can be approximated using the sizing spread
 
 This part of the sizing process is the most involved and most important. 
 
-Vertical sizing should answer the question of what fraction of the total requirements for storage and workload can be satisfied with a single data node, and with what resources. The answer to this question represents a building block (a unit of scale) and includes both the size of the resources, and the workload capacity. It also includes the complete configuration of the building block (system, VM if present, JVM, and GemFire).
+Vertical sizing should answer the question of what fraction of the total requirements for storage and workload can be satisfied with a single data node, and with what resources. The answer to this question represents a building block (a unit of scale) and includes both the size of the resources, and the workload capacity. It also includes the complete configuration of the building block (system, VM if present, JVM, and Geode).
 
 For example, a result of this step for a simple read-only application might be that a single data node with a JVM sized to 64G can store 40G of data and support a workload of 5000 get operations per second within the required latency SLA, without exhausting any resources. It is important to capture all the key performance indicators for the application, and make sure they meet the desired SLA. A complete output of the vertical sizing step would include all the relevant details, for example, hardware resources per node, peak capacity and performance at peak capacity, and would note which resource becomes a bottleneck at peak capacity. 
 
@@ -106,7 +106,7 @@ If WAN distribution is needed, it is best to set up an identical twin cluster an
 
 Test runs should exercise a representative application workload, and be long enough to incur multiple GC cycles, so that stable resource usage can be confirmed. Also, if any Geode queues are used, tests should be run to determine adequate queue sizes that meet the SLA. If disk storage is used, then adequate disk store size and configuration per node should be determined as well as part of this exercise.
 
-Upon each test run, the latency metrics collected by the application are examined. VSD is used to examine the GemFire statistics and correlate the resource usage with latencies and throughput observed. The article [Using Visual Statistics Display to Analyze GemFire Runtime Configuration, Resources, and Performance](http://blogs.vmware.com/vfabric/2012/10/using-visual-statistics-display-to-analyze-gemfire-runtime-configuration-resources-and-performance.html) covers the basics of VSD and the relevant statistics we need. The resources that should be examined are memory (heap, and non-heap, GC), CPU, system load, network, file descriptors, and threads. In addition, the queue statistics should be examined as well.  
+Upon each test run, the latency metrics collected by the application are examined. VSD is used to examine the statistics and correlate the resource usage with latencies and throughput observed. The article [Using Visual Statistics Display to Analyze GemFire Runtime Configuration, Resources, and Performance](http://blogs.vmware.com/vfabric/2012/10/using-visual-statistics-display-to-analyze-gemfire-runtime-configuration-resources-and-performance.html) covers the basics of VSD and the relevant statistics we need. The resources that should be examined are memory (heap, and non-heap, GC), CPU, system load, network, file descriptors, and threads. In addition, the queue statistics should be examined as well.  
 
 One of the objectives of vertical sizing is to determine the headroom required to accomplish the desired performance. This might take several tests, in order to tune the headroom to no more and no less than needed. A much larger headroom than needed could amount to a significant waste of resources. A smaller headroom could cause higher GC activity and CPU usage and hurt performance.
 
@@ -116,7 +116,7 @@ Locator JVM sizing may be necessary when JMX Manager is running in the locator J
 
 ###### Notes on GC
 
-When it comes to GC, the most important goal is to avoid full GC’s, as they cause stop the world pauses, which can cause a GemFire data node to be unresponsive, and as a result expelled from the cluster. 
+When it comes to GC, the most important goal is to avoid full GC’s, as they cause stop the world pauses, which can cause a Geode data node to be unresponsive, and as a result expelled from the cluster. 
 The permanent generation space can trigger a full GC as well, which happens when it fills up. It should be sized to avoid this. In addition, the JVM can be instructed to garbage collect the permanent generation space along with CMS GC using the following option: 
 
         -XX:+CMSClassUnloadingEnabled
@@ -164,4 +164,4 @@ General recommendations that should be considered as the starting point in capac
 | NAS | Do not use; performance and resilience issues |
 
 * **Memory/CPU relationship**: mind the NUMA boundary
-* **Virtualization**: Do not oversubscribe resources (memory, CPU, storage). Run a single GemFire data node JVM per VM.
+* **Virtualization**: Do not oversubscribe resources (memory, CPU, storage). Run a single Geode data node JVM per VM.
