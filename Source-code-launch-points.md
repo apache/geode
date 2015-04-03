@@ -19,8 +19,8 @@ For partitioned regions start with `PartitionRegion`, `BucketRegion`,
 There are lots of messaging classes here, such as 
 `DistributedCacheOperation` & subclasses,
 `RemoteOperationMessage` & subclasses, `PartitionMessage` & subclasses,
-`SearchLoadAndWriteProcessor`, `GetInitialImageOperation`, `StateFlushOperation`,
-and `EntryEventImpl`.
+`SearchLoadAndWriteProcessor`, `GetInitialImageOperation`
+and `StateFlushOperation`.
 
 Also look in `CacheDistributionAdvisor` and `RegionAdvisor`.  These hold
 profiles of peers and are used to determine who should receive replication
