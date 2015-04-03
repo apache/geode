@@ -31,7 +31,7 @@ The *gfsh show metrics* command can be used to show the current (**currentHeapSi
 	         | maximumHeapSize | 81250
 
 ##Action
-There are several ways to eliminate a heap memory issue including:
+There are several ways to eliminate heap issues, including:
 
 * Increase the maximum amount of heap available to the VM using the *-Xmx* VM argument
 * Configure one or more regions to overflow so that their values are not stored on the heap
