@@ -30,12 +30,12 @@ gfsh>start server --name=server1 --memcached-port=11211 --memcached-protocol=BIN
 
 ## Why move from memcached?
 
-One of the fundamental problem with memcached is that it only supports “cache-aside” (as opposed to “write-through”) i.e. the application is responsible for updating the cache as well as the database. This results in:
+One of the fundamental problems with memcached is that it only supports “cache-aside” (as opposed to “write-through”) i.e. the application is responsible for updating the cache as well as the database. This results in:
 - Potential for inconsistency between the cache and the DB
 - Polluting the business logic in each of your application with same infrastructure concerns.
 ![memcached workflow](http://i.imgur.com/Jjf4AKC.png?2)
 
-In a typical workflow, your application will read data from memcached, if not found it will read from the DB, then writes the fetched data to memcached. When an update occurs, you would update the database followed by updating/invalidating the cache. Since this is a two step operation, you could run into race conditions which leaves your cache and database inconsistent. 
+In a typical workflow, your application will read data from memcached, if not found it will read from the DB, then write the fetched data to memcached. When an update occurs, you would update the database followed by updating/invalidating the cache. Since this is a two step operation, you could run into race conditions which leave your cache and database inconsistent. 
 
 ### Stale cache
  A client may die just after it updated the DB but before it wrote the change to memcached. All other clients are oblivious of the changed DB and happily continue serving stale data.
