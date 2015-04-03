@@ -55,4 +55,4 @@ Some other areas to check are:
 * Make sure the NewSize is correct
 * Make sure PermGen is correct
 
-See [[Sizing a GemFire Cluster]] for additional details.
+See [[Sizing a Geode Cluster]] for additional details.
