@@ -10,6 +10,7 @@ This article provides some practical suggestions for debugging GemFire Applicati
 
 ## GemFire Shell (gfsh)
 GemFire gfsh provides a command-line interface from which you can launch, manage, and monitor GemFire processes, data, and applications.  The shell provides commands useful in debugging and to bring all the information to a single location for analysis.  The following gfsh commands require first executing the gfsh ```connect``` command to establish the connection to the locator or JMX Manager of the distributed system.
+Please refer to the GemFire documentation for more details.
 * export logs
 * export stack-traces
 * show log
@@ -30,6 +31,23 @@ GemFire gfsh provides a command-line interface from which you can launch, manage
 
 ## Specific search strings and patterns
 1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).  
+
+1. Use MergeLogFiles (/gemfire-core/src/main/java/com/gemstone/gemfire/internal/logging/MergeLogFiles.java) to merge your log files based on timestamps.
+
+```
+Usage: java MergeLogFiles [(directory | logFile)]+
+-dirCount n      Number of parent dirs to print
+-mergeFile file  File in which to put merged logs
+-pids            Search for PIDs in file names and use them to identify files
+-align           Align non-timestamped lines with others
+-noblanks        Suppress output of blank lines
+-threaded        Use multithreading to take advantage of multiple CPUs
+
+Merges multiple GemFire log files and sorts them by timestamp.
+The merged log file is written to System.out (or a file).
+
+If a directory is specified, all .log files in that directory are merged.
+```
 
 1. Search the system logs for warning, error or severe messages  
 
