@@ -92,7 +92,8 @@ Essentially, when data colocation is required, all entry keys returning the same
 
 Applications can also introduce a partition resolver for a partitioned data region non-intrusively by specifying the PartitionResolver class to invoke when data is published.
 
-```xml
+
+```
 <cache>
   <region name="myPrDataRegion">
     <region-attributes>
@@ -105,6 +106,7 @@ Applications can also introduce a partition resolver for a partitioned data regi
   </region>
 <cache>
 ```
+<pre><code>
 //Create a new PartitionResolver 
 PartitionResolver resolver = new MyPartitionResolver();
 
@@ -114,8 +116,11 @@ PartitionAttributes attrs = new PartitionAttributesFactory().setPartitionResolve
 Region region = new RegionFactory().setPartitionAttributes(attrs).create("myPrDataRegion");
 </code></pre>
 
-Colocating related entries across multiple partitioned regions 
+######Colocating related entries across multiple partitioned regions 
+
 So, for instance, in a Orders partitioned region, all order entries that return the same CustomerID will be guaranteed to reside on the same node.
+
+```
 <cache>
   <region name="Customers">
     <region-attributes>
@@ -146,6 +151,8 @@ So, for instance, in a Orders partitioned region, all order entries that return 
   </region>
 </cache>
 
+```
+<pre><code>
 //Create a new PartitionResolver based on CustomerID, so that all orders from same CustomerId will yield to a single bucket
 PartitionResolver resolver = new CustomerPartitionResolver();
 
@@ -167,23 +174,32 @@ Region orders = new RegionFactory().setPartitionAttributes(attrs ).create("Order
 attrs = new PartitionAttributesFactory().setPartitionResolver(resolver).setColocatedWith(customers.getFullPath()).create(); 
 //Create a Shipments partition region
 Region shipments = new RegionFactory().setPartitionAttributes(attrs ).create("Shipments");
+</code></pre>
 
 Following rules apply while defining colocation :
-The region name passed in setCollocatedWith() method should be previously created, otherwise IllegalStateException is thrown.
-Collocated entities should have custom partitioning enabled, otherwise IllegalStateException is thrown.
-Collocated Partitioned regions should have same PartitionResolver (must return the same routing object)
-Collocated Partitioned Regions should have same partition attributes (such as, totalNoOfBuckets, redundantCopies)
 
-Data aware behavior routing using GemFire Function Service
++The region name passed in setCollocatedWith() method should be previously created, otherwise IllegalStateException is thrown.
++Collocated entities should have custom partitioning enabled, otherwise IllegalStateException is thrown.
++Collocated Partitioned regions should have same PartitionResolver (must return the same routing object)
++Collocated Partitioned Regions should have same partition attributes (such as, totalNoOfBuckets, redundantCopies)
+
+######Data aware behavior routing using GemFire Function Service
+
 GemFire's Function execution service enables both cache clients and peer nodes to execute arbitrary, application functions on the data fabric.  Then the data is partitioned across a number of members for scalability, GemFire can route the function transparently to the node that carries the data subset required by the function and avoid moving the taget data around on the network.  This is called 'data aware' function routing.  Applications employing data aware routing do not need to have any knowledge of where the data is managed. 
+
 Application functions can be executed on a single node, executed in parallel on a subset of nodes or executed in parallel across all the nodes. This programming model is similar to the now popularized Map-Reduce model from Google. Data-aware function routing is most appropriate for applications that require iteration over multiple data items (such a query or custom aggregation function).  By colocating the relevant data and parallelizing the calculation, the overall throughput of the system can be dramatically increased. More importantly, the calculation latency is inversely proportional to the number of nodes on which it can be parallelized.
+
 Execution of a function on a single server node is similar to how applications execute stored procedures on database servers. This feature can be useful for the following cases:
-1) Application wants to execute a server side transaction or carry out data updates using the GemFire distributed lock service.
-2) Application wants to initialize some of its components once on each server which might be used later by executed functions
-3) Initialization and startup of a 3rd party service such a messaging service
-4) Any arbitrary aggregation operation that requires iteration over local data sets done more efficiently through a single call to the cache server
-Registering Functions to FunctionService
+
+1. Application wants to execute a server side transaction or carry out data updates using the GemFire distributed lock service.
+2. Application wants to initialize some of its components once on each server which might be used later by executed functions
+3. Initialization and startup of a 3rd party service such a messaging service
+4. Any arbitrary aggregation operation that requires iteration over local data sets done more efficiently through a single call to the cache server
+
+######Registering Functions to FunctionService
 Applications can declare and register the functions using declarative means (cache.xml) or through the GemFire API.  All registered functions have an identifier. Identifying functions allows the administrator to monitor function activity and cancel them on demand. 
+
+```
 <cache>
  ...
 <function-service>
@@ -197,76 +213,140 @@ Applications can declare and register the functions using declarative means (cac
  ...
 </cache>
 
+```
 
+<pre><code>
 Registering functions in programmatic way :
 Function function1 = new TradeCalc1();//TradeCalc1 implements Function interface
 Function function2 =new TradeCalc2();//TradeCalc2 implements Function interface
 FunctionService.registerFunction(function1);
 FunctionService.registerFunction(function2);
+</code></pre>
 
++Functions that need to be executed across remote members should be registered in each member before invoking.
++Applications may create inline functions which need not be registered.
++Id (returned from Function.getFunctionId()) can be any arbitrary string.
++Modifying function instance after registration has no effect on function execution.
 
-
-Functions that need to be executed across remote members should be registered in each member before invoking.
-Applications may create inline functions which need not be registered.
-Id (returned from Function.getFunctionId()) can be any arbitrary string.
-Modifying function instance after registration has no effect on function execution.
-Example 1 : Data aware routing and colocated transactions   
+#####Example 1 : Data aware routing and colocated transactions   
 Suppose Customers, Orders and Shipments are colocated as described in last example , here. And a user wants following behavior:
-A Customer places an order, application needs to approve the order before scheduling shipment for that order. If the order is not approved, shipment should not be scheduled.
+
+<i>A Customer places an order, application needs to approve the order before scheduling shipment for that order. If the order is not approved, shipment should not be scheduled.</i>
+
 Using FunctionService, this can be achieved as demonstrated [here]  
-Example 2 : Data independent parallel execution on all data nodes.
+
+#####Example 2 : Data independent parallel execution on all data nodes.
+
 Suppose a user wants to do an aggregation operation across the partitioned region on all nodes. Specifically, user is interested in avg sales from orders region.
-Using FunctionService, this can be achived as demonstrated [here]. 
-Example 3 : fire-n-forget function execution. 
+
+Using FunctionService, this can be achieved as demonstrated [here]. 
+
+#####Example 3 : fire-n-forget function execution. 
+
 Suppose a user wants to execute a function which doesn't return any result  
-What is available from GemFire to application function ? 
+
+#####What is available from GemFire to application function ? 
 
 An instance of  FunctionContext is made available to the function when and where it executes.  It is required by Function#execute(FunctionContext) to execute a Function on a particular member. An user can retrieve following information from FunctionContext
-API
-Description
-getArguments()
-These are the arguments specified by the caller using Execution#withArgs(Serializable)
-getFunctionId()
-Returns the identifier of the function.
-getResultSender()
-Returns the ResultSender which is used to add the ability for an execute method to send a single result back, 
-or break its result into multiple pieces and send each piece back to the calling thread's ResultCollector.
-A context can be data dependent or data independent. For data dependent functions, refer to RegionFunctionContext. Function code can retrieve the following information from RegionFunctionContext (which extends FunctionContext)
-API
-Description
-getFilter()
-Returns subset of keys (filter) provided by the invoking thread (aka routing objects). 
-The set of filter keys are locally present in the datastore on the executing cluster member.
-getDataSet()
-Returns the reference to the Region on which the function is executed
- In adition to the above, if user has executed a function on colocated partitioned regions, the following can be retrieved using utility class PartitionRegionHelper
-API
-Description
-getLocalData(Region r)
-Given a partitioned Region return a Region providing read access limited to the local heap, 
-writes using this Region have no constraints and behave the same as a partitioned Region.
-getColocatedRegions (Region r)
-Given a partitioned Region, return a map of colocated Regions.
-getLocalColocatedRegions(RegionFunctionContext context)
-Given a RegionFunctionContext  for a partitioned Region return a map of colocated Regions with read access limited to the context of the function.
-How does function execution work ?
+
+<table>
+<tr>
+ <td>API</td>
+ <td>Description</td>
+</tr>
+<tr>
+<td>getArguments()</td>
+<td>These are the arguments specified by the caller using Execution#withArgs(Serializable)</td>
+</tr>
+<tr>
+<td>getFunctionId()</td>
+<td>Returns the identifier of the function.</td>
+</tr>
+<tr>
+<td>getResultSender()</td>
+<td>Returns the ResultSender which is used to add the ability for an execute method to send a single result back, 
+or break its result into multiple pieces and send each piece back to the calling thread's ResultCollector.</td>
+</tr>
+</table>
+
+A context can be data dependent or data independent. For data dependent functions, refer to RegionFunctionContext. Function code can retrieve the following information from RegionFunctionContext (which extends FunctionContext).
+
+<table>
+<tr>
+<td>API</td>
+<td>Description</td>
+</tr>
+<tr>
+<td>getFilter()</td>
+<td>Returns subset of keys (filter) provided by the invoking thread (aka routing objects). 
+The set of filter keys are locally present in the datastore on the executing cluster member.</td>
+</tr>
+<tr>
+<td>getDataSet()</td>
+
+<td>Returns the reference to the Region on which the function is executed</td>
+</tr>
+</table>
+
+ In adition to the above, if user has executed a function on colocated partitioned regions, the following can be retrieved using utility class PartitionRegionHelper.
+
+<table>
+<tr>
+<td>API</td>
+<td>Description</td>
+</tr>
+<tr>
+<td>getLocalData(Region r)</td>
+<td>Given a partitioned Region return a Region providing read access limited to the local heap, 
+writes using this Region have no constraints and behave the same as a partitioned Region.</td>
+</tr>
+<tr>
+<td>getColocatedRegions (Region r)</td>
+<td>Given a partitioned Region, return a map of colocated Regions.</td>
+</tr>
+<tr>
+<td>getLocalColocatedRegions(RegionFunctionContext context)</td>
+<td>Given a RegionFunctionContext  for a partitioned Region return a map of colocated Regions with read access limited to the context of the function.</td>
+</tr>
+</table>
+
+#####How does function execution work ?
+
 When an user invokes a function, depending on filter passed, target nodes for this function execution are identified. If possible the nodes are pruned to minimum set of nodes where all the data is present. function execution message is sent asynchronously to all the target nodes, using a configurable thread pool. Each target node then sends the function execution results to the caller.The caller waits for the result using ResultCollector.getResult().
+
 Default implementation of ResultCollector called DefaultResultCollector waits for each node to respond with a result and returns the unordered set of results to the caller. These results from the target nodes are added using ResultCollector#add(Serializable oneResult)API. Using this API an user can customize aggregation of results.
-What if my function execution result is large ?
+
+#####What if my function execution result is large ?
+
 An user can optionally use the ResultSender to chunk the results, and send back to the caller. The ResultSender class provides methods to send results back to the ResultCollector. Instead of getting the result of a function execution when the execution is complete, ResultSender provides mechanism to send individual results back back to the caller prior to completion.  It may also break a result into multiple chunks and send each result back to the caller. To signal the calling thread to stop waiting for the result,  the function should use the lastResult using the ResultSender.
-How does ResultSender play with the ResultCollector?
+
+#####How does ResultSender play with the ResultCollector?
+
 Each time a function sends a result using ResultSender it gets added to the ResultCollector at the caller node. So, the partial sent results are available to the application program instantaneously. This facilitates the developer to work on partial results and can decide on application logic without waiting for all the results.
-What happens when one of the function execution target nodes goes down ?
+
+#####What happens when one of the function execution target nodes goes down ?
+
 FunctionException is thrown with cause as FunctionInvocationTargetException,this usually indicates that the node that was executing the function failed mid-process. Applications can catch the FunctionInvocationTargetException and choose to re-execute the function. It is the function implementation's responsibility to provide any desired idempotent behavior.
+
 For instance, any generated state as the function is being executed should be stored in GemFire with redundancy. So, when the function fails, the client can re-execute and with a flag that indicates that the function execution is a possible duplicate. The function implementation could check this flag, use the partial state stored in GemFire to complete the remainder of the function.
-Some useful FunctionService statistics
+
+#####Some useful FunctionService statistics
+
 GemFire captures several statistics on each member to allow monitoring application behavior on data nodes.
-functionExecutionsCompleted :Total number of completed function.execute() calls
-functionExecutionsCompletedProcessingTime :Total time consumed for all completed invocations
-functionExecutionsRunning :A guage indicating the number of currently running invocations
-resultsSentToResultCollector :Total number of results sent to the ResultCollector
-functionExecutionCalls :Total number of FunctionService...execute() calls
-functionExecutionsHasResultCompletedProcessingTime :Total time consumed for all completed execute() calls where hasResult() returns true
-functionExecutionsHasResultRunning:A gauge indicating the number of currently active execute() calls for functions where hasResult() returns true
-functionExecutionsExceptions :Total number of Exceptions Occured while executing function
+
+**functionExecutionsCompleted** :Total number of completed function.execute() calls
+
+**functionExecutionsCompletedProcessingTime** :Total time consumed for all completed invocations
+
+**functionExecutionsRunning** :A guage indicating the number of currently running invocations
+
+**resultsSentToResultCollector** :Total number of results sent to the ResultCollector
+
+**functionExecutionCalls** :Total number of FunctionService...execute() calls
+
+**functionExecutionsHasResultCompletedProcessingTime** :Total time consumed for all completed execute() calls where hasResult() returns true
+
+**functionExecutionsHasResultRunning**:A gauge indicating the number of currently active execute() calls for functions where hasResult() returns true
+
+**functionExecutionsExceptions** :Total number of Exceptions Occured while executing function
 resultsReceived :Total number of results sent to the ResultCollector
