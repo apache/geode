@@ -12,25 +12,24 @@
 * [[Projects and Packages]]
 
 ## Articles
-#### Developers
+#### Develop
 * [[CacheWriter and CacheListener Best Practices]]
 * [[Function best practices]]
 * [[Debugging GemFire Applications]]
 * [[Persistence best practices]]
 * [[OQL]]
 
-### Architects
+### Design
 * [[Data Architecture in GemFire]]
 * [Embedded architecture](https://github.com/gemfire/apache-gemfire-staging/wiki/Running-Haptic-In-Embedded-Mode)
-* [[GemFire for PCF]]
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
-* [[OLTP]]
-
-### Administrators
 * [[Sizing a Geode Cluster]]
-* [[What to monitor]]
 * [[Network configuration]]
+
+### Troubleshoot
+
+* [[What to monitor]]
 * [[Troubleshooting CPU]]
 * [[Troubleshooting Disk-Space]]
 * [[Troubleshooting File Descriptors]]
