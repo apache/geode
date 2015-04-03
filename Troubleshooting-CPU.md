@@ -2,11 +2,11 @@
 ## Description
 When an application becomes CPU-bound, it no longer processes interrupts efficiently.
 ## Determination
-One way to determine whether a machine or process is CPU-bound is to use an operating system command such as *vmstat* or *top* while the application is running.
+One way to determine whether a machine or process is CPU-bound is to use an operating system command such as `vmstat` or `top` while the application is running.
 
 ###Operating System Command
 ####vmstat
-The *vmstat* output below shows that the CPUs are 99% idle.
+The `vmstat` output below shows that the CPUs are 99% idle.
 
 	vmstat 2
 	 procs                      memory      swap          io     system         cpu
@@ -17,7 +17,7 @@ The *vmstat* output below shows that the CPUs are 99% idle.
 	  0  0  95592  61284 975552 329124    0    0     0     0  173   585  0  1 99  0
 	  0  0  95592  61280 975556 329124    0    0     0     6  173   569  0  0 99  0
 ####top
-The *top* output shows, among other things, CPU usage percentage. The output below shows that the CPUs are mostly in use (idle=3.0%) and that Java processes using most of that CPU.
+The `top` output shows, among other things, CPU usage percentage. The output below shows that the CPUs are mostly in use (idle=3.0%) and that Java processes using most of that CPU.
 
 	top
 	  12:49:24  up 113 days, 23:36, 35 users,  load average: 10.40, 5.20, 2.30
@@ -32,15 +32,15 @@ The *top* output shows, among other things, CPU usage percentage. The output bel
 	 22698 user1  15   0 1102M 1.1G 18068 R     1.4 14.1   0:10   0 java
 	 19286 user1  15   0 1100M 1.1G 18080 R     0.5 14.1   0:25   0 java
 ###vsd
-Another way to determine whether a machine or process is CPU-bound is to use *vsd* to display active CPU and process CPU time values contained in a given GemFire statistics archive. The *LinuxProcessStats* category contains the active CPU statistic, and the *VMStats* category contains the process CPU time statistic.
+Another way to determine whether a machine or process is CPU-bound is to use `vsd` to display active CPU and process CPU time values contained in a given GemFire statistics archive.
 ####LinuxSystemStats
-The chart below shows **LinuxSystemStats cpuActive** values. This process is CPU-bound.
+The chart below shows **LinuxSystemStats cpuActive** values. This machine is CPU-bound.
 ![LinuxSystemStats](images/troubleshooting_cpu_image001.gif)
 ####VMStats
 The chart below shows **VMStats processCpuTime** values.
 ![VMStats](images/troubleshooting_cpu_image002.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the active CPU (**cpuUsage**) of a member. An example is:
+The `gfsh` **show metrics** command can be used to show the active CPU (**cpuUsage**) of a member. An example is:
 
 	show metrics --member=server1 --categories=member
 	
@@ -55,7 +55,7 @@ The *gfsh show metrics* command can be used to show the active CPU (**cpuUsage**
 
 ##Action
 Determining that there is a CPU issue is one thing. Finding the source of the issue is another.
-One thing that can be done is to dump the JVM threads using the operating system *'kill -3'* command as shown below. These dumps will show you how many threads there are and what each thread is doing. Often, you'll find application issues by examining these thread dumps. Note that the *'-3'* signal will not terminate the VM; it just dumps the thread stacks.
+One thing that can be done is to dump the JVM threads using the operating system `kill -3` command as shown below. These dumps will show you how many threads there are and what each thread is doing. Often, application issues can be found by examining these thread dumps.
 
 	kill -3 22523
 	 
@@ -98,12 +98,12 @@ One thing that can be done is to dump the JVM threads using the operating system
  
 If the thread dumps show mostly active GemFire threads, one action would be to reduce the number of processing threads by one or more of the following methods:
 
-* By setting or reducing the maximum number of threads (*max-threads*) processing client requests
+* By setting or reducing the maximum number of threads (**max-threads**) processing client requests
 * By reducing the number of GemFire selector threads 
-* By setting the number of sockets between processes to 1 (*conserve-sockets=true*) 
+* By setting the number of sockets between processes to 1 (**conserve-sockets=true**) 
 * By reducing the maximum number of GemFire threads processing distribution messages by setting one or more of the following Java system properties (although these properties should only be set on the recommendation of GemFire Support): 
-	* *DistributionManager.MAX_THREADS* – the maximum size of the standard thread pool (default=100) 
-	* *DistributionManager.MAX_PR_THREADS* – the maximum size of the partitioned thread pool (default= CPUs*4 or 16, whichever is greater) 
-	* *DistributionManager.MAX_FE_THREAADS* – the maximum size of the function execution thread pool (default= CPUs*4 or 16, whichever is greater)
+	* **DistributionManager.MAX_THREADS** – the maximum size of the standard thread pool (default=100) 
+	* **DistributionManager.MAX_PR_THREADS** – the maximum size of the partitioned thread pool (default= CPUs*4 or 16, whichever is greater) 
+	* **DistributionManager.MAX_FE_THREAADS** – the maximum size of the function execution thread pool (default=CPUs*4 or 16, whichever is greater)
 	
 If these actions fail, the load can be reduced by distributing processing among additional CPUs by adding more machines. One thing you should not do is to add more Java VMs to the existing machines. This action will most likely exacerbate the situation.

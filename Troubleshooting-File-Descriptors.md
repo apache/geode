@@ -2,13 +2,13 @@
 ## Description
 JVMs use File Descriptors (FDs) to access files and sockets. Often, the default (1024) is not high enough to support a running GemFire JVM.
 ## Determination
-A native memory issue will manifest in the GemFire log file as a **SocketException** with the message *'Too many open files'* thrown either by a GemFire thread or an application thread. An example of the exception is shown below.
+A native memory issue will manifest itself in the GemFire log file as a **SocketException** with the message **Too many open files** thrown either by a GemFire thread or an application thread. An example of the exception is shown below.
 
 	[info 2009/05/02 00:33:26.480 UTC  <RMI TCP Connection(83)-168.109.18.47> tid=0x100f]
 	 Connection: failed to connect to peer server(12739):53311/47704 because: java.net.SocketException: Too many open files
 
 ###lsof
-One way to determine whether there is an FD issue is to use the OS command *lsof* to list open files including sockets of any running process including JVMs. These include:
+One way to determine whether there is an FD issue is to use the operating system `lsof` command to list open files including sockets of any running process including JVMs. These include:
 
 * Java jar files
 * GemFire stats and log files
@@ -56,15 +56,15 @@ The example below counts establsished TCP socket connections.
 	     29     290    4037
 
 ###vsd
-Another way to determine whether there is an FD issue is to use *vsd* to display the open and maximum FD values contained in a given GemFire statistics archive.
+Another way to determine whether there is an FD issue is to use `vsd` to display the open and maximum FD values contained in a given GemFire statistics archive.
 ####VMStats
 The chart below shows **VMStats fdLimit** and **fdsOpen** values. In this case, the application ran out of FDs.
 ![VMStats](images/troubleshooting_file_descriptor_image001.gif)
 
-The JVM also contains FDs for files and (mainly) sockets that have been closed. It maintains these FDs until a GC cleans them up. This condition is referred to as a soft FD leak. It results in a saw-tooth pattern in the **VMStats fdsOpen** values. An example is shown in the chart below.
+The JVM will also maintain references to FDs for files and (mainly) sockets that have been closed until a GC cleans them up. This condition is referred to as a soft FD leak. It results in a saw-tooth pattern in the **VMStats fdsOpen** values. An example is shown in the chart below.
 ![VMStats](images/troubleshooting_file_descriptor_image002.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the FD limit (**fileDescriptorLimit**) and number of open FDs (**totalFileDescriptorOpen**) of a member. An example is:
+The `gfsh` **show metrics** command can be used to show the FD limit (**fileDescriptorLimit**) and number of open FDs (**totalFileDescriptorOpen**) of a member. An example is:
 
 	show metrics --member=server1 --categories=jvm
 	
@@ -78,5 +78,5 @@ The *gfsh show metrics* command can be used to show the FD limit (**fileDescript
 ##Action
 There are several actions that can help prevent FD issues, including:
 
-* Increase the open files limit. Check your OS for specifics on how to do this.
+* Increase the open files limit. Check your operating system for specifics on how to do this.
 * Change the GemFire settings that control the life of connected sockets. For additional details, see [this link](https://communities.vmware.com/docs/DOC-23140).

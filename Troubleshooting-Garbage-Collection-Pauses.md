@@ -4,22 +4,21 @@ Garbage Collection (GC) frees objects that are no longer referenced by the Java 
 ##Determination
 There are several ways to see GC pauses. One is to enable GC debugging. Startup parameters like below can be added to the JVM to enable GC debugging. See the JDK documentation for additional details.
 
-* -verbose:gc
-* -Xloggc:gc.log
-* -XX:+PrintGCDetails
-* -XX:+PrintGCTimeStamps
-* -XX:+PrintTenuringDistribution
-* -XX:+PrintGCApplicationStoppedTime
+* **-verbose:gc**
+* **-Xloggc:gc.log**
+* **-XX:+PrintGCDetails**
+* **-XX:+PrintGCTimeStamps**
+* **-XX:+PrintGCApplicationStoppedTime**
 
-The output from the GC debugging VM arguments is to show GC activity. For example, the -XX:+PrintGCApplicationStoppedTime VM argument shows application pauses. The output below shows a 7 second application pause.
+The output from the GC debugging VM arguments is to show GC activity. For example, the **-XX:+PrintGCApplicationStoppedTime** VM argument shows application pauses. The output below shows a 7 second application pause.
 
 	Total time for which application threads were stopped: 7.0117490 seconds
-In addition, the -XX:+PrintGCDetails VM argument also shows pauses as shown below. The Full GC below paused the application for 21.73 seconds.
+In addition, the **-XX:+PrintGCDetails** VM argument also shows pauses as shown below. The Full GC below paused the application for 21.73 seconds.
 
 	2014-09-29T00:37:36.047-0700: 184053.420: [Full GC2014-09-29T00:37:36.048-0700: 184053.421: [CMS: 38824730K->18654967K(98566144K), 21.7356830 secs] 39078944K->18654967K(100453632K), [CMS Perm : 45938K->45360K(46208K)], 21.7391550 secs] [Times: user=20.94 sys=0.78, real=21.73 secs]
  
 ### vsd
-Another way to see GC pauses is to use *vsd* to display the **VMGCStats collections** and **collectionTime** values as well as the **StatSampler delayDuration** and **jvmPauses** values contained in a given GemFire statistics archive.
+Another way to see GC pauses is to use `vsd` to display the **VMGCStats collections** and **collectionTime** values as well as the **StatSampler delayDuration** and **jvmPauses** values contained in a given GemFire statistics archive.
 ####VMGCStats
 The chart below shows the **VMGCStats CMS collectionTime** values.
 ![VMMemoryPoolStats](images/troubleshooting_gc_pauses_image001.gif)

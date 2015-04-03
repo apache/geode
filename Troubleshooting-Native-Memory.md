@@ -10,7 +10,7 @@ Native memory issues are generally caused by one of two things, namely
 * configuring too low of a maximum for user processes
 
 ## Determination
-A native memory issue will manifest in the GemFire log file as an **OutOfMemoryError** with the message *'unable to create new native thread'* thrown either by a GemFire thread or an application thread. The error must contain the *'unable to create new native thread'* message and not the *'Java heap space'* message (see [[Troubleshooting Heap]] for details on that issue). An example of the error is shown below.
+A native memory issue will manifest itself in the GemFire log file as an **OutOfMemoryError** with the message *'unable to create new native thread'* thrown either by a GemFire thread or an application thread. The error must contain the *'unable to create new native thread'* message and not the *'Java heap space'* message (see [[Troubleshooting Heap]] for details on that issue). An example of the error is shown below.
 
 	[severe 2008/09/29 10:56:12.919 EDT <Message Dispatcher for 127.0.0.1:2879> tid=0x56f]
 	 Uncaught exception in thread <Message Dispatcher for 127.0.0.1:2879>
@@ -19,9 +19,9 @@ A native memory issue will manifest in the GemFire log file as an **OutOfMemoryE
 	         at java.lang.Thread.start(Thread.java:597)
 
 ###Free Memory
-One way to determine whether there is a native memory issue is to use an OS command such as *free* or *top* to see the available free memory.
+One way to determine whether there is a native memory issue is to use an operating system command such as `free` or `top` to see the available free memory.
 ####free
-The *free* command shows the amount of free and used memory on the machine. The *free* output below shows ~48GB total memory with ~11GB used and ~37GB free.
+The *free* command shows the amount of free and used memory on the machine. The `free` output below shows ~48GB total memory with ~11GB used and ~37GB free.
 
 	free -m
 	             total       used       free     shared    buffers     cached
@@ -30,14 +30,14 @@ The *free* command shows the amount of free and used memory on the machine. The 
 	Swap:        98303          0      98303
 
 ####top
-The *top* command shows, among other things, the amount of free and used memory on the machine as well individual processes. The *top* output below is a different view of the *free* output. It below shows the same 48GB total memory with ~11GB used and ~37GB free. It also shows the JVM using most of that memory.
+The `top` command shows, among other things, the amount of free and used memory on the machine as well individual processes. The `top` output below is a different view of the `free` output. It below shows the same 48GB total memory with ~11GB used and ~37GB free. It also shows the JVM using most of that memory.
 
 	Mem:  49409536k total, 11254756k used, 38154780k free,    13416k buffers
 	 9024 user1     20   0 45.5g 9.4g  15m S  9.3 20.0   5:46.14 java               
 ###User Processes
-If the free memory looks ok, then the issue might be caused by the configured maximum user processes being set too low. Use an OS command like *ulimit* to see the maximum user processes. 
+If the free memory looks ok, then the issue might be caused by the configured maximum user processes being set too low. Use an operating system command like `ulimit` to see the maximum user processes. 
 ####ulimit
-The *ulimit* command shows the resource limits allowed to a user (like files and processes). The *ulimit* output below shows the soft limits.
+The `ulimit` command shows the resource limits allowed to a user (like files and processes). The `ulimit` output below shows the soft limits.
 
 	ulimit -Sa
 	core file size          (blocks, -c) unlimited
@@ -59,7 +59,7 @@ The *ulimit* command shows the resource limits allowed to a user (like files and
 
 The **max user processes** value is the one of interest for native memory issues. In this case, the soft limit of 501408 is fine.
 
-In addition, you can see the limits for a specific running process in linux by *cat*ting the limits file for that process. The limits for the process with *pid* 7360 are shown below.
+In addition, you can see the limits for a specific running process in linux by dumping the limits file for that process. The limits for the process with *pid* 7360 are shown below.
 
 	cat /proc/7360/limits
 	Limit                     Soft Limit           Hard Limit           Units     
@@ -95,7 +95,7 @@ The chart below shows healthy **LinuxSystemStats freeMemory** values.
 The chart below shows unhealthy **LinuxSystemStats freeMemory** values. It also shows that the JVM heap is the source of the memory usage.
 ![VMStats](images/troubleshooting_native_memory_image004.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the number of threads (**jvmThreads**) of a member. An example is:
+The `gfsh` **show metrics** command can be used to show the number of threads (**jvmThreads**) of a member. An example is:
 
 	show metrics --member=server1 --categories=jvm
 	
@@ -119,4 +119,4 @@ If there is not enough available RAM:
 
 If the maximum for user processes is too low:
 
-* Increase the maximum number of user processes. Check your OS for specifics on how to do this.
+* Increase the maximum number of user processes. Check the operating system for specifics on how to do this.

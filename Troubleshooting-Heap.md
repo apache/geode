@@ -2,23 +2,23 @@
 ## Description
 Java application VMs allocate objects on the heap. The heap includes both live and dead objects. It is configured using the -Xms and -Xmx VM arguments. When the heap becomes close to full, GCs occur which cause application pauses.
 ## Determination
-One way to know that there is a heap memory issue is when an **OutOfMemoryError** with the message *'Java heap space'* is thrown either by GemFire or the application. The error must contain the *'Java heap space'* message and not the *'unable to create new native thread'* message (see [[Troubleshooting Native Memory]] for details on that issue). An example is shown below.
+A heap memory issue will manifest itself in the GemFire log file as an **OutOfMemoryError** with the message **Java heap space** thrown either by a GemFire thread or an application thread. The error must contain the **Java heap space** message and not the **unable to create new native thread** message (see [[Troubleshooting Native Memory]] for details on that issue). An example is shown below.
 
 	[severe 2009/02/23 19:38:48.293 UTC <Gateway Event Processor> tid=0xbd] Uncaught exception in thread <Gateway Processor>
 	 java.lang.OutOfMemoryError: Java heap space
 ###vsd
-Another way to determine whether there is a heap memory issue is to use *vsd* to display free, used and maximum heap memory values contained in a given GemFire statistics archive. There are several categories that contain the used and maximum heap memory values. The most useful are the **VMMemoryUsageStats-vmHeapMemoryStats maxMemory** and **usedMemory** values, the **VMMemoryPoolStats-CMSOldGen-Heapmemory maxMemory** and **usedMemory** values and the **VMStats freeMemory** value.
+Another way to determine whether there is a heap memory issue is to use `vsd` to display free, used and maximum heap memory values contained in a given GemFire statistics archive.
 ####vmHeapMemoryStats
-The chart below shows **VMMemoryUsageStats-vmHeapMemoryStats maxMemory** and **usedMemory** values.
+The chart below shows **VMMemoryUsageStats-vmHeapMemoryStats maxMemory** and **usedMemory** values. The **VMMemoryUsageStats** values show the overall heap memory usage.
 ![VMMemoryUsageStats](images/troubleshooting_heap_image001.gif)
 ####CMS Old Gen-Heap memory
-The chart below shows **VMMemoryPoolStats-CMSOldGen-Heapmemory currentMaxMemory** and **currentUsedMemory** values.
+The chart below shows **VMMemoryPoolStats-CMSOldGen-Heapmemory currentMaxMemory** and **currentUsedMemory** values. The **VMMemoryPoolStats** values show the heap memory usage for specific memory pools (i.e. CMS).
 ![VMMemoryPoolStats](images/troubleshooting_heap_image002.gif)
 ####VMStats
-The chart below shows the **VMStats freeMemory** values.
+The chart below shows the **VMStats freeMemory** values. The **VMStats freeMemory** values show the JVM's free memory.
 ![VMStats](images/troubleshooting_heap_image003.gif)
 ###gfsh
-The *gfsh show metrics* command can be used to show the current (**currentHeapSize**) and maximum (**maximumHeapSize**) heap sizes of a member. An example is:
+The `gfsh` **show metrics** command can be used to show the current (**currentHeapSize**) and maximum (**maximumHeapSize**) heap sizes of a member. An example is:
 	show metrics --member=server1 --categories=member
 	
 	Member Metrics
