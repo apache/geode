@@ -68,7 +68,7 @@ memory, and CPU statistics.
 Refer to the [Oracle Troubleshooting Guide](http://www.oracle.com/technetwork/java/javase/crashes-137240.html) for more details.  
 
 1. Verify that there are no heapdump (*.hprof) files or OutOfMemoryErrors.
-Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html), [jmap](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jmap.html) and [Eclipse Memory Analyzer](https://eclipse.org/mat/) can provide heap histograms and leak suspects.  
+Tools such as [jhat](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jhat.html), [jmap](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jmap.html), [visualvm](http://docs.oracle.com/javase/7/docs/technotes/guides/visualvm/) and [Eclipse Memory Analyzer](https://eclipse.org/mat/) can provide heap histograms and leak suspects.  
 
 1. Search the stack dumps for ```Java-level deadlock```.  Dumping the stacks using [jstack](https://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/hangloop.html) or the Linux command ```kill -3 <pid>``` will highlight any Java-level deadlocks including the threads involved in the deadlock as well as the stack dumps for each of those threads.  When debugging, it is best to get stack dumps for all JVMs.  To determine if progress is being made, execute multiple thread dumps several seconds apart for comparison.  
 You can also search for ```state=BLOCKED``` threads and trace waiting to lock (e.g. waiting to lock java.lang.Object@16ce6f90) threads to whichever thread locked the object (e.g. locked java.lang.Object@16ce6f90). Follow this pattern until you find the root thread. 
