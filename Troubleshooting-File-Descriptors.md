@@ -79,4 +79,4 @@ The `gfsh` **show metrics** command can be used to show the FD limit (**fileDesc
 There are several actions that can help prevent FD issues, including:
 
 * Increase the open files limit. Check your operating system for specifics on how to do this.
-* Change the GemFire settings that control the life of connected sockets. For additional details, see [this link](https://communities.vmware.com/docs/DOC-23140).
+* Change the GemFire settings that control the life of connected sockets. For additional details, see <a href="https://communities.vmware.com/docs/DOC-23140" target="_blank">this link</a>
