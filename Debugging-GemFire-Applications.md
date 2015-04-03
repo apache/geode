@@ -50,7 +50,27 @@ If a directory is specified, all .log files in that directory are merged.
 1. If you are debugging a specific interaction, draw a sequence diagram.
 
 ## Specific search strings and patterns
-1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).  
+1. If possible, bring all the system logs and stack dumps together into a single directory for inspection (use gfsh commands above).  Here's a simple script which will search for specific strings in the logs.
+    ```
+# !bin/bash
+find . -name hs_err\*.log -print
+find . -name jrockit.\*.dump -print
+find . -name core -print
+find . -name \*.hprof -print
+
+fgrep SerializationException */system.log
+fgrep OutOfMemory *.log */*.log | grep -v HeapDumpOnOutOfMemoryError
+fgrep NullPointerException *.log */*.log
+fgrep ConcurrentModificationException *.log */*.log
+fgrep Assert *.log */*.log
+fgrep deadlock *.log */*.log
+fgrep InternalGemFire *.log */*.log
+fgrep "Too many" *.log */*.log
+fgrep "Suspect notification" *.log */*.log
+
+grep Exception *.log */*.log | grep -v continuing | grep -v HeapDumpOnOutOfMemoryError
+
+    ```
 
 1. Search the system logs for warning, error or severe messages  
 
