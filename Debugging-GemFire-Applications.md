@@ -17,7 +17,7 @@ Please refer to the GemFire documentation for more details.
 * show dead-locks
 
 ## GemFire MergeLogFiles
-Use  GemFire MergeLogFiles (com/gemstone/gemfire/internal/logging/MergeLogFiles.java) to merge your log files based on timestamps.
+Use  GemFire MergeLogFiles (com.gemstone.gemfire.internal.logging.MergeLogFiles) to merge your log files based on timestamps.
 
 ```
 $ java -classpath $CLASSPATH -Xmx1200M com.gemstone.gemfire.internal.logging.MergeLogFiles
