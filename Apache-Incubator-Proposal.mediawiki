@@ -46,13 +46,22 @@ Anthony Baker is a member of the GemFire engineering team, specializing in data 
 
 === Alignment ===
 The following existing ASF projects can be considered when reviewing [OSS_PROJET_NAME] proposal:
-   * Apache Ignite (incubating)
-   * Apache CassandraTM
-   * Apache HadoopⓇ
-   * Apache Storm
-   * Apache SparkTM
-   * Apache Kafka and Samza
-[FIXME: please provide short compare-n-contrast with all of the above]
+
+Apache HadoopⓇ is a distributed storage and processing framework for very large datasets focusing primarily on batch processing for analytic purposes. Geode is a data management platform that provides real-time, consistent, and transactional access to data-intensive applications. Our roadmap includes plans to provide close integration with HDFS.
+
+Apache HBase offers tabular data stored in Hadoop based on the Google Bigtable model.  HBase uses a key-based partitioning scheme and column family data model that can work well for scan intensive workloads but is not as broadly applicable as the rich object model, OQL querying, and hash partitioning provided by Geode.  Geode will use the HFile format for storing data in HDFS.
+
+Apache SparkTM is a fast engine for processing large datasets, typically from a Hadoop cluster, and performing batch, streaming, interactive, or machine learning workloads.  Geode supports high throughput streaming ingest application patterns and data parallel algorithms. Geode also ensures that data is highly available through redundancy while Spark recovers from faults using RDD lineage recomputation.  Our roadmap includes plans for providing integration with the Spark platform.
+
+Apache Ignite (incubating) offers distributed in-memory processing capabilities which in some ways overlap with Geode.  However, Geode has been a technology leader in this field for more than 10 years and the product API's, design, and implementation details are quite different.  In addition, Geode offers highly optimized shared-nothing disk persistence for in-memory data which does not appear to be available with Ignite.
+
+Apache Cassandra is a highly scalable, distributed key-value store that focuses on eventual consistency.  It uses log-structured merge trees to handle write-heavy workloads.  The Geode distributed in-memory cluster provides highly performant and advanced capabilities including network partition detection and recovery, version-based state synchronization and conflict resolution, and single IO disk operations.
+
+Apache ActiveMQ and its sub project Apache Apollo offers a powerful message queue framework that is being considered for an open source implementation of Geode's WAN replication capabilities.
+
+Apache Storm is a streaming engine that processes events through a directed graph of computation. It requires Apache Zookeeper for coordination and Apache Kafka to reliably store the streaming data source. Geode provides builtin capabilities for these functions. In addition, Geode offers data locality for related entities and in-process access to reference data typically used during processing.
+
+Apache Kafka offers distributed and durable publish-subscribe messaging. Geode expands beyond publish-subscribe messaging to support data oriented notifications delivered from highly available, fault tolerant event queues that can be easily correlated to related data for further processing. Apache Samza is a distributed processing framework heavily dependent on Apache Kafka and Apache Hadoop YARN for messaging and distributed fault-tolerant processing.  Geode is data source agnostic and leverages its own technology and implementation for such use cases.
 
 == Known Risks ==
 Development has been sponsored mostly by a single company (or its predecessors) thus far and coordinated mainly by the core Pivotal GemFire team.
