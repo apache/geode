@@ -4,7 +4,7 @@ GemFire is tested with a combination of junit, dunit (distributed unit) and regr
 
 Always write unit tests for new functionality and always ensure that all unit tests pass before submitting a pull request.
 
-    ./gradlew check
+    ./gradlew build
 
 Our ultimate goal is to have the highest quality product for our users. There are multiple ways of slicing this issue, but if we go all the way back to when the code is being developed, we find unit tests. Unit tests are the foundation in continuous software testing, with the top characteristic of being automated. Good unit testing can save a lot of time and energy later on in the software development lifecycle.
 
