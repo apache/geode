@@ -2,7 +2,8 @@
 ##Description
 Garbage Collection (GC) frees objects that are no longer referenced by the Java application. There are several Java GC algorithms including Throughput (PS) and Concurrent Mark Sweep (CMS). The PS collector (the default) always and the CMS collector sometimes does what is known as a stop-the-world GC where it stops all application threads to clean up dead objects. This results in a GC pause. Long GC pauses have the potential to cause many issues with GemFire JVMs including client timeouts, members being kicked out of the distributed system, etc. It is always recommended to use the CMS collector with GemFire processes.
 ##Determination
-There are several ways to see GC pauses. One is to enable GC debugging. Startup parameters like below can be added to the JVM to enable GC debugging. See the JDK documentation for additional details.
+There are several ways to see GC pauses. One is to enable GC debugging. Startup parameters like below can be added to the JVM to enable GC debugging. For additional details, see the <a href="http://www.oracle.com/technetwork/articles/java/vmoptions-jsp-140102.html" target="_blank">Java HotSpot VM Options</a> guide or the <a href="https://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/clopts.html" target="_blank">Troubleshooting Guide for HotSpot VM</a> guide.
+
 
 * **-verbose:gc**
 * **-Xloggc:gc.log**

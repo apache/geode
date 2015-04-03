@@ -10,7 +10,7 @@ GemFire JVMs use disk in several ways, including:
 In an active system, these files (especially the region persistence files) can use a lot of disk space.
 ## Determination
 ### Disk Store Monitor
-The GemFire `Disk Store Monitor` runs in each JVM and monitors disk usage. See the GemFire documentation for additional details.
+The GemFire `Disk Store Monitor` runs in each JVM and monitors disk usage. For additional details, see the <a href="http://gemfire.docs.pivotal.io/latest/userguide/index.html#about_users_guide.html" target="_blank">GemFire Users Guide</a>.
 
 It logs a warning like below in the GemFire log file when the disk usage exceeds the usage threshold (default=80%).
 
