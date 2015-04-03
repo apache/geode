@@ -92,9 +92,7 @@ Essentially, when data colocation is required, all entry keys returning the same
 
 Applications can also introduce a partition resolver for a partitioned data region non-intrusively by specifying the PartitionResolver class to invoke when data is published.
 
-<pre><code>
-
-```
+```xml
 <cache>
   <region name="myPrDataRegion">
     <region-attributes>
