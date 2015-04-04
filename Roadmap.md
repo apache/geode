@@ -1,4 +1,5 @@
-The Geode team is actively working on several ground breaking features that seek to extend the product's usefulness in transactional environments while adding new features that make it very relevant to big data applications. Here are some of the key features being built into the product at this time
+The Geode team is actively working on several ground breaking features that seek to extend the product's usefulness in transactional environments while adding new features that make it very relevant to big data applications. Here are some of the key features being built into the product at this time.
+
 **HDFS Integration:**
 GemFire as a transactional layer that microbatches data out to Hadoop. This capability makes GemFire a NoSQL store that can sit on top of Hadoop and parallelize the process of moving data from the in memory tier into Hadoop, making it very useful for capturing and processing fast data while making it available for Hadoop jobs relatively quickly. The key requirements being met here are
 * Ingest data into HDFS parallely
