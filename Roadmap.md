@@ -7,8 +7,6 @@ GemFire as a transactional layer that microbatches data out to Hadoop. This capa
 * Have programmable policies for deciding what stays in memory
 * Roll files in HDFS
 * Index  data that is in memory
-* Secondary indexes for dealing with data on disk
-* Have the ability to programmatically load data from HDFS into memory
 * Have expiration policies that allows the transactional set to decay out older data
 * Solution needs to support replicated and partitioned regions
 
