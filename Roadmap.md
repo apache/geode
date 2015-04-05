@@ -11,7 +11,7 @@ GemFire as a transactional layer that microbatches data out to Hadoop. This capa
 * Solution needs to support replicated and partitioned regions
 
 **Spark Integration:**
-GemFire as a data store for Spark applications is what is being enabled here. By providing a bridge style connector for Spark applications, GemFire can become the data store for storing intermediate and final state for Spark applications and allow reference data stored in the in memory tier to accessed very efficiently for applications
+GemFire as a data store for Spark applications is what is being enabled here. By providing a bridge style connector for Spark applications, GemFire can become the data store for storing intermediate and final state for Spark applications and allow reference data stored in the in memory tier to be accessed very efficiently for applications
 * Expose GemFire regions as Spark RDDs
 * Write Spark RDDs to GemFire Regions
 * Execute arbitrary OQL queries in your spark applications
