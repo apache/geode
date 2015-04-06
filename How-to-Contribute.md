@@ -4,6 +4,10 @@ Use a [pull request](https://help.github.com/articles/using-pull-requests/) to s
 
 File a [ticket](https://github.com/gemfire/apache-gemfire-staging/issues/new) to submit a bug report.
 
+## Ideas for Contributions
+
+TBD. Copy Suds' spreadsheet here.
+
 ## Updating the Wiki
 
 Changes to wiki pages can be made using the GitHub editor or by cloning the wiki locally using git.  The URL is the following:
