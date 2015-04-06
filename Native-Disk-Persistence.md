@@ -109,9 +109,9 @@ If multiple Java VMs want to share the same directory then they must not both us
 
 ###What files are created?
 
-At creation, each oplog is initialized at the disk store’s max-oplog-size divided between the crf and drf files.  When it’s closed, GemFire shrinks the size of these files to the actual space used in each file.  After the oplog is closed, a krf file is created which contains the key names as well as the offset for the value within the crf file.  Although this krf file is not required at startup, if available, it improves startup by allowing GemFire to load the entry values in the background after the keys are loaded into memory. 
+At creation, each oplog is initialized at the disk store’s max-oplog-size divided between the crf and drf files.  When it’s closed, Geode shrinks the size of these files to the actual space used in each file.  After the oplog is closed, a krf file is created which contains the key names as well as the offset for the value within the crf file.  Although this krf file is not required at startup, if available, it improves startup by allowing Geode to load the entry values in the background after the keys are loaded into memory. 
  
-When an oplog is full, GemFire closes it and a new log with the next sequence number is created.
+When an oplog is full, Geode closes it and a new log with the next sequence number is created.
 
 ###File Extensions
 
@@ -226,7 +226,7 @@ A persistent region writes every key and value added to a region to disk. It doe
 
 ###Network File Systems
 
-Keep in mind that if the directories you configure for persistence are on a network file system then the persistence writes will compete for network bandwidth with GemFire data distribution.
+Keep in mind that if the directories you configure for persistence are on a network file system then the persistence writes will compete for network bandwidth with Geode data distribution.
 If a network file system is going to be used, it is best for the data directory to be on local disk(s). 
 
 ###Statistics related to disk persistence
