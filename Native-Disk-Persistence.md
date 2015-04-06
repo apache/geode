@@ -147,49 +147,121 @@ When an oplog is full, GemFire closes it and a new log with the next sequence nu
 <td>Created after the oplog has reached the max-oplog-size. Used to improve performance at startup.</td>
 </tr>
 </table>
-Further reading 
+
+####Further reading 
 Disk Storage operation logs:
  http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/disk_storage/operation_logs.html 
+
 System startup with disk stores:
 http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/disk_storage/how_startup_works_in_system_with_disk_stores.html#how_startup_works_in_system_with_disk_stores
-When is data written to disk?
+
+###When is data written to disk?
+
 Data is written to disk when any write operation is done on a persistent region.
+
 The following table describes the region write operations: 
-write operation 	data written 	methods 
-entry create 	one oplog record containing the key, value and an entry id 	create, put, putAll, get due to load, region creation due to initialization from peer 
-entry update 	one oplog record containing the new value and an entry id 	put(), putAll(), invalidate(), localInvalidate(), Entry.setValue() 
-entry destroy 	one oplog record containing an entry id 	remove(), destroy(), localDestroy() 
-region close 	closes all files but leaves them on disk 	close(), Cache.close() 
-region destroy 	closes and deletes all files from disk 	destroyRegion(), localDestroyRegion() 
-region clear 	deletes all files from disk and creates new empty files 	clear(), localClear() 
-region invalidate 	does an entry update with a new value of null for every entry 	invalidateRegion(), localInvalidateRegion() 
-Even if synchronous disk writes are configured, GemFire only writes synchronously to the file system buffers, not the disk itself. This means that it is possible that some data is in the buffer when the machine crashes and it may never get written to disk. However, data is protected if the Java VM that is hosting the persistent region crashes.
+
+<table>
+<tr>
+<td>write operation</td>
+<td> data written</td>
+<td>methods</td>
+</tr>
+<tr>
+<td> entry create </td>
+<td>one oplog record containing the key, value and an entry id</td> 	
+<td>create, put, putAll, get due to load, region creation due to initialization from peer </td>
+</tr>
+<tr>
+<td>entry update</td>
+<td>one oplog record containing the new value and an entry id</td>
+<td> put(), putAll(), invalidate(), localInvalidate(), Entry.setValue()</td>
+</tr>
+<tr>
+<td>entry destroy</td>
+<td> one oplog record containing an entry id</td>
+<td> remove(), destroy(), localDestroy()</td>
+</tr>
+<tr>
+<td>region close</td>
+<td>closes all files but leaves them on disk</td>
+<td>close(), Cache.close()</td>
+</tr>
+<tr>
+<td>region destroy</td>
+<td>closes and deletes all files from disk</td>
+<td> destroyRegion(), localDestroyRegion() </td>
+</tr>
+<tr>
+<td>region clear</td>
+<td>deletes all files from disk and creates new empty files</td>
+<td>clear(), localClear()</td>
+</tr>
+<tr>
+<td>region invalidate</td>
+<td>does an entry update with a new value of null for every entry</td>
+<td>invalidateRegion(), localInvalidateRegion()</td>
+</tr>
+</table>
+
+Even if synchronous disk writes are configured, Geode only writes synchronously to the file system buffers, not the disk itself. This means that it is possible that some data is in the buffer when the machine crashes and it may never get written to disk. However, data is protected if the Java VM that is hosting the persistent region crashes.
  
-Be Careful
+####Be Careful
+
 You can configure flushing these synchronous oplog writes to disk but it usually causes a significant performance decrease. If you are using very fast hard disk or solid state memory, you might choose to configure the oplog writes to flush. To configure flushing to disk set this system property gemfire.syncWrites to true.
-Asynchronous writes
+
+###Asynchronous writes
+
 Using asynchronous writes can give you better performance at the cost of using more memory (for buffering) and the risk of your data still being in the Java VM's object memory after your write operation has completed.
+
 Instead of immediately appending to the current oplog like a sync write, async writes add the current operation to an async buffer. When this buffer is full (based on bytes-threshold), or when its time expires (based on time-interval), or when it is forced (by calling writeToDisk) it will be flushed to the current oplog. The flush takes all the ops currently in the buffer, copies them all into one buffer, and appends that buffer to the current oplog with a single disk write.
+
 When operations are added to the async buffer conflation may occur to those updates in memory. For example if the async buffer already contains a create for key X at the time a destroy of key X is done then the buffer ends up having nothing for key X and no writes to disk are needed. Or if key X is modified five times before the async buffer flushes then only the most recent modify is kept in the buffer and it is the only one written to disk when the flush occurs.
-How domain data is written on disk
+
+###How domain data is written on disk
+
 A persistent region writes every key and value added to a region to disk. It does this be serializing the keys and values. See the developer's guide for information on how to serialize your data.
-Performance
-Network File Systems
+
+##Performance
+
+###Network File Systems
+
 Keep in mind that if the directories you configure for persistence are on a network file system then the persistence writes will compete for network bandwidth with GemFire data distribution.
 If a network file system is going to be used, it is best for the data directory to be on local disk(s). 
-Statistics related to disk persistence
+
+###Statistics related to disk persistence
  
 See
 http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/statistics/statistics_list.html
-DiskDirStatistics
+
+####DiskDirStatistics
+
 DiskDirStatistics instances can be used to see how much physical disk space is being used by persistent regions. 
-statistic 	description 
-dbSpace 	measures the space, in bytes, used by db files 
-diskSpace 	measures the space, in bytes, used by db files and oplog files 
+
+<table>
+<tr>
+<td>statistic</td>
+<td>description</td>
+</tr>
+<tr>
+<td>dbSpace</td>
+<td>measures the space, in bytes, used by db files</td>
+</tr>
+<tr>
+<td>diskSpace</td>
+</td>measures the space, in bytes, used by db files and oplog files</td>
+</tr>
+</table>
+
+
 An instance of DiskDirStatistics will exist for each directory on each persistent region. Its name is the name of the region followed by a directory number. The first directory is numbered 0, the second one 1, etc.
+
 The space measured by these statistics is the actual disk space used, not the space reserved. Each time an oplog is created an attempt is made to reserve enough space for it to grow to its maximum size. Various operating system utilities will report the reserved space as the size of the file. For example on Unix ls -l reports the reserved size. This number will not change for the lifetime of the oplog. However the actual disk spaced used does change. It starts at zero and keeps increasing as records are appended to the oplog. This is the value reported by diskSpace. You can also see this value with operating system utilities. For example on Unix du -s reports the used size.
-DiskRegionStatistics
+
+####DiskRegionStatistics
+
 DiskRegionStatistics instances describe a particular persistent region. The name of the instance will be the region name it describes.
+
 statistic 	description 
 entriesInVM 	The current number of entries with a value in stored in the VM. For a persistent region every value stored in the VM will also be stored on disk.
 entriesOnDisk 	The current number of entries whose value is stored on disk and not in the VM. All recovered entries are in this state initially and evicted entries.
@@ -236,5 +308,7 @@ dbReads 	Total number of reads from the db files.
 dbReadTime 	Total time, in nanoseconds, spent reading from the db files. 
 dbReadBytes 	Total number of bytes read from the db files. 
 dbSeeks 	Total number of db file seeks. 
-CachePerfStatistics
+
+####CachePerfStatistics
+
 The CachePerfStatistics instance has a statistic named rollsWaiting which tells you how many of this VM's disk regions are ready to roll an oplog to the db files but are waiting for a thread to be available to do this work.
