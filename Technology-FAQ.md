@@ -1,0 +1,5 @@
+== Does Geode directly support [[JSR-107|https://jcp.org/en/jsr/detail?id=107]] AKA JCache ? ==
+
+While GemFire does not directly support [[JSR-107|https://jcp.org/en/jsr/detail?id=107]] (JCache), e.g. with a API implementation, we do have indirect support via Spring.  Spring Data GemFire's Caching [[feature|http://docs.spring.io/spring-data-gemfire/docs/1.6.0.RELEASE/reference/html/#apis:spring-cache-abstraction]] and support for GemFire is built on the core Spring Framework's [[Cache Abstraction|http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache]], which added [[support for JCache|http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#_caching_improvements]] annotations in 4.1.
+
+Therefore, as usual and always, Spring gives Enterprise GemFire/Java Developers the best part of JCache without all the boilerplate fluff, ceremony and cruft leading to invasive code, and therefore puts caching in the application exactly where it belongs!
