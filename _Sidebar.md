@@ -17,7 +17,7 @@
 * [[CacheWriter and CacheListener Best Practices]]
 * [[Function best practices]]
 * [[Debugging Geode Applications]]
-* [[Persistence best practices]]
+* [[Native Disk Persistence]]
 * [[OQL]]
 
 ### Design
