@@ -1,4 +1,4 @@
-The dunit framework is an extension of junit. You should be familiar with writing junit tests. GemFire currently is using junit 4.  Dunit tests may be run via gradle (distributedTest and integrationTest tasks) or in your IDE (run as a junit test).
+The dunit framework is an extension of junit. You should be familiar with writing junit tests. Geode currently is using junit 4.  Dunit tests may be run via gradle (distributedTest and integrationTest tasks) or in your IDE (run as a junit test).
 
 The base class for all dunit tests is DistributedTestCase. However the most common way to write a dunit test is to extend CacheTestCase, which provides helper methods to create a cache.
 
