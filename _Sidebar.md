@@ -7,8 +7,8 @@
 
 ## Contributors
 * [[How to Contribute]]
-* [[Getting Started for GemFire Developers]]
-* [[Building and Running GemFire from Source]]
+* [[Getting Started for Geode Developers]]
+* [[Building and Running Geode from Source]]
 * [[Criteria for Code Submissions]]
 * [[Source Code Launch Points]]
 
@@ -16,12 +16,12 @@
 #### Develop
 * [[CacheWriter and CacheListener Best Practices]]
 * [[Function best practices]]
-* [[Debugging GemFire Applications]]
+* [[Debugging Geode Applications]]
 * [[Persistence best practices]]
 * [[OQL]]
 
 ### Design
-* [[Data Architecture in GemFire]]
+* [[Data Architecture in Geode]]
 * [Embedded architecture](https://github.com/gemfire/apache-gemfire-staging/wiki/Running-Haptic-In-Embedded-Mode)
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
