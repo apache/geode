@@ -31,15 +31,14 @@ Geode includes the following features:
 
 # Geode in 5 minutes
 
-Clone the repository and build from source (note: currently Geode supports jdk1.7.75):
+Obtain the source archive from Pivotal.  Extract and build from source (note: currently Geode supports jdk1.7.75):
 
-    $ git clone git@github.com:gemfire/apache-gemfire-staging.git
-    $ cd gemfire/
+    $ cd geode
     $ ./gradlew build installDist
 
 Start a locator and server:
 
-    $ cd gemfire-assembly/build/install/gemfire
+    $ cd gemfire-assembly/build/install/geode
     $ ./bin/gfsh
     gfsh> start locator --name=locator
     gfsh> start server --name=server
@@ -77,8 +76,8 @@ _HelloWorld.java_
 
 Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-dependencies.jar`.
 
-    javac -cp /some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld.java
-    java -cp .:/some/path/gemfire/open/gemfire-assembly/build/install/gemfire/lib/gemfire-core-dependencies.jar HelloWorld
+    javac -cp /some/path/geode/gemfire-assembly/build/install/geode/lib/gemfire-core-dependencies.jar HelloWorld.java
+    java -cp .:/some/path/geode/gemfire-assembly/build/install/geode/lib/gemfire-core-dependencies.jar HelloWorld
 
 #Application Development
 
