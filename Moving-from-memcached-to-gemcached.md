@@ -1,10 +1,10 @@
 # Gemcached
 
-GemFire servers can be configured to talk memcached protocol. GemFire server is [memcapable](http://libmemcached.org/Memcapable.html), this means any existing memcached application can be pointed to a GemFire cluster with zero lines of code change. All you need to do is to specify a port and/or the protocol (Binary or ASCII) while starting the GemFire server.
+Geode servers can be configured to talk memcached protocol. Geode server is [memcapable](http://libmemcached.org/Memcapable.html), this means any existing memcached application can be pointed to a Geode cluster with zero lines of code change. All you need to do is to specify a port and/or the protocol (Binary or ASCII) while starting the Geode server.
 
 ```gfsh>start server --name=server1 --memcached-port=11211 --memcached-protocol=BINARY```
 
-The GemFire server creates a region named “gemcached” for storing all memcached data. The gemcached region is PARTITION by default.
+The Geode server creates a region named “gemcached” for storing all memcached data. The gemcached region is PARTITION by default.
 
 ## Configure “gemcached”
 
@@ -23,7 +23,7 @@ To change the region attributes for the gemcached region, use a cache.xml to def
 	</region>
 </cache>
 ```
-Then use this cache.xml while starting the GemFire server like so:
+Then use this cache.xml while starting the Geode server like so:
 ```
 gfsh>start server --name=server1 --memcached-port=11211 --memcached-protocol=BINARY --cache-xml-file=/path/to/cache.xml
 ```
@@ -49,16 +49,16 @@ Even with using CAS, there is a small window where your DB and cache are still i
 Say your application is serving up very popular content from one of your memcached servers. When this server crashes, all clients hitting that server will get a cache miss, and now all the clients end up going to the database potentially overwhelming it.
 
 ## Gemcached to the rescue!
-With Gemcached, you can use GemFire as a write-through cache.
-![GemFire as write through cache](http://i.imgur.com/QGozVMm.png?1)
+With Gemcached, you can use Geode as a write-through cache.
+![Geode as write through cache](http://i.imgur.com/QGozVMm.png?1)
 
-This means that your application does not have to talk to the database anymore, simplifying your application code. All database reads and writes are done through GemFire. To read data from DB you can use GemFire's CacheLoader and to write data back to the DB use AsyncEventListener. Lets look at how the above problems are solved with gemcached.
+This means that your application does not have to talk to the database anymore, simplifying your application code. All database reads and writes are done through Geode. To read data from DB you can use Geode's CacheLoader and to write data back to the DB use AsyncEventListener. Lets look at how the above problems are solved with gemcached.
 
 ### Stale cache
- The client only writes to GemFire, and when that write completes, GemFire guarantees that the write has already been replicated to the redundant copy. Even if the primary bucket for the key died before replicating to the redundant copy, none of the other clients, nor the database will see the update.
+ The client only writes to Geode, and when that write completes, Geode guarantees that the write has already been replicated to the redundant copy. Even if the primary bucket for the key died before replicating to the redundant copy, none of the other clients, nor the database will see the update.
 
 ### Inconsistent cache
-Since all changes are first made to GemFire and then persisted to the DB, they will always be consistent. All updates will make it to the DB even in case of GemFire node failures since the AsyncEventListener queue is replicated as well as persistent.
+Since all changes are first made to Geode and then persisted to the DB, they will always be consistent. All updates will make it to the DB even in case of Geode node failures since the AsyncEventListener queue is replicated as well as persistent.
 
 ### Thundering herds
-When there are multiple concurrent requests for the same key in GemFire and they result in a cache miss, they all invoke the CacheLoader, however the CacheLoader will only allow one request to hit the database. Other concurrent requests will use the newly fetched value from the database.
+When there are multiple concurrent requests for the same key in Geode and they result in a cache miss, they all invoke the CacheLoader, however the CacheLoader will only allow one request to hit the database. Other concurrent requests will use the newly fetched value from the database.
