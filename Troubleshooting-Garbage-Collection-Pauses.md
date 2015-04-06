@@ -1,6 +1,6 @@
 #Troubleshooting Garbage Collection Pauses
 ##Description
-Garbage Collection (GC) frees objects that are no longer referenced by the Java application. There are several Java GC algorithms including Throughput (PS) and Concurrent Mark Sweep (CMS). The PS collector (the default) always and the CMS collector sometimes does what is known as a stop-the-world GC where it stops all application threads to clean up dead objects. This results in a GC pause. Long GC pauses have the potential to cause many issues with GemFire JVMs including client timeouts, members being kicked out of the distributed system, etc. It is always recommended to use the CMS collector with GemFire processes.
+Garbage Collection (GC) frees objects that are no longer referenced by the Java application. There are several Java GC algorithms including Throughput (PS) and Concurrent Mark Sweep (CMS). The PS collector (the default) always and the CMS collector sometimes does what is known as a stop-the-world GC where it stops all application threads to clean up dead objects. This results in a GC pause. Long GC pauses have the potential to cause many issues with Geode JVMs including client timeouts, members being kicked out of the distributed system, etc. It is always recommended to use the CMS collector with Geode processes.
 ##Determination
 There are several ways to see GC pauses. One is to enable GC debugging. Startup parameters like below can be added to the JVM to enable GC debugging. For additional details, see the <a href="http://www.oracle.com/technetwork/articles/java/vmoptions-jsp-140102.html" target="_blank">Java HotSpot VM Options</a> guide or the <a href="https://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/clopts.html" target="_blank">Troubleshooting Guide for HotSpot VM</a> guide.
 
@@ -19,7 +19,7 @@ In addition, the **-XX:+PrintGCDetails** VM argument also shows pauses as shown 
 	2014-09-29T00:37:36.047-0700: 184053.420: [Full GC2014-09-29T00:37:36.048-0700: 184053.421: [CMS: 38824730K->18654967K(98566144K), 21.7356830 secs] 39078944K->18654967K(100453632K), [CMS Perm : 45938K->45360K(46208K)], 21.7391550 secs] [Times: user=20.94 sys=0.78, real=21.73 secs]
  
 ### vsd
-Another way to see GC pauses is to use `vsd` to display the **VMGCStats collections** and **collectionTime** values as well as the **StatSampler delayDuration** and **jvmPauses** values contained in a given GemFire statistics archive.
+Another way to see GC pauses is to use `vsd` to display the **VMGCStats collections** and **collectionTime** values as well as the **StatSampler delayDuration** and **jvmPauses** values contained in a given Geode statistics archive.
 ####VMGCStats
 The chart below shows the **VMGCStats CMS collectionTime** values.
 ![VMMemoryPoolStats](images/troubleshooting_gc_pauses_image001.gif)
@@ -44,7 +44,7 @@ The chart below shows the **StatSampler delayDuration** values. This statistic i
 The chart below shows the **StatSampler jvmPauses** values. This statistic shows the **delayDuration** in a different way. Any time the **dalayDuration** is >3 seconds, this statistic is incremented.
 ![VMMemoryPoolStats](images/troubleshooting_gc_pauses_image003.gif)
 
-It is also accompanied by a warning message in the GemFire log like:
+It is also accompanied by a warning message in the Geode log like:
 
 	[warning 2014/09/29 00:37:57.792 PDT server <Thread-10 StatSampler> tid=0xb8] Statistics sampling thread detected a wakeup delay of 20,995 ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.
 

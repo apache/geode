@@ -32,7 +32,7 @@ The `top` output shows, among other things, CPU usage percentage. The output bel
 	 22698 user1  15   0 1102M 1.1G 18068 R     1.4 14.1   0:10   0 java
 	 19286 user1  15   0 1100M 1.1G 18080 R     0.5 14.1   0:25   0 java
 ###vsd
-Another way to determine whether a machine or process is CPU-bound is to use `vsd` to display active CPU and process CPU time values contained in a given GemFire statistics archive.
+Another way to determine whether a machine or process is CPU-bound is to use `vsd` to display active CPU and process CPU time values contained in a given Geode statistics archive.
 ####LinuxSystemStats
 The chart below shows **LinuxSystemStats cpuActive** values. This machine is CPU-bound.
 ![LinuxSystemStats](images/troubleshooting_cpu_image001.gif)
@@ -95,13 +95,13 @@ One thing that can be done is to dump the JVM threads using the operating system
 		at com.gemstone.gemfire.distributed.internal.DistributionManager$4$1.run(DistributionManager.java:1012)
 		at java.lang.Thread.run(Thread.java:744)
 	 ...
- 
-If the thread dumps show mostly active GemFire threads, one action would be to reduce the number of processing threads by one or more of the following methods:
+
+If the thread dumps show mostly active Geode threads, one action would be to reduce the number of processing threads by one or more of the following methods:
 
 * By setting or reducing the maximum number of threads (**max-threads**) processing client requests
-* By reducing the number of GemFire selector threads 
+* By reducing the number of Geode selector threads 
 * By setting the number of sockets between processes to 1 (**conserve-sockets=true**) 
-* By reducing the maximum number of GemFire threads processing distribution messages by setting one or more of the following Java system properties (although these properties should only be set on the recommendation of GemFire Support): 
+* By reducing the maximum number of Geode threads processing distribution messages by setting one or more of the following Java system properties (although these properties should only be set on the recommendation of Geode Support): 
 	* **DistributionManager.MAX_THREADS** – the maximum size of the standard thread pool (default=100) 
 	* **DistributionManager.MAX_PR_THREADS** – the maximum size of the partitioned thread pool (default= CPUs*4 or 16, whichever is greater) 
 	* **DistributionManager.MAX_FE_THREAADS** – the maximum size of the function execution thread pool (default=CPUs*4 or 16, whichever is greater)

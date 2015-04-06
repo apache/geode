@@ -10,7 +10,7 @@ Native memory issues are generally caused by one of two things, namely
 * configuring too low of a maximum for user processes
 
 ## Determination
-A native memory issue will manifest itself in the GemFire log file as an **OutOfMemoryError** with the message *'unable to create new native thread'* thrown either by a GemFire thread or an application thread. The error must contain the *'unable to create new native thread'* message and not the *'Java heap space'* message (see [[Troubleshooting Heap]] for details on that issue). An example of the error is shown below.
+A native memory issue will manifest itself in the Geode log file as an **OutOfMemoryError** with the message *'unable to create new native thread'* thrown either by a Geode thread or an application thread. The error must contain the *'unable to create new native thread'* message and not the *'Java heap space'* message (see [[Troubleshooting Heap]] for details on that issue). An example of the error is shown below.
 
 	[severe 2008/09/29 10:56:12.919 EDT <Message Dispatcher for 127.0.0.1:2879> tid=0x56f]
 	 Uncaught exception in thread <Message Dispatcher for 127.0.0.1:2879>
@@ -82,7 +82,7 @@ In addition, you can see the limits for a specific running process in linux by d
 
 The **Max processes** value is the one of interest for native memory issues. In this case, soft limit of 1024 is too low.
 ###vsd
-Another way to check whether there is a native memory issue is to use *vsd* to display the free memory and number of threads contained in a given GemFire statistics archive. The **VMStats threads** statistic shows the number of threads in the JVM. The **LinuxSystemStats freeMemory** shows the available free memory in the OS.
+Another way to check whether there is a native memory issue is to use *vsd* to display the free memory and number of threads contained in a given Geode statistics archive. The **VMStats threads** statistic shows the number of threads in the JVM. The **LinuxSystemStats freeMemory** shows the available free memory in the OS.
 ####VMStats
 The chart below shows healthy **VMStats threads** values.
 ![VMStats](images/troubleshooting_native_memory_image001.gif)
