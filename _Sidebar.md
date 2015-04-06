@@ -26,7 +26,7 @@
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
 * [[Sizing a Geode Cluster]]
-* [[Network configuration]]
+* [[Network Configuration Best Practices]]
 * [[Geode Security Framework]]
 
 ### Troubleshoot
