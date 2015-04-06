@@ -17,6 +17,7 @@ Here is a starting point for contributing to the Geode project.  All ideas are w
 1. [Thrift](https://thrift.apache.org) client driver.
 1. Add lifecycle API's for Geode servers and locators.
 1. Create a bi-temporal data model and framework.
+1. [Nagios](http://www.nagios.org) plugin for Geode.
 
 ## Updating the Wiki
 
