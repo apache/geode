@@ -1,12 +1,25 @@
 [Please add to this document when you find gaps or bad advice.]
 
-Most of the functionality of GemFire is implemented in the project gemfire-core.
+Most of the functionality of Geode is implemented in the project gemfire-core.
 There, under com/gemstone/gemfire you will find an array of packages that
 hold the public API and also the implementation of those APIs.
 
-Here are some good areas to look for the following functionality:
+Here are the main architectural components:
 
-* **Region implementation**: `internal/cache`
+- storage (in memory and on disk)
+- distribution engine (peer to peer messaging)
+- replication messages and algorithms
+- clustering service
+- query engine
+- transaction service
+- distributed lock service
+- function execution service
+- client/server communication and subscriptions
+
+
+Here are some good starting areas for each component:
+
+* **Storage: Region implementation**: `internal/cache`
 
 Notable classes are `GemFireCacheImpl`, `LocalRegion`, `DistributedRegion`,
 `AbstractRegionMap`, and `AbstractRegionEntry`.
@@ -14,9 +27,14 @@ Notable classes are `GemFireCacheImpl`, `LocalRegion`, `DistributedRegion`,
 For partitioned regions start with `PartitionRegion`, `BucketRegion`,
 `PartitionedRegionDataStore` and `PartitionedRegionHelper`.
 
-* **Replication**: `internal/cache`
+* **Storage: Persistence**: `internal/cache` and `internal/cache/persistence`
 
-There are lots of messaging classes here, such as 
+Start with `DiskStoreImpl` and `Oplog`.
+
+* **Replication Messages**: `internal/cache`
+
+Replication is primarly implemented in messaging classes in this
+package.  There are lots of messaging classes here, such as 
 `DistributedCacheOperation` & subclasses,
 `RemoteOperationMessage` & subclasses, `PartitionMessage` & subclasses,
 `SearchLoadAndWriteProcessor`, `GetInitialImageOperation`
@@ -26,23 +44,30 @@ Also look in `CacheDistributionAdvisor` and `RegionAdvisor`.  These hold
 profiles of peers and are used to determine who should receive replication
 messages.
 
-* **Persistence**: `internal/cache` and `internal/cache/persistence`
+* **Clustering Service**: `distributed/internal`
 
-Start with `DiskStoreImpl` and `Oplog`.
+Notable classes in these packages for message distribution are
+`InternalDistributedSystem`, `DistribuitonManager`, `DistributionMessage`,
+`ReplyProcessor21`, `JGroupMembershipManager`.  All peer-to-peer messages
+are implemented as subclasses of `DistributionMessage`.
 
-* **Transactions**: `internal/cache`
-
-The primary classes are `TXState` and `TXCommitMessage`.
-
-* **Querying**: `cache/internal/query`
+* **Query Engine**: `cache/internal/query`
 
 Start with `DefaultQueryService`.
 
-* **Distributed Locking**: `distributed/internal/locks`
+* **Transaction Service**: `internal/cache`
+
+The primary classes are `TXState` and `TXCommitMessage`.
+
+* **Distributed Lock Service**: `distributed/internal/locks`
 
 `DLockService` and `DLockGrantor` are good classes to begin with.
 
-* **Clients**: `cache/client/internal` and `internal/cache/tier/sockets`
+* **Function Execution Engine**: `cache/execute/internal`
+
+Start with `FunctionServiceManager` and the subclasses of `AbstractExecution`.
+
+* **Client/Server**: `cache/client/internal` and `internal/cache/tier/sockets`
 
 `cache/client/internal` contains the client-side code.  Look at `ServerRegionProxy`,
 which hooks into `LocalRegion` (in the `internal/cache` package) to turn it
@@ -57,15 +82,6 @@ threads handle individual requests.  `CacheClientProxy` sends subscription
 messages to clients.  `CacheClientNotifier` receives events from the `Cache`
 and hands them to the appropriate proxies.
 
-* **Function Execution**: `cache/execute/internal`
 
-Start with `FunctionServiceManager` and the subclasses of `AbstractExecution`.
-
-* **Clustering**: `distributed/internal`
-
-Notable classes in these packages for message distribution are
-`InternalDistributedSystem`, `DistribuitonManager`, `DistributionMessage`,
-`ReplyProcessor21`, `JGroupMembershipManager`.  All peer-to-peer messages
-are implemented as subclasses of `DistributionMessage`.
 
 
