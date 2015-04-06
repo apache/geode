@@ -1,6 +1,6 @@
 #Code Style Guide
 
-Java code for the GemFire project was originally 
+Java code for the Geode project was originally 
 developed using conventions based on
 +The Elements of Java Style+, by A. Vermeulen, S. Ambler, _et. al_. 
 
