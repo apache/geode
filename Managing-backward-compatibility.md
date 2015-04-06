@@ -1,19 +1,19 @@
 #Managing On-wire Backwards Compatibility
 
-Client/server and peer-to-peer communications in GemFire have
+Client/server and peer-to-peer communications in Geode have
 backward compatibility requirements.  This page describes the
 infrastructure provided to meet those requirements.  First we'll look 
 at the Version infrastructure and then discuss client/server,
 peer-to-peer and persistence requirements.
 
 
-##GemFire versions
+##Geode versions
 
 The class Version lists all versions of the product and is used to implement
 on-wire backward compatibility between servers/clients and between peers.
 
 All client/server and server/server (aka peer to peer) communication in
-GemFire uses Data Serialization, which
+Geode uses Data Serialization, which
 provides versioned streams (see VersionedDataInputStream
 and InternalDataSerializer as starting points) that can be queried to see
 what version the recipient or sender of a message is using.  These are used
@@ -82,12 +82,12 @@ set and deserialization behavior for that client.
 
 ##Peer to peer compatibility between major releases
 
-GemFire servers are connected to one another via a peer-to-peer distributed
-system.  Since GemFire is an always-up system it supports rolling upgrade 
+Geode servers are connected to one another via a peer-to-peer distributed
+system.  Since Geode is an always-up system it supports rolling upgrade 
 between both minor and major releases between peers.
 
 This means that new distributed algorithms must be able to tolerate the
-presence in the distributed system of older versions of GemFire and make
+presence in the distributed system of older versions of Geode and make
 allowance for how they behave.  The algorithms can't assume that all peers
 will understand the new algorithm.
 
@@ -102,7 +102,7 @@ fully rolled to the new version.
 
 ##Persistent file compatibility
 
-Persistent file compatibility between releases is still somewhat ad hoc. For 
+Persistent file compatibility between releases is still somewhat ad-hoc. For 
 minor versions, newer versions should be able to start up using the persistent 
 files from old versions. For major versions, ideally we will also allow new 
 versions to start up from the persistent files of older versions. However, 
