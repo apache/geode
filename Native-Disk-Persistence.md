@@ -249,7 +249,7 @@ DiskDirStatistics instances can be used to see how much physical disk space is b
 </tr>
 <tr>
 <td>diskSpace</td>
-</td>measures the space, in bytes, used by db files and oplog files</td>
+<td>measures the space, in bytes, used by db files and oplog files</td>
 </tr>
 </table>
 
@@ -262,52 +262,168 @@ The space measured by these statistics is the actual disk space used, not the sp
 
 DiskRegionStatistics instances describe a particular persistent region. The name of the instance will be the region name it describes.
 
-statistic 	description 
-entriesInVM 	The current number of entries with a value in stored in the VM. For a persistent region every value stored in the VM will also be stored on disk.
-entriesOnDisk 	The current number of entries whose value is stored on disk and not in the VM. All recovered entries are in this state initially and evicted entries.
-rollableOplogs 	Current number of oplogs that are ready to be rolled. They are ready when they are no longer being written to even if rolling is not enabled. 
-writes 	The total entry creates or modifies handed off to the disk layer. 
-writeTime 	The total nanoseconds spent handing off entry creates or modifies to the disk layer. 
-writtenBytes 	The total bytes of data handed off to the disk layer doing entry creates or modifies. 
-reads 	The total entry values faulted in to memory from disk. For a persistent region this only happens with recovered entries or entries whose value was evicted. 
-readTime 	The total nanoseconds spent faulting entry values in to memory from disk. 
-readBytes 	The total bytes read from disk because of entry values being faulted in to memory from disk. 
-removes 	The total entry destroys handed off to the disk layer. 
-removeTime 	The total nanoseconds spent handing off entry destroys to the disk layer. 
-statistic 	description 
-rolls 	Total number of completed oplog rolls to the db files. 
-rollTime 	Total amount of time, in nanoseconds, spent rolling oplogs to the db files. 
-rollsInProgress 	Current number of oplog rolls to the db files that are in progress. 
-rollInserts 	Total number of times an oplog roll did a db insert (also called a create). 
-rollInsertTime 	Total amount of time, in nanoseconds, spent doing inserts into the db during a roll. 
-rollUpdates 	Total number of times an oplog roll did a db update (also called a modify). 
-rollUpdateTime 	Total amount of time, in nanoseconds, spent doing updates to the db during a roll. 
-rollDeletes 	Total number of times an oplog roll did a db delete. 
-rollDeleteTime 	Total amount of time, in nanoseconds, spent doing deletes from the db during a roll. 
-statistic 	description 
-recoveriesInProgress 	Current number of persistent regions being recovered from disk. 
-recoveryTime 	The total amount of time, in nanoseconds, spent doing recovery. 
-recoveredBytes 	The total number of bytes that have been read from disk during recovery. 
-oplogRecoveries 	The total number of oplogs recovered. A single recovery may read multiple oplogs. 
-oplogRecoveryTime 	The total amount of time, in nanoseconds, spent doing an oplog recovery. 
-oplogRecoveredBytes 	The total number of bytes that have been read from oplogs during recovery. 
-statistic 	description 
-flushes 	The total number of times the async write buffer has been written to the oplog. 
-flushTime 	The total amount of time, in nanoseconds, spent doing a buffer flush. 
-flushedBytes 	The total number of bytes flushed out of the async write buffer to the oplog. 
-bufferSize 	The current number of bytes buffered to be written by the next async flush. 
-statistic 	description 
-openOplogs 	Current number of open oplogs this region has. Each open oplog consumes one file descriptor. 
-oplogReads 	Total number of oplog reads. An oplog read must be done to fault values in to memory that have not yet rolled to the db files. 
-oplogSeeks 	Total number of oplog seeks. Seeks only need to be done for oplogReads. Reads done on the active oplog require two seeks, all other reads require one seek. 
-statistic 	description 
-dbWrites 	Total number of writes done to the db files. 
-dbWriteTime 	Total time, in nanoseconds, spent writing to the db files. 
-dbWriteBytes 	Total number of bytes written to the db files. 
-dbReads 	Total number of reads from the db files. 
-dbReadTime 	Total time, in nanoseconds, spent reading from the db files. 
-dbReadBytes 	Total number of bytes read from the db files. 
-dbSeeks 	Total number of db file seeks. 
+<table>
+<tr>
+<td>statistic</td>
+<td>description</td>
+</tr>
+<tr>
+<td>entriesInVM</td>
+<td>The current number of entries with a value in stored in the VM. For a persistent region every value stored in the VM will also be stored on disk.</td>
+</tr>
+<tr>
+<td>entriesOnDisk</td> 	
+<td>The current number of entries whose value is stored on disk and not in the VM. All recovered entries are in this state initially and evicted entries.</td>
+</tr>
+<tr>
+<td>rollableOplogs</td> 	
+<td>Current number of oplogs that are ready to be rolled. They are ready when they are no longer being written to even if rolling is not enabled.</td>
+</tr>
+<tr> 
+<td>writes</td>
+<td>The total entry creates or modifies handed off to the disk layer.</td>
+</tr>
+<tr>
+<td>writeTime</td>
+<td>The total nanoseconds spent handing off entry creates or modifies to the disk layer.</td>
+</tr>
+<tr>
+<td>writtenBytes</td>
+<td>The total bytes of data handed off to the disk layer doing entry creates or modifies.</td>
+</tr>
+<tr>
+<td>reads</td>
+<td>The total entry values faulted in to memory from disk. For a persistent region this only happens with recovered entries or entries whose value was evicted.</td>
+</tr>
+<tr> 
+<td>readTime</td>
+<td>The total nanoseconds spent faulting entry values in to memory from disk.</td>
+</tr>
+<td>readBytes</td>
+<td>The total bytes read from disk because of entry values being faulted in to memory from disk. 
+removes 	The total entry destroys handed off to the disk layer. </td>
+</tr>
+<tr>
+<td>removeTime</td>
+<td>The total nanoseconds spent handing off entry destroys to the disk layer.</td>
+</tr> 
+<tr>
+<td>rolls</td>
+<td>Total number of completed oplog rolls to the db files. </td>
+</tr>
+<tr>
+<td>rollTime</td>
+<td>Total amount of time, in nanoseconds, spent rolling oplogs to the db files. </td>
+</tr>
+<tr>
+<td>rollsInProgress</td>
+<td>Current number of oplog rolls to the db files that are in progress.</td>
+</tr>
+<tr>
+<td>rollInserts</td>
+<td>Total number of times an oplog roll did a db insert (also called a create). </td>
+</tr>
+<tr>
+<td>rollInsertTime</td>
+<td>Total amount of time, in nanoseconds, spent doing inserts into the db during a roll. </td>
+</tr>
+<tr>
+<td>rollUpdates</td>
+<td>Total number of times an oplog roll did a db update (also called a modify). </td>
+</tr>
+<tr>
+<td>rollUpdateTime</td>
+<td>Total amount of time, in nanoseconds, spent doing updates to the db during a roll.</td>
+</tr>
+<tr>
+<td>rollDeletes</td>
+<td>Total number of times an oplog roll did a db delete. </td>
+</tr>
+<tr>
+<td>rollDeleteTime</td>
+<td>Total amount of time, in nanoseconds, spent doing deletes from the db during a roll. </td>
+</tr>
+<tr>
+<td>recoveriesInProgress</td>
+<td>Current number of persistent regions being recovered from disk.</td>
+</tr>
+<tr>
+<td> recoveryTime</td>
+<td>The total amount of time, in nanoseconds, spent doing recovery.</td>
+</tr>
+<tr>
+<td>recoveredBytes</td>
+<td>The total number of bytes that have been read from disk during recovery.</td>
+</tr>
+<tr> 
+<td>oplogRecoveries</td>
+<td>The total number of oplogs recovered. A single recovery may read multiple oplogs. </td>
+</tr>
+<tr>
+<td>oplogRecoveryTime</td>
+<td>The total amount of time, in nanoseconds, spent doing an oplog recovery. </td>
+</tr>
+<tr>
+<td>oplogRecoveredBytes</td>
+<td>The total number of bytes that have been read from oplogs during recovery. </td>
+</tr>
+<tr>
+<td>flushes</td>
+<td>The total number of times the async write buffer has been written to the oplog. </td>
+</tr>
+<tr>
+<td>flushTime</td>
+<td>The total amount of time, in nanoseconds, spent doing a buffer flush.</td>
+</tr>
+<tr> 
+<td>flushedBytes</td>
+<td>The total number of bytes flushed out of the async write buffer to the oplog.</td>
+</tr>
+<tr> 
+<td>bufferSize</td>
+<td>The current number of bytes buffered to be written by the next async flush. </td>
+</tr>
+<tr>
+<td>openOplogs</td>
+<td>Current number of open oplogs this region has. Each open oplog consumes one file descriptor. </td>
+</tr>
+<tr>
+<td>oplogReads</td>
+<td>Total number of oplog reads. An oplog read must be done to fault values in to memory that have not yet rolled to the db files. </td>
+</tr>
+<tr>
+<td>oplogSeeks</td>
+<td>Total number of oplog seeks. Seeks only need to be done for oplogReads. Reads done on the active oplog require two seeks, all other reads require one seek. </td>
+</tr>
+<tr>
+<td>dbWrites</td>
+<td>Total number of writes done to the db files.</td>
+</tr>
+<tr> 
+<td>dbWriteTime</td>
+<td>Total time, in nanoseconds, spent writing to the db files.</td>
+</tr>
+<tr>
+<td> dbWriteBytes</td>
+<td>Total number of bytes written to the db files. </td>
+</tr>
+<tr>
+<td>dbReads</td>
+<td>Total number of reads from the db files.</td>
+</tr>
+<tr>
+<td> dbReadTime</td>
+<td>Total time, in nanoseconds, spent reading from the db files. </td>
+</tr>
+<tr>
+<td>dbReadBytes</td>
+<td>Total number of bytes read from the db files. </td>
+</tr>
+<tr>
+<td>dbSeeks</td>
+<td>Total number of db file seeks. </td>
+</tr>
+</table>
 
 ####CachePerfStatistics
 
