@@ -15,7 +15,7 @@
 ## Articles
 #### Develop
 * [[CacheWriter and CacheListener Best Practices]]
-* [[[PDX Serialization Internals]]
+* [[PDX Serialization Internals]]
 * [[Function best practices]]
 * [[Debugging Geode Applications]]
 * [[Native Disk Persistence]]
