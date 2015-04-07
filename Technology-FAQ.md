@@ -26,15 +26,17 @@ Therefore, as usual and always, Spring gives Geode/Java Developers the best part
 
 ## Do you have Scala/Groovy…. C++, .NET clients ? Available in the OSS ? 
 
-## What’s the biggest GemFire cluster in production today ? (data)
+## What’s the biggest Geode cluster in production today ? (data)
 
-## What’s the largest GemFire cluster in production today ? (number of members)
+## What’s the largest Geode cluster in production today ? (number of members)
 
 ## What’s our distributed transaction algorithm/choices/etc.. ? (2PC, Paxos)
 
-## What’s GemFire leader election algorithm ?
+## What’s Geode leader election algorithm ?
 
 ## What’s Geode’s relation with GemFireXD ? Is GemFireXD going OSS soon ?
+
+## How does Geode compare to ... ?
 
 
 
