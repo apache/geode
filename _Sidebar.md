@@ -32,7 +32,7 @@
 
 ### Troubleshoot
 
-* [[What to monitor]]
+* [[What To Monitor]]
 * [[Troubleshooting CPU]]
 * [[Troubleshooting Disk-Space]]
 * [[Troubleshooting File Descriptors]]
