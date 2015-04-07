@@ -58,6 +58,8 @@ Choice of redundancy may be driven by data size, and whether data can be retriev
 
 For deployments that can grow very large, it is important to allow for the growth by taking advantage of not just horizontal scalability, but also the ability to store as much data as possible in a single node. Geode has been deployed in clusters of over 100 nodes. However, smaller clusters are easier to manage. So, as a general rule, it is recommended to store as much data as possible in a single node while maintaining a comfortable data movement requirement for re-establishing the redundancy SLA after a single point of failure. Geode has been used with heaps of well over 64GB in size, and this trend is on the rise. 
 
+###### NUMA Considerations
+
 One thing to consider when deciding on the JVM size (and VM size in virtualized deployments) is the Non-Uniform Memory Architecture (NUMA) memory boundaries. Most modern CPUs implement this kind of architecture where memory is carved up across the CPUs such that memory directly connected to the bus of each CPU has very fast access whereas memory accesses by that same CPU on the other portions of memory (directly connected to the other CPUs) can pay a serious (as much as 2X slower) wait-state penalty for accessing data. An example is a system that has 4 CPUs with 8 cores each and a Non-Uniform Memory Architecture that assigns each CPU its own portion of the memory. Lets say that the total memory on the machine is 256GB. This means that each NUMA node is 64GB. Growing a JVM larger than 64GB on such a machine will cause wait-states to be induced when the CPUs need to cross NUMA node boundaries to access memory within the heap. For optimal performance, Geode JVMs should be sized to fit within a single NUMA node. 
 
 #### Geode Queues
@@ -78,7 +80,7 @@ The following are the steps in the sizing process:
 
 The following sections go into the details of each step.
 
-#### Domain Object Sizing
+#### Step 1: Domain Object Sizing
 
 Before any other estimates can be made, the size of the domain objects to be stored in the cluster has to be estimated. A good way to size a domain object is by running a single instance Geode test with Geode statistics enabled, in which each domain object to be sized is stored in a dedicated partitioned region. The test just loads a number of instances of each domain object, making sure they all stay in memory (no overflow). After running the test, load the statistics file from it into VSD and examine _dataStoreBytesInUse_ and _dataStoreEntryCount_ partition region stats for each partitioned region. Dividing the value of _dataStoreBytesInUse_ by the value of _dataStoreEntryCount_ will be as good an estimate for the average value size as you can get. Note that this estimate doesn’t include the key size and entry overhead, just the value itself.
 
@@ -86,11 +88,11 @@ Another approach is to use a heap histogram. In this approach it’s best to run
 
 Data sizing can also be done using [Data Sizer Java Utility](https://communities.vmware.com/docs/DOC-20695).
 
-#### Estimating Total Memory Requirements Using the Sizing Spreadsheet
+#### Step 2: Estimating Total Memory Requirements Using the Sizing Spreadsheet
 
 Total memory and system requirements can be approximated using the sizing spreadsheet, which calculates in all the Geode region related per-entry overhead, and takes into account the desired memory headroom. The spreadsheet formulas are rough approximations that serve to inform a very high level estimate, as they do not account for any other overhead (buffers, threads, queues, application workload, etc). In addition, the results obtained from the spreadsheet do not have any performance context. For this reason, the next step is to take the results for memory allocation per server obtained from the spreadsheet and use them as the starting point for  the vertical sizing. 
 
-#### Vertical Sizing
+#### Step 3: Vertical Sizing
 
 This part of the sizing process is the most involved and most important. 
 
@@ -132,7 +134,7 @@ If minor GC pauses are too long, reducing the young generation might help. On th
       
         -XX:+UnlockDiagnosticVMOptions XX:ParGCCardsPerStrideChunk=32768
 
-#### Scale-out Validation
+#### Step 4: Scale-out Validation
 
 During this step, the initial three node cluster is scaled out at least a couple of times, adding at least a couple of nodes each time. The client hosts should be scaled out accordingly as well, in order to be able to create adequate workload at each step. It is important to remember to increase the workload proportionally to the scale-out. There is no hard rule about how much to increase the cluster size, or in what increments. Often, this is dictated by available hardware resources.
 
@@ -140,7 +142,7 @@ The goal of this step is to validate the building block configuration and capaci
 
 If JMX is used for monitoring, watch the heap usage of the locator running the JMX Manager. 
 
-#### Projection to Full Scale
+#### Step 5: Projection to Full Scale
 
 Once the scale-out validation is done, and any adjustments have been made, we have everything we need to determine the total cluster size. We know the storage and workload capacity of a single node, and we know that we can scale horizontally to meet the full requirements. In addition, in the process we have tuned the cluster configuration to meet the demands of the application workload.
 
