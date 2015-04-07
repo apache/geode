@@ -4,7 +4,7 @@
 
 This is a summary document. You should always refer to the Geode documentation on the Pivotal site for all official support and information. It is far more in-depth and detailed. What this document can do is provide a quick hit of things to look out for when dealing with DevOps lifecycle issues. Within every organization, as the use of Geode matures, it’s usage will generally expand. This often means the original Use Case is no longer applicable. That’s where this document comes in. It was written to hopefully fill the gap between initial Geode implementation and the seasoned Geode user. Hopefully this will tell you what to look our for before you get to critical mass.
 
-This document addresses a typical WAN topology comprised of Geode Locator(s) and Geode Data Fabric which includes Senders, Receivers and dedicated Servers. Operational monitoring of the Geode Data Fabric is imperative to insure continuous delivery of services. Other topologies are available, including Peer-to-Peer with and without a locator as well as various WAN configurations.
+This document addresses a typical distributed system comprised of Geode Locator(s) and Geode Data Fabric which includes Senders, Receivers and dedicated Servers. Operational monitoring of the Geode Data Fabric is imperative to insure continuous delivery of services. Other topologies are available, including Peer-to-Peer with and without a locator as well as various WAN configurations.
 
 Guidance for [[Sizing a Geode Cluster]] are available and it is assumed that these have been evaluated and implemented. This document is primarily concerned with Strategic Operational Capacity Planning. The difference is between what was planned in the implementation of the Geode cluster versus the reality of daily usage. In the best Agile tradition, this document attempts to summarize the primary pain points when it comes to the DevOps portion of Geode and how to adjust as the Use Case changes.  This document is based on real life experiences with Geode over a number of years, not theoretical discussions. 
 
@@ -13,7 +13,7 @@ Most of these monitor points should be obvious to most experienced Capacity Plan
 
 ###Assumptions
 
-This document assumes a 2 site Data Fabric WAN topology and you are using the recommended Oracle JDK. Although the metrics listed herein are inclusive of all topologies, you can pick and choose which metrics best fit your installation needs. Although the subject of migration and upgrades are mentioned, that subject is a separate issue and the Best Practices for that subject is addressed in the Geode documentation provided online.
+This document assumes you are using the recommended Oracle JDK. Although the metrics listed herein are inclusive of all topologies, you can pick and choose which metrics best fit your installation needs. Although the subject of migration and upgrades are mentioned, that subject is a separate issue and the Best Practices for that subject is addressed in the Geode documentation provided online.
 
 It is also assumed the reader has a deeper understanding of the Geode architecture and implementation. For instance, while it is not expected that the reader understand the hashing algorithm used to distribute data to the buckets in a Geode cluster, it is  expected the reader understands the role of buckets in the cluster and the consequences of having too many or to few. 
 	##Quickstart
