@@ -15,6 +15,7 @@
 ## Articles
 #### Develop
 * [[CacheWriter and CacheListener Best Practices]]
+* [[PDX Serialization Internals]]
 * [[Function best practices]]
 * [[Debugging Geode Applications]]
 * [[Native Disk Persistence]]
@@ -26,7 +27,7 @@
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
 * [[Sizing a Geode Cluster]]
-* [[Network configuration]]
+* [[Network Configuration Best Practices]]
 * [[Geode Security Framework]]
 
 ### Troubleshoot

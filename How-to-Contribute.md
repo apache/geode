@@ -6,7 +6,18 @@ File a [ticket](https://github.com/gemfire/apache-gemfire-staging/issues/new) to
 
 ## Ideas for Contributions
 
-TBD. Copy Suds' spreadsheet here.
+Here is a starting point for contributing to the Geode project.  All ideas are welcome!
+
+1. Implement a Java version of VSD (statistics graphing and correlation).
+1. Add `gfsh` cluster control features to Pulse.
+1. [AMI](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) for Geode.
+1. Redis protocol adapter.
+1. [Ambari](https://ambari.apache.org) installer plugin for Geode.
+1. [Kafka](http://kafka.apache.org) and [SpringXD](http://projects.spring.io/spring-xd/) data ingestion plugins.
+1. [Thrift](https://thrift.apache.org) client driver.
+1. Add lifecycle API's for Geode servers and locators.
+1. Create a bi-temporal data model and framework.
+1. [Nagios](http://www.nagios.org) plugin for Geode.
 
 ## Updating the Wiki
 
