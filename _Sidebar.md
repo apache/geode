@@ -23,7 +23,7 @@
 
 ### Design
 * [[Data Architecture in Geode]]
-* [Embedded architecture](https://github.com/gemfire/apache-gemfire-staging/wiki/Running-Haptic-In-Embedded-Mode)
+* [[Running in Embedded Mode]]
 * [[Moving from memcached to gemcached]]
 * [[Client server Architecture]]
 * [[Sizing a Geode Cluster]]
