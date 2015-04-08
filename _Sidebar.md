@@ -13,7 +13,7 @@
 * [[Criteria for Code Submissions]]
 * [[Geode Internal Architecture]]
 * [[Source Code Launch Points]]
-
+* [[How to create a Statistic]]
 ## Articles
 #### Develop
 * [[CacheWriter and CacheListener Best Practices]]
