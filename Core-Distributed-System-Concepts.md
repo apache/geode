@@ -1,5 +1,6 @@
 The Geode distributed system is made up of a number of member caches that connect to each other in a peer-to-peer (P2P) network. In this topology, each peer maintains communication channels to every other peer, allowing for one network hop access to any other cache member. Even though Geode clients (that can host their own local cache) only connect to specific servers, all servers in a Geode distributed system are always aware of and connected to each other.
-Dynamic Group Membership Service (GMS)
+
+#Dynamic Group Membership Service (GMS)
 
 A static distributed membership system, where the member caches are well defined (their identity and where they will be hosted) is inflexible and makes it difficult to add or remove members dynamically. The system would have to shutdown partially or completely to expand or contract the number of members participating in the distributed system in response to changing load.
 
