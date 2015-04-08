@@ -4,6 +4,7 @@
 * [Documentation](http://gemfire.docs.pivotal.io)
 * [[Technology FAQ]]
 * [[Roadmap]]
+* [[Releases]]
 
 ## Contributors
 * [[How to Contribute]]
