@@ -11,13 +11,13 @@ The core of geode is a few singletons
 
 # Serialization
 
-Geode has it's own serialization framework, which is available to customers that implement the DataSerializable interface. You should look at the public documentation on DataSerializable and DataSerializer to become familiar with how to use this framework.
+Geode has its own serialization framework, which is available to customers that implement the DataSerializable interface. You should look at the public documentation on DataSerializable and DataSerializer to become familiar with how to use this framework.
 
 Internal classes are serialized with the same framework, but we don't use the public Instantiator framework. Instead internal classes implement DataSerializableFixedID. See the javadocs on DataSerializableFixedID for how this works.
 
 # Logging and Statistics
 
-Geode has it's own framework for logging. You can get an instance of the logger from the geode cache, using cache.getLoggerI18n.
+Geode has its own framework for logging. You can get an instance of the logger from the geode cache, using cache.getLoggerI18n.
 
 Geode also has a framework for recording statistics. see [engbestpractices:Adding Stats Basics] for how to add new statistics.
 
