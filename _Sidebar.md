@@ -11,6 +11,7 @@
 * [[Getting Started for Geode Developers]]
 * [[Building and Running Geode from Source]]
 * [[Criteria for Code Submissions]]
+* [[Geode Internal Architecture]]
 * [[Source Code Launch Points]]
 
 ## Articles
