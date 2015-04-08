@@ -1,6 +1,4 @@
-[Please add to this document when you find gaps or bad advice.]
-
-Most of the functionality of Geode is implemented in the project gemfire-core.
+Most of the functionality of Geode is implemented in the subproject gemfire-core.
 There, under com/gemstone/gemfire you will find an array of packages that
 hold the public API and also the implementation of those APIs.
 
@@ -15,7 +13,6 @@ Here are the main architectural components:
 - distributed lock service
 - function execution service
 - client/server communication and subscriptions
-
 
 Here are some good starting areas for each component:
 
