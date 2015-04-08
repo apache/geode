@@ -203,7 +203,7 @@ Means of setting up regular builds for Geode on builds.apache.org
   * Hitesh Khamesra
   * Jacob Barrett
   * Jags Ramnarayan
-  * Jan I
+  * Jan Iversen
   * Jason Huynh
   * Jens Deppe
   * Jianxia Chen
