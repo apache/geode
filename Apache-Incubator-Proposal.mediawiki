@@ -11,7 +11,7 @@ While Geode is our primary choice for a name of the project, in order to facilit
   * FIG
 
 == Background ==
-GemFire is an extremely mature and robust product that can trace its legacy all the way back to one of the first Object Databases for Smalltalk: GemStone. For this reason, the engineers behind GemFire are the de-facto knowledge leaders for distributed in-memory management. Since that time, the GemFire code base has been maintained by the same group of engineers as a closed source project. The original company developing GemStone and GemFire was acquired by VMWare in 2010 and later spun off as part of Pivotal Software in 2013. Today GemFire is used by over 600 enterprise customers. An example deployment includes China National Railways that uses Pivotal GemFire to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 gigabytes "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
+GemFire is an extremely mature and robust product that can trace its legacy all the way back to one of the first Object Databases for Smalltalk: GemStone. The GemFire code base has been maintained by the same group of engineers as a closed source project. Because of that, even though the engineers behind GemFire are the de-facto knowledge leaders for distributed in-memory management, they have had little exposure to the open source governance process.    The original company developing GemStone and GemFire was acquired by VMWare in 2010 and later spun off as part of Pivotal Software in 2013. Today GemFire is used by over 600 enterprise customers. An example deployment includes China National Railways that uses Pivotal GemFire to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 gigabytes "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
 
 == Rationale ==
 Modern-day data management architectures require a robust in-memory data grid solution to handle a variety of use cases, ranging from enterprise-wide caching to real-time transactional applications at scale. In addition, as memory size and network bandwidth growth continues to outpace those of disk, the importance of managing large pools of RAM at scale increases. It is essential to innovate at the same pace and Pivotal strongly believes that in the Big Data space, this can be optimally achieved through a vibrant, diverse, self-governed community collectively innovating around a single codebase while at the same time cross-pollinating with various other data management communities. ASF is the ideal place to meet these ambitious goals.
@@ -20,19 +20,19 @@ Modern-day data management architectures require a robust in-memory data grid so
 Our initial goals are to bring Geode into the ASF, transition internal engineering processes into the open, and foster a collaborative development model according to the "Apache Way." Pivotal plans to develop new functionality in an open, community-driven way. To get there, the existing internal build, test and release processes will be refactored to support open development.
 
 == Current Status ==
-Currently, the project code base is licensed for evaluation purposes and is available in a public GitHub repository (http://github.com/pivotal/OSS_PROJECT_NAME). The documentation and wiki pages are also available on the public GitHub repository. Although Pivotal GemFire was developed as a proprietary, closed-source product, the internal engineering practices adopted by the development team lend themselves well to an open, collaborative and meritocratic environment.
+Currently, the project code base is licensed for evaluation purposes and is available for download from Pivotal.io (http://pivotal.io). The documentation and wiki pages are available as public GitHub repositories under Project Geode organization on GitHub (https://github.com/project-geode). Although Pivotal GemFire was developed as a proprietary, closed-source product, the internal engineering practices adopted by the development team lend themselves well to an open, collaborative and meritocratic environment.
 
 The Pivotal GemFire team has always focused on building a robust end user community of paying and non-paying customers. The existing documentation along with StackOverflow and other similar forums are expected to facilitate conversions between our existing users so as to transform them into an active community of Geode members, stakeholders and developers.
 
 === Meritocracy ===
-Our proposed list of initial committers include the current GemFire R&D team, Pivotal Field Engineers, and several existing customers and partners. This group will form a base for the broader community we will invite to collaborate on the codebase. We intend to radically expand the initial developer and user community by running the project in accordance with the Apache Way. Users and new contributors will be treated with respect and welcomed. By participating in the community and providing quality patches/support that move the project forward, they will earn merit. They also will be encouraged to provide non-code contributions (documentation, events, community management, etc.) and will gain merit for doing so. Those with a proven support and quality track record will be encouraged to become committers.
+Our proposed list of initial committers include the current GemFire R&D team, Pivotal Field Engineers, and several existing customers and partners. This group will form a base for the broader community we will invite to collaborate on the codebase. We intend to radically expand the initial developer and user community by running the project in accordance with the "Apache Way". Users and new contributors will be treated with respect and welcomed. By participating in the community and providing quality patches/support that move the project forward, they will earn merit. They also will be encouraged to provide non-code contributions (documentation, events, community management, etc.) and will gain merit for doing so. Those with a proven support and quality track record will be encouraged to become committers.
 
 === Community ===
 If Geode is accepted for incubation, the primary initial goal will be transitioning the core community towards embracing the Apache Way of project governance. We would solicit major existing contributors to become committers on the project from the start.
 
 === Core Developers ===
 
-Core developers include some skilled in working in openly governed Apache-licensed communities. Most of the core developers are currently NOT affiliated with the ASF and would require new ICLAs before committing to the project.
+While a few core developers are skilled in working in openly governed Apache communities. Most of the core developers are currently NOT affiliated with the ASF and would require new ICLAs before committing to the project.
 
 Jags Ramnarayan is the Chief Architect for “fast data” products (GemFire) at Pivotal and serves in the extended leadership team of the company. At Pivotal and previously at VMWare he led the technology direction for its high performance distributed data grid and in-memory DB products. He also plays an active role in the company strategy for data services, served as a committee member of the VMWare innovation conference, loves working with customers and is a frequent speaker on "distributed data" in several conferences. He has spent more than two decades in this industry and has a bachelors degree in computer science and a masters degree in management of science and technology.
 
@@ -51,9 +51,9 @@ Apache HadoopⓇ is a distributed storage and processing framework for very larg
 
 Apache HBase offers tabular data stored in Hadoop based on the Google Bigtable model.  HBase uses a key-based partitioning scheme and column family data model that can work well for scan intensive workloads but is not as broadly applicable as the rich object model, OQL querying, and hash partitioning provided by Geode.  Geode will use the HFile format for storing data in HDFS.
 
-Apache SparkTM is a fast engine for processing large datasets, typically from a Hadoop cluster, and performing batch, streaming, interactive, or machine learning workloads.  Geode supports high throughput streaming ingest application patterns and data parallel algorithms. Geode also ensures that data is highly available through redundancy while Spark recovers from faults using RDD lineage recomputation.  Our roadmap includes plans for providing integration with the Spark platform.
+Apache Spark is a fast engine for processing large datasets, typically from a Hadoop cluster, and performing batch, streaming, interactive, or machine learning workloads.  Geode supports high throughput streaming ingest application patterns and data parallel algorithms. Geode also ensures that data is highly available through redundancy while Spark recovers from faults using RDD lineage recomputation.  Our roadmap includes plans for providing integration with the Spark platform.
 
-Apache Ignite (incubating) offers distributed in-memory processing capabilities which in some ways overlap with Geode.  However, Geode has been a technology leader in this field for more than 10 years and the product API's, design, and implementation details are quite different.  In addition, Geode offers highly optimized shared-nothing disk persistence for in-memory data which does not appear to be available with Ignite.
+Apache Ignite (incubating) offers distributed in-memory processing capabilities which in some ways overlap with Geode.  However, Geode has been in this field for more than 10 years and the product API's, design, and implementation details are quite different.  In addition, Geode offers highly optimized shared-nothing disk persistence for in-memory data which does not appear to be available with Ignite.
 
 Apache Cassandra is a highly scalable, distributed key-value store that focuses on eventual consistency.  It uses log-structured merge trees to handle write-heavy workloads.  The Geode distributed in-memory cluster provides highly performant and advanced capabilities including network partition detection and recovery, version-based state synchronization and conflict resolution, and single IO disk operations.
 
@@ -73,11 +73,10 @@ The tools and development practices in place for the Pivotal GemFire product are
 The project currently includes a modified version of the JGroups software toolkit. JGroups was initially released under the LGPL license. Although we have complied with the terms of the LGPL by making the modified source available, LGPL is classified as an incompatible license by the ASF.  The JGroups project has since been re-licenced under ALv2 (see http://www.jgroups.org/license.html) and we plan to engage with the licensor to overcome this license incompatibility. If the license incompatibility cannot be overcome through our discussions with the licensor, we will need to rework this portion of the project based upon a newer version of the JGroups toolkit or via other alternative development efforts.
 
 === Orphaned products ===
-Pivotal is fully committed to Pivotal GemFire and the product will continue to be based on the [OSS_PROJET_NAME] project. Moreover, Pivotal has a vested interest in making [OSS_PROJET_NAME] succeed by driving its close integration with sister ASF projects. We expect this to further reduces the risk of orphaning the product.
-
+Pivotal is fully committed to Pivotal GemFire and the product will continue to be based on the Geode project. Moreover, Pivotal has a vested interest in making Geode succeed by driving its close integration with sister ASF projects. We expect this to further reduces the risk of orphaning the product.
 
 === Inexperience with Open Source ===
-Pivotal has embraced open source software since its formation by employing contributors/committers and by shepherding open source projects like Cloud Foundry, Spring, RabbitMQ and MADlib. Pivotal also supports other open source projects such as Redis, Chorus, Groovy and Grails. We have experience with the formation of vibrant communities around open technologies with the Cloud Foundry Foundation.  Although some of the initial committers have not been developers on an entirely open source, community-driven project, we expect to bring to bear the open development practices that have proven successful on longstanding Pivotal open source projects to the [OSS_PROJET_NAME] project.  Additionally, there are several ASF veterans (members, committers and PMC members such as proposal Champion Roman Shaposhnik) involved and included in this proposal. The project will rely on their guidance and collective wisdom to quickly transition the entire team of initial committers towards practicing the Apache Way.
+Pivotal has embraced open source software since its formation by employing contributors/committers and by shepherding open source projects like Cloud Foundry, Spring, RabbitMQ and MADlib. Pivotal also supports other open source projects such as Redis, Chorus, Groovy and Grails. We have experience with the formation of vibrant communities around open technologies with the Cloud Foundry Foundation.  Although some of the initial committers have not been developers on an entirely open source, community-driven project, we expect to bring to bear the open development practices that have proven successful on longstanding Pivotal open source projects to the Geode project.  Additionally, several ASF veterans agreed to mentor the project and are listed in this proposal. The project will rely on their guidance and collective wisdom to quickly transition the entire team of initial committers towards practicing the Apache Way.
 
 === Homogeneous Developers ===
 While most of the initial committers are employed by Pivotal, we have already seen a healthy level of interest from our existing customers and partners. We intend to convert that interest directly into participation and will be investing in activities to recruit additional committers from other companies.
@@ -86,21 +85,22 @@ While most of the initial committers are employed by Pivotal, we have already se
 Most of the contributors are paid to work in the Big Data space. While they might wander from their current employers, they are unlikely to venture far from their core expertises and thus will continue to be engaged with the project regardless of their current employers.
 
 === Relationships with Other Apache Products ===
-As mentioned in the Alignment section, [OSS_PROJET_NAME] may consider various degrees of integration and code exchange with Apache Ignite (incubating), Apache Hadoop, Apache Storm, Apache Spark and Apache Kafka/Samza. Given the success that the Pivotal GemFire product enjoyed as an embedded service, we expect integration points to be inside and outside the project. We look forward to collaborating with these communities as well as other communities under the Apache umbrella.
+As mentioned in the Alignment section, Geode may consider various degrees of integration and code exchange with Apache Ignite (incubating), Apache Hadoop, Apache Storm, Apache Spark and Apache Kafka/Samza. Given the success that the Pivotal GemFire product enjoyed as an embedded service, we expect integration points to be inside and outside the project. We look forward to collaborating with these communities as well as other communities under the Apache umbrella.
 
 === An Excessive Fascination with the Apache Brand ===
 While we intend to leverage the Apache ‘branding’ when talking to other projects as testament of our project’s ‘neutrality’, we have no plans for making use of Apache brand in press releases nor posting billboards advertising acceptance of Geode into Apache Incubator.
 
 == Documentation ==
-See documentation for the current state of the project documentation available as part of the GitHub repository at the following URL FIXME
+See documentation for the current state of the project documentation available as part of the GitHub repository at 
+https://github.com/project-geode/docs
 
 A mature project website is also available at Pivotal GemFire documentation website.
 
 == Initial Source ==
-Initial source is available on GitHub under [a]the [LICENSE_TBD] at [OSS_PROJET_NAME] 
+Pivotal is releasing the source code for Geode under an Evaluation License at http://network.pivotal.io.  We encourage ASF community members interested in  this proposal to download the source code, review and try out the software. 
 
 == Source and Intellectual Property Submission Plan ==
-We know of no legal encumberments that would inhibit the transfer of source code to the ASF.
+As soon as Geode is approved to join Apache Incubator, the source code will be transitioned via the Software Grant Agreement onto ASF infrastructure and in turn made available under the Apache License, version 2.0.  We know of no legal encumberments that would inhibit the transfer of source code to the ASF.
 
 == External Dependencies ==
 
@@ -159,17 +159,17 @@ N/A
 == Required Resources ==
 
 === Mailing lists ===
-  * private@[OSS_PROJECT_NAME].incubator.apache.org (moderated subscriptions)
-  * commits@[OSS_PROJECT_NAME].incubator.apache.org
-  * dev@[OSS_PROJECT_NAME].incubator.apache.org
-  * issues@[OSS_PROJECT_NAME].incubator.apache.org
-  * user@[OSS_PROJECT_NAME].incubator.apache.org        
+  * private@geode.incubator.apache.org (moderated subscriptions)
+  * commits@geode.incubator.apache.org
+  * dev@geode.incubator.apache.org
+  * issues@geode.incubator.apache.org
+  * user@geode.incubator.apache.org        
 
 === Git Repository ===
-https://git-wip-us.apache.org/repos/asf/incubator-[OSS_PROJECT_NAME].git
+https://git-wip-us.apache.org/repos/asf/incubator-geode.git
 
 === Issue Tracking ===
-JIRA [OSS_PROJECT_NAME] ([OSS_PROJECT_NAME])
+JIRA Project Geode (GEODE)
 
 === Other Resources ===
 
