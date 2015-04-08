@@ -23,7 +23,7 @@ One of the most important things to know about Geode stats, is that when you wan
 
 # Creating a Stat...
 
-Stats in Geode are grouped according to functional area in their own class. For instance, the Geode `DistributionStats` in the `com.gemstone.gemfire.distributed.internal}} package track statistical information concerning Geode's distribution layer. These stats are all related to p2p message distribution across the Geode distributed system along with sender and receiver connections, and so on.
+Stats in Geode are grouped according to functional area in their own class. For instance, the Geode `DistributionStats` in the `com.gemstone.gemfire.distributed.internal` package track statistical information concerning Geode's distribution layer. These stats are all related to p2p message distribution across the Geode distributed system along with sender and receiver connections, and so on.
 
 
 The first thing to do is add accessors/mutators to the appropriate Geode statistics class (such as `DistributionStats`) and it's corresponding interface (for `DistributionStats`, the interface is `DMStats`.
