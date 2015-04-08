@@ -1,6 +1,6 @@
 **Work in progress**
 
-PDX serialization is the preferred serialization format for storing objects in gemfire. PDX serialization is designed to serialize data as compactly as possible, while still providing the capability to read individual fields in a serialized object for query processing. PDX is also designed for ease of use, backwards and forwards compatibility between different versions of your objects.
+PDX serialization is the preferred serialization format for storing objects in Geode. PDX serialization is designed to serialize data as compactly as possible, while still providing the capability to read individual fields in a serialized object for query processing. PDX is also designed for ease of use, backwards and forwards compatibility between different versions of your objects.
 
 Bruce Schuchardt wrote up a excellent article on using PDX on the pivotal blog: [Data Serialization: How to Run Multiple Big Data Apps on a Single Data Store with GemFire](http://blog.pivotal.io/pivotal/products/data-serialization-how-to-run-multiple-big-data-apps-at-once-with-gemfire). In this article, we're going to dive behind the scenes and look at how PDX implements these features.
 
@@ -8,7 +8,7 @@ Bruce Schuchardt wrote up a excellent article on using PDX on the pivotal blog: 
 
 A serialized object must arrive at it's destination with enough information to deserialize the object. Self describing formats such as JSON or XML are easy to convert to objects because the description is embedded in the text. However systems designed for efficiency tend to separate the description of an object from the serialized data itself. With thrift and protobuf, that description is defined with an IDL and turned into code. With Avro, object descriptions are defined in JSON schemas and two systems can exchange schema definitions in a handshake.
 
-PDX takes the approach of schema exchange and cranks it up a notch by taking advantage of GemFire's data storage and distribution capabilities. With PDX, serialized object descriptions are called "types" and types are stored within the GemFire distributed system in a PDX type registry. The serialized data contains a unique type id that can be used to look up the type from the registry. 
+PDX takes the approach of schema exchange and cranks it up a notch by taking advantage of Geode's data storage and distribution capabilities. With PDX, serialized object descriptions are called "types" and types are stored within the Geode distributed system in a PDX type registry. The serialized data contains a unique type id that can be used to look up the type from the registry. 
 
 [Image here](image here)
 
@@ -20,7 +20,7 @@ PDX objects are optimized for size, but also for random access to individual fie
     | HEADER | LENGTH  | DSID | ID |  FIELDS  |  OFFSETS  |
 
 
- * **HEADER**   - This is just a magic number to tell gemfire this is a PDX object as opposed to an object serialized in some other format.
+ * **HEADER**   - This is just a magic number to tell Geode this is a PDX object as opposed to an object serialized in some other format.
  * **DSID**     - The distributed system id for the system that generated this type.
  * **ID**  - An id that uniquely identifies what PDX type is used to deserialize this data.
  * **FIELDS**   - The actual data. Fixed sized fields are written in the number of bytes needed for the field, for example an int takes 4 bytes. Variable length fields (eg a string) are written with a length followed by field data.
@@ -39,7 +39,7 @@ To see how this works, imagine reading a single field 'price' using PdxInstance.
 
 # How types get around
 
-At the most basic level, PDX types are stored in a GemFire replicated region called PdxTypes. That region is available on all peers within a distributed system. When a new type is being defined, the type registry uses a distributed lock to ensure that it obtains a unique id. It then puts the new type in the region using a transaction. The type is now known to all peers within the distributed system. If the system is using persistence, the type registry region will also be persistent so that the type information can be recovered on restart.
+At the most basic level, PDX types are stored in a Geode replicated region called PdxTypes. That region is available on all peers within a distributed system. When a new type is being defined, the type registry uses a distributed lock to ensure that it obtains a unique id. It then puts the new type in the region using a transaction. The type is now known to all peers within the distributed system. If the system is using persistence, the type registry region will also be persistent so that the type information can be recovered on restart.
 
 Clients obtain types lazily when they try to deserialize an object. If a type is not known to a client, the client fetches the type from a server and caches it in it's own local type registry.
 
