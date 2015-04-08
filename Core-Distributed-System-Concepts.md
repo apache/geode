@@ -1,5 +1,3 @@
-# Core Distributed System Concepts
-
 The Geode distributed system is made up of a number of member caches that connect to each other in a peer-to-peer (P2P) network. In this topology, each peer maintains communication channels to every other peer, allowing for one network hop access to any other cache member. Even though Geode clients (that can host their own local cache) only connect to specific servers, all servers in a Geode distributed system are always aware of and connected to each other.
 Dynamic Group Membership Service (GMS)
 
