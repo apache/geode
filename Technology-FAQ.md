@@ -8,9 +8,9 @@ Therefore, as usual and always, Spring gives Geode/Java Developers the best part
 
 ## What is the largest single data element Geode can handle?
 
-## What is the largest cluster size for Geode?
-
 ## What happens if a member run out of memory?
+
+The JVM will run into an non-deterministic state and in order to avoid such situations the recommendation is to configure [[Resource Manager]] settings properly.
 
 ## What happens if a node fails?
 
