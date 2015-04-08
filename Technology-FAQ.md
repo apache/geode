@@ -10,11 +10,17 @@ Therefore, as usual and always, Spring gives Geode/Java Developers the best part
 
 ## What is the largest cluster size for Geode?
 
-## What happens if I run out of memory?
+## What happens if a member run out of memory?
 
 ## What happens if a node fails?
 
+A node can fails for many different reasons, such as out of memory erros, loss of connectivity or just being unresponsive due to running out of resources.
+
+If the node crashes and the system is setup with redundancy there is no data loss because the secondary copies will now become primaries.  For more details please check [[Redundancy and Recovery]].
+
 ## What platforms are supported?
+
+Geode can run in pure Java mode in pretty much any JDK supported platform. Native libraries are available for Linux and for more details please check the [certification matrix](http://gemfire.docs.pivotal.io/latest/userguide/index.html#getting_started/system_requirements/supported_configurations.html#system_requirements). 
 
 ## How can I contribute?
 
@@ -65,6 +71,5 @@ The oldest non-admin member in the cluster is the leader or in Geode's terminolo
 ## What’s Geode’s relation with GemFire XD ? Is GemFire XD going OSS soon ?
 
 ## How does Geode compare to ... ?
-
 
 
