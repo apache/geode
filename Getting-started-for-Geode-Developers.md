@@ -2,7 +2,7 @@ This guide is for people interested in working on the Geode code itself. It assu
 
 ## Building and Running Tests
 
-Geode is built with gradle. See [[Building and running|Building-and-Running-Geode-from-Source]] for basic instructions on how to build.
+Geode is built with [gradle 2.3](https://gradle.org). See [[Building and running|Building-and-Running-Geode-from-Source]] for basic instructions on how to build.  We recommend you use jdk1.7.0_75.
 
 Geode uses the standard gradle lifecycle. Execute this to build and run all tests:
 
