@@ -18,6 +18,7 @@ Here is a starting point for contributing to the Geode project.  All ideas are w
 1. Add lifecycle API's for Geode servers and locators.
 1. Create a bi-temporal data model and framework.
 1. [Nagios](http://www.nagios.org) plugin for Geode.
+1. Help to rebrand the [training materials](https://github.com/project-geode/training) for Geode.
 
 ## Updating the Wiki
 
