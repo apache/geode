@@ -1,4 +1,4 @@
-Geode is built using the standard gradle lifecycle model.  To build Geode, invoke
+Geode is built using the standard Gradle lifecycle model.  To build Geode, invoke
 
     ./gradlew build
 
