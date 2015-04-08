@@ -24,9 +24,13 @@ Geode can run in pure Java mode in pretty much any JDK supported platform. Nativ
 
 ## How can I contribute?
 
+Please check the [[How to Contribute]] page.
+
 ## Does Geode run in the cloud?
 
-## Do you support distributed transactions? 
+## Does Geode support distributed transactions? 
+
+Transaction data needs to be co-located, which means the transaction execution will happen atomically and in the same node and the results will be distributed to the other members of the system. During the transaction execution updated data will not be available outside of the transaction context until it completes. 
 
 ## When should I use Geode versus other technologies?
 
@@ -67,9 +71,3 @@ Currently Geode supports optimistic lock with repeatable reads.
 ## What’s Geode leader election algorithm ?
 
 The oldest non-admin member in the cluster is the leader or in Geode's terminology the coordinator. If this node crash or leave the system, the next oldest non-admin member becomes the coordinator. 
-
-## What’s Geode’s relation with GemFire XD ? Is GemFire XD going OSS soon ?
-
-## How does Geode compare to ... ?
-
-
