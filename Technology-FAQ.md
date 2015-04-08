@@ -34,7 +34,7 @@ Therefore, as usual and always, Spring gives Geode/Java Developers the best part
 
 ## What’s Geode leader election algorithm ?
 
-## What’s Geode’s relation with GemFireXD ? Is GemFireXD going OSS soon ?
+## What’s Geode’s relation with GemFire XD ? Is GemFire XD going OSS soon ?
 
 ## How does Geode compare to ... ?
 
