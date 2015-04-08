@@ -13,6 +13,7 @@
 * [[Criteria for Code Submissions]]
 * [[Geode Internal Architecture]]
 * [[Source Code Launch Points]]
+* [[Core Distributed System Concepts]]
 * [[How to create a Statistic]]
 
 ## Articles
