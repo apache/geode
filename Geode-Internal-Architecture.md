@@ -130,7 +130,7 @@ There are some slides an and outline about partitioned regions here - [~dsmith:I
 
 Client server messaging is implemented differently than the peer to peer messaging layer. The server side part of the messaging is implemented in com.gemstone.gemfire.internal.cache.tier.sockets.command Each message type has it's own server side class, which reads that particular message, processes it, and replies.
 
-The client side of the messages are in com.gemstone.gemfire.cache.client.internal as the subclasses of AbsactOp. These operations are responsible for sending the message and reading the reply.
+The client side of the messages are in com.gemstone.gemfire.cache.client.internal as the subclasses of AbstractOp. These operations are responsible for sending the message and reading the reply.
 
 ## Server side
 
