@@ -178,6 +178,7 @@ Means of setting up regular builds for Geode on builds.apache.org
 == Initial Committers ==
   * Amey Barve
   * Adib Saikali
+  * Alan Strait
   * Amogh Shetkar
   * Anil Gingade
   * Anilkumar Gingade
@@ -186,12 +187,15 @@ Means of setting up regular builds for Geode on builds.apache.org
   * Asif Shahid
   * Avinash Dongre
   * Barry Oglesby
+  * Ben Reser
   * Bruce Schuchardt
+  * Bruce Szalwinski
   * Catherine Johnson
   * Chip Childers
   * Christian Tzolov
   * Dan Smith
   * Darrel Schneider
+  * Dave Muirhead
   * David Yozie
   * Dick Cavender
   * Edin Zulich
@@ -213,6 +217,7 @@ Means of setting up regular builds for Geode on builds.apache.org
   * Kirk Lund
   * Kishor Bachhav
   * Konstantin Boudnik
+  * Konstantin Ignatyev
   * Lise Storc
   * Luke Shannon
   * Lyndon Adams
@@ -260,6 +265,8 @@ Means of setting up regular builds for Geode on builds.apache.org
   * Cloud Foundry Foundation: Chip Childers
   * NASA JPL: Chris Mattmann
   * Unaffiliated: Jan Iversen
+  * CDK Global: Ben Reser, Konstantin Ignatyev, Bruce Szalwinski
+  * Blue River Systems Group: Alan Strait, Dave Muirhead
   * Pivotal: everyone else on this proposal
 
 == Sponsors ==
