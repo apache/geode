@@ -4,29 +4,29 @@
 
 One of the primary goals in a grid environment is to achieve linear scalability - add additional compute capacity to offer predictable latency when the concurrent load increases, to increase the overall throughput or to decrease the latency. When dealing with stateful applications it is often the access to shared state that becomes the bottleneck.
 
-There are three primary features in GemFire that enable linearly scalable architectures, and they are:
+There are three primary features in Geode that enable linearly scalable architectures, and they are:
 
 1. Data Partitioning: uniformly stripe the data in memory across the grid
 2. Data Affinity: Keep related data that is frequently accessed or updated together colocated.
 3. Data Aware Routing: Move the data dependent behavior to the node where the data resides rather than the other way around 
 
-GemFire supports Data Partitioning across peer server nodes in a Distributed System.  Partitioning spreads the data for a single data set (a.k.a. region) across a set of peer server nodes.  Each data element (by key) is owned by only one primary partition at any point in time.   Individual partitions are optionally replicated on one or more backup nodes to provide fault tolerance in case the primary node for the given partition fails.  Partitioning is a key feature to scale large applications, particularly for OLTP applications that grow in terms of data volume - the number of data items managed grows rather than individual items grow over time. For details on the Data Partitioning options and configuration, look [here]***
+Geode supports Data Partitioning across peer server nodes in a Distributed System.  Partitioning spreads the data for a single data set (a.k.a. region) across a set of peer server nodes.  Each data element (by key) is owned by only one primary partition at any point in time.   Individual partitions are optionally replicated on one or more backup nodes to provide fault tolerance in case the primary node for the given partition fails.  Partitioning is a key feature to scale large applications, particularly for OLTP applications that grow in terms of data volume - the number of data items managed grows rather than individual items grow over time. For details on the Data Partitioning options and configuration, look [here]***
  
-GemFire supports Data Affinity (a.k.a. Data Colocation) which allows data in distinct regions to be partitioned in such a was as that related information from different regions is all hosted by the same node.  
+Geode supports Data Affinity (a.k.a. Data Colocation) which allows data in distinct regions to be partitioned in such a was as that related information from different regions is all hosted by the same node.  
 
 We draw inspiration for the data model from <a href="http://www.google.com/url?q=http%3A%2F%2Fwww.ics.uci.edu%2F~cs223%2Fpapers%2Fcidr07p15.pdf&sa=D&sntz=1&usg=AFQjCNFGUcY5KLOPSA0ncgeLIH4JNxekGQ">Pat Helland's 'Life beyond distributed transactions'</a> by adopting entity groups as a first class artifact designers start with, and define relationships between entities within the group (associations based on reference as well as containment). Rationalizing the design around entity groups will force the designer to think about data access patterns and how the data will be colocated in partitions.
 
 For example, consider a Customer and their Orders.  If partitioned independently, an individual customer's orders could be distributed randomly across all of the available nodes that host Order data.  But with Data Affinity, you can set up your region by stating something like 'create region Orders (...) colocate with Customer' and keep all contact information and all orders for a single customer in a single member. If for billing purposes you regularly query customer contact information and order information together to form billing statements, Then, anytime you perform an operation on those data types a single customer uses the cache of only a single member.
 
-GemFire support Data Aware Routing through the GemFire Function Service. In the case of Data Aware Functions, the behavior can be directly routed to the node(s) that hosts the data needed to execute the function in parallel, stream and aggregate the results substantially reducing the time taken to execute complex data intensive tasks. The distribution and parallelism of the activity is abstracted away from the caller. 
+Geode support Data Aware Routing through the Geode Function Service. In the case of Data Aware Functions, the behavior can be directly routed to the node(s) that hosts the data needed to execute the function in parallel, stream and aggregate the results substantially reducing the time taken to execute complex data intensive tasks. The distribution and parallelism of the activity is abstracted away from the caller. 
 
-Database vendors introduced stored procedures so that applications could off-load data intensive application logic to the database node where the behavior could be collocated with the data. GemFire extends this paradigm by supporting invocation of application defined functions on highly partitioned data nodes such that the behavior execution itself can be parallelized. Behavior is routed to and executed on the node(s) that host(s) the data required by the behavior. Application functions can be executed on just one node, executed in parallel on a subset of nodes or in parallel across all the nodes. This programming model is similar to the now Map-Reduce model popularized by Google. 
+Database vendors introduced stored procedures so that applications could off-load data intensive application logic to the database node where the behavior could be collocated with the data. Geode extends this paradigm by supporting invocation of application defined functions on highly partitioned data nodes such that the behavior execution itself can be parallelized. Behavior is routed to and executed on the node(s) that host(s) the data required by the behavior. Application functions can be executed on just one node, executed in parallel on a subset of nodes or in parallel across all the nodes. This programming model is similar to the now Map-Reduce model popularized by Google. 
 
-With the three combined features of Data Partitioning, Data Affinity and Data Aware Routing, GemFire can receive a request on any node and route that request to a specific peer server that hosts the data required to execute that function.  With Data Affinity (aka data colocation), all of the data needed to execute that function will be hosted by that same node, even when the data is spread over multiple data regions.  Because all of the data is hosted locally, there is no need to coordinate a transaction with any other node.  If pessimistic locking is required, it is reduced to a thread level semaphore in the local JVM which is much faster than coordinating with a transaction service.  With distributed transactions eliminated and processing spread over a series of nodes (that can be increased dynamically) the architecture is well on the way to linear scalability.
+With the three combined features of Data Partitioning, Data Affinity and Data Aware Routing, Geode can receive a request on any node and route that request to a specific peer server that hosts the data required to execute that function.  With Data Affinity (aka data colocation), all of the data needed to execute that function will be hosted by that same node, even when the data is spread over multiple data regions.  Because all of the data is hosted locally, there is no need to coordinate a transaction with any other node.  If pessimistic locking is required, it is reduced to a thread level semaphore in the local JVM which is much faster than coordinating with a transaction service.  With distributed transactions eliminated and processing spread over a series of nodes (that can be increased dynamically) the architecture is well on the way to linear scalability.
 
 ###Data Affinity in a single partitioned region (custom partitioning using PartitionResolver)
 
-When storing entries in partitioned data regions, GemFire uses a 'hashing' policy by default  - the entry key is hashed to compute an integer which should be evenly distributed across a large range of values.  The integer is used to identify a 'bucket' to which the entry will be assigned.  The bucket is in turn mapped to a physical cache member node where the primary copy of the data will be managed. Each data node hosting a partitioned region will normally manage multiple buckets.  When capacity is increased (more members are added) it is the buckets that are distributed across the members.  Through the GemFire APIs and functions, applications are totally abstracted away from the physical location of the entry and (for optimal scalability) should not attempt to control where the data will be managed.
+When storing entries in partitioned data regions, Geode uses a 'hashing' policy by default  - the entry key is hashed to compute an integer which should be evenly distributed across a large range of values.  The integer is used to identify a 'bucket' to which the entry will be assigned.  The bucket is in turn mapped to a physical cache member node where the primary copy of the data will be managed. Each data node hosting a partitioned region will normally manage multiple buckets.  When capacity is increased (more members are added) it is the buckets that are distributed across the members.  Through the Geode APIs and functions, applications are totally abstracted away from the physical location of the entry and (for optimal scalability) should not attempt to control where the data will be managed.
 
 Custom partitioning or application-controlled partitioning is an explicit mechanism that permits applications to control collocation of related data entries. Applications can colocate multiple entries within a single partitioned region to be colocated or even configure colocation policy across multiple data regions. 
 
@@ -42,9 +42,9 @@ The class of object used for the entry's key or the callback arg (an optional ar
 
                                                               	OR
 
-Configure your own PartitionResolver class in partition attributes  (either via the APIs or in the cache configuration file).  This is useful when the entry key is a primitive type or String, or if you don't want to implement GemFire interfaces in your data classes.
+Configure your own PartitionResolver class in partition attributes  (either via the APIs or in the cache configuration file).  This is useful when the entry key is a primitive type or String, or if you don't want to implement Geode interfaces in your data classes.
 
-If you want to colocate all Trades by symbol, here is an example of how to do it in GemFire. 
+If you want to colocate all Trades by symbol, here is an example of how to do it in Geode. 
 
 ###Data Affinity across multiple partitioned regions
 
@@ -54,15 +54,15 @@ To collocate entries across multiple data regions, the application has to do two
 
 2. Entries across data regions have to return the same routing object (by implementing the PartitionResolver) for entries that have to be colocated. 
   
-Take for instance, the classic Order management system, Customer -> (1-M) Orders -> (1-M) Shipments. And, say the application transacts or accesses data by joining related information together, but, only deals with one specific customer at a time. The idea here is all customers are partitioned, but, all associated Orders and, by corollary, related shipments are always collocated. With colocation established, GemFire will prune queries so that they run only on the correct partition. Similarly, transaction coordination will be reduced to an efficient, local lock.
+Take for instance, the classic Order management system, Customer -> (1-M) Orders -> (1-M) Shipments. And, say the application transacts or accesses data by joining related information together, but, only deals with one specific customer at a time. The idea here is all customers are partitioned, but, all associated Orders and, by corollary, related shipments are always collocated. With colocation established, Geode will prune queries so that they run only on the correct partition. Similarly, transaction coordination will be reduced to an efficient, local lock.
 
-<a href="https://github.com/gemfire/apache-gemfire-staging/wiki/Colocating-related-entries-across-multiple-partitioned-regions">Here</a>  is an example which demonstrates how you can achieve colocation for the above scenario . 
+[Here](Colocating-related-entries-across-multiple-partitioned-regions"> is an example which demonstrates how you can achieve colocation for the above scenario. 
 
 ###Example use cases in finance where colocation is useful
 
 ####Bi-temporal data management for Financial Risk analytics
 
-In many applications, particularly in financial applications, data has a temporal nature - it is valid 'at' and possibly 'for' a specific period of time. Bi-temporal modeling includes valid time ranges for every entry in the cache. This causes significant growth in the quantity of data. Every update or delete operation is recorded as a new entry in the cache. Any data change operation becomes a new cache entry and uses a timestamp along with the business (i.e entry) key to uniquely identify the object. Applications typically want to access the value of a financial instrument or product at a particular point in time ('asOf' some timestamp). Such a time based request requires GemFire to execute a query (relational operators). The 'best practices' approach is to colocate all temporal data corresponding to any given business key (i.e. for a specific financial instrument).  The temporal query can then be focused on a target subset of entries that can potentially satisfy the query.  Growth of the system, in terms of handling additional financial instruments, is best achieved by establishing additional partitions in order to spread the data and processing across more machines.
+In many applications, particularly in financial applications, data has a temporal nature - it is valid 'at' and possibly 'for' a specific period of time. Bi-temporal modeling includes valid time ranges for every entry in the cache. This causes significant growth in the quantity of data. Every update or delete operation is recorded as a new entry in the cache. Any data change operation becomes a new cache entry and uses a timestamp along with the business (i.e entry) key to uniquely identify the object. Applications typically want to access the value of a financial instrument or product at a particular point in time ('asOf' some timestamp). Such a time based request requires Geode to execute a query (relational operators). The 'best practices' approach is to colocate all temporal data corresponding to any given business key (i.e. for a specific financial instrument).  The temporal query can then be focused on a target subset of entries that can potentially satisfy the query.  Growth of the system, in terms of handling additional financial instruments, is best achieved by establishing additional partitions in order to spread the data and processing across more machines.
 
 ####Pricing engine for Financial Derivative product pricing
 
@@ -88,7 +88,7 @@ public Serializable getRoutingObject(EntryOperation opDetails){
 }
 </code></pre>
 
-Essentially, when data colocation is required, all entry keys returning the same 'routing object' (symbol in this case) are guaranteed to be collocated on the same partition. GemFire hashes the returned symbol to a bucket which is mapped to a partition node.
+Essentially, when data colocation is required, all entry keys returning the same 'routing object' (symbol in this case) are guaranteed to be collocated on the same partition. Geode hashes the returned symbol to a bucket which is mapped to a partition node.
 
 Applications can also introduce a partition resolver for a partitioned data region non-intrusively by specifying the PartitionResolver class to invoke when data is published.
 
@@ -183,21 +183,21 @@ Following rules apply while defining colocation :
 +Collocated Partitioned regions should have same PartitionResolver (must return the same routing object)
 +Collocated Partitioned Regions should have same partition attributes (such as, totalNoOfBuckets, redundantCopies)
 
-######Data aware behavior routing using GemFire Function Service
+######Data aware behavior routing using Geode Function Service
 
-GemFire's Function execution service enables both cache clients and peer nodes to execute arbitrary, application functions on the data fabric.  Then the data is partitioned across a number of members for scalability, GemFire can route the function transparently to the node that carries the data subset required by the function and avoid moving the taget data around on the network.  This is called 'data aware' function routing.  Applications employing data aware routing do not need to have any knowledge of where the data is managed. 
+Geode's function execution service enables both cache clients and peer nodes to execute arbitrary, application functions on the data fabric.  Then the data is partitioned across a number of members for scalability, Geode can route the function transparently to the node that carries the data subset required by the function and avoid moving the taget data around on the network.  This is called 'data aware' function routing.  Applications employing data aware routing do not need to have any knowledge of where the data is managed. 
 
 Application functions can be executed on a single node, executed in parallel on a subset of nodes or executed in parallel across all the nodes. This programming model is similar to the now popularized Map-Reduce model from Google. Data-aware function routing is most appropriate for applications that require iteration over multiple data items (such a query or custom aggregation function).  By colocating the relevant data and parallelizing the calculation, the overall throughput of the system can be dramatically increased. More importantly, the calculation latency is inversely proportional to the number of nodes on which it can be parallelized.
 
 Execution of a function on a single server node is similar to how applications execute stored procedures on database servers. This feature can be useful for the following cases:
 
-1. Application wants to execute a server side transaction or carry out data updates using the GemFire distributed lock service.
+1. Application wants to execute a server side transaction or carry out data updates using the Geode distributed lock service.
 2. Application wants to initialize some of its components once on each server which might be used later by executed functions
 3. Initialization and startup of a 3rd party service such a messaging service
 4. Any arbitrary aggregation operation that requires iteration over local data sets done more efficiently through a single call to the cache server
 
 ######Registering Functions to FunctionService
-Applications can declare and register the functions using declarative means (cache.xml) or through the GemFire API.  All registered functions have an identifier. Identifying functions allows the administrator to monitor function activity and cancel them on demand. 
+Applications can declare and register the functions using declarative means (cache.xml) or through the Geode API.  All registered functions have an identifier. Identifying functions allows the administrator to monitor function activity and cancel them on demand. 
 
 ```
 <cache>
@@ -245,7 +245,7 @@ Using FunctionService, this can be achieved as demonstrated [here].
 
 Suppose a user wants to execute a function which doesn't return any result  
 
-#####What is available from GemFire to application function ? 
+#####What is available from Geode to application function ? 
 
 An instance of  FunctionContext is made available to the function when and where it executes.  It is required by Function#execute(FunctionContext) to execute a Function on a particular member. An user can retrieve following information from FunctionContext
 
@@ -328,11 +328,11 @@ Each time a function sends a result using ResultSender it gets added to the Resu
 
 FunctionException is thrown with cause as FunctionInvocationTargetException,this usually indicates that the node that was executing the function failed mid-process. Applications can catch the FunctionInvocationTargetException and choose to re-execute the function. It is the function implementation's responsibility to provide any desired idempotent behavior.
 
-For instance, any generated state as the function is being executed should be stored in GemFire with redundancy. So, when the function fails, the client can re-execute and with a flag that indicates that the function execution is a possible duplicate. The function implementation could check this flag, use the partial state stored in GemFire to complete the remainder of the function.
+For instance, any generated state as the function is being executed should be stored in Geode with redundancy. So, when the function fails, the client can re-execute and with a flag that indicates that the function execution is a possible duplicate. The function implementation could check this flag, use the partial state stored in Geode to complete the remainder of the function.
 
 #####Some useful FunctionService statistics
 
-GemFire captures several statistics on each member to allow monitoring application behavior on data nodes.
+Geode captures several statistics on each member to allow monitoring application behavior on data nodes.
 
 **functionExecutionsCompleted** :Total number of completed function.execute() calls
 
