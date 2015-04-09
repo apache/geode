@@ -28,7 +28,7 @@ Geode uses gradle plugins to generate your IDE configuration files.
 
 ### Eclipse
 
-Invoking `./gradlew eclipse` will generate the project and classpath files for all subprojects.  Import all projects into eclipse.
+Invoking `./gradlew eclipse` will generate the project and classpath files for all subprojects.  Import all projects into eclipse.  Note: run `gradle build` prior to importing the projects into Eclipse.
 
 ### IntelliJ
 
