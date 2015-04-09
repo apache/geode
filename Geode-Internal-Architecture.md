@@ -186,9 +186,39 @@ To prevent the oplogs from growing forever, old oplogs are compacted. When over 
 
 # Querying and Indexes
 
-TBD
+A subset of OQL is supported.  It is a SQL-like language that allows additional functionality for querying complex objects, object attributes and methods.
+
+Query - Implementation of query can be found in DefaultQuery.  This class is the starting point for query execution and is a good place to start tracing in a debugger. 
+When executing a query, the first step the engine takes is parsing the query.  We use antlr to do this task, which generates an AST Tree and we then compile the tree and execute
+
+Querying on a Partitioned Region - Partition Region query execution is slightly more complex.  There is logic for determining which nodes to send the query to, executing the query on the remote nodes and gathering the results on the coordinating node, among other things such as ordering results and retrying failed nodes.  The logic for doing so can be found in PRQueryProcessor and PartitionedRegionQueryEvaluator. 
+
+IndexManager - An IndexManager is created for each region when an index is created on the region.  There is an index manager per region.  The index 
+manager manages the creation, deletion and update of each index.  It retains a map of index expressions to indexes, so that duplicate indexes can be avoided and is also used to determine if an index can be used for a query.
+
+Index - Are used to provide a speed improvement for fields that are often queried on, but comes at a memory cost and very minor cost for maintaining the index.  Internally there are various types of indexes.  These include CompactRangeIndex, RangeIndex, HashIndex, MapRangeIndex, CompactMapRangeIndex, PartitionedIndex and  PrimaryKeyIndex
+
+* RangeIndex - Uses a ConcurrentNavigableMap to store a key to store a RegionEntryToValuesMap. A RegionEntryToValuesMap is a map that uses the entry as the key and a struct as the value
+An example of the struct:
+struct(index_iter1:Portfolio [ID=8 status=active type=type2 pkid=8
+XYZ:Position secId=XYZ out=100.0 type=a id=7 mktValue=8.0, AOL:Position secId=AOL out=5000.0 type=a id=5 mktValue=6.0, APPL:Position secId=APPL out=6000.0 type=a id=6 mktValue=7.0, 
+P1:Position secId=MSFT out=4000.0 type=a id=4 mktValue=5.0, P2:null
+],index_iter2:Position secId=APPL out=6000.0 type=a id=6 mktValue=7.0)
+- notice the index iter naming associated with the struct and how the struct is a combination of portfolio, position.
+
+* CompactRangeIndex - A memory efficient but slightly restricted version of RangeIndex.  Will be preferred by the engine over range index if possible.  Uses a ConcurrentNavigableMap to store a key and value pair, where the value can either be a RegionEntry, an IndexElemArray that contains RegionEntries or a IndexConcurrentHashSet that contains RegionEntries. The ConcurrentNavigableMap also is passed a Comparator that allows Indexes to match across different Numeric types.
+
+* MapRangeIndex - This index contains a map where the key is the map key and the value is a range indexes.
+So for example an portfolio.positions'key' = 'IBM' The map range index would have a map with a key of 'key' and the value would be a range index. The range index would have another map where the key is 'IBM' and the value would be RegionEntryToValuesMap. The RegionEntryToValuesMap would be a map where the key is the entry itself and the value is 'IBM'
+
+* CompactMapRangeIndex - Similar to MapRangeIndex but a map of CompactRangeIndexes instead.  Similar restrictions to those between CompactRangeIndex and RangeIndex.
+
+* HashIndex - Is a memory savings index that does not store key values and instead extracts the key from the object and uses the hash of the key to slot the RegionEntry into an array
+
+* PrimaryKeyIndex - The primary key index is a very lightweight index that hints to the query engine that it should do a a region.get(key)
+
+* PartitionedIndex - The partition index is a collection of indexes which are the buckets of the region.  
 
 # FunctionService
 
 TBD
-
