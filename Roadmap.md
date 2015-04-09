@@ -28,4 +28,4 @@ Allow Lucene indexes to be stored in Geode regions allowing users to do text sea
 
 * Making authentication and authorization for all channels (gfsh, admin, client-server and REST) to follow the highly effective client server model that we support today.
 * Extending the transactions mechanism in Geode to support distributed transactions with eager locking and extend the colocated transaction model already supported in the product.
-* WAN improvements that deliver significantly higher throughput.
+
