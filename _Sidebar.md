@@ -4,7 +4,7 @@
 * [Documentation](http://geode-docs.cfapps.io/)
 * [[Technology FAQ]]
 * [[Roadmap]]
-* [[Releases]]
+* [Download](https://network.pivotal.io/products/project-geode)
 
 ## Contributors
 * [[How to Contribute]]
