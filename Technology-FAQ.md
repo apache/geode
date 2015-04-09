@@ -20,7 +20,7 @@ If the node crashes and the system is setup with redundancy there is no data los
 
 ## What platforms are supported?
 
-Geode can run in pure Java mode in pretty much any JDK supported platform. Native libraries are available for Linux and for more details please check the [certification matrix](http://gemfire.docs.pivotal.io/latest/userguide/index.html#getting_started/system_requirements/supported_configurations.html#system_requirements). 
+Geode can run in pure Java mode in pretty much any JDK supported platform. Native libraries are available for Linux and for more details please check the [certification matrix](http://geode-docs.cfapps.io/docs-gemfire/getting_started/system_requirements/supported_configurations.html#system_requirements). 
 
 ## How can I contribute?
 

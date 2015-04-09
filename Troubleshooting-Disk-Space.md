@@ -10,7 +10,7 @@ Geode JVMs use disk in several ways, including:
 In an active system, these files (especially the region persistence files) can use a lot of disk space.
 ## Determination
 ### Disk Store Monitor
-The Geode `Disk Store Monitor` runs in each JVM and monitors disk usage. For additional details, see the <a href="http://gemfire.docs.pivotal.io/latest/userguide/index.html#about_users_guide.html" target="_blank">GemFire Users Guide</a>.
+The Geode `Disk Store Monitor` runs in each JVM and monitors disk usage. For additional details, see the <a href="http://geode-docs.cfapps.io/docs-gemfire/about_users_guide.html" target="_blank">Geode Users Guide</a>.
 
 It logs a warning like below in the Geode log file when the disk usage exceeds the usage threshold (default=80%).
 
@@ -53,4 +53,4 @@ There are several actions that can help alleviate disk issues issues, including:
 * Configure Geode log and statistics rolling so earlier logs and statistics files are deleted
 * Add additional disks for region and queue persistence and overflow
 
-For additional details, see the <a href="http://gemfire.docs.pivotal.io/latest/userguide/index.html#about_users_guide.html" target="_blank">GemFire Users Guide</a>.
+For additional details, see the <a href="http://geode-docs.cfapps.io/docs-gemfire/about_users_guide.html" target="_blank">Geode Users Guide</a>.

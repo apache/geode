@@ -67,7 +67,7 @@ The above indicates a partitioned region with default attribute: data-policy:  P
 
 The above chooses to bypass the region shortcut:  REPLICATE_PERSISTENT_OVERFLOW and simply specifies all attributes for a persisted replicated region with overflow.  In most cases you will also want to set the scope region attribute to distributed-ack although any of the scopes can be used with a persistent region.   For more information on configuring persistence and overflow, see 
 
-http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/storing_data_on_disk/storing_data_on_disk.html
+http://geode-docs.cfapps.io/docs-gemfire/developing/storing_data_on_disk/storing_data_on_disk.html
 
 ##How persistence works
 
@@ -87,7 +87,7 @@ Because oplogs are only appended, your disk usage will continue to grow until th
 
 The advantage of this two staged approach is that the synchronous writes to disk that your application must wait for are only to the oplog. Because the oplogs are only appended to writes can be made to the oplog without causing the disk head to seek. 
 
-Further reading on how persistence works, see http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/storing_data_on_disk/how_persist_overflow_work.html
+Further reading on how persistence works, see http://geode-docs.cfapps.io/docs-gemfire/developing/storing_data_on_disk/how_persist_overflow_work.html
 
 ###What disks and directories will be used?
 
@@ -97,7 +97,7 @@ To declare the _disk-dirs_ in cache.xml add a _disk-dir_ sub-element to the _dis
 
 Note that an optional _dir-size_ can also be configured. For further information, see 
 
-http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/disk_storage/disk_store_configuration_params.htm
+http://geode-docs.cfapps.io/docs-gemfire/managing/disk_storage/disk_store_configuration_params.html
  
 ###Useful Information
 
@@ -150,10 +150,10 @@ When an oplog is full, Geode closes it and a new log with the next sequence numb
 
 ####Further reading 
 Disk Storage operation logs:
- http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/disk_storage/operation_logs.html 
+ http://geode-docs.cfapps.io/docs-gemfire/managing/disk_storage/operation_logs.html 
 
 System startup with disk stores:
-http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/disk_storage/how_startup_works_in_system_with_disk_stores.html#how_startup_works_in_system_with_disk_stores
+http://geode-docs.cfapps.io/docs-gemfire/managing/disk_storage/how_startup_works_in_system_with_disk_stores.html#how_startup_works_in_system_with_disk_stores
 
 ###When is data written to disk?
 
@@ -232,7 +232,7 @@ If a network file system is going to be used, it is best for the data directory 
 ###Statistics related to disk persistence
  
 See
-http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/statistics/statistics_list.html
+http://geode-docs.cfapps.io/docs-gemfire/managing/statistics/statistics_list.html
 
 ####DiskDirStatistics
 

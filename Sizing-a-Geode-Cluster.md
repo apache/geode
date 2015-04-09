@@ -40,7 +40,7 @@ Listed below are factors that can have significant impact on the memory overhead
 * Choice of Keys. Smaller and simpler keys are more efficient in terms of both space and performance.
 * Use of indexes. Indexing incurs a per entry overhead, as documented in the below mentioned section of the User’s Guide. 
 
-The section [Memory Requirements for Cached Data](http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/memory_requirements_for_cache_data.html) of the GemFire User’s Guide provides more detailed information and guidelines on this topic.
+The section [Memory Requirements for Cached Data](http://geode-docs.cfapps.io/docs-gemfire/reference/topics/memory_requirements_for_cache_data.html) of the GemFire User’s Guide provides more detailed information and guidelines on this topic.
 
 If the data value objects are small, but great in number, the per-entry overhead can add up to a significant memory requirement. This overhead can be reduced by grouping multiple data values into a single entry or by using containment relationships. For instance, you may choose to have your Order objects contain their line items instead of having a separate OrderLineItems region. If this option is available, it is worth considering as it may yield performance improvements in addition to space savings. 
 
