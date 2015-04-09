@@ -186,7 +186,9 @@ To prevent the oplogs from growing forever, old oplogs are compacted. When over 
 
 # Querying and Indexes
 
-A subset of OQL is supported.  It is a SQL-like language that allows additional functionality for querying complex objects, object attributes and methods.
+Geode provides a SQL-like querying language called OQL that allows applications to access data stored in regions. 
+
+OQL is a SQL-like language that allows additional functionality for querying complex objects, object attributes and methods.
 
 Query - Implementation of query can be found in DefaultQuery.  This class is the starting point for query execution and is a good place to start tracing in a debugger. 
 When executing a query, the first step the engine takes is parsing the query.  We use antlr to do this task, which generates an AST Tree and we then compile the tree and execute
