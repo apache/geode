@@ -1,5 +1,4 @@
 #Solving the problem of poorly performing Web Applications
----------need to put images in here from original document [here](https://docs.google.com/a/pivotal.io/document/d/1vR1f40lD6qYJ-3DrNOhJOkMpKtxij36Pz9Bjax7OT1s/edit#heading=h.fa8ah6dp3ymu)
 
 #####Joshua Davis Senior Solutions Architect, Pivotal
 
@@ -53,11 +52,16 @@ Using an embedded in-memory database such as Geode is a great way of mitigating 
 
 <li>Enables the future use of a distributed data cache when you need it instead of dealing with the up-front costs of implementation. </li>
 </ul>
+
+![Architecture](images/embedded1.png)
+
 ###Why use the embedded Geode Topology over the Client/Server Topology?
 
 Geode is a product that contains many options for deployment, only one of them is embedding the server within your application.  The Client/Server approach is an In Memory Data Grid (IMDG) that employs a horizontal scaling and failover approach. The additional Geode component when compared to the embedded topology is the Geode Locator.  Locators keep track of the nodes within the IMDG and coordinate queries.  This enables Geode clients in applications to access an abstraction for the “location” of where the Geode nodes are on the network and their exact topology implementation.
 
 In the embedded mode you have the ability to share and exchange data between the nodes of embedded Geode, but you must either know of the other nodes, or use the Multicast protocol to discover the other embedded nodes.  There are other differences when it comes to security options, WAN replication, load balancing and complexity that should be considered when choosing a topology.  
+
+![Embedded](images/embedded2.png)
 
 The basic rules of thumb for using the Geode embedded topology are:
 <ul>
