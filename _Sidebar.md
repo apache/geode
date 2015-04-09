@@ -23,6 +23,7 @@
 * [[Function best practices]]
 * [[Debugging Geode Applications]]
 * [[Native Disk Persistence]]
+* [[Reliable Messaging]]
 * [[OQL]]
 
 ### Design
