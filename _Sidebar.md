@@ -34,6 +34,7 @@
 * [[Sizing a Geode Cluster]]
 * [[Network Configuration Best Practices]]
 * [[Geode Security Framework]]
+* [[Resource Management in Geode]]
 
 ### Troubleshoot
 
