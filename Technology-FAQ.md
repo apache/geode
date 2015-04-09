@@ -14,7 +14,7 @@ The JVM will run into an non-deterministic state and in order to avoid such situ
 
 ## What happens if a node fails?
 
-A node can fails for many different reasons, such as out of memory erros, loss of connectivity or just being unresponsive due to running out of resources.
+A node can fails for many different reasons, such as out of memory errors, loss of connectivity or just being unresponsive due to running out of resources such as file descriptors.
 
 If the node crashes and the system is setup with redundancy there is no data loss because the secondary copies will now become primaries.  For more details please check [[Redundancy and Recovery]].
 
