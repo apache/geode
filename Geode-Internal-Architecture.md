@@ -199,12 +199,11 @@ manager manages the creation, deletion and update of each index.  It retains a m
 Index - Are used to provide a speed improvement for fields that are often queried on, but comes at a memory cost and very minor cost for maintaining the index.  Internally there are various types of indexes.  These include CompactRangeIndex, RangeIndex, HashIndex, MapRangeIndex, CompactMapRangeIndex, PartitionedIndex and  PrimaryKeyIndex
 
 * RangeIndex - Uses a ConcurrentNavigableMap to store a key to store a RegionEntryToValuesMap. A RegionEntryToValuesMap is a map that uses the entry as the key and a struct as the value
-An example of the struct:
+An example of the struct (notice the index iter naming associated with the struct and how the struct is a combination of portfolio, position):
 struct(index_iter1:Portfolio [ID=8 status=active type=type2 pkid=8
 XYZ:Position secId=XYZ out=100.0 type=a id=7 mktValue=8.0, AOL:Position secId=AOL out=5000.0 type=a id=5 mktValue=6.0, APPL:Position secId=APPL out=6000.0 type=a id=6 mktValue=7.0, 
 P1:Position secId=MSFT out=4000.0 type=a id=4 mktValue=5.0, P2:null
-],index_iter2:Position secId=APPL out=6000.0 type=a id=6 mktValue=7.0)
-- notice the index iter naming associated with the struct and how the struct is a combination of portfolio, position.
+],index_iter2:Position secId=APPL out=6000.0 type=a id=6 mktValue=7.0) 
 
 * CompactRangeIndex - A memory efficient but slightly restricted version of RangeIndex.  Will be preferred by the engine over range index if possible.  Uses a ConcurrentNavigableMap to store a key and value pair, where the value can either be a RegionEntry, an IndexElemArray that contains RegionEntries or a IndexConcurrentHashSet that contains RegionEntries. The ConcurrentNavigableMap also is passed a Comparator that allows Indexes to match across different Numeric types.
 
