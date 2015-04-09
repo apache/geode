@@ -232,7 +232,7 @@ If a network file system is going to be used, it is best for the data directory 
 ###Statistics related to disk persistence
  
 See
-http://geode-docs.cfapps.io/docs-gemfire/managing/statistics/statistics_list.html
+http://geode-docs.cfapps.io/docs/reference/statistics/statistics_list.html
 
 ####DiskDirStatistics
 
