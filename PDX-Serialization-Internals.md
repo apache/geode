@@ -8,6 +8,8 @@ A serialized object must arrive at it's destination with enough information to d
 
 PDX takes the approach of schema exchange and cranks it up a notch by taking advantage of Geode's data storage and distribution capabilities. With PDX, serialized object descriptions are called "types" and types are stored within the Geode distributed system in a PDX type registry. The serialized data contains a unique type id that can be used to look up the type from the registry. 
 
+![Type Distribution Diagram](images/TypeDistribution.png)
+
 # A typical type
 
 PDX objects are optimized for size, but also for random access to individual fields. A serialized byte array in PDX format looks something like this
