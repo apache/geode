@@ -12,3 +12,9 @@ The distribution archives will be located in `gemfire-assembly/build/distributio
 To embed Geode in your application, add `lib/gemfire-core-dependencies.jar` to your classpath.
 
 See the [Getting Started Guide](http://gemfire.docs.pivotal.io/latest/userguide/index.html#getting_started/book_intro.html) in the Pivotal GemFire User's Guide for an overview of Geode.
+
+Note for Windows users:  start `gfsh` using this system property:
+
+```
+gfsh start locator --name=locator --J=-Dgemfire.OSProcess.ENABLE_OUTPUT_REDIRECTION=true
+```
