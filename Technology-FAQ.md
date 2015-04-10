@@ -14,7 +14,7 @@ Yes, Geode is an extremely mature and robust product that can trace its legacy a
 
 ### How big can Geode scale?
 
-Geode has been deployed to run mission-critical applications on clusters with a handful of nodes to clusters with 100+ members managing terabytes of data. 
+Geode has been deployed to run mission-critical applications on clusters with 100+ members managing terabytes of data in-memory.  Adding capacity is as simple as spinning up a new node.  Geode automatically configures the new member and reassigns data and loading across the cluster.
 
 ### What operating systems are supported?
 
