@@ -18,7 +18,7 @@ Geode has been deployed to run mission-critical applications on clusters with 10
 
 ### What operating systems are supported?
 
-Geode is supported on most JDK platforms including Linux and Windows. For more details please check the [certification matrix](http://geode-docs.cfapps.io/docs-gemfire/getting_started/system_requirements/supported_configurations.html#system_requirements). 
+Geode is supported on most JDK platforms including Linux and Windows. For more details please check the [certification matrix](http://geode-docs.cfapps.io/docs/getting_started/system_requirements/supported_configurations.html#system_requirements). 
 
 ### How does my application connect to a Geode cluster?
 
@@ -56,7 +56,7 @@ Bulk synchronization is performed in the event of the failure of a member or whe
 
 Keys are hash-partitioned over a fixed number of buckets (the default bucket count is 113).  Buckets are automatically balanced across the cluster members based on data size, redundancy, and availability zones.
  
-### How Geode handle a network partition?
+### How does Geode handle a network partition?
 
 The network partition detection system is based on quorum and liveness checks.  If a member shuts down due to a network partition it will periodically attempt to reconnect and rebuild its cache, recovering data either from disk or from redundant storage in other members.
 
