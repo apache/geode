@@ -1,54 +1,62 @@
-## Does Geode directly support [[JSR-107|https://jcp.org/en/jsr/detail?id=107]] AKA JCache ?
+### When should I use Geode?
 
-While GemFire does not directly support [[JSR-107|https://jcp.org/en/jsr/detail?id=107]] (JCache), e.g. with a API implementation, we do have indirect support via Spring.  Spring Data GemFire's Caching [[feature|http://docs.spring.io/spring-data-gemfire/docs/1.6.0.RELEASE/reference/html/#apis:spring-cache-abstraction]] and support for Geode is built on the core Spring Framework's [[Cache Abstraction|http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache]], which added [[support for JCache|http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#_caching_improvements]] annotations in 4.1.
+Application developers and IT architects who need extremely fast processing and consistent data using open source software often run into trouble. When their applications are required to support thousands of concurrent transactions that access hundreds of gigabytes of operational data, they start having performance problems, or problems with the integrity of data.
 
-Therefore, as usual and always, Spring gives Geode/Java Developers the best part of JCache without all the boilerplate fluff, ceremony and cruft leading to invasive code, and therefore puts caching in the application exactly where it belongs!
+Geode is an in-memory distributed database designed to provide high performance, low latency, extreme scale-out concurrency and consistency for data storage.
 
-## What APIs are Available
+Unlike traditional relational databases with scaling limitations, Geode scales out horizontally across many nodes to provide low latency response for thousands of concurrent read and write operations on terabytes of data in-memory. 
 
-## What is the largest single data element Geode can handle?
+Unlike many in-memory data grids, Geode can maintain a high degree of data consistency across many concurrent transactions and can operate as a highly available, resilient service. This makes it possible for users to deploy mission critical applications at very high scale.
 
-## What happens if a member run out of memory?
+### Is Geode a mature technology?
 
-The JVM will run into an non-deterministic state and in order to avoid such situations the recommendation is to configure [[Resource Manager]] settings properly.
+Yes, Geode is an extremely mature and robust product that can trace its legacy all the way back to one of the first Object Databases for Smalltalk: GemStone. Geode (as GemFire™) was first deployed in the financial sector as the transactional, low-latency data engine used by multiple Wall Street trading platforms.  Today Geode is used by over 600 enterprise customers for high-scale, 24x7 business critical applications. An example deployment includes [China National Railways](http://pivotal.io/big-data/case-study/scaling-online-sales-for-the-largest-railway-in-the-world-china-railway-corporation) that uses Geode to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 terabytes of "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
 
-## What happens if a node fails?
+### How big can Geode scale?
 
-A node can fails for many different reasons, such as out of memory errors, loss of connectivity or just being unresponsive due to running out of resources such as file descriptors.
+Geode has been deployed to run mission-critical applications on clusters with a handful of nodes to clusters with 100+ members managing terabytes of data. 
 
-If the node crashes and the system is setup with redundancy there is no data loss because the secondary copies will now become primaries.  For more details please check [[Redundancy and Recovery]].
+### What operating systems are supported?
 
-## What platforms are supported?
+Geode on most JDK platforms including Linux, Windows, and OSX. For more details please check the [certification matrix](http://geode-docs.cfapps.io/docs-gemfire/getting_started/system_requirements/supported_configurations.html#system_requirements). 
 
-Geode can run in pure Java mode in pretty much any JDK supported platform. Native libraries are available for Linux and for more details please check the [certification matrix](http://geode-docs.cfapps.io/docs-gemfire/getting_started/system_requirements/supported_configurations.html#system_requirements). 
+### How does my application connect to a Geode cluster?
 
-## How can I contribute?
+Geode provides Java client APIs that can be used by any other language running in the JVM (Scala, Groovy, Javascript, etc). A REST interface is supported as well.  C++ and .NET clients are not part of the current open source product, but are available in the commercial GemFire product.
 
-Please check the [[How to Contribute]] page.
+The client drivers can be configured to cache data locally for improved performance.  In addition, the driver provides single-hop network reads and writes for optimal performance.
 
-## Does Geode run in the cloud?
+### Does Geode support zero downtime operation?
 
-## Does Geode support distributed transactions? 
-
-Transaction data needs to be co-located, which means the transaction execution will happen atomically and in the same node and the results will be distributed to the other members of the system. During the transaction execution updated data will not be available outside of the transaction context until it completes. 
-
-## When should I use Geode versus other technologies?
-
-## Do you have Scala/Groovy…. C++, .NET clients ? Available in the OSS ? 
-
-Geode provides Java APIs that can be used by any other language running in the JVM. C++ and .NET clients are not part of the current open source product, but available in the commercial offering.
-
-## What’s the biggest Geode cluster in production today ? (data)
-
-## What’s the largest Geode cluster in production today ? (number of members)
-
-## How Geode's achieve consistency between Replicated regions ?
-
-Geode's leverage [[Region Version Vectors]] as an extension to the versioning scheme that aid in synchronization of replicated regions. These use a scheme outlined in [[Concise Version Vectors in WinFS]] and Peer to Peer replication in WinFS.  
+Yes, Geode provides rolling upgrade support so a cluster can remain online even while being upgraded.  In addition, Geode undergoes strict backwards compatibility testing to ensure that existing applications will continue to function.  PDX support for forwards and backwards data versioning allows a data model to evolve seamlessly.
  
-## How Geode deals with Network Partitioning ?
+### Does Geode support transactions?
 
-The new network partition detection system will declare a partition event if membership is reduced by a certain percent due to abnormal loss of members within a single membership view change.
+Yes, Geode provides atomic transactions (all data operations succeed or fail together). Transactions are executed on a single node to avoid expensive distributed lock operations.  When the transaction is committed the results are replicated to the other cluster members.  Data used in a transaction must be colocated.  Within the context of a transaction updates will not be seen until they are committed.
+
+### What happens if a member runs out of memory?
+
+Geode works to prevent resource issues by supporting LRU (least recently used) eviction.  Eviction can be configured to overflow an entry to disk or remove it altogether.  Expiration is also supported.  The [[Resource Manager]] can be configured to generate alerts at eviction and critical memory usage thresholds.  When a member is in a critical state further writes are blocked to allow the GC and eviction activities to restore the member to normal operation.
+
+### What happens if a node fails?
+
+Geode provides data redundancy to ensure zero data loss when a node fails.  In addition, availability zones can be configured to ensure that redundant data copies are hosted on different racks. Because Geode guarantees data consistency the failover to the redundant copies is seamless.
+
+### If I shutdown all members in a cache will I lose data?
+
+You can configure a Geode region to store it's data to local disk.  When the cluster is restarted all members restore the in-memory data from disk.  Keys are recovered first and values are recovered asynchronously.  Members ensure consistency by exchanging version information.
+
+### How does Geode ensure strong consistency?
+
+Cache updates are synchronously replicated to ensure consistency prior to acknowledging success.  Replicates employ a type of version vector as an extension to the entry versioning scheme to validate data liveness.
+
+### How does Geode partition data?
+
+Keys are hash-partitioned over a fixed number of buckets (the default bucket count is 113).  Buckets are automatically balanced across the cluster members based on data size, redundancy, and availability zones.
+ 
+### How Geode handle a network partition?
+
+The new network partition (aka split brain) detection system will declare a partition event if membership is reduced by a certain percent due to abnormal loss of members within a single membership view change.
 
 Each non-admin member will have a weight of 10 except the lead-member, which will have a weight of 15. Locators will have a weight of 3. The weights of members prior to the view change are added together and compared to the weight of members lost between the last view and completion of installation of the new view.
 
@@ -62,12 +70,12 @@ When we count locators in the mix with the 10 server example, the loss of the fi
 
 This approach acts to preserve the largest amount of servers in the distributed system, handles 50/50 splits and gets rid of the possibility of all members shutting down if there are no locators. It handles the original case that the coordinator/lead-member system addressed where there were two locators and two cache servers, though it does not eliminate the possibility of the whole system going down in that configuration.
 
-For more information check [[Network Partition Detection]]
+For more information see [[Core Distributed System Concepts]].
 
-## What’s our distributed transaction algorithm/choices/etc.. ? (2PC, Paxos)
+### Does Geode support [[JSR-107|https://jcp.org/en/jsr/detail?id=107]]?
 
-Currently Geode supports optimistic lock with repeatable reads. 
- 
-## What’s Geode leader election algorithm ?
+While Geode does not directly support [[JSR-107|https://jcp.org/en/jsr/detail?id=107]] (JCache) with an API implementation, it does provide indirect support via Spring.  Spring Data GemFire's Caching [[feature|http://docs.spring.io/spring-data-gemfire/docs/1.6.0.RELEASE/reference/html/#apis:spring-cache-abstraction]] and support for Geode is built on the core Spring Framework's [[Cache Abstraction|http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache]], which added [[support for JCache|http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#_caching_improvements]] annotations in 4.1.  Spring gives Geode developers the best part of JCache without requiring unnecessary or invasive coding patterns.
 
-The oldest non-admin member in the cluster is the leader or in Geode's terminology the coordinator. If this node crash or leave the system, the next oldest non-admin member becomes the coordinator. 
+### How can I contribute?
+
+Please check the [[How to Contribute]] page.
