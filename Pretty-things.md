@@ -1,8 +1,6 @@
 # Logos
 
-Want logos? We've got 'em right here: https://github.com/project-geode/docs/wiki/images/logos/
-
-Look how pretty they are:
+Want logos? We've got 'em!
 
 ![Black](images/logos/RGB/PNG/GEODE-RGB-Black.png)
 ![FullColor](images/logos/RGB/PNG/GEODE-RGB-FullColor.png)
