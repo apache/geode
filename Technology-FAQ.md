@@ -18,7 +18,7 @@ Geode has been deployed to run mission-critical applications on clusters with 10
 
 ### What operating systems are supported?
 
-Geode is supported on most JDK platforms including Linux, Windows, and OSX. For more details please check the [certification matrix](http://geode-docs.cfapps.io/docs-gemfire/getting_started/system_requirements/supported_configurations.html#system_requirements). 
+Geode is supported on most JDK platforms including Linux and Windows. For more details please check the [certification matrix](http://geode-docs.cfapps.io/docs-gemfire/getting_started/system_requirements/supported_configurations.html#system_requirements). 
 
 ### How does my application connect to a Geode cluster?
 
