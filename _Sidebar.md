@@ -25,13 +25,10 @@
 * [[Debugging Geode Applications]]
 * [[Native Disk Persistence]]
 * [[Reliable Messaging]]
-* [[OQL]]
 
 ### Design
-* [[Data Architecture in Geode]]
 * [[Running in Embedded Mode]]
 * [[Moving from memcached to gemcached]]
-* [[Client server Architecture]]
 * [[Sizing a Geode Cluster]]
 * [[Network Configuration Best Practices]]
 * [[Geode Security Framework]]
