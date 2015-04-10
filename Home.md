@@ -1,3 +1,5 @@
+![Geode Logo](http://projectgeode.org/images/logo-geode.png)
+
 # Overview
 
 Geode is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.  
