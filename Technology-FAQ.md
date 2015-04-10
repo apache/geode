@@ -48,7 +48,9 @@ You can configure a Geode region to store it's data to local disk.  When the clu
 
 ### How does Geode ensure strong consistency?
 
-Cache updates are synchronously replicated to ensure consistency prior to acknowledging success.  Replicates employ a type of version vector as an extension to the entry versioning scheme to validate data liveness.
+Cache updates are synchronously replicated to ensure consistency prior to acknowledging success.  Concurrent modifications are handled through version stamps on cache entries.
+
+Bulk synchronization is performed in the event of the failure of a member or when a member is restarted and is recovering from disk.  Bulk synchronization is performed through interchange of version vectors with "exceptions".
 
 ### How does Geode partition data?
 
@@ -56,21 +58,7 @@ Keys are hash-partitioned over a fixed number of buckets (the default bucket cou
  
 ### How Geode handle a network partition?
 
-The new network partition (aka split brain) detection system will declare a partition event if membership is reduced by a certain percent due to abnormal loss of members within a single membership view change.
-
-Each non-admin member will have a weight of 10 except the lead-member, which will have a weight of 15. Locators will have a weight of 3. The weights of members prior to the view change are added together and compared to the weight of members lost between the last view and completion of installation of the new view.
-
-The default setting will be 51%, so if you have a distributed system with 10 members (not considering locators for the moment) and membership drops to 5 you would be okay if one of the remaining members was the lead member in the last view. If you lost the lead member when the count went from 10 to 5 a partition would be declared and the 5 members would shut down. Any locator that could see those 5 members would also shut down. The presumption would be that the lead and the other 4 members are doing okay.
-
-New members being added in the view are not considered in the weight calculations. They don't hold any data yet and aren't known by anyone but the coordinator until the view is sent out. They may initiate surprise connections to other members but will soon block if there's a real network partition.
-
-Locators add a small amount of weight so that if there are two locators to show a preference for continuing to run with multiple locators present over having a surviving quorum with the lead member but no locators present. We need to do this to account for the needs of the original 2 locator 2 server configuration. Loss of the lead member in that configuration would cause the other member to shut down unless locators are given enough weight to keep the non-lead alive.
-
-When we count locators in the mix with the 10 server example, the loss of the first 5 cache servers would cause disconnect (weight=55) unless the group of 5 servers seeing this loss retained two or more locators (weight=50 + 3 + 3).
-
-This approach acts to preserve the largest amount of servers in the distributed system, handles 50/50 splits and gets rid of the possibility of all members shutting down if there are no locators. It handles the original case that the coordinator/lead-member system addressed where there were two locators and two cache servers, though it does not eliminate the possibility of the whole system going down in that configuration.
-
-For more information see [[Core Distributed System Concepts]].
+The network partition detection system is based on quorum and liveness checks.  If a member shuts down due to a network partition it will periodically attempt to reconnect and rebuild its cache, recovering data either from disk or from redundant storage in other members.
 
 ### Does Geode support [[JSR-107|https://jcp.org/en/jsr/detail?id=107]]?
 
