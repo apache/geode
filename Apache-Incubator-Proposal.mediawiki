@@ -20,7 +20,7 @@ Modern-day data management architectures require a robust in-memory data grid so
 Our initial goals are to bring Geode into the ASF, transition internal engineering processes into the open, and foster a collaborative development model according to the "Apache Way." Pivotal plans to develop new functionality in an open, community-driven way. To get there, the existing internal build, test and release processes will be refactored to support open development.
 
 == Current Status ==
-Currently, the project code base is licensed for evaluation purposes and is available for download from Pivotal.io (http://pivotal.io). The documentation and wiki pages are available as public GitHub repositories under Project Geode organization on GitHub (https://github.com/project-geode). Although Pivotal GemFire was developed as a proprietary, closed-source product, the internal engineering practices adopted by the development team lend themselves well to an open, collaborative and meritocratic environment.
+Currently, the project code base is licensed for evaluation purposes and is available for download from Pivotal.io (https://network.pivotal.io/products/project-geode). The documentation and wiki pages are available as public GitHub repositories under Project Geode organization on GitHub (https://github.com/project-geode). Although Pivotal GemFire was developed as a proprietary, closed-source product, the internal engineering practices adopted by the development team lend themselves well to an open, collaborative and meritocratic environment.
 
 The Pivotal GemFire team has always focused on building a robust end user community of paying and non-paying customers. The existing documentation along with StackOverflow and other similar forums are expected to facilitate conversions between our existing users so as to transform them into an active community of Geode members, stakeholders and developers.
 
@@ -33,6 +33,8 @@ If Geode is accepted for incubation, the primary initial goal will be transition
 === Core Developers ===
 
 While a few core developers are skilled in working in openly governed Apache communities. Most of the core developers are currently NOT affiliated with the ASF and would require new ICLAs before committing to the project.
+
+We hope that the following few introductions will help get everybody to know the key folks on the GemFire team:
 
 Jags Ramnarayan is the Chief Architect for “fast data” products (GemFire) at Pivotal and serves in the extended leadership team of the company. At Pivotal and previously at VMWare he led the technology direction for its high performance distributed data grid and in-memory DB products. He also plays an active role in the company strategy for data services, served as a committee member of the VMWare innovation conference, loves working with customers and is a frequent speaker on "distributed data" in several conferences. He has spent more than two decades in this industry and has a bachelors degree in computer science and a masters degree in management of science and technology.
 
@@ -92,12 +94,10 @@ While we intend to leverage the Apache ‘branding’ when talking to other proj
 
 == Documentation ==
 See documentation for the current state of the project documentation available as part of the GitHub repository at 
-https://github.com/project-geode/docs
-
-A mature project website is also available at Pivotal GemFire documentation website.
+https://github.com/project-geode/docs and live at http://geode-docs.cfapps.io/
 
 == Initial Source ==
-Pivotal is releasing the source code for Geode under an Evaluation License at http://network.pivotal.io.  We encourage ASF community members interested in  this proposal to download the source code, review and try out the software. 
+Pivotal is releasing the source code for Geode under an Evaluation License at https://network.pivotal.io/products/project-geode .  We encourage ASF community members interested in  this proposal to download the source code, review and try out the software. 
 
 == Source and Intellectual Property Submission Plan ==
 As soon as Geode is approved to join Apache Incubator, the source code will be transitioned via the Software Grant Agreement onto ASF infrastructure and in turn made available under the Apache License, version 2.0.  We know of no legal encumberments that would inhibit the transfer of source code to the ASF.
@@ -266,7 +266,6 @@ Means of setting up regular builds for Geode on builds.apache.org
   * NASA JPL: Chris Mattmann
   * Unaffiliated: Jan Iversen
   * CDK Global: Ben Reser, Konstantin Ignatyev, Bruce Szalwinski
-  * Blue River Systems Group: Alan Strait, Dave Muirhead
   * Pivotal: everyone else on this proposal
 
 == Sponsors ==
