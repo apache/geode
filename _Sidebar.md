@@ -5,7 +5,7 @@
 * [[Technology FAQ]]
 * [[Roadmap]]
 * [Download](https://network.pivotal.io/products/project-geode)
-* Pretty things
+* [[Pretty things]]
 
 ## Contributors
 * [[How to Contribute]]
