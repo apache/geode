@@ -1,4 +1,4 @@
-![Geode Logo](http://projectgeode.org/images/logo-geode.png)
+![Geode Banner](http://projectgeode.org/images/geode-banner.png)
 
 # Overview
 
