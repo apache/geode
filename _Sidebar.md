@@ -2,6 +2,7 @@
 * [[Apache Incubator Proposal]]
 * [Geode in 5 minutes](https://github.com/project-geode/docs/wiki#geode-in-5-minutes)
 * [Documentation](http://geode-docs.cfapps.io/)
+* [[Geode Demo Application]]
 * [[Technology FAQ]]
 * [[Roadmap]]
 * [Download](https://network.pivotal.io/products/project-geode)
