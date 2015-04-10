@@ -17,7 +17,9 @@ Internal classes are serialized with the same framework, but we don't use the pu
 
 # Logging and Statistics
 
-Geode has its own framework for logging. You can get an instance of the logger from the geode cache, using cache.getLoggerI18n.
+Geode uses log4j2 for logging. To get a logger add a static logger field to your class
+
+    private static final Logger logger = LogService.getLogger();
 
 Geode also has a framework for recording statistics. see [engbestpractices:Adding Stats Basics] for how to add new statistics.
 
