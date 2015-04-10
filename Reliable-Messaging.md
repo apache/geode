@@ -10,7 +10,7 @@ It should be remembered that clients may also be publishers, but since updates, 
 ### Subscription Options
 
 Geode clients can choose to register interest in all data elements for a given data region on the server. All interaction with the server is done through key-value pairs. Both the key and the value may be any Serializable object (for Java) or DataSerializable objects.
-Clients may request an initial snapshot of data from the server in order to populate their Level 1 cache. They may register interest in insertions, updates and deletions for subsets of region data by specifying individual keys, lists of keys, regular expressions (that are evaluated against the keyset on the server) or OQL queries against the region on the server.
+Clients may request an initial snapshot of data from the server in order to populate their Level 1 cache. They may register interest in insertions, updates and deletions for subsets of region data by specifying individual keys, lists of keys, regular expressions (that are evaluated against the keyset on the server) against the region on the server.
 
 Once interest is registered, the server takes on the responsibility of delivering events to the subscriber. 
 
