@@ -219,7 +219,3 @@ So for example an portfolio.positions'key' = 'IBM' The map range index would hav
 * PrimaryKeyIndex - The primary key index is a very lightweight index that hints to the query engine that it should do a a region.get(key)
 
 * PartitionedIndex - The partition index is a collection of indexes which are the buckets of the region.  
-
-# FunctionService
-
-TBD
