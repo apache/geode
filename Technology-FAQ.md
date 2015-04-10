@@ -28,15 +28,15 @@ The client drivers can be configured to cache data locally for improved performa
 
 ### Does Geode support zero downtime operation?
 
-Yes, Geode provides rolling upgrade support so a cluster can remain online even while being upgraded.  In addition, Geode undergoes strict backwards compatibility testing to ensure that existing applications will continue to function.  PDX support for forwards and backwards data versioning allows a data model to evolve seamlessly.
+Yes, Geode provides rolling upgrade support so a cluster can remain online even while being upgraded.  In addition, Geode undergoes strict backwards compatibility testing to ensure that existing applications will continue to function.  PDX serialization support for forwards and backwards data versioning allows a data model to evolve seamlessly.
  
 ### Does Geode support transactions?
 
-Yes, Geode provides atomic transactions (all data operations succeed or fail together). Transactions are executed on a single node to avoid expensive distributed lock operations.  When the transaction is committed the results are replicated to the other cluster members.  Data used in a transaction must be colocated.  Within the context of a transaction updates will not be seen until they are committed.
+Yes, Geode provides atomic transactions (all data operations succeed or fail together). Transactions are executed on a single node to avoid expensive distributed lock operations.  When the transaction is committed the results are replicated to the other cluster members.  Within the context of a transaction updates will not be seen until they are committed.  Data used in a transaction must be colocated.  
 
 ### What happens if a member runs out of memory?
 
-Geode works to prevent resource issues by supporting LRU (least recently used) eviction.  Eviction can be configured to overflow an entry to disk or remove it altogether.  Expiration is also supported.  The [[Resource Manager]] can be configured to generate alerts at eviction and critical memory usage thresholds.  When a member is in a critical state further writes are blocked to allow the GC and eviction activities to restore the member to normal operation.
+Geode works to prevent resource issues by supporting LRU (least recently used) eviction.  Eviction can be configured to overflow an entry to disk or remove it altogether.  Expiration is also supported.  The [Resource Manager](http://geode-docs.cfapps.io/docs/managing/heap_use/how_the_resource_manager_works.html) can be configured to generate alerts at eviction and critical memory usage thresholds.  When a member is in a critical state further writes are blocked to allow the GC and eviction activities to restore the member to normal operation.
 
 ### What happens if a node fails?
 
