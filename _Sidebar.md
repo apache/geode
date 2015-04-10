@@ -36,7 +36,7 @@
 * [[Network Configuration Best Practices]]
 * [[Geode Security Framework]]
 * [[Resource Management in Geode]]
-* [[JMX Federation in Geode]
+* [[JMX Federation in Geode]]
 
 ### Troubleshoot
 
