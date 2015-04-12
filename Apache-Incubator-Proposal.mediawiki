@@ -34,18 +34,6 @@ If Geode is accepted for incubation, the primary initial goal will be transition
 
 While a few core developers are skilled in working in openly governed Apache communities. Most of the core developers are currently NOT affiliated with the ASF and would require new ICLAs before committing to the project.
 
-We hope that the following few introductions will help get everybody to know the key folks on the GemFire team:
-
-Jags Ramnarayan is the Chief Architect for “fast data” products (GemFire) at Pivotal and serves in the extended leadership team of the company. At Pivotal and previously at VMWare he led the technology direction for its high performance distributed data grid and in-memory DB products. He also plays an active role in the company strategy for data services, served as a committee member of the VMWare innovation conference, loves working with customers and is a frequent speaker on "distributed data" in several conferences. He has spent more than two decades in this industry and has a bachelors degree in computer science and a masters degree in management of science and technology.
-
-Bruce Schuchardt was a developer of object-oriented database systems (GemStone/S, GemStone/J) before joining the GemFire team at its inception.  He has a MS focusing on data management and has always had a passion for distributed systems technology.  He enjoys fishing, hiking and travelling.
-
-Darrel Schneider has been working on GemFire since its creation.  He designed and implemented many key features including the PDX serialization framework.  Currently Darrel is working on optimizing off-heap data storage and retrieval.
-
-Dan Smith has been writing code ever since he typed in some BASIC from the back of a magazine in elementary school. For the last 10 years Dan has been working in distributed systems development. He's currently a Staff Engineer at Pivotal working on GemFire. 
-
-Anthony Baker is a member of the GemFire engineering team, specializing in data storage and distribution. He has over 20 years of experience in fields ranging from high performance computing to interactive television and massively parallel embedded processor arrays. Anthony enjoys algorithms and API design and can often be found chasing down obscure concurrency bugs.
-
 === Alignment ===
 The following existing ASF projects can be considered when reviewing Geode proposal:
 
