@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+  <HEAD>
+    <TITLE>com.gemstone.gemfire.pdx package</TITLE>
+  </HEAD>
+  <BODY>
+  The <code>com.gemstone.gemfire.pdx</code> package provides APIs used
+  for object serialization. PDX stands for Portable Data eXchange and has the following
+  advantages over other object serialization APIs:
+<ul>
+<li> The serialized form is portable between Java and C#.
+<li> The data in a PDX serialized object can be accessed without deserializing the object.
+     This allows data to be accessed even if the domain class is unavailable.
+     So GemFire servers are able to do things like queries without needing to deserialize
+     the domain objects. Being able to keep the serialized form in the server cache
+     saves time and memory.
+     This also allows a C# developer to only write a C# domain class without needing
+     to also write a corresponding Java domain class.
+<li> PDX supports class versioning. Different versions of the same PDX class are allowed
+     in the same distributed system. So you can add a new version of your application
+     without by just starting a new client. No need to shutdown clients using the
+     old version of the PDX data or of restarting your servers.
+<li> The PDX serialized form is compact because a minimal amount of type information
+     is encoded in the serialized form. This saves memory and time.
+</ul>
+<p>
+To use PDX either implement {@link com.gemstone.gemfire.pdx.PdxSerializable}
+on your domain class or implement a {@link com.gemstone.gemfire.pdx.PdxSerializer}.
+In either case you use a {@link com.gemstone.gemfire.pdx.PdxWriter}
+to serialize your data and a
+{@link com.gemstone.gemfire.pdx.PdxReader} to deserialize.
+<p>
+An auto serialization mechanism is also provided as an early access feature.
+This has the potential to obviate the need for any augmentation of domain
+classes to allow them to be serialized. See {@link com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer}
+for more details.
+<p>
+The PDX object model is that a PDX type has a name and an ordered list of PDX fields.
+A PDX field has a name and a field type. For your domain class to be serialized
+by PDX you must define this meta information. You do this by calling methods on
+PdxWriter and PdxReader that define the PDX fields. For example calling
+writeString("stringField", this.stringField) defines a field whose name is
+"stringField" and whose field type is "String". The PDX type name is the fully
+qualified domain class name. PDX field names are case sensitive. They do not need
+to match your instance variable names but this is a good convention to follow.
+The order in which you write your fields must be the order in which you read them.
+
+<p>
+As your PDX domain class changes you are free to add and remove fields. But you can
+not change the field type of a PDX field. For example you can not change from
+calling writeString to writeDate for the same field name.
+Once the domain class has changed then some of your fields will not be read during
+deserialization. For example if you have a PDX class with one field (lets call it
+version 1) and you then add a second field (lets call it version 2) then when
+the version 1 code deserializes data from version 2 it will only read field one.
+So field two will be unread. But when this object is reserialized it will preserve
+the unread field data and include it in the serialized form (unless you configure
+ignore-unread-fields to true). You can optimize the amount of memory consumed
+by unread fields by managing them yourself by calling
+{@link com.gemstone.gemfire.pdx.PdxReader#readUnreadFields}
+and {@link com.gemstone.gemfire.pdx.PdxWriter#writeUnreadFields}.
+<p>
+To read the fields of a PDX without deserializing it see
+{@link com.gemstone.gemfire.pdx.PdxInstance}.
+To modify the fields of a PDX without deserializing it see
+{@link com.gemstone.gemfire.pdx.WritablePdxInstance}.
+
+<p>
+<em>PDX Configuration</em>
+<p>
+The GemFire Cache has a number of configuration attributes related to PDX.
+They can be configured using API method on
+{@link com.gemstone.gemfire.cache.CacheFactory}
+or {@link com.gemstone.gemfire.cache.client.ClientCacheFactory}.
+They can also be configured in a cache.xml using the <code>pdx</code> element.
+The following describes the dtd elements and attribute names but corresponding
+method names are also available on the cache factories.
+<ul>
+<li><code>read-serialized</code> Set it to true if you want PDX deserialization
+to produce a PdxInstance instead of an instance of the domain class.
+<li><code>ignore-unread-fields</code> Set it to true if you do not want unread
+PDX fields to be preserved during deserialization. This can save you memory
+and is safe to use in a member that only reads data from the cache.
+<li><code>persistent</code> Set to true if you are using persistent regions
+or WAN gateways. This causes the PDX type information to be written to disk.
+<li><code>disk-store-name</code> If using persistence this attribute allows you
+to configure what disk store the PDX type data will be store in. By default
+the default disk store is used.
+<li><code>pdx-serializer</code> Allows you to configure the
+{@link com.gemstone.gemfire.pdx.PdxSerializer} for this GemFire member.
+<li><code>distributed-system-id</code> When using PDX with WAN gateways each
+distributed system must set this gemfire property to a unique value in the
+range 0..255 inclusive.
+</ul>
+  </BODY>
+</HTML>

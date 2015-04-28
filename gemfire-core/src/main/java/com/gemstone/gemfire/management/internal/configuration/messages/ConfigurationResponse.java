@@ -1,0 +1,165 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.management.internal.configuration.messages;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.xml.sax.SAXException;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
+import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
+
+/***
+ * Response containing the configuration requested by the {@link ConfigurationRequest}
+ * @author bansods
+ */
+public class ConfigurationResponse implements DataSerializableFixedID {
+  
+  private Map<String,Configuration> requestedConfiguration = new HashMap<String,Configuration>();
+  private byte [][]jarBytes;
+  private String[] jarNames;
+  private boolean failedToGetSharedConfig = false;
+  
+  public ConfigurationResponse() {
+    
+  }
+  
+  public ConfigurationResponse(Map<String, Configuration> requestedConfiguration) {
+    this.requestedConfiguration.putAll(requestedConfiguration);
+  }
+  
+  @Override
+  public int getDSFID() {
+    return DataSerializableFixedID.CONFIGURATION_RESPONSE;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeHashMap((HashMap<?,?>)requestedConfiguration, out);
+    DataSerializer.writeStringArray(jarNames, out);
+    DataSerializer.writeArrayOfByteArrays(jarBytes, out);
+    DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    this.requestedConfiguration = DataSerializer.readHashMap(in);
+    this.jarNames = DataSerializer.readStringArray(in);
+    this.jarBytes = DataSerializer.readArrayOfByteArrays(in);
+    this.failedToGetSharedConfig = DataSerializer.readBoolean(in);
+  }
+
+  public Map<String, Configuration> getRequestedConfiguration() {
+    return this.requestedConfiguration;
+  }
+
+  public void setRequestedConfiguration(Map<String, Configuration> requestedConfiguration) {
+    this.requestedConfiguration = requestedConfiguration;
+  }
+  
+  public void addConfiguration(Configuration configuration)  {
+    if (configuration != null) {
+      this.requestedConfiguration.put(configuration.getConfigName(), configuration);
+    }
+  }
+ 
+  public String toString() {
+    StringBuffer sb = new StringBuffer();
+    Set<String> configNames = requestedConfiguration.keySet();
+    for (String configName : configNames) {
+      sb.append("\n" + requestedConfiguration.get(configName));
+    }
+    return sb.toString();
+  }
+  
+  public String describeConfig() {
+    StringBuffer sb = new StringBuffer();
+    if (requestedConfiguration.isEmpty()) {
+      sb.append("Received an empty shared configuration");
+    } else {
+      Set<Entry<String, Configuration>> entries = requestedConfiguration.entrySet();
+      Iterator<Entry<String, Configuration>> iter = entries.iterator();
+      
+      while (iter.hasNext()) {
+        Entry<String, Configuration> entry = iter.next();
+        String configType = entry.getKey();
+        Configuration config = entry.getValue();
+        
+        if (config != null) {
+          sb.append("\n***************************************************************");
+          sb.append("\nConfiguration for  '" + configType + "'");
+          sb.append("\n\nJar files to deployed");
+
+          Set<String>jarNames = config.getJarNames();
+          Iterator<String> jarIter = jarNames.iterator();
+          int jarCounter = 0;
+
+          while (jarIter.hasNext()) {
+            sb.append("\n" + ++jarCounter + "." + jarIter.next());
+          }
+          
+          try {
+            String cacheXmlContent = config.getCacheXmlContent();
+            if (!StringUtils.isBlank(cacheXmlContent)) {
+              sb.append("\n" + XmlUtils.prettyXml(cacheXmlContent));
+            }
+          } catch (IOException | TransformerFactoryConfigurationError | TransformerException | SAXException | ParserConfigurationException e) {
+            throw new InternalGemFireError(e);
+          }
+        }
+       
+      }
+    }
+    return sb.toString();
+  }
+  
+  
+  public String[] getJarNames() {
+    return this.jarNames;
+  }
+  
+  public byte[][] getJars() {
+    return this.jarBytes;
+  }
+  
+  public void addJarsToBeDeployed(String[] jarNames, byte[][] jarBytes) {
+    this.jarNames = jarNames;
+    this.jarBytes = jarBytes;
+  }
+
+  // TODO Sourabh, please review for correctness
+  public Version[] getSerializationVersions() {
+    return new Version[] { Version.CURRENT };
+  }
+
+  public boolean failedToGetSharedConfig() {
+    return failedToGetSharedConfig;
+  }
+
+  public void setFailedToGetSharedConfig(boolean failedToGetSharedConfig) {
+    this.failedToGetSharedConfig = failedToGetSharedConfig;
+  }
+}
+
+

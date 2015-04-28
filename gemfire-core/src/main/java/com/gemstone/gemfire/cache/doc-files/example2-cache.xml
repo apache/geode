@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+    is-server="true" search-timeout="60" version="8.1">
+  <cache-transaction-manager>
+    <transaction-listener>
+       <class-name>com.company.data.MyTransactionListener</class-name>
+       <parameter name="URL">
+         <string>jdbc:cloudscape:rmi:MyData</string>
+       </parameter>
+    </transaction-listener>    
+  </cache-transaction-manager>
+
+  <cache-server port="12345" max-connections="256"/>
+
+  <region name="myRegion" refid="REPLICATE">
+    <region-attributes scope="global">
+      <entry-time-to-live>
+        <expiration-attributes action="invalidate" timeout="60"/>
+      </entry-time-to-live>
+      <cache-loader>
+        <class-name>com.company.data.DatabaseLoader</class-name>
+        <parameter name="URL">
+          <string>jdbc:cloudscape:rmi:MyData</string>
+        </parameter>
+      </cache-loader>
+    </region-attributes>
+  </region>
+
+  <region name="myOtherRegion" refid="REPLICATE">
+    <entry>
+      <key><string>MyKey</string></key>
+      <value><string>MyValue</string></value>
+    </entry>
+    <entry>
+      <key><string>MyOtherKey</string></key>
+      <value>
+        <declarable>
+          <class-name>com.company.data.MyDeclarable</class-name>
+        </declarable>
+      </value>
+    </entry>
+  </region>
+</cache>

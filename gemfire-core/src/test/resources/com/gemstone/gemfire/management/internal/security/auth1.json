@@ -1,0 +1,14 @@
+{
+"roles" : [	
+			{
+				"name" : "jmxReader",
+				"operationsAllowed" : ["QUERYDATA_DS"]				
+			}
+		],
+users : [
+	 		{
+	 			"name" : "tushark",
+	 			"roles" : ["jmxReader"]
+	 		}
+		]
+}

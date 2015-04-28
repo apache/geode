@@ -1,0 +1,721 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache;
+
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+/**
+ * This id stores seven pieces of information:
+ * <ul>
+ * <li>The unique identifier which will identify this entry called the keyId
+ * <li>The oplog id identifying the oplog in which this entry's value is
+ * present
+ * <li>The position in the oplog (the oplog offset) where this entry's value is
+ * stored
+ * <li>The length of the byte array (which represent the value)on disk
+ * <li>Userbits of the value
+ * </ul>
+ * 
+ * @author Mitul Bid
+ * @author Asif
+ * @author Suyog
+ * @since 5.1
+ */
+
+public abstract class DiskId
+{
+
+  // @todo this field could be an int for an overflow only region
+  /**
+   * id consists of
+   * most significant
+   * 1 byte = users bits
+   * 2-8 bytes = oplog id
+   * least significant.
+   * 
+   * The highest bit in the oplog id part is set to 1 if the oplog id
+   * is negative.
+   */
+  private long id;
+
+  /**
+   * Length of the bytes on disk.
+   * This is always set. If the value is invalid then it will be set to 0.
+   * The most significant bit is used by overflow to mark it as needing to be written.
+   */
+  protected int valueLength = 0;
+
+  /** bit position in id for setting flush buffer toggle bit * */
+//   private static final int IS_FLUSH_BUFFER_TOGGLE_BIT = 0x20 << 24;
+
+  // userBits of the value on disk
+  //private byte userBits = -1;
+
+  abstract long getKeyId();
+
+  /** Returns the offset in oplog where the entry is stored */
+  abstract long getOffsetInOplog();
+
+  
+  /**
+   * Bit masks to extract the oplog id or user bits from the id
+   * field
+   * The oplog id is currently the lowest 7 bytes, and the user
+   * bits is the most significant byte. The sign of the oplog id
+   * is held in the highest bit of the oplog id bytes.
+   */
+  public static final long OPLOG_ID_MASK =     0x00FFFFFFFFFFFFFFL;
+  public static final long USER_BITS_MASK =    0xFF00000000000000L;
+  public static final long MAX_OPLOG_ID =      0x007FFFFFFFFFFFFFL;
+  public static final long OPLOG_ID_SIGN_BIT = 0x0080000000000000L;
+  public static final long USER_BITS_SHIFT = 24 + 32;
+  /**
+   * @return Returns the oplog id.
+   */
+  synchronized long getOplogId() {
+    //mask the first byte to get the oplogId
+    long oplogId = this.id & MAX_OPLOG_ID; 
+    
+    //Check to see if the oplog id should be negative
+    if ((this.id & OPLOG_ID_SIGN_BIT ) != 0) 
+    {
+      oplogId = -1L * oplogId;
+    }
+    
+    return oplogId;
+  }
+
+  abstract void setKeyId(long keyId);
+
+  /**
+   * Setter for oplog offset of an entry
+   * 
+   * @param offsetInOplog -
+   *          offset in oplog where the entry is stored.
+   */
+  abstract void setOffsetInOplog(long offsetInOplog);
+
+  abstract boolean isKeyIdNegative();
+
+  abstract void markForWriting();
+  abstract void unmarkForWriting();
+
+  abstract boolean needsToBeWritten();
+
+  /**
+   * Returns previous oplog id
+   */
+  synchronized long setOplogId(long oplogId) {
+    long result = getOplogId();
+    long oldUserBits = this.id & USER_BITS_MASK;//only get the most significant byte containing
+                            // sign bit + toggle flag + user bits
+    long opId = oplogId;
+    if (oplogId < 0) {
+      opId = -1 * oplogId;// make oplogId positive
+      opId |= OPLOG_ID_SIGN_BIT; //Set the highest bit of the oplog id to be 
+                             //1 to indicate a negative number
+    }
+    this.id = opId | oldUserBits;
+
+    //Assert.assertTrue(oplogId == getOplogId());
+    return result;
+  }
+
+//   /**
+//    * Setter for the flush buffer toggle flag
+//    * 
+//    * @param flag -
+//    *          The flush buffer toggle flag which identifies whether the latest
+//    *          value is present in the pendingflushes buffer or the pending
+//    *          writes buffer
+//    */
+//   void setFlushBufferToggleFlag(boolean flag) {
+//     if (flag) {
+//       this.id = this.id | IS_FLUSH_BUFFER_TOGGLE_BIT;// set the toggle flag bit
+//       //Assert.assertTrue(getFlushBufferToggleFlag());
+//     }
+//     else {
+//       this.id = this.id & 0x5FFFFFFF;// reset the toggle flag bit
+//       //Assert.assertTrue(!getFlushBufferToggleFlag());
+//     }
+
+//   }
+
+//   /**
+//    * @return Returns the flush buffer toggle flag.
+//    */
+//   boolean getFlushBufferToggleFlag() {
+//     return (this.id & IS_FLUSH_BUFFER_TOGGLE_BIT) != 0; //return true if toggle
+//                                                         // flag bit is 1 else
+//                                                         // return false.
+//     //return this.flushBufferToggleFlag;
+//   }
+
+  /**
+   * @return Returns the userBits.
+   */
+  synchronized byte getUserBits() {
+    return (byte)(this.id >> USER_BITS_SHIFT); //shift to right to get the user bits
+  }
+
+  /**
+   * @param userBits
+   *          The userBit to set.
+   */
+  synchronized void setUserBits(byte userBits) {
+    long userLong = ((long) userBits) << USER_BITS_SHIFT;// set it as most signifcant byte.
+
+    this.id &= OPLOG_ID_MASK; // mask the most significant byte in id.
+    this.id |= userLong; // set the most significant byte in id.
+
+    //Assert.assertTrue(userBit == getUserBits());
+  }
+  /**
+   * Return true if entry is schedule to be async written to disk.
+   * Return false if it has already been written or was never modified.
+   * @since prPersistSprint1
+   */
+  public boolean isPendingAsync() {
+    return EntryBits.isPendingAsync(getUserBits());
+  }
+  /**
+   * @since prPersistSprint1
+   */
+  public synchronized void setPendingAsync(boolean v) {
+    byte origBits = getUserBits();
+    byte newBits = EntryBits.setPendingAsync(origBits, v);
+    if (origBits != newBits) {
+      setUserBits(newBits);
+    }
+  }
+  
+  public synchronized void setRecoveredFromDisk(boolean v) {
+    byte origBits = getUserBits();
+    byte newBits = EntryBits.setRecoveredFromDisk(origBits, v);
+    if (origBits != newBits) {
+      setUserBits(newBits);
+    }
+  }
+
+  /**
+   * @return Returns the valueLength.
+   */
+  int getValueLength() {
+    return valueLength & 0x7fffffff;
+  }
+
+  /**
+   * @param valueLength
+   *          The valueLength to set.
+   */
+  void setValueLength(int valueLength) {
+    if (valueLength < 0) {
+      throw new IllegalStateException("Expected DiskId valueLength " + valueLength + " to be >= 0.");
+    }
+    this.valueLength = (this.valueLength & (0x80000000)) | valueLength;
+  }
+
+  public DiskEntry getPrev() {
+    return null;
+  }
+  public DiskEntry getNext() {
+    return null;
+  }
+  public void setPrev(DiskEntry v) {
+    throw new IllegalStateException("should only be called by disk compaction");
+  }
+  public void setNext(DiskEntry v) {
+    throw new IllegalStateException("should only be called by disk compaction");
+  }
+
+  @Override
+  public String toString() {
+    /*
+     * StringBuffer temp = new StringBuffer("Oplog Key ID = ");
+     * temp.append(this.keyId);
+     */
+    StringBuffer temp = new StringBuffer("Oplog ID = ");
+    temp.append(this.getOplogId());
+    temp.append("; Offset in Oplog = ");
+    temp.append(getOffsetInOplog());
+    temp.append("; Value Length = ");
+    temp.append(getValueLength());
+    temp.append("; UserBits is = ");
+    temp.append(this.getUserBits());
+    return temp.toString();
+  }
+
+  /**
+   * Creates appropriate instance of DiskId depending upon the maxOplogSize set
+   * by the user. If the maxOplogSize (in bytes) is greater than
+   * Integer.MAX_VALUE, LongOplogOffsetDiskId will be created and for
+   * maxOplogSize lesser than that, IntOplogOffsetDiskId will be created.
+   * 
+   * @param maxOplogSize
+   * @return the disk-id instance created.
+   */
+  static DiskId createDiskId(long maxOplogSize,
+                             boolean isPersistenceType,
+                             boolean needsLinkedList) {
+    long bytes = maxOplogSize * 1024 * 1024;
+    if (bytes > Integer.MAX_VALUE) {
+      if (isPersistenceType) {
+        if (needsLinkedList) {
+          return new PersistenceWithLongOffset();
+        } else {
+          return new PersistenceWithLongOffsetNoLL();
+        }
+      } else {
+        if (needsLinkedList) {
+          return new OverflowOnlyWithLongOffset();
+        } else {
+          return new OverflowOnlyWithLongOffsetNoLL();
+        }
+      }
+    }
+    else {
+      if (isPersistenceType) {
+        if (needsLinkedList) {
+          return new PersistenceWithIntOffset();
+        } else {
+          return new PersistenceWithIntOffsetNoLL();
+        }
+      } else {
+        if (needsLinkedList) {
+          return new OverflowOnlyWithIntOffset();
+        } else {
+          return new OverflowOnlyWithIntOffsetNoLL();
+        }
+      }
+    }
+  }
+
+  /**
+   * Test method to verify if the passed DiskId is an instance of
+   * PersistenceWithIntOffset.
+   * 
+   * @param diskId -
+   *          the DiskId instance
+   * @return true if the given DiskId is an instance of PersistenceWithIntOffset
+   */
+  static boolean isInstanceofPersistIntOplogOffsetDiskId(DiskId diskId) {
+    return diskId instanceof PersistenceWithIntOffset;
+  }
+
+  /**
+   * Test method to verify if the passed DiskId is an instance of
+   * PersistenceWithLongOffset.
+   * 
+   * @param diskId -
+   *          the DiskId instance
+   * @return true if the given DiskId is an instance of
+   *         PersistenceWithLongOffset
+   */
+  static boolean isInstanceofPersistLongOplogOffsetDiskId(DiskId diskId) {
+    return diskId instanceof PersistenceWithLongOffset;
+  }
+
+  /**
+   * Test method to verify if the passed DiskId is an instance of
+   * OverflowOnlyWithIntOffset.
+   * 
+   * @param diskId -
+   *          the DiskId instance
+   * @return true if the given DiskId is an instance of
+   *         OverflowOnlyWithIntOffset
+   */
+  static boolean isInstanceofOverflowIntOplogOffsetDiskId(DiskId diskId) {
+    return diskId instanceof OverflowOnlyWithIntOffset;
+  }
+
+  /**
+   * Test method to verify if the passed DiskId is an instance of
+   * PersistenceWithLongOffset.
+   * 
+   * @param diskId -
+   *          the DiskId instance
+   * @return true if the given DiskId is an instance of LongOplogOffsetDiskId
+   */
+  static boolean isInstanceofOverflowOnlyWithLongOffset(DiskId diskId) {
+    return diskId instanceof OverflowOnlyWithLongOffset;
+  }
+
+  /**
+   * Inner class implementation of DiskId which stores offset in oplog as 'int'
+   * field.
+   * 
+   * @author dpatel
+   *  
+   */
+  protected static abstract class IntOplogOffsetDiskId extends DiskId
+  {
+    /**
+     * The position in the oplog (the oplog offset) where this entry's value is
+     * stored
+     */
+    private volatile int offsetInOplog;
+
+    /**
+     * @return the offset in oplog where the entry is stored (returned as long)
+     */
+    @Override
+    long getOffsetInOplog() {
+      return offsetInOplog;
+    }
+
+    /**
+     * Setter for oplog offset of an entry
+     * 
+     * @param offsetInOplog -
+     *          offset in oplog where the entry is stored.
+     */
+    @Override
+    void setOffsetInOplog(long offsetInOplog) {
+      this.offsetInOplog = (int)offsetInOplog;
+    }
+  }
+
+  /**
+   * Inner class implementation of DiskId which stores offset in oplog as 'long'
+   * field.
+   * 
+   * @author dpatel
+   *  
+   */
+  protected static abstract class LongOplogOffsetDiskId extends DiskId
+  {
+    /**
+     * The position in the oplog (the oplog offset) where this entry's value is
+     * stored
+     */
+    private volatile long offsetInOplog;
+
+    /**
+     * @return the offset in oplog where the entry is stored.
+     */
+    @Override
+    long getOffsetInOplog() {
+      return offsetInOplog;
+    }
+
+    /**
+     * Setter for oplog offset of an entry
+     * 
+     * @param offsetInOplog -
+     *          offset in oplog where the entry is stored.
+     */
+    @Override
+    void setOffsetInOplog(long offsetInOplog) {
+      this.offsetInOplog = offsetInOplog;
+    }
+  }
+
+  protected static class OverflowOnlyWithIntOffsetNoLL extends
+      IntOplogOffsetDiskId
+  {
+    OverflowOnlyWithIntOffsetNoLL() {
+      markForWriting();
+    }
+
+    @Override
+    long getKeyId() {
+      throw new UnsupportedOperationException(LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_QUERIED.toLocalizedString());
+    }
+
+    @Override
+    void setKeyId(long keyId) {
+      throw new UnsupportedOperationException(LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_SET.toLocalizedString());
+    }
+
+    @Override
+    boolean isKeyIdNegative() {
+      return false;
+    }
+
+    @Override
+    void markForWriting() {
+      this.valueLength |= 0x80000000;
+    }
+    @Override
+    void unmarkForWriting() {
+      this.valueLength &= 0x7fffffff;
+    }
+
+    @Override
+    boolean needsToBeWritten() {
+      return (this.valueLength & 0x80000000) != 0;
+    }
+  }
+  final protected static class OverflowOnlyWithIntOffset extends
+      OverflowOnlyWithIntOffsetNoLL
+  {
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry prev;
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry next;
+
+    @Override
+    public DiskEntry getPrev() {
+      return this.prev;
+    }
+    @Override
+    public DiskEntry getNext() {
+      return this.next;
+    }
+    @Override
+    public void setPrev(DiskEntry v) {
+      this.prev = v;
+    }
+    @Override
+    public void setNext(DiskEntry v) {
+      this.next = v;
+    }
+  }
+
+  protected static class OverflowOnlyWithLongOffsetNoLL extends
+      LongOplogOffsetDiskId
+  {
+    OverflowOnlyWithLongOffsetNoLL() {
+      markForWriting();
+    }
+    
+    @Override
+    long getKeyId() {
+      throw new UnsupportedOperationException(LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_QUERIED.toLocalizedString());
+    }
+
+    @Override
+    void setKeyId(long keyId) {
+      throw new UnsupportedOperationException(LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_SET.toLocalizedString());
+    }
+
+    @Override
+    boolean isKeyIdNegative() {
+      return false;
+    }
+
+    @Override
+    void markForWriting() {
+      this.valueLength |= 0x80000000;
+    }
+    @Override
+    void unmarkForWriting() {
+      this.valueLength &= 0x7fffffff;
+    }
+
+    @Override
+    boolean needsToBeWritten() {
+      return (this.valueLength & 0x80000000) != 0;
+    }
+  }
+  final protected static class OverflowOnlyWithLongOffset extends
+      OverflowOnlyWithLongOffsetNoLL
+  {
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry prev;
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry next;
+
+    @Override
+    public DiskEntry getPrev() {
+      return this.prev;
+    }
+    @Override
+    public DiskEntry getNext() {
+      return this.next;
+    }
+    @Override
+    public void setPrev(DiskEntry v) {
+      this.prev = v;
+    }
+    @Override
+    public void setNext(DiskEntry v) {
+      this.next = v;
+    }
+  }
+
+  protected static class PersistenceWithIntOffsetNoLL extends
+      IntOplogOffsetDiskId
+  {
+    /** unique entry identifier * */
+    private long keyId;
+
+    @Override
+    long getKeyId() {
+      return keyId;
+    }
+
+    @Override
+    void setKeyId(long keyId) {
+      this.keyId = keyId;
+    }
+
+    @Override
+    boolean isKeyIdNegative() {
+      return this.keyId < 0;
+    }
+
+    @Override
+    void markForWriting() {
+      if (this.keyId > DiskRegion.INVALID_ID) {
+        // Mark the id as needing to be written
+        // The disk remove that this section used to do caused bug 30961
+        this.setKeyId(- this.keyId);
+      }
+    }
+    @Override
+    void unmarkForWriting() {
+      if (this.keyId < DiskRegion.INVALID_ID) {
+        // Mark the id as NOT needing to be written
+        this.setKeyId(- this.keyId);
+      }
+    }
+
+    @Override
+    boolean needsToBeWritten() {
+      return this.keyId <= DiskRegion.INVALID_ID;
+    }
+
+    @Override
+    public String toString() {
+      StringBuffer temp = new StringBuffer("Oplog Key ID = ");
+      temp.append(this.keyId);
+      temp.append("; ");
+      temp.append(super.toString());
+      return temp.toString();
+    }
+  }
+  final protected static class PersistenceWithIntOffset extends
+      PersistenceWithIntOffsetNoLL
+  {
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry prev;
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry next;
+
+    @Override
+    public DiskEntry getPrev() {
+      return this.prev;
+    }
+    @Override
+    public DiskEntry getNext() {
+      return this.next;
+    }
+    @Override
+    public void setPrev(DiskEntry v) {
+      this.prev = v;
+    }
+    @Override
+    public void setNext(DiskEntry v) {
+      this.next = v;
+    }
+  }
+
+  protected static class PersistenceWithLongOffsetNoLL extends
+      LongOplogOffsetDiskId
+  {
+    /** unique entry identifier * */
+    private long keyId;
+
+    @Override
+    long getKeyId() {
+      return keyId;
+    }
+
+    @Override
+    void setKeyId(long keyId) {
+      this.keyId = keyId;
+    }
+
+    @Override
+    boolean isKeyIdNegative() {
+      return this.keyId < 0;
+    }
+
+    @Override
+    void markForWriting() {
+      if (this.keyId > DiskRegion.INVALID_ID) {
+        // Mark the id as needing to be written
+        // The disk remove that this section used to do caused bug 30961
+        this.setKeyId(- this.keyId);
+      }
+    }
+    @Override
+    void unmarkForWriting() {
+      if (this.keyId < DiskRegion.INVALID_ID) {
+        // Mark the id as NOT needing to be written
+        this.setKeyId(- this.keyId);
+      }
+    }
+
+    @Override
+    public String toString() {
+      StringBuffer temp = new StringBuffer("Oplog Key ID = ");
+      temp.append(this.keyId);
+      temp.append("; ");
+      temp.append(super.toString());
+      return temp.toString();
+
+    }
+
+    @Override
+    boolean needsToBeWritten() {
+      return this.keyId <= DiskRegion.INVALID_ID;
+    }
+  }
+  final protected static class PersistenceWithLongOffset extends
+      PersistenceWithLongOffsetNoLL
+  {
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry prev;
+    /**
+     * Used by DiskRegion for compaction
+     * @since prPersistSprint1
+     */
+    private DiskEntry next;
+
+    @Override
+    public DiskEntry getPrev() {
+      return this.prev;
+    }
+    @Override
+    public DiskEntry getNext() {
+      return this.next;
+    }
+    @Override
+    public void setPrev(DiskEntry v) {
+      this.prev = v;
+    }
+    @Override
+    public void setNext(DiskEntry v) {
+      this.next = v;
+    }
+  }
+}
+

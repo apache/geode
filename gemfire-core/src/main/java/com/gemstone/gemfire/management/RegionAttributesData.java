@@ -1,0 +1,408 @@
+/*
+ *  =========================================================================
+ *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *  ========================================================================
+ */
+package com.gemstone.gemfire.management;
+
+import java.beans.ConstructorProperties;
+import java.util.Arrays;
+
+import com.gemstone.gemfire.cache.Region;
+
+/**
+ * Composite data type used to distribute attributes for a {@link Region}.
+ * 
+ * @author rishim
+ * @since 7.0
+ */
+public class RegionAttributesData {
+
+  private String cacheLoaderClassName;
+  private String cacheWriterClassName;
+  private String keyConstraintClassName;
+  private String[] cacheListeners;
+  private String valueConstraintClassName;
+  private int regionTimeToLive;
+  private int regionIdleTimeout;
+  private int entryTimeToLive;
+  private int entryIdleTimeout;
+  private String customEntryTimeToLive;
+  private String customEntryIdleTimeout;
+  private boolean ignoreJTA;
+  private String dataPolicy;
+  private String scope;
+  private int initialCapacity;
+  private float loadFactor;
+  private boolean lockGrantor;
+  private boolean multicastEnabled;
+  private int concurrencyLevel;
+  private boolean indexMaintenanceSynchronous;
+  private boolean statisticsEnabled;
+  private boolean subscriptionConflationEnabled;
+  private boolean asyncConflationEnabled;
+  private String poolName;
+  private boolean cloningEnabled;
+  private String diskStoreName;
+  private String interestPolicy;
+  private boolean diskSynchronous;
+  private String compressorClassName;
+
+  @ConstructorProperties( { 
+    "cacheLoaderClassName",
+    "cacheWriterClassName",
+    "keyConstraintClassName",
+    "valueConstraintClassName",
+    "regionTimeToLive",
+    "regionIdleTimeout",
+    "entryTimeToLive",
+    "entryIdleTimeout",
+    "customEntryTimeToLive",
+    "customEntryIdleTimeout",
+    "ignoreJTA",
+    "dataPolicy",
+    "scope",
+    "initialCapacity",
+    "loadFactor",
+    "lockGrantor",
+    "multicastEnabled",
+    "concurrencyLevel",
+    "indexMaintenanceSynchronous",
+    "statisticsEnabled",
+    "subscriptionConflationEnabled",
+    "asyncConflationEnabled",
+    "poolName",
+    "cloningEnabled",
+    "diskStoreName",
+    "interestPolicy",
+    "diskSynchronous",
+    "cacheListeners",
+    "compressorClassName"
+      })
+      
+      
+  public RegionAttributesData(String cacheLoaderClassName,
+      String cacheWriterClassName,
+      String keyConstraintClassName,
+      String valueConstraintClassName,
+      int regionTimeToLive,
+      int regionIdleTimeout,
+      int entryTimeToLive,
+      int entryIdleTimeout,
+      String customEntryTimeToLive,
+      String customEntryIdleTimeout,
+      boolean ignoreJTA,
+      String dataPolicy,
+      String scope,
+      int initialCapacity,
+      float loadFactor,
+      boolean lockGrantor,
+      boolean multicastEnabled,
+      int concurrencyLevel,
+      boolean indexMaintenanceSynchronous,
+      boolean statisticsEnabled,
+      boolean subscriptionConflationEnabled,
+      boolean asyncConflationEnabled,
+      String poolName,
+      boolean cloningEnabled,
+      String diskStoreName,
+      String interestPolicy,
+      boolean diskSynchronous,
+      String[] cacheListeners,
+      String compressorClassName) {
+    
+    
+    
+      this.cacheLoaderClassName = cacheLoaderClassName;
+      this.cacheWriterClassName = cacheWriterClassName;
+      this.keyConstraintClassName = keyConstraintClassName;
+      this.valueConstraintClassName = valueConstraintClassName;
+      this.regionTimeToLive = regionTimeToLive;
+      this.regionIdleTimeout = regionIdleTimeout;
+      this.entryTimeToLive = entryTimeToLive;
+      this.entryIdleTimeout = entryIdleTimeout;
+      this.customEntryTimeToLive = customEntryTimeToLive;
+      this.customEntryIdleTimeout = customEntryIdleTimeout;
+      this.ignoreJTA = ignoreJTA;
+      this.dataPolicy = dataPolicy;
+      this.scope = scope;
+      this.initialCapacity = initialCapacity;
+      this.loadFactor = loadFactor;
+      this.lockGrantor = lockGrantor;
+      this.multicastEnabled = multicastEnabled;
+      this.concurrencyLevel = concurrencyLevel;
+      this.indexMaintenanceSynchronous = indexMaintenanceSynchronous;
+      this.statisticsEnabled = statisticsEnabled;
+      this.subscriptionConflationEnabled = subscriptionConflationEnabled;
+      this.asyncConflationEnabled = asyncConflationEnabled;
+      this.poolName = poolName;
+      this.cloningEnabled = cloningEnabled;
+      this.diskStoreName = diskStoreName;
+      this.interestPolicy = interestPolicy;
+      this.diskSynchronous = diskSynchronous;
+      this.cacheListeners = cacheListeners;
+      this.compressorClassName = compressorClassName;
+  }
+
+  /**
+   * Returns the Class of cache loader associated with this region.
+   */
+  public String getCacheLoaderClassName() {
+    return cacheLoaderClassName;
+  }
+  
+  /** 
+   * Returns the Class of the cache writer associated with this region.
+   */
+  public String getCacheWriterClassName() {
+    return cacheWriterClassName;
+  }
+  
+  /**
+   * Returns the Class that the keys in this region are constrained to
+   * (must be an instance of).
+   */
+  public String getKeyConstraintClassName() {
+    return keyConstraintClassName;
+  }
+  
+  /**
+   * Returns the Class that the values in this region are constrained to
+   * (must be an instance of).
+   */
+  public String getValueConstraintClassName() {
+    return valueConstraintClassName;
+  }
+  
+  /** 
+   * Returns the time to live expiration for the Region.
+   */
+  public int getRegionTimeToLive() {
+    return regionTimeToLive;
+  }
+  
+  /**
+   * Returns the idle timeout expiration for the Region.
+   */
+  public int getRegionIdleTimeout() {
+    return regionIdleTimeout;
+  }
+  
+  /**
+   * Returns the time to live expiration for entries in the Region.
+   */
+  public int getEntryTimeToLive() {
+    return entryTimeToLive;
+  }
+  
+  /**
+   * Returns the idle timeout expiration for entries in the Region.
+   */
+  public int getEntryIdleTimeout() {
+    return entryIdleTimeout;
+  }
+  
+  /** 
+   * Returns the custom time to live expiration for entries in the
+   * Region, if one exists.
+   */
+  public String getCustomEntryTimeToLive() {
+    return customEntryTimeToLive;
+  }
+  
+  /**
+   * Returns the custom idle timeout expiration for entries in the Region,
+   * if one exists.
+   */
+  public String getCustomEntryIdleTimeout() {
+    return customEntryIdleTimeout;
+  }
+
+  /**
+   * Returns whether JTA transactions are being ignored.
+   * 
+   * @return True if JTA transactions are being ignored, false otherwise.
+   */
+  public boolean isIgnoreJTA() {
+    return ignoreJTA;
+  }
+  
+  /**
+   * Returns the data policy.
+   */
+  public String getDataPolicy() {
+    return dataPolicy;
+  }
+  
+  /**
+   * Returns the scope.
+   */
+  public String getScope() {
+    return scope;
+  }
+  
+  /**
+   * Returns the initial capacity of entries in the Region.
+   */
+  public int getInitialCapacity() {
+    return initialCapacity;
+  }
+  
+  /**
+   * Returns the load factor of entries in the Region.
+   */
+  public float getLoadFactor() {
+    return loadFactor;
+  }
+  
+  /**
+   * Returns whether this member is configured to become the lock granter 
+   * when the Region is created. It does not indicate whether this member
+   * is currently the lock granter for the Region.
+   * 
+   * @return True if this member is configured to start the Region as the
+   *         lock granter, false otherwise. Always returns false if the scope
+   *         of the Region is not <code>Scope.GLOBAL</code>
+   */
+  public boolean isLockGrantor() {
+    return lockGrantor;
+  }
+  
+  /**
+   * Returns whether multicast communication is enabled for the Region.
+   * 
+   * @return True if multicast communication is enabled, false otherwise.
+   */
+  public boolean isMulticastEnabled() {
+    return multicastEnabled;
+  }
+  
+  /**
+   * Returns the concurrency level for entries in the Region.
+   */
+  public int getConcurrencyLevel() {
+    return concurrencyLevel;
+  }
+  /**
+   * Returns whether query service index maintenance will be done
+   * synchronously.
+   * 
+   * @return True if query service index maintenance will be done
+   *         synchronously or false if it will be done asynchronously.
+   */
+  public boolean isIndexMaintenanceSynchronous() {
+    return indexMaintenanceSynchronous;
+  }
+  
+  /**
+   * Returns whether statistic collection is enabled for the Region and its
+   * entries.
+   * 
+   * @return True if statistic collection is enabled, false otherwise.
+   */
+  public boolean isStatisticsEnabled() {
+    return statisticsEnabled;
+  }
+  
+  /**
+   * Returns whether conflation is enabled for sending messages from a cache
+   * server to its clients.  This value only has meaning for client to server
+   * communication and is not relevant for peer to peer communication.
+   *
+   * @return True if conflation is enabled, false otherwise.
+   */
+  public boolean isSubscriptionConflationEnabled() {
+    return subscriptionConflationEnabled;
+  }
+
+  /**
+   * Returns whether asynchronous conflation is enabled for sending messages
+   * to peers.
+   *
+   * @return True if asynchronous conflation is enabled, false otherwise.
+   */
+  public boolean isAsyncConflationEnabled() {
+    return asyncConflationEnabled;
+  }
+
+  /**
+   * Returns the name of the Pool that this Region will use to communicate
+   * with servers, if any.
+   * 
+   * @return The name of the Pool used to communicate with servers or null if the
+   *         host member communicates with peers.
+   */
+  public String getPoolName() {
+    return poolName;
+  }
+  
+  /**
+   * Returns whether cloning is enabled.
+   *
+   * @return True if cloning is enabled, false otherwise.
+   */
+  public boolean isCloningEnabled() {
+    return cloningEnabled;
+  }
+
+  /**
+   * Returns the name of the DiskStore associated with the Region.
+   */
+  public String getDiskStoreName() {
+    return diskStoreName;
+  }
+
+  /** 
+   * Returns the subscriber's interest policy.
+   */
+  public String getInterestPolicy() {
+    return interestPolicy;
+  }
+  
+  /**
+   * Returns whether disk writes are synchronous.
+   * 
+   * @return True if disk writes are synchronous, false otherwise.
+   */
+  public boolean isDiskSynchronous(){
+     return diskSynchronous;
+  }
+
+  /**
+   * Returns a list of CacheListeners for the Region.
+   * An empty array if no listener is specified.
+   */
+  public String[] getCacheListeners() {
+    return cacheListeners;
+  }
+
+  /**
+   * Returns the compressor class name used by the region.
+   * @return null if no compression is used.
+   */
+  public String getCompressorClassName() {
+    return compressorClassName;
+  }
+
+  @Override
+  public String toString() {
+    return "RegionAttributesData [asyncConflationEnabled=" + asyncConflationEnabled + ", cacheListeners=" + Arrays.toString(cacheListeners)
+        + ", cacheLoaderClassName=" + cacheLoaderClassName + ", cacheWriterClassName=" + cacheWriterClassName + ", cloningEnabled=" + cloningEnabled
+        + ", compressorClassName=" + compressorClassName + ", concurrencyLevel=" + concurrencyLevel + ", customEntryIdleTimeout=" + customEntryIdleTimeout
+        + ", customEntryTimeToLive=" + customEntryTimeToLive + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName
+        + ", diskSynchronous=" + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive=" + entryTimeToLive
+        + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
+        + indexMaintenanceSynchronous + ", initialCapacity=" + initialCapacity + ", interestPolicy=" + interestPolicy + ", keyConstraintClassName="
+        + keyConstraintClassName + ", loadFactor=" + loadFactor + ", lockGrantor=" + lockGrantor + ", multicastEnabled=" + multicastEnabled
+        + ", poolName=" + poolName + ", regionIdleTimeout=" + regionIdleTimeout + ", regionTimeToLive=" + regionTimeToLive + ", scope=" + scope
+        + ", statisticsEnabled=" + statisticsEnabled + ", subscriptionConflationEnabled=" + subscriptionConflationEnabled
+        + ", valueConstraintClassName=" + valueConstraintClassName + "]";
+  }
+
+  
+
+}
+

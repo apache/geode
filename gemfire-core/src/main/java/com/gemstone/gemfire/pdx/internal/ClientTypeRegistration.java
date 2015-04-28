@@ -1,0 +1,409 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.pdx.internal;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.ServerConnectivityException;
+import com.gemstone.gemfire.cache.client.internal.AddPDXEnumOp;
+import com.gemstone.gemfire.cache.client.internal.AddPDXTypeOp;
+import com.gemstone.gemfire.cache.client.internal.ExecutablePool;
+import com.gemstone.gemfire.cache.client.internal.GetPDXEnumByIdOp;
+import com.gemstone.gemfire.cache.client.internal.GetPDXEnumsOp;
+import com.gemstone.gemfire.cache.client.internal.GetPDXIdForEnumOp;
+import com.gemstone.gemfire.cache.client.internal.GetPDXIdForTypeOp;
+import com.gemstone.gemfire.cache.client.internal.GetPDXTypeByIdOp;
+import com.gemstone.gemfire.cache.client.internal.GetPDXTypesOp;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.pdx.PdxInitializationException;
+
+/**
+ * @author dsmith
+ *
+ */
+public class ClientTypeRegistration implements TypeRegistration {
+  private static final Logger logger = LogService.getLogger();
+  
+  private final GemFireCacheImpl cache;
+  
+  private volatile boolean typeRegistryInUse = false;
+
+  public ClientTypeRegistration(GemFireCacheImpl cache) {
+    this.cache = cache;
+  }
+  
+  public int defineType(PdxType newType) {
+    verifyConfiguration(); 
+    Collection<Pool> pools = getAllPools();
+    
+    ServerConnectivityException lastException = null;
+    for(Pool pool: pools) {
+      try {
+        int result = GetPDXIdForTypeOp.execute((ExecutablePool) pool, newType);
+        newType.setTypeId(result);
+        sendTypeToAllPools(newType, result, pools, pool);
+        return result;
+      } catch(ServerConnectivityException e) {
+        //ignore, try the next pool.
+        lastException = e;
+      }
+    }
+    if(lastException != null) {
+      throw lastException;
+    } else {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry can not define a type.");
+    }
+  }
+  
+  private void sendTypeToAllPools(PdxType type, int id,
+      Collection<Pool> pools, Pool definingPool) {
+    
+    for(Pool pool: pools) {
+      if(pool.equals(definingPool)) {
+        continue;
+      }
+      
+      try {
+        AddPDXTypeOp.execute((ExecutablePool) pool, id, type);
+      } catch(ServerConnectivityException ignore) {
+        logger.debug("Received an exception sending pdx type to pool {}, {}", pool, ignore.getMessage(), ignore);
+        //TODO DAN - is it really safe to ignore this? What if this is the pool
+        //we're about to do a put on? I think maybe we really should pass the context
+        //down to this point, if it is available. Maybe just an optional thread local?
+        //Then we could go straight to that pool to register the type and bail otherwise.
+      }
+    }
+    
+  }
+
+  public PdxType getType(int typeId) {
+    verifyConfiguration();
+    Collection<Pool> pools = getAllPools();
+    
+    ServerConnectivityException lastException = null;
+    for(Pool pool: pools) {
+      try {
+        PdxType type = GetPDXTypeByIdOp.execute((ExecutablePool) pool, typeId);
+        if(type != null) {
+          return type;
+        }
+      } catch(ServerConnectivityException e) {
+        logger.debug("Received an exception getting pdx type from pool {}, {}", pool, e.getMessage(), e);
+        //ignore, try the next pool.
+        lastException = e;
+      }
+    }
+    
+    if(lastException != null) {
+      throw lastException;
+    } else {
+      if(pools.isEmpty()) {
+        // TODO check for cache closed
+        if (this.cache.isClosed()) {
+          throw new CacheClosedException("PDX detected cache was closed");
+        }
+        throw new CacheClosedException("Client pools have been closed so the PDX type registry can not lookup a type.");
+      } else {
+        throw new InternalGemFireError("getType: Unable to determine PDXType for id " + typeId + " from existing client to server pools " + pools);
+      }
+    }
+  }
+  
+  private Collection<Pool> getAllPools() {
+    return getAllPools(cache);
+  }
+  
+  private static Collection<Pool> getAllPools(GemFireCacheImpl cache) {
+    Collection<Pool> pools = PoolManagerImpl.getPMI().getMap().values();
+    for(Iterator<Pool> itr= pools.iterator(); itr.hasNext(); ) {
+      PoolImpl pool = (PoolImpl) itr.next();
+      if(pool.isUsedByGateway()) {
+        itr.remove();
+      }
+    }
+    return pools;
+  }
+
+  public void addRemoteType(int typeId, PdxType type) {
+    throw new UnsupportedOperationException("Clients will not be asked to add remote types");
+  }
+
+  public int getLastAllocatedTypeId() {
+    throw new UnsupportedOperationException("Clients does not keep track of last allocated id");
+  }
+
+  public void initialize() {
+    //do nothing
+  }
+
+  public void gatewaySenderStarted(GatewaySender gatewaySender) {
+    checkAllowed();
+  }
+  
+  public void creatingPersistentRegion() {
+    //do nothing
+  }
+
+  public void creatingPool() {
+    //do nothing
+  }
+
+  public int getEnumId(Enum<?> v) {
+    EnumInfo ei = new EnumInfo(v);
+    Collection<Pool> pools = getAllPools();
+
+    ServerConnectivityException lastException = null;
+    for(Pool pool: pools) {
+      try {
+        int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, ei);
+        sendEnumIdToAllPools(ei, result, pools, pool);
+        return result;
+      } catch(ServerConnectivityException e) {
+        //ignore, try the next pool.
+        lastException = e;
+      }
+    }
+    if (lastException != null) {
+      throw lastException;
+    } else {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry can not define a type.");
+    }
+  }
+  
+  private void sendEnumIdToAllPools(EnumInfo enumInfo, int id,
+      Collection<Pool> pools, Pool definingPool) {
+
+    for (Pool pool: pools) {
+      if (pool.equals(definingPool)) {
+        continue;
+      }
+
+      try {
+        AddPDXEnumOp.execute((ExecutablePool) pool, id, enumInfo);
+      } catch(ServerConnectivityException ignore) {
+        logger.debug("Received an exception sending pdx type to pool {}, {}", pool, ignore.getMessage(), ignore);
+        //TODO DAN - is it really safe to ignore this? What if this is the pool
+        //we're about to do a put on? I think maybe we really should pass the context
+        //down to this point, if it is available. Maybe just an optional thread local?
+        //Then we could go straight to that pool to register the type and bail otherwise.
+      }
+    }
+  }
+
+  public void addRemoteEnum(int enumId, EnumInfo newInfo) {
+    throw new UnsupportedOperationException("Clients will not be asked to add remote enums");
+  }
+
+  public int defineEnum(EnumInfo newInfo) {
+    Collection<Pool> pools = getAllPools();
+    
+    ServerConnectivityException lastException = null;
+    for(Pool pool: pools) {
+      try {
+        int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, newInfo);
+        sendEnumIdToAllPools(newInfo, result, pools, pool);
+        return result;
+      } catch(ServerConnectivityException e) {
+        //ignore, try the next pool.
+        lastException = e;
+      }
+    }
+    
+    
+    if(lastException != null) {
+      throw lastException;
+    } else {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry can not define a type.");
+    }
+   }
+
+  public EnumInfo getEnumById(int enumId) {
+    Collection<Pool> pools = getAllPools();
+    
+    ServerConnectivityException lastException = null;
+    for(Pool pool: pools) {
+      try {
+        EnumInfo result = GetPDXEnumByIdOp.execute((ExecutablePool) pool, enumId);
+        if(result != null) {
+          return result;
+        }
+      } catch(ServerConnectivityException e) {
+        logger.debug("Received an exception getting pdx type from pool {}, {}", pool, e.getMessage(), e);
+        //ignore, try the next pool.
+        lastException = e;
+      }
+    }
+    
+    if(lastException != null) {
+      throw lastException;
+    } else {
+      if(pools.isEmpty()) {
+        // TODO check for cache closed
+        if (this.cache.isClosed()) {
+          throw new CacheClosedException("PDX detected cache was closed");
+        }
+        throw new CacheClosedException("Client pools have been closed so the PDX type registry can not lookup an enum.");
+      } else {
+        throw new InternalGemFireError("getEnum: Unable to determine pdx enum for id " + enumId + " from existing client to server pools " + pools);
+      }
+    }
+  }
+  
+  private void verifyConfiguration() {
+    if(typeRegistryInUse) {
+      return;
+    } else {
+      typeRegistryInUse = true;
+      checkAllowed();
+    }
+  }
+  
+  private void checkAllowed() {
+    //Anything is allowed until the registry is in use.
+    if(!typeRegistryInUse) {
+      return;
+    }
+  }
+
+  @SuppressWarnings({ "unchecked", "serial" })
+  @Override
+  public Map<Integer, PdxType> types() {
+    Collection<Pool> pools = getAllPools();
+    if (pools.isEmpty()) {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry is not available.");
+    }
+    
+    Map<Integer, PdxType> types = new HashMap<Integer, PdxType>();
+    for (Pool p : pools) {
+      try {
+        types.putAll(GetPDXTypesOp.execute((ExecutablePool) p));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    return types;
+  }
+
+  @SuppressWarnings({ "unchecked", "serial" })
+  @Override
+  public Map<Integer, EnumInfo> enums() {
+    Collection<Pool> pools = getAllPools();
+    if (pools.isEmpty()) {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry is not available.");
+    }
+    
+    Map<Integer, EnumInfo> enums = new HashMap<Integer, EnumInfo>();
+    for (Pool p : pools) {
+      enums.putAll(GetPDXEnumsOp.execute((ExecutablePool) p));
+    }
+    return enums;
+  }
+  
+
+  @Override
+  public PdxType getPdxTypeForField(String fieldName, String className) {
+    for (Object value : types().values()) {
+      if (value instanceof PdxType){
+        PdxType pdxType = (PdxType) value;
+        if(pdxType.getClassName().equals(className) && pdxType.getPdxField(fieldName) != null){
+          return pdxType;
+        }
+      }
+    }
+    return null;
+  }
+  @Override
+  public void testClearRegistry() {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public boolean isClient() {
+    return true;
+  }
+
+  @Override
+  public void addImportedType(int typeId, PdxType importedType) {
+    Collection<Pool> pools = getAllPools();
+    
+    ServerConnectivityException lastException = null;
+    for(Pool pool: pools) {
+      try {
+        sendTypeToAllPools(importedType, typeId, pools, pool);
+      } catch(ServerConnectivityException e) {
+        //ignore, try the next pool.
+        lastException = e;
+      }
+    }
+    if(lastException != null) {
+      throw lastException;
+    } else {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry can not define a type.");
+    }
+  }
+
+  @Override
+  public void addImportedEnum(int enumId, EnumInfo importedInfo) {
+    Collection<Pool> pools = getAllPools();
+    
+    ServerConnectivityException lastException = null;
+    for(Pool pool: pools) {
+      try {
+        sendEnumIdToAllPools(importedInfo, enumId, pools, pool);
+      } catch(ServerConnectivityException e) {
+        //ignore, try the next pool.
+        lastException = e;
+      }
+    }
+    
+    if(lastException != null) {
+      throw lastException;
+    } else {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry can not define a type.");
+    }
+  }
+  
+  @Override
+  public int getLocalSize() {
+    return 0;
+  }
+}

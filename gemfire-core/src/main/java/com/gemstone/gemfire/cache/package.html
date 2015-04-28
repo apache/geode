@@ -1,0 +1,593 @@
+<html>
+<body>
+
+<p>Provides an implementation of distributed object caching that
+can leverage GemFire's distribution capabilities. Refer to
+the programmer's guide for performance guidelines.</p>
+
+<a name="top">
+<ul>
+<li><a href="#functions">Function Execution</a></li>
+<li><a href="#distcache">Distributed Caching</a></li>
+<li><a href="#regions">Cache Regions</a></li>
+<li><a href="#partition">Partitioned Regions</a></li>
+<li><a href="#entries">Region Entries</a></li>
+<li><a href="#consistency">Distribution and Consistency Models</a></li>
+<li><a href="#storage">Storage Model</a></li>
+<li><a href="#loader">Cache Loaders</a></li>
+<li><a href="#cachewriter">Cache Writers</a></li>
+<li><a href="#expiration">Expiration</a></li>
+<li><a href="#event">Cache Events</a></li>
+<li><a href="#eviction">Eviction Attributes</a></li>
+<li><a href="#statistics">Statistics</a></li>
+<li><a href="#declarative">Declarative Caching</a></li>
+<li><a href="#clientServer">Client/Server Caching</a></li>
+<li><a href="#tx">Cache Transactions</a></li>
+<li><a href="#membership">Membership Attributes</a></li>
+</ul>
+
+<a name="functions"><h2>Function Execution</h2><a href="#top">Back to
+Top</a>
+
+<p>Function execution facilitates movement of behavior in the form of
+{@linkplain com.gemstone.gemfire.cache.execute.Function}s executed using the
+{@linkplain com.gemstone.gemfire.cache.execute.FunctionService
+Function Execution Service}.  A Function may generate results from
+parallel execution on many {@linkplain com.gemstone.gemfire.cache.execute.FunctionService#onMembers(String...) members}
+, or several {@linkplain com.gemstone.gemfire.cache.execute.FunctionService#onServers(Pool)
+Cache Servers}, or perhaps evaluating {@link
+com.gemstone.gemfire.cache.execute.FunctionService#onRegion(Region) Region} data.  A {@linkplain
+com.gemstone.gemfire.cache.execute.ResultCollector} collects and
+possibly processes those results for consumption.  For more information look to the
+{@link com.gemstone.gemfire.cache.execute} package.
+</p>
+
+<a name="distcache"><h2>Distributed Caching</h2><a href="#top">Back to Top</a>
+
+<!-- Architecture diagram that shows multiple VMs in the same
+distributed system -->
+
+<p>GemFire's distributed caching implementation allows application data to be
+efficiently shared among multiple threads in a VM, multiple VMs
+running on the same physical machine, and multiple VMs running on
+multiple machines.  Cached data resides in "regions" whose
+contents are stored in a VM's heap.</p>
+<p>The {@link com.gemstone.gemfire.cache.CacheFactory} class provides
+the entry point to the caching API.  A <code>CacheFactory</code> is
+configured to create a {@linkplain com.gemstone.gemfire.cache.Cache
+"cache instance"} that resides in the VM.  The cache factory also allows
+the {@link com.gemstone.gemfire.distributed.DistributedSystem} to be configured.</p>
+
+<a name="regions"><h2>Cache Regions</h2></a><a href="#top">Back to Top</a>
+
+<p>Application data is cached in a {@linkplain
+com.gemstone.gemfire.cache.Region "region"}.  The {@link
+com.gemstone.gemfire.cache.RegionFactory} class provides the simpliest
+entry point into the {@linkplain com.gemstone.gemfire.cache.Region} 
+API. A {@link com.gemstone.gemfire.cache.Region} implements {@link java.util.Map},
+however, it also provides caching behavior such as data loading,
+eviction control, and distribution.  Every region has a name and
+regions may be nested to provide a cache-naming hierarchy ("parent
+regions" with "subregions").  The root regions of the naming hierarchy
+(that is, the regions with no parent) are obtained with the {@link
+com.gemstone.gemfire.cache.Cache#rootRegions} method.
+Any region may be obtained with the {@link
+com.gemstone.gemfire.cache.Cache#getRegion} method.</p>
+
+<p>Region properties such as the region's cache loader, data policy, and
+storage model are specified by an instance of {@link
+com.gemstone.gemfire.cache.RegionAttributes}.  A region
+<code>RegionAttributes</code> object can be specified when {@linkplain
+com.gemstone.gemfire.cache.Region#createSubregion creating} a
+region.</p>
+
+<a name="partition"><h2>Partitioned Regions</h2><a href="#top">Back to Top</a>
+
+<p>Region data can be partitioned across many distributed system members to create one large logical heap.  
+The data policy must be set to {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}
+or {@link com.gemstone.gemfire.cache.DataPolicy#PERSISTENT_PARTITION}.
+{@link com.gemstone.gemfire.cache.PartitionAttributes} are used to configure
+a partitioned region.  A partitioned region can be configured to be
+highly available, surviving the loss of one or more system members, by
+maintaining copies of data.  These extra copies also benefit read operations by
+allowing load balancing across all the copies.</p>
+
+<p>Partitioned Regions have the added feature of allowing storage
+sizes larger than a single Java VM can provide and with multiple
+Java VMs comes multiple garbage collectors, improving the performance of
+the entire Region in the face of a full garbage collection cycle.</p>
+</p>
+
+<p>Partitioned Regions support custom partitioning with the use of a
+{@link com.gemstone.gemfire.cache.PartitionResolver} and can be
+associated together or 
+{@linkplain com.gemstone.gemfire.cache.PartitionAttributesFactory#setColocatedWith(String)
+colocated} to allow for efficient data usage.
+</p>
+
+<p>A {@link com.gemstone.gemfire.cache.partition.PartitionRegionHelper}
+class provides methods to facilitate usage of Partitioned
+Regions with other features, for example when used in conjunction with <a
+href="#functions">function execution</a>.
+</p>
+
+<a name="entries"><h2>Region Entries</h2><a href="#top">Back to Top</a>
+
+<!-- Life cycle, constrained keys -->
+
+<p>A region contains key/value pairs of objects known as the region's
+{@linkplain com.gemstone.gemfire.cache.Region.Entry "entries"}.  The
+<code>Region</code> class provides a number of methods for
+manipulating the region's entries such as {@link
+com.gemstone.gemfire.cache.Region#create create}, {@link
+com.gemstone.gemfire.cache.Region#put put}, {@link
+com.gemstone.gemfire.cache.Region#invalidate invalidate}, and {@link
+com.gemstone.gemfire.cache.Region#destroy destroy} .  The following
+diagram describes the life cycle of a region entry.</p>
+
+<CENTER>
+<IMG SRC="doc-files/entry-life-cycle.gif"
+     WIDTH="598" HEIGHT="224"/>
+</CENTER>
+
+<a name="consistency"><h2>Distribution and Consistency Models</h2><a href="#top">Back to Top</a>
+
+<p>A region's {@linkplain
+com.gemstone.gemfire.cache.RegionAttributes#getScope scope} attribute
+determines how the region's entries will be distributed to other
+caches.  A region with {@linkplain com.gemstone.gemfire.cache.Scope#LOCAL local} scope
+will not distribute any of its changes to any other members of the
+distributed system, nor will it receive changes when another cache
+instance is updated.</p>
+
+<p>When a change (such as a <code>put</code> or
+<code>invalidate</code>) is made to a region with non-local scope,
+that change is distributed to the other members of the distributed
+system that have created that region in their cache instance.  There
+are three kinds of distributed scope, each of which guarantees a
+different level of consistency for distributed data.  {@linkplain
+com.gemstone.gemfire.cache.Scope#GLOBAL "Global"
+scope} provides the highest level of data consistency by obtaining a
+{@linkplain com.gemstone.gemfire.distributed.DistributedLockService
+distributed lock} on a region entry before propagating a change to other
+members of the distributed system.  With globally-scoped regions, only
+one thread in the entire distributed system may modify the region entry at a
+time.</p>
+
+<p>{@linkplain com.gemstone.gemfire.cache.Scope#DISTRIBUTED_ACK
+"Distributed ACK" scope} provides slightly weaker data consistency
+than global scope.  With distributed ACK scope, the method that
+modifies the region (such as a call to {@link
+com.gemstone.gemfire.cache.Region#destroy}) will not return until an
+acknowledgment of the change has been received from every member of
+the distributed system.  Multiple threads may modify the region
+concurrently, but the modifying thread may proceed knowing that its
+change to the region has been seen by all other members.</p>
+
+<p>{@linkplain com.gemstone.gemfire.cache.Scope#DISTRIBUTED_NO_ACK
+"Distributed NO ACK" scope} provides the weakest data consistency of
+all the scopes, but also provides the best performance.  A method invocation that
+modifies a region with distributed NO ACK scope will return
+immediately after it has updated the contents of the region in its own
+cache instance.  The updates are distributed
+asynchronously.</p>
+
+<a name="storage"><h2>Storage Model</h2><a href="#top">Back to Top</a>
+
+<p>The contents of a region (that is, the region's key/value pairs)
+may be stored in either the JVM's heap or on a disk drive.
+</p>
+
+<a name="dataPolicy"><h3>Data Policy</h3></a><a href="#top">Back to Top</a>
+
+<p>A region's {@linkplain com.gemstone.gemfire.cache.DataPolicy
+"data policy" attribute} determines if data is stored in the local cache.
+The {@linkplain com.gemstone.gemfire.cache.DataPolicy#NORMAL normal policy}
+will store region data in the local cache.
+The {@linkplain com.gemstone.gemfire.cache.DataPolicy#EMPTY empty policy}
+will never store region data in the local cache. They act as proxy regions that
+distribute write operations to others and receive events from others.
+The {@linkplain com.gemstone.gemfire.cache.DataPolicy#withReplication replication policies}
+may reduce the number of net searches that a caching application has to be perform,
+and can provide a backup mechanism. The replicated region initializes itself when
+it is created with the keys and value of the region as found in other caches.
+The {@linkplain com.gemstone.gemfire.cache.DataPolicy#REPLICATE replicate policy} simply stores the relicate data in memory and
+the {@linkplain com.gemstone.gemfire.cache.DataPolicy#PERSISTENT_REPLICATE persistent replicate policy} stores the data in memory and disk.
+The {@linkplain com.gemstone.gemfire.cache.DataPolicy#withPartitioning partition policies} are used for <a href="#partition">partitioned</a> regions.
+The {@linkplain com.gemstone.gemfire.cache.DataPolicy#PARTITION partition policy} simply stores the <a href="#partition">partitioned</a> data in memory and
+the {@linkplain com.gemstone.gemfire.cache.DataPolicy#PERSISTENT_PARTITION persistent partition policy} stores the <a href="#partition">partitioned</a> data in memory and disk.
+</p>
+
+<a name="storageOnDisk"><h3>Disk Storage</h3></a>
+
+<p>GemFire supports several modes of region persistence as determined by
+the {@linkplain com.gemstone.gemfire.cache.DataPolicy#withPersistence
+persistent data policies} and the {@link
+com.gemstone.gemfire.cache.RegionAttributes#getEvictionAttributes}'s {@linkplain
+com.gemstone.gemfire.cache.EvictionAction eviction action}
+of {@linkplain com.gemstone.gemfire.cache.EvictionAction#OVERFLOW_TO_DISK overflow-to-disk}.
+The following table summarizes the different modes and their configuration.</p>
+
+<table border="1">
+
+<th>persistence</th>
+<th>overflow-to-disk</th>
+<th>mode</th>
+<th>description</th>
+
+<tr>
+ <td>false</td>
+ <td>false</td>
+ <td>No Disk</td>
+ <td>The cache <code>Region</code> persists no data to the disk.
+     This is the default configuration.</td>
+</tr>
+
+<tr>
+ <td>false</td>
+ <td>true</td>
+ <td>Disk for overflow only</td>
+ <td>Once the amount of data stored in the region exceeds the eviction
+     controller's threshold, least recently used data is written to
+     disk and removed from the VM until the region's size is below the
+     threshold.</td> 
+</tr>
+
+<tr>
+ <td>true</td>
+ <td>false</td>
+ <td>Disk for persistence</td>
+ <td>All data in the region is {@linkplain
+     com.gemstone.gemfire.cache.DiskStore scheduled to be
+     written} to disk as soon as it is placed in the region.  Thus,
+     the data on disk contains a complete backup of the region.  No
+     information about recently used data is maintained and,
+     therefore, the size of the VM will continue to grow as more data
+     is added to the region.  "Disk for persistence" mode is
+     appropriate for situations in which the user wants to back up a
+     region whose data fits completely in the VM.</td>
+</tr>
+
+<tr>
+ <td>true</td>
+ <td>true</td>
+ <td>Disk for overflow and persistence</td>
+ <td>All data in the region is {@linkplain
+     com.gemstone.gemfire.cache.DiskStore scheduled to be
+     written} to disk as soon as it is placed in the region.  But
+     unlike "disk for persistence" mode, the least recently used data will
+     be removed from the VM once the eviction controller's
+     threshold is reached.</td>
+</tr>
+
+</table>
+
+<p>There are several things to keep in mind when working with regions
+that store data on disk.</p>
+
+<UL>
+
+<LI>Operations (such as {@link
+com.gemstone.gemfire.cache.Region#invalidate invalidate} and {@link
+com.gemstone.gemfire.cache.Region#destroy}) that remove data from the
+cache also remove data from disk.  In order for data to be removed
+from the VM and not from disk, {@linkplain
+com.gemstone.gemfire.cache.EvictionAction#OVERFLOW_TO_DISK}
+overflow} must be used.</LI>
+
+<LI>When disk overflow is enabled, only the {@linkplain
+com.gemstone.gemfire.cache.Region.Entry#getValue value} of the least
+recently used entry is removed from the VM.  That is, the entry's key
+and the entry itself remain in the VM.</LI>
+
+<LI>When disk overflow is enabled, and backup is not then in each
+disk directory files whose name start with <code>OVERFLOW_</code>
+will be created. These files are deleted automatically when they
+are no longer being used. If a VM crashes it may not clean up its
+overflow files. In that case they will be cleaned up the next time
+the same region is created.</LI>
+
+<LI>GemFire will look for the value of a region entry on disk before
+it will look in other cache instances.  That is, it will not perform a
+net search or a {@linkplain
+com.gemstone.gemfire.cache.CacheLoader#load load} if the value exists
+on disk.</LI>
+
+<LI>When data is read from or written to disk, no {@linkplain
+com.gemstone.gemfire.cache.CacheEvent cache events} are fired.</LI>
+
+<LI>Region operations such as {@linkplain
+com.gemstone.gemfire.cache.Region#destroy destroy} and {@linkplain
+com.gemstone.gemfire.cache.Region#invalidate invalidate} effect the
+data that is stored on disk in addition to the data stored in the VM.
+That is, if an entry is destroyed in the VM (even by an {@link
+com.gemstone.gemfire.cache.ExpirationAction}), it will also be destroyed on disk.</LI>
+
+</UL>
+
+<h3>Region backup and restore</h3>
+
+Any GemFire resource that stores data on disk does so by configuring itself
+to use a {@link com.gemstone.gemfire.cache.DiskStore disk store}.
+Disk stores are created using the
+{@link com.gemstone.gemfire.cache.DiskStoreFactory disk store factory API} or by
+configuring them in XML using the "disk-store" element.
+
+Region's specify the disk store they are in by setting the
+{@link com.gemstone.gemfire.cache.RegionAttributes#getDiskStoreName disk store name region attribute}.
+
+<P>A {@linkplain com.gemstone.gemfire.cache.Region#put put} on a region
+that is configured to have a disk "backup" (by using a 
+{@linkplain com.gemstone.gemfire.cache.DataPolicy#withPersistence
+persistent data policy})
+ will result in the immediate scheduling of a
+disk write according to the region's {@link
+com.gemstone.gemfire.cache.DiskStore disk store}
+and the  {@linkplain com.gemstone.gemfire.cache.RegionAttributes#isDiskSynchronous
+disk synchronous region attribute}.</P>
+
+<P>The actual backup data is stored in each of the disk store's specified disk
+directories. If any one of these directories runs out of space then
+any further writes to the backed up region will fail with a
+DiskAccessException. The actual file names begin with <code>BACKUP_</code>.
+If you wish to store a backup in another location
+or offline, then all of these files need to be saved. All of the files
+in the same directory must always be kept together in the same directory.
+It is ok to change the directory name.
+
+<P>When a region with a disk backup is created, it initializes itself
+with a "bulk load" operation that reads region entry data from its
+disk files.  Note that the bulk load operation does not create cache
+events and it does not send update messages to other members of the
+distributed system.  Bulk loading reads both the key and value
+of each region entry into memory.
+If region also has overflow-to-disk enabled then it will only load values
+until the LRU limit is reached.
+If the system property "gemfire.disk.recoverValues"
+is set to "false" then the entry values will
+not be loaded into memory during the bulk load
+but will be lazily read into the VM as they are requested.</P>
+
+<P>A common high-availability scenario may involve replicated regions
+that are configured to have disk backups.  When a replicated backup
+region is created in a distributed system that already contains a
+replicated backup region, GemFire optimizes the initialization of the
+backup region by streaming the contents of the backup file to the
+region being initialized.  If there is no other replicated backup region
+in the distributed system, the backup file for the region being
+initialized may contain stale data.  (That is, the value of region
+entries may have changed while the backup VM was down.)  In this
+situation, the region being initialized will consult other VMs in the
+distributed system to obtain an up-to-date version of the cached
+data.</P>
+
+<a name="loader"><h2>Cache Loaders</h2></a><a href="#top">Back to Top</a>
+
+<!-- CacheLoader, netSearch, netLoad -->
+
+<p>A {@linkplain com.gemstone.gemfire.cache.CacheLoader cache loader}
+allows data from outside of the VM to be placed into a region.  When
+{@link com.gemstone.gemfire.cache.Region#get} is called for a region
+entry that has a <code>null</code> value, the {@link
+com.gemstone.gemfire.cache.CacheLoader#load load} method of the
+region's cache loader is invoked.  The <code>load</code> method
+creates the value for the desired key by performing an operation such
+as a database query.  The <code>load</code> may also perform a
+{@linkplain com.gemstone.gemfire.cache.LoaderHelper#netSearch net
+search} that will look for the value in a cache instance hosted by
+another member of the distributed system.</p>
+
+<p>If a region was not created with a user-specified cache loader, the
+<code>get</code> operation will, by default, perform a special
+variation of net search: if the value cannot be found in any of the
+members of the distributed system, but one of those members has
+defined a cache loader for the region, then that remote cache loader
+will be invoked (a "net load") and the loaded value returned to the
+requester.  Note that a net load does not store the loaded value in
+the remote cache's region.</p>
+
+<a name="cachewriter"><h2>Cache Writers</h2><a href="#top">Back to Top</a>
+
+<p>The {@link com.gemstone.gemfire.cache.CacheWriter} is a type of event handler
+that is invoked <em>synchronously before</em> the cache is modified, and has
+the ability to abort the operation. Only one CacheWriter in the distributed system
+is invoked before the operation that would modify a cache. A CacheWriter
+is typically used to update an external database.</p>
+
+<a name="expiration"><h2>Expiration</h2></a><a href="#top">Back to Top</a>
+
+<p>Sometimes cached data has a limited lifetime.  The region attributes 
+{@linkplain com.gemstone.gemfire.cache.RegionAttributes#getRegionTimeToLive
+regionTimeToLive}, {@linkplain
+com.gemstone.gemfire.cache.RegionAttributes#getRegionIdleTimeout
+regionIdleTimeout}, {@linkplain
+com.gemstone.gemfire.cache.RegionAttributes#getEntryTimeToLive
+entryTimeToLive}, and {@linkplain
+com.gemstone.gemfire.cache.RegionAttributes#getEntryIdleTimeout
+entryIdleTimeout}, specify how data is handled when it becomes too
+old.  There are two conditions under which cache data is considered
+too old: data has resided unchanged in a region for a given amount of time
+("time to
+live") and data has not been accessed for a given amount of time
+("idle
+time").  GemFire's caching implementation launches an "expiration
+thread" that periodically monitors region entries and will expire
+those that have become too old.  When a region entry expires, it can
+either be {@linkplain
+com.gemstone.gemfire.cache.ExpirationAction#INVALIDATE
+invalidated},  {@linkplain
+com.gemstone.gemfire.cache.ExpirationAction#DESTROY
+destroyed}, {@linkplain
+com.gemstone.gemfire.cache.ExpirationAction#LOCAL_INVALIDATE locally
+invalidated}, or {@linkplain
+com.gemstone.gemfire.cache.ExpirationAction#LOCAL_DESTROY locally destroyed}.</p>
+
+<a name="event"><h2>Cache Events</h2></a><a href="#top">Back to Top</a>
+
+<p>The {@link com.gemstone.gemfire.cache.CacheListener}
+interface provides callback methods that are invoked synchronously in
+response to certain operations (such as a <code>put</code> or
+<code>invalidate</code>) being performed on a region.  The event
+listener for a region is specified with the {@link
+com.gemstone.gemfire.cache.AttributesFactory#setCacheListener
+setCacheListener} method.  Each callback method on the
+<code>CacheListener</code> receives a {@link
+com.gemstone.gemfire.cache.CacheEvent} describing the operation
+that caused the callback to be invoked and possibly containing information
+relevant to the operation 
+(such as the old and new values of a region entry).</p>
+
+<a name="eviction"><h2>Eviction Attributes</h2><a href="#top">Back to Top</a>
+
+<p>Before a new entry is created in a region, the region's eviction controller
+ is consulted.  The eviction controller may perform some action on the region (usually an
+action that makes the region smaller) based on certain criteria.  For
+instance, an eviction controller could keep track of the sizes of the
+entry values.  Before a new entry is added, the eviction controller
+could remove the entry with the largest value to free up space in
+the cache instance for new data.  GemFire provides {@link
+com.gemstone.gemfire.cache.EvictionAttributes} that will create an eviction controller 
+that destroys the "least recently used" Region Entry once the Region
+exceeds a given number of entries.</p>
+
+<a name="statistics"><h2>Statistics</h2><a href="#top">Back to Top</a>
+
+<!-- API statistics and VSD statistics -->
+
+<p>The {@link com.gemstone.gemfire.cache.CacheStatistics} class
+provides statistics information about the usage of a region or entry.
+Statistics are often used by eviction controllers to determine which
+entries should be invalidated or destroyed when the region reaches its
+maximum size.</p>
+
+<a name="declarative"><h2>Declarative Caching</h2><a href="#top">Back to Top</a>
+
+<p>A "caching XML file" declares regions, entries, and attributes.  When
+a <code>Cache</code> is created its contents can be initialized
+according to a caching XML file.
+The top level element must be a cache element.
+</p>
+
+<p>The Document Type Definition for a declarative cache XML file can
+be found in <code>"doc-files/cache6_5.dtd"</code>. For examples of
+declarative cache XML files see <A
+href="doc-files/example-cache.xml">example1</A>, <A
+href="doc-files/example2-cache.xml">example2</A>, and <A
+href="doc-files/example3-cache.xml">example3</A>.
+
+<a name="clientServer"><h2>Client/Server Caching</h2><a href="#top">Back to Top</a>
+
+<p>GemFire caches can be configured in a client/server hierarchy.
+In this configuration, GemFire cache regions are configured as 
+clients to regions in GemFire server caches running in a separate
+distributed system.
+The GemFire {@linkplain com.gemstone.gemfire.cache.server servers}
+are generally run as cacheserver processes.
+{@linkplain com.gemstone.gemfire.cache.client Clients}
+are configured with a
+{@linkplain com.gemstone.gemfire.cache.client.ClientCache client cache}
+which has a default
+{@linkplain com.gemstone.gemfire.cache.client.Pool pool}
+that manages connections to the server caches
+which are used by the client regions.
+When a client updates its region, the update is forwarded to the server.
+When a client get results in a local cache miss,
+the get request is forwarded to the server.
+The clients may also subscribe to server-side events. 
+For more information on the client see the
+{@linkplain com.gemstone.gemfire.cache.client client package}.
+For more information on the server see the
+{@linkplain com.gemstone.gemfire.cache.server server package}.
+</p>
+
+<a name="tx"><h2>Cache Transactions</h2><a href="#top">Back to Top</a>
+
+<p>The GemFire cache supports transactions providing enhanced data
+consistency across multiple Regions.  GemFire Transactions are
+designed to run in a highly concurrent environment and as such have
+optimistic conflict behavior.  They are optimistic in the sense that
+they assume little data overlap between transactions.  Using that
+assumption, they do not reserve entries that are being changed by the
+transaction until the commit operation.  For example, when two
+transactions operate on the same Entry, the last one to commit will
+detect a conflict and fail to commit.  The changes made by the
+successful transaction are only available to other threads after the
+commit has finished, or in other words GemFire Transactions exhibit
+Read Committed behavior.</p>
+
+<p>To provide application integration with GemFire transactions, a
+<code>TransactionListener</code> with associated
+<code>TransactionEvents</code> is provided as a <code>Cache</code>
+attribute.  The listener is notified of commits, both failed and
+successful as well as explicit rollbacks.  When a commit message is
+received by a distributed member with the same Region, again the
+TransactionListener is invoked.
+
+<p>GemFire transactions also integrate well with JTA transactions.  If
+a JTA transaction has begun and an existing GemFire transaction is not
+already present, any transactional region operation will create a
+GemFire transaction and register it with the JTA transaction, causing
+the JTA transaction manager to take control of the GemFire
+commit/rollback operation.
+
+<p>Similar to JTA transactions, GemFire transactions are associated
+with a thread. Only one transaction is allowed at a time per thread
+and a transaction is not allowed to be shared amount threads.  The
+changes made changed by a GemFire transaction are distributed to other
+distributed memebers as per the Region's Scope.
+
+<p>Finally, GemFire transactions allow for the "collapse" of multiple
+operations on an Entry, for example if an application destroys an
+Entry and follows with a <code>create</code> operation and then a
+<code>put</code> operations, all three operations are combined into
+one action reflecting the sum of all three.
+
+<a name="membership"><h2>Membership Attributes</h2><a href="#top">Back to Top</a>
+
+<p>The GemFire region can be configured to require the 
+presence of one or more user-defined membership roles.  Each {@link 
+com.gemstone.gemfire.distributed.Role} is assigned to any number of
+applications when each application connects to the GemFire distributed
+system.  {@link com.gemstone.gemfire.cache.MembershipAttributes} are 
+then used to specify which {@linkplain 
+com.gemstone.gemfire.cache.MembershipAttributes#getRequiredRoles roles 
+are required} to be online and present in that region's membership
+for access to the cache region being configured.</p>
+
+<p>In addition to specifying which roles are required, 
+<code>MembershipAttributes</code> are used to specify the {@link 
+com.gemstone.gemfire.cache.LossAction}. The loss action determines how 
+access to the region is affected when one or more required roles are 
+offline and no longer present in the system membership. The region can be 
+made completely {@linkplain 
+com.gemstone.gemfire.cache.LossAction#NO_ACCESS "NO_ACCESS"}, 
+which means that the application cannot read from or write to that region.  
+{@linkplain com.gemstone.gemfire.cache.LossAction#LIMITED_ACCESS 
+"LIMITED_ACCESS"} means that the application cannot write to that region.
+{@linkplain com.gemstone.gemfire.cache.LossAction#FULL_ACCESS 
+"FULL_ACCESS"} means that the application can read from and write to that 
+region as normal. If "FULL_ACCESS" is selected, 
+then the application would only be aware of the missing required role if it
+registered a {@link com.gemstone.gemfire.cache.RegionRoleListener}. 
+This listener provides callbacks to notify the application when required 
+roles are gained or lost, thus providing for custom integration of required
+roles with the application.</p>
+
+<p>{@link com.gemstone.gemfire.cache.ResumptionAction} defined in the
+<code>MembershipAttributes</code> specifies how the application responds
+to having a missing required role return to the distributed membership.  
+{@linkplain com.gemstone.gemfire.cache.ResumptionAction#NONE "None"}
+results in no special action, while {@linkplain 
+com.gemstone.gemfire.cache.ResumptionAction#REINITIALIZE "Reinitialize"} 
+causes the region to be reinitialized.  Reinitializing the region will 
+clear all entries from that region.  If it is a replicate, the 
+region will repopulate with entries available from other distributed 
+members.</p>
+
+<p>{@link com.gemstone.gemfire.cache.RequiredRoles} provides methods to
+check for missing required roles for a region and to wait until all required
+roles are present. In addition, this class can be used to check if a role
+is currently present in a region's membership.</p> 
+
+</body>
+</hTML>

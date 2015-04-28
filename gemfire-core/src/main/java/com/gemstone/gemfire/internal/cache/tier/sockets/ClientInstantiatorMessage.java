@@ -1,0 +1,222 @@
+/*
+ * ========================================================================= 
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ * =========================================================================
+ */
+
+package com.gemstone.gemfire.internal.cache.tier.sockets;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
+
+/**
+ * Class <code>ClientInstantiatorMessage</code> represents a message that is
+ * to be sent to the client from a server , when a new <code>Instantiator</code>.
+ * object is registerd on Server. This message contains array of serailized
+ * instantiators along with the unique <code>EventID</code>
+ * 
+ * @author Yogesh Mahajan
+ * 
+ * @since 5.0
+ */
+public final class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
+  private static final long serialVersionUID = 2949326125521840437L;
+  /**
+   * Serialized 2D array of the instantiators
+   */
+  private byte[][] serializedInstantiators;
+
+  /**
+   * Constructor.
+   * 
+   * @param operation
+   *                The operation performed (e.g. AFTER_CREATE, AFTER_UPDATE,
+   *                AFTER_DESTROY, AFTER_INVALIDATE, AFTER_REGION_DESTROY)
+   * @param instantiator
+   *                Serialized 2D array of the instantiators
+   * @param memberId
+   *                membership id of the originator of the event
+   * @param eventIdentifier
+   *                EventID of this message
+   */
+  public ClientInstantiatorMessage(EnumListenerEvent operation,
+      byte[][] instantiator, ClientProxyMembershipID memberId,
+      EventID eventIdentifier) {
+    super(operation, memberId, eventIdentifier);
+    this.serializedInstantiators = instantiator;
+  }
+
+  /* (non-Javadoc)
+   * reimplemented to state that all clients are interested in this message.
+   * @see com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl#isClientInterested(com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID)
+   */
+  @Override
+  public boolean isClientInterested(ClientProxyMembershipID clientId) {
+    return true;
+  }
+  
+  @Override
+  public boolean needsNoAuthorizationCheck() {
+    return true;
+  }
+
+  /**
+   * default constructor
+   * 
+   */
+  public ClientInstantiatorMessage() {
+
+  }
+
+//   /**
+//    * Returns the serialized value of Instantiators.
+//    * 
+//    * @return the serialized value of Instantiators
+//    */
+//   public byte[][] getInstantiators()
+//   {
+//     return this.serializedInstantiators;
+//   }
+
+  /**
+   * Determines whether or not to conflate this message.
+   * 
+   * @return Whether to conflate this message
+   */
+  @Override
+  public boolean shouldBeConflated()
+  {
+    return false;
+  }
+
+  @Override
+  protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException
+  {
+    Version clientVersion = proxy.getVersion();
+    Message message = null;
+    if (clientVersion.compareTo(Version.GFE_57) >= 0) {
+      message = getGFEMessage(proxy.getProxyID(), null, clientVersion);
+    } else {
+      throw new IOException(
+          "Unsupported client version for server-to-client message creation: "
+              + clientVersion);
+    }
+      
+    return message;
+  }
+
+  @Override
+  protected Message getGFEMessage(ClientProxyMembershipID proxy,
+      byte[] latestValue, Version clientVersion) throws IOException {
+    Message message = null;
+    int instantiatorsLength = this.serializedInstantiators.length;
+    message = new Message(instantiatorsLength + 1, clientVersion); // one for eventID
+    // Set message type
+    message.setMessageType(MessageType.REGISTER_INSTANTIATORS);
+    for (int i = 0; i < instantiatorsLength; i = i + 3) {
+      message.addBytesPart(this.serializedInstantiators[i]);
+      message.addBytesPart(this.serializedInstantiators[i + 1]);
+      message.addBytesPart(this.serializedInstantiators[i + 2]);
+    }
+    message.setTransactionId(0);
+    message.addObjPart(this.getEventId());
+    return message;
+  }
+  
+  @Override
+  public int getDSFID() {
+    return CLIENT_INSTANTIATOR_MESSAGE;
+  }
+
+  /**
+   * Writes an object to a <code>Datautput</code>.
+   * 
+   * @throws IOException
+   *                 If this serializer cannot write an object to
+   *                 <code>out</code>.
+   * @see #fromData
+   */
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    // Note: does not call super.toData what a HACK
+    out.writeByte(_operation.getEventCode());
+    int instantiatorCount = this.serializedInstantiators.length;
+    out.writeInt(instantiatorCount);
+    for (int i = 0; i < instantiatorCount; i++) {
+      DataSerializer.writeByteArray(this.serializedInstantiators[i], out);
+    }
+    DataSerializer.writeObject(_membershipId, out);
+    DataSerializer.writeObject(_eventIdentifier, out);
+  }
+
+  /**
+   * Reads an object from a <code>DataInput</code>.
+   * 
+   * @throws IOException
+   *                 If this serializer cannot read an object from
+   *                 <code>in</code>.
+   * @throws ClassNotFoundException
+   *                 If the class for an object being restored cannot be found.
+   * @see #toData
+   */
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException
+  {
+    // Note: does not call super.fromData what a HACK
+    _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
+    int instantiatorCount = in.readInt(); // is byte suficient for this ?
+    this.serializedInstantiators = new byte[instantiatorCount][];
+    for (int i = 0; i < instantiatorCount; i++) {
+      this.serializedInstantiators[i] = DataSerializer.readByteArray(in);
+    }
+    _membershipId = ClientProxyMembershipID.readCanonicalized(in);
+    _eventIdentifier = (EventID)DataSerializer.readObject(in);
+  }
+
+  @Override
+  public Object getKeyToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public String getRegionToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public Object getValueToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public void setLatestValue(Object value)
+  {
+  }
+  
+  @Override
+  public String toString()
+  {
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("ClientInstantiatorMessage[").append(";value=").append(
+        (Arrays.toString(this.serializedInstantiators))).append(";memberId=").append(
+        getMembershipId()).append(";eventId=").append(getEventId()).append(
+        ";notifyAll=").append("]");
+    return buffer.toString();
+  }
+
+}
+

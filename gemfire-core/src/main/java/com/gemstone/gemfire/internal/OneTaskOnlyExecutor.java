@@ -1,0 +1,166 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * A decorator for a ScheduledExecutorService which tries to make sure that
+ * there is only one task in the queue for the executor service that has been
+ * submitted through this decorator.
+ * 
+ * This class is useful if you have a task that you want to make sure runs at
+ * least once after an event, but if the event happens repeatedly before the
+ * task runs, the task should still only run once.
+ * 
+ * In many cases it might make sense to have multiple decorators, or to submit
+ * one kind of task through the decorator and other tasks directly through the
+ * executor.
+ * 
+ * For example, a task that recovers redundancy for all buckets of a PR when a
+ * member crashes only needs to be run once, no matter how many members crash
+ * before the task starts. But after the task has started, we want to make sure
+ * we schedule another execution for the next crash.
+ * 
+ * If the a new task is scheduled to run sooner than the task that is currently in the queue,
+ * the currently queued task will be canceled and the new task will be submitted to the queue
+ * with the new time. 
+ * 
+ * @author dsmith
+ * @since 6.0
+ */
+@SuppressWarnings("synthetic-access")
+public class OneTaskOnlyExecutor {
+  
+  private final ScheduledExecutorService ex;
+  private ScheduledFuture<?> future = null;
+  private ConflatedTaskListener listener;
+
+  public OneTaskOnlyExecutor(ScheduledExecutorService ex) {
+    this(ex, new ConflatedTaskListenerAdapter());
+  }
+  
+  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ConflatedTaskListener listener) {
+    this.ex = ex;
+    this.listener = listener;
+  }
+
+  /**
+   * Schedule an execution of a task. This will either add the task to the
+   * execution service, or if a task has already been scheduled through this
+   * decorator and is still pending execution it will return the future
+   * associated with the previously scheduled task.
+   * 
+   * @param runnable
+   *          a runnable to execution
+   * @param delay
+   *          the time to delay before execution
+   * @param unit
+   *          the time unit
+   * @return The future associated with this task, or with a previously
+   *         scheduled task if that task has not yet been run.
+   * @see ScheduledExecutorService#schedule(Runnable, long, TimeUnit)
+   */
+  public ScheduledFuture<?> schedule(Runnable runnable, long delay, TimeUnit unit) {
+    synchronized(this) {
+      if (future == null || future.isCancelled() || future.isDone()
+          || future.getDelay(unit) > delay) {
+        if(future != null && !future.isDone()) {
+          future.cancel(false);
+          listener.taskDropped();
+        }
+        future = ex.schedule(new DelegatingRunnable(runnable), delay, unit);
+      } else {
+        listener.taskDropped();
+      }
+    }
+    return future;
+  }
+  
+  /**
+   * Schedule an execution of a task. This will either add the task to the
+   * execution service, or if a task has already been scheduled through this
+   * decorator and is still pending execution it will return the future
+   * associated with the previously scheduled task.
+   * 
+   * @param callable
+   *          a callable to execute
+   * @param delay
+   *          the time to delay before execution
+   * @param unit
+   *          the time unit
+   * @return The future associated with this task, or with a previously
+   *         scheduled task if that task has not yet been run.
+   * @see ScheduledExecutorService#schedule(Runnable, long, TimeUnit)
+   */
+  public <T> ScheduledFuture<?> schedule(Callable<T> callable, long delay, TimeUnit unit) {
+    synchronized(this) {
+      if(future == null || future.isCancelled() || future.isDone() || future.getDelay(unit) > delay) {
+        if(future != null && !future.isDone()) {
+          future.cancel(false);
+          listener.taskDropped();
+        }
+          future = ex.schedule(new DelegatingCallable<T>(callable), delay, unit);
+      } else {
+        listener.taskDropped();
+      }
+    }
+    return future;
+  }
+
+  /**
+   * Removes the canceled tasks from the executor queue.
+   */
+  public void purge() {
+    ((ScheduledThreadPoolExecutor)ex).purge();
+  }
+
+  private class DelegatingRunnable implements Runnable {
+    private final Runnable runnable;
+    
+    public DelegatingRunnable(Runnable runnable) {
+      this.runnable = runnable;
+    }
+
+    public void run() {
+      synchronized(OneTaskOnlyExecutor.this) {
+        future = null;
+      }
+      runnable.run();
+    }
+  }
+  
+  private class DelegatingCallable<T> implements Callable<T> {
+    private final Callable<T> callable;
+    
+    public DelegatingCallable(Callable<T> callable) {
+      this.callable = callable;
+    }
+
+    public T call() throws Exception {
+      synchronized(OneTaskOnlyExecutor.this) {
+        future = null;
+      }
+      return callable.call();
+    }
+  }
+  
+  public static interface ConflatedTaskListener {
+    void taskDropped();
+  }
+  
+  public static class ConflatedTaskListenerAdapter implements ConflatedTaskListener {
+    public void taskDropped() {
+      
+    }
+  }
+}

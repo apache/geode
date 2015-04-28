@@ -1,0 +1,226 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/**
+ * 
+ */
+package com.gemstone.gemfire.pdx.internal;
+
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Date;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.pdx.PdxSerializationException;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.Version;
+
+/**
+ * Used by PdxWriterImpl to manage the raw data of a PDX.
+ * @author darrel
+ *
+ */
+public class PdxOutputStream {
+
+  private final HeapDataOutputStream hdos;
+  
+  /**
+   * 
+   */
+  public PdxOutputStream() {
+    this.hdos = new HeapDataOutputStream(Version.CURRENT);
+  }
+
+  /**
+   * @param allocSize
+   */
+  public PdxOutputStream(int allocSize) {
+    this.hdos = new HeapDataOutputStream(allocSize, Version.CURRENT);
+  }
+
+  /**
+   * Wrapper constructor
+   * @param hdos
+   */
+  public PdxOutputStream(HeapDataOutputStream hdos) {
+    this.hdos = hdos;
+  }
+
+  public void writeDate(Date date) {
+    try {
+      DataSerializer.writeDate(date, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeString(String value) {
+    try {
+      DataSerializer.writeString(value, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeObject(Object object, boolean ensureCompatibility) {
+    try {
+      InternalDataSerializer.basicWriteObject(object, this.hdos, ensureCompatibility);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeBooleanArray(boolean[] array) {
+    try {
+      DataSerializer.writeBooleanArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeCharArray(char[] array) {
+    try {
+      DataSerializer.writeCharArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeByteArray(byte[] array) {
+    try {
+      DataSerializer.writeByteArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeShortArray(short[] array) {
+    try {
+      DataSerializer.writeShortArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeIntArray(int[] array) {
+    try {
+      DataSerializer.writeIntArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeLongArray(long[] array) {
+    try {
+      DataSerializer.writeLongArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeFloatArray(float[] array) {
+    try {
+      DataSerializer.writeFloatArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeDoubleArray(double[] array) {
+    try {
+      DataSerializer.writeDoubleArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeStringArray(String[] array) {
+    try {
+      DataSerializer.writeStringArray(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeObjectArray(Object[] array, boolean ensureCompatibility) {
+    try {
+      InternalDataSerializer.writeObjectArray(array, this.hdos, ensureCompatibility);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public void writeArrayOfByteArrays(byte[][] array) {
+    try {
+      DataSerializer.writeArrayOfByteArrays(array, this.hdos);
+    } catch (IOException e) {
+      throw new PdxSerializationException("Exception while serializing a PDX field", e);
+    }
+  }
+
+  public int size() {
+    return this.hdos.size();
+  }
+
+  public void writeChar(char value) {
+    this.hdos.writeChar(value);
+  }
+
+  public void writeByte(int value) {
+    this.hdos.writeByte(value);
+  }
+
+  public void writeShort(short value) {
+    this.hdos.writeShort(value);
+  }
+
+  public void writeInt(int value) {
+    this.hdos.writeInt(value);
+  }
+
+  public void writeLong(long value) {
+    this.hdos.writeLong(value);
+  }
+
+  public void writeFloat(float value) {
+    this.hdos.writeFloat(value);
+  }
+
+  public void writeDouble(double value) {
+    this.hdos.writeDouble(value);
+  }
+
+  public HeapDataOutputStream.LongUpdater reserveLong() {
+    return this.hdos.reserveLong();
+  }
+
+  public void write(byte b) {
+    this.hdos.write(b);
+  }
+
+  public void sendTo(DataOutput out) throws IOException {
+    this.hdos.sendTo(out);
+  }
+
+  public void write(ByteBuffer data) {
+    this.hdos.write(data);
+  }
+
+  public ByteBuffer toByteBuffer() {
+    return this.hdos.toByteBuffer();
+  }
+  
+  public byte[] toByteArray() {
+    return this.hdos.toByteArray();
+  }
+
+  public void write(byte[] source, int offset, int len) {
+    this.hdos.write(source, offset, len);
+  }
+}

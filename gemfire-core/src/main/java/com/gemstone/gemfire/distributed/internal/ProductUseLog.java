@@ -1,0 +1,138 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.distributed.internal;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Set;
+
+import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.logging.PureLogWriter;
+
+/**
+ * A log intended for recording product-use.
+ *
+ * This class wraps a {@link InternalLogWriter} which it uses to record messages.
+ * It wipes the log when it gets too large.  The size of the log file is limited to 5mb by
+ * default and can be adjusted with the system property <b>gemfire.max_product_use_file_size</b>,
+ * though the size is not allowed to be less than 1mb.
+ * 
+ * @author Bruce Schuchardt
+ * @since 2013
+ */
+public final class ProductUseLog implements MembershipListener {
+  protected static long MAX_PRODUCT_USE_FILE_SIZE = Long.getLong("max_view_log_size", 5000000); 
+  private final int logLevel;
+  private final File productUseLogFile;
+  private PureLogWriter logWriter;
+  private InternalDistributedSystem system;
+
+  static {
+    // don't allow malicious setting of the file size to something too small
+    if (MAX_PRODUCT_USE_FILE_SIZE < 1000000) {
+      MAX_PRODUCT_USE_FILE_SIZE = 1000000;
+    }
+  }
+  
+  public ProductUseLog(File productUseLogFile) {
+    this.productUseLogFile = productUseLogFile;
+    this.logLevel = InternalLogWriter.INFO_LEVEL;
+    createLogWriter();
+  }
+  
+  /** adds the log as a membership listener to the given system and logs the view when members join */
+  public void monitorUse(InternalDistributedSystem system) {
+    this.system = system;
+    DM dmgr = system.getDistributionManager();
+    dmgr.addMembershipListener(this);
+    MembershipManager mmgr = dmgr.getMembershipManager();
+    if (mmgr != null) {
+      log("Log opened with new distributed system connection.  " + system.getDM().getMembershipManager().getView());
+    } else { // membership manager not initialized?
+      log("Log opened with new distributed system connection.  Membership view not yet available in this VM.");
+    }
+  }
+  
+  public synchronized void log(String logMessage) {
+    if (!this.logWriter.isClosed()) {
+      if (this.productUseLogFile.length() + logMessage.length() + 100 > MAX_PRODUCT_USE_FILE_SIZE) {
+        clearLog();
+      }
+      this.logWriter.info(logMessage);
+    }
+  }
+  
+  /** 
+   * Closes the log.  It may be reopened with reopen().  This does not remove
+   * the log from any distributed systems it is monitoring.
+   */
+  public synchronized void close() {
+    if (!this.logWriter.isClosed()) {
+      this.logWriter.close();
+    }
+  }
+  
+  /**
+   * returns true if the log has been closed
+   */
+  public synchronized boolean isClosed() {
+    return this.logWriter.isClosed();
+  }
+  
+  /** reopens a closed log */
+  public synchronized void reopen() {
+    if (this.logWriter.isClosed()) {
+      createLogWriter();
+    }
+  }
+  
+  private synchronized void clearLog() {
+    this.logWriter.close();
+    this.productUseLogFile.delete();
+    createLogWriter();
+  }
+  
+  private synchronized void createLogWriter() {
+    FileOutputStream fos;
+    try {
+      fos = new FileOutputStream(productUseLogFile, true);
+    } catch (FileNotFoundException ex) {
+      String s = LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0.toLocalizedString(productUseLogFile);
+      throw new GemFireIOException(s, ex);
+    }
+    PrintStream out = new PrintStream(fos);
+    this.logWriter = new PureLogWriter(this.logLevel, out);
+  }
+
+  @Override
+  public void memberJoined(InternalDistributedMember id) {
+    log("A new member joined: " + id + ".  " + system.getDM().getMembershipManager().getView());
+  }
+
+  @Override
+  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+  }
+
+  @Override
+  public void memberSuspect(InternalDistributedMember id,
+      InternalDistributedMember whoSuspected) {
+  }
+
+  @Override
+  public void quorumLost(Set<InternalDistributedMember> failures,
+      List<InternalDistributedMember> remaining) {
+  }
+
+}

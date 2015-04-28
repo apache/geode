@@ -1,0 +1,238 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+
+package com.gemstone.gemfire.internal.util;
+
+import com.gemstone.gemfire.internal.lang.StringUtils;
+
+/**
+ * @author John Blum
+ * @author jpenney
+ *
+ * Handle some simple editing of fixed-length arrays.
+ *
+ * TODO use Java 1.5 template classes to simplify this interface
+ *
+ */
+public abstract class ArrayUtils {
+
+  /**
+   * Gets the element at index in the array in a bound-safe manner.  If index is not a valid index in the given array,
+   * then the default value is returned.
+   * <p/>
+   * @param <T> the class type of the elements in the array.
+   * @param array the array from which the element at index is retrieved.
+   * @param index the index into the array to retrieve the element.
+   * @param defaultValue the default value of element type to return in the event that the array index is invalid.
+   * @return the element at index from the array or the default value if the index is invalid.
+   */
+  public static <T> T getElementAtIndex(T[] array, int index, T defaultValue) {
+    try {
+      return array[index];
+    }
+    catch (ArrayIndexOutOfBoundsException ignore) {
+      return defaultValue;
+    }
+  }
+
+  /**
+   * Gets the first element from the given array or null if the array reference is null or the array length is 0.
+   * <p/>
+   * @param <T> the Class type of the elements in the array.
+   * @param array the array of elements from which to retrieve the first element.
+   * @return the first element from the array or null if either the array reference is null or the array length is 0.
+   */
+  public static <T> T getFirst(final T... array) {
+    return (array != null && array.length > 0 ? array[0] : null);
+  }
+
+  /**
+   * Converts the specified Object array into a String representation.
+   * <p/>
+   * @param array the Object array of elements to convert to a String.
+   * @return a String representation of the Object array.
+   * @see java.lang.StringBuilder
+   */
+  public static String toString(final Object... array) {
+    final StringBuilder buffer = new StringBuilder("[");
+    int count = 0;
+
+    if (array != null) {
+      for (final Object element : array) {
+        buffer.append(count++ > 0 ? ", " : StringUtils.EMPTY_STRING).append(element);
+      }
+    }
+
+    buffer.append("]");
+
+    return buffer.toString();
+  }
+
+  public static String toString(final String... array) {
+    return toString((Object[])array); 
+  }
+  
+  /**
+   * Insert an element into an array.  The element is inserted at the
+   * given position, all elements afterwards are moved to the right.
+   *
+   * @param originalArray array to insert into
+   * @param pos position at which to insert the element
+   * @param element element to add
+   * @return the new array
+   */
+  public static Object[] insert(Object[] originalArray, int pos, Object element) {
+    Object[] newArray = (Object[]) java.lang.reflect.Array.newInstance(
+      originalArray.getClass().getComponentType(), originalArray.length + 1);
+
+    // Test Cases (proof of correctness by examining corner cases)
+    // 1) A B C D insert at 0: expect X A B C D
+    // 2) A B C D insert at 2: expect A B X C D
+    // 3) A B C D insert at 4: expect A B C D X
+
+    // copy everything before the given position
+    if (pos > 0) {
+      System.arraycopy(originalArray, 0, newArray, 0, pos); // does not copy originalArray[pos], where we insert
+    }
+
+    // 1) A B C D insert at 0: no change, ". . . . ."
+    // 2) A B C D insert at 2: copy "A B", "A B . . ."
+    // 3) A B C D insert at 4: copy "A B C D", "A B C D ."
+
+    // insert
+    newArray[pos] = element;
+
+    // 1) A B C D insert at 0: "X . . . ."
+    // 2) A B C D insert at 2: "A B X . ."
+    // 3) A B C D insert at 4: "A B C D X" (all done)
+
+    // copy remaining elements
+    if (pos < originalArray.length) {
+      System.arraycopy(originalArray, pos, // originalArray[pos] first element copied
+          newArray, pos + 1, // newArray[pos + 1] first destination
+          originalArray.length - pos); // number of elements left
+    }
+
+    // 1) A B C D insert at 0: "A B C D" copied at 1: "X A B C D"
+    // 2) A B C D insert at 2: "C D" copied at 3: "A B X C D"
+    // 3) A B C D insert at 4: no change
+    return newArray;
+  }
+
+  /**
+   * Remove element from an array.  The element is removed at the
+   * specified position, and all remaining elements are moved to the left.
+   *
+   * @param originalArray array to remove from
+   * @param pos position to remove
+   * @return the new array
+   */
+  public static Object[] remove(Object[] originalArray, int pos) {
+    Object[] newArray = (Object[])java.lang.reflect.Array.newInstance(
+      originalArray.getClass().getComponentType(), originalArray.length - 1);
+
+    // Test cases: (proof of correctness)
+    // 1) A B C D E remove 0: expect "B C D E"
+    // 2) A B C D E remove 2: expect "A B D E"
+    // 3) A B C D E remove 4: expect "A B C D"
+
+    // Copy everything before
+    if (pos > 0) {
+      System.arraycopy(originalArray, 0, newArray, 0, pos); // originalArray[pos - 1] is last element copied
+    }
+
+    // 1) A B C D E remove 0: no change, ". . . ."
+    // 2) A B C D E remove 2: "A B"  copied at beginning: "A B . ."
+    // 3) A B C D E remove 4: "A B C D" copied (all done)
+
+    // Copy everything after
+    if (pos < originalArray.length - 1) {
+      System.arraycopy(originalArray, pos + 1, // originalArray[pos + 1] is first element copied
+          newArray, pos, // first position to copy into
+          originalArray.length - 1 - pos);
+    }
+
+    // 1) A B C D E remove 0: "B C D E" copied into to position 0
+    // 2) A B C D E remove 2: "D E" copied into position 2: "A B D E"
+    // 3) A B C D E remove 4: no change
+    return newArray;
+  }
+
+  /**
+   * Check if two objects, possibly null, are equal. Doesn't really belong to
+   * this class...
+   */
+  public static boolean objectEquals(Object o1, Object o2) {
+    if (o1 == o2) {
+      return true;
+    }
+    if (o1 == null) {
+      return false;
+    }
+    return o1.equals(o2);
+  }
+
+  /**
+   * Converts the primitive int array into an Integer wrapper object array.
+   * </p>
+   * @param array the primitive int array to convert into an Integer wrapper object array.
+   * @return an Integer array containing the values from the elements in the primitive int array.
+   */
+  public static Integer[] toIntegerArray(final int[] array) {
+    final Integer[] integerArray = new Integer[array == null ? 0 : array.length];
+
+    if (array != null) {
+      for (int index = 0; index < array.length; index++) {
+        integerArray[index] = array[index];
+      }
+    }
+
+    return integerArray;
+  }
+  
+  /**
+   * Converts a double byte array into a double Byte array. 
+   * 
+   * @param array the double byte array to convert into double Byte array
+   * @return a double array of Byte objects containing values from the double byte array
+   */
+  public static Byte[][] toByteArray(final byte[][] array) {
+    if (array == null) {
+      return null;
+    }
+    final Byte[][] byteArray = new Byte[array.length][];
+    for (int i = 0; i < array.length; i++) {
+      byteArray[i] = new Byte[array[i].length];
+      for (int j = 0; j < array[i].length; j++) {
+        byteArray[i][j] = array[i][j];
+      }
+    }
+    return byteArray;
+  }
+
+  /**
+   * Converts a double Byte array into a double byte array. 
+   * 
+   * @param byteArray the double Byte array to convert into a double byte array
+   * @return a double byte array containing byte values from the double Byte array
+   */
+  public static byte[][] toBytes(final Byte[][] byteArray) {
+    if (byteArray == null) {
+      return null;
+    }
+    final byte[][] array = new byte[byteArray.length][];
+    for (int i = 0; i < byteArray.length; i++) {
+      array[i] = new byte[byteArray[i].length];
+      for (int j = 0; j < byteArray[i].length; j++) {
+        array[i][j] = byteArray[i][j];
+      }
+    }
+    return array;
+  }
+
+}

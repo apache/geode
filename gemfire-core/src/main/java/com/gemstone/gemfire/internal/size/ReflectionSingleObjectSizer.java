@@ -1,0 +1,174 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.size;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.SharedLibrary;
+import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
+
+/**
+ * Figure out the size of an object using reflection. This class
+ * does not follow any object references, it just calculates the size
+ * of a flat object.
+ * 
+ * @author dsmith
+ *
+ */
+public class ReflectionSingleObjectSizer implements SingleObjectSizer {
+  public static final int REFERENCE_SIZE = SharedLibrary.getReferenceSize();
+  public static final int OBJECT_SIZE = SharedLibrary.getObjectHeaderSize();
+  
+  private static final UnsafeWrapper unsafe;
+  static {
+    UnsafeWrapper tmp = null;
+    try {
+      tmp = new UnsafeWrapper();
+    } catch (RuntimeException ignore) {
+    } catch (Error ignore) {
+    }
+    unsafe = tmp;
+  }
+
+  public long sizeof(Object object) {
+    return sizeof(object, true);
+  }
+
+  public long sizeof(Object object, boolean roundResult) {
+    Class<?> clazz = object.getClass();
+    long size;
+    if(clazz.isArray()) {
+      if (unsafe != null) {
+        size = unsafe.arrayBaseOffset(clazz);
+        int arrayLength = Array.getLength(object);
+        if (arrayLength > 0) {
+          int typeSize = unsafe.arrayScaleIndex(clazz);
+          if (typeSize == 0) {
+            // the javadocs say that arrayScaleIndex may return 0.
+            // If it did then we use sizeType.
+            typeSize = sizeType(clazz.getComponentType());
+          }
+          size += (long)arrayLength * typeSize;
+        }
+      } else {
+        // not as accurate but does not use unsafe
+        size = OBJECT_SIZE + 4 /* for array length */;
+        int arrayLength = Array.getLength(object);
+        if (arrayLength > 0) {
+          size += (long)arrayLength * sizeType(clazz.getComponentType());
+        }
+      }
+      if (roundResult) {
+        size = roundUpSize(size);
+      }
+      return size;
+    } else {
+      return sizeof(clazz, roundResult);
+    }
+  }
+
+  public static long sizeof(Class clazz) {
+    return sizeof(clazz, true);
+  }
+  /**
+   * Since unsafe.fieldOffset(Field) will give us the offset to the first byte
+   * of that field all we need to do is find which of the non-static declared
+   * fields has the greatest offset.
+   */
+  public static long sizeof(Class clazz, boolean roundResult) {
+    Assert.assertTrue(!clazz.isArray());
+    long size;
+    if (unsafe != null) {
+      Field lastField = null;
+      long lastFieldOffset = 0;
+      do {
+        Field[] fields = clazz.getDeclaredFields();
+        for(Field field: fields) {
+          if(!Modifier.isStatic(field.getModifiers())) {
+            long offset = unsafe.fieldOffset(field);
+            if (offset >= lastFieldOffset) {
+              lastFieldOffset = offset;
+              lastField = field;
+            }
+          }
+        }
+        if (lastField != null) {
+          // if we have found a field in a subclass then one of them will be the last field
+          // so just break without looking at super class fields.
+          break;
+        }
+        clazz = clazz.getSuperclass();
+      } while (clazz != null);
+
+      if (lastField != null) {
+        size = lastFieldOffset + sizeType(lastField.getClass());
+      } else {
+        // class with no fields
+        size = OBJECT_SIZE;
+      }
+    } else {
+      // This code is not as accurate as unsafe but gives an estimate of memory used.
+      // If it is wrong it will always under estimate because it does not account
+      // for any of the field alignment that the jvm does.
+      size = OBJECT_SIZE;
+      do {
+        Field[] fields = clazz.getDeclaredFields();
+        for(Field field: fields) {
+          if(!Modifier.isStatic(field.getModifiers())) {
+            size += sizeType(field.getClass());
+          }
+        }
+        clazz = clazz.getSuperclass();
+      } while (clazz != null);
+    }
+    if (roundResult) {
+      size = roundUpSize(size);
+    }
+    return size;
+  }
+
+  public static long roundUpSize(long size) {
+    //Round up to the nearest 8 bytes. Experimentally, this
+    //is what we've seen the sun 32 bit VM do with object size.
+    //See https://wiki.gemstone.com/display/rusage/Per+Entry+Overhead
+    long remainder = size % 8;
+    if (remainder != 0) {
+      size = size - remainder  + 8;
+    }
+    return size;
+  }
+  
+  private static int sizeType(Class<?> t) {
+      
+      if (t == Boolean.TYPE)
+        return 1;
+      else if (t == Byte.TYPE)
+        return 1;
+      else if (t == Character.TYPE)
+        return 2;
+      else if (t == Short.TYPE)
+        return 2;
+      else if (t == Integer.TYPE)
+        return 4;
+      else if (t == Long.TYPE)
+        return 8;
+      else if (t == Float.TYPE)
+        return 4;
+      else if (t == Double.TYPE)
+        return 8;
+      else if (t == Void.TYPE)
+        return 0;
+      else
+        return REFERENCE_SIZE;
+  }
+  
+
+}

@@ -1,0 +1,103 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.persistence;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+
+public class PersistentMembershipView implements DataSerializable {
+  private Set<PersistentMemberID> offlineMembers;
+  private Map<InternalDistributedMember, PersistentMemberID> onlineMembers;
+  private Set<PersistentMemberPattern> revokedMembers;
+  
+  public PersistentMembershipView() {
+    
+  }
+  
+  public PersistentMembershipView(Set<PersistentMemberID> offlineMembers,
+      Map<InternalDistributedMember, PersistentMemberID> onlineMembers,
+      Set<PersistentMemberPattern> revokedMembers) {
+    this.offlineMembers = offlineMembers;
+    this.onlineMembers = onlineMembers;
+    this.revokedMembers = revokedMembers;
+  }
+  public Set<PersistentMemberID> getOfflineMembers() {
+    return offlineMembers;
+  }
+  public Map<InternalDistributedMember, PersistentMemberID> getOnlineMembers() {
+    return onlineMembers;
+  }
+  
+  public Set<PersistentMemberPattern> getRevokedMembers() {
+    return revokedMembers;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.DataSerializable#fromData(java.io.DataInput)
+   */
+  public void fromData(DataInput in) throws IOException,
+      ClassNotFoundException {
+    int offlineSize = in.readInt();
+    offlineMembers = new HashSet<PersistentMemberID>(offlineSize);
+    for(int i = 0; i < offlineSize; i++) {
+      PersistentMemberID id = new PersistentMemberID();
+      InternalDataSerializer.invokeFromData(id, in);
+      offlineMembers.add(id); 
+    }
+    
+    int onlineSize = in.readInt();
+    onlineMembers = new HashMap<InternalDistributedMember,PersistentMemberID>(onlineSize);
+    for(int i = 0; i < onlineSize; i++) {
+      InternalDistributedMember member = new InternalDistributedMember();
+      InternalDataSerializer.invokeFromData(member, in);
+      PersistentMemberID id = new PersistentMemberID();
+      InternalDataSerializer.invokeFromData(id, in);
+      onlineMembers.put(member, id); 
+    }
+    
+    int revokedSized = in.readInt();
+    revokedMembers = new HashSet<PersistentMemberPattern>(revokedSized);
+    for(int i = 0; i < revokedSized; i++) {
+      PersistentMemberPattern pattern = new PersistentMemberPattern();
+      InternalDataSerializer.invokeFromData(pattern, in);
+      revokedMembers.add(pattern);
+    }
+    
+    
+  }
+  public void toData(DataOutput out) throws IOException {
+    out.writeInt(offlineMembers.size());
+    for(PersistentMemberID member: offlineMembers) {
+      InternalDataSerializer.invokeToData(member, out);
+    }
+    out.writeInt(onlineMembers.size());
+    for(Map.Entry<InternalDistributedMember, PersistentMemberID> entry : onlineMembers.entrySet()) {
+      InternalDataSerializer.invokeToData(entry.getKey(), out);
+      InternalDataSerializer.invokeToData(entry.getValue(), out);
+    }
+    
+    out.writeInt(revokedMembers.size());
+    for(PersistentMemberPattern revoked : revokedMembers) {
+      InternalDataSerializer.invokeToData(revoked, out);
+    }
+  }
+
+  @Override
+  public String toString() {
+    return "PersistentMembershipView[offline=" + offlineMembers + ",online=" + onlineMembers + ", revoked=" + revokedMembers + "]";
+  }
+}

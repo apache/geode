@@ -1,0 +1,245 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.persistence;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.MessageWithReply;
+import com.gemstone.gemfire.distributed.internal.ReplyException;
+import com.gemstone.gemfire.distributed.internal.ReplyMessage;
+import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.cache.DistributedRegion;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
+import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
+import com.gemstone.gemfire.internal.logging.LogService;
+
+/**
+ * @author dsmith
+ *
+ */
+public class MembershipViewRequest extends
+  DistributionMessage implements MessageWithReply {
+
+  private static final Logger logger = LogService.getLogger();
+  
+  private String regionPath;
+  private int processorId;
+  private boolean targetReinitializing;
+
+  public MembershipViewRequest() {
+    
+  }
+  
+  public MembershipViewRequest(String regionPath, int processorId, boolean targetReinitializing) {
+    this.regionPath = regionPath;
+    this.processorId = processorId;
+    this.targetReinitializing = targetReinitializing;
+  }
+
+  public static PersistentMembershipView send(
+      InternalDistributedMember recipient, DM dm, String regionPath, boolean targetReinitializing) throws ReplyException {
+    MembershipViewRequestReplyProcessor processor = new MembershipViewRequestReplyProcessor(dm, recipient);
+    MembershipViewRequest msg = new MembershipViewRequest(regionPath, processor.getProcessorId(), targetReinitializing);
+    msg.setRecipient(recipient);
+    dm.putOutgoing(msg);
+    return processor.getResult();
+  }
+  
+  public static Set<PersistentMembershipView> send(
+      Set<InternalDistributedMember> recipients, DM dm, String regionPath) throws ReplyException {
+    MembershipViewRequestReplyProcessor processor = new MembershipViewRequestReplyProcessor(dm, recipients);
+    MembershipViewRequest msg = new MembershipViewRequest(regionPath, processor.getProcessorId(), false);
+    msg.setRecipients(recipients);
+    dm.putOutgoing(msg);
+    return processor.getResults();
+  }
+  
+  @Override  
+  final public int getProcessorType() {
+    return this.targetReinitializing ? DistributionManager.WAITING_POOL_EXECUTOR :
+                              DistributionManager.HIGH_PRIORITY_EXECUTOR;
+  }
+
+  @Override
+  protected void process(DistributionManager dm) {
+    int initLevel = this.targetReinitializing ? LocalRegion.AFTER_INITIAL_IMAGE
+        : LocalRegion.ANY_INIT;
+    int oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
+
+    PersistentMembershipView view = null;
+    ReplyException exception = null;
+    try {
+      // get the region from the path, but do NOT wait on initialization,
+      // otherwise we could have a distributed deadlock
+
+      Cache cache = CacheFactory.getInstance(dm.getSystem());
+      Region region = cache.getRegion(this.regionPath);
+      PersistenceAdvisor persistenceAdvisor = null;
+      if(region instanceof DistributedRegion) {
+        persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
+      } else if ( region == null) {
+        Bucket proxy = PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(), this.regionPath, false);
+        if(proxy != null) {
+          persistenceAdvisor = proxy.getPersistenceAdvisor();
+        }
+      }
+      if(persistenceAdvisor != null) {
+        view= persistenceAdvisor.getMembershipView();
+      }
+    } catch (RegionDestroyedException e) {
+//      exception = new ReplyException(e);
+      logger.debug("<RegionDestroyed> {}", this);
+    }
+    catch (CancelException e) {
+//      exception = new ReplyException(e);
+      logger.debug("<CancelException> {}", this);
+    }
+    catch(VirtualMachineError e) {
+      SystemFailure.initiateFailure(e);
+      throw e;
+    }
+    catch(Throwable t) {
+      SystemFailure.checkFailure();
+      exception = new ReplyException(t);
+    }
+    finally {
+      LocalRegion.setThreadInitLevelRequirement(oldLevel);
+      MembershipViewReplyMessage replyMsg = new MembershipViewReplyMessage();
+      replyMsg.setRecipient(getSender());
+      replyMsg.setProcessorId(processorId);
+      replyMsg.view= view;
+      if (logger.isDebugEnabled()) {
+        logger.debug("MembershipViewRequest returning view {} for region {}", view, this.regionPath);
+      }
+      if(exception != null) {
+        replyMsg.setException(exception);
+      }
+      dm.putOutgoing(replyMsg);
+    }
+  }
+
+  public int getDSFID() {
+    return PERSISTENT_MEMBERSHIP_VIEW_REQUEST;
+  }
+  
+  @Override
+  public void fromData(DataInput in) throws IOException,
+      ClassNotFoundException {
+    super.fromData(in);
+    processorId = in.readInt();
+    regionPath = DataSerializer.readString(in);
+    targetReinitializing = in.readBoolean();
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    super.toData(out);
+    out.writeInt(processorId);
+    DataSerializer.writeString(regionPath, out);
+    out.writeBoolean(targetReinitializing);
+  }
+  
+  private static class MembershipViewRequestReplyProcessor extends ReplyProcessor21 {
+    private Set<PersistentMembershipView> views = new HashSet<PersistentMembershipView>();
+
+    
+    
+    public MembershipViewRequestReplyProcessor(DM dm,
+        InternalDistributedMember member) {
+      super(dm, member);
+    }
+    
+    public MembershipViewRequestReplyProcessor(DM dm,
+        Set<InternalDistributedMember> members) {
+      super(dm, members);
+    }
+
+    public PersistentMembershipView getResult() {
+      waitForRepliesUninterruptibly();
+      if(views.isEmpty()) {
+        //TODO prperist internationalize.
+        throw new ReplyException("Member departed");
+      }
+      return views.iterator().next();
+    }
+    
+    public Set<PersistentMembershipView> getResults() {
+      waitForRepliesUninterruptibly();
+      return views;
+    }
+
+    @Override
+    public void process(DistributionMessage msg) {
+      if(msg instanceof MembershipViewReplyMessage) {
+        PersistentMembershipView view = ((MembershipViewReplyMessage) msg).view;
+        if (logger.isDebugEnabled()) {
+          logger.debug("MembershipViewReplyProcessor received {}", view);
+        }
+        if(view != null) {
+          synchronized(this) {
+            this.views.add(view);
+          }
+        }
+      }
+      super.process(msg);
+    }
+  }
+
+  public static class MembershipViewReplyMessage extends ReplyMessage {
+    private PersistentMembershipView view;
+
+    @Override
+    public int getDSFID() {
+      return PERSISTENT_MEMBERSHIP_VIEW_REPLY;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException,
+        ClassNotFoundException {
+      super.fromData(in);
+      boolean hasView = in.readBoolean();
+      if(hasView) {
+        view = new PersistentMembershipView();
+        InternalDataSerializer.invokeFromData(view, in);
+      }
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      super.toData(out);
+      if(view == null) {
+        out.writeBoolean(false);
+      } else {
+        out.writeBoolean(true);
+        InternalDataSerializer.invokeToData(view, out);
+      }
+    }
+  }
+}

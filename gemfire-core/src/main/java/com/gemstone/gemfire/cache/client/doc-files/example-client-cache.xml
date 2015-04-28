@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- A sample client GemFire declarative caching XML File -->
+
+<!DOCTYPE client-cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Cache 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<client-cache copy-on-read="false">
+
+  <pool name="myPool">
+    <locator host="myHostName" port="41111"/>
+  </pool>
+
+  <!-- Create a proxy region -->
+  <region name="region1" refid="PROXY"/>
+
+  <!-- Create a caching proxy region -->
+  <region name="region2" refid="CACHING_PROXY">
+    <region-attributes>
+
+      <entry-time-to-live>
+        <expiration-attributes action="destroy" timeout="3000"/>
+      </entry-time-to-live>
+
+      <entry-idle-time>
+        <expiration-attributes timeout="600"/>
+      </entry-idle-time>
+    </region-attributes>
+  </region>
+</client-cache>

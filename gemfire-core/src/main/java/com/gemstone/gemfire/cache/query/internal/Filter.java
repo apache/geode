@@ -1,0 +1,170 @@
+/*=========================================================================
+ * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ * $Id: Filter.java,v 1.1 2005/01/27 06:26:33 vaibhav Exp $
+ *=========================================================================
+ */
+package com.gemstone.gemfire.cache.query.internal;
+
+import java.util.List;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.cache.query.*;
+
+/**
+ * Class Description
+ * 
+ * @version $Revision: 1.1 $
+ * @author ericz
+ * @author asif
+ */
+public interface Filter {
+
+  /**
+   * Evaluates as a filter taking advantage of indexes if appropriate.
+   * 
+   * @return SelectResults
+   */
+  public SelectResults filterEvaluate(ExecutionContext context,
+      SelectResults iterationLimit) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException;
+
+  /**
+   * 
+   * Asif : Evaluates as a filter taking advantage of indexes if appropriate.
+   * This function has a meaningful implementation only in CompiledComparison &
+   * CompiledUndefined . It is unsupported in other classes. The additional
+   * parameters which it takes are a boolean which is used to indicate whether
+   * the index result set needs to be expanded to the top level or not. The
+   * second is a CompiledValue representing the operands which are only iter
+   * evaluatable. In case of a GroupJunction, the CompiledValue passed will be
+   * null except if a GroupJunction has only one filter evaluatable condition &
+   * rest are iter operands. In such cases , the iter operands will be evaluated
+   * while expanding/cutting down the index resultset. In case of
+   * CompositeGroupJunction, the iter operand may be passed as not null while
+   * evaluating the last Composite condition iff the number of GroupJunctions
+   * present is zero. If there exists one GroupJunction, then since the
+   * GroupJunction gets expanded to the CompositeGroupJunction level , the iter
+   * operand can be evaluated along with the iter operands of the GroupJunction,
+   * else the iter operand can get evaluated during cartesian/expansion of
+   * GroupJunctions. Ofcourse, the iter operands will get pushed to
+   * CompositeGroupJunction level, in the first place , only if a single
+   * CompositeGroupJunction gets created. *
+   * 
+   * @param context ExecutionContext object
+   * @param iterationLimit SelectResults object representing the intermediate
+   *          ResultSet. It is mostly passed as null or the value is ignored
+   *          except when evaluating a filter evaluatable composite condition (
+   *          equi join condition across the regions) for an AND junction inside
+   *          a CompositeGroupJunction
+   * @param completeExpansionNeeded A boolean which indicates whether a
+   *          GroupJunction or a CompositeGroupJunction needs to be expanded to
+   *          the query from clause iterator level ( i.e to the top level)
+   * @param iterOperands CompiledComparison or CompiledJunction representing the
+   *          operands which are iter evaluatable
+   * @param indpndntItrs An Array of RuntimeIterators . This is passed as null
+   *          in case of a where clause containing single condition. It is used
+   *          to identify the order of iterators to be present in the Select
+   *          Results ( StructBag or ResultBag) so that their is consistency in
+   *          the Object Type of the SelectResults which enables union or
+   *          intersection to occur correctly. It also helps in identifying the
+   *          mapping of SelectResults fields and their RuntimeIterators during
+   *          the cartesian/expansion of results in the AllGroupJunction. The
+   *          Independent For GroupJunction , it is normally a single Iterator
+   *          representing the independent iterator for the Group. But when a
+   *          GroupJunction is part of a CompositeGroupJunction & there exists
+   *          only a single GroupJunction in it , the Array will contain more
+   *          than one independent iterators for the group, with the independent
+   *          iterators being that of CompositeGroupJunction. If the
+   *          completeExpansion flag is true , then this will be null as in that
+   *          case , the position of iterators in the Results is decided by the
+   *          actual order of iterators in the Query from clause .
+   * @param   isIntersection
+   * @param   conditioningNeeded
+   * @param   evaluateProjection  
+   * @return Object of type SelectResults representing the Results obtained from
+   *         evaluation of the condition
+   * @throws FunctionDomainException
+   * @throws TypeMismatchException
+   * @throws NameResolutionException
+   * @throws QueryInvocationTargetException
+   */
+  public SelectResults filterEvaluate(ExecutionContext context,
+      SelectResults iterationLimit, boolean completeExpansionNeeded,
+      CompiledValue iterOperands, RuntimeIterator[] indpndntItrs, boolean isIntersection, boolean conditioningNeeded, boolean evaluateProjection)
+      throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException;
+
+  /**
+   * This method gets invoked from the filterEvaluate of CompiledJunction and
+   * GroupJunction if the boolean isSingleFilter of OrganizedOperands happens to
+   * be false
+   * 
+   * @param context ExecutionContext object
+   * @param intermediateResults SelectResults Object which will usually be null
+   *          or will mostly be ignored
+   * @return Object of type SelectResults representing the Results obtained from
+   *         evaluation of the condition
+   * @throws FunctionDomainException
+   * @throws TypeMismatchException
+   * @throws NameResolutionException
+   * @throws QueryInvocationTargetException
+   */
+  public SelectResults auxFilterEvaluate(ExecutionContext context,
+      SelectResults intermediateResults) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException;
+  
+  public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException ;
+  
+ /**
+  * 
+  * @param context
+  * @return boolean
+  * @throws FunctionDomainException
+  * @throws TypeMismatchException
+  * @throws NameResolutionException
+  * @throws QueryInvocationTargetException
+  */
+  public boolean isProjectionEvaluationAPossibility(ExecutionContext context) throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
+  
+  /**
+   * Only used by single base collection index
+   * @param independentIter
+   * @param context
+   * @param completeExpnsNeeded
+   * @return boolean
+   * @throws AmbiguousNameException
+   * @throws TypeMismatchException
+   * @throws NameResolutionException
+   */
+  public boolean isConditioningNeededForIndex(RuntimeIterator independentIter, ExecutionContext context,  boolean completeExpnsNeeded) throws AmbiguousNameException, TypeMismatchException, NameResolutionException ;
+  
+/**
+ * 
+ * @param comparedTo
+ * @param context
+ * @param thisSize
+ * @return boolean true if this is the better filter as compared to the Filter passed as parameter
+ * @throws FunctionDomainException
+ * @throws TypeMismatchException
+ * @throws NameResolutionException
+ * @throws QueryInvocationTargetException
+ */
+  boolean isBetterFilter(Filter comparedTo, ExecutionContext context, int thisSize)  throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
+	  
+  public int getOperator() ;
+  
+  /**
+   * This method returns the boolean indicating whether limit can be applied at index level.
+   * It works only if it has been ensured that the query is dependent on single iterator and
+   * for Group junction so created in case of AND clause, would use exactly one index & rest 
+   * to be iter evaluated
+   * @return true if limit can be applied at index level
+   */
+  public boolean isLimitApplicableAtIndexLevel(ExecutionContext context)throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException  ;
+  
+  public boolean isOrderByApplicableAtIndexLevel(ExecutionContext context, String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException ;
+}

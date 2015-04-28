@@ -1,0 +1,171 @@
+apply plugin: 'distribution'
+
+jar.enabled = false
+
+configurations {
+  archives
+}
+
+dependencies {
+  provided project(':gemfire-core')
+  
+  archives project(':gemfire-json')  
+  archives project(':gemfire-joptsimple')  
+  archives project(':gemfire-jgroups')  
+  archives project(':gemfire-core')  
+  archives project(':gemfire-web')
+  archives project(':gemfire-web-api')
+}
+
+sourceSets {
+  // need to remove this since we use the dependencies jar out of the install dir
+  test.runtimeClasspath -= configurations.provided
+}
+
+test {
+  // test from the actual classpath not the gradle classpath
+  dependsOn installDist
+  classpath += files "$buildDir/install/${distributions.main.baseName}/lib/gemfire-core-dependencies.jar"
+}
+
+task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
+  outputs.file file("$buildDir/gemfire.properties")
+  main 'com.gemstone.gemfire.distributed.internal.DistributionConfigImpl'
+  classpath project(':gemfire-core').sourceSets.main.runtimeClasspath
+  workingDir buildDir
+  
+  doFirst {
+    buildDir.mkdirs()
+  }
+}
+
+task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
+  outputs.file file("$buildDir/cache.xml")
+  main 'com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator'
+  classpath project(':gemfire-core').sourceSets.main.runtimeClasspath
+  workingDir buildDir
+
+  doFirst {
+    buildDir.mkdirs()
+  }
+}
+
+// This closure sets the gemfire classpath.  If we add another jar to the classpath it must
+// be included in the filter logic below.
+def cp = {
+  configurations.archives.dependencies.collect { it.dependencyProject }
+    .findAll { !it.name.contains('web') }
+    .collect { it.jar.archiveName }
+    .join(' ') + ' ' +
+    project(':gemfire-core').configurations.runtime.collect { it.getName() }.findAll {
+      it.contains('antlr') ||
+      it.contains('commons-io') ||
+      it.contains('commons-logging') ||
+      it.contains('fastutil') ||
+      it.contains('jackson-annotations') ||
+      it.contains('jackson-core') ||
+      it.contains('jackson-databind') ||
+      it.contains('jansi') ||
+      it.contains('javax.resource-api') ||
+      it.contains('javax.servlet-api') ||
+      it.contains('javax.transaction-api') ||
+      it.contains('jetty-http') ||
+      it.contains('jetty-io') ||
+      it.contains('jetty-security') ||
+      it.contains('jetty-server') ||
+      it.contains('jetty-servlet') ||
+      it.contains('jetty-webapp') ||
+      it.contains('jetty-util') ||
+      it.contains('jetty-xml') ||
+      it.contains('jline') ||
+      it.contains('jna') ||
+      it.contains('log4j-api') ||
+      it.contains('log4j-core') ||
+      it.contains('log4j-jcl') ||
+      it.contains('log4j-slf4j-impl') ||
+      it.contains('slf4j-api') ||
+      it.contains('spring-core') ||
+      it.contains('spring-shell') ||
+      it.contains('snappy-java')
+    }.join(' ') 
+}
+
+task depsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
+  description 'Assembles the jar archive that defines the gemfire classpath.'
+  archiveName 'gemfire-core-dependencies.jar'
+  doFirst {
+    manifest { 
+      attributes("Class-Path": cp())
+    }
+  }
+}
+
+task gfshDepsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
+  description 'Assembles the jar archive that defines the gfsh classpath.'
+  def springWeb = configurations.runtime.collect { it.getName() }.find { it.contains('spring-web') }
+  archiveName 'gfsh-dependencies.jar'
+  doFirst {
+    manifest {
+      attributes("Class-Path": cp() + 
+        ' ' + project(':gemfire-core').webJar.archiveName +
+        ' ' + springWeb
+      )
+    }
+  }
+}
+
+distributions {
+  main {
+    baseName = 'geode' //TODO rootProject.name
+    contents {
+      duplicatesStrategy 'exclude'
+      
+      into ('config') {
+        from defaultCacheConfig
+        from defaultDistributionConfig
+
+        from (project(':gemfire-core').sourceSets.main.resources.files.find { 
+          it.name == 'log4j2-default.xml' 
+        }) {
+          rename 'log4j2-default.xml', 'log4j2.xml'
+        }
+      }
+      
+      into ('lib') {
+        exclude 'annotation*.jar'
+        from project(":gemfire-jgroups").configurations.runtime
+        from project(":gemfire-jgroups").configurations.archives.allArtifacts.files
+
+        from project(":gemfire-json").configurations.runtime
+        from project(":gemfire-json").configurations.archives.allArtifacts.files
+
+        from project(":gemfire-joptsimple").configurations.runtime
+        from project(":gemfire-joptsimple").configurations.archives.allArtifacts.files
+
+        from project(":gemfire-core").configurations.runtime
+        from project(":gemfire-core").configurations.archives.allArtifacts.files
+
+        // include this jar        
+        from project(":gemfire-web-api").jar.outputs.files.getFiles()
+        
+        // dependency jars
+        from depsJar
+        from gfshDepsJar
+      }
+
+      into ('tools/Extensions') {
+        from (project(":gemfire-web").configurations.archives.allArtifacts.files) {
+          exclude '*.jar'
+        }
+        from (project(":gemfire-web-api").configurations.archives.allArtifacts.files) {
+          exclude '*.jar'
+        }
+      }
+    }
+  }
+}
+
+artifacts {
+  archives depsJar, gfshDepsJar
+}
+ 

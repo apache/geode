@@ -1,0 +1,630 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.4  (Solaris Sparc)">
+	<META NAME="CREATED" CONTENT="20050218;15555998">
+	<META NAME="CHANGEDBY" CONTENT="Eric Zoerner">
+	<META NAME="CHANGED" CONTENT="20050301;13324700">
+	<STYLE>
+	<!--
+		@page { size: 8.5in 11in; margin-left: 0.79in; margin-right: 1.25in; margin-top: 1in; margin-bottom: 1in }
+		H1 { margin-bottom: 0.04in; direction: ltr; color: #000000; widows: 2; orphans: 2 }
+		H1.western { font-family: "Arial", sans-serif; font-size: 14pt; so-language: en-US }
+		H1.cjk { font-family: "Times New Roman", serif; font-size: 14pt }
+		H1.ctl { font-family: "Times New Roman", serif; font-size: 10pt; font-weight: medium }
+		P { margin-bottom: 0.08in; direction: ltr; color: #000000; widows: 2; orphans: 2 }
+		P.western { font-family: "Times New Roman", serif; font-size: 10pt; so-language: en-US }
+		P.cjk { font-family: "Times New Roman", serif; font-size: 10pt }
+		P.ctl { font-family: "Times New Roman", serif; font-size: 10pt }
+		PRE { color: #000000 }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" TEXT="#000000" DIR="LTR">
+<DIV TYPE=HEADER>
+	<H1 CLASS="western" ALIGN=CENTER STYLE="margin-top: 0in; margin-bottom: 0.2in">
+	Design: Indexes in GemFire Querying</H1>
+</DIV>
+<P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0"><FONT FACE="Arial, sans-serif"><FONT SIZE=3>This
+document describes the creation, use, and maintenance of indexes in
+the GemFire query processor, as designed for the 4.0 release.
+The index types that will be supported in that release include
+&ldquo;functional sorted&rdquo; indexes and &ldquo;primary key&rdquo;
+indexes. </FONT></FONT>
+</P>
+<OL TYPE=I>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+	<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Types of Indexes</B></FONT></FONT></P>
+	<OL TYPE=A>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Functional Sorted
+		Indexes<BR></B>A functional index is so named because it can be
+		used to index on data using any function of the region entries that
+		make up the data. It is a sorted index, so it supports comparisons
+		using any of the relational operators (&lt;, &gt;, &lt;=, &gt;=, =,
+		&lt;&gt;).</FONT></FONT></P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<B><FONT SIZE=3><FONT FACE="Arial, sans-serif">Primary Key
+		Indexes<BR></FONT></FONT></B><SPAN STYLE="font-weight: medium"><FONT SIZE=3><FONT FACE="Arial, sans-serif">A
+		Primary Key index is cover for the keys that are already in a
+		Region. Creating a primary key index allows the query processor to
+		use the keys in a region to improve performance in query
+		evaluation. A primary key index provides the query service with
+		information about the relationship between the keys in the region
+		and the values in the region. Since the keys are not sorted in a
+		region, a primary key index is only used for queries using the =
+		operator.  As an example of a query that can use a primary key
+		index, say the /Portfolios region has Portfolio objects keyed by
+		its ID. The primary key index is created with the parameters
+		fromClause=&rdquo;/Portfolios&rdquo; and indexedExpression=&rdquo;ID&rdquo;.
+		The projectionAttributes must default to &ldquo;*&rdquo;. This
+		primary key index could then be used for a query such as:<BR><TT>SELECT
+		DISTINCT * FROM /Portfolios WHERE ID = '3434'</TT></FONT></FONT></SPAN><SPAN STYLE="font-weight: medium"><TT><FONT SIZE=3><FONT FACE="Arial, sans-serif"><BR>In
+		GemFire, the primary key index does not require any extra structure
+		or maintenance since it it implicit in the Region implementation
+		itself. The rest of this document, therefore, describes the
+		functional sorted indexes only.</FONT></FONT></TT></SPAN></P>
+	</OL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+	<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Structure of Indexes</B></FONT></FONT></P>
+	<OL TYPE=A>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT SIZE=3><FONT FACE="Arial, sans-serif">Indexes are stored in
+		instances of <TT><B>IndexManager</B></TT>. Each region in the cache
+		has an IndexManager. When a region is destroyed, so is its
+		IndexManager and the indexes stored therein.</FONT></FONT></P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3>An index contains two
+		maps, a <B>forward map</B> and a <B>reverse map</B>. The forward
+		map is used when evaluating a query, and the reverse map is used
+		when updating the index when a region is modified.</FONT></FONT></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Forward Map</B></FONT></FONT></P>
+			<OL TYPE=a>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><FONT FACE="Arial, sans-serif">The forward map has
+				the <B>structure</B>:<BR><TT><TT>SortedMap&lt;key: Object value:
+				Map&lt;key: RegionEntry value: Object&gt;&gt;<BR></TT></TT>The
+				keys of the SortedMap are the values of the <TT><TT>indexedExpression</TT></TT></FONT>
+				<FONT FACE="Arial, sans-serif">as is evaluated for each element
+				in the <A HREF="#baseCollection">base collection</A>. The value
+				is a Map that maintains an assocation between the <I>context
+				object</I> from the Region and the <I>targets</I> derived from
+				that context.</FONT></FONT></P>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><FONT FACE="Arial, sans-serif">The <B>context object</B>
+				is a <TT>RegionEntry</TT>. This object is used to determine which
+				entry in the region the target objects are derived from.</FONT></FONT></P>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><FONT FACE="Arial, sans-serif">The <B>target</B>
+				objects are values that will be used in the results of the SELECT
+				expression. This target object is an element from the base
+				collection if the <TT>projectionAttributes</TT> is *, or is an
+				element from the base collection transformed by the function
+				defined by the <TT>projectionAttributes</TT>. The <I>target </I>is
+				conceptually a Set of values, but to conserve on resources in the
+				index, it is represented as follows:</FONT></FONT></P>
+				<UL>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-style: normal; widows: 0; orphans: 0">
+					<FONT FACE="Arial, sans-serif"><FONT SIZE=3>When it is a single
+					object, it is stored as such in the index.</FONT></FONT></P>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<FONT FACE="Times New Roman, serif"><FONT SIZE=3><FONT SIZE=3><FONT FACE="Arial, sans-serif">If
+					it is a set of objects, it is stored in a collection which
+					itself is an instance of <TT>SelectResults</TT></FONT><TT><FONT FACE="Arial, sans-serif">,
+					either a <TT>ResultsBag</TT> or a <TT>StructBag</TT>.</FONT></TT></FONT></FONT></FONT></P>
+				</UL>
+			</OL>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Reverse Map</B></FONT></FONT></P>
+			<OL TYPE=a>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><SPAN STYLE="font-weight: medium"><FONT FACE="Arial, sans-serif">The
+				reverse map has the <B>structure</B><SPAN STYLE="font-weight: medium">:</SPAN><B><BR></B><TT><SPAN STYLE="font-weight: medium">Map&lt;key:
+				RegionEntry, value: Object&gt;</SPAN></TT></FONT></SPAN><FONT FACE="Arial, sans-serif">,
+				where the value is the key(s) in the forward map. If there is
+				more than one key in the forward map that reference a
+				RegionEntry, then the value of this map is a collection of all
+				those keys. The reverse map is used to quickly discover which
+				keys in the forward map have a reference to a particular
+				RegionEntry. It is used when a region entry is modified and the
+				indexes of the region need to be updated.</FONT></FONT></P>
+			</OL>
+		</OL>
+	</OL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+	<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>Index
+	Creation</B><BR>Indexes are specified with three parameters: the
+	<TT>fromClause</TT>, the <TT>indexedExpression</TT>, and the
+	<TT>projectionAttributes</TT>. These parameters are analogous and
+	equivalent to the corresponding parts of the SELECT expression that
+	the indexes will be used to evaluate.</FONT></FONT></P>
+	<OL TYPE=A>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>FromClause</B><BR>The
+		<TT>fromClause</TT></FONT> <FONT FACE="Arial, sans-serif">defines
+		the base collection of objects that are being selected from, and
+		optionally defines iterator variables that can be referred to in
+		the <TT>indexedExpression</TT></FONT> <FONT FACE="Arial, sans-serif">or
+		the <TT>projectionAttributes</TT>. The <TT>fromClause</TT></FONT>
+		<FONT FACE="Arial, sans-serif">can be a single expression that
+		specifies a collection, or it can be a list of expressions that
+		<I>drill down into</I> or <I>join across</I> a complex object
+		structure and define a namespace of objects that can be referenced
+		in the query. Each expression in the fromClause sets up a nested
+		iteration.</FONT></FONT></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0"><A NAME="baseCollection"></A>
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Base Collection</B></FONT></FONT></P>
+			<OL TYPE=a>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><FONT FACE="Arial, sans-serif">If there is <B>one
+				expression</B> in the <TT>fromClause</TT>, then the base
+				collection is the value of that expression.</FONT></FONT></P>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><FONT FACE="Arial, sans-serif">If there are
+				<B>multiple, comma-delimited, expressions</B> in the <TT>fromClause</TT>,
+				then the base collection is a struct that consists of a field for
+				each of the expressions in order. These structs represent the
+				cartesian product of each collection specified in the <TT>fromClause</TT>.</FONT></FONT></P>
+			</OL>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>Examples </B>of
+			<TT>fromClauses</TT></FONT> <FONT FACE="Arial, sans-serif">that
+			could be used to create an index include: </FONT></FONT>
+			</P>
+			<PRE><FONT SIZE=3>/root/employees</FONT>
+<FONT SIZE=3>/root/employees e</FONT>
+<FONT SIZE=3>/portfolios ptfo, ptfo.positions pos</FONT><BR><FONT SIZE=3><FONT FACE="Arial, sans-serif">(in the last example the base collection will be of type</FONT> struct&lt;Portfolio, Position&gt;<FONT FACE="Arial, sans-serif">)</FONT></FONT></PRE>
+		</OL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>IndexedExpression</B><BR>The
+		<TT><SPAN STYLE="text-decoration: none">indexedExpression</SPAN></TT></FONT>
+		<FONT FACE="Arial, sans-serif">specifies the value that is indexed
+		on. For a sorted index, it specifies the expression that will be
+		used to compare with another value that is independent of objects
+		in the from clause (i.e. a constant) using the relational operators
+		(&lt;, =, &gt;, &lt;=, &gt;=, &lt;&gt;). Example <TT>indexedExpressions</TT></FONT>
+		<FONT FACE="Arial, sans-serif">that could be used to create an
+		index include: </FONT></FONT>
+		</P>
+		<PRE><FONT SIZE=3>empId</FONT>
+<FONT SIZE=3>ptfo.active</FONT>
+<FONT SIZE=3>pos.sharesOutstanding<BR>ptfo.someMethodReturningAComparable(element(select distinct * from<BR>  positions.values where sharesOutstanding &gt; 10000))</FONT></PRE>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>ProjectionAttributes<BR></B><SPAN STYLE="font-weight: medium">[Open
+		issue: Is it really practical to put projectionAttributes on an
+		index? Does Sybase/Oracle support this at all? Considering the
+		extra complexity it introduces in the implementation (as seen
+		later) this may be a lower priority than other features].<BR>  </SPAN><BR>The
+		<TT>projectionAttributes</TT></FONT> <FONT FACE="Arial, sans-serif">is
+		an expression that does a transformation on the results of a query,
+		and this projection can be pre-computed for each element in the
+		results and stored in the index as well. If there is a
+		comma-delimited list of expressions in the <TT>projectionAttributes</TT>,
+		then a struct is created with the value of each expression as a
+		field in the struct. An identifier can also be included to
+		explicitly name the fields in the struct. <FONT SIZE=3><FONT FACE="Arial, sans-serif">If
+		no identifiers are provided, then the field names are derived from
+		the tail attributes names or generated by the query processor. </FONT></FONT>If
+		the <TT>projectionAttributes</TT></FONT> <FONT FACE="Arial, sans-serif">is
+		</FONT><TT><FONT FACE="Arial, sans-serif">*</FONT></TT> <FONT FACE="Arial, sans-serif">then
+		there is no transformation on the results. Examples
+		<TT>projectAttributes</TT></FONT> <FONT FACE="Arial, sans-serif">that
+		could be used to create an index include:</FONT></FONT></P>
+		<PRE><FONT SIZE=3>*</FONT>
+<FONT SIZE=3>empId</FONT>
+<FONT SIZE=3>e.key, e.value, e.value.id</FONT>
+<FONT SIZE=3>key: e.key, value: e.value, id: e.value.id<BR>e.key AS k, e.value AS v, e.value.id AS id</FONT><BR></PRE>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>Algorithm for
+		Creating Indexes<BR></B>For the purposes of this section, assume we
+		have a region of Portfolios with Positions as defined in the use
+		cases section of the functional specification with region path
+		&ldquo;/portfolios&rdquo;. An index is created to speed up queries
+		that are similar to:<BR><BR><TT>SELECT DISTINCT posn<BR>FROM
+		/portfolios ptfo, ptfo.positions.values posn<BR>WHERE ptfo.status =
+		'active' AND posn.sharesOutstanding &gt; 10000<BR><BR></TT>The
+		createIndex method is called with the following
+		parameters:<BR><BR>fromClause = &ldquo;/portfolios ptflo,
+		ptflo.positions.values posn&rdquo;;<BR>indexedExpression =
+		&ldquo;posn.sharesOutstanding&rdquo;;<BR>projectionAttributes =
+		&ldquo;posn&rdquo;;</FONT></FONT></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Extract region
+			information from the fromClause.<BR></B>In order to create an
+			index, the fromClause must reference one and only one region using
+			a regionPath, and the fromClause, indexedExpression, and
+			projectionAttributes must not have any query parameters in them.
+			If these restrictions do not hold, then the createIndex method
+			will throw an exception.<BR><BR>Determine the one and only one
+			region path in the fromClause.<BR><BR>For the above example, the
+			region information from the fromClause determines that the region
+			path is &ldquo;/portfolios&rdquo;.</FONT></FONT></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Transform the
+			parameters.</B><BR>Make the following transformation on the
+			fromClause::</FONT></FONT></P>
+			<OL TYPE=a>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<SPAN STYLE="font-weight: medium"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Where
+				it references the regionPath, substitute <TT>$1</TT>.</FONT></FONT></SPAN></P>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><FONT FACE="Arial, sans-serif">For the working
+				example, we now have the fromClause<BR><TT>$1 ptflo,
+				ptflo.positions.values posn</TT></FONT></FONT></P>
+			</OL>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<B><FONT SIZE=3><FONT FACE="Arial, sans-serif">Construct and
+			Excecute the Index Maintenance Query (IMQ)<BR></FONT></FONT></B><SPAN STYLE="font-weight: medium"><FONT SIZE=3><FONT FACE="Arial, sans-serif">A
+			special Query is created for an index which we will call the Index
+			Maintenance Query (IMQ). This query is constructed as follows.</FONT></FONT></SPAN></P>
+			<OL TYPE=a>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-weight: medium; widows: 0; orphans: 0">
+				<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Construct
+				IMQ<BR></B>Using the transformed fromClause as described above
+				and the other index parameters, construct the query as:<BR><TT>SELECT
+				DISTINCT idxExpr:</TT> <I>indexedExpression<TT>, </TT></I><TT><SPAN STYLE="font-style: normal">target:
+				</SPAN></TT><I>projectionAttributes<BR></I><SPAN STYLE="font-style: normal"><TT>FROM</TT>
+				</SPAN><I>fromClause<BR></I><SPAN STYLE="font-style: normal">Save
+				this query with the index and compile into bytecodes if
+				possible,as it will be re-used for index maintenance as well as
+				for index creation.<BR>For our working example, the IMQ would
+				be:<BR><TT><FONT FACE="Courier New">SELECT DISTINCT idxExpr: 
+				posn.sharesOutstanding<I>, </I><SPAN STYLE="font-style: normal">target:
+				posn</SPAN><I><BR></I><SPAN STYLE="font-style: normal">FROM <FONT SIZE=3>$1
+				ptflo, ptflo.positions.values posn</FONT></SPAN></FONT></TT></SPAN></FONT></FONT></P>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-style: normal; widows: 0; orphans: 0">
+				<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Execute
+				IMQ.<BR></B><SPAN STYLE="font-weight: medium">Iterate through
+				each RegionEntry in the region, and for each RegionEntry:</SPAN></FONT></FONT></P>
+				<UL>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Create
+					an special instance of QRegion that contains exactly one entry,
+					the current RegionEntry. Execute the IMQ using this QRegion as
+					the <TT>$1</TT> query parameter. The result of this query
+					provides structs that contains the the index values and target
+					values needed for the index for this region entry.<BR>[<B>Note:
+					</B>We need to implement a light-weight read-only Region
+					implementation that has just one RegionEntry in it, and use this
+					Region to construct this special QRegion instance.]</FONT></FONT></SPAN></SPAN></P>
+				</UL>
+			</OL>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>Use the results to
+			build the index.</B> <BR><FONT SIZE=3>These structs can now be
+			used directly to build the index by iterating over them and
+			collecting the indexed values and constructing the map of
+			RegionEntry=&gt;target objects, and adding the RegionEntry to the
+			reverse map.</FONT></FONT></FONT></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>Concurrency during
+			Index Creation<BR></B><SPAN STYLE="font-weight: medium">For
+			indexes that are specified in the cache.xml, the indexes are
+			created during initialization before a reference to the region is
+			released to application threads.<BR>Whenever an index is being
+			created, modifications to the region by other threads must be
+			blocked, i.e a local region write lock is obtained. Threads that
+			only read from the region are not blocked.  [TBD &ndash; to we
+			already have a local region write lock, or does the query group
+			need to implement this?]</SPAN></FONT></FONT></P>
+		</OL>
+	</OL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+	<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Index Use while
+	Executing a Query<BR></B><SPAN STYLE="font-weight: medium">To
+	determine if an index is <I>compatible</I> for a particular query,
+	the fromClause, indexedExpression, and projectionAttributes of an
+	index must be compatible with a query as described below. In the
+	future, histograms should be added to indexes along with query
+	transformations cost-based estimation to the query processor so that
+	more intelligent heuristics can be used to determine whether the use
+	of a particular index is actually worthwhile. In 4.0, if an
+	index is deemed to be compatible then it will be used. The
+	algorithms described here make some simplifying assumptions and an
+	index may not necessarily be used in all cases where they could be
+	if the algorithms were more sophisticated. This could be improved on
+	in future releases.</SPAN></FONT></FONT></P>
+	<OL TYPE=A>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Canonicalization<BR></B><SPAN STYLE="font-weight: medium">To
+		facilitate the matching algorithms as described, later, the index
+		parameters (fromClause, indexedExpression, and
+		projectionAttributes) and the query being executed are first <SPAN STYLE="font-style: normal">put
+		into a canonicalized form so there are no variables in the query.
+		Canonicalization is done as follows:</SPAN></SPAN></FONT></FONT></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3>Queries and index
+			parameters are first compiled into a tree of nodes which are
+			instances of <TT>CompiledValue</TT>. The term &ldquo;compiled&rdquo;
+			 here should not be confused with byte-code compilation which is a
+			lower level of compilation that will most likely not be
+			implemented in this release due resource restrictions. See the
+			package.html for com.gemstone.gemfire.cache.query for further
+			details on byte-code compilation.</FONT></FONT></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3>Each iterator
+			definition in the fromClause is assigned a placeholder that
+			represents its runtime iteration. The product currently has an
+			internal class that implements these placeholders, named
+			<TT>RuntimeIterator</TT>. For the purpose of this document, we
+			will refer to these placeholders as <I>itr1, itr2, ..., itrN.</I>
+			All identifiers in the query and index parameters that refer to
+			explicitly declared iterator variables are replaced with reference
+			to these placeholders. Any implicit references to attributes or
+			methods are resolved to determine which iterator it operates on,
+			and these implicit references are made explicit and given a
+			reference to the appropriate placeholder. </FONT></FONT>
+			</P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3>Remove any
+			unreferenced iterator definitions in the fromClause, i.e.  any
+			definitions that are not referenced anywhere else in the query or
+			index parameters. Note, however, that a * projectionAttributes
+			implicitly references all iterator definitions in the fromClause.</FONT></FONT></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<SPAN STYLE="font-weight: medium"><FONT SIZE=3><SPAN STYLE="font-style: normal"><FONT FACE="Arial, sans-serif"><SPAN STYLE="font-style: normal">Given
+			the example query<BR><TT><FONT SIZE=3><FONT FACE="Courier New">SELECT
+			DISTINCT posn<BR>FROM /portfolios, positions.values posn<BR>WHERE
+			status = 'active' AND sharesOutstanding &gt; $1</FONT></FONT></TT></SPAN><TT><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Courier New"><BR></FONT></FONT></SPAN></TT></FONT><TT><FONT FACE="Arial, sans-serif">the
+			canonicalized form would be a tree of CompiledValue nodes which
+			could be transcribed as:<BR><TT>SELECT DISTINCT </TT></FONT></TT></SPAN><TT><FONT FACE="Arial, sans-serif"><TT><I>itr2<BR></I><SPAN STYLE="font-style: normal">FROM
+			/portfolios </SPAN><I>itr1, itr1</I><SPAN STYLE="font-style: normal">.positions.values
+			</SPAN><I>itr2<BR></I><SPAN STYLE="font-style: normal">WHERE
+			</SPAN><I>itr1</I><SPAN STYLE="font-style: normal">.status =
+			'active' AND </SPAN><I>itr2</I><SPAN STYLE="font-style: normal">.sharesOutstanding
+			&gt; $1</SPAN></TT></FONT></TT></FONT></SPAN></P>
+		</OL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<B><FONT SIZE=3><FONT FACE="Arial, sans-serif">Compatible
+		fromClause<BR></FONT></FONT></B><SPAN STYLE="font-weight: medium"><FONT SIZE=3><FONT FACE="Arial, sans-serif">The
+		fromClause of an index is compatible with a query if the index
+		fromClause is a sublist of the query fromClause (a sublist includes
+		the case of being equivalent lists).</FONT></FONT></SPAN></P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Compatible
+		projectionAttributes<BR></B><SPAN STYLE="font-weight: medium">The
+		projectionAttributes of an index is automaticaly compatible if it
+		is * (no projection), or if it is equivalent to the
+		projectionAttributes in the query.</SPAN></FONT></FONT></P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<B><FONT SIZE=3><FONT FACE="Arial, sans-serif">Compatible
+		indexedExpression</FONT></FONT></B></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><B><FONT FACE="Arial, sans-serif"><SPAN STYLE="font-style: normal">Equivalence</SPAN></FONT></B><SPAN STYLE="font-weight: medium"><FONT FACE="Arial, sans-serif"><SPAN STYLE="font-style: normal">:
+			The indexedExpression (tree) is passed into the the whereClause
+			(tree) of the query using a method that calculates compatibility
+			by potentially recursively visiting children nodes that represent
+			subexpressions. By default, a node in the whereClause will answer
+			true only if the indexedExpression is equivalent to the node
+			itself. E.g., the expression </SPAN></FONT></SPAN><FONT FACE="Arial, sans-serif"><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3>element(</FONT></SPAN></SPAN></TT><SPAN STYLE="font-weight: medium"><I><FONT SIZE=3>sub_expr1</FONT></I></SPAN><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3>)</FONT></SPAN></SPAN></TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3>in
+			the </FONT></SPAN></SPAN><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">indexedExpression</FONT></FONT></SPAN></SPAN></TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3>
+			is compatible with </FONT></SPAN></SPAN><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3>element(</FONT></SPAN></SPAN></TT><SPAN STYLE="font-weight: medium"><I><FONT SIZE=3>sub_expr2</FONT></I></SPAN><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3>)</FONT></SPAN></SPAN></TT></FONT><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">in
+			the whereClause if and only if <I>sub_expr1</I> and <I>sub_expr2</I>
+			are equivalent.</FONT></FONT></SPAN></SPAN></TT></FONT></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Some
+			types of expression nodes, however, define compatible in other
+			ways.</FONT></FONT></SPAN></SPAN></TT></FONT></P>
+			<OL TYPE=a>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT FACE="Arial, sans-serif"><FONT SIZE=3>An
+				</FONT><TT><FONT SIZE=3>AND</FONT></TT><FONT SIZE=3> node in the
+				whereClause is compatible with an indexedExpression not only if
+				it is equivalent based on its <I>unordered </I>terms, but also if
+				any of its terms are compatible.</FONT></FONT></SPAN></SPAN></TT></FONT></P>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT FACE="Arial, sans-serif"><FONT SIZE=3>An
+				</FONT><TT><FONT SIZE=3>OR </FONT></TT><FONT SIZE=3>node in this
+				release is compatible only if it is equivalent based on its
+				<I>unordered</I> terms.</FONT></FONT></SPAN></SPAN></TT></FONT></P>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">A
+				relational expression (using one of the operators &lt;, &gt;, &lt;=,
+				&gt;=, or &lt;&gt;) is compatible if equivalent or if both of the
+				following are true:</FONT></FONT></SPAN></SPAN></TT></FONT></P>
+				<UL>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">one
+					of its terms is compatible</FONT></FONT></SPAN></SPAN></TT></FONT></P>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">the
+					other term is a constant, i.e. is not dependent on <U>any</U><SPAN STYLE="text-decoration: none">
+					of the iterators.</SPAN></FONT></FONT></SPAN></SPAN></TT></FONT></P>
+				</UL>
+			</OL>
+		</OL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT SIZE=3><B><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Compatible
+		Index<BR></FONT></FONT></SPAN></SPAN></TT></B><SPAN STYLE="font-weight: medium"><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">If
+		all of these compatibility tests for a query pass for a particular
+		index, then the query will use that index. Note that it is possible
+		for a query to use multiple compatible indexes as explained below.</FONT></FONT></SPAN></SPAN></TT></SPAN></FONT></P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT SIZE=3><B><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Query
+		Evaluation</FONT></FONT></SPAN></SPAN></TT></B><SPAN STYLE="font-weight: medium"><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif"><BR>There
+		are two ways a query can be evaluated, by </FONT></FONT></SPAN></SPAN></TT></SPAN><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>iteration</B><SPAN STYLE="font-weight: medium">&nbsp;or
+		</SPAN><B>&ldquo;filtering&rdquo;</B><SPAN STYLE="font-weight: medium">
+		(for the lack of a better term).</SPAN></FONT></FONT></SPAN></SPAN></TT></FONT></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><B><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Iteration<BR></FONT></FONT></SPAN></SPAN></TT></B><SPAN STYLE="font-weight: medium"><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">A
+			query is evaluated by brute-force, most likely by iteration and
+			cartesian product of the collections in the fromClause if there
+			are no compatible indexes and the where clause is dependent on at
+			least one of the iterators. The whereClause tree is visited for
+			each element in the iteration across the cartesian product, and
+			those elemets for which the whereClause evaluates to true are kept
+			in the result set and the projection attributes are applied to it,
+			and for those elements for which the whereClause evaluates to true
+			are discarded.</FONT></FONT></SPAN></SPAN></TT></SPAN></FONT></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><B><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Filtered
+			Evaluation<BR></FONT></FONT></SPAN></SPAN></TT></B><SPAN STYLE="font-weight: medium"><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">When
+			there is at least one compatible index, then the query is
+			evaluated by &ldquo;filtering&rdquo; which means it does
+			intersections or iterations on intermediate result sets obtained
+			from indexes instead of the entire base collection. For filtered
+			evaluation, the compiled whereClause tree is visited recursively,
+			but instead of doing this for each iteration of the base
+			collection, the entire result set is build up as it visits the
+			nodes in the tree. An expression that is compatible with an index
+			will produce a result set using that index. When combined with
+			other terms in an AND expression, either other result sets will be
+			intersected with each other to produce a result set for the entire
+			AND expression, or some terms will produce result sets that are
+			intersected and other terms that cannot use an index will be
+			evaluated against the intermediate results from other terms by
+			iteration, causing elements in the intermediate results to be
+			dropped if they don't evaluate to TRUE for the other term(s). 
+			Terms in AND expressions that use indexes should always be
+			evaluated first before terms that require iteration; this
+			minimizes the size of the iteration required.</FONT></FONT></SPAN></SPAN></TT></SPAN></FONT></P>
+			<OL TYPE=a>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><B><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Projections
+				on Indexes<BR></FONT></FONT></SPAN></SPAN></TT></B><SPAN STYLE="font-weight: medium"><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">When
+				computing the result set from an index lookup that contains a
+				projection, the RegionEntry where the target objects are derived
+				from should be kept as well. This result set may need to be
+				intersected with the results of another index lookup that may or
+				may be projected, or may need to be iterated across with an
+				expression that refers to data that is not in the projection.
+				Each of these cases is described as follows.</FONT></FONT></SPAN></SPAN></TT></SPAN></FONT></P>
+				<UL>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">If
+					two index lookup result sets are intersected and they both have
+					the same projection or they both have no projection, then do the
+					intersection normally, keeping the context information (i.e. the
+					RegionEntries) in the result.</FONT></FONT></SPAN></SPAN></SPAN></TT></FONT></P>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">It
+					two index lookup result sets need to be intersected and one has
+					a projection and the other does not, then apply the projection
+					to the result set that does not have a projection and then do
+					the intersection.</FONT></FONT></SPAN></SPAN></SPAN></TT></FONT></P>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">If
+					an index lookup result set has no projection and an expression
+					is being applied through iteration, then nothing special needs
+					to be done.</FONT></FONT></SPAN></SPAN></SPAN></TT></FONT></P>
+					<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+					<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">If
+					an index lookup result set does have a projection and an
+					expression is being applied through iteration, then first
+					determine if the expression refers to any iterator variable that
+					is not available in the projection. If so, then the full
+					(unprojected) base collection element(s) (i.e. the part of the
+					cartesian product this entry contributes to) should be computed
+					from the index results for each element using the RegionEntry
+					instead of the projection retrieved from the index before the
+					expression is applied to determine whether the projection(s)
+					from the index should added to the intermediate results.</FONT></FONT></SPAN></SPAN></SPAN></TT></FONT></P>
+				</UL>
+				<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+				<FONT SIZE=3><B><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Choice
+				of multiple Indexes<BR></FONT></FONT></SPAN></SPAN></TT></B><SPAN STYLE="font-weight: medium"><TT><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif">Where
+				there is an expression that is compatible with more than one
+				available index, then if one index has a projection and the other
+				does not, then prefer the index with the projection. In some
+				cases an index for a complex expression is available as well as
+				an index for a simpler expression that is part of the more
+				complex expression. In this case the index for the more complex
+				expression is preferred.  [to do &ndash; provide example]</FONT></FONT></SPAN></SPAN></TT></SPAN></FONT></P>
+			</OL>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><TT><SPAN STYLE="font-weight: medium"><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>Independent
+			whereClause. </B>In the corner case where the whereClause is not
+			dependent at all on any of the iterators then iteration is also
+			not necessary as the result will simply be the entire projected
+			base collection or the empty set. </FONT></FONT></SPAN></SPAN></SPAN></TT></FONT>
+			</P>
+		</OL>
+	</OL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+	<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Index Maintenance</B></FONT></FONT></P>
+	<OL TYPE=A>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Synchronous<BR></B><SPAN STYLE="font-weight: medium">Synchronous
+		index maintenance implies that the thread that makes a modification
+		to region data does not return until the indexes for that region
+		are updated. This guarantees that a thread that makes modifications
+		to a region and then does a query will get results that reflect the
+		changes.</SPAN></FONT></FONT></P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Asynchronous<BR></B><SPAN STYLE="font-weight: medium">Asynchronous
+		index maintenance uses a background thread that does the index
+		maintenance. Operations to update the index are queued in Runnable
+		added to a QueuedExecutor and a background thread takes operations
+		off the queue and updates the indexes. Although the operations
+		should be done in order with respect to a particular region, we
+		should try to avoid using a thread per region. One thread per
+		cache, however, may not be sufficient so some compromise may need
+		to be made with respect to the number of threads. The size of the
+		index maintenance queue may need to be made configurable by the
+		user to prevent index maintenance from lagging behind region
+		updates too much. Other than the use of background threads, index
+		maintenance is the same for both synchronous and asynchronous.</SPAN></FONT></FONT></P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-weight: medium; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Upon region
+		modification. </B>When a region that has indexes is modified, an
+		updateIndexes call is made to the region's index manager to update
+		the indexes. A reference to the RegionEntry that is being modified
+		is provided, and information regarding whether the modification was
+		a create, destroy, or update.  If it was an update, then including
+		the &ldquo;old value&rdquo; is not necessary since the old data in
+		the indexes is completely identified by the RegionEntry.</FONT></FONT></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-weight: medium; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Remove old data.<BR></B>If
+			the operation is not a create, the old data that is associated
+			with the RegionEntry is removed from the indexes, using the
+			reverse map of the index.</FONT></FONT></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<SPAN STYLE="font-weight: medium"><FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>Add
+			new data.<BR></B>If the operation is not a destroy, the new data
+			is calculated and added to the index in both the forward and
+			reverse maps. If it is a destroy, then skip the next section on
+			computing the new data.</FONT></FONT></SPAN></P>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT SIZE=3><FONT FACE="Arial, sans-serif"><B>New Data: Compute
+			the new index values and target values.<BR></B>Execute the <B>IMQ</B>
+			using the same procedure <SPAN STYLE="font-weight: medium"> that
+			was used for index creation, but only use the one created or
+			updated RegionEntry to construct a QRegion. This provides the
+			index values and target values to use to update the index for this
+			entry.</SPAN></FONT></FONT></P>
+		</OL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; font-weight: medium; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Concurrency<BR></B><SPAN STYLE="font-weight: medium">Each
+		index has a </SPAN><B>ReadWriteLock</B><SPAN STYLE="font-weight: medium">.
+		This lock can either be an instance of
+		the backport of the JDK 1.5 ReentrantReadWriteLock can be used. The
+		read lock allows multiple readers and the write lock is exclusive.
+		During index maintenance, all the indexes are write-locked up
+		front. When a query needs to use an index, it obtains a read lock
+		on the index while it uses it.</SPAN></FONT></FONT></P>
+	</OL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+	<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Futures</B></FONT></FONT></P>
+	<OL TYPE=A>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+		<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Improved Concurrency
+		During Region Maintenance</B></FONT></FONT></P>
+		<OL TYPE=i>
+			<LI><P CLASS="western" STYLE="margin-bottom: 0in; widows: 0; orphans: 0">
+			<FONT FACE="Arial, sans-serif"><FONT SIZE=3><B>Multiple Reader,
+			Multiple Writer ReadWriteLock<BR></B><SPAN STYLE="font-weight: medium">&lt;TBD&gt;</SPAN></FONT></FONT></P>
+		</OL>
+	</OL>
+</OL>
+</BODY>
+</HTML>

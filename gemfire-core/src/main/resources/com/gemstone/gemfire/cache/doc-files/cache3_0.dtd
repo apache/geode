@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+This is the XML DTD for the GemFire distributed cache declarative
+caching XML file.  All declarative cache files must include a DOCTYPE
+of the following form:
+
+  <!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 3.0//EN"
+    "http://www.gemstone.com/dtd/cache3_0.dtd">
+
+The contents of a declarative XML file correspond to APIs found in the
+
+                      com.gemstone.gemfire.cache
+
+package.  A declarative caching XML file is used to populate a Cache
+when it is created.
+
+-->
+
+<!--
+
+The following conventions apply to all GemFire distributed cache
+declarative caching XML file elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+
+-->
+
+<!--
+The "cache" element is the root element of the declarative cache file.
+This element configures a GemFire Cache and describes the root regions it
+contains, if any.
+-->
+
+<!ELEMENT cache (vm-root-region|shared-root-region)*>
+<!ATTLIST cache
+  lock-timeout CDATA #IMPLIED
+  lock-lease CDATA #IMPLIED
+  search-timeout CDATA #IMPLIED
+>
+
+<!--
+A "vm-root-region" element describes a root region whose entries and
+subregions will be stored in VM local memory.
+Note that the "name" attribute specifies the simple name of the region;
+it cannot contain a "/".
+-->
+
+<!ELEMENT vm-root-region (region-attributes, entry*, region*)>
+<!ATTLIST vm-root-region
+  name CDATA #REQUIRED
+>
+
+<!--
+A "shared-root-region" element describes a root region whose entries
+and subregions will be stored in shared memory.
+Note that the "name" attribute specifies the simple name of the region;
+it cannot contain a "/".
+-->
+
+<!ELEMENT shared-root-region (region-attributes, entry*, region*)>
+<!ATTLIST shared-root-region
+  name CDATA #REQUIRED
+>
+
+<!--
+A "region" element describes a region (and its entries) in GemFire
+distributed cache.  It may be used to create a new region or may be
+used to add new entries to an existing region.  Note that the "name"
+attribute specifies the simple name of the region; it cannot contain a
+"/".
+-->
+
+<!ELEMENT region (region-attributes, entry*, region*)>
+<!ATTLIST region
+  name CDATA #REQUIRED
+>
+
+<!--
+A "region-attributes" element describes the attributes of a region to
+be created.
+-->
+
+<!ELEMENT region-attributes (key-constraint?, region-time-to-live?,
+  region-idle-time?, entry-time-to-live?, entry-idle-time?,
+  disk-write-attributes?, disk-dirs?,
+  cache-loader?, cache-writer?, cache-listener?, eviction-attributes?)>
+<!ATTLIST region-attributes
+  scope (local | distributed-no-ack | distributed-ack | global) #IMPLIED
+  mirror-type (none | keys | keys-values) #IMPLIED
+  serialize-values (true | false) #IMPLIED
+  keep-alive-timeout CDATA #IMPLIED
+  initial-capacity CDATA #IMPLIED
+  load-factor CDATA #IMPLIED
+  concurrency-level CDATA #IMPLIED
+  persist-backup (true | false) #IMPLIED
+  statistics-enabled (true | false) #IMPLIED
+>
+
+<!-- Create eviction attributes that monitors and controls the size of the Region 
+-->
+<!ELEMENT eviction-attributes (lru-entry-count|lru-heap-percentage|lru-memory-size)?>
+
+<!-- Create an LRU eviction controller which performs the action if the 
+     Region has more than the maximum number of Entries in the Region
+-->
+<!ELEMENT lru-entry-count EMPTY>
+<!ATTLIST lru-entry-count
+    maximum CDATA #IMPLIED
+    action (local-destroy|overflow-to-disk) #IMPLIED>
+
+<!-- 
+   Create an LRU that measures the JVM heap after each interval, 
+   if the heap is over the maximum percentage, the action is performed.
+-->
+<!ELEMENT lru-heap-percentage EMPTY>
+<!ATTLIST lru-heap-percentage
+    maximum CDATA #IMPLIED
+    time-interval CDATA #IMPLIED
+    action (local-destroy|overflow-to-disk) #IMPLIED>
+
+<!-- 
+   Create an LRU that performs the action when the memory size of the Region is over the
+   maximum.  The optional class-name and parameter allows for the declaration an ObjectSizer which 
+   is used to measure the size of each Object in the Region.  The class must implement the ObjectSizer interface.
+-->
+<!ELEMENT lru-memory-size (class-name, parameter*)?>
+<!ATTLIST lru-memory-size
+    maximum CDATA #IMPLIED
+    action (local-destroy|overflow-to-disk) #IMPLIED>
+
+
+<!--
+A "key-constraint" element specifies the name of a class to which the
+keys of a region are constrained.
+-->
+
+<!ELEMENT key-constraint (#PCDATA)>
+
+<!--
+A "region-time-to-live" element specifies a Region's time to live
+-->
+
+<!ELEMENT region-time-to-live (expiration-attributes)>
+
+<!--
+A "region-idle-time" element specifies a Region's idle time
+-->
+
+<!ELEMENT region-idle-time (expiration-attributes)>
+
+<!--
+A "entry-time-to-live" element specifies a Region's entries' time to
+live
+-->
+
+<!ELEMENT entry-time-to-live (expiration-attributes)>
+
+<!--
+A "entry-idle-time" element specifies a Region's entries' idle time
+-->
+
+<!ELEMENT entry-idle-time (expiration-attributes)>
+
+<!-- 
+An "expiration-attributes" element describes expiration 
+-->
+
+<!ELEMENT expiration-attributes EMPTY>
+<!ATTLIST expiration-attributes
+  timeout CDATA #REQUIRED
+  action (invalidate | destroy | local-invalidate | local-destroy) #IMPLIED
+>
+
+<!--
+An "entry" element desribes an entry to be added to a region.  Note
+that if an entry with the given key already exists in the region, it
+will be replaced.
+-->
+
+<!ELEMENT entry (key, value)>
+
+<!-- 
+A "class-name" element specifies the name of a Declarable class, an
+instance of which is created when a declarative cache XML file is
+read.
+-->
+
+<!ELEMENT class-name (#PCDATA)>
+
+<!-- 
+A "parameter" element describes a parameter used to initialize a
+Declarable object.
+-->
+
+<!ELEMENT parameter (string | declarable)>
+<!ATTLIST parameter
+  name CDATA #REQUIRED
+>
+
+<!--
+A "cache-loader" element describes a region's CacheLoader
+-->
+
+<!ELEMENT cache-loader (class-name, parameter*)>
+
+<!--
+A "disk-write-attributes" element describes how entry data is written
+to disk.
+-->
+
+<!ELEMENT disk-write-attributes (synchronous-writes | asynchronous-writes)>
+
+<!--
+A "synchronous-writes" element specifies that entry data should be
+written to disk synchronously.
+-->
+
+<!ELEMENT synchronous-writes EMPTY>
+
+<!--
+An "asynchronous-writes" element specifies how entry data should be
+written to disk asynchronous.
+-->
+
+<!ELEMENT asynchronous-writes EMPTY>
+<!ATTLIST asynchronous-writes
+  time-interval CDATA #REQUIRED
+  bytes-threshold CDATA #REQUIRED
+>
+
+<!-- 
+A "disk-dirs" element specifies the region's disk directories
+-->
+<!ELEMENT disk-dirs (disk-dir+)>
+
+<!--
+A "disk-dir" element specifies one of a region's disk directories
+-->
+
+<!ELEMENT disk-dir (#PCDATA)>
+
+<!--
+A "cache-writer" element describes a region's CacheWriter
+-->
+
+<!ELEMENT cache-writer (class-name, parameter*)>
+
+
+<!--
+A "cache-listener" element describes a region's CacheListener
+-->
+
+<!ELEMENT cache-listener (class-name, parameter*)>
+
+<!--
+A "key" element describes the key in a Region entry
+-->
+<!ELEMENT key (string | declarable)>
+
+<!--
+A "value" element describes the value in a Region entry
+-->
+<!ELEMENT value (string | declarable)>
+
+<!--
+A "string" element specifies a String to placed in a Region entry
+-->
+<!ELEMENT string (#PCDATA)>
+
+<!--
+A "declarable" element specifies a Declarable object to be placed in a
+Region entry
+-->
+<!ELEMENT declarable (class-name, parameter*)>

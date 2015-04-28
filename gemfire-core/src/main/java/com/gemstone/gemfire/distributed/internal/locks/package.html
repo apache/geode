@@ -1,0 +1,297 @@
+<HTML>
+<BODY>
+
+<H1>The GemFire Distributed Lock Service</H1>
+
+The GemFire Distributed Lock Service (also know as "dlock" or "DLS")
+provides synchronization locks that span multiple members of a
+distributed system.  The user creates a {@link
+com.gemstone.gemfire.distributed.DistributedLockService} with a given
+name and uses to acquire distributed locks.  Lock coordination and
+management is provided by an instance of the distributed lock service
+referred to as the "grantor".  Each lock service instance knows which
+member is the grantor.  A member of the distributed system referred to
+as the "elder" maintains a mapping between the name of a lock service
+and the member who is the grantor.  The distributed lock service is
+used to implement GemFire global Regions and distributed transactions.
+
+<H2>Creating a distributed lock service</H2>
+
+Before a member of the distributed system can create an instance of a
+distributed lock service, it must contact the "elder" member to find
+out which member hosts the lock service's "grantor".  The "elder"
+member is defined as the oldest member in the JavaGroups view of the
+distributed system.  The member that is creating the lock service
+sends the elder a {@link
+com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage} to
+find out who the current grantor is.  If no member is currently the
+grantor of the distributed lock service, then the member that sent the
+request is chosen to be the grantor.
+
+<P>
+
+<CENTER>
+<IMG SRC="doc-files/elder.jpg" WIDTH="435" HEIGHT="287">
+</CENTER>
+
+<P>
+
+By centralizing the information and logic regarding which member hosts
+a grantor, we avoid numerous race conditions and deadlocks when a new
+lock service is created, when a lock service is destroyed, when a
+member that hosts a grantor crashes, and when a lock service wishes to
+<a href="#transfer-grantor">transfer</a> grantorship to itself.  Race
+conditions are also reduced by minimizing the number of messages that
+are sent to the elder.  For instance, we do not broadcast a message
+when a member becomes grantor.  Instead, we let the other members of
+the distributed system ask the elder for this information when they
+need it.
+
+<H2>Requesting a distributed lock</H2>
+
+Once a distributed lock service has been created and initialized, it
+can be used to obtain a distributed lock.  The member that wishes to
+obtain a lock sends a {@link
+com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage} to the
+lock service's grantor.  The grantor will process the lock request and
+will grant the lock once it becomes available.
+
+<P>
+
+However, it is possible that the member that the requester sent the
+{@link com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}
+to is no longer the grantor.  That is, there can be a race between the
+requester requesting the lock and the grantor lock service being
+destroyed.  In this scenario, the member replies to the requester with
+a <code>LockResponseMessage</code> that
+indicates that the member is not the grantor.  The requester will then
+send a {@link
+com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage} to
+the elder to determine who the new grantor is.
+
+<P>
+
+Another interesting race condition may occur when a requester learns
+the identity of the grantor before the grantor member learns that it
+is the grantor.  That is, the elder might inform a requester of the
+identity of a grantor before the grantor member has fully initialized
+(or has even heard back from the elder that it is the grantor).  This
+race condition is resolved by blocking the processing of a {@link
+com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage} until
+the member knows whether or not it is the grantor.
+
+<H2>Lock Service Destruction</H2>
+
+When an application has finished using a lock service, the service can
+be {@linkplain
+com.gemstone.gemfire.distributed.DistributedLockService#destroy
+destroyed}.  When a non-grantor distributed lock service is destroyed,
+the member destroying the lock service sends a
+<code>DestroyServiceMessage</code> to the grantor.  Upon receiving the
+message, the grantor cleans up all pending lock requests made by the
+service being destroyed.  The grantor also responds to the pending
+requests with a "you're destroyed" message indicating that the locks
+were not granted because the member's service was destroyed.  The
+thread destroying the non-grantor lock service blocks until it
+receives an acknowledgment message from the grantor saying that the
+grantor has cleaned up all pending requests.  This blocking prevents
+race conditions if a member were to successively destroy and recreate
+the same named lock service.
+
+[What do we do about lock request messages that have been received by
+the grantor, but have not been processed?  That is, the lock request
+messages that are still in the message queue when the service destroy
+message is received.]
+
+<H3>Grantor Destruction</H3>
+
+When a <i>grantor</i> lock service is destroyed, all lock-related
+requests (including requests for lock releases and lock service
+destructions) block until the grantor is completely destroyed.  Once
+the grantor is destroyed, lock-related requests are replied to with a
+"not grantor" message.
+
+In a simple destruction algorithm, the grantor could alert the elder
+that it is no longer grantor.  The next member to request information
+about the grantor from the elder would be named the grantor.  This new
+grantor would perform "grantor recovery" (see below) to determine
+which members held which locks.  However, this algorithm is far from
+optimal because it requires that each member of the distributed system
+(remember, we do not keep track of which members have a lock service)
+be contacted after the grantor has been destroyed.
+
+In a more orderly destruction algorithm, the grantor being destroyed
+selects a member to be its "successor" and instructs the successor to
+request that it become grantor (see <a
+href="#transfer-grantor">"Transferring Grantorship"</a> below).  The
+grantor being destroyed chooses a successor based on number of locks
+held by each member.  The successor is the member who holds the most
+locks.  If two or more members hold the same number of locks, any one
+of those members can be chosen as a successor.  The grantor being
+destroyed sends a message to the successor indicating that the
+successor should request that it become the new grantor.  The
+grantor's destruction will not proceed until it receives a <code>TransferGrantorshipMessage</code>
+indicating that another member is becoming the grantor (Note that this
+message may not always come from the successor.  It may originate from
+one of the "young turks" described below.), or until it receives a
+message saying that the successor has refused to become grantor (This
+may occur if the successor no longer has an instance of the lock
+service.), or if the successor member leaves the distributed system.
+The destroy operation will not return, and lock-related requests will
+block, until the transfer of grantorship has completed.  The
+successor-based algorithm minimizes the number of processes involved
+in grantor destruction and the number of messages that must be sent
+between processes.
+
+If no locks are held when the grantor is destroyed, the grantor sends
+the elder a "destroyed with no locks" message that instructs the elder
+that there is no grantor.  The grantor does not bother to name a
+successor because there is no good choice.  Since the elder knows that
+no locks were held at the time of destruction, it can instruct the new
+grantor (that is, the next member that requests information about the
+grantor) that grantor recovery is not necessary.  After the grantor
+being destroyed sends message, destruction is complete.
+
+<H3>Grantor Recovery</H3>
+
+When a new grantor is chosen, the elder informs the new grantor that
+it is not the first grantor and that the new grantor must recover
+lock-related information that was previously maintained by the old
+grantor.  Before the newly-chosen grantor can service lock requests,
+it has to recover information from other members of the distributed
+lock service.  The new grantor sends <code>LockRecoveryMessage</code>s to all
+members of the distributed system that respond with information about
+which distributed locks, if any, they hold.
+
+<P>
+
+It has been noted that that performing grantor recovery after the
+current grantor is cleanly destroyed is not optimal.  As an
+optimization, the grantor being destroyed could choose a successor
+grantor and transfer grantorship to it.  Since the grantor does not
+maintain a list of which members have created the lock service, it
+could choose a successor based on the members that have obtained
+locks.
+
+<A NAME="transfer-grantor"><H2>Transferring Grantorship</H2></A>
+
+In some applications a single member of the distributed lock service
+may want to acquire many locks in rapid succession.  We allow the user
+to optimize this scenario by ensuring that the member that requests
+the locks is also the grantor.  The grantor member can grant itself
+locks faster that it can grant locks to other members because there is
+no messaging involved.  The {@link
+com.gemstone.gemfire.distributed.DistributedLockService#becomeLockGrantor}
+transfers grantorship to a distributed lock service instance.
+
+<P>
+
+A lock service (known in this example as the "young turk") initiates
+grantorship transfer by sending a <code>TransferGrantorshipRequest</code>
+to the elder.  The elder notes that the young turk is now the grantor
+and instructs the current grantor that it is no longer the grantor and
+that it should expect to hear from the young turk shortly.  Once the
+current grantor has received this message, it will reply to {@link
+com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s with a
+response that indicates that it is not the grantor.  Note that the
+young turk will not reply to {@link
+com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s until
+grantorship has been fully transferred.
+
+<P>
+
+After it has notified the current grantor, the elder replies to the
+young turk with the identity of the current grantor.  The young turk,
+in turn, requests that the current grantor transfer locking-related
+information (for example, which members hold which lock) so that the
+young turk knows how to grant new locks.  This direct transfer of
+grantorship is an optimization over regular grantor recovery.
+
+<P>
+
+An application (or more likely a Hydra test) that has many distributed
+lock service members that simultaneously transfer grantorship may
+result in a "chain" of grantors.  That is, the first young turk is
+transferring grantorship from the current grantor, but there is also a
+line of other young turks that want to become grantor.  In fact, only
+the last young turk in line will actually become grantor.  The last
+young turk in line is the member that the elder believes is the
+grantor.  To ensure that one of the young turks in the middle of the
+line does not become grantor, when a young turk that is in the process
+of having grantorship transferred to it receives a request for grantor
+transfer from another young turk, the older turk gives up its dreams
+of becoming grantor and "passes through" the lock information to the
+younger turk when that information arrives.  After the older turk
+gives up, it replies to any pending {@link
+com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s with
+"not grantor".
+
+<P>
+
+There are several interesting scenarios to consider when members crash
+during the transfer of grantorship.  In the first scenario, the
+current grantor crashes during grantorship transfer.  When the young
+turk detects that the current grantor has crashed, it simply performs
+regular grantor recovery.  If there are not any younger turks, then
+the young turk becomes grantor.
+
+<P>
+
+In the second scenario, a young turk detects that its younger turk has
+crashed, thus breaking the chain of young turks.  In this scenario,
+the young turk knows that it will never be grantor (because it had a
+younger turk) and gives up trying to be grantor because it doesn't
+know if there are any younger turks to succeed it.  The younger turk
+on the other half of the broken chain will detect that its older turk
+has crashed and will initiate grantor recovery.
+
+<P>
+
+<CENTER>
+<IMG SRC="doc-files/turks.jpg" WIDTH="652" HEIGHT="315">
+</CENTER>
+
+<H2>Elder Death</H2>
+
+If an elder crashes or disconnects from the distributed system, a new
+elder is chosen.  When a member of the distributed system needs to
+contact the elder, it consults its JavaGroups view to determine which
+member is the eldest.  (Note that we assume that all members of the
+distributed system have identical JavaGroups views and will, thus,
+choose the same member as the elder.)  The member then sends a
+grantor-related message (such as a {@link
+com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage}) to
+the member it believes to the elder.  If a member receives a
+grantor-related message, it assumes it is the elder and begins to act
+as such.
+
+<P>
+
+When a member realizes that it is the Elder, it initiates elder
+recovery by sending an <code>ElderInfoRequest</code> to each
+member of the distributed system.  The other members reply with the
+names of the lock service grantors that they host.  This information
+allows the elder to build its mapping of lock services to grantors.
+While the elder is initializing, it will not respond to any requests
+for grantor information.
+
+<P>
+
+To optimize the common case in which the elder does not leave the
+distributed system, we do not require the first member to join a
+distributed system to perform elder recovery.  When a member connects
+to the distributed system, it keeps track of whether or not there are
+any other members.  If there are no other members, this first member
+notes this fact and if it becomes the elder, it will not perform elder
+recovery because it knows that there was not a previous elder.
+
+<P>
+
+A member lazily determines that it is the elder when it receives a
+request for grantor information.  A member could be more eager about
+becoming the elder, but if the application is not using the
+distributed lock service, the potential elder recovery would be wasted
+effort.
+
+</BODY>
+</HTML>

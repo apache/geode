@@ -1,0 +1,156 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.sequencelog.model;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+
+import com.gemstone.gemfire.internal.sequencelog.GraphType;
+
+/**
+ * @author dsmith
+ *
+ */
+public class GraphSet implements GraphReaderCallback {
+  private Map<GraphID, Graph> graphs = new HashMap<GraphID, Graph>();
+  private long maxTime = Long.MIN_VALUE;
+  private long minTime = Long.MAX_VALUE;
+  private final Map<String, Long> locations = new HashMap<String, Long>();
+  
+  private Set<EdgePattern> edgePatterns = new TreeSet<EdgePattern>();
+  
+  public void addEdge(long timestamp, GraphType graphType,
+      String graphName, String edgeName, String state, String source, String dest) {
+    addEdge(timestamp, graphType, graphName, edgeName, state, source, dest, false);
+  }
+
+  private void addEdge(long timestamp, GraphType graphType,
+      String graphName, String edgeName, String state, String source, String dest, boolean isFromPattern) {
+    if(source == null) {
+      source = "ERROR_NULL";
+    }
+    if(dest == null) {
+      dest = "ERROR_NULL";
+    }
+    GraphID id = new GraphID(graphType, graphName);
+    Graph graph = graphs.get(id);
+    if(graph == null) {
+      graph = new Graph(id);
+      graphs.put(id, graph);
+    }
+    graph.addEdge(timestamp, edgeName, state, source, dest, isFromPattern);
+    if(timestamp < minTime) {
+      minTime = timestamp;
+    }
+    if(timestamp > maxTime) {
+      maxTime = timestamp;
+    }
+    
+    if(source != null) {
+      updateLocations(source, timestamp);
+    }
+    if(dest != null) {
+      updateLocations(dest, timestamp);
+    }
+    
+  }
+  
+  private void updateLocations(String location, long timestamp) {
+    Long time = locations.get(location);
+    if(time == null || time.longValue() > timestamp) {
+      locations.put(location, timestamp);
+    }
+    
+  }
+
+  public void addEdgePattern(long timestamp, GraphType graphType,
+      Pattern graphNamePattern, String edgeName, String state, String source,
+      String dest) {
+    edgePatterns.add(new EdgePattern(timestamp, graphType, graphNamePattern, edgeName, state, source, dest));
+    
+  }
+  
+  /**
+   * Indicate this graphset is done populating. Triggers parsing of all of the graph patterns.
+   */
+  public void readingDone() {
+    for (EdgePattern edgePattern : edgePatterns) {
+      for (GraphID graphId : graphs.keySet()) {
+        if (edgePattern.graphNamePattern.matcher(graphId.getGraphName())
+            .matches() && edgePattern.graphType.equals(graphId.getType())) {
+          addEdge(edgePattern.timestamp, graphId.getType(),
+              graphId.getGraphName(), edgePattern.edgeName, edgePattern.state,
+              edgePattern.source, edgePattern.dest, true);
+        }
+      }
+    }
+  }
+  
+  public Map<GraphID, Graph> getMap() {
+    return graphs;
+  }
+
+  public long getMaxTime() {
+    return maxTime;
+  }
+
+  public long getMinTime() {
+    return minTime;
+  }
+
+  public List<String> getLocations() {
+    List<String> result = new ArrayList<String>(locations.keySet());
+    Collections.<String>sort(result, new Comparator<String> () {
+      public int compare(String o1, String o2) {
+        Long time1 = locations.get(o1);
+        Long time2 = locations.get(o2);
+        return time1.compareTo(time2);
+      }
+    });
+    return result;
+  }
+  
+  private static class EdgePattern implements Comparable<EdgePattern> {
+    private final long timestamp; 
+    private final GraphType graphType;
+    private final Pattern graphNamePattern;
+    private final String edgeName;
+    private final String state;
+    private final  String source;
+    private final String dest;
+    
+    public EdgePattern(long timestamp, GraphType graphType,
+        Pattern graphNamePattern, String edgeName, String state, String source,
+        String dest) {
+      this.timestamp = timestamp;
+      this.graphType = graphType;
+      this.graphNamePattern = graphNamePattern;
+      this.edgeName = edgeName;
+      this.state = state;
+      this.source = source;
+      this.dest = dest;
+    }
+
+    public int compareTo(EdgePattern o) {
+      int timeDifference = Long.signum(timestamp - o.timestamp);
+      if(timeDifference != 0) {
+        return timeDifference;
+      } else {
+        //don't really care about the order, but want to make them unique in the set.
+        return System.identityHashCode(this) - System.identityHashCode(o);
+      }
+    }
+  }
+}

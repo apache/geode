@@ -1,0 +1,692 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE>com.gemstone.gemfire.cache.query</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.4  (Solaris Sparc)">
+	<META NAME="CREATED" CONTENT="20050524;10003600">
+	<META NAME="CHANGEDBY" CONTENT="Eric Zoerner">
+	<META NAME="CHANGED" CONTENT="20050525;12214300">
+	<STYLE>
+	<!--
+		@page { size: 8.5in 11in }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P>GemFire's query service, an implementation of an OQL/SQL-style
+query processor with supporting indexes. The query service enables
+data to be retrieved efficiently from a GemFire cache through the use
+of a high-level query language. The query language allows you to
+access the data based on multiple attributes and to tranform the
+results. The service also allows you to create indexes in order to
+optimize the performance of data retrieval<B>. <BR></B><BR>The
+{@linkplain com.gemstone.gemfire.cache.query.QueryService
+QueryService} interface provides the public entry point to query
+execution, query compilation, and index creation. A <TT>QueryService
+</TT>instance is obtained from {@linkplain
+com.gemstone.gemfire.cache.Cache#getQueryService}. Queries can also
+be performed by using the shortcut methods {@linkplain
+com.gemstone.gemfire.cache.Region#query}, {@linkplain
+com.gemstone.gemfire.cache.Region#selectValue}, and {@linkplain
+com.gemstone.gemfire.cache.Region#existsValue}. 
+</P>
+<P>This package description contains the following sections: 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Terminology">Terminology</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Query_Language">Query
+	Language Features</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Indexes">Indexes </A>
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#RESERVED WORDS|outline">Reserved
+	Words</A></P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#LANGUAGE GRAMMAR|outline">Language
+	Grammar</A></P>
+</UL>
+<H1><A NAME="Terminology"></A>Terminology</H1>
+<DL>
+	<DT><A NAME="attribute"></A>&nbsp;<B>Attribute</B> 
+	</DT><DD STYLE="margin-bottom: 0.2in">
+	A named member of a type. An attribute is mapped to a Java class
+	member in three possible ways with the following priority until a
+	match is found. If the attribute is named&nbsp;<I>x</I>, then: 
+	</DD></DL>
+<OL>
+	<LI><P STYLE="margin-bottom: 0in">
+	public method <TT>getX()</TT> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">public method&nbsp; <TT>x()</TT> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">public field&nbsp; <TT>x</TT> 
+	</P>
+</OL>
+<DL>
+	<DT><BR>(attribute) path 
+	</DT><DD>
+	A sequence of attributes separated by a dot (.) that is applied to
+	objects where the value of one attribute is used to apply the next
+	attribute in the sequence. For example, the path <TT>x.y.z</TT> as
+	it applies to object <TT>A</TT> is equivalent to
+	<TT>A.getX().getY().getZ()</TT>. <BR>&nbsp; 
+	</DD><DT>
+	<B>collection</B> 
+	</DT><DD STYLE="margin-bottom: 0.2in">
+	In the context of the query language, a collection includes not only
+	instances of <TT>java.util.Collection</TT>, but arrays and maps as
+	well. Iteration over a map results in the iteration over its entries
+	as Map.Entry. 
+	</DD><DT>
+	<B>region path</B> 
+	</DT><DD>
+	A fully-qualified specification of a region in the cache. The query
+	language only supports full paths starting from a cache root region.
+	The minimum region path is a forward slash ('/') followed by a root
+	region name. The region path for a non-root region, A, begins with a
+	forward slash and region A' s root region name followed by the
+	series of region names required to navigate to region A, with a
+	forward slash delminiter between region names.<BR>&nbsp; 
+	</DD><DT>
+	<B>struct</B> 
+	</DT><DD STYLE="margin-bottom: 0.2in">
+	A data type that has a fixed number of elements, each of which has a
+	field name and can contain an object value. An element of a struct
+	is typically referred to by an attribute name, for example, if an
+	address were represented by a struct, then you might access the
+	address elements in this manner: <TT>address.zipCode = 12345</TT>;
+	<TT>address.city = 'San Francisco'. </TT>Query evaluation may
+	generate structs whose elements can be referred to as an attribute
+	in the query language. Structures that are returned to Java are
+	immutable and implement the {@linkplain
+	com.gemstone.gemfire.cache.query.Struct Struct} interface. 
+	</DD></DL>
+<H1>
+<A NAME="Query_Language"></A>Query Language</H1>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Region_Paths">Region
+	Paths</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#SELECT_Expression">SELECT
+	Statement</A> 
+	</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in"><A HREF="#Result of a Select Statement|outline">Result
+		of a SELECT Statement</A></P>
+		<LI><P STYLE="margin-bottom: 0in"><A HREF="#Typing of Iteration Elements">Typing
+		of Iteration Elements</A></P>
+		<LI><P STYLE="margin-bottom: 0in"><A HREF="#Joins">Joins</A> 
+		</P>
+	</UL>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Method_Invocation">Method
+	Invocation</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Operators">Operators</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Functions">Functions</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Construction_Expressions">Construction
+	Expressions</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#IN_Expression">IN
+	Expression</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Literals">Literals</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Query_Parameter_References">Query
+	Parameter References</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#Comments">Comments</A> 
+	</P>
+</UL>
+<P><BR>The Query Language supported in GemFire is essentially a
+subset of OQL (ODMG 3.0), which in turn is based on SQL-92. 
+</P>
+<P>The query language provides the basic set of clauses, expressions,
+and operators that allow you to retrieve elements from objects stored
+in cache regions. This section describes the operators, keywords, and
+operations that the query language supports for this release. 
+</P>
+<P>NOTE: Query language keywords such as SELECT, DATE, and NULL, are
+case-insensitive. Identifiers in query strings, such as attribute
+names, method names, and path expressions, are case-sensitive. 
+</P>
+<P>Query language keywords are capitalized in the documentation to
+identify them as keywords. 
+</P>
+<H2><A NAME="Region_Paths"></A>Region Paths</H2>
+<P>In the context of a query, the name of a region is specified by
+its full path starting with a forward slash (/), and delimited by the
+<BR>forward slash (/) between regions names. Region names in a region
+path are restricted to alphanumeric characters or underscore
+characters only.</P>
+<P>Many queries need to operate on the values of a Region. Some
+queries, however, need to operate on the Region itself, e.g. to get
+the keys or entries of the region. To facilitate this, when a region
+path evaluates to a Region in the context of a query, the type of
+object it refers to has the following interface: 
+</P>
+<PRE STYLE="margin-bottom: 0.2in"> interface QRegion extends com.gemstone.gemfire.cache.Region, java.util.Collection { }</PRE><P>
+Thus, the interface inherits all the attributes and methods from both
+Region and Collection. When used as a Collection, the elements are
+the values of the region. This enables a query to use a Region as
+either a collection of its values or as a Region itself. 
+</P>
+<P>Example: 
+</P>
+<PRE STYLE="margin-bottom: 0.2in"> /root/employees</PRE><P STYLE="margin-left: 0.42in">
+Can be used as a Collection of values in region /root/employees</P>
+<PRE STYLE="margin-bottom: 0.2in"> /root/employees.keys</PRE><P STYLE="margin-left: 0.42in; margin-bottom: 0in">
+Returns the set of keys in region /root/employees</P>
+<H2><A NAME="SELECT_Expression"></A>SELECT Statement</H2>
+<P>The SELECT statement lets you filter data from collection(s) of
+objects based on a predicate and optionally transform the results. &nbsp;
+</P>
+<PRE STYLE="margin-bottom: 0.2in"> SELECT DISTINCT projectionList FROM fromClause [WHERE expression]</PRE><P STYLE="margin-left: 0.79in">
+<I>The DISTINCT keyword is required in this version of GemFire. </I>
+</P>
+<P>The semantics of the SELECT statement are as follows. The FROM
+clause specifies the collections to iterate over, the WHERE clause
+specifies a boolean expression to filter the elements in the
+iteration(s), and the projectionAttributes performs an optional
+transformation on each element in the result. &nbsp; &nbsp; 
+</P>
+<P>The FROM clause establishes a naming scope for the rest of the
+fromExpression (if more collections are listed) as well as for the
+WHERE clause and the projection attributes. Explicit variables may
+also be declared in the FROM clause. These are added to the current
+scope, one variable for each collection in the list. The variable
+becomes an &quot;iterator variable&quot; in <BR>that it is bound to
+the elements of the associated collection as they are iterated over.
+Each expression in the FROM clause can be any expression that
+evaluates to a collection. For example, an expression in the FROM
+clause is typically a path expression that resolves to a region in
+the Cache so that the values in the region become the collection of
+objects to filter. Other possibilities include a query parameter that
+is bound to a collection, or a nested SELECT statement. &nbsp; 
+</P>
+<H3><A NAME="SelectResults"></A><A NAME="Result of a Select Statement|outline"></A>
+Result of a Select Statement</H3>
+<P>The result of a SELECT statement is a collection that implements
+the {@linkplain com.gemstone.gemfire.cache.query.SelectResults
+SelectResults} interface.</P>
+<P>The SelectResults is a simple collection of unstructured objects
+in two cases:</P>
+<OL>
+	<LI><P>If only one expression is specified by the projection list
+	and no field name is specified</P>
+	<LI><P>If the SELECT list is <SPAN STYLE="text-decoration: none"><B>*</B></SPAN>
+	and there is a single collection in the FROM clause</P>
+</OL>
+<P>In all other cases, it is a collection of structs containing the
+data.</P>
+<P>The name of each field in the struct is either specified
+explicitly by an identifier (using the <TT>fieldname<TT>:</TT>expr</TT>
+syntax in the SELECT list or an explicit variable name in the FROM
+clause) or it defaults to the last attribute name specified in the
+path expression of the associated expression. If default names can
+not be decided, arbitrary unique names are generated by the query
+processor.</P>
+<H3><A NAME="Typing of Iteration Elements"></A>Typing of Iteration
+Elements in the FROM clause</H3>
+<P>In order for the query processor to be able to resolve implicit
+attribute names in a select statement, the types of the elements in
+the iterator collections specified in the FROM clause must be
+provided.</P>
+<P STYLE="margin-bottom: 0in">In the following example, the type of
+the values in the region and the type of the elements in the
+<TT>positions.values</TT> collection must be available to the query
+processor in order to resolve the implicit attributes <TT>id</TT> and
+<TT>sharesOutstanding</TT>:</P>
+<P><TT>SELECT DISTINCT id FROM /portfolios, positions.values WHERE
+sharesOutstanding &gt; 100</TT></P>
+<P>There are three possible ways of providing this type information:</P>
+<OL>
+	<LI><P>If it is a Region, provide the type in the <TT>valueConstraint</TT>
+	or <TT>keyConstraint</TT> RegionAttributes.</P>
+	<LI><P>Use the TYPE keyword to specify the type of the elements.
+	Note that application-defined types must be <I>imported</I>,
+	e.g.:<BR><TT>IMPORT com.acme.Portfolio;<BR>IMPORT
+	com.acme.Position;<BR>SELECT DISTINCT id<BR>FROM /portfolios TYPE
+	Portfolio, positions.values TYPE Position<BR>WHERE <TT>sharesOutstanding
+	&gt; 100</TT></TT></P>
+	<LI><P>Use typecasting:<BR><TT>IMPORT com.acme.Portfolio;<BR>IMPORT
+	com.acme.Position;<BR>SELECT DISTINCT id<BR>FROM
+	(collection&lt;Portfolio&gt;)/portfolios,
+	(collection&lt;Position&gt;)positions.values<BR>WHERE
+	<TT>sharesOutstanding &gt; 100</TT></TT></P>
+</OL>
+<P STYLE="font-style: normal">If explicit iterator variables are
+used, this typing is not necessary since the names can be resolved
+without requiring type information. However, in the future GemFire
+may allow queries to be compiled into bytecodes, which will require
+this type information. It is therefore recommended that this type
+information always be provided to ensure forward compatibility.</P>
+<H3><A NAME="Joins"></A>Joins</H3>
+<P>Since the collections in the FROM clause are not necessarily
+related to each other, SELECT statements could be used to join data
+between two different regions: 
+</P>
+<PRE STYLE="margin-bottom: 0.2in"> SELECT p FROM /Persons p, /Flowers f WHERE p.name = f.name</PRE><P>
+This returns all the Persons from the /Persons region that has the
+same name as some Flower in the /Flowers region. There could be
+indexes on both regions for the name attribute, but only one index
+could be used during query evaluation. GemFire does not currently
+support the creation of indexes targeted for joins across more than
+one region. 
+</P>
+<H2><A NAME="Method_Invocation"></A>Method Invocation</H2>
+<P>The query language supports method invocation in query
+expressions. The query processor maps attributes in query strings
+using the rules described under <A HREF="#attribute"><B>Attribute</B></A>
+in the terminology section. If you know that the attribute name maps
+to a public method that takes no parameters, you can simply include
+the method name in the query string as an attribute. For example,
+<TT>emps.isEmpty</TT> is equivalent to <TT>emps.isEmpty()</TT>. In
+the following example, the query invokes <TT>isEmpty() </TT>on
+subordinates, and <BR>returns the set of all employees with no
+subordinates. &nbsp; 
+</P>
+<PRE STYLE="margin-bottom: 0.2in"> SELECT DISTINCT * FROM /root/employees WHERE subordinates.isEmpty</PRE><P>
+GemFire also supports invoking public methods with parameters. To
+invoke methods with parameters, provide the method arguments between
+parentheses. For overloaded methods, the query processor matches the
+runtime argument types with the parameter types required by the
+method to resolve which method to call. If more than one method can
+be <BR>invoked, the query processor chooses the method whose
+parameter types are the most specific for the given arguments. 
+</P>
+<P>Methods that are declared with a void return type return NULL when
+executed in a query. 
+</P>
+<H2><A NAME="Operators"></A>Operators</H2>
+<P>GemFire supports the following operator types in expressions: 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Comparison Operators 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Logical Operators 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Unary Operators 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Map and Index Operators 
+	</P>
+	<LI><P>Dot and Forward Slash Operators 
+	</P>
+</UL>
+<H3>Comparison Operators</H3>
+<P>Comparison operators compare two values and return the results,
+either true or false. GemFire query language supports the following
+comparison operators: 
+</P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;=&nbsp;&nbsp;&nbsp;&nbsp;
+&gt;&nbsp;&nbsp;&nbsp;&nbsp; &gt;=<BR><BR>The operator != is also
+accepted as equivalent to &lt;&gt;. &nbsp; 
+</P>
+<H3>Logical Operators</H3>
+<P>The operators AND and OR allow you to create more complex
+expressions by combining expressions to produce a boolean result
+(true or false). 
+</P>
+<H3>Unary Operators</H3>
+<P>GemFire supports the unary operator NOT. 
+</P>
+<H3>Map and Index Operators</H3>
+<P>If <TT>expr</TT> is an expression that evaluates to an integer <TT>i</TT>,
+then <TT>a[expr]</TT> extracts the <TT>(i+1)th</TT> element of array,
+list, or string <TT>a</TT>. (The first element has rank 0). The same
+operator is used to access a value by key in a Map or Region, in
+which case the type of expr can be any Object. In the case of a
+Region, the map operator performs a non-distributed get that does not
+cause a netSearch if the value is not present in the region locally.
+(i.e. equivalent to <TT>getEntry(expr).getValue()</TT>). &nbsp; 
+</P>
+<H3>Dot and Forward Slash Operators</H3>
+<P>The dot operator separates attribute names in a path expression,
+and specifies the navigation through object attributes. The forward
+slash is used to navigate through subregions as described above under
+Region Paths. 
+</P>
+<H2><A NAME="Functions"></A>Functions</H2>
+<P>The query language supports the functions: 
+</P>
+<DL>
+	<DT>ELEMENT(query) 
+	</DT><DD>
+	Extracts a single element from a collection or array. This function
+	throws a FunctionDomainException if the argument is not a collection
+	or array with exactly one element. 
+	</DD><DT>
+	IS_DEFINED(query) 
+	</DT><DD>
+	Returns true if the query evaluates to a non-null value. 
+	</DD><DT>
+	IS_UNDEFINED(query) 
+	</DT><DD STYLE="margin-bottom: 0.2in">
+	Returns true if the query cannot be evaluated or evaluates to null. 
+	</DD></DL>
+<H2>
+<A NAME="Construction_Expressions"></A>Construction Expressions</H2>
+<P><A NAME="IN_Expression"></A>The construction expression currently
+implemented is the set constructor. A set can be constructed using
+<CODE>SET(e<SUB>1</SUB>, e<SUB>2</SUB>, ..., e<SUB>n</SUB>)</CODE>
+where <CODE>e<SUB>1</SUB>, e<SUB>2</SUB>, ..., e<SUB>n</SUB></CODE>
+are expressions. This constructor creates and returns the set
+containing the elements <CODE>e<SUB>1</SUB>, e<SUB>2</SUB>, ..., e<SUB>n</SUB></CODE>.
+&nbsp; <BR><BR><BR>
+</P>
+<H2>IN Expression</H2>
+<P>If e1 and e2 are expressions, e2 is a collection, and e1 is an
+object or a literal having the same type or a subtype as the elements
+of e2, then 
+</P>
+<PRE STYLE="margin-bottom: 0.2in"> e1 IN e2</PRE><P>
+is an expression of type boolean. It returns true if element e1 is
+not UNDEFINED and belongs to collection e2, it returns false if e1 is
+not UNDEFINED and does not belong to collection e2, and it returns
+UNDEFINED if e1 is UNDEFINED. 
+</P>
+<P>Example: <BR>&nbsp; 
+</P>
+<PRE STYLE="margin-bottom: 0.2in"> 2 IN SET(1, 2, 3)</PRE><P>
+This returns true. 
+</P>
+<P>As another example where the collection membership is a subquery:
+<BR>If, in addition to a region with employees in it there is a
+separate region named /payroll that contains payroll objects with
+attributes empId for employee id and rate for payrate, this query
+returns the names of the employees earning a rate of 8:</P>
+<PRE STYLE="margin-bottom: 0.2in"> SELECT name FROM /root/employees WHERE empId IN (SELECT empId FROM /payroll WHERE rate = 8)</PRE><H2>
+<A NAME="Literals"></A>Literals</H2>
+<P>Query language expressions can contain literals as well as
+operators and attribute names. The following lists the literal types
+that GemFire supports.</P>
+<DL>
+	<DT>boolean 
+	</DT><DD>
+	A boolean value, either TRUE or FALSE 
+	</DD><DT>
+	integer and long 
+	</DT><DD>
+	An integer literal is of type long if it is suffixed with the ASCII
+	letter L. Otherwise it is of type int. 
+	</DD><DT>
+	floating point</DT><DD>
+	A floating-point literal is of type float if it is suffixed with an
+	ASCII letter F. Otherwise its type is double and it can optionally
+	be suffixed with an ASCII letter D. A double or floating point
+	literal can optionally include an exponent suffix of E or e,
+	followed by a signed or unsigned number. 
+	</DD><DT>
+	string 
+	</DT><DD>
+	String literals are delimited by single quotation marks. Embedded
+	single-quotation marks are doubled. For example, the character
+	string 'Hello' evaluates to the value Hello, while the character
+	string 'He said, ''Hello''' evaluates to He said, 'Hello'. Embedded
+	newlines are kept as part of the string literal. 
+	</DD><DT>
+	char 
+	</DT><DD>
+	A literal is of type char if it is a string literal prefixed by the
+	keyword CHAR, otherwise it is of type string. The CHAR literal for
+	the single-quotation mark character is CHAR '''' (four single
+	quotation marks). 
+	</DD><DT>
+	date 
+	</DT><DD>
+	A java.sql.Date object that uses the JDBC format prefixed with the
+	DATE keyword: DATE yyyy-mm-dd In the Date, yyyy represents the year,
+	mm represents the month, and dd represents the day. The year must be
+	represented by four digits; a two-digit shorthand for the year is
+	not allowed. 
+	</DD><DT>
+	time 
+	</DT><DD>
+	A java.sql.Time object that uses the JDBC format (based on a 24-hour
+	clock) prefixed with the TIME keyword: TIME hh:mm:ss In the Time, hh
+	represents the hours, mm represents the minutes, and ss represents
+	the seconds. The hours field is based on a 24-hour clock. 
+	</DD><DT>
+	timestamp</DT><DD STYLE="margin-bottom: 0.2in">
+	A java.sql.Timestamp object that uses the JDBC format with a
+	TIMESTAMP prefix: TIMESTAMP yyyy-mm-dd hh:mm:ss.fffffffff In the
+	Timestamp, yyyy-mm-dd represents the date, hh:mm:ss represents the
+	time, and fffffffff represents the fractional seconds (up to nine
+	digits).</DD><DT>
+	NULL</DT><DT STYLE="margin-bottom: 0.2in">
+	UNDEFINED</DT></DL>
+<H3>
+Comparing Values with java.util.Date</H3>
+<P>You can compare the temporal literal values DATE, TIME, and
+TIMESTAMP with java.util.Date values. However, there is no literal
+for java.util.Date values in the query language. 
+</P>
+<H2><A NAME="Rules_for_UNDEFINED"></A>Rules for UNDEFINED</H2>
+<P>The special value UNDEFINED behaves according to the following
+rules:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Accessing an attribute of a NULL
+	value results in UNDEFINED. 
+	</P>
+	<LI><P>IS_UNDEFINED(UNDEFINED) returns TRUE; IS_DEFINED(UNDEFINED)
+	returns FALSE</P>
+	<LI><P>If the predicate that is defined by the WHERE clause of a
+	SELECT statement returns UNDEFINED, this is handled as if the
+	predicate returns false. 
+	</P>
+	<LI><P>For AND and OR expressions: 
+	</P>
+	<PRE>    UNDEFINED AND FALSE // returns false
+    UNDEFINED OR TRUE // returns true
+    UNDEFINED AND TRUE // returns UNDEFINED
+    UNDEFINED OR FALSE // returns UNDEFINED
+    UNDEFINED AND UNDEFINED // returns UNDEFINED
+    UNDEFINED OR UNDEFINED // returns UNDEFINED</PRE>
+	<LI><P>Any other operation with any UNDEFINED operands results in
+	UNDEFINED. This includes the dot operator, method invocations with
+	UNDEFINED arguments, and comparison operations. 
+	</P>
+</UL>
+<H2><A NAME="Query_Parameter_References"></A>Query Parameter
+References</H2>
+<P>Query parameters are identified by a dollar sign ($) followed by a
+digit that represents the parameter's position in the parameter array
+passed in the execute() method. Counting begins at one (1). That is,
+$1 references the first bound attribute, and $2 references the second
+bound attribute, and so on. &nbsp; 
+</P>
+<H2><A NAME="Comments"></A>Comments</H2>
+<P>You can include comments in the query string. To insert a one-line
+comment, begin the line with two dashes (<TT>--</TT>). To insert a
+multiple-line comment, begin the comment block with <TT>/*</TT> and
+end it with <TT>*/</TT>. 
+</P>
+<H1><A NAME="Indexes"></A>Indexes</H1>
+<P>An index provides significant performance gains for query
+execution by enabling the query evaluation to avoid the often
+substantial work of iterating through every object in a collection of
+objects, instead looking up results in a preconstructed index.
+GemFire provides functional indexes that support attribute (or more
+complex functions of attributes) comparison with a constant using any
+of the relational operators. An index is kept current with respect to
+a region automatically. The RegionAttribute
+<TT>synchronousIndexMaintenance</TT> specifies whether the indexes
+for the region are kept current atomically when the region is
+modified (synchronous), or whether they are brought up to date in a
+background thread (asynchronous). The default is asynchronous since
+this provides the best performance. Asynchronous index maintenance
+may batch up multiple updates to the same key in the region and only
+apply the most recent. 
+</P>
+<P>The QueryService provides the following methods for creating an
+index: 
+</P>
+<PRE>Index createIndex(String name, IndexType indexType, String indexedExpression,
+                           String fromClause);
+Index createIndex(String name, IndexType indexType, String indexedExpression,
+                           String fromClause, String imports);</PRE><P>
+The <I>indexType</I> currently must be either <CODE>IndexType.FUNCTIONAL</CODE>
+or <CODE>PRIMARY_KEY</CODE>. 
+</P>
+<P>The <I>fromClause</I>&nbsp;&nbsp;resolves to a collection or list
+of collections which will correspond to the fromClause or part of a
+fromClause in a SELECT statement. The fromClause must contain one and
+only one region path, and the collections that the expressions
+evaluate to must have the characteristic that each struct generated
+by those collections is dependent on one and only one entry in the
+referenced region (otherwise and exception is thrown since the index
+wouldn't be able to be maintained on single entry updates).
+References to query parameters are not allowed.</P>
+<P>The&nbsp;<I>indexedExpression</I> should be a function of the
+elements of the collection (or collection of structs) referenced in
+the fromExpression, and is used to optimize the comparison of the
+same path found in a WHERE clause when used to compare against a
+constant expression (i.e. an expression that does not depend on the
+iterator context) using the relational operators. The exact use and
+specification of the indexedExpression varies depending on the index
+type. See {@linkplain com.gemstone.gemfire.cache.query.IndexType}. No
+query parameters or region paths are permitted.</P>
+<P>The <I>imports</I> provides packages and classes used in variable
+typing and typecasts.</P>
+<P>In addition to functional indexes, GemFire also supports a <B>primary
+key </B>index. A primary key index uses the keys in the region
+itself. By creating a primary key index, you make the query service
+aware of the relationship between the values in the region and the
+keys in the region and enable the relationship to be used to optimize
+the execution of queries. For example, if the values in a region are
+employee objects and the keys in the region is the attribute empId on
+those employees, then you can create a primary key index on that
+region with the indexedExpression &quot;empId&quot;.  Note that
+primary key indexes are not sorted so they will only be used for
+equality tests. To obtain a sorted index on the region keys, create a
+functional index instead.</P>
+<P>Index creation is also supported in the cache.xml for creating
+indexes declaratively at the same time regions are created via the
+cache.xml.</P>
+<H2><A NAME="RESERVED WORDS|outline"></A>RESERVED WORDS</H2>
+<PRE STYLE="margin-bottom: 0.2in">abs all and andthen any array as asc avg bag bag boolean by by byte char collection count date declare define desc dictionary distinct double element enum except exists false first flatten float for from group having import in int intersect interval is_defined is_undefined last like list listtoset long map max min mod nil not null octet or order orelse query select set short some string struct sum time timestamp true type undefine undefined union unique unsigned where</PRE><H2>
+<A NAME="LANGUAGE GRAMMAR|outline"></A>LANGUAGE GRAMMAR</H2>
+<PRE><FONT SIZE=3><I>symbol      ::=        expression</I></FONT>
+
+<FONT SIZE=3><I>n</I>                   is a nonterminal symbol that has to appear at some place within the grammar on the left side of a rule, all nonterminal symbols have to be derived to be terminal symbols.</FONT>
+
+<FONT SIZE=3><B>t                    </B>represents the terminal symbol t</FONT>
+
+<FONT SIZE=3><I>x y</I>                 represents <I>x</I> followed by <I>y</I></FONT>
+
+<FONT SIZE=3><I>x </I>| <I>y</I> </FONT>
+<FONT SIZE=3>(<I>x</I>| <I>y</I> )           represents <I>x</I> or <I>y</I>,</FONT>
+
+<FONT SIZE=3>[ <I>x</I> ]               x or empty</FONT>
+
+<FONT SIZE=3>{ <I>x</I> }              possibly empty sequence of <I>x</I></FONT>
+
+
+
+<FONT SIZE=3><I>query_program</I> ::= [ <I>imports</I> <B>; </B>]  <I>query </I> [<B>;</B>]</FONT>
+<FONT SIZE=3><I>imports</I> ::= <I>import</I> { <B>;</B> <I>import </I>}</FONT>
+<FONT SIZE=3><I>import</I> ::= <B>IMPORT</B> <I>qualifiedName</I> [ <B>AS</B> <I>identifier </I>]</FONT>
+<FONT SIZE=3><I>query</I> ::= <I>selectExpr</I>  | <I>expr</I></FONT>
+<FONT SIZE=3><I>selectExpr</I> ::= <B>SELECT</B> <B>DISTINCT</B> <I>projectionAttributes</I> <I>fromClause </I>[ <I>whereClause</I> ]</FONT>
+<FONT SIZE=3><I>projectionAttributes</I> ::= <B>*</B></FONT>
+                                       <FONT SIZE=3>| <I>projectionList</I></FONT>
+<FONT SIZE=3><I>projectionList</I> ::= <I>projection</I> { <B>, </B><I>projection</I> }</FONT>
+<FONT SIZE=3><I>projection</I> ::= <I>field</I></FONT>
+                      <FONT SIZE=3>| <I>expr</I> [ <B>AS</B> <I>identifier </I>] </FONT>
+<FONT SIZE=3><I>field</I> ::= <I>identifier</I> <B>:</B> <I>expr</I></FONT>
+<FONT SIZE=3><I>fromClause</I> ::= <B>FROM</B> <I>iteratorDef</I> { <B>,</B> <I>iteratorDef</I> }</FONT>
+<FONT SIZE=3><I>iteratorDef</I> ::=   <I>expr</I> [ [ <B>AS </B>] <I>identifier</I> ] [ <B>TYPE</B> <I>type </I>]                 </FONT>
+                          <FONT SIZE=3>| </FONT> <FONT SIZE=3><I>identifier</I> <B>IN</B> <I>expr</I></FONT>  <FONT SIZE=3>[ <B>TYPE</B> <I>type </I>]</FONT>              
+<FONT SIZE=3><I>whereClause</I> ::= <B>WHERE</B> <I>expr</I></FONT>
+<FONT SIZE=3><I>expr</I> ::= <I>castExpr</I></FONT>
+<FONT SIZE=3><I>castExpr</I> ::= <I>orExpr</I></FONT>
+                    <FONT SIZE=3>| <I>left_paren</I> <I>type</I> <I>right_paren</I> <I>castExpr</I></FONT>
+<FONT SIZE=3><I>orExpr</I> ::= <I>andExpr</I> { <B>OR</B> <I>andExpr</I> }</FONT>
+<FONT SIZE=3><I>andExpr</I> ::= <I>equalityExpr</I> { <B>AND</B> <I>equalityExpr</I> }</FONT>
+<FONT SIZE=3><I>equalityExpr</I> ::= <I>relationalExpr</I> { ( <B>=</B> | <B>&lt;&gt;</B>  | <B>!= </B>) <I>relationalExpr </I>}</FONT>
+<FONT SIZE=3><I>relationalExpr</I> ::= <I><FONT SIZE=3>inExpr</FONT></I> { ( <B>&lt;</B> | <B>&lt;=</B> | <B>&gt;</B> | <B>&gt;=</B> ) <I>inExpr</I></FONT> }
+<FONT SIZE=3><I>inExpr</I> ::= <I>unaryExpr</I> { <B>IN</B> <I>unaryExpr</I> }</FONT>
+<FONT SIZE=3><I>unaryExpr</I> ::= [ <B>NOT</B> ] <I>unaryExpr</I></FONT>
+<FONT SIZE=3><I>postfixExpr</I> ::=  <I>primaryExpr</I> { <I>left_bracket</I> <I>expr</I> <I>right_bracket</I> }</FONT>
+                     <FONT SIZE=3>| <I>primaryExpr</I> { <I>dot</I> <I>identifier</I> [ <I>argList</I> ] }</FONT>
+<FONT SIZE=3><I>argList</I> ::= <I>left_paren</I> [ <I>valueList</I> ] <I>right_paren</I></FONT>
+<FONT SIZE=3><I>qualifiedName</I> ::= <I>identifier</I> { <I>dot</I> <I>identifier</I> }</FONT>
+<FONT SIZE=3><I>primaryExpr</I> ::= <I>conversionExpr</I></FONT>
+                    <FONT SIZE=3>| <I>identifier</I> [ <I>argList</I> ]</FONT>
+                    <FONT SIZE=3>| <I>undefinedExpr</I></FONT>
+                    <FONT SIZE=3>| <I>collectionConstruction</I></FONT>
+                    <FONT SIZE=3>| <I>queryParam</I></FONT>
+                    <FONT SIZE=3>| <I>literal</I></FONT>
+                    <FONT SIZE=3>| ( <I>query</I> )</FONT>
+<FONT SIZE=3><I>conversionExpr</I> ::= <I>element</I> ( <I>query</I> )</FONT>
+<FONT SIZE=3><I>undefinedExpr</I> ::= <B>IS_UNDEFINED</B> ( <I>query</I> )</FONT>
+                              <FONT SIZE=3>| <B>IS_DEFINED</B> ( <I>query</I> )</FONT>
+<FONT SIZE=3><I>collectionConstruction</I> ::= <B>SET</B> <I>left_paren</I> [ <I>valueList</I> ] <I>right_paren</I></FONT>
+<FONT SIZE=3><I>valueList</I> ::= <I>expr</I> { <B>,</B> <I>expr</I> }</FONT>
+<FONT SIZE=3><I>queryParam</I> ::= <B>$</B> <I>integerLiteral</I></FONT>
+<FONT SIZE=3><I>identifier</I> ::= <I>letter</I> { <I>letter</I> | <I>digit</I> | <B>_</B> }</FONT>
+<FONT SIZE=3><I>literal</I> ::= <I>booleanLiteral</I></FONT>
+                <FONT SIZE=3>| <I>integerLiteral</I></FONT>
+                <FONT SIZE=3>| <I>longLiteral</I></FONT>
+                <FONT SIZE=3>| <I>doubleLiteral</I></FONT>
+                <FONT SIZE=3>| <I>floatLiteral</I></FONT>
+                <FONT SIZE=3>| <I>charLiteral</I></FONT>
+                <FONT SIZE=3>| <I>stringLiteral</I></FONT>
+                <FONT SIZE=3>| <I>dateLiteral</I></FONT>
+                <FONT SIZE=3>| <I>timeLiteral</I></FONT>
+                <FONT SIZE=3>| <I>timestampLiteral</I></FONT>
+                <FONT SIZE=3>| <B>NULL</B></FONT>
+                <FONT SIZE=3>| <B>UNDEFINED</B></FONT>
+<FONT SIZE=3><I>booleanLiteral</I> ::= <B>TRUE</B> | <B>FALSE</B></FONT>
+<FONT SIZE=3><I>integerLiteral</I> ::= [ <B>-</B> ] <I>digit</I> { <I>digit</I> }</FONT>
+<FONT SIZE=3><I>longLiteral</I> ::= <I>integerLiteral</I> <B>L</B></FONT>
+<FONT SIZE=3><I>floatLiteral</I> ::= [ <B>-</B> ] <I>digit</I> { <I>digit</I> } <I>dot</I> <I>digit</I> { <I>digit</I> }</FONT>
+                         <FONT SIZE=3>[ ( <B>E</B> | <B>e</B> ) [ <B>+</B> | <B>-</B> ] <I>digit</I> { <I>digit</I> } ] <B>F</B></FONT>
+<FONT SIZE=3><I>doubleLiteral</I> ::= [ <B>-</B> ] <I>digit</I> { <I>digit</I> } <I>dot</I> <I>digit</I> { <I>digit</I> }</FONT>
+                            <FONT SIZE=3>[ ( <B>E</B> | <B>e</B> ) [ <B>+</B> | <B>-</B> ] <I>digit</I> { <I>digit</I> } ] [ <B>D </B>]</FONT>
+<FONT SIZE=3><I>charLiteral</I> ::= <B>CHAR</B> <B>'</B> <I>character</I> <B>'</B></FONT>
+<FONT SIZE=3><I>stringLiteral</I> ::= <B>'</B> { <I>character</I> } <B>'</B></FONT>
+<FONT SIZE=3><I>dateLiteral</I> ::= <B>DATE ' </B><I>integerLiteral &ndash;</I> <I>integerLiteral &ndash;</I> <I>integerLiteral </I><B>'</B></FONT>
+<FONT SIZE=3><I>timeLiteral</I> ::= <B>TIME</B></FONT>
+                    <FONT SIZE=3><B>' </B><I>integerLiteral</I> <B>:</B> <I>integerLiteral</I> <B>:</B> <I>integerLiteral</I><B>'</B></FONT>
+<FONT SIZE=3><I>timestampLiteral</I> ::= <B>TIMESTAMP</B></FONT>
+                    <FONT SIZE=3><B>'</B> <I>integerLiteral &ndash;</I> <I>integerLiteral </I><B>-</B> <I>integerLiteral</I></FONT>
+                    <FONT SIZE=3><I>integerLiteral </I><B>:</B> <I>integerLiteral </I><B>:</B> <I>digit </I>{ <I>digit</I> } [ <B>.</B> <I>digit</I></FONT>
+                   <FONT SIZE=3>{ <I>digit </I>} ] <B>'</B></FONT>
+<FONT SIZE=3><I>letter</I> ::= <I>(any unicode letter)</I></FONT>
+<FONT SIZE=3><I>character</I> ::= <I>(any character)</I></FONT>
+<FONT SIZE=3><I>digit</I> ::= <B>0 </B>| <B>1</B> | <B>2</B> | <B>3</B> | <B>4</B> | <B>5</B> | <B>6</B> | <B>7</B> | <B>8</B> | <B>9</B></FONT>
+<FONT SIZE=3><I>dot</I> ::= <B>.</B></FONT>
+<I>left_paren</I> ::= <B>(</B>
+<I>right_paren</I> ::= <B>)</B>
+<I>left_bracket</I> ::= <B>[</B>
+<I>right_bracket</I> ::= <B>]</B></PRE><P STYLE="margin-bottom: 0in">
+<FONT SIZE=3><B>Language Notes:</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>1. Query language keywords
+(for example, SELECT, NULL, DATE) are</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>case-insensitive;
+identifiers are case-sensitive.</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>2. Comment lines begin
+with --</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>3. Comment blocks are
+delimited by /* and */</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>4. String literals are
+delimited by single-quotes; embedded single-quotes</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>are doubled. Examples:</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>'Hello' value = Hello</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>'He said, ''Hello''' value
+= He said, 'Hello'</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>5. Character literals
+begin with the CHAR keyword followed by the character</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>in single quotation marks.
+The single-quotation mark character itself is</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>represented as CHAR ' ' '
+' (with four single quotation marks).</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>6. In the TIMESTAMP
+literal, there is amaximum of nine digits after the</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=3>decimal point.</FONT></P>
+</BODY>
+</HTML>

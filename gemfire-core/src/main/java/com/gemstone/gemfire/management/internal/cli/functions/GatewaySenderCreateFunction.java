@@ -1,0 +1,210 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.management.internal.cli.functions;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.execute.FunctionAdapter;
+import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
+import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
+import com.gemstone.gemfire.internal.ClassPathLoader;
+import com.gemstone.gemfire.internal.InternalEntity;
+import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+
+public class GatewaySenderCreateFunction extends FunctionAdapter implements
+    InternalEntity {
+
+  private static final Logger logger = LogService.getLogger();
+  
+  private static final long serialVersionUID = 8746830191680509335L;
+
+  private static final String ID = GatewaySenderCreateFunction.class.getName();
+  
+  public static GatewaySenderCreateFunction INSTANCE = new GatewaySenderCreateFunction();
+
+
+  @Override
+  public void execute(FunctionContext context) {
+    ResultSender<Object> resultSender = context.getResultSender();
+
+    Cache  cache          = CacheFactory.getAnyInstance();
+    String memberNameOrId = CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+
+    GatewaySenderFunctionArgs gatewaySenderCreateArgs = (GatewaySenderFunctionArgs) context.getArguments();
+    
+    try {
+      GatewaySender createdGatewaySender = createGatewaySender(cache, gatewaySenderCreateArgs);
+      XmlEntity xmlEntity = new XmlEntity(CacheXml.GATEWAY_SENDER, "id", gatewaySenderCreateArgs.getId());
+      resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity, CliStrings.format(CliStrings.CREATE_GATEWAYSENDER__MSG__GATEWAYSENDER_0_CREATED_ON_1, new Object[] {createdGatewaySender.getId(), memberNameOrId})));
+    } catch (GatewaySenderException e) {
+      resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
+    } catch (Exception e) {
+      String exceptionMsg = e.getMessage();
+      if (exceptionMsg == null) {
+        exceptionMsg = CliUtil.stackTraceAsString(e);
+      }
+      resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
+    }
+  }
+  
+  private CliFunctionResult handleException(final String memberNameOrId,
+      final String exceptionMsg, final Exception e) {
+    if (e != null && logger.isDebugEnabled()) {
+      logger.debug(e.getMessage(), e);
+    }
+    if (exceptionMsg != null) {
+      return new CliFunctionResult(memberNameOrId, false, exceptionMsg);
+    }
+    
+    return new CliFunctionResult(memberNameOrId);
+  }
+  
+  /**
+   * Creates the GatewaySender with given configuration.
+   * 
+   * @param     cache
+   * @param     gatewaySenderCreateArgs
+   * @return    GatewaySender
+   */
+  private static GatewaySender createGatewaySender(Cache cache, GatewaySenderFunctionArgs gatewaySenderCreateArgs) {
+    GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
+    
+    Boolean isParallel = gatewaySenderCreateArgs.isParallel();
+    if (isParallel != null) {
+      gateway.setParallel(isParallel);
+    }
+    
+    Boolean manualStart = gatewaySenderCreateArgs.isManualStart();
+    if (manualStart != null) {
+      gateway.setManualStart(manualStart);
+    }
+    
+    Integer maxQueueMemory = gatewaySenderCreateArgs.getMaxQueueMemory();
+    if (maxQueueMemory != null) {
+      gateway.setMaximumQueueMemory(maxQueueMemory);
+    }
+    
+    Integer batchSize = gatewaySenderCreateArgs.getBatchSize();
+    if (batchSize != null) {
+      gateway.setBatchSize(batchSize);
+    }
+    
+    Integer batchTimeInterval = gatewaySenderCreateArgs.getBatchTimeInterval();
+    if (batchTimeInterval != null) {
+      gateway.setBatchTimeInterval(batchTimeInterval);
+    }
+    
+    Boolean enableBatchConflation = gatewaySenderCreateArgs.isBatchConflationEnabled();
+    if (enableBatchConflation != null) {
+      gateway.setBatchConflationEnabled(enableBatchConflation);
+    }
+    
+    Integer socketBufferSize = gatewaySenderCreateArgs.getSocketBufferSize();
+    if (socketBufferSize != null) {
+      gateway.setSocketBufferSize(socketBufferSize);
+    }
+    
+    Integer socketReadTimeout = gatewaySenderCreateArgs.getSocketReadTimeout();
+    if (socketReadTimeout != null) {
+      gateway.setSocketReadTimeout(socketReadTimeout);
+    }
+    
+    Integer alertThreshold = gatewaySenderCreateArgs.getAlertThreshold();
+    if (alertThreshold != null) {
+      gateway.setAlertThreshold(alertThreshold);
+    }
+    
+    Integer dispatcherThreads = gatewaySenderCreateArgs.getDispatcherThreads();
+    if (dispatcherThreads != null && dispatcherThreads > 1) {
+      gateway.setDispatcherThreads(dispatcherThreads);
+      
+      String orderPolicy = gatewaySenderCreateArgs.getOrderPolicy();
+      gateway.setOrderPolicy(OrderPolicy.valueOf(orderPolicy));
+    }
+    
+    Boolean isPersistenceEnabled = gatewaySenderCreateArgs.isPersistenceEnabled();
+    if (isPersistenceEnabled != null) {
+      gateway.setPersistenceEnabled(isPersistenceEnabled);
+    }
+
+    String diskStoreName = gatewaySenderCreateArgs.getDiskStoreName();
+    if (diskStoreName != null) {
+      gateway.setDiskStoreName(diskStoreName);
+    }
+    
+    Boolean isDiskSynchronous = gatewaySenderCreateArgs.isDiskSynchronous();
+    if (isDiskSynchronous != null) {
+      gateway.setDiskSynchronous(isDiskSynchronous);
+    }
+    
+    String[] gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
+    if (gatewayEventFilters != null) {
+      for (String gatewayEventFilter : gatewayEventFilters) {
+        Class gatewayEventFilterKlass = forName(gatewayEventFilter, CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER);
+        gateway.addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass, CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER));
+      }
+    }
+    
+    String[] gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
+    if (gatewayTransportFilters != null) {
+      for (String gatewayTransportFilter : gatewayTransportFilters) {
+        Class gatewayTransportFilterKlass = forName(gatewayTransportFilter, CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER);
+        gateway.addGatewayTransportFilter((GatewayTransportFilter) newInstance(gatewayTransportFilterKlass, CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER));
+      }
+    }
+    return gateway.create(gatewaySenderCreateArgs.getId(), gatewaySenderCreateArgs.getRemoteDistributedSystemId());
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Class forName(String classToLoadName, String neededFor) {
+    Class loadedClass = null;
+    try {
+      // Set Constraints
+      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
+      if (classToLoadName != null && !classToLoadName.isEmpty()) {
+        loadedClass = classPathLoader.forName(classToLoadName);
+      }
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1, new Object[] {classToLoadName, neededFor}), e);
+    } catch (ClassCastException e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE, new Object[] {classToLoadName, neededFor}), e);
+    }
+
+    return loadedClass;
+  }
+  
+  private static Object newInstance(Class klass, String neededFor) {
+    Object instance = null;
+    try {
+      instance = klass.newInstance();
+    } catch (InstantiationException e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_GATEWAYSENDER__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, new Object[] {klass, neededFor}), e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_GATEWAYSENDER__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, new Object[] {klass, neededFor}), e);
+    }
+    return instance;
+  }
+  
+  @Override
+  public String getId() {
+    return ID;
+  }
+
+}

@@ -1,0 +1,378 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.  
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *
+ *=========================================================================
+ */
+   
+package com.gemstone.gemfire.internal;
+
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.io.*;
+import java.net.InetAddress;
+
+/**
+ * Represents the information about the manager that is stored
+ * in its SystemAdmin  manager VM's main thread.
+ * <p> For internal use only.
+ *
+ * @author darrel
+ *
+ */
+public class ManagerInfo implements DataSerializable {
+  private static final long serialVersionUID = 5792809580026325378L;
+  /**
+   * The name of the file the locator will create when
+   * the system is started. It will be deleted when the system
+   * is stopped. It contains a single serialize copy of
+   * {@link ManagerInfo}. The file will always be located in
+   * the system directory.
+   */
+  private static final String LOCATOR_INFO_FILE_NAME = ".locator";
+  /**
+   * The status code constant that means the system is stopped.
+   * <p>Current value is <code>0</code>.
+   */
+  public static final int STOPPED_STATUS_CODE = 0;
+  /**
+   * The status code constant that means the system is stopping.
+   * <p>Current value is <code>1</code>.
+   */
+  public static final int STOPPING_STATUS_CODE = 1;
+  /**
+   * The status code constant that means the system was killed.
+   * <p>Current value is <code>2</code>.
+   */
+  public static final int KILLED_STATUS_CODE = 2;
+  /**
+   * The status code constant that means the system is starting.
+   * <p>Current value is <code>3</code>.
+   */
+  public static final int STARTING_STATUS_CODE = 3;
+  /**
+   * The status code constant that means the system is started.
+   * <p>Current value is <code>4</code>.
+   */
+  public static final int STARTED_STATUS_CODE = 4;
+
+  public static void setLocatorStarted(File directory, int port, InetAddress bindAddress) {
+    ManagerInfo.saveManagerInfo(OSProcess.getId(), STARTED_STATUS_CODE, directory, port, bindAddress);
+  }
+  public static File setLocatorStarting(File directory, int port, InetAddress bindAddress) {
+    if (ManagerInfo.isManagerRunning(directory, true)) {
+      throw new SystemIsRunningException(LocalizedStrings.ManagerInfo_0_1_IS_ALREADY_RUNNING.toLocalizedString(new Object[] {"Locator", directory.getPath()}));
+    }
+    File result = getManagerInfoFile(directory, true);
+    ManagerInfo.saveManagerInfo(OSProcess.getId(), STARTING_STATUS_CODE, directory, port, bindAddress);
+    return result;
+  }
+  // fix for bug #44059.  store the port and address for the locator in the persistent information
+  // so we can use "-dir" to stop the locator.
+  public static void setLocatorStopping(File directory, int port, InetAddress bindAddress) {
+    ManagerInfo.saveManagerInfo(OSProcess.getId(), STOPPING_STATUS_CODE, directory, port, bindAddress);
+  }
+  /**
+   * Saves the manager information to the info
+   * file in the given <code>directory</code>.
+   * @param pid the process id of the manager VM.
+   * @param status the status of the manager
+   * @param directory the manager's directory.
+   * @param port the tcp/ip port for the locator
+   * @param bindAddress the tcp/ip address for the locator
+   * @throws GemFireIOException if the file could not be written.
+   */
+  private static void saveManagerInfo(int pid, int status, File directory, int port, InetAddress bindAddress) {
+    ManagerInfo info = new ManagerInfo(pid, status, port, bindAddress);
+    File infoFile = getManagerInfoFile(directory, true);
+    try {
+      FileOutputStream ostream = new FileOutputStream(infoFile);
+      DataOutputStream dos = new DataOutputStream(ostream);
+      DataSerializer.writeObject(info, dos);
+      ostream.close();
+    } catch (IOException io) {
+      throw new GemFireIOException(LocalizedStrings.ManagerInfo_COULD_NOT_WRITE_FILE_0.toLocalizedString(infoFile), io);
+    }
+  }
+
+  /**
+   * Gets the process ID of the manager.
+   */
+  public int getManagerProcessId() {
+    return this.managerPid;
+  }
+  /**
+   * Gets the status of the manager.
+   */
+  public int getManagerStatus() {
+    return this.managerStatus;
+  }
+  /**
+   * get the port number of the manager
+   */
+  public int getManagerPort() {
+    return this.port;
+  }
+  /**
+   * get the bind address of the manager
+   */
+  public InetAddress getManagerAddress() {
+    return this.bindAddress;
+  }
+  static final String[] statusNames = new String[] {
+    LocalizedStrings.ManagerInfo_STOPPED.toLocalizedString(),
+    LocalizedStrings.ManagerInfo_STOPPING.toLocalizedString(),
+    LocalizedStrings.ManagerInfo_KILLED.toLocalizedString(),
+    LocalizedStrings.ManagerInfo_STARTING.toLocalizedString(),
+    LocalizedStrings.ManagerInfo_RUNNING.toLocalizedString() 
+  };
+  /**
+     * Gets the string representation for the given <code>status</code> int code.
+     */
+  public static String statusToString(int status) {
+    return statusNames[status];
+  }
+  /**
+     * Gets the status code for the given <code>statusName</code>.
+     * @throws IllegalArgumentException if an unknown status name is given.
+     */
+  public static int statusNameToCode(String statusName) {
+    for (int i=STOPPED_STATUS_CODE; i <= STARTED_STATUS_CODE; i++) {
+      if (statusNames[i].equalsIgnoreCase(statusName)) {
+        return i;
+      }
+    }
+    throw new IllegalArgumentException(LocalizedStrings.ManagerInfo_UNKNOWN_STATUSNAME_0.toLocalizedString(statusName));
+  }
+
+  public static ManagerInfo loadLocatorInfo(File directory) {
+    return loadManagerInfo(directory, true);
+  }
+  private static ManagerInfo loadManagerInfo(File directory, boolean locator) {
+    if (!directory.exists() || !directory.isDirectory()) {
+      throw new UncreatedSystemException(LocalizedStrings.ManagerInfo__0_DOES_NOT_EXIST_OR_IS_NOT_A_DIRECTORY.toLocalizedString(directory.getPath()));
+    }
+    File infoFile = getManagerInfoFile(directory, locator);
+    if (!infoFile.exists()) {
+      throw new UnstartedSystemException(LocalizedStrings.ManagerInfo_THE_INFO_FILE_0_DOES_NOT_EXIST.toLocalizedString(infoFile.getPath()));
+    }
+    try {
+      FileInputStream fis = new FileInputStream(infoFile);
+      if (fis.available() == 0) {
+        throw new GemFireIOException(LocalizedStrings.ManagerInfo_COULD_NOT_LOAD_FILE_0_BECAUSE_THE_FILE_IS_EMPTY_WAIT_FOR_THE_1_TO_FINISH_STARTING.toLocalizedString(new Object[] {infoFile, (locator ? "locator" : "system")}), null);
+      }
+      DataInputStream dis = new DataInputStream(fis);
+      ManagerInfo result = 
+        (ManagerInfo) DataSerializer.readObject(dis);
+      fis.close();
+      return result;
+    } catch (IOException io) {
+      throw new GemFireIOException(LocalizedStrings.ManagerInfo_COULD_NOT_LOAD_FILE_0.toLocalizedString(infoFile), io);
+    } catch (ClassNotFoundException ex) {
+      throw new GemFireIOException(LocalizedStrings.ManagerInfo_COULD_NOT_LOAD_FILE_0_BECAUSE_A_CLASS_COULD_NOT_BE_FOUND.toLocalizedString(infoFile), ex);
+    }
+  }
+  public static File getLocatorInfoFile(File directory) {
+    return getManagerInfoFile(directory, true);
+  }
+  private static File getManagerInfoFile(File directory, boolean locator) {
+    if (!locator) {
+      throw new IllegalArgumentException(LocalizedStrings.ManagerInfo_ONLY_LOCATORS_ARE_SUPPORTED.toLocalizedString());
+    }
+    File res = new File(directory, LOCATOR_INFO_FILE_NAME);
+    try {
+        res = res.getCanonicalFile();
+    } catch (IOException ex) {
+        res = res.getAbsoluteFile();
+    }
+    return res;
+  }
+  public static String getLocatorStatusCodeString(File directory) {
+    return statusToString(getLocatorStatusCode(directory));
+  }
+  public static int getLocatorStatusCode(File directory) {
+    return getManagerStatusCode(directory, true);
+  }
+  private static int getManagerStatusCode(File directory, boolean locator) {
+    boolean interrupted = false;
+    try {
+      ManagerInfo mi = ManagerInfo.loadManagerInfo(directory, locator);
+      if (!PureJavaMode.isPure() && !OSProcess.exists(mi.getManagerProcessId())) {
+        return KILLED_STATUS_CODE;
+      } else {
+        return mi.getManagerStatus();
+      }
+    } catch (UnstartedSystemException ex) {
+      return STOPPED_STATUS_CODE;
+    } catch (GemFireIOException ex) {
+      // wait a bit and try again in case we caught the manager rewriting
+      // its info file
+      try {Thread.sleep(1000);} 
+      catch (InterruptedException ignore) {
+        interrupted = true;
+      }
+      try {
+        ManagerInfo.loadManagerInfo(directory, locator);
+        // all is well so do a recursive call
+        return getManagerStatusCode(directory, locator);
+      } catch (UnstartedSystemException ignore) {
+        return STOPPED_STATUS_CODE;
+      } catch (GemFireIOException ex2) {
+        // give up. The info file is probably corrupt
+        throw ex2;
+      }
+    }
+    finally {
+      if (interrupted) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+  public static boolean isLocatorStarted(File directory) {
+    return isManagerStarted(directory, true);
+  }
+  private static boolean isManagerStarted(File directory, boolean locator) {
+    try {
+      ManagerInfo mi = loadManagerInfo(directory, locator);
+      int status = mi.getManagerStatus();
+      if (status != STARTED_STATUS_CODE) {
+        return false;
+      }
+      // Check to see if manager process exists, assume it is for PureJava
+      if (PureJavaMode.isPure() || OSProcess.exists(mi.getManagerProcessId())) {
+        return true;
+      }
+      return false;
+    } catch (UnstartedSystemException ignore) {
+      return false;
+    } catch (GemFireIOException ex) {
+      Throwable cause = ex.getCause();
+      if (cause == null) {
+        // this happens when the file was zero size
+        return false;
+      } else if (cause instanceof InvalidClassException) {
+        // This happens when we have a serialVersionUID mismatch.
+        // We don't want to hide this so throw the exception
+        throw ex;
+      } else {
+        return false;
+      }
+    }
+  }
+  public static boolean isLocatorRunning(File directory) {
+    return isManagerRunning(directory, true);
+  }
+  private static boolean isManagerRunning(File directory, boolean locator) {
+    try {
+      ManagerInfo mi = loadManagerInfo(directory, locator);
+      int status = mi.getManagerStatus();
+      if (status != STARTED_STATUS_CODE
+          && status != STARTING_STATUS_CODE
+          && status != STOPPING_STATUS_CODE) {
+        return false;
+      }
+      // Check to see if manager process exists
+      if (!PureJavaMode.isPure() && !OSProcess.exists(mi.getManagerProcessId())) {
+        return false;
+      }
+      return true;
+    } catch (UnstartedSystemException ignore) {
+      return false;
+    } catch (GemFireIOException ex) {
+      Throwable cause = ex.getCause();
+      if (cause == null) {
+        // this happens when the file was zero size
+        // This indicates the manager is changing its info file
+        return true;
+      } else if (cause instanceof InvalidClassException) {
+        // This happens when we have a serialVersionUID mismatch.
+        // We don't want to hide this so throw the exception
+        throw ex;
+      } else {
+        // This indicates the manager is changing its info file
+        return true;
+      }
+    }
+  }
+  public static boolean isLocatorStopped(File directory) {
+    return isManagerStopped(directory, true);
+  }
+  private static boolean isManagerStopped(File directory, boolean locator) {
+    try {
+      ManagerInfo mi = loadManagerInfo(directory, locator);
+      if (!OSProcess.exists(mi.getManagerProcessId())) {
+        return true;
+      }
+      return false;
+    } catch (UnstartedSystemException ignore) {
+      return true;
+    } catch (GemFireIOException ex) {
+      Throwable cause = ex.getCause();
+      if (cause == null) {
+        // this happens when the file was zero size
+        return false;
+      } else if (cause instanceof InvalidClassException) {
+        // This happens when we have a serialVersionUID mismatch.
+        // We don't want to hide this so throw the exception
+        throw ex;
+      } else {
+        return false;
+      }
+    }
+  }
+    
+  /**
+   * Constructs a manager info instance given the process id
+   * of the manager VM.
+   * @param port TODO
+   * @param bindAddress TODO
+   */
+  private ManagerInfo(int pid, int status, int port, InetAddress bindAddress) {
+    this.managerPid = pid;
+    this.managerStatus = status;
+    this.port = port;
+    this.bindAddress = bindAddress;
+  }
+
+  /**
+   * Constructor for <code>DataSerializable</code>
+   */
+  public ManagerInfo() { }
+
+  // instance variables
+  private int managerPid;
+  private int managerStatus;
+  private int port;
+  private InetAddress bindAddress;
+
+  public void toData(DataOutput out) throws IOException {
+    out.writeInt(this.managerPid);
+    out.writeInt(this.managerStatus);
+    out.writeInt(this.port);
+    if (this.bindAddress == null) {
+      out.writeByte(0);
+    } else {
+      byte[] address = this.bindAddress.getAddress();
+      out.writeByte(address.length);
+      out.write(address, 0, address.length);
+    }
+  }
+
+  public void fromData(DataInput in) 
+    throws IOException, ClassNotFoundException {
+
+    this.managerPid = in.readInt();
+    this.managerStatus = in.readInt();
+    this.port = in.readInt();
+    byte len = in.readByte();
+    if (len > 0) {
+      byte[] addr = new byte[len];
+      in.readFully(addr);
+      this.bindAddress = InetAddress.getByAddress(addr);
+    }
+  }
+}
+

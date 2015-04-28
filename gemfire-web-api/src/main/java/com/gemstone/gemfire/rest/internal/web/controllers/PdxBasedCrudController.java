@@ -1,0 +1,345 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.rest.internal.web.controllers;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.util.ArrayUtils;
+import com.gemstone.gemfire.rest.internal.web.controllers.support.JSONTypes;
+import com.gemstone.gemfire.rest.internal.web.controllers.support.RegionData;
+import com.gemstone.gemfire.rest.internal.web.controllers.support.RegionEntryData;
+import com.gemstone.gemfire.rest.internal.web.exception.ResourceNotFoundException;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
+
+/**
+ * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on region
+ * <p/>
+ * @author Nilkanth Patel, john blum
+ * @see org.springframework.stereotype.Controller
+ * @since 8.0
+ */
+
+@Controller("pdxCrudController")
+@Api(value = "region",
+     description = "region CRUD operations")
+@RequestMapping(PdxBasedCrudController.REST_API_VERSION)
+@SuppressWarnings("unused")
+public class PdxBasedCrudController extends CommonCrudController {
+
+  private static final Logger logger = LogService.getLogger();
+  
+  protected static final String REST_API_VERSION = "/v1";
+  
+  protected static final String DEFAULT_GETALL_RESULT_LIMIT = "50";  
+  
+  @Override
+  protected String getRestApiVersion() {
+    return REST_API_VERSION;
+  }
+
+  /**
+   * Creating entry into the region
+   * @param region region name where data will be created
+   * @param key gemfire region key
+   * @param json JSON document that is stored against the key
+   * @return JSON document
+   */
+  
+  @RequestMapping(method = RequestMethod.POST, value = "/{region}",
+                  consumes = MediaType.APPLICATION_JSON_VALUE,
+                  produces = { MediaType.APPLICATION_JSON_VALUE })
+  @ApiOperation(
+    value = "create entry",
+    notes = "Create (put-if-absent) data in region",
+    response  = void.class
+  )
+  @ApiResponses( {
+    @ApiResponse( code = 201, message = "Created."),
+    @ApiResponse( code = 400, message = "Data specified (JSON doc) in the request body is invalid." ),
+    @ApiResponse( code = 404, message = "Region does not exist." ),
+    @ApiResponse( code = 409, message = "Key already exist in region."),
+    @ApiResponse( code = 500, message = "GemFire throws an error or exception.")   
+  } )
+  public ResponseEntity<?> create(@PathVariable("region") String region,
+      @RequestParam(value = "key", required = false) String key,
+      @RequestBody final String json) {
+    
+    key = generateKey(key);
+    
+    if(logger.isDebugEnabled()){
+      logger.debug("Posting (creating/putIfAbsent) JSON document ({}) to Region ({}) with Key ({})...",
+          json, region, key);
+    }
+    region = decode(region);
+    Object existingPdxObj = null;
+    
+    //Check whether the user has supplied single JSON doc or Array of JSON docs  
+    final JSONTypes jsonType = validateJsonAndFindType(json);
+    if(JSONTypes.JSON_ARRAY.equals(jsonType)){
+      existingPdxObj = postValue(region, key, convertJsonArrayIntoPdxCollection(json));
+    }else {
+      existingPdxObj = postValue(region, key, convert(json));  
+    }
+    
+    final HttpHeaders headers = new HttpHeaders();
+    headers.setLocation(toUri(region, key));
+    
+    if (existingPdxObj != null) {
+      final RegionEntryData<Object> data = new RegionEntryData<Object>(region);
+      data.add(existingPdxObj);
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      return new ResponseEntity<RegionEntryData<?>>(data, headers, HttpStatus.CONFLICT);
+    } else {
+      return new ResponseEntity<String>(headers, HttpStatus.CREATED);
+    }
+  }
+  
+  /**
+   * Read all or fixed number of data in a given Region
+   * @param region gemfire region name
+   * @param limit total number of entries requested
+   * @return JSON document
+   */
+  @RequestMapping(method = RequestMethod.GET, value = "/{region}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ApiOperation(
+    value = "read all data for region",
+    notes = "Read all data for region. Use limit param to get fixed or limited number of entries.",
+    response  = void.class
+  )
+  @ApiResponses( {
+    @ApiResponse( code = 200, message = "OK."),
+    @ApiResponse( code = 400, message = "Bad request." ),
+    @ApiResponse( code = 404, message = "Region does not exist." ),
+    @ApiResponse( code = 500, message = "GemFire throws an error or exception.")    
+  } )
+  public ResponseEntity<?> read(@PathVariable("region") String region,
+      @RequestParam(value = "limit", defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit) {
+    
+    if(logger.isDebugEnabled()){
+      logger.debug("Reading all data in Region ({})...", region);
+    }
+    region = decode(region);
+      
+    Map<Object, Object> valueObjs = null;
+    final RegionData<Object> data = new RegionData<Object>(region);
+
+    final HttpHeaders headers = new HttpHeaders();
+    String keyList = null;
+    int regionSize = getRegion(region).size();
+    List<Object> keys = new ArrayList<Object>(regionSize);
+    List<Object> values = new ArrayList<Object>(regionSize);
+    
+    for (Map.Entry<Object, Object> entry : getValues(region).entrySet() ) {
+      Object value = entry.getValue();
+      if (value != null) {
+        keys.add(entry.getKey());
+        values.add(value);
+      }
+    }
+    
+    if ("ALL".equalsIgnoreCase(limit) ) {  
+      data.add(values);
+      keyList = StringUtils.collectionToDelimitedString(keys, ",");
+    } else {
+      try {
+        int maxLimit = Integer.valueOf(limit);
+        if(maxLimit < 0){
+          String errorMessage = String.format("Negative limit param (%1$s) is not valid!", maxLimit);
+          return new ResponseEntity<String>(
+              convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+        }
+        
+        int mapSize = keys.size();
+        if (maxLimit > mapSize) {
+          maxLimit = mapSize;
+        }
+        data.add(values.subList(0, maxLimit));
+
+        keyList = StringUtils.collectionToDelimitedString(
+            keys.subList(0, maxLimit), ",");
+
+      } catch (NumberFormatException e) {
+        // limit param is not specified in proper format. set the HTTPHeader
+        // for BAD_REQUEST
+        String errorMessage = String.format("limit param (%1$s) is not valid!", limit);
+        return new ResponseEntity<String>(
+            convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+      }  
+    } 
+    
+    headers.set("Content-Location", toUri(region, keyList).toASCIIString() );
+    return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
+  }
+  
+  /**
+   * Reading data for set of keys
+   * @param region gemfire region name
+   * @param keys string containing comma seperated keys 
+   * @return JSON document
+   */
+  @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
+                  produces = MediaType.APPLICATION_JSON_VALUE)
+  @ApiOperation(
+    value = "read data for specific keys",
+    notes = "Read data for specific set of keys in region.",
+    response  = void.class
+  )
+  @ApiResponses( {
+    @ApiResponse( code = 200, message = "OK."),
+    @ApiResponse( code = 400, message = "Bad Request."),
+    @ApiResponse( code = 404, message = "Region does not exist." ),
+    @ApiResponse( code = 500, message = "GemFire throws an error or exception.")  
+  } )
+  public ResponseEntity<?> read(
+      @PathVariable("region") String region,
+      @PathVariable("keys") final String[] keys,
+      @RequestParam(value = "ignoreMissingKey", required = false ) final String ignoreMissingKey) {
+    
+    if(logger.isDebugEnabled()){
+      logger.debug("Reading data for keys ({}) in Region ({})",
+          ArrayUtils.toString(keys), region);
+    }
+    
+    final HttpHeaders headers = new HttpHeaders();
+    region = decode(region);
+    
+    if (keys.length == 1) { 
+      /* GET op on single key */
+      Object value = getValue(region, keys[0]);
+      //if region.get(K) return null (i.e INVLD or TOMBSTONE case) We consider 404, NOT Found case  
+      if(value == null) {
+        throw new ResourceNotFoundException(String.format("Key (%1$s) does not exist for region (%2$s) in cache!", keys[0], region));
+      }
+      
+      final RegionEntryData<Object> data = new RegionEntryData<Object>(region);
+      headers.set("Content-Location", toUri(region, keys[0]).toASCIIString());
+      data.add(value);
+      return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
+
+    } else {
+      //fail fast for the case where ignoreMissingKey param is not specified correctly.
+      if (ignoreMissingKey != null 
+          && !(ignoreMissingKey.equalsIgnoreCase("true") || ignoreMissingKey.equalsIgnoreCase("false"))){
+        String errorMessage = String.format("ignoreMissingKey param (%1$s) is not valid. valid usage is ignoreMissingKey=true!", ignoreMissingKey);
+        return new ResponseEntity<String>(
+            convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+      }
+      
+      if(!("true".equalsIgnoreCase(ignoreMissingKey))) { 
+        List<String> unknownKeys = checkForMultipleKeysExist(region, keys);
+        if(unknownKeys.size() > 0) {
+          String unknownKeysAsStr = StringUtils.collectionToDelimitedString(unknownKeys, ",");
+          String erroString = String.format("Requested keys (%1$s) not exist in region (%2$s)", StringUtils.collectionToDelimitedString(unknownKeys, ","), region);
+          return new ResponseEntity<String>(convertErrorAsJson(erroString), headers, HttpStatus.BAD_REQUEST);
+        }
+      }  
+      
+      final Map<Object, Object> valueObjs = getValues(region, keys);
+
+      // Do we need to remove null values from Map..?
+      // To Remove null value entries from map.
+      // valueObjs.values().removeAll(Collections.singleton(null));
+  
+      //currently we are not removing keys having value null from the result.
+      String keyList = StringUtils.collectionToDelimitedString(valueObjs.keySet(), ",");
+      headers.set("Content-Location", toUri(region, keyList).toASCIIString() );
+      final RegionData<Object> data = new RegionData<Object>(region);
+      data.add(valueObjs.values());
+      return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Update data for a key or set of keys
+   * @param region gemfire data region
+   * @param keys keys for which update operation is requested
+   * @param opValue type of update (put, replace, cas etc)
+   * @param json new data for the key(s)
+   * @return JSON document
+   */
+  @RequestMapping(method = RequestMethod.PUT, value = "/{region}/{keys}",
+                  consumes = { MediaType.APPLICATION_JSON_VALUE },
+                  produces = { MediaType.APPLICATION_JSON_VALUE })
+  @ApiOperation(
+    value = "update data for key",
+    notes = "Update or insert (put) data for key in region." +
+            "op=REPLACE, update (replace) data with key if and only if the key exists in region" +
+            "op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in region",
+    response  = void.class
+  )
+  @ApiResponses( {
+    @ApiResponse( code = 200, message = "OK."),
+    @ApiResponse( code = 400, message = "Bad Request."),
+    @ApiResponse( code = 404, message = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
+    @ApiResponse( code = 409, message = "For CAS, @old value does not match to the current value in region" ),
+    @ApiResponse( code = 500, message = "GemFire throws an error or exception.")
+  } )
+  public ResponseEntity<?> update(@PathVariable("region") String region,
+      @PathVariable("keys") final String[] keys,
+      @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
+      @RequestBody final String json) {
+    
+    if(logger.isDebugEnabled()){
+      logger.debug("updating key(s) for region ({}) ", region);
+    }
+    region = decode(region);
+    
+    if(keys.length > 1){
+      //putAll case
+      return updateMultipleKeys(region, keys, json);
+    } else {
+      //put case
+      return updateSingleKey(region, keys[0], json, opValue);
+    }
+  }
+    
+  @RequestMapping(method = RequestMethod.HEAD, value = "/{region}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ApiOperation(
+    value = "Get total number of entries",
+    notes = "Get total number of entries into the specified region",
+    response  = void.class
+  )
+  @ApiResponses( {
+    @ApiResponse( code = 200, message = "OK."),
+    @ApiResponse( code = 400, message = "Bad request." ),
+    @ApiResponse( code = 404, message = "Region does not exist." ),
+    @ApiResponse( code = 500, message = "GemFire throws an error or exception.")    
+  } )
+  public ResponseEntity<?> size(@PathVariable("region") String region) {
+    
+    if(logger.isDebugEnabled()){
+      logger.debug("Determining the number of entries in Region ({})...", region);
+    }
+    region = decode(region);
+      
+    final HttpHeaders headers = new HttpHeaders();
+    
+    headers.set("Resource-Count", String.valueOf(getRegion(region).size()) );
+    return new ResponseEntity<RegionData<?>>(headers, HttpStatus.OK);
+  }
+  
+}

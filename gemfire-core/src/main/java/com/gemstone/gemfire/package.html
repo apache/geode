@@ -1,0 +1,70 @@
+<HTML>
+<BODY>
+
+<P>The base package of the GemFire Java product, featuring highly
+concurrent distributed {@linkplain com.gemstone.gemfire.cache.Cache caching}
+with {@linkplain com.gemstone.gemfire.cache.CacheEvent cache event} delivery, {@linkplain
+com.gemstone.gemfire.cache.query OQL querying}, and {@linkplain
+com.gemstone.gemfire.admin remote cache administration}, built using a {@linkplain
+com.gemstone.gemfire.distributed.DistributedSystem} which includes a
+{@linkplain com.gemstone.gemfire.distributed.DistributedLockService}.
+</P>
+
+<p>This package contains classes that are used throughout GemFire,
+providing enhanced serialization performance using the {@link
+com.gemstone.gemfire.DataSerializable} feature and the ability to
+profile your GemFire application using a handy {@link
+com.gemstone.gemfire.Statistics} infrastructure.
+<p>
+
+<!-- ------------------------------------------------------------ -->
+
+<A NAME="statistics"><H2>GemFire Statistics</H2></A>
+
+<P>The ability to monitor and analyze the behavior and performance of
+an application can ease the job of optimization.  To aid in this
+analysis, GemFire provides the ability to register and capture
+application statistics.  An application statistic is simply a number
+that the application is free to modify and that is monitored by
+the GemFire's statistics collector.
+The statistics may be
+monitored at runtime using the Admin API or GemFire JMX Agent.</P>
+
+<P>Each application statistic is described by a
+{@link com.gemstone.gemfire.StatisticDescriptor} instance.
+Logical groupings of application statistics are described by a
+{@link com.gemstone.gemfire.StatisticsType} instance that contains the name
+and description of each statistic.  Each instance of an type
+is represented by an instance of
+{@link com.gemstone.gemfire.Statistics}.
+The {@link com.gemstone.gemfire.StatisticDescriptor descriptors},
+{@link com.gemstone.gemfire.StatisticsType types}, and
+{@link com.gemstone.gemfire.Statistics instances} are created using an
+instance of the {@link com.gemstone.gemfire.StatisticsFactory} interface.
+Each statistics instance
+(there may be multiple instances of a statistics type) can be identified
+by a {@link com.gemstone.gemfire.Statistics#getTextId text id}
+and/or a {@link com.gemstone.gemfire.Statistics#getNumericId numeric id}.
+The name, description, etc. of the statistic and its type
+are available in the Admin API or GemFire JMX Agent.</P>
+
+<P>An application can get, set, and increment the value of a statistic
+using methods of the <code>Statistics</code> interface.  If statistics
+sampling has been <A
+href="distributed/DistributedSystem.html#statistic-sampling-enabled">enabled</A>
+a thread in the application VM <A
+href="distributed/DistributedSystem.html#statistic-sample-rate">periodically</A>
+reads the values of application statistics allowing them to be viewed
+by the Admin API and GemFire JMX Agent.  Statistics may also be archived
+to a file, the <A
+href="distributed/DistributedSystem.html#statistic-archive-file ">name
+and location</A> of which may be configured when creating a {@link
+com.gemstone.gemfire.distributed.DistributedSystem}. </P>
+
+<P>In addition to application statistics, GemFire maintains statistics
+about the distributed system, the distributed cache,
+and the physical machine on which it runs.  These statistics can be
+monitored, viewed, and archived just like application statistics.</P>
+
+</BODY>
+</HTML>

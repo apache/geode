@@ -1,0 +1,108 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache;
+
+import com.gemstone.gemfire.*;
+//import com.gemstone.gemfire.internal.NanoTimer;
+//import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.*;
+
+/**
+ * GemFire statistics about Disk Directories
+ *
+ * @author Darrel Schneider
+ *
+ * @since 3.2
+ */
+public class DiskDirectoryStats {
+
+  private static final StatisticsType type;
+
+  ////////////////////  Statistic "Id" Fields  ////////////////////
+
+  private static final int diskSpaceId;
+  private static final int maxSpaceId;
+  private static final int volumeSizeId;
+  private static final int volumeFreeSpaceId;
+  private static final int volumeFreeSpaceChecksId;
+  private static final int volumeFreeSpaceTimeId;
+  
+  static {
+    String statName = "DiskDirStatistics";
+    String statDescription =
+      "Statistics about a single disk directory for a region";
+
+    final String diskSpaceDesc =
+      "The total number of bytes currently being used on disk in this directory for oplog files.";
+    final String maxSpaceDesc =
+      "The configured maximum number of bytes allowed in this directory for oplog files. Note that some product configurations allow this maximum to be exceeded.";
+    StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
+
+    type = f.createType(statName, statDescription,
+       new StatisticDescriptor[] {
+         f.createLongGauge("diskSpace", diskSpaceDesc, "bytes"),
+         f.createLongGauge("maximumSpace", maxSpaceDesc, "bytes"),
+         f.createLongGauge("volumeSize", "The total size in bytes of the disk volume", "bytes"),
+         f.createLongGauge("volumeFreeSpace", "The total free space in bytes on the disk volume", "bytes"),
+         f.createLongCounter("volumeFreeSpaceChecks", "The total number of disk space checks", "checks"),
+         f.createLongCounter("volumeFreeSpaceTime", "The total time spent checking disk usage", "nanoseconds")
+       });
+
+    // Initialize id fields
+    diskSpaceId = type.nameToId("diskSpace");
+    maxSpaceId = type.nameToId("maximumSpace");
+    volumeSizeId = type.nameToId("volumeSize");
+    volumeFreeSpaceId = type.nameToId("volumeFreeSpace");
+    volumeFreeSpaceChecksId = type.nameToId("volumeFreeSpaceChecks");
+    volumeFreeSpaceTimeId = type.nameToId("volumeFreeSpaceTime");
+  }
+
+  //////////////////////  Instance Fields  //////////////////////
+
+  /** The Statistics object that we delegate most behavior to */
+  private final Statistics stats;
+
+  ///////////////////////  Constructors  ///////////////////////
+
+  /**
+   * Creates a new <code>DiskRegionStatistics</code> for the given
+   * region. 
+   */
+  public DiskDirectoryStats(StatisticsFactory f, String name) {
+    this.stats = f.createStatistics(type, name);
+  }
+
+  /////////////////////  Instance Methods  /////////////////////
+
+  public void close() {
+    this.stats.close();
+  }
+
+  /**
+   * Returns the current value of the "diskSpace" stat.
+   */
+  public long getDiskSpace() {
+    return this.stats.getLong(diskSpaceId);
+  }
+
+  public void incDiskSpace(long delta) {
+    this.stats.incLong(diskSpaceId, delta);
+  }
+  public void setMaxSpace(long v) {
+    this.stats.setLong(maxSpaceId, v);
+  }
+  public void addVolumeCheck(long total, long free, long time) {
+    stats.setLong(volumeSizeId, total);
+    stats.setLong(volumeFreeSpaceId, free);
+    stats.incLong(volumeFreeSpaceChecksId, 1);
+    stats.incLong(volumeFreeSpaceTimeId, time);
+  }
+  public Statistics getStats(){
+    return stats;
+  }
+}

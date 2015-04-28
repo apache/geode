@@ -1,0 +1,13 @@
+To build with gradle, just run
+
+./gradlew build
+
+To create a distribution run
+
+./gradlew distTar
+
+or
+
+./gradlew distZip
+
+the distribution archives will be located in gemfire-assembly/build/distributions/.

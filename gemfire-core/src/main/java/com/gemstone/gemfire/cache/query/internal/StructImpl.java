@@ -1,0 +1,172 @@
+/*=========================================================================
+ * Copyright (c) 2005-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *========================================================================
+ */
+
+package com.gemstone.gemfire.cache.query.internal;
+
+import java.util.*;
+import java.io.*;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.types.*;
+import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.pdx.PdxInstance;
+import com.gemstone.gemfire.pdx.internal.PdxString;
+
+/**
+ * Implementation of Struct
+ * @author Eric Zoerner
+ * @since 4.0
+ */
+public class StructImpl
+  implements Struct, DataSerializableFixedID {
+  private StructTypeImpl type;
+  private Object[] values;
+  private transient boolean hasPdx = false;
+  /** no-arg constructor required for DataSerializable */
+  public StructImpl() {};
+  
+  /** Creates a new instance of StructImpl */
+  public StructImpl(StructTypeImpl type, Object[] values) {
+    if (type == null) {
+      throw new IllegalArgumentException(LocalizedStrings.StructImpl_TYPE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    this.type = type;
+    this.values = values;
+    if (this.values != null) {
+      for (Object o : values) {
+        if (o instanceof PdxInstance || o instanceof PdxString) {
+          this.hasPdx = true;
+          break;
+        } 
+      }
+    }
+  }
+
+  /**
+   * @throws IllegalArgumentException if fieldName not found
+   */
+  public Object get(String fieldName) {
+    return this.values[this.type.getFieldIndex(fieldName)];
+  }
+
+  public ObjectType[] getFieldTypes() {
+    return this.type.getFieldTypes();
+  }
+
+
+  public String[] getFieldNames() {
+    return this.type.getFieldNames();
+  }
+
+  public Object[] getFieldValues() {
+    if (this.values == null) {
+      return new Object[0];
+    }
+    return this.values;
+  }  
+  
+  /**
+   * Helper method, Returns field values, in case of PdxInstance 
+   * gets the domain objects.
+   */
+  public Object[] getPdxFieldValues() {
+    if (this.values == null) {
+      return new Object[0];
+    }
+    
+    Object[] fValues = new Object[this.values.length];
+    for (int i=0; i < this.values.length; i++) {
+      if (this.values[i] instanceof PdxInstance) {
+        fValues[i] = ((PdxInstance)this.values[i]).getObject();
+      }
+      else if (this.values[i] instanceof PdxString) {
+        fValues[i] = ((PdxString)this.values[i]).toString();
+      } else {
+        fValues[i] = this.values[i];
+      }
+    }
+    return fValues;
+  }  
+
+  public StructType getStructType() {
+    return this.type;
+  }
+
+  public boolean isHasPdx() {
+    return hasPdx;
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Struct)) return false;
+    Struct s = (Struct)obj;
+    if (!Arrays.equals(getFieldTypes(), s.getStructType().getFieldTypes())) return false;
+    if (!Arrays.equals(getFieldNames(), s.getStructType().getFieldNames())) return false;
+    if (!Arrays.equals(getFieldValues(), s.getFieldValues())) return false;
+    return true;
+  }
+  
+  @Override
+  public int hashCode() {
+    int hashCode = this.type.hashCode();
+    for(Object o:values) {
+      if(o!= null) {
+        hashCode ^= o.hashCode();
+      }
+    }
+    return hashCode;
+  }
+  
+  @Override
+  public String toString() {
+    Object[] locValues = getFieldValues();
+    String[] names = getFieldNames();
+    StringBuffer buf = new StringBuffer();
+    buf.append("struct(");
+    for (int i = 0; i < locValues.length; i++) {
+      if (i > 0) buf.append(",");
+      buf.append(names[i]);
+      buf.append(":");
+      buf.append(locValues[i]);
+    }
+    buf.append(")");
+    return buf.toString();
+  }
+
+  public int getDSFID() {
+    return STRUCT_IMPL;
+  }
+
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException
+  {
+    this.type = (StructTypeImpl)DataSerializer.readObject(in);
+    this.values = DataSerializer.readObjectArray(in);
+    if (this.values != null) {
+      for (Object o : values) {
+        if (o instanceof PdxInstance) {
+          this.hasPdx = true;
+          break;
+        } 
+      }
+    }
+  }
+  
+  public void toData(DataOutput out) throws IOException
+  {    
+    DataSerializer.writeObject(this.type, out);
+    DataSerializer.writeObjectArray(this.values, out);
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }  
+}

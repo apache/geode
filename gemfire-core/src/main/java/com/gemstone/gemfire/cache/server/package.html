@@ -1,0 +1,27 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+  <HEAD>
+    <TITLE>com.gemstone.gemfire.cache.server package</TITLE>
+  </HEAD>
+  <BODY>
+  The <code>com.gemstone.gemfire.cache.server</code> package provides APIs used
+  for the server side of client/server caching.
+<p>
+A {@link com.gemstone.gemfire.cache.server.CacheServer cache server} can be
+declared using the <code>cache-server</code> element described in the
+<code>cache6_5.dtd</code>.
+<p>
+Or it can be created by calling {@link com.gemstone.gemfire.cache.Cache#addCacheServer}.
+<p>
+Another option is to use the <code>cacheserver</code> executable which can be found
+in the GemFire <code>bin</code> directory.
+<p>
+To obtain an instance of <code>CacheServer</code> that has already been created
+use {@link com.gemstone.gemfire.cache.Cache#getCacheServers}.
+<p>
+See the {@link com.gemstone.gemfire.cache.client client} package for information
+on how to create clients that will connect to and access the cache in your
+cache server.
+  </BODY>
+</HTML>

@@ -1,0 +1,247 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.tier.sockets;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
+/**
+ * 
+ * @author Amardeep
+ *
+ */
+public class ClientDataSerializerMessage  extends ClientUpdateMessageImpl{
+  private byte[][] serializedDataSerializer;
+
+  private Class[][] supportedClasses;
+  
+  public ClientDataSerializerMessage(EnumListenerEvent operation,
+      byte[][] dataSerializer, ClientProxyMembershipID memberId,
+      EventID eventIdentifier, Class[][] supportedClasses) {
+    super(operation, memberId, eventIdentifier);
+    this.serializedDataSerializer = dataSerializer;
+    this.supportedClasses = supportedClasses;
+  }
+
+  /**
+   * default constructor
+   * 
+   */
+  public ClientDataSerializerMessage() {
+
+  }
+  
+  @Override
+  public boolean shouldBeConflated()
+  {
+    return false;
+  }
+  
+  /**
+   * Returns a <code>Message</code> generated from the fields of this
+   * <code>ClientDataSerializerMessage</code>.
+   * 
+   * @param latestValue
+   *                byte[] containing the latest value to use. This could be the
+   *                original value if conflation is not enabled, or it could be
+   *                a conflated value if conflation is enabled.
+   * @return a <code>Message</code> generated from the fields of this
+   *         <code>ClientDataSerializerMessage</code>
+   * @throws IOException
+   * @see com.gemstone.gemfire.internal.cache.tier.sockets.Message
+   */
+  @Override
+  protected Message getMessage(CacheClientProxy proxy, byte[] latestValue)
+    throws IOException {
+    if (proxy.getVersion().compareTo(Version.GFE_6516) >= 0) {
+      return getGFE6516Message(proxy.getVersion());
+    } else if (proxy.getVersion().compareTo(Version.GFE_57) >= 0) {
+      return getGFEMessage(proxy.getVersion());
+    } else {
+      throw new IOException(
+          "Unsupported client version for server-to-client message creation: "
+              + proxy.getVersion());
+    }
+  }
+
+  protected Message getGFEMessage(Version clientVersion) {
+    Message message = null;
+    int dataSerializerLength = this.serializedDataSerializer.length;
+    message = new Message(dataSerializerLength + 1, clientVersion); // one for eventID
+    // Set message type
+    message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
+    for (int i = 0; i < dataSerializerLength; i = i + 2) {
+      message.addBytesPart(this.serializedDataSerializer[i]);
+      message.addBytesPart(this.serializedDataSerializer[i + 1]);
+    }
+    message.setTransactionId(0);
+    message.addObjPart(this.getEventId());
+    return message;
+  }
+
+  protected Message getGFE6516Message(Version clientVersion) {
+    Message message = null;
+
+    // The format:
+    // part  0: serializer1 classname
+    // part  1: serializer1 id
+    // part  2: serializer1 number of supported classes  --|
+    // part  3: serializer1 supported class1 name          |
+    // part  4: serializer1 supported class2 name          |---> additional parts since 6.5.1.6
+    // part  5: serializer1 supported classN name        --|
+    // part  6: serializer2 classname
+    // part  7: serializer2 id
+    // part  8: serializer2 number of supported classes
+    // part  9: serializer2 supported class1 name
+    // part 10: serializer2 supported classN name
+    //          ...
+    // Last part: event ID
+
+    int dsLength = this.serializedDataSerializer.length; // multiple of 2
+    assert (dsLength % 2) == 0;
+    int numOfDS = (this.supportedClasses != null) ? this.supportedClasses.length : 0;
+    assert (dsLength / 2) == numOfDS;
+
+    // Calculate total number of parts
+    int numOfParts = dsLength + numOfDS;
+    for (int i = 0; i < numOfDS; i++) {
+      if (this.supportedClasses[i] != null) {
+        numOfParts += this.supportedClasses[i].length;
+      }
+    }
+    numOfParts += 1; // one for eventID
+//    this._logger.fine("Number of parts for ClientDataSerializerMessage: "
+//        + numOfParts + ", with eventID: " + this.getEventId());
+
+    message = new Message(numOfParts, clientVersion);
+    // Set message type
+    message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
+    for (int i = 0; i < dsLength; i = i + 2) {
+      message.addBytesPart(this.serializedDataSerializer[i]);      // part 0
+      message.addBytesPart(this.serializedDataSerializer[i + 1]);  // part 1
+
+      int numOfClasses = this.supportedClasses[i/2].length;
+      byte[][] classBytes = new byte[numOfClasses][];
+      try {
+        for (int j = 0; j < numOfClasses; j++) {
+          classBytes[j] = CacheServerHelper.serialize(this.supportedClasses[i/2][j].getName());
+        }
+      } catch (IOException ioe) {
+        numOfClasses = 0;
+        classBytes = null;
+      }
+      message.addIntPart(numOfClasses);  // part 2
+      for (int j = 0; j < numOfClasses; j++) {
+        message.addBytesPart(classBytes[j]);  // part 3 onwards
+      }
+    }
+    message.setTransactionId(0);
+    message.addObjPart(this.getEventId());  // last part
+    return message;
+  }
+
+  @Override
+  public int getDSFID() {
+    return CLIENT_DATASERIALIZER_MESSAGE;
+  }
+
+  /**
+   * Writes an object to a <code>Datautput</code>.
+   * 
+   * @throws IOException
+   *                 If this serializer cannot write an object to
+   *                 <code>out</code>.
+   * @see #fromData
+   */
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    
+    out.writeByte(_operation.getEventCode());
+    int dataSerializerCount = this.serializedDataSerializer.length;
+    out.writeInt(dataSerializerCount);
+    for (int i = 0; i < dataSerializerCount; i++) {
+      DataSerializer.writeByteArray(this.serializedDataSerializer[i], out);
+    }
+    DataSerializer.writeObject(_membershipId, out);
+    DataSerializer.writeObject(_eventIdentifier, out);
+  }
+
+  /**
+   * Reads an object from a <code>DataInput</code>.
+   * 
+   * @throws IOException
+   *                 If this serializer cannot read an object from
+   *                 <code>in</code>.
+   * @throws ClassNotFoundException
+   *                 If the class for an object being restored cannot be found.
+   * @see #toData
+   */
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException
+  {
+    // Note: does not call super.fromData what a HACK
+    _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
+    int dataSerializerCount = in.readInt(); 
+    this.serializedDataSerializer = new byte[dataSerializerCount][];
+    for (int i = 0; i < dataSerializerCount; i++) {
+      this.serializedDataSerializer[i] = DataSerializer.readByteArray(in);
+    }
+    _membershipId = ClientProxyMembershipID.readCanonicalized(in);
+    _eventIdentifier = (EventID)DataSerializer.readObject(in);
+  }
+
+  @Override
+  public Object getKeyToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public String getRegionToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public Object getValueToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public void setLatestValue(Object value)
+  {
+  }
+
+  @Override
+  public boolean isClientInterested(ClientProxyMembershipID clientId) {
+    return AcceptorImpl.VERSION.compareTo(Version.GFE_61) >= 0;
+  }
+
+  @Override
+  public boolean needsNoAuthorizationCheck() {
+    return true;
+  }
+
+  @Override
+  public String toString()
+  {
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("ClientDataSerializerMessage[").append(";value=").append(
+        (Arrays.toString(this.serializedDataSerializer))).append(";memberId=").append(
+        getMembershipId()).append(";eventId=").append(getEventId()).append("]");
+    return buffer.toString();
+  }
+}

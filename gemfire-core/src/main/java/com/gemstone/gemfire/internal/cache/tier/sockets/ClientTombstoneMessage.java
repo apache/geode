@@ -1,0 +1,179 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.tier.sockets;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.tier.Acceptor;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import com.gemstone.gemfire.internal.cache.versions.VersionSource;
+/**
+ * 
+ * @author bruce schuchardt
+ *
+ */
+public class ClientTombstoneMessage  extends ClientUpdateMessageImpl{
+  
+  enum TOperation {
+    GC, GC_PR
+  }
+  
+  private Object removalInformation;
+  private TOperation op;
+
+  /** GC operation for non-partitioned regions */
+  public static ClientTombstoneMessage gc(LocalRegion region,
+      Map<VersionSource, Long> regionGCVersions, EventID eventId) {
+    return new ClientTombstoneMessage(TOperation.GC, region, regionGCVersions, eventId);
+  }
+  
+  /** GC operation for partitioned regions */
+  public static ClientTombstoneMessage gc(LocalRegion region,
+      Set<Object> removedKeys, EventID eventId) {
+    return new ClientTombstoneMessage(TOperation.GC_PR, region, removedKeys, eventId);
+  }
+  
+  private ClientTombstoneMessage(TOperation op, LocalRegion region,
+      Object removalInformation, EventID eventId) {
+    super(EnumListenerEvent.AFTER_TOMBSTONE_EXPIRATION, null, eventId);
+    this.op = op;
+    this.removalInformation = removalInformation;
+    setRegionName(region.getFullPath()); // fix for bug #45962 - tombstone message must have the region name
+  }
+
+  /**
+   * default constructor
+   */
+  public ClientTombstoneMessage() {
+  }
+
+  @Override
+  public boolean shouldBeConflated()
+  {
+    return false;
+  }
+  
+  /*
+   * Returns a <code>Message</code> generated from the fields of this
+   * <code>ClientTombstoneMessage</code>.
+   */
+  @Override
+  protected Message getMessage(CacheClientProxy proxy, byte[] latestValue)
+    throws IOException {
+    if (Version.GFE_70.compareTo(proxy.getVersion()) <= 0) {
+      return getGFE70Message(proxy.getVersion());
+    }
+    else {
+      return null;
+    }
+  }
+
+  protected Message getGFE70Message(Version clientVersion) {
+    Message message = null;
+
+    // The format:
+    // part  0: operation (gc=0)
+    // part  1: region name
+    // part  2: operation ordinal
+    // part  3: regionGCVersions
+    // Last part: event ID
+    int numParts = 4;
+    message = new Message(numParts, clientVersion);
+    // Set message type
+    message.setMessageType(MessageType.TOMBSTONE_OPERATION);
+    message.addStringPart(this.getRegionName());
+    message.addIntPart(this.op.ordinal());
+    message.addObjPart(this.removalInformation);
+    message.addObjPart(getEventId());
+    return message;
+  }
+
+  @Override
+  public int getDSFID() {
+    return CLIENT_TOMBSTONE_MESSAGE;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    
+    out.writeByte(op.ordinal());
+    out.writeByte(_operation.getEventCode());
+    DataSerializer.writeString(getRegionName(), out);
+    DataSerializer.writeObject(this.removalInformation, out);
+    DataSerializer.writeObject(this._membershipId, out);
+    DataSerializer.writeObject(this._eventIdentifier, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException
+  {
+    // note: does not call super.fromData() since there are no keys, etc.
+    // The message class hierarchy should be revised to have a more abstract
+    // top-level class.
+    this.op = TOperation.values()[in.readByte()];
+    this._operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
+    this.setRegionName(DataSerializer.readString(in));
+    this.removalInformation = DataSerializer.readObject(in);
+    this._membershipId = ClientProxyMembershipID.readCanonicalized(in);
+    this._eventIdentifier = (EventID)DataSerializer.readObject(in);
+  }
+
+  @Override
+  public Object getKeyToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public String getRegionToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public Object getValueToConflate()
+  {
+    return null;
+  }
+
+  @Override
+  public void setLatestValue(Object value)
+  {
+  }
+
+  @Override
+  public boolean isClientInterested(ClientProxyMembershipID clientId) {
+    return Acceptor.VERSION.compareTo(Version.GFE_70) >= 0;
+  }
+
+  @Override
+  public boolean needsNoAuthorizationCheck() {
+    return true;
+  }
+
+  @Override
+  public String toString()
+  {
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("ClientTombstoneMessage[op=").append(this.op)
+      .append(";region=").append(getRegionName())
+      .append(";removalInfo=").append(this.removalInformation)
+      .append(";memberId=").append(getMembershipId())
+      .append(";eventId=").append(getEventId()).append("]");
+    return buffer.toString();
+  }
+}

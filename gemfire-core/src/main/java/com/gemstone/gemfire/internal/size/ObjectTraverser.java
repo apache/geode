@@ -1,0 +1,203 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.size;
+
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Map;
+
+import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
+
+
+public class ObjectTraverser {
+  private static final Map<Class, FieldSet> FIELD_CACHE = new CopyOnWriteWeakHashMap<Class, FieldSet>();
+  private static final FieldSet NON_PRIMATIVE_ARRAY = new FieldSet(null, null);
+  
+  /**
+   * Visit all objects reachable from a given root object, using a breadth first search. Using this
+   * method requires some heap space - probably between 8 - 30 bytes per reachable object. 
+   * @param root object to traverse from
+   * @param visitor a visitor to visit each node
+   * @param includeStatics if true, the first time we see a new object type, we will visit all of the static fields.
+   * @throws IllegalArgumentException
+   * @throws IllegalAccessException
+   */
+  public static void breadthFirstSearch(Object root, Visitor visitor, boolean includeStatics) throws IllegalArgumentException, IllegalAccessException {
+    VisitStack stack = new VisitStack(visitor, includeStatics);
+    
+    stack.add(null, root);
+    while(!stack.isEmpty()) {
+      Object next = stack.next();
+      doSearch(next, stack);
+    }
+    
+  }
+  
+  private static void doSearch(Object root, VisitStack stack) throws IllegalArgumentException, IllegalAccessException {
+    Class clazz = root.getClass();
+    boolean includeStatics = stack.shouldIncludeStatics(clazz);
+    FieldSet set = FIELD_CACHE.get(clazz);
+    if(set == null) {
+      set = cacheFieldSet(clazz);
+    }
+
+    if(set == NON_PRIMATIVE_ARRAY) {
+      Class componentType = clazz.getComponentType();
+      int length = Array.getLength(root);
+      for(int i = 0; i < length; i++) {
+        Object value = Array.get(root, i);
+        stack.add(root, value);
+      }
+      return;
+    }
+
+    if(includeStatics) {
+      for(Field field : set.getStaticFields()) {
+        Object value = field.get(root);
+        stack.add(root, value);
+      }
+    }
+    
+    for(Field field : set.getNonPrimativeFields()) {
+      Object value = field.get(root);
+      stack.add(root, value);
+    }
+  }
+  
+  private static FieldSet cacheFieldSet(Class clazz) {
+    FieldSet set = buildFieldSet(clazz);
+    FIELD_CACHE.put(clazz, set);
+    return set;
+  }
+  
+  private static FieldSet buildFieldSet(Class clazz) {
+    ArrayList<Field> staticFields = new ArrayList<Field>();
+    ArrayList<Field> nonPrimativeFields = new ArrayList<Field>();
+    
+    while(clazz != null) {
+      if(clazz.isArray()) {
+        Class componentType = clazz.getComponentType();
+        if(!componentType.isPrimitive()) {
+          return NON_PRIMATIVE_ARRAY;
+        } else {
+          return new FieldSet(new Field[0], new Field[0]);
+        }
+      }
+
+      Field[] fields = clazz.getDeclaredFields();
+      for(int i = 0; i < fields.length; i++) {
+        Field field = fields[i];
+        Class fieldType = field.getType();
+        //skip static fields if we've already counted them once
+        if(!fieldType.isPrimitive()) {
+          field.setAccessible(true);
+          if(Modifier.isStatic(field.getModifiers())) {
+            staticFields.add(field);
+          }
+          else {
+            nonPrimativeFields.add(field);
+          }
+        } 
+      }
+      
+      clazz = clazz.getSuperclass();
+    }
+    
+    return new FieldSet(staticFields.toArray(new Field[staticFields.size()]), nonPrimativeFields.toArray(new Field[nonPrimativeFields.size()]));
+  }
+  
+  public interface Visitor {
+    /**
+     * Visit an object
+     * @param parent the parent of the object
+     * @param object the object we are visiting
+     * @return true the search should continue on and visit the children of this object as well
+     */
+    boolean visit(Object parent, Object object);
+  }
+  
+  
+  
+  private static class VisitStack {
+    private ReferenceOpenHashSet seen = new ReferenceOpenHashSet();
+    private LinkedList stack = new LinkedList();
+    private Visitor visitor;
+    private boolean includeStatics;
+    
+    VisitStack(Visitor visitor, boolean includeStatics) {
+      this.visitor = visitor; 
+      this.includeStatics = includeStatics;
+    }
+    
+    public void add(Object parent, Object object) {
+      if(object == null) {
+        return;
+      }
+      boolean newObject = ! seen.contains(object);
+      if(newObject) {
+        seen.add(object);        
+        boolean visitChildren = visitor.visit(parent, object);
+        if(visitChildren) {
+          stack.add(object);
+        }
+      }
+    }
+    
+    public Object next() {
+      return stack.removeFirst();
+    }
+    
+    public boolean isEmpty() {
+      return stack.isEmpty();
+    }
+    
+    public boolean shouldIncludeStatics(Class clazz) {
+      if(!includeStatics) {
+        return false;
+      }
+      boolean keyExists = seen.contains(clazz);
+      seen.add(clazz);
+      return ! keyExists;
+    }
+  }
+  
+  private ObjectTraverser() {
+    
+  }
+  
+  private static class FieldSet {
+    private final Field[] staticFields;
+    private final Field[] nonPrimativeFields;
+    
+    public FieldSet(Field[] staticFields, Field[] nonPrimativeFields) {
+      this.staticFields = staticFields;
+      this.nonPrimativeFields = nonPrimativeFields;
+    }
+    
+    public Field[] getStaticFields() {
+      return staticFields;
+    }
+    public Field[] getNonPrimativeFields() {
+      return nonPrimativeFields;
+    }
+    
+    
+  }
+}

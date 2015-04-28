@@ -1,0 +1,170 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *========================================================================
+ */
+package com.gemstone.gemfire.admin.jmx.internal;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.modelmbean.ModelMBean;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.admin.AdminException;
+import com.gemstone.gemfire.admin.DistributedSystemHealthConfig;
+import com.gemstone.gemfire.admin.GemFireHealthConfig;
+import com.gemstone.gemfire.admin.RuntimeAdminException;
+import com.gemstone.gemfire.admin.internal.GemFireHealthImpl;
+import com.gemstone.gemfire.internal.admin.GfManagerAgent;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+//import org.apache.commons.modeler.ManagedBean;
+
+/**
+ * The JMX "managed resource" that represents the health of GemFire.
+ * Basically, it provides the behavior of
+ * <code>GemFireHealthImpl</code>, but does some JMX stuff like
+ * registering beans with the agent.
+ *
+ * @see AdminDistributedSystemJmxImpl#createGemFireHealth
+ *
+ * @author David Whitlock
+ *
+ * @since 3.5
+ */
+public class GemFireHealthJmxImpl extends GemFireHealthImpl 
+  implements ManagedResource {
+
+  private static final Logger logger = LogService.getLogger();
+  
+  /** The name of the MBean that will manage this resource */
+  private String mbeanName;
+
+  /** The ModelMBean that is configured to manage this resource */
+  private ModelMBean modelMBean;
+
+  /** The object name of the MBean created for this managed resource */
+  private final ObjectName objectName;
+
+  ///////////////////////  Constructors  ///////////////////////
+
+  /**
+   * Creates a new <code>GemFireHealthJmxImpl</code> that monitors the
+   * health of the given distributed system and uses the given JMX
+   * agent. 
+   */
+  GemFireHealthJmxImpl(GfManagerAgent agent,
+                       AdminDistributedSystemJmxImpl system)
+    throws AdminException {
+
+    super(agent, system);
+    this.mbeanName = new StringBuffer()
+      .append(MBEAN_NAME_PREFIX)
+      .append("GemFireHealth,id=")
+      .append(MBeanUtil.makeCompliantMBeanNameProperty(system.getId()))
+      .toString();
+    this.objectName = MBeanUtil.createMBean(this);
+  }
+
+  //////////////////////  Instance Methods  //////////////////////
+
+  public String getHealthStatus() {
+    return getHealth().toString();
+  }
+  
+  public ObjectName manageGemFireHealthConfig(String hostName)
+  throws MalformedObjectNameException {
+    try {
+      GemFireHealthConfig config = getGemFireHealthConfig(hostName);
+      GemFireHealthConfigJmxImpl jmx = (GemFireHealthConfigJmxImpl) config;
+      return new ObjectName(jmx.getMBeanName());
+    } //catch (AdminException e) { logWriter.warning(e); throw e; }
+    catch (RuntimeException e) { 
+      logger.warn(e.getMessage(), e); 
+      throw e; 
+    } catch (VirtualMachineError err) {
+      SystemFailure.initiateFailure(err);
+      // If this ever returns, rethrow the error.  We're poisoned
+      // now, so don't let this thread continue.
+      throw err;
+    } catch (Error e) { 
+      // Whenever you catch Error or Throwable, you must also
+      // catch VirtualMachineError (see above).  However, there is
+      // _still_ a possibility that you are dealing with a cascading
+      // error condition, so you also need to check to see if the JVM
+      // is still usable:
+      SystemFailure.checkFailure();
+      logger.error(e.getMessage(), e);
+      throw e; 
+    }
+  }
+    
+  /**
+   * Creates a new {@link DistributedSystemHealthConfigJmxImpl}
+   */
+  @Override
+  protected DistributedSystemHealthConfig
+    createDistributedSystemHealthConfig() {
+
+    try {
+      return new DistributedSystemHealthConfigJmxImpl(this);
+
+    } catch (AdminException ex) {
+      throw new RuntimeAdminException(LocalizedStrings.GemFireHealthJmxImpl_WHILE_GETTING_THE_DISTRIBUTEDSYSTEMHEALTHCONFIG.toLocalizedString(), ex);
+    }
+  }
+
+  /**
+   * Creates a new {@link GemFireHealthConfigJmxImpl}
+   */
+  @Override
+  protected GemFireHealthConfig
+    createGemFireHealthConfig(String hostName) {
+
+    try {
+      return new GemFireHealthConfigJmxImpl(this, hostName);
+
+    } catch (AdminException ex) {
+      throw new RuntimeAdminException(LocalizedStrings.GemFireHealthJmxImpl_WHILE_GETTING_THE_GEMFIREHEALTHCONFIG.toLocalizedString(), ex);
+    }
+  }
+
+  /**
+   * Ensures that the three primary Health MBeans are registered and returns
+   * their ObjectNames. 
+   */
+  protected void ensureMBeansAreRegistered() {
+    MBeanUtil.ensureMBeanIsRegistered(this);
+    MBeanUtil.ensureMBeanIsRegistered((ManagedResource)this.defaultConfig);
+    MBeanUtil.ensureMBeanIsRegistered((ManagedResource)this.dsHealthConfig);
+  }
+  
+  public String getMBeanName() {
+    return this.mbeanName;
+  }
+  
+  public ModelMBean getModelMBean() {
+    return this.modelMBean;
+  }
+
+  public void setModelMBean(ModelMBean modelMBean) {
+    this.modelMBean = modelMBean;
+  }
+
+  public ManagedResourceType getManagedResourceType() {
+    return ManagedResourceType.GEMFIRE_HEALTH;
+  }
+
+  public ObjectName getObjectName() {
+    return this.objectName;
+  }
+
+  public void cleanupResource() {
+    close();
+  }
+  
+}

@@ -1,0 +1,250 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.size;
+
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import com.gemstone.gemfire.internal.ClassPathLoader;
+import com.gemstone.gemfire.internal.size.ObjectTraverser.Visitor;
+
+
+public class ObjectGraphSizer {
+  private static final String SIZE_OF_CLASS_NAME = System.getProperty("gemfire.ObjectSizer.SIZE_OF_CLASS", ReflectionSingleObjectSizer.class.getName());
+  static final SingleObjectSizer SIZE_OF_UTIL;
+  private static ObjectFilter NULL_FILTER = new ObjectFilter() {
+    @Override
+    public boolean accept(Object parent, Object object) {
+      return true;
+    }
+    
+  };
+
+  static
+  {
+    Class sizeOfClass;
+    try {
+      sizeOfClass = ClassPathLoader.getLatest().forName(SIZE_OF_CLASS_NAME);
+      SIZE_OF_UTIL = new CachingSingleObjectSizer((SingleObjectSizer) sizeOfClass.newInstance());
+    } catch (Exception e) {
+      throw new ExceptionInInitializerError(e);
+    }
+  }
+  
+  /**
+   * Find the size of an object and all objects reachable from it using breadth
+   * first search. This is equivalent to calling
+   * 
+   * <pre>
+   * size(root, false);
+   * </pre>
+   * 
+   */
+  // TODO
+  // - native byte buffers
+  // - native memory (how??)
+  public static long size(Object root) throws IllegalArgumentException,
+      IllegalAccessException {
+    return size(root, false);
+  }
+  
+  /**
+   * Find the size of an object and all objects reachable from it using breadth
+   * first search. This is equivalent to calling set(root, filter,
+   * includeStatics) where the filter will accept all objects.
+   * 
+   */
+  public static long size(Object root, boolean includeStatics)
+      throws IllegalArgumentException, IllegalAccessException {
+    return size(root, NULL_FILTER, includeStatics);
+  }
+  
+  /**
+   * Find the size of an object and all objects reachable from it using breadth
+   * first search. This method will include objects reachable from static
+   * fields. Using this method requires some heap space - probably between 8 -
+   * 30 bytes per reachable object.
+   * 
+   * Objects reachable only through weak or soft references will not be
+   * considered part of the total size.
+   * 
+   * @param root
+   *                the object to size
+   * @param filter
+   *                that can exclude objects from being counted in the results.
+   *                If an object is not accepted, it's size will not be included
+   *                and it's children will not be visited unless they are
+   *                reachable by some other path.
+   * @param includeStatics
+   *                if set to true, static members of a class will be traversed
+   *                the first time that a class is encountered.
+   * 
+   */
+  public static long size(Object root, ObjectFilter filter,
+      boolean includeStatics) throws IllegalArgumentException,
+      IllegalAccessException {
+    SizeVisitor visitor = new SizeVisitor(filter);
+    ObjectTraverser.breadthFirstSearch(root, visitor, includeStatics);
+    
+    return visitor.getTotalSize();
+  }
+  
+  public static String histogram(Object root, boolean includeStatics)
+      throws IllegalArgumentException, IllegalAccessException {
+    return histogram(root, NULL_FILTER, includeStatics);
+  }
+  
+  public static String histogram(Object root, ObjectFilter filter, boolean includeStatics)
+      throws IllegalArgumentException, IllegalAccessException {
+    HistogramVistor visitor = new HistogramVistor(filter);
+    ObjectTraverser.breadthFirstSearch(root, visitor, includeStatics);
+
+    return visitor.dump();
+
+  }
+  
+  private static class HistogramVistor implements ObjectTraverser.Visitor {
+    private final Map<Class, Integer> countHisto = new HashMap<Class, Integer>();
+    private final Map<Class, Long> sizeHisto = new HashMap<Class, Long>();
+    private final ObjectFilter filter;
+
+    public HistogramVistor(ObjectFilter filter) {
+      this.filter = filter;
+    }
+
+    public boolean visit(Object parent, Object object) {
+      if (!filter.accept(parent, object)) {
+        return false;
+      }
+      Integer count = countHisto.get(object.getClass());
+      if(count == null) {
+        count = Integer.valueOf(1);
+      } else {
+        count = Integer.valueOf(count.intValue() + 1);
+      }
+      
+      countHisto.put(object.getClass(), count);
+      
+      long objectSize;
+      try {
+        objectSize = SIZE_OF_UTIL.sizeof(object);
+      } catch (IllegalArgumentException e) {
+        throw new RuntimeException(e);
+      }
+      Long size = sizeHisto.get(object.getClass());
+      if(size == null) {
+        size = Long.valueOf(objectSize);
+      } else {
+        size = Long.valueOf(size.longValue() + objectSize);
+      }
+      
+      sizeHisto.put(object.getClass(), size);
+      
+      return true;
+    }
+    
+    public String dump() {
+      StringBuilder result = new StringBuilder();
+      result.append("clazz\tsize\tcount\n");
+      Set<HistogramEntry> orderedSize = getOrderedSet();
+      for(HistogramEntry entry : orderedSize) {
+        Class clazz = entry.clazz;
+        Integer count = entry.count;
+        Long size = entry.size;
+        result.append(clazz + "\t"+ size + "\t" + count + "\n");
+      }
+      return result.toString();
+    }
+    
+    public Set<HistogramEntry> getOrderedSet() {
+      TreeSet<HistogramEntry> result = new TreeSet<HistogramEntry>();
+      for(Map.Entry<Class, Long> entry : sizeHisto.entrySet()) {
+        Class clazz = entry.getKey();
+        Long size = entry.getValue();
+        Integer count = countHisto.get(clazz);
+        result.add(new HistogramEntry(clazz, count, size));
+      }
+      return result;
+    }
+    
+    private static class HistogramEntry implements Comparable<HistogramEntry> {
+      private final Class clazz;
+      private final Integer count;
+      private final Long size;
+      
+      public HistogramEntry(Class clazz, Integer count, Long size) {
+        this.size = size;
+        this.clazz = clazz;
+        this.count =count;
+      }
+
+
+
+      public int compareTo(HistogramEntry o) {
+        int diff = size.compareTo(o.size);
+        if(diff == 0) {
+          diff = clazz.getName().compareTo(o.clazz.getName());
+        }
+        return diff;
+      }
+      
+      @Override
+      public String toString() {
+        return size.toString();
+      }
+    }
+  }
+  
+  private static class SizeVisitor implements Visitor {
+    private long totalSize;
+    private final ObjectFilter filter;
+
+    public SizeVisitor(ObjectFilter filter) {
+      this.filter = filter;
+    }
+
+    public boolean visit(Object parent, Object object) {
+      if (!filter.accept(parent, object)) {
+        return false;
+      }
+
+      totalSize += SIZE_OF_UTIL.sizeof(object);
+      // We do want to include the size of the reference itself, but
+      // we don't visit the children because they will be GC'd if there is no
+      // other reference
+      return !(object instanceof WeakReference)
+          && !(object instanceof SoftReference);
+    }
+
+    public long getTotalSize() {
+      return totalSize;
+    }
+  }
+  
+  
+  
+
+  
+  public static interface ObjectFilter {
+    boolean accept(Object parent, Object object);
+  }
+  
+  private ObjectGraphSizer() { }
+  
+}

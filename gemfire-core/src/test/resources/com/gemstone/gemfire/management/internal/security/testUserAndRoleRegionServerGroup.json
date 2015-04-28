@@ -1,0 +1,16 @@
+{
+"roles" : [	
+			{
+				"name" : "jmxReader",
+				"operationsAllowed" : ["QUERY"],
+				"serverGroup" : "SG2",
+				"region" : "secureRegion"
+			}
+		],
+users : [
+	 		{
+	 			"name" : "tushark",
+	 			"roles" : ["jmxReader"]
+	 		}
+		]
+}

@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+This is the XML DTD for the GemFire distributed cache declarative
+caching XML file.  All declarative cache files must include a DOCTYPE
+of the following form:
+
+  <!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.0//EN"
+    "http://www.gemstone.com/dtd/cache5_0.dtd">
+
+The contents of a declarative XML file correspond to APIs found in the
+
+                      com.gemstone.gemfire.cache
+
+package.  A declarative caching XML file is used to populate a Cache
+when it is created.
+
+-->
+
+<!--
+
+The following conventions apply to all GemFire distributed cache
+declarative caching XML file elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+
+-->
+
+<!--
+The "cache" element is the root element of the declarative cache file.
+This element configures a GemFire Cache and describes the root regions it
+contains, if any.
+-->
+
+<!ELEMENT cache (cache-transaction-manager?,
+                 dynamic-region-factory?,
+                 gateway-hub*,
+                 bridge-server*,
+                 region-attributes*,
+                 (region|vm-root-region|jndi-bindings)*)>
+<!ATTLIST cache
+  lock-timeout CDATA #IMPLIED
+  lock-lease CDATA #IMPLIED
+  search-timeout CDATA #IMPLIED
+  is-server (true | false) #IMPLIED
+  copy-on-read (true | false) #IMPLIED
+>
+
+<!--
+A "cache-transaction-manager" describes a cache's transaction manager
+which is used to control transactions.
+-->
+<!ELEMENT cache-transaction-manager (transaction-listener*)>
+
+<!--
+A "transaction-listener" describes a TransactionListener
+-->
+<!ELEMENT transaction-listener (class-name, parameter*)>
+
+
+<!--
+A "dynamic-region-factory" element configures a dynamic region factory for this cache.
+If this optional element is missing then the cache does not support dynamic regions.
+
+The optional "disk-dir" sub-element can be used to specify the directory to store the
+persistent files that are used for dynamic region bookkeeping.
+It defaults to the current directory.
+
+The optional "cache-loader" and "cache-writer" sub-elements should only be used for
+client applications in a client/server cache configuration and then must be a bridge-loader
+and a bridge-writer.  They should not be specified in servers or peers.
+-->
+<!ELEMENT dynamic-region-factory (disk-dir?, cache-loader?, cache-writer?)>
+<!ATTLIST dynamic-region-factory
+  disable-persist-backup (true | false) #IMPLIED
+  disable-register-interest (true | false) #IMPLIED
+>
+
+<!--
+The "gateway-hub" element specifies a Gateway Hub that is
+initialized when the Cache is declaratively initialized.
+-->
+<!ELEMENT gateway-hub (gateway*)>
+<!ATTLIST gateway-hub
+  id CDATA #REQUIRED
+  port CDATA #REQUIRED
+  socket-buffer-size CDATA #IMPLIED
+  maximum-time-between-pings CDATA #IMPLIED
+>
+
+<!--
+The "gateway" element specifies a Gateway that is
+initialized when a GatewayHub is declaratively initialized.
+-->
+<!ELEMENT gateway (gateway-endpoint+, gateway-queue?)>
+<!ATTLIST gateway
+  id CDATA #REQUIRED
+  early-ack (true | false) #IMPLIED
+  socket-buffer-size CDATA #IMPLIED
+  socket-read-timeout CDATA #IMPLIED
+>
+
+<!--
+The "gateway-endpoint" element specifies an endpoint that is
+initialized when a Gateway is declaratively initialized.
+-->
+<!ELEMENT gateway-endpoint EMPTY>
+<!ATTLIST gateway-endpoint
+  id CDATA #REQUIRED
+  host CDATA #REQUIRED
+  port CDATA #REQUIRED
+>
+
+<!--
+The "gateway-queue" element specifies a queue that is
+initialized when a Gateway is declaratively initialized.
+-->
+<!ELEMENT gateway-queue EMPTY>
+<!ATTLIST gateway-queue
+  overflow-directory CDATA #IMPLIED
+  maximum-queue-memory CDATA #IMPLIED
+  batch-size CDATA #IMPLIED
+  batch-time-interval CDATA #IMPLIED
+  batch-conflation (true | false) #IMPLIED
+  enable-persistence (true | false) #IMPLIED
+>
+
+<!--
+The "bridge-server" element specifies a Cache Bridge Server that is
+started when the Cache is declaratively initialized.
+-->
+<!ELEMENT bridge-server EMPTY>
+<!ATTLIST bridge-server
+   port CDATA #REQUIRED
+   max-connections CDATA #IMPLIED
+   notify-by-subscription (true | false) #IMPLIED
+   socket-buffer-size CDATA #IMPLIED
+   maximum-time-between-pings CDATA #IMPLIED
+>
+
+<!--
+A "vm-root-region" element is the same as "region".
+This element exists for backwards compatiblity and should not be used
+in new xml files.
+-->
+
+<!ELEMENT vm-root-region (region-attributes, index*, entry*, region*)>
+<!ATTLIST vm-root-region
+  name CDATA #REQUIRED
+>
+
+<!--
+A "region" element describes a region (and its entries) in GemFire
+distributed cache.  It may be used to create a new region or may be
+used to add new entries to an existing region.  Note that the "name"
+attribute specifies the simple name of the region; it cannot contain a
+"/".
+-->
+
+<!ELEMENT region ( region-attributes, index*, entry*, region* )>
+<!ATTLIST region
+  name CDATA #REQUIRED
+>
+
+<!--
+A "region-attributes" element describes the attributes of a region to
+be created.
+-->
+
+<!ELEMENT region-attributes (key-constraint?, value-constraint?, region-time-to-live?,
+  region-idle-time?, entry-time-to-live?, entry-idle-time?,
+  disk-write-attributes?, disk-dirs?, partition-attributes?,
+  membership-attributes?, subscription-attributes?,
+  cache-loader?, cache-writer?, cache-listener*, eviction-attributes?)>
+<!ATTLIST region-attributes
+  id CDATA #IMPLIED
+  refid CDATA #IMPLIED
+  scope (local | distributed-no-ack | distributed-ack | global) #IMPLIED
+  mirror-type (none | keys | keys-values) #IMPLIED
+  data-policy (normal
+             | empty
+             | replicate
+             | persistent-replicate
+             ) #IMPLIED
+  initial-capacity CDATA #IMPLIED
+  load-factor CDATA #IMPLIED
+  concurrency-level CDATA #IMPLIED
+  persist-backup (true | false) #IMPLIED
+  statistics-enabled (true | false) #IMPLIED
+  ignore-jta (true | false) #IMPLIED
+  index-update-type (synchronous|asynchronous) #IMPLIED
+  is-lock-grantor (true | false) #IMPLIED
+  early-ack (true | false) #IMPLIED
+  multicast-enabled (true | false) #IMPLIED
+  enable-gateway (true | false) #IMPLIED
+  enable-bridge-conflation (true | false) #IMPLIED
+  enable-async-conflation (true | false) #IMPLIED
+  publisher (true | false) #IMPLIED
+>
+
+<!-- Create eviction attributes that monitors and controls the size of the Region 
+-->
+<!ELEMENT eviction-attributes (lru-entry-count|lru-heap-percentage|lru-memory-size)?>
+
+<!-- Create an LRU eviction controller which performs the action if the 
+     Region has more than the maximum number of Entries in the Region
+-->
+<!ELEMENT lru-entry-count EMPTY>
+<!ATTLIST lru-entry-count
+    maximum CDATA #IMPLIED
+    action (local-destroy|overflow-to-disk) #IMPLIED>
+
+<!-- 
+   Create an LRU that measures the JVM heap after each interval, 
+   if the heap is over the maximum percentage, the action is performed.
+-->
+<!ELEMENT lru-heap-percentage EMPTY>
+<!ATTLIST lru-heap-percentage
+    maximum CDATA #IMPLIED
+    time-interval CDATA #IMPLIED
+    action (local-destroy|overflow-to-disk) #IMPLIED>
+
+<!-- 
+   Create an LRU that performs the action when the memory size of the Region is over the
+   maximum.  The optional class-name and parameter allows for the declaration an ObjectSizer which 
+   is used to measure the size of each Object in the Region.  The class must implement the ObjectSizer interface.
+-->
+<!ELEMENT lru-memory-size (class-name, parameter*)?>
+<!ATTLIST lru-memory-size
+    maximum CDATA #IMPLIED
+    action (local-destroy|overflow-to-disk) #IMPLIED>
+
+
+<!-- An "index" element describes an index to be created on a region in GemfireCache. The index node if any
+should all come immediately after the "region-attributes" node. There can be any number of  functional type
+of index on a Region, but only at max one index of type "primary-key". The "name" attribute is a required 
+field which identifies the name of the index
+-->
+<!ELEMENT index (functional|primary-key)>
+<!ATTLIST index 
+  name CDATA #REQUIRED
+>
+
+<!-- 
+A functional type of index needs a from-clause, expression which are mandatory. The import string used for specifying the type of
+Object in the region or the type of Object which the indexed expression evaluates to
+-->
+<!ELEMENT functional EMPTY>
+
+<!ATTLIST functional 
+  from-clause CDATA #REQUIRED
+  expression  CDATA #REQUIRED  
+  imports CDATA #IMPLIED  
+>
+
+<!-- 
+A primary-key type of index needs a field attribute  which is mandatory. There should be only one 
+or zero primary-index defined for a region
+-->
+<!ELEMENT primary-key EMPTY>
+<!ATTLIST primary-key 
+  field  CDATA #REQUIRED    
+>
+
+<!--
+A "key-constraint" element specifies the name of a class to which the
+keys of a region are constrained.
+-->
+
+
+<!ELEMENT key-constraint (#PCDATA)>
+
+<!--
+A "value-constraint" element specifies the name of a class to which the
+values of a region are constrained.
+-->
+
+<!ELEMENT value-constraint (#PCDATA)>
+
+
+<!--
+A "region-time-to-live" element specifies a Region's time to live
+-->
+
+<!ELEMENT region-time-to-live (expiration-attributes)>
+
+<!--
+A "region-idle-time" element specifies a Region's idle time
+-->
+
+<!ELEMENT region-idle-time (expiration-attributes)>
+
+<!--
+A "entry-time-to-live" element specifies a Region's entries' time to
+live
+-->
+
+<!ELEMENT entry-time-to-live (expiration-attributes)>
+
+<!--
+A "entry-idle-time" element specifies a Region's entries' idle time
+-->
+
+<!ELEMENT entry-idle-time (expiration-attributes)>
+
+<!-- 
+An "expiration-attributes" element describes expiration 
+-->
+
+<!ELEMENT expiration-attributes EMPTY>
+<!ATTLIST expiration-attributes
+  timeout CDATA #REQUIRED
+  action (invalidate | destroy | local-invalidate | local-destroy) #IMPLIED
+>
+
+<!--
+An "entry" element desribes an entry to be added to a region.  Note
+that if an entry with the given key already exists in the region, it
+will be replaced.
+-->
+
+<!ELEMENT entry (key, value)>
+
+<!-- 
+A "class-name" element specifies the name of a Declarable class, an
+instance of which is created when a declarative cache XML file is
+read.
+-->
+
+<!ELEMENT class-name (#PCDATA)>
+
+<!-- 
+A "parameter" element describes a parameter used to initialize a
+Declarable object.
+-->
+
+<!ELEMENT parameter (string | declarable)>
+<!ATTLIST parameter
+  name CDATA #REQUIRED
+>
+
+<!--
+A "cache-loader" element describes a region's CacheLoader
+-->
+
+<!ELEMENT cache-loader (class-name, parameter*)>
+
+<!--
+A "disk-write-attributes" element describes how entry data is written
+to disk.
+-->
+
+<!ELEMENT disk-write-attributes (synchronous-writes | asynchronous-writes)>
+
+<!--
+A "synchronous-writes" element specifies that entry data should be
+written to disk synchronously.
+-->
+
+<!ELEMENT synchronous-writes EMPTY>
+
+<!--
+An "asynchronous-writes" element specifies how entry data should be
+written to disk asynchronous.
+-->
+
+<!ELEMENT asynchronous-writes EMPTY>
+<!ATTLIST asynchronous-writes
+  time-interval CDATA #REQUIRED
+  bytes-threshold CDATA #REQUIRED
+>
+
+<!-- 
+A "disk-dirs" element specifies the region's disk directories
+-->
+<!ELEMENT disk-dirs (disk-dir+)>
+
+<!--
+A "disk-dir" element specifies one of a region's disk directories
+-->
+
+<!ELEMENT disk-dir (#PCDATA)>
+
+<!--
+A "partition-attributes" element configures a region for partitioned
+data storage
+-->
+
+<!ELEMENT partition-attributes (cache-loader?, local-properties?, global-properties?)>
+<!ATTLIST partition-attributes
+  redundant-copies CDATA #IMPLIED
+>
+
+<!-- 
+  Partitioned Region properties that affect Caches that store data for the partitioned region
+  -->
+<!ELEMENT global-properties (parameter*)>
+
+<!-- 
+  Partitioned Region properties that affect the storage that the local Cache contributes to the Partitioned Region
+  -->
+<!ELEMENT local-properties (parameter*)>
+  
+<!--
+A "membership-attributes" element configures a region for membership
+constraints based on required roles
+-->
+
+<!ELEMENT membership-attributes (required-role*)>
+<!ATTLIST membership-attributes
+  loss-action (no-access | limited-access | full-access | reconnect) #IMPLIED
+  resumption-action (none | reinitialize) #IMPLIED
+>
+
+<!--
+A "required-role" element specifies a role that is required for reliable
+access to the region
+-->
+
+<!ELEMENT required-role EMPTY>
+<!ATTLIST required-role
+  name CDATA #REQUIRED
+>
+
+<!--
+A "subscription-attributes" element configures how a region subscribes
+to remote distributed regions
+-->
+
+<!ELEMENT subscription-attributes EMPTY>
+<!ATTLIST subscription-attributes
+  interest-policy (all | cache-content) #IMPLIED
+>
+
+<!--
+A "cache-writer" element describes a region's CacheWriter
+-->
+
+<!ELEMENT cache-writer (class-name, parameter*)>
+
+<!--
+A "cache-listener" element describes a region's CacheListener
+-->
+
+<!ELEMENT cache-listener (class-name, parameter*)>
+
+<!--
+A "key" element describes the key in a Region entry
+-->
+<!ELEMENT key (string | declarable)>
+
+<!--
+A "value" element describes the value in a Region entry
+-->
+<!ELEMENT value (string | declarable)>
+
+<!--
+A "string" element specifies a String to placed in a Region entry
+-->
+<!ELEMENT string (#PCDATA)>
+
+<!--
+A "declarable" element specifies a Declarable object to be placed in a
+Region entry
+-->
+<!ELEMENT declarable (class-name, parameter*)>
+<!-- A jndi-bindings element will contain the jndi-binding for each of the  datasources which are to be bound with the JNDI Context -->
+<!ELEMENT jndi-bindings (jndi-binding*)> 
+<!-- For every datasource which is bound to the tree , there wil exist one jndi-binding tag. This tag will describe the 
+ property & configuration of the datasource . The attributes of jndi-binding are used for configuration by Gemfire, while the property element is used to configure the custom property for the datasource. Of the attributes list the type & jndi-name are required.
+impleDataSource.xa-datasource-class is needed when type is XAPooledDataSource, while conn-pooled-datasource-class is needed when type is PooledDataSource. jdbc-driver-class is needed when the type is SimpleDataSource.It is advisable to set the user-name & password as attributes rather than as property element. Or they may be set both as attributes of jndi-binding tag as well as attribute of property tag-->
+<!ELEMENT jndi-binding (config-property*)>
+<!ATTLIST jndi-binding
+  type (SimpleDataSource|PooledDataSource|XAPooledDataSource|ManagedDataSource) #REQUIRED
+  jndi-name CDATA #REQUIRED
+  init-pool-size CDATA #IMPLIED
+  max-pool-size CDATA #IMPLIED  
+  idle-timeout-seconds CDATA #IMPLIED
+  blocking-timeout-seconds CDATA #IMPLIED
+  login-timeout-seconds CDATA #IMPLIED
+  conn-pooled-datasource-class CDATA #IMPLIED
+  xa-datasource-class CDATA  #IMPLIED 
+  connection-url CDATA #IMPLIED 
+  jdbc-driver-class CDATA #IMPLIED 
+  user-name CDATA #IMPLIED
+  password CDATA #IMPLIED
+  managed-conn-factory-class CDATA #IMPLIED
+  transaction-type CDATA #IMPLIED
+>
+<!ELEMENT config-property (config-property-name, config-property-type, config-property-value)>
+<!ELEMENT config-property-name (#PCDATA)>
+<!ELEMENT config-property-type (#PCDATA)>
+<!ELEMENT config-property-value (#PCDATA)>
+
+
+
+
+

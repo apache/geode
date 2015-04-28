@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="FATAL" shutdownHook="disable" packages="com.gemstone.gemfire.internal.logging.log4j">
+  <Properties>
+    <Property name="gemfire-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%tid] %message%n%throwable%n</Property>
+  </Properties>
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="${gemfire-pattern}"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Logger name="com.gemstone" level="INFO" additivity="true">
+    <filters>
+      <MarkerFilter marker="GEMFIRE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
+    </filters>
+    </Logger>
+    <Root level="INFO">
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+  </Loggers>
+</Configuration>

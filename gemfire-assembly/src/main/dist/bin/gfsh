@@ -1,0 +1,138 @@
+#!/bin/bash
+
+#
+# Environment variables:
+#
+# GF_JAVA - java executable path. 
+#
+# JAVA_ARGS - java arguments, i.e., -Xms1024m -Xmx1024m ...
+#
+# GEMFIRE - GemFire product directory  
+#
+#
+
+if [ -t 0 -a -t 1 ]; then
+  export COLUMNS=`tput cols`
+fi
+
+# Is the file a symbolic link?
+if [ -L $0 ]; then
+    LINK=$( ls -la $0 | awk '{print $NF}' )
+    # Is the link an absolute path?
+    if [[ $(echo $LINK | grep '^/') ]]; then
+        GFSCRIPT=$LINK
+    else
+        GFSCRIPT=$( dirname $0 )/$LINK
+    fi
+    GFPATH=$( cd $(dirname $GFSCRIPT)/..; pwd )
+else
+    GFPATH=$( cd $(dirname $0)/..; pwd )
+fi
+
+# Set GEMFIRE to the product toplevel directory
+GEMFIRE=$GFPATH
+
+UNAME=$( uname )
+if [[ "$UNAME" == CYGWIN* ]]; then
+  UNAME="cygwin"
+else
+  if [[ "$UNAME" == Darwin* ]]; then
+    UNAME="darwin"
+  fi
+fi
+
+if [ "x$WINDIR" != "x" ]; then
+  if [ "${UNAME}" = "cygwin" ]; then
+#	Added for making backspace work under cygwin
+	JLINE_TERMINAL="-Djline.terminal=com.gemstone.gemfire.management.internal.cli.shell.jline.CygwinMinttyTerminal"
+  else
+    echo "ERROR: The variable WINDIR is set indicating this script is running in a Windows OS, please use the .bat file version instead."
+    exit 1
+  fi
+fi
+
+if [ ! -f $GEMFIRE/lib/gemfire-core-dependencies.jar ]; then
+  echo "ERROR: Could not determine GEMFIRE location."
+  exit 1
+fi
+export GEMFIRE
+
+GEMFIRE_JARS=$GEMFIRE/lib/gfsh-dependencies.jar
+if [ "x$CLASSPATH" != "x" ]; then
+  GEMFIRE_JARS=$GEMFIRE_JARS:$CLASSPATH
+fi
+CLASSPATH=$GEMFIRE_JARS
+
+#
+# Copy default .gfshrc to the home directory. Uncomment if needed.
+#
+#if [ ! -f $HOME/.gemfire/.gfsh2rc ]; then
+#  cp $GEMFIRE/defaultConfigs/.gemfire/.gfsh2rc $HOME
+#fi
+
+#
+# Make dirs and copy etc files if .gemfire does not exist. Uncomment if needed.
+#
+#if [ ! -d $HOME/.gemfire ]; then
+#  mkdir -p $HOME/.gemfire/gfsh
+#fi
+
+LAUNCHER=com.gemstone.gemfire.management.internal.cli.Launcher
+
+if [ "x$JAVA_ARGS" != "x" ]; then
+  JAVA_ARGS="$JAVA_ARGS"
+fi
+
+if [ "x$GF_JAVA" == "x" ]; then 
+    if [ "x$JAVA_HOME" != "x" ]; then
+        GF_JAVA=$JAVA_HOME/bin/java
+    fi
+fi
+
+GF_JAVA=${GF_JAVA:-java}
+
+GF_JAVA_PATH=`which "$GF_JAVA"`
+if [ "x$GF_JAVA_PATH" == "x" ]; then
+  echo "ERROR: Could not find java executable in the path. Please set JAVA_HOME to point to the JDK directory or point GF_JAVA to java executable from JDK."
+  exit 1
+fi
+GF_JAVA_PARENT=`dirname "$GF_JAVA_PATH"`
+GF_JAVA_PARENT=`dirname "$GF_JAVA_PARENT"`
+TOOLS_JAR="$GF_JAVA_PARENT/lib/tools.jar"
+if [ ! -f "$TOOLS_JAR" ]; then
+    # Now consider java is from JRE in JDK 
+    TOOLS_JAR="$GF_JAVA_PARENT/../lib/tools.jar"
+    if [ ! -f "$TOOLS_JAR" ]; then
+        TOOLS_JAR=
+        if [ "${UNAME}" = "darwin" ]; then
+            # For MacOS, try default path
+            TOOLS_JAR="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Classes/classes.jar"
+            if [ ! -f "$TOOLS_JAR" ]; then
+              TOOLS_JAR=
+            fi
+        fi
+    fi
+fi
+
+if [ "x$TOOLS_JAR" != "x" ]; then
+  CLASSPATH="$CLASSPATH:$TOOLS_JAR"
+fi
+
+if [ "${UNAME}" = "cygwin" ]; then
+  CLASSPATH=$( cygpath -w -p "$CLASSPATH" )
+  if [ -t 0 -a -t 1 ]; then
+    stty -icanon min 1 -echo
+  fi
+fi
+
+# Set our trap handler to clean up the terminal in case bad things happen
+# Only when running attached to terminal
+if [ -t 0 -a -t 1 ]; then
+  trap "stty icanon echo" SIGCHLD
+fi
+
+# This enables job control and monitoring, effectively switching on the trap
+# handler to run when the java exe exits, regardless of how (even if killed).
+set -bm
+"$GF_JAVA" -Dgfsh=true -Dlog4j.configurationFile=/com/gemstone/gemfire/internal/logging/log4j/log4j2-cli.xml ${JLINE_TERMINAL} -classpath "${CLASSPATH}" $JAVA_ARGS $LAUNCHER  "$@"
+exit $?

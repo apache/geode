@@ -1,0 +1,207 @@
+/*
+ * =========================================================================
+ *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ *  This product is protected by U.S. and international copyright
+ *  and intellectual property laws. Pivotal products are covered by
+ *  more patents listed at http://www.pivotal.io/patents.
+ * ========================================================================
+ */
+package com.gemstone.gemfire.management.internal.cli.shell;
+
+import java.io.File;
+import java.util.logging.Level;
+
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.util.IOUtils;
+
+/**
+ *
+ * @author Abhishek Chaudhari
+ * @since 7.0
+ */
+// According to 8.0 discussions, gfsh should have as less confing as possible
+// hence Persisting GfshConfig is not done
+public class GfshConfig {
+  private static final String LOG_DIR_PROPERTY              = "gfsh.log-dir";
+  private static final String LOG_LEVEL_PROPERTY            = "gfsh.log-level";
+  private static final String LOG_FILE_SIZE_LIMIT_PROPERTY  = "gfsh.log-file-size-limit";
+  private static final String LOG_DISK_SPACE_LIMIT_PROPERTY = "gfsh.log-disk-space-limit";
+
+
+  private static final File  HISTORY_FILE   = new File(getHomeGemFireDirectory(), ".gfsh.history");
+
+  // History file size
+  private static final int MAX_HISTORY_SIZE = 500;
+
+  private static final Level DEFAULT_LOGLEVEL           = Level.OFF;
+  private static final int   DEFAULT_LOGFILE_SIZE_LIMIT = 1024*1024*10;
+  private static final int   DEFAULT_LOGFILE_DISK_USAGE = 1024*1024*10;
+
+
+  private static final String DEFAULT_PROMPT = "{0}gfsh{1}>";
+
+  private String historyFileName;
+  private String defaultPrompt;
+  private int    historySize;
+  private String logDir;
+  private Level  logLevel;
+  private int    logFileSizeLimit;
+  private int    logFileDiskLimit;
+
+  public GfshConfig() {
+    this(HISTORY_FILE.getAbsolutePath(), DEFAULT_PROMPT, MAX_HISTORY_SIZE, null, null, null, null);
+  }
+
+  public GfshConfig(String historyFileName, String defaultPrompt,
+      int historySize, String logDir, Level logLevel, Integer logLimit,
+      Integer logCount) {
+    this.historyFileName = historyFileName;
+    this.defaultPrompt   = defaultPrompt;
+    this.historySize     = historySize;
+
+    // Logger properties
+    if (logDir == null) {
+      this.logDir = System.getProperty(LOG_DIR_PROPERTY, ".");
+    } else {
+      this.logDir = logDir;
+    }
+    if (logLevel == null) {
+      this.logLevel = getLogLevel(System.getProperty(LOG_LEVEL_PROPERTY, DEFAULT_LOGLEVEL.getName()));
+    } else {
+      this.logLevel = logLevel;
+    }
+    if (logLimit == null) {
+      this.logFileSizeLimit = getParsedOrDefault(System.getProperty(LOG_FILE_SIZE_LIMIT_PROPERTY), LOG_FILE_SIZE_LIMIT_PROPERTY, DEFAULT_LOGFILE_SIZE_LIMIT);
+    } else {
+      this.logFileSizeLimit = logLimit;
+    }
+    if (logCount == null) {
+      // validation & correction to default is done in getLogFileCount()
+      this.logFileDiskLimit = getParsedOrDefault(System.getProperty(LOG_DISK_SPACE_LIMIT_PROPERTY), LOG_DISK_SPACE_LIMIT_PROPERTY, DEFAULT_LOGFILE_DISK_USAGE);
+    } else {
+      this.logFileDiskLimit = logCount;
+    }
+  }
+
+  public String getHistoryFileName() {
+    return historyFileName;
+  }
+
+  public String getDefaultPrompt() {
+    return defaultPrompt;
+  }
+
+  public int getHistorySize() {
+    return historySize;
+  }
+
+  public String getLogFilePath() {
+    return IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(logDir, "gfsh-%u_%g.log"));
+  }
+
+  public Level getLogLevel() {
+    return logLevel;
+  }
+
+  public int getLogFileSizeLimit() {
+    return logFileSizeLimit;
+  }
+
+  protected int getLogFileDiskLimit() {
+    return logFileDiskLimit;
+  }
+
+  public int getLogFileCount() {
+    int logCount;
+    try {
+      logCount = getLogFileSizeLimit()/getLogFileDiskLimit();
+      logCount = logCount >= 1 ? logCount : 1;
+    } catch (java.lang.ArithmeticException e) { // for divide by zero
+      logCount = 1;
+    }
+    return logCount;
+  }
+
+  public boolean isLoggingEnabled() {
+    // keep call for getLogLevel() instead of logLevel for inheritance
+    return !Level.OFF.equals(getLogLevel());
+  }
+
+  private String getLoggerConfig() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("log-file="+getLogFilePath()).append(Gfsh.LINE_SEPARATOR);
+    builder.append("log-level="+getLogLevel().getName()).append(Gfsh.LINE_SEPARATOR);
+    builder.append("log-file-size-limit="+getLogFileSizeLimit()).append(Gfsh.LINE_SEPARATOR);
+    builder.append("log-disk-space-limit="+getLogFileDiskLimit()).append(Gfsh.LINE_SEPARATOR);
+    builder.append("log-count="+getLogFileCount()).append(Gfsh.LINE_SEPARATOR);
+
+    return builder.toString();
+  }
+
+  public boolean isTestConfig() {
+    return false;
+  }
+
+  public boolean isANSISupported() {
+    return !Boolean.getBoolean("gfsh.disable.color");
+  }
+
+  private static Level getLogLevel(final String logLevelString) {
+    try {
+      String logLevelAsString = StringUtils.isBlank(logLevelString) ? "" : logLevelString.trim(); //trim spaces if any
+      // To support level NONE, used by GemFire
+      if ("NONE".equalsIgnoreCase(logLevelAsString)) {
+        logLevelAsString = Level.OFF.getName();
+      }
+      // To support level ERROR, used by GemFire, fall to WARNING
+      if ("ERROR".equalsIgnoreCase(logLevelAsString)) {
+        logLevelAsString = Level.WARNING.getName();
+      }
+      return Level.parse(logLevelAsString.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      System.out.println(e.getMessage());
+      return DEFAULT_LOGLEVEL;
+    }
+  }
+
+  private static String getHomeGemFireDirectory() {
+    String userHome = System.getProperty("user.home");
+    String homeDirPath = userHome + "/.gemfire";
+    File alternateDir = new File(homeDirPath);
+    if (!alternateDir.exists()) {
+      if (!alternateDir.mkdirs()) {
+        homeDirPath = ".";
+      }
+    }
+    return homeDirPath;
+  }
+
+  private static int getParsedOrDefault(final String numberString, final String parseValueFor, final int defaultValue) {
+    if (numberString == null) {
+      return defaultValue;
+    }
+    try {
+      return Integer.valueOf(numberString);
+    } catch (NumberFormatException e) {
+      System.err.println("Invalid value \"" + numberString + "\" specified for: \"" + parseValueFor + "\". Using default value: \""+defaultValue+"\".");
+      return defaultValue;
+    }
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append(getClass().getSimpleName());
+    builder.append(" [historyFileName=");
+    builder.append(getHistoryFileName());
+    builder.append(", historySize=");
+    builder.append(getHistorySize());
+    builder.append(", loggerConfig={");
+    builder.append(getLoggerConfig()).append("}");
+    builder.append(", isANSISupported=");
+    builder.append(isANSISupported());
+    builder.append("]");
+    return builder.toString();
+  }
+}
+

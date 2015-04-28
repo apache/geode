@@ -1,0 +1,161 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.admin.internal;
+
+import com.gemstone.gemfire.internal.ClassPathLoader;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import org.xml.sax.*;
+import java.io.*;
+
+/**
+ * The abstract superclass of classes that convert XML into a {@link
+ * com.gemstone.gemfire.admin.DistributedSystemConfig} and vice versa.
+ * It provides helper methods and constants.
+ *
+ * @author David Whitlock
+ * @since 4.0
+ */
+abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
+
+  /** The location of the DTD file */
+  protected static final String DTD_LOCATION =
+    "/com/gemstone/gemfire/admin/doc-files/ds5_0.dtd";
+
+  /** The URL for the DTD */
+  protected static final String SYSTEM_ID =
+    "http://www.gemstone.com/dtd/ds5_0.dtd";
+
+  /** The public ID for the DTD */
+  protected static final String PUBLIC_ID = 
+    "-//GemStone Systems, Inc.//GemFire Distributed System 5.0//EN";
+
+  /** The name of the <code>distributed-system</code> element. */
+  public static final String DISTRIBUTED_SYSTEM =
+    "distributed-system";
+
+  /** The name of the <code>id</code> attribute. */
+  public static final String ID = "id";
+
+  /** The name of the <code>disable-tcp</code> attribute. */
+  public static final String DISABLE_TCP = "disable-tcp";
+
+  /** The name of the <code>remote-command</code> element. */
+  public static final String REMOTE_COMMAND = "remote-command";
+
+  /** The name of the <code>locators</code> element. */
+  public static final String LOCATORS = "locators";
+
+  /** The name of the <code>ssl</code> element. */
+  public static final String SSL = "ssl";
+
+  /** The name of the <code>cache-server</code> element */
+  public static final String CACHE_SERVER = "cache-server";
+
+  /** The name of the <code>multicast</code> element */
+  public static final String MULTICAST = "multicast";
+
+  /** The name of the <code>locator</code> element */
+  public static final String LOCATOR = "locator";
+
+  /** The name of the <code>port</code> attribute */
+  public static final String PORT = "port";
+
+  /** The name of the <code>address</code> attribute */
+  public static final String ADDRESS = "address";
+
+  /** The name of the <code>host</code> element. */
+  public static final String HOST = "host";
+
+  /** The name of the <code>working-directory</code> element */
+  public static final String WORKING_DIRECTORY = "working-directory";
+
+  /** The name of the <code>product-directory</code> element */
+  public static final String PRODUCT_DIRECTORY = "product-directory";
+
+  /** The name of the <code>protocols</code> element */
+  public static final String PROTOCOLS = "protocols";
+
+  /** The name of the <code>ciphers</code> element */
+  public static final String CIPHERS = "ciphers";
+
+  /** The name of the <code>property</code> element */
+  public static final String PROPERTY = "property";
+
+  /** Name of the <code>authentication-required</code> attribute */
+  public static final String AUTHENTICATION_REQUIRED =
+    "authentication-required";
+
+  /** The name of the <code>key</code> element */
+  public static final String KEY = "key";
+
+  /** The name of the <code>value</code> element */
+  public static final String VALUE = "value";
+  
+  /** The name of the <code>classpath</code> element */
+  public static final String CLASSPATH = "classpath";
+
+  ///////////////////////  Instance Methods  ///////////////////////
+
+  /**
+   * Given a public id, attempt to resolve it to a DTD.  Returns an
+   * <code>InputSoure</code> for the DTD.
+   */
+  public InputSource resolveEntity(String publicId, String systemId) 
+    throws SAXException {
+
+    if (publicId == null || systemId == null) {
+      throw new SAXException(LocalizedStrings.ManagedEntityConfigXml_PUBLIC_ID_0_SYSTEM_ID_1.toLocalizedString(new Object[] {publicId, systemId}));
+    }
+
+    // Figure out the location for the publicId.
+    String location = DTD_LOCATION;
+
+    InputSource result;
+//    if (location != null) (cannot be null) 
+    {
+      InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
+      if (stream != null) {
+        result = new InputSource(stream);
+      } else {
+        throw new SAXNotRecognizedException(LocalizedStrings.ManagedEntityConfigXml_DTD_NOT_FOUND_0.toLocalizedString(location));
+      }
+
+//    } else {
+//      throw new SAXNotRecognizedException(LocalizedStrings.ManagedEntityConfigXml_COULD_NOT_FIND_DTD_FOR_0_1.toLocalizedString(new Object[] {publicId, systemId}));
+    }
+
+    return result;
+  }
+
+  /**
+   * Warnings are ignored
+   */
+  public void warning(SAXParseException ex) throws SAXException { 
+
+  }
+
+  /**
+   * Throws a {@link com.gemstone.gemfire.cache.CacheXmlException}
+   */
+  public void error(SAXParseException ex) throws SAXException {
+    IllegalArgumentException ex2 = new IllegalArgumentException(LocalizedStrings.ManagedEntityConfigXml_ERROR_WHILE_PARSING_XML.toLocalizedString());
+    ex2.initCause(ex);
+    throw ex2;
+  }
+  
+  /**
+   * Throws a {@link com.gemstone.gemfire.cache.CacheXmlException}
+   */
+  public void fatalError(SAXParseException ex) throws SAXException {
+    IllegalArgumentException ex2 = new IllegalArgumentException(LocalizedStrings.ManagedEntityConfigXml_FATAL_ERROR_WHILE_PARSING_XML.toLocalizedString());
+    ex2.initCause(ex);
+    throw ex2;
+  }
+
+}

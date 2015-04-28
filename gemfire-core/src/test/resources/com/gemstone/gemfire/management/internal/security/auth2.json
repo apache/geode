@@ -1,0 +1,21 @@
+{
+"roles" : [	
+			{
+				"name" : "jmxReader",
+				"operationsAllowed" : ["QUERYDATA_DS"]				
+			},
+			{
+				"name" : "dataOperators",
+				"operationsAllowed" : [
+					"PUT","LOCATE_ENTRY"
+				]
+			}
+		],
+users : [
+	 		{
+	 			"name" : "tushark",
+	 			"password" : "1234567",
+	 			"roles" : ["jmxReader", "dataOperators"]
+	 		}
+		]
+}

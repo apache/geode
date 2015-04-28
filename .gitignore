@@ -1,0 +1,19 @@
+# This file should contain patterns all developers want to ignore
+# If you have workspace specific files, add them 
+# to .git/info/exclude.
+#
+# see git help gitignore for more details
+build/
+.gradle/
+.classpath
+.project
+.settings/
+build-eclipse/
+/tags
+
+*.iml
+*.ipr
+*.iws
+*.swp
+# bruce: my synch settings for windows->linux transfers
+transferhost.txt

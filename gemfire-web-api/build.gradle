@@ -1,0 +1,42 @@
+apply plugin: 'war'
+
+dependencies {
+  compile 'commons-lang:commons-lang:2.4'
+  compile 'commons-fileupload:commons-fileupload:1.3.1'
+  compile 'com.fasterxml:classmate:0.9.0'
+  compile 'com.fasterxml.jackson.core:jackson-annotations:2.2.0'
+  compile 'com.fasterxml.jackson.core:jackson-core:2.2.0'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.2.0'
+  compile 'com.fasterxml.jackson.module:jackson-module-scala_2.10:2.1.5'
+  compile 'com.google.guava:guava:15.0'
+  compile 'com.mangofactory:swagger-springmvc:0.8.2'
+  compile 'org.json4s:json4s-ast_2.10:3.2.4'
+  compile 'org.json4s:json4s-ext_2.10:3.2.4'
+  compile 'org.json4s:json4s-core_2.10:3.2.4'
+  compile 'org.json4s:json4s-jackson_2.10:3.2.4'
+  compile 'org.json4s:json4s-native_2.10:3.2.4'
+  compile 'org.scala-lang:scala-reflect:2.10.0'
+  compile 'org.scala-lang:scala-library:2.10.0'
+  compile 'org.springframework.hateoas:spring-hateoas:0.16.0.RELEASE'
+  compile 'org.springframework:spring-aspects:3.2.12.RELEASE'
+  compile 'org.springframework:spring-oxm:3.2.12.RELEASE'
+  compile 'com.thoughtworks.paranamer:paranamer:2.3'
+  compile 'com.wordnik:swagger-annotations:1.3.2'
+  compile 'com.wordnik:swagger-core_2.10:1.3.2'
+
+  provided 'javax.servlet:javax.servlet-api:3.1.0'
+  provided project(':gemfire-core')
+}
+
+jar {
+  from sourceSets.main.output
+}
+
+artifacts {
+  archives jar
+}
+
+war {
+  classpath configurations.runtime
+}
+

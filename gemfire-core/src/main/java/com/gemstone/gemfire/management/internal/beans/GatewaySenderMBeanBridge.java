@@ -1,0 +1,291 @@
+/*
+ *  =========================================================================
+ *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *  ========================================================================
+ */
+package com.gemstone.gemfire.management.internal.beans;
+
+import java.util.List;
+
+import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventDispatcher;
+import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
+import com.gemstone.gemfire.management.internal.ManagementStrings;
+import com.gemstone.gemfire.management.internal.beans.stats.MBeanStatsMonitor;
+import com.gemstone.gemfire.management.internal.beans.stats.StatType;
+import com.gemstone.gemfire.management.internal.beans.stats.StatsAverageLatency;
+import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
+import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
+
+/**
+ * 
+ * @author rishim
+ * 
+ */
+public class GatewaySenderMBeanBridge {
+
+  private GatewaySender sender;
+  
+  private MBeanStatsMonitor monitor;
+  
+  private StatsRate eventsQueuedRate;
+  
+  private StatsRate eventsReceivedRate;
+  
+  private StatsRate batchesDispatchedRate;
+
+  private StatsAverageLatency batchDistributionAvgLatency;
+   
+  private GatewaySenderEventDispatcher dispatcher;
+  
+  private AbstractGatewaySender abstractSender;
+
+  public GatewaySenderMBeanBridge(GatewaySender sender) {
+    this.sender = sender;
+    this.monitor = new MBeanStatsMonitor(
+        ManagementStrings.GATEWAY_SENDER_MONITOR.toLocalizedString());
+      
+    this.abstractSender = ((AbstractGatewaySender) this.sender);
+    GatewaySenderStats stats = abstractSender.getStatistics();
+    
+    addGatewaySenderStats(stats);
+    initializeStats();
+  }
+
+  public void setDispatcher() {
+    AbstractGatewaySenderEventProcessor eventProcessor = abstractSender
+        .getEventProcessor();
+    if (eventProcessor != null) {
+      this.dispatcher = abstractSender
+          .getEventProcessor().getDispatcher();
+    }
+
+  }
+  
+  public GatewaySenderMBeanBridge() {
+    this.monitor = new MBeanStatsMonitor(
+        ManagementStrings.GATEWAY_SENDER_MONITOR.toLocalizedString());
+    initializeStats();
+  }
+
+  public void addGatewaySenderStats(GatewaySenderStats gatewaySenderStats) {
+    monitor.addStatisticsToMonitor(gatewaySenderStats.getStats());
+  }
+  
+  
+  public void stopMonitor(){
+    monitor.stopListener();
+  }
+  
+  private void initializeStats() {
+    eventsQueuedRate = new StatsRate(StatsKey.GATEWAYSENDER_EVENTS_QUEUED,
+        StatType.INT_TYPE, monitor);
+    eventsReceivedRate = new StatsRate(StatsKey.GATEWAYSENDER_EVENTS_RECEIVED,
+        StatType.INT_TYPE, monitor);
+    batchesDispatchedRate = new StatsRate(
+        StatsKey.GATEWAYSENDER_BATCHES_DISTRIBUTED, StatType.INT_TYPE, monitor);
+    batchDistributionAvgLatency = new StatsAverageLatency(
+        StatsKey.GATEWAYSENDER_BATCHES_DISTRIBUTED, StatType.INT_TYPE,
+        StatsKey.GATEWAYSENDER_BATCHES_DISTRIBUTE_TIME, monitor);
+  }
+
+  public int getAlertThreshold() {
+    return sender.getAlertThreshold();
+  }
+
+  public int getBatchSize() {
+    return sender.getBatchSize();
+  }
+
+  public long getBatchTimeInterval() {
+    return sender.getBatchTimeInterval();
+  }
+
+  public String getOverflowDiskStoreName() {
+    return sender.getDiskStoreName();
+  }
+
+
+  public String[] getGatewayEventFilters() {
+    List<GatewayEventFilter> filters = sender.getGatewayEventFilters();
+    String[] filtersStr = null;
+    if (filters != null && filters.size() > 0) {
+      filtersStr = new String[filters.size()];
+    } else {
+      return filtersStr;
+    }
+    int j = 0;
+    for (GatewayEventFilter filter : filters) {
+      filtersStr[j] = filter.toString();
+      j++;
+    }
+    return filtersStr;
+  }
+
+  public String[] getGatewayTransportFilters() {
+    List<GatewayTransportFilter> transportFilters = sender
+        .getGatewayTransportFilters();
+
+    String[] transportFiltersStr = null;
+    if (transportFilters != null && transportFilters.size() > 0) {
+      transportFiltersStr = new String[transportFilters.size()];
+    } else {
+      return transportFiltersStr;
+    }
+    int j = 0;
+    for (GatewayTransportFilter listener : transportFilters) {
+      transportFiltersStr[j] = listener.getClass().getCanonicalName();
+      j++;
+    }
+    return transportFiltersStr;
+  }
+
+  public int getMaximumQueueMemory() {
+    return sender.getMaximumQueueMemory();
+
+  }
+
+  public int getRemoteDSId() {
+    return sender.getRemoteDSId();
+  }
+
+  public String getSenderId() {
+    return sender.getId();
+  }
+
+  public int getSocketBufferSize() {
+    return sender.getSocketBufferSize();
+  }
+
+  public long getSocketReadTimeout() {
+    return sender.getSocketReadTimeout();
+  }
+
+  public boolean isBatchConflationEnabled() {
+    return sender.isBatchConflationEnabled();
+  }
+
+  public boolean isManualStart() {
+    return sender.isManualStart();
+  }
+
+  public boolean isPaused() {
+    return sender.isPaused();
+  }
+
+  public boolean isPersistenceEnabled() {
+    return sender.isPersistenceEnabled();
+  }
+
+  public boolean isRunning() {
+    return sender.isRunning();
+  }
+
+  public void pause() {
+    sender.pause();
+
+  }
+
+  public void resume() {
+    sender.resume();
+
+  }
+
+  public void start() {
+    sender.start();
+
+  }
+
+  public void stop() {
+    sender.stop();
+
+  }
+
+  public void rebalance() {
+    sender.rebalance();
+  }
+
+  public boolean isPrimary() {
+    return ((AbstractGatewaySender) sender).isPrimary();
+  }
+
+  public int getDispatcherThreads() {
+    return sender.getDispatcherThreads();
+  }
+
+  public String getOrderPolicy() {
+    return sender.getOrderPolicy() != null ? sender.getOrderPolicy().name()
+        : null;
+  }
+
+  public boolean isDiskSynchronous() {
+    return sender.isDiskSynchronous();
+  }
+
+  public boolean isParallel() {
+    return sender.isParallel();
+  }
+  
+  /** Statistics Related Attributes **/
+  
+
+  public int getTotalBatchesRedistributed() {
+   return getStatistic(StatsKey.GATEWAYSENDER_TOTAL_BATCHES_REDISTRIBUTED).intValue();
+  }
+
+  public int getTotalEventsConflated() {
+    return getStatistic(StatsKey.GATEWAYSENDER_EVENTS_QUEUED_CONFLATED).intValue();
+  }  
+
+  public int getEventQueueSize() {
+    return getStatistic(StatsKey.GATEWAYSENDER_EVENTS_QUEUE_SIZE).intValue();
+  }
+
+  public float getEventsQueuedRate() {
+    return eventsQueuedRate.getRate();
+  }
+
+  public float getEventsReceivedRate() {
+    return eventsReceivedRate.getRate();
+  }
+  
+  public float getBatchesDispatchedRate() {
+    return batchesDispatchedRate.getRate();
+  }
+  
+  public long getAverageDistributionTimePerBatch() {
+    return batchDistributionAvgLatency.getAverageLatency();
+  }
+  
+
+  private Number getStatistic(String statName) {
+    if (monitor != null) {
+      return monitor.getStatistic(statName);
+    } else {
+      return 0;
+    }
+  }
+
+  public String getGatewayReceiver() {
+    return ((AbstractGatewaySender)this.sender).getServerLocation().toString();
+  }
+
+
+  public boolean isConnected() {
+    if (this.dispatcher != null && this.dispatcher.isConnectedToRemote()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  public int getEventsExceedingAlertThreshold() {
+    return getStatistic(StatsKey.GATEWAYSENDER_EVENTS_EXCEEDING_ALERT_THRESHOLD).intValue();
+  }
+}

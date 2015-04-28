@@ -1,0 +1,140 @@
+
+
+
+		Probabilistic Broadcast for JavaGroups
+		======================================
+
+
+
+JavaGroups currently uses virtual synchrony (VS) in its main protocol
+suite. VS is suited for tightly coupled, lockstep replication. Typical
+examples are clusters, replicated databases etc. Group size is 100
+max, and it is targeted to LANs rather than WANs.
+
+The problem with VS is that is has to enforce that all members have
+received all messages in a view before proceeding to the next
+view. This is done by a FLUSH protocol, which ensures (by
+retransmission) that each member has seen all messages in the current
+view. During the FLUSH protocol, all members are essentially
+blocked. Messages can be sent, but they will be sent only when the
+FLUSH protocol has terminated (in one of the subsequent view, not in
+the current one). The FLUSH protocol itself may need to be restarted,
+e.g. in the case when a participating member fails during the FLUSH.
+
+When one node (or a link) in a VS group is slow, it will bring the
+performance of the entire group down, as members proceed at the pace
+of the slowest members (at least during membership
+changes). (Otherwise, the likely result is just growing buffers and
+retransmissions, as messages waiting to be delivered are buffered).
+
+The bimodel multicast (or probabilistic broadcast) protocols (PBCAST)
+developed at Cornell try to solve this problem by providing
+probabilistic reliability guarantees rather than hard ones. In a
+nutshell, the probability of a very small number of members receiving
+a message is high and the probability of all members receiving it is
+high as well. The probability of some members receiving a message is
+very small, because the 'epidemic' nature of PBCAST infects the group
+exponentially, making sure every member receives a message, or none.
+
+PBCAST protocols therefore scale very well, both in terms of group
+member size as well as over WANs with intermittent link/node
+failures. By implementing a PBCAST protocol, JavaGroups can now be
+used in WAN settings. However, there are no hard reliability
+guarantees anymore, just probabilitic ones. Yes there are a number of
+applications, which don't need hard reliability, and can live with
+probabilistic guarantees, for example replicated naming services and
+publish-subscribe applications. In these settings, eventual
+convergence of replicated state and low-cost of the protocol is more
+important than lock-step replication.
+
+The JavaGroups API will not be changed at all. However, applications
+with a protocol stack configured to use PBCAST have to be aware that
+views are only an approximation of the membership, not a hard
+guarantee.
+
+The PBCAST protocol is located in the ./pbcast subdirectory of
+./Protocols. The major changes are:
+
+
+GMS
+---
+Unlike VS, the JavaGroups implementation of PBCAST does not per se
+guarantee that the set of messages delivered in a view V is the same
+at all members. Therefore, applications cannot rely on the fact that
+when they send a message in view V, it will be received by all current
+non-faulty members in V.
+
+Views are delivered at each receiver at a certain position in the
+incoming message stream. However, as PBCAST only provides FIFO (which
+guarantees that messages from sender P are seen in the order sent by
+P), it is possible that messages sent by senders P and Q in view V1
+can be received in different views at each receiver. However, it is
+possible to add total order by implementing a TOTAL protocol and
+adding it on top of a given protocol stack. This would then
+essentially provide VS.
+
+Consider the following example: P send messages m1 and m2 in view V1
+(consisting of P, Q and R). While it sends the messages, a new member
+S joins the group. Since there is no FLUSH protocol that ensures that
+m1 and m2 are delivered in V1, the following could happen: m1 is
+delivered to Q and R in V1. Message m2 is delivered to Q, but is lost
+to R (e.g. dropped by a lossy link). Now, the new view V2 is installed
+by Q (which is the coordinator). Now, m2 is retransmitted by P to
+R. Clearly, VS would drop m2 because it was sent in a previous
+view. However, PBCAST faces two choices: either accept the message and
+deliver it or drop it as well. If we accept it, the FIFO properties
+for P are upheld, if we drop it, the next message m3 from P will not
+be delivered until m2 was seen by R. (Message IDs are not reset to 0
+because we have no total order over views beeing delivered at each
+member at the same location in the message stream, as shown
+above). Therefore, we have to accept the message.
+
+This leads to the conclusion that views are not used as a demarcation
+between message sets, but rather as indication that the group
+membership has changed. Therefore, protocols in the PBCAST suite will
+only use views to update their internal membership list, but never
+make the assumption that all members will see the view change at the
+same logical location in their message streams.
+
+
+FLUSH
+-----
+Not used anymore, as we're not flushing messages when proceeding to
+the next view.
+
+
+NAKACK
+------
+Not used anymore. Functionality will be covered by PBCAST. NAKACK made
+assumptions about views and messages and can therefore not be used.
+
+
+VIEW_ENFORCER
+-------------
+Not used anymore. Messages sent in one view can be delivered in
+another one, although this usually doesn't happen. But we cannot make
+any assumptions about it.
+
+
+STATE_TRANSFER
+--------------
+Not used anymore. New protocol for state transfer, especially geared
+towards big states (transfer in multiple transfers). However,
+STATE_TRANSFER could still be used (a TOTAL protocol has to be
+present).
+
+
+QUEUE
+-----
+May be used by the new state transfer protocol
+
+
+STABLE
+------
+Not used anymore. Functionality will be covered by PBCAST protocol.
+
+
+
+Refs
+----
+[1] http://www.cs.cornell.edu/Info/Projects/Spinglass/index.html

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+This is the XML DTD for the GemFire distributed system administrative
+configuration XML file.  All configuration files must include a
+DOCTYPE of the following form:
+
+  <!DOCTYPE distributed-system PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Distributed System 5.0//EN"
+    "http://www.gemstone.com/dtd/ds5_0.dtd">
+
+The contents of a distributed system configuration XML file correspond
+to APIs found in the
+
+                      com.gemstone.gemfire.admin
+
+package.  A distributed system configuration XML file is used by tools
+such as the GemFire JMX Agent to initialize information a distributed system.
+
+-->
+
+<!--
+
+The following conventions apply to all GemFire distributed system
+configuration XML file elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+
+-->
+
+<!--
+The "distributed-system" element is the root of a distributed system
+configuration file.  It describes the distributed system to be
+configured.
+-->
+
+<!ELEMENT distributed-system (remote-command?, multicast?, locators?, ssl?,
+          cache-server*)> 
+<!ATTLIST distributed-system
+  id CDATA #IMPLIED
+  disable-tcp (true | false) #IMPLIED
+>
+
+<!--
+The "locators" element must be given unless multicast is to be used
+for discovery.
+-->
+
+<!ELEMENT locators (locator+)>
+
+<!-- 
+The "multicast" element describes the multicast settings used for
+communications and (if locators aren't specified) for discovery.
+-->
+
+<!ELEMENT multicast EMPTY>
+<!ATTLIST multicast
+  port CDATA #REQUIRED
+  address CDATA #IMPLIED
+>
+
+<!--
+The "locator" element describes the locator processes that are used
+for discovery.
+-->
+
+<!ELEMENT locator (host?, remote-command?, working-directory?,
+                   product-directory?)> 
+<!ATTLIST locator
+  port CDATA #REQUIRED
+>
+
+<!--
+The "ssl" element describes how members of the distributed system uses
+SSL to communicate.  If the "ssl" element is not specified, then ssl
+is not enabled.
+-->
+
+<!ELEMENT ssl (protocols?, ciphers?, property*)>
+<!ATTLIST ssl
+  authentication-required (true | false) #IMPLIED
+>
+
+<!--
+The "protocols" element describes the SSL protocols used when members
+of the distributed system communicate.
+-->
+
+<!ELEMENT protocols (#PCDATA)>
+
+<!--
+The "ciphers" element describes the SSL ciphers used when members of
+the distributed system communicate.
+-->
+
+<!ELEMENT ciphers (#PCDATA)>
+
+<!--
+The "property" element describes a SSL-related system property that
+should be set.
+-->
+
+<!ELEMENT property (key, value)>
+<!ELEMENT key (#PCDATA)>
+<!ELEMENT value (#PCDATA)>
+
+<!--
+The "cache-server" element describes a GemFire distributed cache
+server that is managed via the administration API.
+-->
+
+<!ELEMENT cache-server (host?, remote-command?, working-directory?,
+  product-directory?, classpath?)> 
+
+<!--
+The "classpath" element specifies the location of extra classes
+required by a managed entity.
+-->
+
+<!ELEMENT classpath (#PCDATA)>
+
+<!--
+The "host" element specifies a host machine on which a managed entity
+runs.
+-->
+
+<!ELEMENT host (#PCDATA)>
+
+<!--
+The "remote-command" element specifies a prefix to use when launching
+managed entities on a remote machine.
+-->
+
+<!ELEMENT remote-command (#PCDATA)>
+
+<!--
+The "working-directory" element specifies the working directory in
+which a managed entity runs.
+-->
+
+<!ELEMENT working-directory (#PCDATA)>
+
+<!--
+The "product-directory" element specifies the locator of the GemFire
+product installation used by a managed entity.
+-->
+
+<!ELEMENT product-directory (#PCDATA)>

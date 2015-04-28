@@ -1,0 +1,313 @@
+/*
+ * =========================================================================
+ *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ *  This product is protected by U.S. and international copyright
+ *  and intellectual property laws. Pivotal products are covered by
+ *  more patents listed at http://www.pivotal.io/patents.
+ * ========================================================================
+ */
+
+package com.gemstone.gemfire.cache.client.internal.locator;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.lang.ObjectUtils;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.process.PidUnavailableException;
+import com.gemstone.gemfire.internal.process.ProcessUtils;
+
+/**
+ * The LocatorStatusResponse class...
+ * </p>
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.client.internal.locator.ServerLocationResponse
+ * @since 7.0
+ */
+public class LocatorStatusResponse extends ServerLocationResponse {
+
+  private Integer pid;
+
+  private List<String> jvmArgs;
+
+  private Long uptime;
+
+  private String classpath;
+  private String gemfireVersion;
+  private String javaVersion;
+  private String workingDirectory;
+
+  private String logFile;
+  private String host;
+  private Integer port;
+  private String name;
+  
+  private static Integer identifyPid() {
+    try {
+      return ProcessUtils.identifyPid();
+    }
+    catch (PidUnavailableException ignore) {
+      return null;
+    }
+  }
+
+  public LocatorStatusResponse initialize(final int locatorPort,
+                                          final String locatorHost,
+                                          final String locatorLogFile,
+                                          final String locatorName) {
+    final RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
+    this.pid = identifyPid();
+    this.jvmArgs = runtimeBean.getInputArguments();
+    this.uptime = runtimeBean.getUptime();
+    this.classpath = runtimeBean.getClassPath();
+    this.gemfireVersion = GemFireVersion.getGemFireVersion();
+    this.javaVersion = System.getProperty("java.version");
+    this.workingDirectory = System.getProperty("user.dir");
+    this.logFile = locatorLogFile;
+    this.host = locatorHost;
+    this.port = locatorPort;
+    this.name = locatorName;
+    return this;
+  }
+
+  @Override
+  public int getDSFID() {
+    return DataSerializableFixedID.LOCATOR_STATUS_RESPONSE;
+  }
+
+  public String getClasspath() {
+    return classpath;
+  }
+
+  public String getGemFireVersion() {
+    return gemfireVersion;
+  }
+
+  public String getJavaVersion() {
+    return javaVersion;
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<String> getJvmArgs() {
+    return Collections.unmodifiableList(ObjectUtils.defaultIfNull(jvmArgs, Collections.<String>emptyList()));
+  }
+
+  public Integer getPid() {
+    return pid;
+  }
+
+  public Long getUptime() {
+    return uptime;
+  }
+
+  public String getWorkingDirectory() {
+    return workingDirectory;
+  }
+  
+  public String getLogFile() {
+    return this.logFile;
+  }
+  
+  public String getHost() {
+    return this.host;
+  }
+  
+  public Integer getPort() {
+    return this.port;
+  }
+  
+  public String getName() {
+    return this.name;
+  }
+
+  @Override
+  public boolean hasResult() {
+    return true;
+  }
+
+  @Override
+  public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
+    readPid(in);
+    readUptime(in);
+    readWorkingDirectory(in);
+    readJvmArguments(in);
+    readClasspath(in);
+    readGemFireVersion(in);
+    readJavaVersion(in);
+    readLogFile(in);
+    readHost(in);
+    readPort(in);
+    readName(in);
+  }
+
+  protected void readPid(final DataInput in) throws IOException {
+    final int pid = in.readInt();
+    this.pid = (pid == 0 ? null : pid);
+  }
+
+  protected void readUptime(final DataInput in) throws IOException {
+    this.uptime = in.readLong();
+  }
+
+  protected void readWorkingDirectory(final DataInput in) throws IOException {
+    this.workingDirectory = StringUtils.defaultIfBlank(in.readUTF());
+  }
+
+  protected void readJvmArguments(final DataInput in) throws IOException {
+    final int length = in.readInt();
+    final List<String> jvmArgs = new ArrayList<String>(length);
+    for (int index = 0; index < length; index++) {
+      jvmArgs.add(in.readUTF());
+    }
+    this.jvmArgs = jvmArgs;
+  }
+
+  protected void readClasspath(final DataInput in) throws IOException {
+    this.classpath = StringUtils.defaultIfBlank(in.readUTF());
+  }
+
+  protected void readGemFireVersion(final DataInput in) throws IOException {
+    this.gemfireVersion = StringUtils.defaultIfBlank(in.readUTF());
+  }
+
+  protected void readJavaVersion(final DataInput in) throws IOException {
+    this.javaVersion = StringUtils.defaultIfBlank(in.readUTF());
+  }
+  
+  protected void readLogFile(final DataInput in) throws IOException {
+    this.logFile = StringUtils.defaultIfBlank(in.readUTF());
+  }
+  
+  protected void readHost(final DataInput in) throws IOException {
+    this.host = StringUtils.defaultIfBlank(in.readUTF());
+  }
+  
+  protected void readPort(final DataInput in) throws IOException {
+    final int port = in.readInt();
+    this.port = (port == 0 ? null : port);
+  }
+  
+  protected void readName(final DataInput in) throws IOException {
+    this.name = StringUtils.defaultIfBlank(in.readUTF());
+  }
+
+  @Override
+  public void toData(final DataOutput out) throws IOException {
+    writePid(out);
+    writeUptime(out);
+    writeWorkingDirectory(out);
+    writeJvmArguments(out);
+    writeClasspath(out);
+    writeGemFireVersion(out);
+    writeJavaVersion(out);
+    writeLogFile(out);
+    writeHost(out);
+    writePort(out);
+    writeName(out);
+  }
+
+  protected void writePid(final DataOutput out) throws IOException {
+    out.writeInt(ObjectUtils.defaultIfNull(getPid(), 0));
+  }
+
+  protected void writeUptime(final DataOutput out) throws IOException {
+    out.writeLong(getUptime());
+  }
+
+  protected void writeWorkingDirectory(final DataOutput out) throws IOException {
+    out.writeUTF(ObjectUtils.defaultIfNull(getWorkingDirectory(), ""));
+  }
+
+  protected void writeJvmArguments(final DataOutput out) throws IOException {
+    final List<String> jvmArgs = getJvmArgs();
+    out.writeInt(jvmArgs.size());
+    for (final String jvmArg : jvmArgs) {
+      out.writeUTF(jvmArg);
+    }
+  }
+
+  protected void writeClasspath(final DataOutput out) throws IOException {
+    out.writeUTF(ObjectUtils.defaultIfNull(getClasspath(), ""));
+  }
+
+  protected void writeGemFireVersion(final DataOutput out) throws IOException {
+    out.writeUTF(ObjectUtils.defaultIfNull(getGemFireVersion(), ""));
+  }
+
+  protected void writeJavaVersion(final DataOutput out) throws IOException {
+    out.writeUTF(ObjectUtils.defaultIfNull(getJavaVersion(), ""));
+  }
+  
+  protected void writeLogFile(final DataOutput out)throws IOException {
+    out.writeUTF(ObjectUtils.defaultIfNull(getLogFile(), ""));
+  }
+  
+  protected void writeHost(final DataOutput out)throws IOException {
+    out.writeUTF(ObjectUtils.defaultIfNull(getHost(), ""));
+  }
+  
+  protected void writePort(final DataOutput out) throws IOException {
+    out.writeInt(ObjectUtils.defaultIfNull(getPort(), 0));
+  }
+  
+  protected void writeName(final DataOutput out)throws IOException {
+    out.writeUTF(ObjectUtils.defaultIfNull(getName(), ""));
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (!(obj instanceof LocatorStatusResponse)) {
+      return false;
+    }
+
+    final LocatorStatusResponse that = (LocatorStatusResponse) obj;
+
+    return ObjectUtils.equalsIgnoreNull(this.getPid(), that.getPid())
+      && ObjectUtils.equals(this.getUptime(), that.getUptime())
+      && ObjectUtils.equals(this.getWorkingDirectory(), that.getWorkingDirectory())
+      && ObjectUtils.equals(this.getJvmArgs(), that.getJvmArgs())
+      && ObjectUtils.equals(this.getClasspath(), that.getClasspath())
+      && ObjectUtils.equals(this.getGemFireVersion(), that.getGemFireVersion())
+      && ObjectUtils.equals(this.getJavaVersion(), that.getJavaVersion());
+  }
+
+  @Override
+  public int hashCode() {
+    int hashValue = 17;
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getPid());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getUptime());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getWorkingDirectory());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getJvmArgs());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getClasspath());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getGemFireVersion());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getJavaVersion());
+    return hashValue;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
+    buffer.append("{ pid = ").append(getPid());
+    buffer.append(", uptime = ").append(getUptime());
+    buffer.append(", workingDirectory = ").append(getWorkingDirectory());
+    buffer.append(", jvmArgs = ").append(getJvmArgs());
+    buffer.append(", classpath = ").append(getClasspath());
+    buffer.append(", gemfireVersion = ").append(getGemFireVersion());
+    buffer.append(", javaVersion = ").append(getJavaVersion());
+    buffer.append("}");
+    return buffer.toString();
+  }
+
+}

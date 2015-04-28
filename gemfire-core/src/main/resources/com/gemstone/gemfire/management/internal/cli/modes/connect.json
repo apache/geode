@@ -1,0 +1,29 @@
+{
+	'name' : 'connect',	
+	'modes' : [ 	
+		{
+			'name' : 'default',
+			'text' : 'Default Options',
+			'lead-option' : '',
+			'options' : ['use-ssl', 'key-store', 'key-store-password', 'trust-store', 'trust-store-password', 'ciphers', 'protocols', 'security-properties-file', 'user' , 'password' ]
+		},
+		{
+			'name' : 'locator',
+			'text' : 'Using Locator',
+			'lead-option' : 'locator',
+			'options' : ['locator']
+		},
+		{
+			'name' : 'manager',
+			'text' : 'Using JMX Manager',
+			'lead-option' : 'jmx-manager',
+			'options' : ['jmx-manager']
+		},
+		{
+			'name' : 'http',
+			'text' : 'Using HTTP REST Mode',
+			'lead-option' : 'use-http',
+			'options' : ['use-http', 'url']
+		}
+	]
+}

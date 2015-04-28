@@ -1,0 +1,121 @@
+/*=========================================================================
+ * Copyright (c) 2012 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.snapshot;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Set;
+
+import com.gemstone.gemfire.admin.RegionNotFoundException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
+import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
+import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
+import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+/**
+ * Provides an implementation for cache snapshots.  Most of the implementation
+ * delegates to {@link RegionSnapshotService}.
+ * 
+ * @author bakera
+ */
+public class CacheSnapshotServiceImpl implements CacheSnapshotService {
+  /** the cache */
+  private final GemFireCacheImpl cache;
+  
+  public CacheSnapshotServiceImpl(GemFireCacheImpl cache) {
+    this.cache = cache;
+  }
+  
+  @Override
+  public SnapshotOptions<Object, Object> createOptions() {
+    return new SnapshotOptionsImpl<Object, Object>();
+  }
+
+  @Override
+  public void save(File dir, SnapshotFormat format) throws IOException {
+    save(dir, format, createOptions());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public void save(File dir, SnapshotFormat format,
+      SnapshotOptions<Object, Object> options) throws IOException {
+    if (!dir.exists()) {
+      boolean created = dir.mkdirs();
+      if (!created) {
+        throw new IOException(LocalizedStrings.Snapshot_UNABLE_TO_CREATE_DIR_0.toLocalizedString(dir));
+      }
+    }
+    
+    for (Region<?, ?> r : (Set<Region<?, ?>>) cache.rootRegions()) {
+      for (Region<?, ?> sub : r.subregions(true)) {
+        saveRegion(sub, dir, format, options);
+      }
+      saveRegion(r, dir, format, options);
+    }
+  }
+
+  @Override
+  public void load(File dir, SnapshotFormat format) throws IOException,
+      ClassNotFoundException {
+    File[] snapshots = dir.listFiles(new FileFilter() {
+      @Override
+      public boolean accept(File pathname) {
+        return !pathname.isDirectory();
+      }
+    });
+    
+    if (snapshots == null) {
+      throw new FileNotFoundException(LocalizedStrings.Snapshot_NO_SNAPSHOT_FILES_FOUND_0.toLocalizedString(dir));
+    }
+    load(snapshots, format, createOptions());
+  }
+
+  @Override
+  public void load(File[] snapshots, SnapshotFormat format,
+      SnapshotOptions<Object, Object> options) throws IOException,
+      ClassNotFoundException {
+    
+    for (File f : snapshots) {
+      GFSnapshotImporter in = new GFSnapshotImporter(f);
+      try {
+        byte version = in.getVersion();
+        if (version == GFSnapshot.SNAP_VER_1) {
+          throw new IOException(LocalizedStrings.Snapshot_UNSUPPORTED_SNAPSHOT_VERSION_0.toLocalizedString(version));
+        }
+        
+        String regionName = in.getRegionName();
+        Region<Object, Object> region = cache.getRegion(regionName);
+        if (region == null) {
+          throw new RegionNotFoundException(LocalizedStrings.Snapshot_COULD_NOT_FIND_REGION_0_1.toLocalizedString(regionName, f));
+        }
+        
+        RegionSnapshotService<Object, Object> rs = region.getSnapshotService();
+        rs.load(f, format, options);
+
+      } finally {
+        in.close();
+      }
+    }
+  }
+  
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private void saveRegion(Region<?, ?> region, File dir, SnapshotFormat format, SnapshotOptions options) 
+      throws IOException {
+    RegionSnapshotService<?, ?> rs = region.getSnapshotService();
+    String name = "snapshot" + region.getFullPath().replace('/', '-');
+    File f = new File(dir, name);
+    rs.save(f, format, options);
+  }
+}

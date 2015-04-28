@@ -1,0 +1,72 @@
+/*
+ * =========================================================================
+ *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ *  This product is protected by U.S. and international copyright
+ *  and intellectual property laws. Pivotal products are covered by
+ *  more patents listed at http://www.pivotal.io/patents.
+ * ========================================================================
+ */
+package com.gemstone.gemfire.management.internal.cli.converters;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import com.gemstone.gemfire.management.cli.ConverterHint;
+import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.MethodTarget;
+
+/**
+ *
+ * @author Abhishek Chaudhari
+ *
+ * @since 8.0
+ */
+public class LocatorDiscoveryConfigConverter implements Converter<String> {
+  @Override
+  public boolean supports(Class<?> type, String optionContext) {
+    return String.class.equals(type) && ConverterHint.LOCATOR_DISCOVERY_CONFIG.equals(optionContext);
+  }
+
+  @Override
+  public String convertFromText(String value, Class<?> targetType,
+      String optionContext) {
+    return value;
+  }
+
+  @Override
+  public boolean getAllPossibleValues(List<Completion> completions,
+      Class<?> targetType, String existingData, String optionContext,
+      MethodTarget target) {
+    if (String.class.equals(targetType) && ConverterHint.LOCATOR_DISCOVERY_CONFIG.equals(optionContext)) {
+      Set<String> locatorIdsAndNames = getLocatorIdAndNames();
+
+      for (String string : locatorIdsAndNames) {
+        completions.add(new Completion(string));
+      }
+    }
+
+    return !completions.isEmpty();
+  }
+
+  private Set<String> getLocatorIdAndNames() {
+    final Set<String> locatorIdsAndNames = new TreeSet<String>();
+
+    final Gfsh gfsh = Gfsh.getCurrentInstance();
+
+    if (gfsh != null && gfsh.isConnectedAndReady()) {
+      final String[] locatorIds = gfsh.getOperationInvoker().getDistributedSystemMXBean().listLocators();
+
+      if (locatorIds != null && locatorIds.length != 0) {
+        locatorIdsAndNames.addAll(Arrays.asList(locatorIds));
+      }
+    }
+
+    return locatorIdsAndNames;
+  }
+
+}

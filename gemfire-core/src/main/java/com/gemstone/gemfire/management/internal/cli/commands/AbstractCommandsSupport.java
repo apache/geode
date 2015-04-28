@@ -1,0 +1,189 @@
+/*
+ * =========================================================================
+ *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ *  This product is protected by U.S. and international copyright
+ *  and intellectual property laws. Pivotal products are covered by
+ *  more patents listed at http://www.pivotal.io/patents.
+ * ========================================================================
+ */
+
+package com.gemstone.gemfire.management.internal.cli.commands;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.execute.Execution;
+import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.cli.util.MemberNotFoundException;
+
+import org.springframework.shell.core.CommandMarker;
+
+/**
+ * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality for implementing
+ * command classes with command for the GemFire shell (gfsh).
+ * <p>
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.execute.FunctionService
+ * @see com.gemstone.gemfire.distributed.DistributedMember
+ * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+ * @see org.springframework.shell.core.CommandMarker
+ * @since 7.0
+ */
+@SuppressWarnings("unused")
+public abstract class AbstractCommandsSupport implements CommandMarker {
+
+  protected static void assertArgument(final boolean valid, final String message, final Object... args) {
+    if (!valid) {
+      throw new IllegalArgumentException(String.format(message, args));
+    }
+  }
+
+  protected static void assertNotNull(final Object obj, final String message, final Object... args) {
+    if (obj == null) {
+      throw new NullPointerException(String.format(message, args));
+    }
+  }
+
+  protected static void assertState(final boolean valid, final String message, final Object... args) {
+    if (!valid) {
+      throw new IllegalStateException(String.format(message, args));
+    }
+  }
+
+  protected static String convertDefaultValue(final String from, final String to) {
+    return (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(from) ? to : from);
+  }
+
+  protected static String toString(final Boolean condition, final String trueValue, final String falseValue) {
+    return (Boolean.TRUE.equals(condition) ? StringUtils.defaultIfBlank(trueValue, "true")
+      : StringUtils.defaultIfBlank(falseValue, "false"));
+  }
+
+  protected static String toString(final Throwable t, final boolean printStackTrace) {
+    String message = t.getMessage();
+
+    if (printStackTrace) {
+      StringWriter writer = new StringWriter();
+      t.printStackTrace(new PrintWriter(writer));
+      message = writer.toString();
+    }
+
+    return message;
+  }
+
+  protected boolean isConnectedAndReady() {
+    return (getGfsh() != null && getGfsh().isConnectedAndReady());
+  }
+
+  protected boolean isDebugging() {
+    return (getGfsh() != null && getGfsh().getDebug());
+  }
+
+  protected boolean isLogging() {
+    return (getGfsh() != null);
+  }
+
+  protected Cache getCache() {
+    return CacheFactory.getAnyInstance();
+  }
+
+  protected Gfsh getGfsh() {
+    return Gfsh.getCurrentInstance();
+  }
+
+  @SuppressWarnings("deprecated")
+  protected DistributedMember getMember(final Cache cache, final String memberName) {
+    for (final DistributedMember member : getMembers(cache)) {
+      if (memberName.equalsIgnoreCase(member.getName()) || memberName.equalsIgnoreCase(member.getId())) {
+        return member;
+      }
+    }
+
+    throw new MemberNotFoundException(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
+  }
+
+  /**
+   * Gets all members in the GemFire distributed system/cache.
+   * </p>
+   * @param cache the GemFire cache.
+   * @return all members in the GemFire distributed system/cache.
+   * @see com.gemstone.gemfire.management.internal.cli.CliUtil#getAllMembers(com.gemstone.gemfire.cache.Cache)
+   * @deprecated use CliUtil.getAllMembers(com.gemstone.gemfire.cache.Cache) instead
+   */
+  @Deprecated
+  protected Set<DistributedMember> getMembers(final Cache cache) {
+    Set<DistributedMember> members = new HashSet<DistributedMember>(cache.getMembers());
+    members.add(cache.getDistributedSystem().getDistributedMember());
+    return members;
+  }
+
+  protected Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
+    return FunctionService.onMembers(members);
+  }
+
+  protected void logInfo(final String message) {
+    logInfo(message, null);
+  }
+
+  protected void logInfo(final Throwable cause) {
+    logInfo(cause.getMessage(), cause);
+  }
+
+  protected void logInfo(final String message, final Throwable cause) {
+    if (isLogging()) {
+      getGfsh().logInfo(message, cause);
+    }
+  }
+
+  protected void logWarning(final String message) {
+    logWarning(message, null);
+  }
+
+  protected void logWarning(final Throwable cause) {
+    logWarning(cause.getMessage(), cause);
+  }
+
+  protected void logWarning(final String message, final Throwable cause) {
+    if (isLogging()) {
+      getGfsh().logWarning(message, cause);
+    }
+  }
+
+  protected void logSevere(final String message) {
+    logSevere(message, null);
+  }
+
+  protected void logSevere(final Throwable cause) {
+    logSevere(cause.getMessage(), cause);
+  }
+
+  protected void logSevere(final String message, final Throwable cause) {
+    if (isLogging()) {
+      getGfsh().logSevere(message, cause);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  protected <T extends Function> T register(T function) {
+    if (FunctionService.isRegistered(function.getId())) {
+      function = (T) FunctionService.getFunction(function.getId());
+    }
+    else {
+      FunctionService.registerFunction(function);
+    }
+
+    return function;
+  }
+
+}

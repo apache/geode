@@ -1,0 +1,23 @@
+Create a distribution archive using
+
+./gradlew distTar
+
+Unpack the archive found in gemfire-assembly/build/distributions and run the gfsh shell
+
+cd apache-gemfire-*
+bin/gfsh
+
+OR
+
+Unpack the archive using Gradle task
+
+./gradlew installDist
+
+cd build/install/gemfire
+bin/gfsh
+
+From the gfsh shell you can start a locator and a server using
+
+gfsh> start locator --name=locator
+gfsh> start server --name=server
+

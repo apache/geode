@@ -1,0 +1,262 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.admin.internal;
+
+import com.gemstone.gemfire.admin.AdminException;
+import com.gemstone.gemfire.admin.ConfigurationParameter;
+import com.gemstone.gemfire.admin.ManagedEntityConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.admin.GemFireVM;
+
+/**
+ * A <code>SystemMember</code> that is also managed (or manageable) by
+ * the admin API.
+ *
+ * This class must be public so that its methods can be invoked
+ * reflectively (for MBean operations) on instances of its
+ * subclasses. 
+ *
+ * @author David Whitlock
+ * @since 4.0
+ */
+public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
+  implements InternalManagedEntity {
+
+  /** Controller for starting and stopping local or remote managers */
+  protected ManagedEntityController controller;
+  
+  /** The state of this managed entity (see bug 32455) */
+  private int state = UNKNOWN;
+
+  /** A lock that is obtained while this entity's state changes */
+  private final Object stateChange = new Object();
+
+  //////////////////////  Constructors  //////////////////////
+
+  /**
+   * Creates a new <code>ManagedSystemMemberImpl</code> that
+   * represents an existing member of an
+   * <code>AdminDistributedSystem</code>.
+   */
+  protected ManagedSystemMemberImpl(AdminDistributedSystemImpl system, 
+                                    GemFireVM vm) 
+    throws AdminException {
+
+    super(system, vm);
+    this.controller = system.getEntityController();
+  }
+
+  /**
+   * Creates a new <code>ManagedSystemMemberImpl</code> that
+   * represents a non-existing member with the given
+   * <code>ManagedEntityConfig</code> that has not yet been started.
+   */
+  protected ManagedSystemMemberImpl(AdminDistributedSystemImpl system,
+                                    ManagedEntityConfig config) 
+    throws AdminException {
+
+    super(system);
+    this.internalId = null;
+    this.id = getNewId();
+    this.host = config.getHost();
+    this.name = this.id;
+    this.controller = system.getEntityController();
+  }
+
+  //////////////////////  Instance Methods  //////////////////////
+
+  public String getWorkingDirectory() {
+    return this.getEntityConfig().getWorkingDirectory();
+  }
+
+  public void setWorkingDirectory(String workingDirectory) {
+    this.getEntityConfig().setWorkingDirectory(workingDirectory);
+  }
+
+  public String getProductDirectory() {
+    return this.getEntityConfig().getProductDirectory();
+  }
+
+  public void setProductDirectory(String productDirectory) {
+    this.getEntityConfig().setProductDirectory(productDirectory);
+  }
+
+  @Override
+  public String getHost() {
+    return this.getEntityConfig().getHost();
+  }
+
+  public int setState(int state) {
+    if (this.stateChange == null) {
+      // The initial state is set in the constructor before
+      // stateChange is initialized.
+      int oldState = this.state;
+      this.state = state;
+      return oldState;
+      
+    } else {
+      synchronized (this.stateChange) {
+        int oldState = this.state;
+        this.state = state;
+
+        this.stateChange.notifyAll();
+        
+        return oldState;
+      }
+    }
+  }
+
+  /**
+   * Returns whether or not this managed system member needs to be
+   * stopped.  If this member is stopped or is stopping, then it does
+   * not need to be stopped.  Otherwise, it will atomically place this
+   * member in the {@link #STOPPING} state.  See bug 32455.
+   */
+  protected boolean needToStop() {
+    synchronized (this.stateChange) {
+      if (this.state == STOPPED || this.state == STOPPING) {
+        return false;
+
+      } else {
+        setState(STOPPING);
+        return true;
+      }
+    }
+  }
+
+  /**
+   * Returns whether or not this managed system member needs to be
+   * started.  If this member is started or is starting, then it
+   * does not need to be started.  Otherwise, it will atomically
+   * place this member in the {@link #STARTING} state.  See bug
+   * 32455.
+   */
+  protected boolean needToStart() {
+    synchronized (this.stateChange) {
+      if (this.state == RUNNING || this.state == STARTING) {
+        return false;
+
+      } else {
+        setState(STARTING);
+        return true;
+      }
+    }
+  }
+
+  /**
+   * Sets the state of this managed system member depending on whether
+   * or not <code>vm</code> is <code>null</code>.
+   */
+  @Override
+  void setGemFireVM(GemFireVM vm) throws AdminException {
+    super.setGemFireVM(vm);
+    if (vm != null) {
+      this.setState(RUNNING);
+
+    } else {
+      this.setState(STOPPED);
+    }
+  }
+
+  /**
+   * Waits until this system member's "state" is {@link #RUNNING}.
+   */
+  public boolean waitToStart(long timeout) 
+    throws InterruptedException {
+
+    if (Thread.interrupted()) throw new InterruptedException();
+    
+    long start = System.currentTimeMillis();
+    while (System.currentTimeMillis() - start < timeout) {
+      synchronized (this.stateChange) {
+        if (this.state == RUNNING) {
+          break;
+
+        } else {
+          this.stateChange.wait(System.currentTimeMillis() - start);
+        }
+      }
+    }
+
+    synchronized (this.stateChange) {
+      return this.state == RUNNING;
+    }
+  }
+
+  /**
+   * Waits until this system member's "state" is {@link #STOPPED}.
+   */
+  public boolean waitToStop(long timeout) 
+    throws InterruptedException {
+
+    if (Thread.interrupted()) throw new InterruptedException();
+    long start = System.currentTimeMillis();
+    while (System.currentTimeMillis() - start < timeout) {
+      synchronized (this.stateChange) {
+        if (this.state == STOPPED) {
+          break;
+
+        } else {
+          this.stateChange.wait(System.currentTimeMillis() - start);
+        }
+      }
+    }
+
+    synchronized (this.stateChange) {
+      return this.state == STOPPED;
+    }
+  }
+
+  /**
+   * Appends configuration information to a <code>StringBuffer</code>
+   * that contains a command line.  Handles certain configuration
+   * parameters specially.
+   */
+  protected void appendConfiguration(StringBuffer sb) {
+    ConfigurationParameter[] params = this.getConfiguration();
+    for (int i = 0; i < params.length; i++) {
+      ConfigurationParameter param = params[i];
+
+      if (!param.isModifiable()) {
+        continue;
+      }
+
+      String name = param.getName();
+      String value = param.getValueAsString();
+
+      if (value != null && !value.equals("")) {
+        if (name.equals(DistributionConfig.LOCATORS_NAME)) {
+          // Use the new locator syntax so that is plays nicely with
+          // rsh.  See bug 32306.
+          String locator = value;
+          int firstBracket = locator.indexOf('[');
+          int lastBracket = locator.indexOf(']');
+
+          if (firstBracket > -1 && lastBracket > -1) {
+            String host = locator.substring(0, firstBracket);
+            String port =
+              locator.substring(firstBracket + 1, lastBracket);
+            locator = host + ":" + port;
+          }
+
+          sb.append(" ");
+          sb.append(name);
+          sb.append("=");
+          sb.append(locator);
+
+        } else {
+          sb.append(" ");
+          sb.append(name);
+          sb.append("=");
+          sb.append(value);
+        }
+      }
+    }
+  }
+
+}

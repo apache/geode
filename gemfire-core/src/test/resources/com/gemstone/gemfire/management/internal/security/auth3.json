@@ -1,0 +1,25 @@
+{
+"roles" : [	
+			{
+				"name" : "dataUsers",
+				"operationsAllowed" : ["LOCATE_ENTRY"],
+			},
+			{
+				"name" : "secureDataUsers",
+				"operationsAllowed" : ["LOCATE_ENTRY"],
+				"region" : "secureRegion"
+			}
+		],
+users : [
+	 		{
+	 			"name" : "tushark",
+	 			"password" : "1234567",
+	 			"roles" : ["dataUsers"]
+	 		},
+	 		{
+	 			"name" : "avinash",
+	 			"password" : "1234567",
+	 			"roles" : ["secureDataUsers", "dataUsers"]
+	 		}
+		]
+}

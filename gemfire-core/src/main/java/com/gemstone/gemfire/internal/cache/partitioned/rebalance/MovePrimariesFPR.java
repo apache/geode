@@ -1,0 +1,96 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
+
+import java.util.List;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Bucket;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Member;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
+import com.gemstone.gemfire.internal.logging.LogService;
+
+/**
+ * A director to move primaries to improve the load balance of a
+ * fixed partition region. This is most commonly used as an FPRDirector
+ * @author dsmith
+ *
+ */
+public class MovePrimariesFPR extends RebalanceDirectorAdapter {
+  private static final Logger logger = LogService.getLogger();
+
+  private PartitionedRegionLoadModel model;
+
+  @Override
+  public void initialize(PartitionedRegionLoadModel model) {
+    this.model = model;
+
+  }
+
+  @Override
+  public void membershipChanged(PartitionedRegionLoadModel model) {
+    initialize(model);
+
+  }
+
+  @Override
+  public boolean nextStep() {
+    makeFPRPrimaryForThisNode();
+    return false;
+  }
+  
+  /**
+   * Move all primary from other to this 
+   */
+  private void makeFPRPrimaryForThisNode() {
+    PartitionedRegion partitionedRegion = model.getPartitionedRegion();
+    List<FixedPartitionAttributesImpl> FPAs = partitionedRegion
+        .getFixedPartitionAttributesImpl();
+    InternalDistributedMember targetId = partitionedRegion
+        .getDistributionManager().getId();
+    Member target = model.getMember(targetId);
+    for (Bucket bucket : model.getBuckets()) {
+      if (bucket != null) {
+        for (FixedPartitionAttributesImpl fpa : FPAs) {
+          if (fpa.hasBucket(bucket.getId()) && fpa.isPrimary()) {
+            Member source = bucket.getPrimary();
+            if (source != target) {
+              // HACK: In case we don't know who is Primary at this time
+              // we just set source as target too for stat purposes
+
+              source = (source == null || source == model.INVALID_MEMBER) ? target
+                   : source;
+              if (logger.isDebugEnabled()) {
+                logger.debug("PRLM#movePrimariesForFPR: For Bucket#{}, moving primary from source {} to target {}",
+                    bucket.getId(), bucket.getPrimary(), target);
+              }
+              
+              boolean successfulMove = model.movePrimary(new Move(source, target, bucket));
+              // We have to move the primary otherwise there is some problem!
+              Assert.assertTrue(successfulMove,
+                  " Fixed partitioned region not able to move the primary!");
+              if (successfulMove) {
+                if (logger.isDebugEnabled()) {
+                  logger.debug("PRLM#movePrimariesForFPR: For Bucket#{}, moved primary from source {} to target {}",
+                      bucket.getId(), bucket.getPrimary(), target);
+                }
+
+                bucket.setPrimary(target, bucket.getPrimaryLoad());
+              } 
+            }
+          }
+        }
+      }
+    }
+  }
+}

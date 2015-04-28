@@ -1,0 +1,187 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/**
+ *
+ */
+package com.gemstone.gemfire.internal.cache;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.UUID;
+
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+
+/**
+ * Creates an attribute object for DiskStore.
+ * </p>
+ * @author Gester
+ * @since prPersistSprint2
+ */
+public class DiskStoreAttributes implements Serializable, DiskStore {
+  private static final long serialVersionUID = 1L;
+  
+  public boolean allowForceCompaction;
+  public boolean autoCompact;
+
+  public int compactionThreshold;
+  public int queueSize;
+  public int writeBufferSize;
+
+  public long maxOplogSizeInBytes;
+  public long timeInterval;
+
+  public int[] diskDirSizes;
+
+  public File[] diskDirs;
+
+  public String name;
+  
+  private volatile float diskUsageWarningPct;
+  private volatile float diskUsageCriticalPct;
+
+  public DiskStoreAttributes() {
+    // set all to defaults
+    this.autoCompact = DiskStoreFactory.DEFAULT_AUTO_COMPACT;
+    this.compactionThreshold = DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD;
+    this.allowForceCompaction = DiskStoreFactory.DEFAULT_ALLOW_FORCE_COMPACTION;
+    this.maxOplogSizeInBytes = DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE * (1024*1024);
+    this.timeInterval = DiskStoreFactory.DEFAULT_TIME_INTERVAL;
+    this.writeBufferSize = DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE;
+    this.queueSize = DiskStoreFactory.DEFAULT_QUEUE_SIZE;
+    this.diskDirs = DiskStoreFactory.DEFAULT_DISK_DIRS;
+    this.diskDirSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
+    this.diskUsageWarningPct = DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE;
+    this.diskUsageCriticalPct = DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE;
+  }
+
+  public UUID getDiskStoreUUID() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  /* (non-Javadoc)
+  * @see com.gemstone.gemfire.cache.DiskStore#getAllowForceCompaction()
+  */
+  public boolean getAllowForceCompaction() {
+    return this.allowForceCompaction;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getAutoCompact()
+   */
+  public boolean getAutoCompact() {
+    return this.autoCompact;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getCompactionThreshold()
+   */
+  public int getCompactionThreshold() {
+    return this.compactionThreshold;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getDiskDirSizes()
+   */
+  public int[] getDiskDirSizes() {
+    int[] result = new int[this.diskDirSizes.length];
+    System.arraycopy(this.diskDirSizes, 0, result, 0, this.diskDirSizes.length);
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getDiskDirs()
+   */
+  public File[] getDiskDirs() {
+    File[] result = new File[this.diskDirs.length];
+    System.arraycopy(this.diskDirs, 0, result, 0, this.diskDirs.length);
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getMaxOplogSize()
+   */
+  public long getMaxOplogSize() {
+    // TODO Auto-generated method stub
+    return this.maxOplogSizeInBytes / (1024 * 1024);
+  }
+
+  /**
+   * Used by unit tests
+   */
+  public long getMaxOplogSizeInBytes() {
+    return this.maxOplogSizeInBytes;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getName()
+   */
+  public String getName() {
+    return this.name;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getQueueSize()
+   */
+  public int getQueueSize() {
+    return this.queueSize;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getTimeInterval()
+   */
+  public long getTimeInterval() {
+    return this.timeInterval;
+  }
+
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.cache.DiskStore#getWriteBufferSize()
+   */
+  public int getWriteBufferSize() {
+    return this.writeBufferSize;
+  }
+
+  public void flush() {
+    // nothing needed
+  }
+
+  public void forceRoll() {
+    // nothing needed
+  }
+
+  public boolean forceCompaction() {
+    return false;
+  }
+
+  @Override
+  public void destroy() {
+    // nothing needed
+  }
+
+  @Override
+  public float getDiskUsageWarningPercentage() {
+    return diskUsageWarningPct;
+  }
+
+  @Override
+  public float getDiskUsageCriticalPercentage() {
+    return diskUsageCriticalPct;
+  }
+
+  @Override
+  public void setDiskUsageWarningPercentage(float warningPercent) {
+    DiskStoreMonitor.checkWarning(warningPercent);
+    diskUsageWarningPct = warningPercent;
+  }
+
+  @Override
+  public void setDiskUsageCriticalPercentage(float criticalPercent) {
+    DiskStoreMonitor.checkCritical(criticalPercent);
+    diskUsageCriticalPct = criticalPercent;
+  }
+}

@@ -1,0 +1,29 @@
+{
+	'name' : 'stop server',	
+	'modes' : [ 	
+		{
+			'name' : 'default',
+			'text' : 'Default Options',
+			'lead-option' : '',
+			'options' : []
+		},
+		{
+			'name' : 'name',
+			'text' : 'Using Server Name(Must be connected to cluster)',
+			'lead-option' : 'name',
+			'options' : []
+		},
+		{
+			'name' : 'pid',
+			'text' : 'Using Server Process Id',
+			'lead-option' : 'pid',
+			'options' : []
+		},
+		{
+			'name' : 'dir',
+			'text' : 'Using Server Directory',
+			'lead-option' : 'dir',
+			'options' : []
+		}
+	]
+}

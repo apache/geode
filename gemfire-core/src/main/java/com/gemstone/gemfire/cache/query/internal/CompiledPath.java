@@ -1,0 +1,169 @@
+/*=========================================================================
+ * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ * $Id: CompiledPath.java,v 1.1 2005/01/27 06:26:33 vaibhav Exp $
+ *=========================================================================
+ */
+
+package com.gemstone.gemfire.cache.query.internal;
+
+import java.util.*;
+
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.EntryDestroyedException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+
+
+/**
+ * Represents an identifier that follows a dot operator.
+ *
+ * @version     $Revision: 1.1 $
+ * @author      ericz
+ */
+
+
+
+public class CompiledPath extends AbstractCompiledValue {
+  private CompiledValue _receiver;  // the value represented by the expression before the dot
+  private String _tailID;           // the identifier after the dot.
+  
+  public CompiledPath(CompiledValue rcvr, String id) {
+    _receiver = rcvr;
+    _tailID = id;
+  }
+  
+  @Override
+  public List getChildren() {
+    return Collections.singletonList(this._receiver);
+  }
+  
+  public int getType() {
+    return PATH;
+  }
+  
+  @Override
+  public Set computeDependencies(ExecutionContext context)
+  throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+    return context.addDependencies(this, this._receiver.computeDependencies(context));
+  }
+  
+  
+  
+  @Override
+  public List getPathOnIterator(RuntimeIterator itr, ExecutionContext context)
+  throws TypeMismatchException, AmbiguousNameException {
+    if (!isDependentOnIterator(itr, context))
+      return null;
+    
+    List list = new ArrayList();
+    list.add(getTailID());
+    CompiledValue v = getReceiver();
+    int type = v.getType();
+    while (type == PATH) {
+      CompiledPath p = (CompiledPath)v;
+      list.add(0, p.getTailID());
+      v = p.getReceiver();
+      type = v.getType();
+    };
+    
+    if (type == Identifier) {
+      List path = v.getPathOnIterator(itr, context);
+      if (path == null)
+        return null;
+      list.addAll(0, path);
+      return list;
+    }
+    
+    return null;
+  }
+  
+  
+  public Object evaluate(ExecutionContext context)
+  throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+          QueryInvocationTargetException {
+    CompiledValue rcvr = getReceiver();
+    Object evalRcvr = rcvr.evaluate(context);
+
+    if (context.isCqQueryContext()
+        && (evalRcvr instanceof Region.Entry || evalRcvr instanceof CqEntry)) {
+      try {
+        if (evalRcvr instanceof Region.Entry) {
+          Region.Entry re = (Region.Entry) evalRcvr;
+          if (re.isDestroyed()) {
+            return QueryService.UNDEFINED;
+          }
+          evalRcvr = re.getValue();
+        } else if (evalRcvr instanceof CqEntry) {
+          CqEntry re = (CqEntry) evalRcvr;
+          evalRcvr = re.getValue();
+        }
+      } catch (EntryDestroyedException ede){
+        // Even though isDestory() check is made, the entry could 
+        // throw EntryDestroyedException if the value becomes null.
+        return QueryService.UNDEFINED;
+      }
+
+    }
+
+    // if the receiver is an iterator, then use the contrained type
+    // for attribute evaluation instead of the runtime type
+    
+    //         RuntimeIterator cmpItr = null;
+    
+    //         if (rcvr.getType() == ID)
+    //         {
+    //             CompiledValue resolvedRcvr = context.resolve(((CompiledID)rcvr).getId());
+    
+    //             if (resolvedRcvr != null && resolvedRcvr.getType() == ITERATOR)
+    //                 cmpItr = ((RuntimeIterator)resolvedRcvr);
+    //         }
+    
+    //         if (rcvr.getType() == ITERATOR)
+    //             cmpItr = (RuntimeIterator)rcvr;
+    
+    //         if (cmpItr != null)
+    //         {
+    //             Class constraint = cmpItr.getBaseCollection().getConstraint();
+    //             return PathUtils.evaluateAttribute(evalRcvr,
+    //                                                constraint,
+    //                                                getTailID());
+    //         }
+    
+    Object obj =  PathUtils.evaluateAttribute(evalRcvr, getTailID());
+    // check for BucketRegion substitution
+    PartitionedRegion pr = context.getPartitionedRegion();
+    if (pr != null && (obj instanceof Region)) {
+      if (pr.getFullPath().equals(((Region)obj).getFullPath())) {
+        obj = context.getBucketRegion();
+      }
+    }
+    return obj;
+  }
+  
+  public String getTailID() {
+    return _tailID;
+  }
+  
+  public CompiledValue getReceiver() {
+    return _receiver;
+  }
+  
+  @Override
+  public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
+  throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+    //Asif: Canonicalize the tail ID. If the tail ID contains
+    // something like getX ,convert it into x.
+    int len;
+    if (_tailID.startsWith("get") && (len =_tailID.length()) > 3) {
+      clauseBuffer.insert(0, len > 4 ? _tailID.substring(4) : "" );
+      clauseBuffer.insert(0, Character.toLowerCase(_tailID.charAt(3)));
+    } else {
+      clauseBuffer.insert(0, _tailID);
+    }
+    clauseBuffer.insert(0, '.');
+    _receiver. generateCanonicalizedExpression(clauseBuffer, context);
+  }
+}

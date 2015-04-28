@@ -1,0 +1,1435 @@
+<?xml version="1.0"?>
+<!DOCTYPE mbeans-descriptors PUBLIC
+ "-//Apache Software Foundation//DTD Model MBeans Configuration File"
+ "http://jakarta.apache.org/commons/dtds/mbeans-descriptors.dtd">
+
+<!-- ===================================================================== -->
+<!-- MBeans are defined in this file for these components:                 -->
+<!--   com.gemstone.gemfire.admin.jmx.Agent                                -->
+<!--   com.gemstone.gemfire.admin.AdminDistributedSystem                   -->
+<!--   com.gemstone.gemfire.admin.SystemMember                             -->
+<!--   com.gemstone.gemfire.admin.GemFireManager                           -->
+<!--   com.gemstone.gemfire.admin.StatisticResource                        -->
+<!--   com.gemstone.gemfire.admin.DistributionLocator                      -->
+<!--   com.gemstone.gemfire.admin.SystemMemberCache                        -->
+<!--   com.gemstone.gemfire.admin.SystemMemberRegion                       -->
+<!--   com.gemstone.gemfire.admin.SystemMemberCacheServer                  -->
+<!--   com.gemstone.gemfire.admin.CacheVm                                  -->
+<!--   com.gemstone.gemfire.admin.GemFireHealth                            -->
+<!--   com.gemstone.gemfire.admin.DistributedSystemHealthConfig            -->
+<!--   com.gemstone.gemfire.admin.GemFireHealthConfig                      -->
+<!--                                                                       -->
+<!-- Each component is a managed resource wrapped by a Model MBean built   -->
+<!-- by Jakarta Commons-Modeler.                                           -->
+<!--                                                                       -->
+<!-- author    Kirk Lund                                                   -->
+<!-- since     3.5                                                         -->
+<!-- ===================================================================== -->
+<mbeans-descriptors>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.jmx.Agent                                -->
+  <!-- =================================================================== -->
+  <mbean          name="GemFireAgent"
+           description="GemFire JMX Agent"
+                  type="com.gemstone.gemfire.admin.jmx.Agent">
+                 
+    <attribute    name="logFileSizeLimit"
+           description="The maximum size of the JMX Agent log file; a value (in megabytes) in the range 0..1000000."
+                  type="int"
+            writeable="true"/>
+    <attribute    name="logDiskSpaceLimit"
+           description="The maximum disk space to allocate for logging; a value (in megabytes) in the range 0..1000000."
+                  type="int"
+             writeable="true"/>
+    <attribute    name="logFile"
+           description="The name and path of this Agent's log file."
+                  type="java.lang.String"
+             writeable="true"/>
+    <attribute    name="logLevel"
+           description="A keyword or integer that defines the minimum level of alerts to be written to the log - for example, only those alerts that are at level WARNING or higher."
+                  type="java.lang.String"
+             writeable="true"/>
+    <attribute    name="autoConnect"
+           description="If true, the JMX Agent will automatically connect to the distributed system when the Agent is started. The distributed system is specified by the following arguments: mcast-port, mcast-address, locators, remote-command. You can specify these arguments on the agent command line or in the Agent properties file."
+                  type="boolean"
+             writeable="true"/>
+    <attribute    name="connected"
+           description="True if this Agent is connected to a distributed system."
+                  type="boolean"
+                    is="true"
+             writeable="false"/>
+    <attribute    name="propertyFile"
+           description="Name and path of this Agent's properties file. Identical to the argument on the agent command line."
+                  type="java.lang.String"
+             writeable="true"/>
+    <attribute    name="version"
+           description="The Agent's version."
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="systemId"
+           description="A string that describes the associated distributed system."
+                  type="java.lang.String"
+             writeable="true"/>
+    <attribute    name="mcastAddress"
+           description="Multicast address of the associated distributed system."
+                  type="java.lang.String"
+             writeable="true"/>
+    <attribute    name="mcastPort"
+           description="Multicast port of the associated distributed system."
+                  type="int"
+             writeable="true"/>
+    <attribute    name="locators"
+           description="List of locators for connecting to the distributed system. Each locator is uniquely identified by the host on which it is running and the port on which it is listening."
+                  type="java.lang.String"
+             writeable="true"/>
+    <attribute    name="membershipPortRange"
+           description="The allowed range of UDP ports for use in forming an unique membership identifier."
+                  type="java.lang.String"                 
+             writeable="true"/>
+    <attribute    name="bindAddress"
+           description="An IP address that the JMX Agent uses to communicate with members of the distributed system. On a multi-homed host - a machine with multiple network cards - you must explicitly specify the bind address."
+                  type="java.lang.String"
+             writeable="true"/>
+             
+    <attribute    name="sslEnabled"
+           description="Indicates whether to use the Secure Sockets Layer (SSL) protocol for communication between members of this distributed system. Valid values are &quot;true&quot; and &quot;false&quot;. A &quot;true&quot; setting requires the use of locators."
+                  type="boolean"
+             getMethod="isSSLEnabled"
+             setMethod="setSSLEnabled"
+             writeable="true"/>
+    <attribute    name="sslProtocols"
+           description="A space-separated list of the valid SSL protocols for this connection. You can specify &quot;any&quot; to use any protocol that is enabled by default in the configured Java Secure Sockets Extension (JSSE) provider."
+                  type="java.lang.String"
+             getMethod="getSSLProtocols"
+             setMethod="setSSLProtocols"
+             writeable="true"/>
+    <attribute    name="sslCiphers"
+           description="A space-separated list of the valid SSL ciphers for this connection. You can specify &quot;any&quot; to use any ciphers that are enabled by default in the configured JSSE provider."
+                  type="java.lang.String"
+             getMethod="getSSLCiphers"
+             setMethod="setSSLCiphers"
+             writeable="true"/>
+    <attribute    name="sslAuthenticationRequired"
+           description="Indicates whether to require SSL authentication for communication between members of the distributed system. Valid values are &quot;true&quot; and &quot;false&quot;."
+                  type="boolean"
+             getMethod="isSSLAuthenticationRequired"
+             setMethod="setSSLAuthenticationRequired"
+             writeable="true"/>
+    <attribute    name="sslProperties"
+           description="The SSL vendor properties to use for the distributed system."
+                  type="java.util.Properties"
+             getMethod="getSSLProperties"
+             writeable="false"/>
+
+    <operation    name="addSSLProperty"
+           description="Add an SSL vendor property with the specified key and value."
+                impact="ACTION"
+            returnType="void">
+      <parameter name="key" 
+          description="Property key"
+                 type="java.lang.String" />
+      <parameter name="value" 
+          description="Property value"
+                 type="java.lang.String" />
+    </operation>
+    <operation    name="removeSSLProperty"
+           description="Remove the specified SSL vendor property."
+                impact="ACTION"
+            returnType="void">
+      <parameter name="key" 
+          description="Property key"
+                 type="java.lang.String" />
+    </operation>
+
+    <operation    name="getLog"
+           description="Display the tail of the Agent's log file."
+                impact="INFO"
+            returnType="java.lang.String"/>
+    <operation    name="stop"
+           description="Stop the Agent after closing all managed resources"
+                impact="ACTION"
+            returnType="void"/>
+    <operation    name="saveProperties"
+           description="Persist the Agent's current configuration to its properties file"
+                impact="ACTION"
+            returnType="void"/>
+    <operation    name="connectToSystem"
+           description="Connect to the distributed system described by this Agent. Returns the ObjectName of the corresponding DistributedSystem MBean."
+                impact="ACTION_INFO"
+            returnType="javax.management.ObjectName"/>
+    <operation    name="disconnectFromSystem"
+           description="Disconnect from the currently connected distributed system."
+                impact="ACTION"
+            returnType="void"/>
+    <operation    name="manageDistributedSystem"
+           description="Return the ObjectName of the currently connected distributed system. If not connected, return null."
+                impact="INFO"
+            returnType="javax.management.ObjectName"/>
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.AdminDistributedSystem                   -->
+  <!-- =================================================================== -->
+  <mbean          name="AdminDistributedSystem"
+           description="GemFire distributed system"
+                  type="com.gemstone.gemfire.admin.AdminDistributedSystem">
+                  
+    <attribute    name="id"
+           description="A string that uniquely identifies this distributed system."
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="systemName"
+           description="Display name of the distributed system"
+                  type="java.lang.String"
+             writeable="true"/>
+
+    <attribute    name="remoteCommand"
+           description="A default remote command prefix to use for command invocation on remote machines."
+                  type="java.lang.String"/>
+
+    <attribute    name="alertLevel"
+           description="Minimum level for alerts to be delivered to listeners. Should be one of: WARNING, ERROR, SEVERE, OFF. It is not case-sensitive."
+                  type="java.lang.String"
+                  getMethod="getAlertLevelAsString"
+                  setMethod="setAlertLevelAsString"
+                  writeable="true"/>
+
+    <attribute    name="mcastAddress"
+           description="Multicast address of this distributed system."
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="mcastPort"
+           description="Multicast port of this distributed system."
+                  type="int"
+             writeable="false"/>
+
+    <attribute    name="locators"
+           description="List of locators for connecting to this distributed system. Each locator is uniquely identified by the host on which it is running and the port on which it is listening."
+                  type="java.lang.String"
+             writeable="false"/>
+             
+    <attribute    name="membershipPortRange"
+           description="The allowed range of UDP ports for use in forming an unique membership identifier."
+                  type="java.lang.String"
+             writeable="false"/>
+    
+    <attribute   name="refreshIntervalForStatAlerts"
+          description="The interval (in seconds) between auto-polling for checking whether the Stat has exceeded a threshold for which the Stat Alert Definition is defined."
+                 type="int"/>
+
+    <attribute   name="refreshInterval"
+          description="The interval (in seconds) between auto-polling for updating AdminDistributedSystem constituents including SystemMember and StatisticResource. This applies only to the default interval set when the resource is created. This interval is read-only and retains the value set when the Agent config is created"
+                 type="int"
+            writeable="false"/>
+            
+    <attribute    name="canPersistStatAlertDefs"
+           description="Indicates whether Statistics Alert definitions could be persisted across runs/sessions of the JMX Agent."
+                  type="boolean"
+             getMethod="canPersistStatAlertDefs"
+             writeable="false"/>
+            
+    <attribute   name="missingPersistentMembers"
+            getMethod="getMissingPersistentMembersJMX"
+          description="Retrieve the set of persistent files that the existing members are waiting for."
+                 type="javax.management.openmbean.TabularData"
+            writeable="false"/>
+
+    <notification name="gemfire.distributedsystem.member.joined"
+           description="A GemFire manager, cache, or other member has joined this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.member.joined"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.member.joined</notification-type>
+    </notification>
+            
+    <notification name="gemfire.distributedsystem.member.left"
+           description="A GemFire manager, cache, or other member has left the distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.member.left"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.member.left</notification-type>
+    </notification>
+
+    <notification name="gemfire.distributedsystem.member.crashed"
+           description="A member of this distributed system has crashed instead of leaving cleanly.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.member.crashed"/>
+        <field    name="severity"       value="4"/><!-- 4: minor, marginal, error -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.member.crashed</notification-type>
+    </notification>
+            
+    <notification name="gemfire.distributedsystem.alert"
+           description="A member of this distributed system has generated an alert.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.alert"/>
+        <field    name="severity"       value="0"/><!-- unknown until runtime -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.alert</notification-type>
+    </notification>
+            
+    <operation   name="waitToBeConnected"
+          description="Wait for the connection to the distributed system to be established"
+               impact="ACTION"
+           returnType="boolean">
+      <parameter name="timeout" 
+          description="Number of milliseconds to wait to be connected"
+                 type="long" />
+    </operation>
+
+    <operation   name="start"
+          description="Start all locators defined for this distributed system."
+               impact="ACTION"
+           returnType="void"/>
+
+    <operation   name="stop"
+          description="Stop all locators defined for this distributed system."
+               impact="ACTION"
+           returnType="void"/>
+
+    <operation   name="manageDistributionLocator"
+          description="Creates a new distribution locator that is ready to configure and start"
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName"/>
+
+    <operation   name="manageDistributionLocators"
+          description="Return an array of JMX ObjectNames for all locators known to this distributed system."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;"/>
+
+    <operation   name="manageCacheVm"
+          description="Create a new CacheVm MBean (that is, make this distributed system aware of a cache server that has not been started )."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName"/>
+
+    <operation   name="manageCacheVms"
+          description="Return an array of JMX ObjectNames for all cache vms known to this distributed system."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;"/>
+
+    <operation   name="manageCacheServer"
+          description="Create a new CacheVm MBean (that is, make this distributed system aware of a cache vm that has not been started ). This action is deprecated as of 5.7 use manageCacheVm instead."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName"/>
+
+    <operation   name="manageCacheServers"
+          description="Return an array of JMX ObjectNames for all cache vms known to this distributed system. This action is deprecated as of 5.7 use manageCacheVm instead."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;"/>
+
+    <operation   name="manageSystemMemberApplications"
+          description="Return an array of JMX ObjectNames for all applications that are members of this distributed system."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;"/>
+
+    <operation   name="monitorGemFireHealth"
+          description="Return the ObjectName for the GemFireHealth MBean."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName"/>
+
+    <operation   name="displayMergedLogs"
+          description="Combine the tails of all system members' logs into a merged log, with the entries ordered by timestamp."
+               impact="ACTION_INFO"
+           returnType="java.lang.String"/>
+
+    <operation   name="getLicense"
+          description="Display GemFire licensing information."
+               impact="INFO"
+           returnType="java.util.Properties"/>
+
+    <operation   name="getLatestAlert"
+          description="Display the most recent system alert."
+               impact="INFO"
+           returnType="java.lang.String"/>
+           
+    <operation   name="createDistributionLocator"
+          description="Create a DistributionLocator MBean. The parameters specify the locator's host machine, the port on which it listens, the working directory hosting the locator, and product directory used by the locator."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName">
+      <parameter name="host" 
+          description="Host machine for the Locator"
+                 type="java.lang.String" />
+      <parameter name="port" 
+          description="Port for the Locator to listen on"
+                 type="int" />
+      <parameter name="workingDirectory" 
+          description="The working directory hosting the Locator"
+                 type="java.lang.String" />
+      <parameter name="productDirectory" 
+          description="The GemFire product directory used by the Locator"
+                 type="java.lang.String" />
+    </operation>
+    
+    <operation   name="manageSystemMember"
+          description="Return the ObjectName for the SystemMemberMBean representing the specified distributed member or null if the member is not found."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName">
+      <parameter name="distributedMember" 
+          description="The distributed member to manage"
+                 type="com.gemstone.gemfire.distributed.DistributedMember" />
+    </operation>
+    
+    <operation   name="getAllStatAlertDefinitions"
+          description="Return an array of all available Stat Alert Definitions objects."
+               impact="INFO"
+           returnType="[Lcom.gemstone.gemfire.internal.admin.StatAlertDefinition;">
+    </operation>
+    
+    <operation   name="updateAlertDefinition"
+          description="Update/Add an Admin Stat Alert Definition to the Aggregator. Sends the updated definition to all the Managers/Members."
+               impact="ACTION_INFO"
+           returnType="void">
+      <parameter name="alertDefinition" 
+          description="The Admin Stat Alert Definition to be updated/added to the Aggregator"
+                 type="com.gemstone.gemfire.internal.admin.StatAlertDefinition" />
+    </operation>
+    
+    <operation   name="removeAlertDefinition"
+          description="Remove an Admin Stat Alert Definition from the Aggregator and all the Managers/Members."
+               impact="ACTION_INFO"
+           returnType="void">
+      <parameter name="defId" 
+          description="The unique id of the Admin Stat Alert Definition to be removed from the Aggregator"
+                 type="java.lang.Integer" />
+    </operation>
+    
+    <operation   name="isAlertDefinitionCreated"
+          description="Check whether the alert definition is already created."
+               impact="INFO"
+           returnType="boolean">
+      <parameter name="alertDefinition" 
+          description="The Admin Stat Alert Definition to be checked"
+                 type="com.gemstone.gemfire.internal.admin.StatAlertDefinition" />
+    </operation>
+    <operation   name="revokePersistentMember"
+          description="Indicate to the distributed system that persistent files have been lost."
+               impact="ACTION_INFO"
+           returnType="void">
+      <parameter name="host" 
+          description="The host of the members to revoke. If null, it will match all hosts"
+                 type="java.lang.String" />
+      <parameter name="directory" 
+          description="The directory on the members to revoke. If null, it will match all directories"
+                 type="java.lang.String" />
+    </operation>
+    <operation   name="shutDownAllMembers"
+          description="Shutting down all members with cache in the distributed system gracefully."
+               impact="ACTION_INFO"
+           returnType="java.util.Set">
+    </operation>
+    <operation   name="shutDownAllMembers"
+          description="Shutting down all members with cache in the distributed system gracefully."
+               impact="ACTION_INFO"
+           returnType="java.util.Set">
+	<parameter name="timeout"
+		description="The amount of time to wait (in milliseconds) for the shutdown all to complete."
+		type="long" />
+    </operation>
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.SystemMember                             -->
+  <!-- =================================================================== -->
+  <mbean         name="SystemMember"
+          description="GemFire system member"
+                 type="com.gemstone.gemfire.admin.SystemMember">
+
+    <attribute   name="id"
+          description="A string that uniquely identifies the application within the distributed system."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="name"
+          description="The application-defined member name."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="host"
+          description="The host machine on which this application is running."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="refreshInterval"
+          description="The interval (in seconds) between auto-refreshes of this application;s configuration attributes, as defined in the gemfire.properties file. To disable the JMX Timer service's auto-refresh feature, set this attribute to zero or less. Effective 6.0, any changes to this parameter wil not affect the current refreshInterval. To change the refreshInterval use AdminDistributedSystem.refreshInterval"
+                 type="int"/>
+
+    <attribute    name="version"
+           description="Display GemFire version information."
+                  type="java.lang.String"
+             writeable="false"/>
+             
+    <attribute    name="hasCache"
+           description="Does the system member host a GemFire Cache?"
+                  type="boolean"
+                    is="false"
+             getMethod="hasCache"
+             writeable="false"/>
+
+    <attribute    name="distributedMember"
+           description="Distributed membership identity."
+                  type="com.gemstone.gemfire.distributed.DistributedMember"
+             writeable="false"/>
+    
+    <notification name="gemfire.distributedsystem.cache.created"
+           description="A cache got created on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.created"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.created</notification-type>
+    </notification>
+
+    <notification name="gemfire.distributedsystem.cache.closed"
+           description="A cache is closed on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.closed"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.closed</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.region.created"
+           description="A region is created in a cache on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.region.created"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.region.created</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.region.lost"
+           description="A region was removed from a cache on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.region.lost"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.region.lost</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.client.joined"
+           description="A cache client established a connection with a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.client.joined"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.client.joined</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.client.left"
+           description="A cache client gracefully closed a connection with a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.client.left"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.client.left</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.client.crashed"
+           description="A cache client crashed and abruptly lost connection with a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.client.crashed"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.client.crashed</notification-type>
+    </notification>
+             
+    <operation    name="getRoles"
+           description="Get the membership roles filled by this member."
+                impact="INFO"
+            returnType="[Ljava.lang.String;">
+    </operation>
+             
+    <operation   name="getLog"
+          description="Display the main log for this system member."
+               impact="INFO"
+           returnType="java.lang.String">
+    </operation>
+
+    <operation   name="getLicense"
+          description="Display GemFire licensing information."
+               impact="INFO"
+           returnType="java.util.Properties">
+    </operation>
+
+    <operation   name="manageCache"
+          description="Create a SystemMemberCache MBean for this application."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName">
+    </operation>
+    
+    <operation   name="manageStats"
+          description="Create a StatisticResource MBean for each statistic resource in this member."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;">
+    </operation>
+
+    <operation   name="manageStat"
+          description="Create a StatisticResource MBean for each statistic resource in this member, given the underlying Statistics Type name."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;">
+      <parameter name="statisticsTypeName" 
+          description="Name of the underlying Statistics Type eg. DistributionStats"
+                 type="java.lang.String" />           
+    </operation>
+    
+    <operation   name="refreshConfig"
+          description="Refresh configuration attributes for this application, using the gemfire.properties file."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+    
+    <operation   name="getConfiguration"
+          description="Returns the current configuration attributes for this application, using the gemfire.properties file."
+               impact="ACTION"
+           returnType="[Lcom.gemstone.gemfire.admin.ConfigurationParameter;">
+    </operation>
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.StatisticResource                        -->
+  <!-- =================================================================== -->
+  <mbean         name="StatisticResource"
+          description="GemFire statistic resource"
+                 type="com.gemstone.gemfire.admin.StatisticResource">
+
+    <attribute   name="name"
+          description="The JMX ObjectName of this statistic resource."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="description"
+          description="Description of this statistic resource."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="type"
+          description="Classification type of this statistic resource."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="owner"
+          description="Name of the source process."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="refreshInterval"
+          description="The interval (in seconds) between auto-refreshes of statistical information. To turn off the JMX Timer service's auto-refresh feature, set this attribute to zero or less. If you're concerned about system performance, leave this set to zero. Effective 6.0, any changes to this parameter wil not affect the current refreshInterval. To change the refreshInterval use AdminDistributedSystem.refreshInterval"
+                 type="int"/>
+
+    <operation   name="refresh"
+          description="Refresh values of statistics."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+    
+    <operation   name="getStatistics"
+          description="Returns a current snapshot of statistics."
+               impact="INFO"
+           returnType="[Lcom.gemstone.gemfire.admin.Statistic;">
+    </operation>
+    
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.DistributionLocator                      -->
+  <!-- =================================================================== -->
+  <mbean         name="DistributionLocator"
+          description="GemFire distribution locator service"
+                 type="com.gemstone.gemfire.admin.DistributionLocator">
+
+    <attribute   name="id"
+          description="Id of the distribution locator."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="host"
+          description="The host machine on which this locator is running."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="workingDirectory"
+          description="The current working directory of the locator."
+                 type="java.lang.String"
+            writeable="true"/>
+
+    <attribute   name="productDirectory"
+          description="The location of the GemFire installation used to run this locator."
+                 type="java.lang.String"
+            writeable="true"/>
+
+    <attribute   name="port"
+          description="The port on which this locator is listening: a value in the range 0..65535."
+                 type="int"
+            writeable="true"/>
+
+    <attribute    name="bindAddress"
+           description="The interface address to which the locator binds."
+                  type="java.lang.String"
+             writeable="true"/>
+             
+    <attribute   name="running"
+          description="True if this locator is running."
+                 type="boolean"
+            writeable="false"
+                   is="true"/>
+
+    <operation   name="start"
+          description="Start this distribution locator."
+               impact="ACTION"
+           returnType="void"/>
+
+    <operation   name="waitToStart"
+          description="Wait for the distribution locator to start"
+               impact="ACTION"
+           returnType="boolean">
+      <parameter name="timeout" 
+          description="Number of milliseconds to wait to start"
+                 type="long" />
+    </operation>
+
+    <operation   name="waitToStop"
+          description="Wait for the distribution locator to stop"
+               impact="ACTION"
+           returnType="boolean">
+      <parameter name="timeout" 
+          description="Number of milliseconds to wait to stop"
+                 type="long" />
+    </operation>
+
+    <operation   name="stop"
+          description="Stop this distribution locator."
+               impact="ACTION"
+           returnType="void"/>
+
+    <operation    name="getLog"
+           description="Display the tail of the locator service's log."
+                impact="INFO"
+            returnType="java.lang.String"/>
+            
+    <operation   name="remove"
+          description="Remove this distribution locator."
+               impact="ACTION"
+           returnType="void"/>
+           
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.SystemMemberCache                        -->
+  <!-- =================================================================== -->
+  <mbean         name="SystemMemberCache"
+          description="GemFire system member cache"
+                 type="com.gemstone.gemfire.admin.SystemMemberCache">
+                 
+    <attribute   name="name"
+          description="The name of the Cache"
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="closed"
+          description="True if this cache has been closed."
+                 type="boolean"
+                 is="true"
+            writeable="false"/>
+    <attribute   name="lockTimeout"
+          description="Seconds that a cache operation will wait to obtain a distributed lock lease."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="lockLease"
+          description="The length, in seconds, of distributed lock leases obtained by this cache."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="searchTimeout"
+          description="Seconds that a cache get operation can spend searching for a value before it times out."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="upTime"
+          description="Seconds that this cache has been open."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="rootRegionNames"
+          description="A set of the names of each root region currently in this cache."
+                 type="java.util.Set"
+            writeable="false"/>
+    <attribute   name="server"
+          description="Is this a cache server?"
+                 type="boolean"
+                   is="true"
+            writeable="true"/>
+
+    <operation   name="getSnapshot"
+          description="Get Member Cache Status"
+               impact="INFO"
+           returnType="com.gemstone.gemfire.admin.GemFireMemberStatus">
+    </operation>
+    <operation   name="getRegionSnapshot"
+          description="Get Member Cache's Region Snapshot"
+               impact="INFO"
+           returnType="com.gemstone.gemfire.admin.RegionSubRegionSnapshot">
+    </operation>
+    <operation   name="manageRegion"
+          description="Creates a SystemMemberRegion MBean for the region with the specified path."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName">
+      <parameter name="path" 
+          description="Full path of region to create an mbean for."
+                 type="java.lang.String" />
+    </operation>
+    <operation   name="getStatistics"
+          description="Returns a current snapshot of cache statistics."
+               impact="INFO"
+           returnType="[Lcom.gemstone.gemfire.admin.Statistic;">
+    </operation>
+    <operation   name="refresh"
+          description="Updates each attribute in this MBean."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+    <operation   name="manageBridgeServer"
+          description="Creates a new, unstarted bridge server for the cache. Deprecated as of 5.7 use manageCacheServer instead."
+               impact="ACTION"
+           returnType="javax.management.ObjectName">
+    </operation>
+    <operation   name="manageBridgeServers"
+          description="Returns the names of the MBeans for the cache's bridge servers. Deprecated as of 5.7 use manageCacheServer instead."
+               impact="ACTION"
+           returnType="[Ljavax.management.ObjectName;">
+    </operation>
+    <operation   name="manageCacheServer"
+          description="Creates a new, unstarted cache server for the cache"
+               impact="ACTION"
+           returnType="javax.management.ObjectName">
+    </operation>
+    <operation   name="manageCacheServers"
+          description="Returns the names of the MBeans for the cache's cache servers"
+               impact="ACTION"
+           returnType="[Ljavax.management.ObjectName;">
+    </operation>
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.SystemMemberRegion                       -->
+  <!-- =================================================================== -->
+  <mbean         name="SystemMemberRegion"
+          description="View of a GemFire system member cache's region"
+                 type="com.gemstone.gemfire.admin.SystemMemberRegion">
+                 
+    <attribute   name="name"
+          description="The name (not the full-path) of this region."
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="fullPath"
+          description="The full path name of this region"
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="userAttribute"
+          description="Description of the region's user attribute object."
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="cacheLoader"
+          description="Description of the region's cache loader."
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="cacheWriter"
+          description="Description of the region's cache writer."
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="evictionAttributes"
+          description="Description of the region's eviction attributes."
+                 type="com.gemstone.gemfire.cache.EvictionAttributes"
+            writeable="false"/>
+    <attribute   name="cacheListener"
+          description="Description of the region's cache listener. This attribute is deprecated as of 6.0. Use getCacheListeners method instead."
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="keyConstraint"
+          description="Name of the class that keys in this region are constrained to be"
+                 type="java.lang.String"
+            writeable="false"/>
+    <attribute   name="regionTimeToLiveTimeLimit"
+          description="This region's time to live time limit."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="regionTimeToLiveAction"
+          description="This region's time to live action."
+                 type="java.lang.Object"
+            writeable="false"/>
+    <attribute   name="entryTimeToLiveTimeLimit"
+          description="This region's entry time to live time limit."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="entryTimeToLiveAction"
+          description="This region's entry time to live action."
+                 type="java.lang.Object"
+            writeable="false"/>
+    <attribute   name="regionIdleTimeoutTimeLimit"
+          description="This region's idle timeout time limit."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="regionIdleTimeoutAction"
+          description="This region's idle timeout action."
+                 type="java.lang.Object"
+            writeable="false"/>
+    <attribute   name="entryIdleTimeoutTimeLimit"
+          description="This region's entry idle timeout time limit."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="entryIdleTimeoutAction"
+          description="This region's entry idle timeout action."
+                 type="java.lang.Object"
+            writeable="false"/>
+    <attribute   name="mirrorType"
+          description="This region's mirror type."
+                 type="java.lang.Object"
+            writeable="false"/>
+    <attribute   name="dataPolicy"
+          description="This region's data policy."
+                 type="java.lang.Object"
+            writeable="false"/>
+    <attribute   name="scope"
+          description="This region's scope."
+                 type="java.lang.Object"
+            writeable="false"/>
+    <attribute   name="initialCapacity"
+          description="This region's initial capacity."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="loadFactor"
+          description="This region's load factor."
+                 type="float"
+            writeable="false"/>
+    <attribute   name="concurrencyLevel"
+          description="This region's concurrency level."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="statisticsEnabled"
+          description="True if statistics are enabled on this region."
+                 type="boolean"
+            writeable="false"/>
+    <attribute   name="persistBackup"
+          description="true if the contents of the region are persisted to disk"
+                 type="boolean"
+                   is="false"
+            writeable="false"/>
+    <attribute   name="earlyAck"
+          description="false if ack is sent after processing update; true if sent early"
+                 type="boolean"
+                   is="false"
+            writeable="false"/>
+    <attribute   name="diskWriteAttributes"
+          description="Description of how the region's contents is written to disk "
+                 type="com.gemstone.gemfire.cache.DiskWriteAttributes"
+            writeable="false"/>
+    <attribute   name="diskDirs"
+          description="Directories to which the region's contents are written"
+                 type="[Ljava.io.File;"
+            writeable="false"/>
+    <attribute   name="entryCount"
+          description="Number of entries in this region."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="subregionCount"
+          description="Number of subregions in this region."
+                 type="int"
+            writeable="false"/>
+    <attribute   name="lastModifiedTime"
+          description="Last time an entry's value in this region or one of its subregions was modified."
+                 type="long"
+            writeable="false"/>
+    <attribute   name="lastAccessedTime"
+          description="Last time an entry in this region or one of its subregions was accessed."
+                 type="long"
+            writeable="false"/>
+    <attribute   name="hitCount"
+          description="Number of times that a get on this region found a local value."
+                 type="long"
+            writeable="false"/>
+    <attribute   name="missCount"
+          description="Number of times that a get on this region did not find a local value."
+                 type="long"
+            writeable="false"/>
+    <attribute   name="hitRatio"
+          description="Ratio of hits to total get calls."
+                 type="float"
+            writeable="false"/>
+    <attribute   name="subregionNames"
+          description="A set of the names of each subregion of this region."
+                 type="java.util.Set"
+            writeable="false"/>
+    <attribute   name="subregionFullPaths"
+          description="A set of the full paths of each subregion of this region."
+                 type="java.util.Set"
+            writeable="false"/>
+    <attribute   name="membershipAttributes"
+          description="Description of the region's membership attributes."
+                 type="com.gemstone.gemfire.cache.MembershipAttributes"
+            writeable="false"/>
+    <attribute   name="subscriptionAttributes"
+          description="Description of the region's subscription attributes."
+                 type="com.gemstone.gemfire.cache.SubscriptionAttributes"
+            writeable="false"/>
+    <attribute   name="partitionAttributes"
+          description="Description of the region's partition attributes."
+                 type="com.gemstone.gemfire.cache.PartitionAttributes"
+            writeable="false"/>        
+    <attribute   name="concurrencyChecksEnabled"
+          description="True if concurrent modifications are handled on this region."
+                 type="boolean"
+            writeable="false"/>
+
+    <operation   name="refresh"
+          description="Updates each attribute in this MBean."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+    <operation   name="getCacheListeners"
+          description="Descriptions of all CacheListeners on this region as a String array. If there are no cacheListeners defined on the region an empty array is returned."
+               impact="INFO"
+           returnType="[Ljava.lang.String;">
+    </operation>
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.SystemMemberCacheServer                 -->
+  <!-- =================================================================== -->
+  <mbean         name="SystemMemberCacheServer"
+          description="View of a GemFire system member's cache server"
+                 type="com.gemstone.gemfire.admin.SystemMemberCacheServer">
+                 
+    <attribute   name="port"
+          description="The port on which this cache server listens for clients."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="bindAddress"
+          description="The address on which this cache server listens for clients."
+                 type="java.lang.String"
+            writeable="true"/>
+    <attribute   name="hostnameForClients"
+          description="The host name or ip address that will be given to clients who discover this cache server"
+                 type="java.lang.String"
+            writeable="true"/>
+    <attribute   name="notifyBySubscription"
+          description="Whether or not this cache server should notify clients based on key subscription."
+                 type="boolean"
+            writeable="true"/>
+    <attribute   name="socketBufferSize"
+          description="The socket buffer size in bytes for connections made by clients to this server."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="maximumTimeBetweenPings"
+          description="The maximum amount of time, in milliseconds, between pinging a client to determine its health."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="maxConnections"
+          description="The maxium number of client connections allowed by this server."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="maxThreads"
+          description="The maxium number of threads allowed in this server to service client requests."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="maximumMessageCount"
+          description="The maximum number of messages that can be enqueued in a client-queue on this server."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="messageTimeToLive"
+          description="The time, in seconds, after which a message in a client-queue on this server will expire."
+                 type="int"
+            writeable="true"/>
+    <attribute   name="groups"
+          description="The list of server groups that this cache server belongs to."
+                 type="[Ljava.lang.String;"
+            writeable="true"/>
+	<attribute   name="loadPollInterval"
+          description="The period, in milliseconds, to test the load for this cache server using the load probe"
+                 type="long"
+            writeable="true"/>
+	<attribute   name="loadProbe"
+          description="The period, in milliseconds, to test the load for this cache server using the load probe"
+                 type="java.lang.String"
+            writeable="false"/>
+	  
+
+    <attribute   name="running"
+          description="True if cache server is running."
+                 type="boolean"
+                   is="true"
+            writeable="false"/>
+
+    <operation   name="start"
+          description="Starts the cache server."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+    <operation   name="stop"
+          description="Stops the cache server."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+    <operation   name="refresh"
+          description="Updates each attribute in this MBean."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.CacheVm                                  -->
+  <!-- =================================================================== -->
+  <mbean         name="CacheVm"
+          description="A dedicated Server VM that contains a GemFire Cache"
+                 type="com.gemstone.gemfire.admin.CacheVm">
+                 
+    <attribute   name="id"
+          description="A string that uniquely identifies the cache vm."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="name"
+          description="The JMX ObjectName of this managed resource."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="host"
+          description="The host machine on which the cache vm is running."
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="refreshInterval"
+          description="The interval (in seconds) between auto-refreshes of this application;s configuration attributes, as defined in the gemfire.properties file. To disable the JMX Timer service's auto-refresh feature, set this attribute to zero or less."
+                 type="int"/>
+
+    <attribute    name="version"
+           description="Display GemFire version information."
+                  type="java.lang.String"
+             writeable="false"/>
+             
+    <attribute    name="hasCache"
+           description="Does the cache vm host a GemFire Cache?"
+                  type="boolean"
+                    is="false"
+             getMethod="hasCache"
+             writeable="false"/>
+             
+    <attribute    name="distributedMember"
+           description="Distributed membership identity."
+                  type="com.gemstone.gemfire.distributed.DistributedMember"
+             writeable="false"/>             
+
+    <attribute   name="productDirectory"
+          description="The location of the GemFire installation used to run this cache vm."
+                 type="java.lang.String"
+            writeable="true"/>
+
+    <attribute   name="workingDirectory"
+          description="The directory in which the cache vm was launched."
+                 type="java.lang.String"
+            writeable="true"/>
+
+    <attribute   name="running"
+          description="True if this cache vm is running."
+                 type="boolean"
+            writeable="false"
+                   is="true"/>
+
+    <attribute   name="cacheXMLFile"
+          description="The declarative caching file user to configure this cache vm."
+                 type="java.lang.String"
+            writeable="true"/>
+
+    <attribute   name="classPath"
+          description="Location(s) of user classes required by cache vm"
+                 type="java.lang.String"
+            writeable="true"/>
+            
+    <notification name="gemfire.distributedsystem.cache.created"
+           description="A cache got created on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.created"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.created</notification-type>
+    </notification>
+
+    <notification name="gemfire.distributedsystem.cache.closed"
+           description="A cache is closed on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.closed"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.closed</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.region.created"
+           description="A region is created in a cache on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.region.created"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.region.created</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.region.lost"
+           description="A region was removed from a cache on a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.region.lost"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.region.lost</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.client.joined"
+           description="A cache client established a connection with a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.client.joined"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.client.joined</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.client.left"
+           description="A cache client gracefully closed a connection with a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.client.left"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.client.left</notification-type>
+    </notification>
+    
+    <notification name="gemfire.distributedsystem.cache.client.crashed"
+           description="A cache client crashed and abruptly lost connection with a member of this distributed system.">
+      <descriptor>
+        <field    name="name"           value="gemfire.distributedsystem.cache.client.crashed"/>
+        <field    name="severity"       value="6"/><!-- 6: normal, cleared, informative -->
+        <field    name="descriptorType" value="notification"/>
+      </descriptor>
+      <notification-type>gemfire.distributedsystem.cache.client.crashed</notification-type>
+    </notification>
+ 
+    <operation    name="getRoles"
+           description="Get the membership roles filled by this member."
+                impact="INFO"
+            returnType="[Ljava.lang.String;">
+    </operation>
+
+    <operation   name="start"
+          description="Start this cache vm."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+
+    <operation   name="waitToStart"
+          description="Wait for the cache vm to start"
+               impact="ACTION"
+           returnType="boolean">
+      <parameter name="timeout" 
+          description="Number of milliseconds to wait to start"
+                 type="long" />
+    </operation>
+
+    <operation   name="waitToStop"
+          description="Wait for the cache vm to stop"
+               impact="ACTION"
+           returnType="boolean">
+      <parameter name="timeout" 
+          description="Number of milliseconds to wait to stop"
+                 type="long" />
+    </operation>
+
+    <operation   name="stop"
+          description="Stop this cache vm."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+
+    <operation   name="getLog"
+          description="Display the log for this cache vm."
+               impact="INFO"
+           returnType="java.lang.String">
+    </operation>
+
+    <operation   name="getLicense"
+          description="Display GemFire licensing information."
+               impact="INFO"
+           returnType="java.util.Properties">
+    </operation>
+
+    <operation   name="manageCache"
+          description="Create a SystemMemberCache MBean for the cache in this cache vm."
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName">
+    </operation>
+    
+    <operation   name="manageStats"
+          description="Create a StatisticResource MBean for each statistic resource in this member."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;">
+    </operation>
+
+    <operation   name="manageStat"
+          description="Create a StatisticResource MBean for each statistic resource in this member, given the underlying Statistics Type name."
+               impact="ACTION_INFO"
+           returnType="[Ljavax.management.ObjectName;">
+      <parameter name="statisticsTypeName" 
+          description="Name of the underlying Statistics Type eg. DistributionStats"
+                 type="java.lang.String" />           
+    </operation>
+
+    <operation   name="refreshConfig"
+          description="Refresh configuration attributes for this application, using the gemfire.properties file."
+               impact="ACTION"
+           returnType="void">
+    </operation>
+    
+    <operation   name="getConfiguration"
+          description="Returns the current configuration attributes for this application, using the gemfire.properties file."
+               impact="ACTION"
+           returnType="[Lcom.gemstone.gemfire.admin.ConfigurationParameter;">
+    </operation>
+    
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.GemFireHealth                            -->
+  <!-- =================================================================== -->
+  <mbean         name="GemFireHealth"
+          description="Monitors the Health of GemFire"
+                 type="com.gemstone.gemfire.admin.GemFireHealth">
+
+    <attribute   name="health"
+          description="The overall health of the distributed system: Good, Okay, or Poor."
+                 type="com.gemstone.gemfire.admin.GemFireHealth$Health"
+            writeable="false"/>
+
+    <attribute   name="healthStatus"
+          description="The current status of the overall health of GemFire"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <operation   name="resetHealth"
+          description="Resets the overall health of the distributed system to Good (optimal)."
+               impact="ACTION_INFO"
+           returnType="void">
+    </operation>
+
+    <operation   name="getDiagnosis"
+          description="Returns a description of any causes of ill health in the distributed system."
+               impact="ACTION_INFO"
+           returnType="java.lang.String">
+    </operation>
+    
+    <operation   name="manageGemFireHealthConfig"
+          description="Registers a new GemFireHealthConfig MBean and returns its ObjectName"
+               impact="ACTION_INFO"
+           returnType="javax.management.ObjectName">
+      <parameter name="host" 
+          description="The host to monitor the health of"
+                 type="java.lang.String" />
+    </operation>
+
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.DistributedSystemHealthConfig            -->
+  <!-- =================================================================== -->
+  <mbean         name="DistributedSystemHealthConfig"
+          description="Configures how the health of a distributed system is determined"
+                 type="com.gemstone.gemfire.admin.DistributedSystemHealthConfig">
+
+    <attribute   name="maxDepartedApplications"
+          description="The maximum number of system members that can unexpectedly leave a healthy distributed system."
+                 type="long"
+            writeable="true"/>
+
+    <operation   name="applyChanges"
+          description="Applies these configuration attributes to the GemFire health monitor."
+               impact="ACTION_INFO"
+           returnType="void">
+    </operation>
+
+  </mbean>
+
+  <!-- =================================================================== -->
+  <!-- com.gemstone.gemfire.admin.GemFireHealthConfig                      -->
+  <!-- =================================================================== -->
+  <mbean         name="GemFireHealthConfig"
+          description="Configures how the health of GemFire components is determined"
+                 type="com.gemstone.gemfire.admin.GemFireHealthConfig">
+
+    <attribute   name="healthEvaluationInterval"
+          description="The number of seconds to wait between two health assessments of this distributed system."
+                 type="int"
+            writeable="true"/>
+
+    <!--  CacheHealthConfig  -->
+
+    <attribute   name="maxNetSearchTime"
+          description="The maximum time (in milliseconds) that a netSearch operation can take before the cache member is considered to be unhealthy."
+                 type="long"
+            writeable="true"/>
+
+    <attribute   name="maxLoadTime"
+          description="The maximum time (in milliseconds) that a cache load operation can take before the cache member is considered to be unhealthy."
+                 type="long"
+            writeable="true"/>
+
+    <attribute   name="minHitRatio"
+          description="The minimum hit ratio in order for a cache member to be considered healthy."
+                 type="double"
+            writeable="true"/>
+
+    <attribute   name="maxEventQueueSize"
+          description="The maximum number of entries in the event delivery queue of a healthy cache member."
+                 type="long"
+            writeable="true"/>
+
+    <!--  MemberHealthConfig  -->
+
+    <attribute   name="maxVMProcessSize"
+          description="The maximum process size (in megabytes) of a healthy member of the distributed system."
+                 type="long"
+            writeable="true"/>
+
+    <attribute   name="maxMessageQueueSize"
+          description="The maximum number of enqueued incoming or outgoing messages that a healthy member of a distributed system can have."
+                 type="long"
+            writeable="true"/>
+
+    <attribute   name="maxReplyTimeouts"
+          description="The maximum number of message replies that can time out in a healthy member."
+                 type="long"
+            writeable="true"/>
+
+    <!--  Operations  -->
+
+    <operation   name="applyChanges"
+          description="Applies this configuration to the GemFire health monitor."
+               impact="ACTION_INFO"
+           returnType="void">
+    </operation>
+
+  </mbean>
+
+</mbeans-descriptors>
+

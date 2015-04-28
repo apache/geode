@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+This is the XML DTD for defining StatisticsType and StatistDescriptor instances.
+All specifications must include a DOCTYPE of the following form:
+
+  <!DOCTYPE statistics PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Statistics Type//EN"
+    "http://www.gemstone.com/dtd/statisticsType.dtd">
+
+-->
+
+<!--
+
+The following conventions apply to all GemFire statistics type
+elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+
+-->
+
+<!-- 
+The "statistics" element is the root element of the document.
+This element identifies which types should be created.
+-->
+<!ELEMENT statistics (type)+>
+
+<!--  
+The "type" element describes a StatisticsType that is to be created.
+The "name" attribute specifies the name of the type.
+-->
+<!ELEMENT type (description?, (stat)+)>
+<!ATTLIST type
+  name CDATA #REQUIRED
+>
+
+<!-- 
+
+The "stat" element describes a StatisticDescriptor to add to the type.
+attribute should be set to "true".  By default, a stat is a counter
+which means its value always increases. If its value may decrease then
+set counter to false.
+
+By default larger values of a counter will indicate better performance.
+By default smaller values of a gauge will indicate better performance.
+
+By default a stat is stored in 32-bits as an "int". The storage can
+be specified to be a 64-bit "long" or "double".
+-->
+<!ELEMENT stat (description?, unit?)>
+<!ATTLIST stat
+  name CDATA #REQUIRED
+  counter (true | false) #IMPLIED
+  largerBetter (true | false) #IMPLIED
+  storage (int | long | double) #IMPLIED 
+>
+
+<!--
+The "description" element provides a description of a type or stat.
+-->
+<!ELEMENT description (#PCDATA)>
+
+<!--
+The unit element specifies the unit ("seconds", "items", "kilograms",
+etc.) of the stat's value.
+-->
+<!ELEMENT unit (#PCDATA)>

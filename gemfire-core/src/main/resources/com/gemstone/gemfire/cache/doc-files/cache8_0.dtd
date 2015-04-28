@@ -1,0 +1,1092 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================= -->
+<!--
+
+This is the XML DTD for the GemFire distributed cache declarative
+caching XML file.  All declarative cache files must include a DOCTYPE
+of the following form:
+
+  <!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
+    "http://www.gemstone.com/dtd/cache8_0.dtd">
+
+If you are declaring a client cache then use this DOCTYPE:
+
+  <!DOCTYPE client-cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
+    "http://www.gemstone.com/dtd/cache8_0.dtd">
+
+The contents of a declarative XML file correspond to APIs found in the
+com.gemstone.gemfire.cache and com.gemstone.gemfire.cache.client
+packages.  A declarative caching XML file is used to populate a Cache
+or a ClientCache when it is created.
+
+The top-level element in this syntax is "cache" or "client-cache".
+All elements are listed here in alphabetical order.
+
+The following conventions apply to all GemFire distributed cache
+declarative caching XML file elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+
+-->
+
+<!-- ======================================================= -->
+<!--
+An "asynchronous-writes" element specifies how entry data should be
+written to disk asynchronous.
+Deprecated as of 6.5 use disk-store instead.
+-->
+<!ELEMENT asynchronous-writes EMPTY>
+<!ATTLIST asynchronous-writes
+  bytes-threshold  CDATA #REQUIRED
+  time-interval    CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!--
+The "bridge-server" element specifies a Cache Bridge Server that is
+started when the Cache is declaratively initialized.
+NOTE: as of 5.7 this element is deprecated;
+      use the "cache-server" element instead.
+-->
+<!ELEMENT bridge-server (group*, client-subscription?, custom-load-probe?)>
+<!ATTLIST bridge-server
+   bind-address                CDATA #IMPLIED
+   hostname-for-clients        CDATA #IMPLIED
+   max-connections             CDATA #IMPLIED
+   maximum-message-count       CDATA #IMPLIED
+   maximum-time-between-pings  CDATA #IMPLIED
+   max-threads                 CDATA #IMPLIED
+   message-time-to-live        CDATA #IMPLIED
+   notify-by-subscription      (false | true) #IMPLIED
+   port                        CDATA #IMPLIED
+   socket-buffer-size          CDATA #IMPLIED
+   load-poll-interval          CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+The "cache-server" element specifies a Cache Server
+that will accept requests from clients and
+that is started when the Cache is declaratively initialized.
+-->
+<!ELEMENT cache-server (group*, client-subscription?, custom-load-probe?)>
+<!ATTLIST cache-server
+   bind-address                CDATA #IMPLIED
+   hostname-for-clients        CDATA #IMPLIED
+   max-connections             CDATA #IMPLIED
+   maximum-message-count       CDATA #IMPLIED
+   maximum-time-between-pings  CDATA #IMPLIED
+   max-threads                 CDATA #IMPLIED
+   message-time-to-live        CDATA #IMPLIED
+   notify-by-subscription      (false | true) #IMPLIED
+   port                        CDATA #IMPLIED
+   socket-buffer-size          CDATA #IMPLIED
+   load-poll-interval          CDATA #IMPLIED
+   tcp-no-delay                (false | true) #IMPLIED
+>
+
+<!--
+ A "client-subscription" element describes the eviction policy,
+ capacity and overflow-directory for client subscription config.
+ The overflow-directory attribute is deprecated as of 6.5 use disk-store-name instead.
+-->
+<!ELEMENT client-subscription EMPTY>
+<!ATTLIST client-subscription
+   eviction-policy             (entry | mem) #REQUIRED
+   capacity                    CDATA #REQUIRED
+   disk-store-name             CDATA #IMPLIED
+   overflow-directory          CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+A "custom-load-probe" element describes a callback that reports
+	the load on a cache-server.
+-->
+
+<!ELEMENT custom-load-probe (
+	class-name,
+	parameter*
+	)>
+
+<!-- ======================================================= -->
+<!--
+The "cache" element is the root element of the declarative cache file
+on a peer or server.
+This element configures a GemFire Cache and describes the root regions it
+contains, if any.
+-->
+
+<!ELEMENT cache (
+    cache-transaction-manager?,
+    dynamic-region-factory?,
+    gateway-hub*,
+    gateway-sender*,
+    gateway-receiver*,
+    gateway-conflict-resolver?,
+    async-event-queue*,
+    cache-server*,
+    bridge-server*,
+    pool*,
+    disk-store*,
+    pdx?,
+    region-attributes*,
+    (jndi-bindings | region | vm-root-region)*,
+    function-service?,
+    resource-manager?,
+    serialization-registration?,
+    backup*,
+    initializer?
+    )>
+<!ATTLIST cache
+  copy-on-read           (false | true) #IMPLIED
+  is-server              (false | true) #IMPLIED
+  lock-timeout           CDATA #IMPLIED
+  lock-lease             CDATA #IMPLIED
+  message-sync-interval  CDATA #IMPLIED
+  search-timeout         CDATA #IMPLIED
+>
+
+<!--
+The "client-cache" element is the root element of the declarative cache file
+on a client.
+This element configures a GemFire ClientCache and describes the root regions it
+contains, if any.
+-->
+<!ELEMENT client-cache (
+    cache-transaction-manager?,
+    dynamic-region-factory?,
+    pool*,
+    disk-store*,
+    pdx?,
+    region-attributes*,
+    (jndi-bindings | region)*,
+    function-service?,
+    resource-manager?,
+    serialization-registration?,
+    initializer?
+    )>
+<!ATTLIST client-cache
+  copy-on-read           (false | true) #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+The  backup element defines files or directories that should
+be backed up when the system wide backup command is invoked.
+Disk stores with persistent data are automatically backed up,
+they do not need to be listed with this element.
+-->
+<!ELEMENT backup (#PCDATA)>
+
+<!-- ======================================================= -->
+<!--
+The "resource manager" element configures the behavior of the resource manager.
+The resource manager provides support for resource management of its associated Cache -->
+<!ELEMENT resource-manager EMPTY>
+<!ATTLIST resource-manager
+  critical-heap-percentage  CDATA #IMPLIED
+  eviction-heap-percentage  CDATA #IMPLIED
+>
+
+
+<!-- ======================================================= -->
+<!--
+The "function service" element configures the behavior of the function service.
+The function service allows users to execute functions on data stored in
+GemFire -->
+<!ELEMENT function-service (
+    function*
+  )>
+
+<!-- ======================================================= -->
+ <!--
+The "function" element defines a function for registration in the function service 
+-->
+<!ELEMENT function (class-name, parameter*)>
+
+
+<!-- ======================================================= -->
+<!--
+A "cache-listener" element describes a region's CacheListener.
+-->
+<!ELEMENT cache-listener (
+    class-name, 
+    parameter*
+  )>
+
+<!-- ======================================================= -->
+<!--
+A "cache-loader" element describes a region's CacheLoader.
+-->
+<!ELEMENT cache-loader (
+    class-name, 
+    parameter*
+  )>
+
+<!-- ======================================================= -->
+<!--
+A "cache-transaction-manager" element allows insertion of cache-level
+transaction listeners.
+-->
+<!ELEMENT cache-transaction-manager (transaction-listener*,transaction-writer?)>
+
+<!-- ======================================================= -->
+<!--
+A "cache-writer" element describes a region's CacheWriter.
+-->
+<!ELEMENT cache-writer (
+    class-name, 
+    parameter*
+  )>
+
+<!-- ======================================================= -->
+<!--
+A compressor registers a custom class which extends Compressor
+to support compression on a region.
+-->
+<!ELEMENT compressor (
+    class-name 
+  )>
+
+<!-- ======================================================= -->
+<!--
+A "gateway-conflict-resolver" element describes a region's GatewayConflictResolver.
+It is used to resolve inter-system concurrency conflicts.
+-->
+<!ELEMENT gateway-conflict-resolver (
+    class-name, 
+    parameter*
+  )>
+
+<!-- ===================================================== -->
+<!--
+A serialization-registration contains a set of serializer or 
+instantiator tags to register customer DataSerializer extensions
+or DataSerializable implementations respectively.
+-->
+<!ELEMENT serialization-registration (
+    serializer*,
+    instantiator*
+  )>
+  
+<!-- ===================================================== -->
+<!--
+A serializer registers a custom class which extends DataSerializer
+to support custom serialization of non-modifiable object types inside
+GemFire. The class must have a public zero-arg constructor.
+-->
+<!ELEMENT serializer (
+    class-name
+  )>
+
+<!-- ===================================================== -->  
+<!--
+An instantiator registers a custom class which implements the
+DataSerializable interface to support custom object serialization
+inside GemFire. The class must have a public zero-arg constructor.
+-->
+<!ELEMENT instantiator (
+    class-name
+  )>
+<!--
+The id that the instantiator should associate with the DataSerializable
+type.
+-->
+<!ATTLIST instantiator
+    id	CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!-- 
+A "class-name" element specifies the name of a class, an
+instance of which is created when a declarative cache XML file is
+read.
+-->
+<!ELEMENT class-name (#PCDATA)>
+
+<!-- ======================================================= -->
+<!ELEMENT config-property (
+    config-property-name, 
+    config-property-type, 
+    config-property-value
+  )>
+
+<!-- ======================================================= -->
+<!ELEMENT config-property-name (#PCDATA)>
+
+<!-- ======================================================= -->
+<!ELEMENT config-property-type (#PCDATA)>
+
+<!-- ======================================================= -->
+<!ELEMENT config-property-value (#PCDATA)>
+
+<!-- ======================================================= -->
+<!--
+A "disk-store" element specifies a DiskStore for persistence.
+-->
+<!ELEMENT disk-store (disk-dirs?)>
+<!ATTLIST disk-store
+  name                           CDATA #REQUIRED
+  auto-compact                   (false | true) #IMPLIED
+  compaction-threshold           CDATA #IMPLIED
+  allow-force-compaction         (false | true) #IMPLIED
+  max-oplog-size                 CDATA #IMPLIED
+  time-interval                  CDATA #IMPLIED
+  write-buffer-size              CDATA #IMPLIED
+  queue-size                     CDATA #IMPLIED
+  disk-usage-warning-percentage  CDATA #IMPLIED
+  disk-usage-critical-percentage CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+A "pdx" element specifies the configuration for the portable data exchange (PDX) method of serialization.
+The "read-serialized" attribute is "early access".
+-->
+<!ELEMENT pdx (pdx-serializer?)>
+<!ATTLIST pdx
+  read-serialized       (false | true) #IMPLIED
+  ignore-unread-fields  (false | true) #IMPLIED
+  persistent            (false | true) #IMPLIED
+  disk-store-name       CDATA #IMPLIED 
+>
+
+<!-- ======================================================= -->
+<!--
+A "pdx-serializer" element describes a serializer used to serialize objects in the portable data exchange format.
+-->
+<!ELEMENT pdx-serializer (
+    class-name, 
+    parameter*
+  )>
+
+<!-- ======================================================= -->
+<!--
+A "pool" element specifies a client to server connection pool.
+-->
+<!ELEMENT pool (locator+|server+)>
+<!ATTLIST pool
+  free-connection-timeout                CDATA #IMPLIED
+  load-conditioning-interval             CDATA #IMPLIED
+  min-connections                        CDATA #IMPLIED
+  max-connections                        CDATA #IMPLIED
+  retry-attempts                         CDATA #IMPLIED
+  idle-timeout                           CDATA #IMPLIED
+  ping-interval                          CDATA #IMPLIED
+  name                                   CDATA #REQUIRED
+  read-timeout                           CDATA #IMPLIED
+  server-group                           CDATA #IMPLIED
+  socket-buffer-size                     CDATA #IMPLIED
+  subscription-enabled                   (false | true) #IMPLIED
+  subscription-message-tracking-timeout  CDATA #IMPLIED
+  subscription-ack-interval              CDATA #IMPLIED
+  subscription-redundancy                CDATA #IMPLIED
+  statistic-interval                     CDATA #IMPLIED
+  thread-local-connections               (false | true) #IMPLIED
+  pr-single-hop-enabled                  (false | true) #IMPLIED
+  multiuser-authentication               (false | true) #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+The "custom-expiry" element specifies a callback that specifies
+custom expiration attributes.  See the CustomExpiry class.
+-->
+<!ELEMENT custom-expiry (
+    class-name, 
+    parameter*
+  )>
+<!ATTLIST custom-expiry
+>
+
+<!-- ======================================================= -->
+<!--
+A "declarable" element specifies a Declarable object to be placed in a
+Region entry.
+-->
+<!ELEMENT declarable (
+    class-name, 
+    parameter*
+  )>
+
+<!-- ======================================================= -->
+<!--
+A "disk-dir" element specifies one of a region or diskstore's disk directories.
+-->
+<!ELEMENT disk-dir (#PCDATA)>
+<!ATTLIST disk-dir
+  dir-size 		CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!-- 
+A "disk-dirs" element specifies the region's disk directories.
+-->
+<!ELEMENT disk-dirs (disk-dir+)>
+
+<!-- ======================================================= -->
+<!--
+A "disk-write-attributes" element describes how entry data is written
+to disk. Deprecated as of 6.5 use disk-store instead.
+-->
+<!ELEMENT disk-write-attributes (asynchronous-writes | synchronous-writes)>
+<!ATTLIST disk-write-attributes
+  max-oplog-size  CDATA #IMPLIED
+  roll-oplogs     CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+A "dynamic-region-factory" element configures a dynamic region factory for
+this cache.  If this optional element is missing then the cache does not
+support dynamic regions.
+
+The optional "disk-dir" sub-element can be used to specify the directory to
+store the persistent files that are used for dynamic region bookkeeping.
+It defaults to the current directory.
+
+The pool-name attribute can be used to set the name of the connection
+	pool used by client applications in a client/server cache configuration. 
+	It should not be specified in servers or peers.
+	
+The optional "cache-loader" and "cache-writer" are for legacy client client
+	 applications that doen't use a connection pool. They must be a 
+	bridge-loader and a bridge-writer. They should not be specified in 
+	servers or peers.
+-->
+<!ELEMENT dynamic-region-factory (
+    disk-dir?,
+    cache-loader?, 
+    cache-writer?
+    )>
+<!ATTLIST dynamic-region-factory
+	disable-persist-backup     (true | false) #IMPLIED
+	disable-register-interest  (true | false) #IMPLIED
+	pool-name                  CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+An "entry" element desribes an entry to be added to a region.  Note
+that if an entry with the given key already exists in the region, it
+will be replaced.
+-->
+<!ELEMENT entry (
+    key, 
+    value
+  )>
+
+<!-- ======================================================= -->
+<!--
+A "entry-idle-time" element specifies a Region's entries' idle time.
+Note that the APIs that correspond to this element add "out" to their name.
+See getEntryIdleTimeout and setEntryIdleTimeout.
+-->
+<!ELEMENT entry-idle-time (expiration-attributes)>
+
+<!-- ======================================================= -->
+<!--
+A "entry-time-to-live" element specifies a Region's entries' time to
+live.
+-->
+<!ELEMENT entry-time-to-live (expiration-attributes)>
+
+<!-- ======================================================= -->
+<!-- 
+Create eviction attributes that monitor and control the size of the Region.
+-->
+<!ELEMENT eviction-attributes 
+    (lru-entry-count | lru-heap-percentage | lru-memory-size)?
+  >
+
+<!-- ======================================================= -->
+<!-- 
+An "expiration-attributes" element describes expiration.
+-->
+<!ELEMENT expiration-attributes (
+  custom-expiry?
+  )>
+<!ATTLIST expiration-attributes
+  action   (destroy | invalidate | local-destroy | local-invalidate) #IMPLIED
+  timeout  CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!-- 
+A functional type of index needs a from-clause, expression which are mandatory.
+The import string is used for specifying the type of Object in the region or
+the type of Object which the indexed expression evaluates to.
+-->
+<!ELEMENT functional EMPTY>
+<!ATTLIST functional 
+  expression   CDATA #REQUIRED  
+  from-clause  CDATA #REQUIRED
+  imports      CDATA #IMPLIED  
+>
+
+<!-- ======================================================= -->
+<!-- 
+An "index" element describes an index to be created on a region.
+The index node, if any, should all come immediately after the
+"region-attributes" node. There can be any number of  functional types
+of index on a Region, but only at max one index of type "primary-key". The
+"name" attribute is a required field which identifies the name of the index.
+-->
+<!ELEMENT index (functional | primary-key)?>
+<!ATTLIST index 
+  name  CDATA #REQUIRED
+  expression   CDATA #IMPLIED  
+  from-clause  CDATA #IMPLIED
+  imports      CDATA #IMPLIED
+  key-index    (false | true) #IMPLIED
+  type         (range | hash) "range" 
+>
+
+<!-- ======================================================= -->
+<!--
+A "initializer" element specifies a Declarable object whose init method
+will be called after all other cache.xml initialization is complete.
+-->
+<!ELEMENT initializer (
+    class-name, 
+    parameter*
+  )>
+
+
+<!-- ======================================================= -->
+<!--
+The "gateway" element specifies a Gateway that is
+initialized when a GatewayHub is declaratively initialized.
+-->
+<!ELEMENT gateway (
+    (gateway-endpoint+ | gateway-listener+), 
+    gateway-queue?
+  )>
+<!ATTLIST gateway
+  early-ack            (false | true) #IMPLIED
+  id                   CDATA #REQUIRED
+  socket-buffer-size   CDATA #IMPLIED
+  socket-read-timeout  CDATA #IMPLIED
+  concurrency-level    CDATA #IMPLIED
+  order-policy         CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+The "gateway-endpoint" element specifies an endpoint that is
+initialized when a Gateway is declaratively initialized.
+-->
+<!ELEMENT gateway-endpoint EMPTY>
+<!ATTLIST gateway-endpoint
+  host  CDATA #REQUIRED
+  id    CDATA #REQUIRED
+  port  CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!--
+The "gateway-hub" element specifies a Gateway Hub that is
+initialized when the Cache is declaratively initialized.
+-->
+<!ELEMENT gateway-hub (gateway*)>
+<!ATTLIST gateway-hub
+  id                          CDATA #REQUIRED
+  bind-address                CDATA #IMPLIED
+  maximum-time-between-pings  CDATA #IMPLIED
+  port                        CDATA #IMPLIED
+  socket-buffer-size          CDATA #IMPLIED
+  startup-policy              (primary | secondary | none) #IMPLIED
+  manual-start                (false | true) #IMPLIED
+  max-connections             CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+The "gateway-listener" element specifies a listener that is
+initialized when a Gateway is declaratively initialized.
+-->
+<!ELEMENT gateway-listener (
+    class-name, 
+    parameter*
+  )>
+<!ATTLIST gateway-listener
+>
+
+<!-- ======================================================= -->
+<!--
+The "gateway-queue" element specifies a queue that is
+initialized when a Gateway is declaratively initialized.
+As of 6.5 overflow-directory is deprecated. Use disk-store-name instead.
+As of 6.5 roll-oplogs is deprecated. Use disk-store-name instead.
+-->
+<!ELEMENT gateway-queue EMPTY>
+<!ATTLIST gateway-queue
+  alert-threshold 	CDATA #IMPLIED
+  batch-conflation 	(false | true) #IMPLIED
+  batch-size 		CDATA #IMPLIED
+  batch-time-interval 	CDATA #IMPLIED
+  enable-persistence 	(false | true) #IMPLIED
+  disk-store-name       CDATA #IMPLIED
+  roll-oplogs    	(false | true) #IMPLIED
+  maximum-queue-memory 	CDATA #IMPLIED
+  overflow-directory 	CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!ELEMENT gateway-sender (gateway-event-filter*,gateway-event-substitution-filter?,gateway-transport-filter*)>
+<!ATTLIST gateway-sender
+  id                           CDATA #REQUIRED
+  remote-distributed-system-id    CDATA #REQUIRED
+  parallel                     (false|true) #IMPLIED
+  manual-start                 (false | true) #IMPLIED
+  socket-buffer-size           CDATA #IMPLIED
+  socket-read-timeout          CDATA #IMPLIED
+  enable-batch-conflation      (false | true) #IMPLIED
+  batch-size                   CDATA #IMPLIED
+  batch-time-interval          CDATA #IMPLIED
+  enable-persistence           (false | true) #IMPLIED
+  disk-store-name              CDATA #IMPLIED
+  disk-synchronous			   (false | true) #IMPLIED
+  maximum-queue-memory         CDATA #IMPLIED
+  alert-threshold              CDATA #IMPLIED
+  dispatcher-threads           CDATA #IMPLIED
+  order-policy                 CDATA #IMPLIED
+ >
+ 
+ <!-- ======================================================= -->
+<!ELEMENT async-event-queue (gateway-event-filter*,gateway-event-substitution-filter?,async-event-listener)>
+<!ATTLIST async-event-queue
+  id                                           CDATA #REQUIRED
+  parallel                                     (false|true) #IMPLIED
+  batch-size                           CDATA #IMPLIED
+  batch-time-interval      CDATA #IMPLIED
+  enable-batch-conflation   (false | true) #IMPLIED
+  maximum-queue-memory                 CDATA #IMPLIED
+  persistent                           (false | true) #IMPLIED
+  disk-store-name                      CDATA #IMPLIED
+  disk-synchronous                     (false | true) #IMPLIED
+  dispatcher-threads        CDATA #IMPLIED
+  order-policy              CDATA #IMPLIED  
+>
+
+<!-- ======================================================= -->
+<!ELEMENT gateway-event-filter (class-name, parameter*)>
+
+<!-- ======================================================= -->
+<!ELEMENT gateway-transport-filter (class-name, parameter*)>
+
+<!-- ======================================================= -->
+<!ELEMENT gateway-event-substitution-filter (class-name, parameter*)>
+
+<!-- ======================================================= -->
+<!ELEMENT gateway-receiver (gateway-transport-filter*)>
+<!ATTLIST gateway-receiver
+  start-port                    CDATA #IMPLIED
+  end-port                      CDATA #IMPLIED
+  bind-address  		CDATA #IMPLIED
+  maximum-time-between-pings    CDATA #IMPLIED
+  socket-buffer-size            CDATA #IMPLIED
+  hostname-for-senders          CDATA #IMPLIED 
+  manual-start                  (false | true) #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!-- A "async-event-listener" element describes a region's AsyncEventListener. -->
+<!ELEMENT async-event-listener (class-name, parameter*)>
+
+<!-- ======================================================= -->
+<!--
+A "group" element specifies a single server group.
+Deprecated as of 7.0 use the groups gemfire property instead.
+-->
+<!ELEMENT group (#PCDATA)>
+
+<!-- ======================================================= -->
+<!-- 
+For every datasource which is bound to the JNDI tree, there will exist one
+jndi-binding tag. This tag will describe the property & configuration of the
+datasource. The attributes of jndi-binding are used for configuration by
+GemFire, while the property element is used to configure the custom property
+for the datasource.
+
+The "xa-datasource-class" must be set when type is XAPooledDataSource,
+"conn-pooled-datasource-class" must be set when type is PooledDataSource,
+and "jdbc-driver-class" msut be set when the type is SimpleDataSource.
+It is advisable to set the user-name and password as attributes
+rather than as a property element.
+Alternatively, they may both be set as attributes of the jndi-binding tag
+as well as an attribute of the property tag.
+-->
+<!ELEMENT jndi-binding (config-property*)>
+<!ATTLIST jndi-binding
+  blocking-timeout-seconds      CDATA #IMPLIED
+  conn-pooled-datasource-class  CDATA #IMPLIED
+  connection-url                CDATA #IMPLIED 
+  idle-timeout-seconds          CDATA #IMPLIED
+  init-pool-size                CDATA #IMPLIED
+  jdbc-driver-class             CDATA #IMPLIED 
+  jndi-name                     CDATA #REQUIRED
+  login-timeout-seconds         CDATA #IMPLIED
+  managed-conn-factory-class    CDATA #IMPLIED
+  max-pool-size                 CDATA #IMPLIED  
+  password                      CDATA #IMPLIED
+  transaction-type              CDATA #IMPLIED
+  type                          (ManagedDataSource | SimpleDataSource |
+                                PooledDataSource | XAPooledDataSource) #REQUIRED
+  user-name                     CDATA #IMPLIED
+  xa-datasource-class           CDATA #IMPLIED 
+>
+
+<!-- ======================================================= -->
+<!-- 
+A jndi-bindings element will contain the jndi-binding for each of the
+datasources which are to be bound with the JNDI Context.
+-->
+<!ELEMENT jndi-bindings (jndi-binding*)> 
+
+<!-- ======================================================= -->
+<!--
+A "key" element describes the key in a Region entry.
+-->
+<!ELEMENT key (string | declarable)>
+
+<!-- ======================================================= -->
+<!--
+A "key-constraint" element specifies the name of a class to which the
+keys of a region are constrained.
+-->
+<!ELEMENT key-constraint (#PCDATA)>
+
+<!-- ======================================================= -->
+<!--
+A "locator" element specifies the host and port that a server locator is listening on
+-->
+<!ELEMENT locator EMPTY>
+<!ATTLIST locator
+  host  CDATA #REQUIRED
+  port  CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!-- 
+Create an LRU eviction controller which performs the action if the 
+Region has more than the maximum number of Entries in the Region.
+-->
+<!ELEMENT lru-entry-count EMPTY>
+<!ATTLIST lru-entry-count
+    action   (local-destroy | overflow-to-disk) #IMPLIED
+    maximum  CDATA #IMPLIED
+  >
+
+<!-- ======================================================= -->
+<!--
+Create an LRU which evicts entries using the specified action
+when the heap is over the resource manager critical-heap-percentage.
+When the threshold has been exceeded each create or put operation
+is required to evict the same size of data which was added. The
+optional class-name and parameters allow for the declaration
+of an ObjectSizer, which will be used to determine data size.
+The class must implement the ObjectSizer interface.
+-->
+<!ELEMENT lru-heap-percentage (
+    class-name,
+    parameter*
+)?>
+<!ATTLIST lru-heap-percentage
+    action  (local-destroy | overflow-to-disk) #IMPLIED
+  >
+
+<!-- ======================================================= -->
+<!-- 
+Create an LRU that performs the action when the memory size of the Region is
+over the maximum.  The optional class-name and parameters allow for the
+declaration an ObjectSizer, which is used to measure the size of each Object
+in the Region.  The class must implement the ObjectSizer interface.
+-->
+<!ELEMENT lru-memory-size (
+    class-name, 
+    parameter*
+  )?>
+<!ATTLIST lru-memory-size
+    action   (local-destroy | overflow-to-disk) #IMPLIED
+    maximum  CDATA #IMPLIED
+  >
+
+<!-- ======================================================= -->
+<!--
+A "membership-attributes" element configures a region for membership
+constraints based on required roles.
+-->
+<!ELEMENT membership-attributes (required-role*)>
+<!ATTLIST membership-attributes
+  loss-action        (full-access | limited-access | no-access | reconnect)
+                     #IMPLIED
+  resumption-action  (none | reinitialize) #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!-- 
+A "parameter" element describes a parameter used to initialize a
+Declarable object.
+-->
+<!ELEMENT parameter (string | declarable)>
+<!ATTLIST parameter
+  name  CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!--
+A "partition-attributes" element configures a region for partitioned
+data storage.
+
+  local-max-memory attribute added to partition-attributes in release 5.1
+  total-max-memory attribute added to partition-attributes in release 5.1
+  total-num-buckets attribute added to partition-attributes in release 5.1
+  partition-resolver attribute added to partition-attributes in release 5.7
+  partition-listener attribute added to partition-attributes in release 6.1
+  colocated-with attribute added to partition-attributes in release 5.7
+-->
+<!ELEMENT partition-attributes (partition-resolver?, partition-listener*, fixed-partition-attributes*)>
+<!ATTLIST partition-attributes
+  local-max-memory        CDATA #IMPLIED
+  recovery-delay          CDATA #IMPLIED
+  redundant-copies        CDATA #IMPLIED
+  startup-recovery-delay  CDATA #IMPLIED
+  total-max-memory        CDATA #IMPLIED
+  total-num-buckets       CDATA #IMPLIED
+  colocated-with          CDATA #IMPLIED
+>
+<!--
+	A "partition-resolver" element describes a partitioned region's custom
+	PartitionResolver.
+-->
+<!ELEMENT partition-resolver (class-name, parameter*)>
+<!ATTLIST partition-resolver
+  name CDATA #IMPLIED
+>
+ 
+<!--
+	A "partition-listener" element describes a partitioned region's custom
+	PartitionListener.
+-->
+<!ELEMENT partition-listener (class-name, parameter*)>
+
+<!--
+	A "fixed-partition-attributes" element describes characteristics of a 
+	partition in a Fixed Partitioned Region.
+-->
+<!ELEMENT fixed-partition-attributes EMPTY> 
+<!ATTLIST fixed-partition-attributes
+  partition-name CDATA #REQUIRED
+  is-primary (true | false) #IMPLIED
+  num-buckets CDATA #IMPLIED
+>
+
+<!-- Will put refid later.....refid   IDREF #IMPLIED -->
+<!-- ======================================================= -->
+<!-- 
+A primary-key type of index needs a field attribute  which is mandatory.
+There should be only one or zero primary-index defined for a region
+-->
+<!ELEMENT primary-key EMPTY>
+<!ATTLIST primary-key 
+  field  CDATA #REQUIRED    
+>
+
+<!-- ======================================================= -->
+<!--
+A "region" element describes a region (and its entries) in GemFire
+distributed cache.  It may be used to create a new region or may be
+used to add new entries to an existing region.  Note that the "name"
+attribute specifies the simple name of the region; it cannot contain a
+"/".
+If "refid" is set then it defines the default region attributes to use for this region.
+A nested "region-attributes" element can override these defaults.
+If the nested "region-attributes" element has its own "refid" then it will cause the
+"refid" on the region to be ignored.
+"refid" can be set to the name of a RegionShortcut or a ClientRegionShortcut
+(see the javadocs of those enum classes for their names).
+-->
+<!ELEMENT region (
+    region-attributes*,
+    index*, 
+    entry*, 
+    region*
+)>
+<!ATTLIST region
+  name  CDATA #REQUIRED
+  refid CDATA #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+A "region-attributes" element describes the attributes of a region to
+be created.
+As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name instead.
+-->
+<!ELEMENT region-attributes (
+    key-constraint?, 
+    value-constraint?,
+    region-time-to-live?,
+    region-idle-time?, 
+    entry-time-to-live?, 
+    entry-idle-time?,
+    disk-write-attributes?, 
+    disk-dirs?, 
+    partition-attributes?,
+    membership-attributes?, 
+    subscription-attributes?,
+    cache-loader?, 
+    cache-writer?, 
+    cache-listener*, 
+    compressor?,
+    eviction-attributes?
+  )>
+<!ATTLIST region-attributes
+  concurrency-level               CDATA #IMPLIED
+  data-policy                     (empty | normal | partition 
+                                  | persistent-replicate | preloaded | replicate
+                                  | persistent-partition ) #IMPLIED
+  early-ack                       (false | true) #IMPLIED
+  enable-async-conflation         (false | true) #IMPLIED
+  enable-gateway                  (false | true) #IMPLIED
+  enable-subscription-conflation  (false | true) #IMPLIED
+  gateway-sender-ids              CDATA #IMPLIED
+  async-event-queue-ids		  	    CDATA #IMPLIED	
+  hub-id                          CDATA #IMPLIED
+  id                              CDATA #IMPLIED
+  ignore-jta                      (false | true) #IMPLIED
+  index-update-type               (asynchronous | synchronous) #IMPLIED
+  initial-capacity                CDATA #IMPLIED
+  is-lock-grantor                 (false | true) #IMPLIED
+  load-factor                     CDATA #IMPLIED
+  mirror-type                     (keys | keys-values | none) #IMPLIED
+  multicast-enabled               (false | true) #IMPLIED
+  persist-backup                  (false | true) #IMPLIED
+  pool-name                       CDATA #IMPLIED
+  disk-store-name                 CDATA #IMPLIED
+  disk-synchronous                (false | true) #IMPLIED
+  publisher                       (false | true) #IMPLIED
+  refid                           CDATA #IMPLIED
+  scope                           (distributed-ack | distributed-no-ack | global
+                                  | local) #IMPLIED
+  statistics-enabled              (false | true) #IMPLIED
+  cloning-enabled                 (false | true) #IMPLIED
+  concurrency-checks-enabled      (false | true) "true"
+>
+
+<!-- ======================================================= -->
+<!--
+A "region-idle-time" element specifies a Region's idle time.
+Note that the APIs that correspond to this element add "out" to their name.
+See getRegionIdleTimeout and setRegionIdleTimeout.
+-->
+<!ELEMENT region-idle-time (expiration-attributes)>
+
+<!-- ======================================================= -->
+<!--
+A "region-time-to-live" element specifies a Region's time to live.
+-->
+<!ELEMENT region-time-to-live (expiration-attributes)>
+
+<!-- ======================================================= -->
+<!--
+A "required-role" element specifies a role that is required for reliable
+access to the region
+-->
+
+<!-- ======================================================= -->
+<!ELEMENT required-role EMPTY>
+<!ATTLIST required-role
+  name  CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!--
+A "server" element specifies the host and port that a cache server is listening on
+-->
+<!ELEMENT server EMPTY>
+<!ATTLIST server
+  host  CDATA #REQUIRED
+  port  CDATA #REQUIRED
+>
+
+<!-- ======================================================= -->
+<!--
+A "string" element specifies a String to be placed in a Region entry.
+-->
+<!ELEMENT string (#PCDATA)>
+
+<!-- ======================================================= -->
+<!--
+A "subscription-attributes" element configures how a region subscribes
+to remote distributed regions.
+-->
+<!ELEMENT subscription-attributes EMPTY>
+<!ATTLIST subscription-attributes
+  interest-policy  (all | cache-content) #IMPLIED
+>
+
+<!-- ======================================================= -->
+<!--
+A "synchronous-writes" element specifies that entry data should be
+written to disk synchronously.
+-->
+<!ELEMENT synchronous-writes EMPTY>
+
+<!-- ======================================================= -->
+<!--
+A "transaction-listener" describes a TransactionListener.
+-->
+<!ELEMENT transaction-listener (class-name, parameter*)>
+
+<!-- ======================================================= -->
+<!--
+A "transaction-writer" describes a TransactionWriter.
+-->
+
+<!ELEMENT transaction-writer (class-name, parameter*)>
+
+
+
+<!-- ======================================================= -->
+<!--
+A "value" element describes the value in a Region entry
+-->
+<!ELEMENT value (string | declarable)>
+
+<!-- ======================================================= -->
+<!--
+A "value-constraint" element specifies the name of a class to which the
+values of a region are constrained.
+-->
+<!ELEMENT value-constraint (#PCDATA)>
+
+
+<!-- ======================================================= -->
+<!--
+A "vm-root-region" element is the same as "region".
+This element exists for backwards compatiblity and should not be used
+in new xml files.
+-->
+
+<!-- ======================================================= -->
+<!ELEMENT vm-root-region (
+    region-attributes, 
+    index*, 
+    entry*, 
+    region*
+  )>
+<!ATTLIST vm-root-region
+  name  CDATA #REQUIRED
+>
+<!-- ======================================================= -->
+

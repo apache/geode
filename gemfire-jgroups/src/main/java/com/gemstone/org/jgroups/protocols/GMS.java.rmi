@@ -1,0 +1,219 @@
+
+/* Todo:
+
+   - Discard messages from members not in our current view (?)
+
+*/
+
+
+package JavaGroups.JavaStack.Protocols;
+
+import java.util.*;
+import JavaGroups.*;
+import JavaGroups.JavaStack.*;
+
+
+public class GMS extends Protocol implements Transportable {
+    private final int       type=Conf.GMS_MSG;
+    private Properties      props=null;
+    private GmsImpl         gms_impl=null;
+    private MethodInvoker   method_invoker=new MethodInvoker(this, false);
+    private String          channel_name=null;
+    private Queue           rsp_queue=new Queue();
+    private String          gossip_host=null;
+    private int             gossip_port=0;
+    private GossipClient    gossip=null;
+    private boolean         gossiping=false;
+
+
+
+    public GMS() {
+	method_invoker.SetMethodLookup(new MethodLookupClos());
+	gms_impl=new GmsImpl(this);
+	method_invoker.AddTargetObject(gms_impl);
+    }
+
+    public ProtocolStack GetProtocolStack()    {return stack;}
+    public String        GetName()             {return "GMS";}
+    public boolean       UseGossip()           {return gossiping;}
+
+    public Vector        FindInitialMembers(String channel_name) {
+	if(gossip != null)
+	    return gossip.Get(channel_name);
+	return new Vector();
+    }
+
+
+    public void Join(Oid new_member) {
+	gms_impl.Join(new_member);
+    }
+
+    public void Leave(Oid member) {
+	gms_impl.Leave(member);
+    }
+
+
+
+    /*-------------------------- Interface Transportable -------------------------------*/
+
+    /** Used e.g. by MethodInvoker to return a response. Tag the message with our type. */
+    public void Send(Message msg) throws Exception {
+	if(msg.GetDest() == null)
+	    msg.SetDest(new Oid(channel_name, type));
+	else
+	    ((Oid)msg.GetDest()).SetType(type);
+	Down(new Event(Event.MSG, msg));
+    }
+    
+    /** Remove a message from the rsp_queue */
+    public Message Receive(long timeout) throws Exception {
+	try {
+	    return (Message)rsp_queue.Remove(timeout);
+	}
+	catch(TimeoutException tex) {
+	    throw tex;
+	}
+	catch(QueueClosed closed) {
+	    return null;
+	}
+	catch(Exception e) {
+	    System.err.println("GMS.Receive(): " + e);
+	}
+	return null;
+    }
+
+    /*----------------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+    /*------------------------------- Interface Protocol -------------------------------*/
+    /**
+     * In case of a request, forward the message to the method invoker. In case of a response,
+     * put it on the response queue, to be retrieved by later Receive() calls.
+     */
+    public void Up(Event evt) {
+	int      msg_type;
+	Message  msg;
+	Header   hdr;
+
+	if(evt.GetType() != Event.MSG) {
+	    PassUp(evt);
+	    return;
+	}
+	
+	msg=(Message)evt.GetArg();
+	hdr=msg.RemoveHeader();
+
+	try {
+	    msg_type=((Oid)msg.GetDest()).GetType();
+	    if(msg_type == type) {
+		if(msg.IsResponse())
+		    rsp_queue.Add(msg);
+		else
+		    method_invoker.Receive(msg);
+		return;
+	    }
+	    PassUp(evt);
+	}
+	catch(Exception e) {
+	    System.err.println(e);
+	}	
+    }
+
+
+    public void Down(Event evt) {	
+	Message msg;
+	if(evt.GetType() != Event.MSG) {
+	    HandleDownEvent(evt);
+	    return;
+	}	
+	msg=(Message)evt.GetArg();
+	msg.AddHeader(new Header(gms_impl.GetViewId()));
+	PassDown(evt);
+    }
+
+
+	
+    private void HandleDownEvent(Event evt) {
+
+	switch(evt.GetType()) {
+
+	case Event.JOIN:
+	    gms_impl.StartJoin();
+	    break;
+	    
+	case Event.LEAVE:
+	    gms_impl.StartLeave((Oid)evt.GetArg());
+	    PassUp(new Event(Event.LEAVE_OK));
+	    break;
+	    
+	default:
+	    PassDown(evt);
+	}
+	
+    }
+
+
+    public void StartWork() {
+	Address local_addr;
+
+	if(stack != null)
+	    channel_name=stack.GetChannelName();
+	if(gms_impl == null) {
+	    System.err.println("GMS.StartWork(): gms_impl is null");
+	    return;
+	}
+	if(gossiping) {
+	    if(gossip == null) {
+		gossip=new GossipClient(stack.GetChannelName(), gossip_host, gossip_port);
+		local_addr=stack != null ? stack.GetLocalAddress() : null;
+		if(local_addr != null)
+		    gossip.SetAddress(new Oid(local_addr, stack.GetChannelName()));
+		else
+		    System.err.println("GMS.StartWork(): starting gossip client, but local " +
+				       "address is null !");
+		gossip.Start();
+	    }
+	}
+    }
+
+    public void StopWork() {
+	if(gossip != null) {
+	    gossip.Stop();
+	    gossip=null;
+	}
+    }
+
+
+ /** Setup the Protocol instance acording to the configuration string */
+    public void SetProperties(Properties props) {
+	String     str;
+	this.props=props;
+
+	str=props.getProperty("gossip_host");
+	if(str != null)
+	    gossip_host=new String(str);
+
+	str=props.getProperty("gossip_port");
+	if(str != null)
+	    gossip_port=new Integer(str).intValue();
+
+	if(gossip_host != null && gossip_port != 0)
+	    gossiping=true;
+
+    }
+
+
+
+    public String toString() {
+	return "Protocol GMS";
+    }
+
+    /*----------------------------------------------------------------------------------*/
+
+
+}

@@ -1,0 +1,29 @@
+<HTML>
+<BODY>
+
+<!-- ------------------------------------------------------------ -->
+
+<H1>GemFire Administration</H1>
+
+<P><B>Developer:</B> Darrel Schneider</P>
+
+<H2>Logging</H2>
+
+<P>GemFire provides a {@linkplain com.gemstone.gemfire.LogWriter
+logging API} that is similar to the one provided by standard java.
+The {@link com.gemstone.gemfire.internal.logging.LogWriterImpl} class provides
+implementations of a number of the <code>LogWriter</code> methods.
+There is one concrete implementation of <code>LogWriterImpl</code>.
+It is {@link com.gemstone.gemfire.internal.logging.PureLogWriter} that
+writes to a VM-local {@link java.io.PrintStream}.</P>
+
+<P>The {@link com.gemstone.gemfire.internal.logging.MergeLogFiles} utility can
+be used to merged multiple log files together sorted by the timestamp
+of their entries.</P>
+
+<H2>Statistics</H2>
+
+<H2>Software Licensing</H2>
+
+</BODY>
+</HTML>

@@ -1,0 +1,498 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *========================================================================
+ */
+package com.gemstone.gemfire.internal;
+
+import com.gemstone.gemfire.Statistics;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.admin.ListenerIdMap;
+import com.gemstone.gemfire.internal.admin.remote.StatListenerMessage;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.logging.log4j.Logger;
+
+/**
+ * GemFireStatSampler adds listeners and rolling archives to HostStatSampler.
+ * <p>
+ * The StatisticsManager is implemented by DistributedSystem.
+ * 
+ * @author Darrel Schneider
+ * @author Kirk Lund
+ * @author Swapnil Bawaskar
+ */
+public final class GemFireStatSampler extends HostStatSampler  {
+
+  private static final Logger logger = LogService.getLogger();
+  
+  private final ListenerIdMap listeners = new ListenerIdMap();
+  
+  // TODO: change the listener maps to be copy-on-write
+  
+  private final Map<LocalStatListenerImpl, Boolean> localListeners = 
+      new ConcurrentHashMap<LocalStatListenerImpl, Boolean>();
+  
+  private final Map<InternalDistributedMember, List<RemoteStatListenerImpl>> recipientToListeners = 
+      new HashMap<InternalDistributedMember, List<RemoteStatListenerImpl>>();
+  
+  private final InternalDistributedSystem con;
+  
+  private int nextListenerId = 1;
+  private ProcessStats processStats = null;
+
+  //////////////////////  Constructors  //////////////////////
+
+  public GemFireStatSampler(InternalDistributedSystem con) {
+    super(con.getCancelCriterion(), new StatSamplerStats(con, con.getId()));
+    this.con = con;
+  }
+  
+  /**
+   * Returns the <code>ProcessStats</code> for this Java VM.  Note
+   * that <code>null</code> will be returned if operating statistics
+   * are disabled.
+   *
+   * @since 3.5
+   */
+  public final ProcessStats getProcessStats() {
+    return this.processStats;
+  }
+  
+  @Override
+  public String getProductDescription() {
+    return "GemFire " + GemFireVersion.getGemFireVersion()
+      + " #" + GemFireVersion.getBuildId()
+      + " as of " + GemFireVersion.getSourceDate();
+  }
+
+  public int addListener(InternalDistributedMember recipient, long resourceId, String statName) {
+    int result = getNextListenerId();
+    synchronized (listeners) {
+      while (listeners.get(result) != null) {
+        // previous one was still being used
+        result = getNextListenerId();
+      }
+      RemoteStatListenerImpl sl = RemoteStatListenerImpl.create(result, recipient, 
+          resourceId, statName, this);
+      listeners.put(result, sl);
+      List<RemoteStatListenerImpl> l = recipientToListeners.get(recipient);
+      if (l == null) {
+        l = new ArrayList<RemoteStatListenerImpl>();
+        recipientToListeners.put(recipient, l);
+      }
+      l.add(sl);
+    }
+    return result;
+  }
+  
+  public boolean removeListener(int listenerId) {
+    synchronized (listeners) {
+      RemoteStatListenerImpl sl = (RemoteStatListenerImpl)listeners.remove(listenerId);
+      if (sl != null) {
+        List<RemoteStatListenerImpl> l = recipientToListeners.get(sl.getRecipient());
+        l.remove(sl);
+      }
+      return sl != null;
+    }
+  }
+
+  public void removeListenersByRecipient(InternalDistributedMember recipient) {
+    synchronized (listeners) {
+      List<RemoteStatListenerImpl> l = recipientToListeners.get(recipient);
+      if (l != null && l.size() != 0) {
+        for (RemoteStatListenerImpl sl : l) {
+          listeners.remove(sl.getListenerId());
+        }
+        recipientToListeners.remove(recipient);
+      }
+    }
+  }
+
+  public void addLocalStatListener(LocalStatListener l, Statistics stats, String statName) {
+    LocalStatListenerImpl sl = null;
+    synchronized (LocalStatListenerImpl.class) {
+      sl = LocalStatListenerImpl.create(l, stats, statName);
+    }
+    this.localListeners.put(sl, Boolean.TRUE);
+  }
+
+  public boolean removeLocalStatListener(LocalStatListener listener) {
+    Iterator<Map.Entry<LocalStatListenerImpl, Boolean>> it = 
+                  this.localListeners.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry<LocalStatListenerImpl, Boolean> entry = it.next();
+      if (listener.equals(entry.getKey().getListener())) {
+        it.remove();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public Set<LocalStatListenerImpl> getLocalListeners() {
+    return this.localListeners.keySet();
+  }
+  
+  @Override
+  public final File getArchiveFileName() {
+    return this.con.getConfig().getStatisticArchiveFile();
+  }
+  
+  @Override
+  public final long getArchiveFileSizeLimit() {
+    if (fileSizeLimitInKB()) {
+      // use KB instead of MB to speed up rolling for testing
+      return ((long)this.con.getConfig().getArchiveFileSizeLimit()) * (1024);
+    } else {
+      return ((long)this.con.getConfig().getArchiveFileSizeLimit()) * (1024*1024);
+    }
+  }
+  
+  @Override
+  public final long getArchiveDiskSpaceLimit() {
+    if (fileSizeLimitInKB()) {
+      // use KB instead of MB to speed up removal for testing
+      return ((long)this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024);
+    } else {
+      return ((long)this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024*1024);
+    }
+  }
+  
+  @Override
+  protected void checkListeners() {
+    checkLocalListeners();
+    synchronized (listeners) {
+      if (listeners.size() == 0) {
+        return;
+      }
+      long timeStamp = System.currentTimeMillis();
+      Iterator<Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>>> it1 = 
+          recipientToListeners.entrySet().iterator();
+      while (it1.hasNext()) {
+        if (stopRequested()) return;
+        Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> me = 
+            it1.next();
+        List<RemoteStatListenerImpl> l = me.getValue();
+        if (l.size() > 0) {
+          InternalDistributedMember recipient = (InternalDistributedMember)me.getKey();
+          StatListenerMessage msg =
+            StatListenerMessage.create(timeStamp, l.size());
+          msg.setRecipient(recipient);
+          for (RemoteStatListenerImpl statListener : l) {
+            if (getStatisticsManager().statisticsExists(statListener.getStatId())) {
+              statListener.checkForChange(msg);
+            } else {
+              // its stale; indicate this with a negative listener id
+              // fix for bug 29405
+              msg.addChange(-statListener.getListenerId(), 0);
+            }
+          }
+          this.con.getDistributionManager().putOutgoing(msg);
+        }
+      }
+    }
+  }
+  
+  @Override
+  protected final int getSampleRate() {
+    return this.con.getConfig().getStatisticSampleRate();
+  }
+  
+  @Override
+  public final boolean isSamplingEnabled() {
+    return this.con.getConfig().getStatisticSamplingEnabled();
+  }
+  
+  @Override
+  protected final StatisticsManager getStatisticsManager() {
+    return this.con;
+  }
+  
+  @Override
+  protected final OsStatisticsFactory getOsStatisticsFactory() {
+    return this.con;
+  }
+  
+  @Override
+  protected final long getSpecialStatsId() {
+    long statId = OSProcess.getId();
+    if (statId == 0 || statId == -1) {
+      statId = getStatisticsManager().getId();
+    }
+    return statId;
+  }
+  
+  @Override
+  protected final void initProcessStats(long id) {
+    if (PureJavaMode.osStatsAreAvailable()) {
+      if (osStatsDisabled()) {
+        logger.info(LogMarker.STATISTICS, LocalizedMessage.create(LocalizedStrings.GemFireStatSampler_OS_STATISTIC_COLLECTION_DISABLED_BY_OSSTATSDISABLED_SYSTEM_PROPERTY));
+      } else {
+        int retVal = HostStatHelper.initOSStats();
+        if ( retVal != 0 ) {
+          logger.error(LogMarker.STATISTICS, LocalizedMessage.create(LocalizedStrings.GemFireStatSampler_OS_STATISTICS_FAILED_TO_INITIALIZE_PROPERLY_SOME_STATS_MAY_BE_MISSING_SEE_BUGNOTE_37160)); 
+        }
+        HostStatHelper.newSystem(getOsStatisticsFactory());
+        String statName = getStatisticsManager().getName();
+        if (statName == null || statName.length() == 0) {
+          statName = "javaApp" + getStatisticsManager().getId();
+        }
+        Statistics stats = HostStatHelper.newProcess(getOsStatisticsFactory(), id, statName + "-proc");
+        this.processStats = HostStatHelper.newProcessStats(stats); 
+      }
+    }
+  }
+
+ @Override
+  protected final void sampleProcessStats(boolean prepareOnly) {
+    if (prepareOnly || osStatsDisabled() || !PureJavaMode.osStatsAreAvailable()) {
+      return;
+    }
+    List<Statistics> l = getStatisticsManager().getStatsList();
+    if (l == null) {
+      return;
+    }
+    if (stopRequested()) return;
+    HostStatHelper.readyRefreshOSStats();
+    synchronized (l) {
+      Iterator<Statistics> it = l.iterator();
+      while (it.hasNext()) {
+        if (stopRequested()) return;
+        StatisticsImpl s = (StatisticsImpl)it.next();
+        if (s.usesSystemCalls()) {
+          HostStatHelper.refresh((LocalStatisticsImpl)s);
+        }
+      }
+    }
+  }
+
+ @Override
+  protected final void closeProcessStats() {
+    if (PureJavaMode.osStatsAreAvailable()) {
+      if (!osStatsDisabled()) {
+        if (this.processStats != null) {
+          this.processStats.close();
+        }
+        HostStatHelper.closeOSStats();
+      }
+    }
+  }
+
+  private void checkLocalListeners() {
+    for (LocalStatListenerImpl st : this.localListeners.keySet()) {
+      if (getStatisticsManager().statisticsExists(st.getStatId())) {
+        st.checkForChange();
+      }
+    }
+  }
+  
+  private int getNextListenerId() {
+    int result = nextListenerId++;
+    if (nextListenerId < 0) {
+      nextListenerId = 1;
+    }
+    return result;
+  }
+    
+  protected static abstract class StatListenerImpl {
+    protected Statistics stats;
+    protected StatisticDescriptorImpl stat;
+    protected boolean oldValueInitialized = false;
+    protected long oldValue;
+
+    public long getStatId() {
+      if (this.stats.isClosed()) {
+        return -1;
+      } else {
+        return this.stats.getUniqueId();
+      }
+    }
+    
+    protected abstract double getBitsAsDouble(long bits);
+  }
+
+  protected static abstract class LocalStatListenerImpl extends StatListenerImpl {
+    private LocalStatListener listener;
+    
+    public LocalStatListener getListener() {
+      return this.listener;
+    }
+    
+    static LocalStatListenerImpl create(LocalStatListener l, Statistics stats, String statName) {
+      LocalStatListenerImpl result = null;
+      StatisticDescriptorImpl stat = (StatisticDescriptorImpl)stats.nameToDescriptor(statName);
+      switch (stat.getTypeCode()) {
+      case StatisticDescriptorImpl.BYTE:
+      case StatisticDescriptorImpl.SHORT:
+      case StatisticDescriptorImpl.INT:
+      case StatisticDescriptorImpl.LONG:
+        result = new LocalLongStatListenerImpl();
+        break;
+      case StatisticDescriptorImpl.FLOAT:
+        result = new LocalFloatStatListenerImpl();
+        break;
+      case StatisticDescriptorImpl.DOUBLE:
+        result = new LocalDoubleStatListenerImpl();
+        break;
+      default:
+        throw new RuntimeException("Illegal field type " + stats.getType() + " for statistic");
+      }
+      result.stats = stats;
+      result.stat = stat;
+      result.listener = l;
+      return result;
+    }
+    
+    /**
+     * Checks to see if the value of the stat has changed. If it has then 
+     * the local listener is fired
+     */
+    public void checkForChange() {
+      long currentValue = stats.getRawBits(stat);
+      if (oldValueInitialized) {
+        if (currentValue == oldValue) {
+          return;
+        }
+      } else {
+        oldValueInitialized = true;
+      }
+      oldValue = currentValue;
+      listener.statValueChanged(getBitsAsDouble(currentValue));
+    }
+  }
+  
+  protected static class LocalLongStatListenerImpl extends LocalStatListenerImpl {
+    @Override
+    protected double getBitsAsDouble(long bits) {
+      return bits;
+    }
+  }
+
+  protected static class LocalFloatStatListenerImpl extends LocalStatListenerImpl {
+    @Override
+    protected double getBitsAsDouble(long bits) {
+      return Float.intBitsToFloat((int)bits);
+    }
+  }
+  
+  protected static class LocalDoubleStatListenerImpl extends LocalStatListenerImpl {
+    @Override
+    protected double getBitsAsDouble(long bits) {
+      return Double.longBitsToDouble(bits);
+    }
+  }
+
+  /**
+   * Used to register a StatListener.
+   */
+  protected static abstract class RemoteStatListenerImpl extends StatListenerImpl{
+    private int listenerId;
+    private InternalDistributedMember recipient;
+
+    @Override
+    public final int hashCode() {
+      return listenerId;
+    }
+    
+    @Override
+    public final boolean equals(Object o) {
+      if (o == null) {
+        return false;
+      }
+      if (o instanceof RemoteStatListenerImpl) {
+        return listenerId == ((RemoteStatListenerImpl)o).listenerId;
+      } else {
+        return false;
+      }
+    }
+
+    public int getListenerId() {
+      return this.listenerId;
+    }
+    
+    public InternalDistributedMember getRecipient() {
+      return this.recipient;
+    }
+    
+    static RemoteStatListenerImpl create(int listenerId, InternalDistributedMember recipient, long resourceId, String statName, HostStatSampler sampler) {
+      RemoteStatListenerImpl result = null;
+      Statistics stats = sampler.getStatisticsManager().findStatistics(resourceId);
+      StatisticDescriptorImpl stat = (StatisticDescriptorImpl)stats.nameToDescriptor(statName);
+      switch (stat.getTypeCode()) {
+      case StatisticDescriptorImpl.BYTE:
+      case StatisticDescriptorImpl.SHORT:
+      case StatisticDescriptorImpl.INT:
+      case StatisticDescriptorImpl.LONG:
+        result = new LongStatListenerImpl();
+        break;
+      case StatisticDescriptorImpl.FLOAT:
+        result = new FloatStatListenerImpl();
+        break;
+      case StatisticDescriptorImpl.DOUBLE:
+        result = new DoubleStatListenerImpl();
+        break;
+      default:
+        throw new RuntimeException(LocalizedStrings.GemFireStatSampler_ILLEGAL_FIELD_TYPE_0_FOR_STATISTIC.toLocalizedString(stats.getType()));
+      }
+      result.stats = stats;
+      result.stat = stat;
+      result.listenerId = listenerId;
+      result.recipient = recipient;
+      return result;
+    }
+    
+    /**
+     * Checks to see if the value of the stat has changed. If it has then it
+     * adds that change to the specified message.
+     */
+    public void checkForChange(StatListenerMessage msg) {
+      long currentValue = stats.getRawBits(stat);
+      if (oldValueInitialized) {
+        if (currentValue == oldValue) {
+          return;
+        }
+      } else {
+        oldValueInitialized = true;
+      }
+      oldValue = currentValue;
+      msg.addChange(listenerId, getBitsAsDouble(currentValue));
+    }
+  }
+
+  protected static class LongStatListenerImpl extends RemoteStatListenerImpl {
+    @Override
+    protected double getBitsAsDouble(long bits) {
+      return bits;
+    }
+  }
+
+  protected static class FloatStatListenerImpl extends RemoteStatListenerImpl {
+    @Override
+    protected double getBitsAsDouble(long bits) {
+      return Float.intBitsToFloat((int)bits);
+    }
+  }
+  
+  protected static class DoubleStatListenerImpl extends RemoteStatListenerImpl {
+    @Override
+    protected double getBitsAsDouble(long bits) {
+      return Double.longBitsToDouble(bits);
+    }
+  }
+}

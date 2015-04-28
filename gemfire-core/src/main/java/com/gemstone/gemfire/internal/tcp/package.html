@@ -1,0 +1,122 @@
+<html>
+<body>
+Contains TCP/IP communications conduit
+<br>
+<br>
+<br>
+<p>The tcp/ip conduit is designed to be used in one way:</p>
+
+</p>1) The conduit is used by the GemFire
+{@link com.gemstone.gemfire.distributed.internal.DistributionChannel}
+when true multicast messaging is not needed.  When used in this way, the
+conduit manages the serialization and transmission of
+{@link com.gemstone.gemfire.distributed.internal.DistributionMessage}
+objects from one system to another.  The
+{@link com.gemstone.gemfire.distributed.internal.DistributionManager}
+maintains a
+Map of JavaGroups Addresses to the corresponding tcp/ip address for each
+system.  The <code>DistributionManager</code> also maintains a set of
+known tcp/ip addresses that the conduit uses for fast iteration when simulating
+multicast message transmission.</p>
+
+<hr>
+
+<p>Messaging uses Java serialization to send messages (and
+receive replies).
+<hr>
+
+<p>The GemFire JCache implementation initializes a <code>TCPConduit</code> when the
+cache is initialized.
+<code>TCPConduit</code>s created by the
+cache use a wildcard bind to select a server port unless the property
+tcpServerPort is set.  If you're building a service using <code>TCPConduit</code>
+you may want to use a fixed port so that if your service exits it can
+restart on the same port.</p>
+
+<hr>
+
+<p>The design of the conduit is fairly simple.  <code>TCPConduit</code> owns the
+{@link java.net.ServerSocket} that accepts connections from other conduits.
+{@link com.gemstone.gemfire.internal.tcp.Connection "Connections"}
+are kept in a
+{@link com.gemstone.gemfire.internal.tcp.ConnectionTable ConnectionTable}.
+</p>
+
+<p>The use of NIO can be turned off with the property <code>p2p.oldIO=true</code>.
+This will force the use of sockets instead of socket channels.
+Each <code>Connection</code> always creates a reader thread for pulling information out
+of its socket.</p>
+
+<p>NIO and oldIO communications are interoperable</p>
+
+<p><code>TCPConduit</code> is used to send and receive messages using
+endpoint <code>Stubs</code> holding target host/port information. The conduit
+uses this information to select the correct <code>Connection</code>,
+or to create a new one if necessary.  When sending a message, the
+conduit passes the message to the <code>Connection</code> and waits
+until transmission is complete before returning.  Messages and
+responses received by a <code>Connection</code> are passed to the
+<code>TCPConduit</code> which routes them to their final
+destination.</p>
+
+<p>When a message is received from another conduit it is deserialized
+and examined.  If it is a <code>DistributionMessage</code>, the message is delegated
+to the <code>DirectChannel</code> held by the <code>DistributionManager</code>.  
+</p>
+
+   TCPConduit  ----->  ConnectionTable
+                       |     |     |
+                       v     v     v
+                        Connections
+</code></pre>
+<hr>
+
+<p>When a Connection is formed between two conduits, the client side
+(the one initiating the connection) transmits its <code>TCPConduit's</code>
+<code>ServerSocket</code> port.  This port is used to identify the connection instead
+of the regular socket port.  This allows all <code>Connection</code> objects to be
+identified by their associated server ports and makes connection management
+much simpler.</p>
+
+<hr>
+<p>Other property settings that affect the conduit:</p><pre>
+
+  p2p.tcpBufferSize - the size of operating system buffers on the tcp socket.
+      outgoing messages.  The default is 32768.
+
+  p2p.readerBufferSize - the size of the buffer used by reader threads
+      to buffer incoming data.  The default is 32768.
+
+  p2p.VERBOSE - turn on verbose logging at finer and finest log settings
+  
+  p2p.defaultLogLevel - level of logging to use if there is no distribution
+      manager or gemfire log writer.  The value is "info", "config", "fine"
+      etc
+  
+  p2p.DEBUG - turn on VERBOSE and defaultLogLevel of "finest"
+  
+  p2p.oldIO - turn off the use of java.nio for I/O operations.  If there is
+      a custom socket implementation being used in the VM that doesn't support
+      NIO you might want to use this property.
+  
+  p2p.useSSL - causes the conduit to use the javax.ssl JSSE factory to create
+      its server socket.  This also sets p2p.oldIO=true since SSL sockets
+      don't currently seem to support NIO.  TCPConduit has the method
+      getSSLSession(serverId) that can be used to retrieve the SSL
+      session for a given connection.  The serverId argument is a stub.
+
+  p2p.idleConnectionTimeout - how long a thread owned connection can be idle
+      before it will be closed.
+
+</pre>
+<p>Some of these properties are instance-specific and can be set when you
+create the conduit by passing a {@link java.util.Properties} object with the settings. When
+you use this form of the <code>TCPConduit</code> constructor, the conduit will not
+search for these settings in system properties:</p><pre>
+
+      p2p.tcpBufferSize
+      p2p.idleConnectionTimeout
+
+</pre>
+</body>
+</html>

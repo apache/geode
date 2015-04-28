@@ -1,0 +1,109 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.management.internal.cli.domain;
+
+import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.*;
+
+public class MemberConfigurationInfo implements Serializable {
+  
+  private List<String> jvmInputArguments;
+  private Properties systemProperties;
+  private Map<String, String> gfePropsSetUsingApi;
+  private Map<String, String> gfePropsRuntime;
+  private Map<String, String> gfePropsSetWithDefaults;
+  private Map<String, String> gfePropsSetFromFile;
+  private Map<String, String> cacheAttributes;
+  private List<Map<String, String>> cacheServerAttributes;
+  private Map<String, String> pdxAttributes;
+  
+  public MemberConfigurationInfo() {
+    RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
+    setJvmInputArguments(runtimeBean.getInputArguments());
+    
+  }
+
+  public List<String> getJvmInputArguments() {
+    return jvmInputArguments;
+  }
+
+  public void setJvmInputArguments(List<String> jvmInputArguments) {
+    this.jvmInputArguments = jvmInputArguments;
+  }
+
+  
+  public Properties getSystemProperties() {
+    return systemProperties;
+  }
+
+  public void setSystemProperties(Properties systemProperties) {
+    this.systemProperties = systemProperties;
+  }
+
+  public Map<String, String> getGfePropsSetUsingApi() {
+    return gfePropsSetUsingApi;
+  }
+
+  public void setGfePropsSetUsingApi(Map<String, String> gfePropsSetUsingApi) {
+    this.gfePropsSetUsingApi = gfePropsSetUsingApi;
+  }
+
+  public Map<String, String> getGfePropsRuntime() {
+    return gfePropsRuntime;
+  }
+
+  public void setGfePropsRuntime(Map<String, String> gfePropsRuntime) {
+    this.gfePropsRuntime = gfePropsRuntime;
+  }
+
+  public Map<String, String> getGfePropsSetWithDefaults() {
+    return gfePropsSetWithDefaults;
+  }
+
+  public void setGfePropsSetWithDefaults(Map<String, String> gfePropsSetWithDefaults) {
+    this.gfePropsSetWithDefaults = gfePropsSetWithDefaults;
+  }
+
+  public Map<String, String> getGfePropsSetFromFile() {
+    return gfePropsSetFromFile;
+  }
+
+  public void setGfePropsSetFromFile(Map<String, String> gfePropsSetFromFile) {
+    this.gfePropsSetFromFile = gfePropsSetFromFile;
+  }
+
+
+  public Map<String, String> getCacheAttributes() {
+    return cacheAttributes;
+  }
+
+  public void setCacheAttributes(Map<String, String> cacheAttributes) {
+    this.cacheAttributes = cacheAttributes;
+  }
+
+  public List<Map<String, String>> getCacheServerAttributes() {
+    return cacheServerAttributes;
+  }
+
+  public void setCacheServerAttributes(List<Map<String, String>> cacheServerAttributes) {
+    this.cacheServerAttributes = cacheServerAttributes;
+  }
+
+  public Map<String, String> getPdxAttrributes() {
+    return pdxAttributes;
+  }
+
+  public void setPdxAttrributes(Map<String, String> pdxAttrributes) {
+    this.pdxAttributes = pdxAttrributes;
+  }
+  
+  
+  
+}

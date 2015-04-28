@@ -1,0 +1,169 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.distributed.internal;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.SocketCreator;
+
+/**
+ * Represents the location of a bridge server. This class is 
+ * preferable to InetSocketAddress because it doesn't do
+ * any name resolution.
+ * 
+ * @author dsmith
+ *
+ */
+public class ServerLocation implements DataSerializable, Comparable {
+  private static final long serialVersionUID = -5850116974987640560L;
+  
+  private String hostName;
+  private int port;
+  /**
+   * Used exclusively in case of single user authentication mode. Client sends
+   * this userId to the server with each operation to identify itself at the
+   * server.
+   */
+  private long userId = -1;
+
+  /**
+   * If its value is two, it lets the client know that it need not send the
+   * security part (connection-id, user-id) with each operation to the server.
+   * Also, that the client should not expect the security part in the server's
+   * response.
+   */
+  private final AtomicInteger requiresCredentials = new AtomicInteger(INITIAL_REQUIRES_CREDENTIALS);
+
+  public static final int INITIAL_REQUIRES_CREDENTIALS = 0;
+
+  public static final int REQUIRES_CREDENTIALS = 1;
+
+  public static final int REQUIRES_NO_CREDENTIALS = 2;
+
+  /**
+   * For DataSerializer
+   */
+  public ServerLocation() {
+    
+  }
+  
+  public ServerLocation(String hostName, int port) {
+    this.hostName = hostName;
+    this.port = port;
+  }
+
+  public final String getHostName() {
+    return hostName;
+  }
+
+  public final int getPort() {
+    return port;
+  }
+
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    hostName = DataSerializer.readString(in);
+    port = in.readInt();
+  }
+
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeString(hostName, out);
+    out.writeInt(port);
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    //result = prime * result + ((hostName == null) ? 0 : hostName.hashCode());
+    result = prime * result + port;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof ServerLocation))
+      return false;
+    final ServerLocation other = (ServerLocation) obj;
+    if (hostName == null) {
+      if (other.hostName != null)
+        return false;
+    } else if (other.hostName == null) {
+      return false;
+    }
+    else if (!hostName.equals(other.hostName)) {
+      String canonicalHostName;
+      try {
+        canonicalHostName = SocketCreator.getLocalHost().getCanonicalHostName();
+      }
+      catch (UnknownHostException e) {
+        throw new IllegalStateException("getLocalHost failed with " + e);
+      }
+      if ("localhost".equals(hostName)) {
+        if (!canonicalHostName.equals(other.hostName)) {
+          return false;
+        }
+      } else if ("localhost".equals(other.hostName)) {
+        if (!canonicalHostName.equals(hostName)) {
+          return false;
+        }
+      } else {
+        return false; // fix for bug 42040
+      }
+    }
+    if (port != other.port)
+      return false;
+    return true;
+  }
+  
+  @Override
+  public String toString() {
+    return hostName + ":" + port;
+  }
+
+  public int compareTo(Object o) {
+    ServerLocation other = (ServerLocation) o;
+    int difference = hostName.compareTo(other.hostName);
+    if(difference != 0) {
+      return difference;
+    }
+    return port - other.getPort();
+  }
+  
+  public void setUserId(long id) {
+    this.userId = id;
+  }
+
+  public long getUserId() {
+    return this.userId;
+  }
+
+  public void compareAndSetRequiresCredentials(boolean bool) {
+    int val = bool ? REQUIRES_CREDENTIALS : REQUIRES_NO_CREDENTIALS;
+    this.requiresCredentials.compareAndSet(INITIAL_REQUIRES_CREDENTIALS, val);
+  }
+
+  public void setRequiresCredentials(boolean bool) {
+    int val = bool ? REQUIRES_CREDENTIALS : REQUIRES_NO_CREDENTIALS;
+    this.requiresCredentials.set(val);
+  }
+
+  public boolean getRequiresCredentials() {
+    return this.requiresCredentials.get() == REQUIRES_CREDENTIALS ? true : false;
+  }
+  
+}

@@ -1,0 +1,47 @@
+<HTML>
+<BODY>
+
+<P>
+
+<CENTER>
+<IMG SRC="doc-files/client_static_diagram.png"
+     />
+     <h3> Static Architecture Overview </h3>
+</CENTER>
+</P>
+
+<h2> ServerRegionProxy </h2>
+
+Classes in this package implement the client code for gemfire clients. Product code accesses the client API through the Server*Proxy classes. For example, when a LocalRegion is configured to use a connection pool, it will create a ServerRegionProxy to perform region operations on the server.
+
+<h2> Operations </h2>
+The ServerRegionProxy delegates to Operation classes to do the actual work. Each operation is responsible for sending and receiving the response for a single client operation, for example PutOp sends one put.
+
+<h2> PoolImpl and OpExecutorIml </h2>
+Operations are performed on the PoolImpl. The pool impl class has methods, such as execute(Op) which will retry the operation a configurable number of times one different servers until it succeeds. Those methods are actually implemented in OpExecutorImpl
+
+<h2> ConnectionManager </h2>
+
+The ConnectionManagerImpl class owns the client to server connections. It creates new connections (using a connection factory and connection source) and allows the pool to check out/check in connections. It keeps track of the maximum and minimum number of connections allowed, and the idle timeout for connections.
+
+<CENTER>
+<IMG SRC="doc-files/ConnectionManagerImpl.png"
+     />
+     <h3> Connection Manager Static Diagram </h3>
+</CENTER>
+
+<h2> QueueManager </h2>
+
+The ConnectionManagerImpl class owns the server to client connections. It creates new server to client connections (using a connection factory and connection source). It's responsible for maintaing the redundancy of the connections, and recovering interest on new connections.
+
+<CENTER>
+<IMG SRC="doc-files/QueueManagerImpl.png"
+     />
+     <h3> Connection Manager Static Diagram </h3>
+</CENTER>
+
+<h2> ConnectionSource </h2>
+The connection source is the logic that decides which server to create a connection to. There are two modes right now, auto and explicit. Auto uses the locators to discover servers and route to the least loaded server. Explicit allows the user to configure an explicit list of endpoints.
+
+</BODY>
+</HTML>

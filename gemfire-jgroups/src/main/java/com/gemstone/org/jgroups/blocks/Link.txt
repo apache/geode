@@ -1,0 +1,48 @@
+
+
+Incoming connection
+-------------------
+
+- created by accept()
+
+- closed upon read() failure on incoming (IOException, EOFException)
+
+- closed by missing heartbeats (Heartbeat)
+
+- closed when peer with address different from expected connects
+  (connection rejected)
+
+
+Outgoing connection
+-------------------
+
+- created when Link is started
+
+- created after creation of incoming (upon accept()). not created if
+  already exists
+
+- created by ConnectionEstablisher. not created if already exists
+
+- closed upon write() failure on outgoing
+
+- closed by missing heartbeats (Heartbeat)
+
+
+Heartbeat
+---------
+
+- monitors outgoing by periodically writing to it (heartbeats)
+
+- started upon creation of outgoing
+
+- stopped upon closing of outgoing (write-failure, heartbeat failure)
+
+
+ConnectionEstablisher
+---------------------
+
+- attempts to periodically create outgoing connection (when down)
+
+- started when outgoing goes (is) down
+
+- stopped when outgoing is up

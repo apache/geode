@@ -1,0 +1,139 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+
+package com.gemstone.gemfire.cache.server;
+
+/**
+ * Used to configure queuing on a cache server for client subscriptions.
+ * <p>
+ * <UL>
+ * <LI>
+ * For eviction-policy <b>none</b> client queue entries are not evicted to disk <br></LI>
+ * <LI>For eviction-policy <b>mem</b> client queue entries are evicted to disk when limit is
+ * reached, defined by <b>capacity</b></LI>
+ * <LI>For eviction-policy <b>entry</b> HA entries are evicted to disk when limit is
+ * reached, defined by <b>capacity</b></LI>
+ * </UL>
+ * <br/>
+ * 
+ * The capacity limits the total amount of memory or entries for all client queues
+ * on held on this server. If this server hosts multiple client queues, they will
+ * all share the same capacity.
+ * 
+ * <p>
+ * <b>Configuration: </b>
+ * <p>
+ * The <code>client queue</code> is configurable declaratively or
+ * programmatically. Declarative configuration is achieved through defining the
+ * configuration parameters in a <code>cache.xml</code> file. Programmatic
+ * configuration may be achieved by first instantiating a
+ * <code>CacheServer</code> object and get {@link CacheServer#getClientSubscriptionConfig} 
+ * <code>ClientSubscriptionConfig</code> object and modify each desired parameter and value.
+ * <p>
+ * <p>
+ * 
+ * If you are using a <code>cache.xml</code> file to create a
+ * <code>CacheServer</code> declaratively, you can do the following to configure
+ * <code>ClientSubscriptionConfig</code> and to have <b>none</b> eviction policy 
+ * no need to specify client-subscription tag as it is a default one.
+ *</p>
+ *
+ *<pre>
+ *<code>
+ * &lt;cache-server port=4444&gt;
+ *   &lt;client-subscription eviction-policy=&quot;entry | mem&quot; capacity=35 overflow-directory=&quot;OverflowDir&quot;&gt;&lt;/client-subscription&gt;
+ * &lt;/cache-server&gt;
+ * </code>
+ *</pre>
+ * @see #getEvictionPolicy
+ * @see #getCapacity
+ * 
+ * 
+ * @since 5.7
+ * @author aingle
+ */
+
+public interface ClientSubscriptionConfig {
+  
+  /**
+   * The default limit that is assigned to client subscription.
+   */
+  public static final int DEFAULT_CAPACITY = 1;
+  
+  /**
+   * The default eviction policy that is assigned to client subscription.
+   */
+  public static final String DEFAULT_EVICTION_POLICY = "none";
+  
+  /**
+   * The default overflow directory that is assigned to client subscription.
+   */
+  public static final String DEFAULT_OVERFLOW_DIRECTORY = ".";
+  
+  /**
+   * Returns the capacity of the client queue.
+   * will be in MB for eviction-policy <b>mem</b> else
+   * number of entries
+   * @see #DEFAULT_CAPACITY
+   * @since 5.7
+   */
+  public int getCapacity();
+
+  /**
+   * Sets the capacity of the client queue.
+   * will be in MB for eviction-policy <b>mem</b> else
+   * number of entries
+   * @see #DEFAULT_CAPACITY
+   * @since 5.7
+   */
+  public void setCapacity(int capacity);
+
+  /**
+   * Returns the eviction policy that is executed when capacity of the client queue is reached.
+   * @see #DEFAULT_EVICTION_POLICY
+   * @since 5.7
+   */
+  public String getEvictionPolicy();
+
+  /**
+   * Sets the eviction policy that is executed when capacity of the client queue is reached.
+   * @see #DEFAULT_EVICTION_POLICY
+   * @since 5.7
+   */
+  public void setEvictionPolicy(String policy);
+
+  /**
+   * Sets the overflow directory for a client queue 
+   * @param overflowDirectory the overflow directory for a client queue's overflowed entries
+   * @since 5.7
+   * @deprecated as of 6.5 use {@link #setDiskStoreName(String)} instead
+   */
+  public void setOverflowDirectory(String overflowDirectory);
+
+  /**
+   * Answers the overflow directory for a client queue's
+   * overflowed client queue entries.
+   * @return the overflow directory for a client queue's
+   * overflowed entries
+   * @since 5.7
+   * @deprecated as of 6.5 use {@link #getDiskStoreName} instead
+   */
+  public String getOverflowDirectory();
+  /**
+   * Sets the disk store name for overflow  
+   * @param diskStoreName 
+   * @since 6.5
+   */
+  public void setDiskStoreName(String diskStoreName);
+
+  /**
+   * get the diskStoreName for overflow
+   * @since 6.5
+   */
+  public String getDiskStoreName();
+}

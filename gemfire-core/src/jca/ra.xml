@@ -1,0 +1,37 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE connector PUBLIC '-//Sun Microsystems, Inc.//DTD Connector 1.0//EN' 'http://java.sun.com/j2ee/dtds/connector_1_0.dtd'>
+
+<connector>
+    <display-name>GFE JCA Adaptor</display-name>
+    <vendor-name>Pivotal Software</vendor-name>
+    <spec-version>1.5</spec-version>
+    <eis-type>GFE JCA</eis-type>
+    <version>1.5</version>
+    <resourceadapter>
+        <managedconnectionfactory-class>com.gemstone.gemfire.internal.ra.spi.JCAManagedConnectionFactory</managedconnectionfactory-class>
+                <config-property>
+                    <config-property-name>ProductName</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>GemFire</config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>UserName</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value/>
+                </config-property>
+                <config-property>
+                    <config-property-name>Version</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>8.0</config-property-value>
+                </config-property>
+        
+        <connectionfactory-interface>com.gemstone.gemfire.ra.GFConnectionFactory</connectionfactory-interface>
+        <connectionfactory-impl-class>com.gemstone.gemfire.internal.ra.GFConnectionFactoryImpl</connectionfactory-impl-class>
+        <connection-interface>com.gemstone.gemfire.ra.GFConnection</connection-interface>
+        <connection-impl-class>com.gemstone.gemfire.internal.ra.GFConnectionImpl</connection-impl-class>
+        <transaction-support>LocalTransaction</transaction-support>
+        <reauthentication-support>false</reauthentication-support> 
+    </resourceadapter>
+</connector>

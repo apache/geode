@@ -1,0 +1,150 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.cache.client.internal;
+
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
+import com.gemstone.gemfire.internal.InternalInstantiator;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+
+/**
+ * A listener which will try to resend the instantiators to all servers if the
+ * entire server distributed system was lost and came back one line. This
+ * listener also takes care of sending the initial list of instantiators to the servers <br>
+ * <br> 
+ * TODO - There is a window in which all of the servers could crash and come
+ * back up and we would connect to a new server before realizing that all the
+ * servers crashed. To fix this, we would need to get some kind of birthdate of
+ * the server ds we connect and use that to decide if we need to recover
+ * instantiators. As it is, the window is not very large.
+ * 
+ * 
+ * @author dsmith
+ * 
+ */
+public class InstantiatorRecoveryListener extends EndpointManager.EndpointListenerAdapter {
+  private static final Logger logger = LogService.getLogger();
+  
+  private final AtomicInteger endpointCount = new AtomicInteger();
+  protected final InternalPool pool;
+  protected final ScheduledExecutorService background;
+  protected final long pingInterval;
+  protected final Object recoveryScheduledLock = new Object();
+  protected boolean recoveryScheduled;
+  
+  public InstantiatorRecoveryListener(ScheduledExecutorService background, InternalPool pool) {
+    this.pool = pool;
+    this.pingInterval = pool.getPingInterval();
+    this.background = background;
+  }
+  
+  @Override
+  public void endpointCrashed(Endpoint endpoint) {
+    int count = endpointCount.decrementAndGet();
+    if (logger.isDebugEnabled()) {
+      logger.debug("InstantiatorRecoveryTask - EndpointCrashed. Now have {} endpoints", count);
+    }
+  }
+
+  @Override
+  public void endpointNoLongerInUse(Endpoint endpoint) {
+    int count = endpointCount.decrementAndGet();
+    if (logger.isDebugEnabled()) {
+      logger.debug("InstantiatorRecoveryTask - EndpointNoLongerInUse. Now have {} endpoints", count);
+    }
+  }
+
+  @Override
+  public void endpointNowInUse(Endpoint endpoint) {
+    int count  = endpointCount.incrementAndGet();
+    final boolean isDebugEnabled = logger.isDebugEnabled();
+    if (isDebugEnabled) {
+      logger.debug("InstantiatorRecoveryTask - EndpointNowInUse. Now have {} endpoints", count);
+    }
+    if(count == 1) {
+      synchronized(recoveryScheduledLock) {
+        if(!recoveryScheduled) {
+          try {
+            recoveryScheduled = true;
+            background.execute(new RecoveryTask());
+            if (isDebugEnabled) {
+              logger.debug("InstantiatorRecoveryTask - Scheduled Recovery Task");
+            }
+          } catch(RejectedExecutionException e) {
+            //ignore, the timer has been cancelled, which means we're shutting down.
+          }
+        }
+      }
+    }
+  }
+  
+  protected class RecoveryTask extends PoolTask {
+
+    @Override
+    public void run2() {
+      if (pool.getCancelCriterion().cancelInProgress() != null) {
+        return;
+      }
+      synchronized(recoveryScheduledLock) {
+        recoveryScheduled = false;
+      }
+      Object[] objects = InternalInstantiator
+          .getInstantiatorsForSerialization();
+      if (objects.length == 0) {
+        return;
+      }
+      EventID eventId = InternalInstantiator.generateEventId();
+      //Fix for bug:40930
+      if (eventId == null) {
+        background.schedule(new RecoveryTask(), pingInterval,
+            TimeUnit.MILLISECONDS);
+        recoveryScheduled = true;
+      }
+      else {
+        try {
+          RegisterInstantiatorsOp.execute(pool, objects, eventId);
+        } 
+        catch (CancelException e) {
+          throw e;
+        }
+        catch (RejectedExecutionException e) {
+          // This is probably because we've started to shut down.
+          pool.getCancelCriterion().checkCancelInProgress(e);
+          throw e; // weird
+        }
+        catch(Exception e) {
+          pool.getCancelCriterion().checkCancelInProgress(e);
+          
+          // If an exception occurred on the server, don't retry
+          Throwable cause = e.getCause();
+          if (cause instanceof ClassNotFoundException) {
+            logger.warn(LocalizedMessage.create(
+                LocalizedStrings.InstantiatorRecoveryListener_INSTANTIATORRECOVERYTASK_ERROR_CLASSNOTFOUNDEXCEPTION,
+                cause.getMessage()));
+          } else {
+            logger.warn(LocalizedMessage.create(
+              LocalizedStrings.InstantiatorRecoveryListener_INSTANTIATORRECOVERYTASK_ERROR_RECOVERING_INSTANTIATORS),
+              e);
+          }
+        } finally {
+          pool.releaseThreadLocalConnection();
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,645 @@
+/*
+ *  =========================================================================
+ *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *  ========================================================================
+ */
+package com.gemstone.gemfire.management.internal.beans;
+
+import java.util.Collections;
+import java.util.Map;
+
+import javax.management.NotificationBroadcasterSupport;
+
+import com.gemstone.gemfire.internal.util.ArrayUtils;
+import com.gemstone.gemfire.management.DiskBackupResult;
+import com.gemstone.gemfire.management.GemFireProperties;
+import com.gemstone.gemfire.management.JVMMetrics;
+import com.gemstone.gemfire.management.MemberMXBean;
+import com.gemstone.gemfire.management.OSMetrics;
+import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
+
+/**
+ * This MBean is a gateway to cache and a member
+ * 
+ * @author rishim
+ * 
+ */
+public class MemberMBean extends NotificationBroadcasterSupport implements
+    MemberMXBean {
+
+  private MemberMBeanBridge bridge;
+
+  public MemberMBean(MemberMBeanBridge bridge) {
+    this.bridge = bridge;
+  }
+
+  @Override
+  public String[] compactAllDiskStores() {
+    return bridge.compactAllDiskStores();
+  }
+
+  @Override
+  public String viewLicense() {
+    return "";
+  }
+
+  @Override
+  public String showLog(int numLines) {
+    return bridge.fetchLog(numLines);
+  }
+
+  @Override
+  public float getBytesReceivedRate() {
+    return bridge.getBytesReceivedRate();
+  }
+
+  @Override
+  public float getBytesSentRate() {
+    return bridge.getBytesSentRate();
+  }
+
+  @Override
+  public long getCacheListenerCallsAvgLatency() {
+    return bridge.getCacheListenerCallsAvgLatency();
+  }
+
+  @Override
+  public long getCacheWriterCallsAvgLatency() {
+    return bridge.getCacheWriterCallsAvgLatency();
+  }
+
+  @Override
+  public String[] listConnectedGatewayReceivers() {
+    return bridge.listConnectedGatewayReceivers();
+  }
+
+  @Override
+  public String[] listConnectedGatewaySenders() {
+    return bridge.listConnectedGatewaySenders();
+  }
+
+
+  @Override
+  public float getCpuUsage() {
+    return bridge.getCpuUsage();
+  }
+
+  @Override
+  public float getCreatesRate() {
+    return bridge.getCreatesRate();
+  }
+
+  @Override
+  public long getCurrentHeapSize() {
+    return getUsedMemory();
+  }
+
+  @Override
+  public float getDiskReadsRate() {
+    return bridge.getDiskReadsRate();
+  }
+
+  @Override
+  public float getDiskWritesRate() {
+    return bridge.getDiskWritesRate();
+  }
+
+  @Override
+  public long getFileDescriptorLimit() {
+    return bridge.getFileDescriptorLimit();
+  }
+
+  @Override
+  public long getDiskFlushAvgLatency() {
+    return bridge.getDiskFlushAvgLatency();
+  }
+
+  @Override
+  public long getFreeHeapSize() {
+    return getFreeMemory();
+  }
+
+
+  @Override
+  public float getFunctionExecutionRate() {
+    return bridge.getFunctionExecutionRate();
+  }
+
+  @Override
+  public float getGetsRate() {
+    return bridge.getGetsRate();
+  }
+
+  @Override
+  public int getInitialImageKeysReceived() {
+    return bridge.getInitialImageKeysReceived();
+  }
+
+  @Override
+  public long getInitialImageTime() {
+    return bridge.getInitialImageTime();
+  }
+
+  @Override
+  public int getInitialImagesInProgres() {
+    return bridge.getInitialImagesInProgres();
+  }
+
+
+  @Override
+  public String[] fetchJvmThreads() {
+    return bridge.fetchJvmThreads();
+  }
+
+  @Override
+  public String[] listRegions() {
+    return bridge.getListOfRegions();
+  }
+
+  @Override
+  public int getLockWaitsInProgress() {
+    return bridge.getLockWaitsInProgress();
+  }
+
+  @Override
+  public float getLruDestroyRate() {
+    return bridge.getLruDestroyRate();
+  }
+
+  @Override
+  public float getLruEvictionRate() {
+    return bridge.getLruEvictionRate();
+  }
+
+  @Override
+  public long getMaximumHeapSize() {
+    return getMaxMemory();
+  }
+
+  @Override
+  public int getNumRunningFunctions() {
+    return bridge.getNumRunningFunctions();
+  }
+
+  @Override
+  public int getNumRunningFunctionsHavingResults() {
+    return bridge.getNumRunningFunctionsHavingResults();
+  }
+
+  @Override
+  public long getPutAllAvgLatency() {
+    return bridge.getPutAllAvgLatency();
+  }
+
+  @Override
+  public float getPutAllRate() {
+    return bridge.getPutAllRate();
+  }
+
+  @Override
+  public long getPutsAvgLatency() {
+    return bridge.getPutsAvgLatency();
+  }
+
+  @Override
+  public float getPutsRate() {
+    return bridge.getPutsRate();
+  }
+
+  @Override
+  public int getLockRequestQueues() {
+    return bridge.getLockRequestQueues();
+  }
+
+  @Override
+  public String[] getRootRegionNames() {
+    return bridge.getRootRegionNames();
+  }
+
+  @Override
+  public int getTotalBackupInProgress() {
+    return bridge.getTotalBackupInProgress();
+  }
+
+  @Override
+  public int getTotalBucketCount() {
+    return bridge.getTotalBucketCount();
+  }
+
+
+  @Override
+  public long getTotalFileDescriptorOpen() {
+    return bridge.getTotalFileDescriptorOpen();
+  }
+
+  @Override
+  public int getTotalHitCount() {
+    return bridge.getTotalHitCount();
+  }
+
+  @Override
+  public int getTotalLoadsCompleted() {
+    return bridge.getTotalLoadsCompleted();
+  }
+
+  @Override
+  public long getTotalLockWaitTime() {
+    return bridge.getTotalLockWaitTime();
+  }
+
+  @Override
+  public int getTotalMissCount() {
+    return bridge.getTotalMissCount();
+  }
+
+  @Override
+  public int getTotalNumberOfLockService() {
+    return bridge.getTotalNumberOfLockService();
+  }
+
+  @Override
+  public int getTotalPrimaryBucketCount() {
+    return bridge.getTotalPrimaryBucketCount();
+  }
+
+  @Override
+  public int getTotalRegionCount() {
+    return bridge.getTotalRegionCount();
+  }
+
+  @Override
+  public int getTotalRegionEntryCount() {
+    return bridge.getTotalRegionEntryCount();
+  }
+
+  @Override
+  public int getTotalTransactionsCount() {
+    return bridge.getTotalTransactionsCount();
+  }
+
+  @Override
+  public long getTransactionCommitsAvgLatency() {
+    return bridge.getTransactionCommitsAvgLatency();
+  }
+
+  @Override
+  public float getTransactionCommitsRate() {
+    return bridge.getTransactionCommitsRate();
+  }
+
+  @Override
+  public int getTransactionCommittedTotalCount() {
+    return bridge.getTransactionCommittedTotalCount();
+  }
+
+  @Override
+  public int getTransactionRolledBackTotalCount() {
+    return bridge.getTransactionRolledBackTotalCount();
+  }
+
+  @Override
+  public long getMemberUpTime() {
+    return bridge.getMemberUpTime();
+  }
+
+  @Override
+  public String getClassPath() {
+    return bridge.getClassPath();
+  }
+
+  @Override
+  public long getCurrentTime() {
+    return bridge.getCurrentTime();
+  }
+
+  @Override
+  public String getHost() {
+    return bridge.getHost();
+  }
+
+  @Override
+  public long getLockLease() {
+    return bridge.getLockLease();
+  }
+
+  @Override
+  public long getLockTimeout() {
+    return bridge.getLockTimeout();
+  }
+  
+  public int getProcessId() {
+    return bridge.getProcessId();
+  }
+
+  public String status() {
+    return bridge.status();
+  }
+
+  @Override
+  public String getVersion() {
+    return bridge.getVersion();
+  }
+
+  @Override
+  public boolean hasGatewayReceiver() {
+    return bridge.hasGatewayReceiver();
+  }
+
+  @Override
+  public boolean hasGatewaySender() {
+    return bridge.hasGatewaySender();
+  }
+
+  @Override
+  public boolean isLocator() {
+    return bridge.isLocator();
+  }
+
+  @Override
+  public boolean isManager() {
+    return bridge.isManager();
+  }
+  @Override
+  public boolean isManagerCreated() {
+    return bridge.isManagerCreated();
+  }
+
+  @Override
+  public boolean isServer() {
+    return bridge.isServer();
+  }
+
+  @Override
+  public GemFireProperties listGemFireProperties() {
+    return bridge.getGemFireProperty();
+  }
+
+  @Override
+  public boolean createManager() {
+    return bridge.createManager();
+  }
+
+  @Override
+  public String processCommand(String commandString) {
+    Map<String, String> emptyMap = Collections.emptyMap();
+    return processCommand(commandString, emptyMap);
+  }
+
+  @Override
+  public String processCommand(String commandString, Map<String, String> env) {
+    return processCommand(commandString, env, null);
+  }
+
+  @Override
+  public String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData) {
+    try {
+      CommandExecutionContext.setBytesFromShell(ArrayUtils.toBytes(binaryData));
+      return bridge.processCommand(commandString, env);
+    } finally {
+      CommandExecutionContext.clear();
+    }
+  }
+  
+  @Override
+  public String[] listDiskStores(boolean includeRegionOwned) {
+    return bridge.listDiskStores(includeRegionOwned);
+  }
+
+  @Override
+  public JVMMetrics showJVMMetrics() {
+    return bridge.fetchJVMMetrics();
+  }
+
+  @Override
+  public OSMetrics showOSMetrics() {
+    return bridge.fetchOSMetrics();
+  }
+
+  @Override
+  public void shutDownMember() {
+    bridge.shutDownMember();
+    
+  }
+
+  @Override
+  public String getName() {
+    return bridge.getName();
+  }
+
+  @Override
+  public String getId() {
+    return bridge.getId();
+  }
+  
+  @Override
+  public String getMember() {
+    return bridge.getMember();
+  }
+  
+  public String[] getGroups() {
+    return bridge.getGroups();
+  }
+
+  @Override
+  public String[] getDiskStores() {
+    return bridge.getDiskStores();
+  }
+
+  @Override
+  public long getGetsAvgLatency() {
+    return bridge.getGetsAvgLatency();
+  }
+
+  @Override
+  public long getLoadsAverageLatency() {
+    return bridge.getLoadsAverageLatency();
+  }
+
+  @Override
+  public long getNetLoadsAverageLatency() {
+    return bridge.getNetLoadsAverageLatency();
+  }
+
+  @Override
+  public long getNetSearchAverageLatency() {
+    return bridge.getNetSearchAverageLatency();
+  }
+
+  @Override
+  public int getTotalDiskTasksWaiting() {
+    return bridge.getTotalDiskTasksWaiting();
+  }
+
+  @Override
+  public int getTotalNetLoadsCompleted() {
+    return bridge.getTotalNetLoadsCompleted();
+  }
+
+  @Override
+  public int getTotalNetSearchCompleted() {
+    return bridge.getTotalNetSearchCompleted();
+  }
+
+  @Override
+  public int getTotalNumberOfGrantors() {
+    return bridge.getTotalNumberOfGrantors();
+  }
+
+  @Override
+  public int getTotalBackupCompleted() {
+    return bridge.getTotalBackupCompleted();
+  }
+
+  @Override
+  public float getDestroysRate() {
+    return bridge.getDestroysRate();
+  }
+
+  @Override
+  public long getDeserializationAvgLatency() {
+    return bridge.getDeserializationAvgLatency();
+  }
+
+  @Override
+  public long getDeserializationLatency() {
+    return bridge.getDeserializationLatency();
+  }
+
+  @Override
+  public float getDeserializationRate() {
+    return bridge.getDeserializationRate();
+  }
+
+  @Override
+  public int getPartitionRegionCount() {
+    return bridge.getPartitionRegionCount();
+  }
+
+  @Override
+  public long getSerializationAvgLatency() {
+    return bridge.getSerializationAvgLatency();
+  }
+
+  @Override
+  public long getSerializationLatency() {
+    return bridge.getSerializationLatency();
+  }
+
+  @Override
+  public float getSerializationRate() {
+    return bridge.getSerializationRate();
+  }
+
+  @Override
+  public long getPDXDeserializationAvgLatency() {
+    return bridge.getPDXDeserializationAvgLatency();
+  }
+
+  @Override
+  public float getPDXDeserializationRate() {
+    return bridge.getPDXDeserializationRate();
+  }
+  
+  public MemberMBeanBridge getBridge(){
+    return bridge;
+  }
+  
+  public void stopMonitor(){
+    bridge.stopMonitor();
+  }
+
+  @Override
+  public long getTotalDiskUsage() {
+    return bridge.getTotalDiskUsage();
+  }
+
+  @Override
+  public float getAverageReads() {
+    return bridge.getAverageReads();
+  }
+
+  @Override
+  public float getAverageWrites() {
+    return bridge.getAverageWrites();
+  }
+
+  @Override
+  public long getGarbageCollectionTime() {
+    return bridge.getGarbageCollectionTime();
+  }
+
+  @Override
+  public long getGarbageCollectionCount() {
+    return bridge.getGarbageCollectionCount();
+  }
+
+  @Override
+  public double getLoadAverage() {
+    return bridge.getLoadAverage();
+  }
+
+  @Override
+  public int getNumThreads() {
+    return bridge.getNumThreads();
+  }
+
+  @Override
+  public long getJVMPauses() {
+    return bridge.getJVMPauses();
+  }
+
+  @Override
+  public long getMaxMemory() {
+    return bridge.getMaxMemory();
+  }
+  
+  @Override
+  public long getFreeMemory() {
+    return bridge.getFreeMemory();
+  }
+  
+  @Override
+  public long getUsedMemory() {
+    return bridge.getUsedMemory();
+  }
+
+  @Override
+  public int getHostCpuUsage() {
+    return bridge.getHostCpuUsage();
+  }
+
+  @Override
+  public boolean isCacheServer() {
+    return bridge.isCacheServer();
+  }
+
+  @Override
+  public String getRedundancyZone() {
+    return bridge.getRedundancyZone();
+  }
+
+  @Override
+  public int getRebalancesInProgress() {
+    return bridge.getRebalancesInProgress();
+  }
+
+  @Override
+  public int getReplyWaitsInProgress() {
+    return bridge.getReplyWaitsInProgress();
+  }
+
+  @Override
+  public int getReplyWaitsCompleted() {
+    return bridge.getReplyWaitsCompleted();
+  }
+
+  @Override
+  public int getVisibleNodes() {
+    return bridge.getVisibleNodes();
+  }    
+
+  
+}

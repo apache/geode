@@ -1,0 +1,10 @@
+rootProject.name = 'gemfire'
+
+include 'gemfire-jgroups'
+include 'gemfire-joptsimple'
+include 'gemfire-json'
+include 'gemfire-junit'
+include 'gemfire-core'
+include 'gemfire-web'
+include 'gemfire-web-api'
+include 'gemfire-assembly'

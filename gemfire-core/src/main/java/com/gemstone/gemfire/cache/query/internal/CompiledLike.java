@@ -1,0 +1,522 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.cache.query.internal;
+
+import java.util.regex.Pattern;
+
+import com.gemstone.gemfire.cache.query.AmbiguousNameException;
+import com.gemstone.gemfire.cache.query.FunctionDomainException;
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
+import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
+import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
+import com.gemstone.gemfire.cache.query.internal.index.PrimaryKeyIndex;
+import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.pdx.internal.PdxString;
+
+/**
+ * 
+ * @author Asif
+ *
+ */
+public class CompiledLike extends CompiledComparison
+{
+
+  final static int WILDCARD_PERCENT = 0;
+
+  final static int WILDCARD_UNDERSCORE = 1;
+  
+  private int wildcardType = -1;
+  
+  private int wildcardPosition = -1;
+  
+  private int patternLength = 0;
+  
+  final static String LOWEST_STRING = "";
+
+  final static char BOUNDARY_CHAR = (char)255;
+
+  final static char UNDERSCORE = '_';
+
+  final static char PERCENT = '%';
+
+  final static char BACKSLASH = '\\';
+
+  private final CompiledValue var;
+
+  private boolean isIndexEvaluated = false;
+  
+  //private final CompiledBindArgument bindArg;
+  private final CompiledValue bindArg;
+  
+  public CompiledLike(CompiledValue var, CompiledValue pattern) {
+    super(var, pattern, OQLLexerTokenTypes.TOK_EQ);
+    this.var = var;
+    this.bindArg = pattern;
+  }
+
+  
+  OrganizedOperands organizeOperands(ExecutionContext context,
+      boolean completeExpansionNeeded, RuntimeIterator[] indpndntItrs)
+      throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException {
+    CompiledComparison[] cvs = getExpandedOperandsWithIndexInfoSetIfAny(context);
+    Filter filter = null;
+    if (cvs.length == 1) {
+      // For the equality condition
+      filter = cvs[0];
+    } else {
+      // 2 or 3 conditions; create junctions
+      if ((getOperator() == OQLLexerTokenTypes.TOK_NE)
+          && (wildcardPosition == patternLength - 1)
+          && (wildcardType == WILDCARD_PERCENT)) {
+        // negation supported only for trailing %
+        // GroupJunction is created since the boundary conditions go out of
+        // range and will be evaluated as false if a RangeJunction was used
+        // For example, for NOT LIKE a%, the CCs generated would be < A OR >= B
+        // which would cause the checkForRangeBoundednessAndTrimNotEqualKeyset
+        // method of RangeJunction to return false
+        filter = new GroupJunction(OQLLexerTokenTypes.LITERAL_or, indpndntItrs,
+            completeExpansionNeeded, cvs);
+
+      } else {
+        filter = new RangeJunction(OQLLexerTokenTypes.LITERAL_and,
+            indpndntItrs, completeExpansionNeeded, cvs);
+      }
+    }
+ 
+    OrganizedOperands result = new OrganizedOperands();
+    result.isSingleFilter = true;
+    result.filterOperand = filter;
+    return result;
+  }
+  
+  /**
+   * Expands the CompiledLike operands based on sargability into 
+   * multiple CompiledComparisons
+   * @param context
+   * @return The generated CompiledComparisons
+   * @throws AmbiguousNameException
+   * @throws TypeMismatchException
+   * @throws NameResolutionException
+   * @throws FunctionDomainException
+   * @throws QueryInvocationTargetException
+   */
+  CompiledComparison[] getExpandedOperandsWithIndexInfoSetIfAny(
+      ExecutionContext context) throws AmbiguousNameException,
+      TypeMismatchException, NameResolutionException, FunctionDomainException,
+      QueryInvocationTargetException {
+    String pattern = (String) this.bindArg.evaluate(context);
+    // check if it is filter evaluatable
+    CompiledComparison[] cvs = getRangeIfSargable(this.var, pattern);
+
+    for (CompiledComparison cc : cvs) {
+      // negation supported only for trailing %
+      if ((getOperator() == OQLLexerTokenTypes.TOK_NE)
+          && (wildcardPosition == patternLength - 1)
+          && (wildcardType == WILDCARD_PERCENT)) {
+        cc.negate();
+      }
+      cc.computeDependencies(context);
+      // Set the indexinfo for the newly created CCs with the indexinfo of this
+      // CompiledLike object
+      IndexInfo[] thisIndexInfo = ((IndexInfo[]) context.cacheGet(this));
+      if (thisIndexInfo != null && thisIndexInfo.length > 0) {
+        // set the index key in the indexinfo of the CC since the index key 
+        // in the indexinfo of this object might have been modified in the
+        // checkIfSargableAndRemoveEscapeChars method
+        IndexInfo indexInfo = new IndexInfo(cc.getKey(context),
+            thisIndexInfo[0]._path, thisIndexInfo[0]._index,
+            thisIndexInfo[0]._matchLevel, thisIndexInfo[0].mapping,
+            cc.getOperator());
+        context.cachePut(cc, new IndexInfo[] { indexInfo });
+      }
+    }
+    if (IndexManager.testHook != null) {
+      if (GemFireCacheImpl.getInstance().getLogger().fineEnabled()) {
+        GemFireCacheImpl.getInstance().getLogger()
+            .fine("IndexManager TestHook is set in getExpandedOperandsWithIndexInfoSetIfAny.");
+      }
+      IndexManager.testHook.hook(12);
+    }
+
+    return cvs;
+  }
+  
+  @Override
+  public SelectResults filterEvaluate(ExecutionContext context,
+      SelectResults intermediateResults, boolean completeExpansionNeeded,
+      CompiledValue iterOperands, RuntimeIterator[] indpndntItrs, boolean isIntersection, boolean conditioningNeeded,
+      boolean evaluateProjection)
+      throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException {
+    OrganizedOperands newOperands = organizeOperands(context, completeExpansionNeeded,  indpndntItrs);
+    assert newOperands.iterateOperand == null;
+    SelectResults result = intermediateResults;
+    result =  (newOperands.filterOperand) .filterEvaluate(context,intermediateResults,  completeExpansionNeeded,
+    iterOperands,indpndntItrs,isIntersection, conditioningNeeded, evaluateProjection) ;
+    
+    return result;
+  } 
+
+  @Override
+  public SelectResults filterEvaluate(ExecutionContext context,
+      SelectResults intermediateResults) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException
+  {
+    RuntimeIterator grpItr = (RuntimeIterator)QueryUtils.getCurrentScopeUltimateRuntimeIteratorsIfAny(this, context).iterator().next();
+    OrganizedOperands newOperands = organizeOperands(context,true,new RuntimeIterator[]{grpItr});
+    assert newOperands.iterateOperand == null;
+    SelectResults result = intermediateResults;
+    result =  (newOperands.filterOperand) .filterEvaluate(context, intermediateResults) ;   
+    return result;
+  }
+  
+
+  /**
+   * Breaks down the like predicate (if sargable) into 2 or 3
+   * CompiledComparisons based on the presence of wildcard
+   * 
+   * @param var
+   * @param pattern
+   * @return The generated CompiledComparisons
+   */
+  CompiledComparison[] getRangeIfSargable(CompiledValue var, String pattern) {
+    CompiledComparison[] cv = null;
+    StringBuffer buffer = new StringBuffer(pattern);
+    // check if the string has a % or _ anywhere
+    wildcardPosition = checkIfSargableAndRemoveEscapeChars(buffer);
+    patternLength = buffer.length();
+    isIndexEvaluated = true;
+    // if wildcardPosition is >= 0 means it is sargable
+    if (wildcardPosition >= 0) {
+      int len = patternLength;
+      if (wildcardPosition == 0) {
+        // wildcard is the leading char
+        // change the like predicate to >= "" and like
+        cv = new CompiledComparison[] {
+            new CompiledComparison(var, new CompiledLiteral(LOWEST_STRING),
+                OQLLexerTokenTypes.TOK_GE), this };
+
+      } else {
+        // the wildcard is not the first char
+        // delete all chars after the wildchar
+        for (int k = len - 1; k >= wildcardPosition; k--) {
+          buffer.deleteCharAt(k);
+          --len;
+        }
+
+        String lowerBound = buffer.toString();
+        int upperBoundPosition = len - 1;
+        char upperBoundChar;
+        while (true) {
+          upperBoundChar = (buffer.charAt(upperBoundPosition));
+          if (upperBoundChar == BOUNDARY_CHAR) {
+            --upperBoundPosition;
+          } else {
+            upperBoundChar = (char) (buffer.charAt(upperBoundPosition) + 1);
+            break;
+          }
+        }
+        buffer.delete(upperBoundPosition, len);
+        buffer.append(upperBoundChar);
+        String upperBound = buffer.toString();
+        CompiledComparison c1 = new CompiledComparison(var,
+            new CompiledLiteral(lowerBound), OQLLexerTokenTypes.TOK_GE);
+        CompiledComparison c2 = new CompiledComparison(var,
+            new CompiledLiteral(upperBound), OQLLexerTokenTypes.TOK_LT);
+        
+        // if % is not the last char in the string.
+        // or the wildchar is _ which could be anywhere
+        if (len < (patternLength - 1) || wildcardType == WILDCARD_UNDERSCORE) {
+          // negation not supported if % is not the last char and also for a _
+          // anywhere
+          if (getOperator() == OQLLexerTokenTypes.TOK_NE) {
+            cv = new CompiledComparison[] {
+                new CompiledComparison(var, new CompiledLiteral(LOWEST_STRING),
+                    OQLLexerTokenTypes.TOK_GE), this };
+          } else {
+            // the like predicate is broken into 3 compiled comparisons
+            cv = new CompiledComparison[] { c1, c2, this };
+          }
+
+        } else {
+          // % is at the end of the string
+          // the like predicate is broken down to 2 compile comparisons
+          cv = new CompiledComparison[] { c1, c2 };
+        }
+      }
+    } else {
+      // not sargable
+      // Change the like predicate to equality
+      cv = new CompiledComparison[] { new CompiledComparison(var,
+          new CompiledLiteral(buffer.toString()), getOperator()) };
+    }
+
+    return cv;
+  }
+
+  private String getRegexPattern(String pattern) {
+    StringBuffer sb = new StringBuffer();
+    boolean prevMetaChar = false;
+    int len = pattern.length();
+
+    for (int i = 0; i < len;i++) {
+      char ch = pattern.charAt(i);
+      switch (ch) {
+        // meta chars: \ ^ * . + ? ( ) | [ ]
+        case ']' :
+        case '[' :
+        case '^' :
+        case '*' :
+        case '.' :
+        case '+' :
+        case '?' :
+        case '(' :
+        case ')' :
+        case '|' :
+        case '{' :
+        case '}' :
+        case '\\' :
+          //if ((ch == '\\') && (i+1) < len && (pattern.charAt(i+1) == '_' || pattern.charAt(i+1) == '%')) {
+          if ((ch == '\\')) {
+            if (!((i+1) < len && (pattern.charAt(i+1) == '\\'))) {
+              break;
+            }
+            i++;
+          } 
+          // Check if subsequent chars are meta chars.
+          // \Q is used for start of string literal 
+          // \E for end of string literal. E.g. \Q+*\E to escape +*
+          if (!prevMetaChar) {
+            sb.append('\\');
+            sb.append('Q');
+            prevMetaChar = true;
+          }
+          sb.append(ch);
+          break;
+        case '_': // replace with .
+        case '%':  // replace with .*
+          if (prevMetaChar) {
+            sb.append('\\');
+            sb.append('E');
+            prevMetaChar = false;
+          }
+
+          // Check if the % has a valid escape. Backtrack to check for \.
+          // If the number of \ on back track is odd, then % is escaped.
+          int numConsecutiveBackSlash = 0;
+          for (int j = i - 1; j > -1; --j) {
+            if (pattern.charAt(j) == '\\') {
+              ++numConsecutiveBackSlash;
+            } else {
+              break;
+            }
+          }
+
+          if ((numConsecutiveBackSlash % 2) == 0) {
+            if (ch == '%') {
+              sb.append(".*");
+              // ignore successive '%'
+              while ((i+1) < len && pattern.charAt(i + 1) == '%') {
+                i++;
+              }
+            }
+            else {
+              sb.append(".");
+            }
+          }
+          else {
+            // The percentage or underscore sign is escaped. Hence it is to be un-escaped now
+            // So remove the backslash
+            // sb.deleteCharAt(sb.length() - 1);
+            sb.append(ch);
+          }
+          break;
+        default:
+          if (prevMetaChar) {
+            sb.append('\\');
+            sb.append('E');
+            prevMetaChar = false;
+          }
+          sb.append(ch);
+      }
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Checks if index can be used for Strings with wildcards. Two wild cards are
+   * supported % and _. The wildcard could be at any index position of the
+   * string.
+   * 
+   * @param buffer
+   * @return position of wildcard if sargable otherwise -1
+   */
+  int checkIfSargableAndRemoveEscapeChars(StringBuffer buffer) {
+    int len = buffer.length();
+    int wildcardPosition = -1;
+    for (int i = 0; i < len; ++i) {
+      char ch = buffer.charAt(i);
+      if (ch == UNDERSCORE) {
+        wildcardType = WILDCARD_UNDERSCORE;
+        wildcardPosition = i; // the position of the wildcard
+        break;
+      } else if (ch == PERCENT) {
+        wildcardType = WILDCARD_PERCENT;
+        wildcardPosition = i; // the position of the wildcard
+        break;
+      } else if (ch == BACKSLASH) {
+        if (i + 1 < len) {
+          if (buffer.charAt(i + 1) == PERCENT
+              || buffer.charAt(i + 1) == UNDERSCORE) {
+            wildcardPosition = -1; // escape the wildcard
+          }
+          buffer.deleteCharAt(i); // one \ escapes next
+          len--;
+        }
+      }
+    }
+    return wildcardPosition;
+  }
+
+  /*
+  @Override
+  public Object evaluate(ExecutionContext context)
+      throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException
+  {
+    CompiledValue iterEvaluator = (CompiledValue)context.cacheGet(this.bindArg);
+    if(iterEvaluator == null) {
+      String pattern = (String)this.bindArg.evaluate(context);
+      CompiledComparison[] cvs = getRangeIfSargable(this.var, pattern);
+
+      for (CompiledComparison cp : cvs) {
+        cp.computeDependencies(context);
+
+      }
+      if(cvs.length ==2 ) {
+        iterEvaluator = new CompiledJunction(cvs, OQLLexerTokenTypes.LITERAL_and);   
+      }else {
+        iterEvaluator = cvs[0];
+      }
+      context.cachePut(this.bindArg, iterEvaluator);
+      
+    }
+    return iterEvaluator.evaluate(context);   
+  }
+  */
+  
+  @Override
+  public Object evaluate(ExecutionContext context)
+      throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException
+  {
+    //reset the isIndexEvaluated flag here since index is not being used here
+    isIndexEvaluated = false;
+
+    Pattern pattern = (Pattern)context.cacheGet(this.bindArg);
+    if(pattern == null) {
+      String strPattern = this.bindArg.evaluate(context).toString(); // handles both Strings and PdxStrings
+      if (strPattern == null) {
+        throw new UnsupportedOperationException("Null values are not supported with LIKE predicate.");
+      }
+      pattern = Pattern.compile(getRegexPattern(strPattern),Pattern.MULTILINE|Pattern.DOTALL);
+      //GemFireCacheImpl.getInstance().getLogger().fine("### DEBUG : string :" + strPattern + " pattern :" + pattern.toString());
+      context.cachePut(this.bindArg, pattern);
+    }
+    Object value = this.var.evaluate(context);
+    if (value == null) {
+      return null;
+    }
+
+    if (!((value instanceof String)  || (value instanceof PdxString) || (value == QueryService.UNDEFINED))) {
+//      throw new TypeMismatchException(
+//          LocalizedStrings.TypeUtils_UNABLE_TO_COMPARE_OBJECT_OF_TYPE_0_WITH_OBJECT_OF_TYPE_1
+//              .toLocalizedString("java.lang.String", value.getClass().getName()));
+      if (getOperator() == TOK_NE) {
+        return true;
+      }
+      return false;
+    }
+
+    // Check if LIKE clause is negated (_operator == TOK_NE) in query.
+    boolean isMatched = pattern.matcher(value.toString()).matches(); 
+    if (getOperator() == TOK_NE) {
+      isMatched = !isMatched;
+    }
+    return isMatched;
+  }
+  
+  /**
+   * @since 6.6
+   */
+  @Override
+  protected PlanInfo protGetPlanInfo(ExecutionContext context)
+      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+    /*
+     * During filterevaluation, CompiledLike is converted to 2 or 3
+     * CompiledComparisons. One of the CCs could be a CompiledLike itself. For
+     * example If the wildcard is _ or the % is anywhere except at the end in
+     * the pattern, a GroupJunction is created. For 'ab%cd', the GroupJunction
+     * would be ">=ab AND < ac AND LIKE ab%cd". The check avoids the
+     * re-filterevaluation of this CompiledLike.
+     */
+    PlanInfo result = null;
+    if (isIndexEvaluated) {
+      result = new PlanInfo();
+      result.evalAsFilter = false;
+    } else {
+      result = super.protGetPlanInfo(context);
+      // CCs created have range conditions which are not supported by PrimaryKey
+      // index. So disabling filter when PrimaryKey index is used
+      if (result.indexes.size() > 0
+          && result.indexes.get(0) instanceof PrimaryKeyIndex) {
+        result.evalAsFilter = false;
+      }
+    }
+    return result;
+  }
+  
+  @Override
+  public int getType() {
+    return LIKE;
+  }
+  @Override
+  public boolean isLimitApplicableAtIndexLevel(ExecutionContext context)  {
+    return true;
+  }
+  
+  @Override
+  public boolean isOrderByApplicableAtIndexLevel(ExecutionContext context,
+      String canonicalizedOrderByClause) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException {
+
+    if (this.getPlanInfo(context).evalAsFilter) {
+      PlanInfo pi = this.getPlanInfo(context);
+      if (pi.indexes.size() == 1) {
+        IndexProtocol ip = (IndexProtocol)pi.indexes.get(0);
+        if (ip.getCanonicalizedIndexedExpression().equals(
+            canonicalizedOrderByClause)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
+}

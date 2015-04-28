@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- A sample GemFire declarative caching XML File that demonstrates
+     the "named region attributes" feature.
+-->
+
+<cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+    version="8.1">
+  <region-attributes id="template" statistics-enabled="true" 
+                     scope="distributed-ack">
+    <key-constraint>java.lang.String</key-constraint>
+    <value-constraint>com.company.app.Customer</value-constraint>
+    <entry-idle-time>
+      <expiration-attributes timeout="60"/>
+    </entry-idle-time>
+  </region-attributes>
+
+  <!-- define a named region-attributes that uses the predefined REPLICATE -->
+  <region-attributes id="distributed" refid="REPLICATE">
+    <cache-loader>
+      <class-name>com.company.app.DBLoader</class-name>
+    </cache-loader>
+  </region-attributes>
+
+  <region-attributes id="persistent" refid="distributed"
+                     data-policy="persistent-replicate"> 
+    <eviction-attributes>
+      <lru-entry-count maximum="1000" action="overflow-to-disk"/>
+    </eviction-attributes>
+  </region-attributes>
+
+  <region name="customers" refid="template"/>
+  <region name="customers-west" refid="template"/>
+  <region name="customers-central" refid="template"/>
+  <region name="customers-east" refid="template"/>
+
+  <region name="orders" refid="template"/>
+  <region name="orders-west" refid="persistent"/>
+  <region name="orders-central" refid="persistent"/>
+  <region name="orders-east" refid="persistent"/>
+</cache>

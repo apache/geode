@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+  <HEAD>
+    <TITLE>com.gemstone.gemfire.cache.execute package</TITLE>
+  </HEAD>
+  <BODY>
+  <p>
+  The <code>com.gemstone.gemfire.cache.execute</code> package provides APIs used
+  for function execution on gemfire system members.
+  </p>
+  <p>
+  GemFire's Function Execution Service supports execution of user-defined methods on targeted GemFire system members.  
+  <br>
+  The fundamental premise is to route the function transparently to the GemFire system member that hosts the 
+  data subset required by the application function and avoid moving data around on the network.
+  Application function can be executed on just one fabric node, executed in parallel on a subset 
+  of nodes or in parallel across all the nodes. <br>
+</p>
+<p>
+	The Function Execution Service API is based on the following classes and interfaces which work together
+	to provide the function execution capability. The API allows execution of functions that are 
+	"data dependent" or "data independent". Data dependent functions are functions that need
+	access to the local data set, on the targeted member.
+        <ul>
+	<li>The FunctionService class provides methods to execute functions on targeted GemFire 
+	 system members.</li>
+
+	<li>Functions are java classes that implement the {@link com.gemstone.gemfire.cache.execute.Function} interface. Functions
+	can be registered with the {@linkplain com.gemstone.gemfire.cache.execute.FunctionService Function Execution Service}.</li>
+	
+	<li>The application obtains the execution object {@link com.gemstone.gemfire.cache.execute.Execution} and uses its methods to target 
+	execution.</li>
+	
+        <li>Calling the execute() method on the Execution object
+	starts the execution on the targeted Gemfire system
+	member(s).</li>
+
+	<li>Upon execution on the targeted member(s), a FunctionContext
+	object is passed into the execute() method. Application developer can 
+	use FunctionContext to get the arguments passed into the execution 
+	of the function and references to the data regions providing access to the 
+	local dataset as well as colocated dataset on the member.</li>
+	
+	<li>The Application developer can get ResultSender from FunctionContext
+	and send the results in parts to ResultCollector. As the result is sent, 
+	it is added to the ResultCollector immediately.	By default GemFire returns a ResultCollector,
+	whose getResult() method blocks until all the results have been obtained from the function
+	execution. To stop ResultCollector from waiting for more results a last result must be sent.
+	</li>
+	</ul>
+
+<p>
+	Example of a "data dependent" execution using the Function Execution Service
+<pre>
+    Region region;
+    Set keySet = Collections.singleton("myKey");
+    Function multiGetFunction;
+    Object args;
+    ResultCollector rc = FunctionService.onRegion(region)
+                                        .withArgs(args)
+                                        .withFilter(keySet)
+                                        .withCollector(new MyCustomResultCollector())
+                                        .execute(multiGetFunction.getId());
+    // Application can do something else here before retrieving the result
+    // It can even get deal with partial results which it will get in
+    // MyCustomResultCollector.addResult().
+    
+    Object functionResult = rc.getResult();
+</pre>
+</p>
+
+<p>
+	Example of a Function execution on a set of regions
+<pre>
+    Region region1, region2, region3;
+    Set s = new HashSet();
+    s.add(region1);
+    s.add(region2);
+    s.add(region3);
+    Function multiGetFunction;
+    Object args;
+    ResultCollector rc = FunctionService.onRegions(s)
+                                        .withArgs(args)
+                                        .withCollector(new MyCustomResultCollector())
+                                        .execute(multiGetFunction.getId());
+    // Application can get the handle of all the regions at the node it is executing on.
+    // This way it can get the handle of data in an efficient way.
+    Object functionResult = rc.getResult();
+</pre>
+</p>
+
+
+<p>
+   	Example of a "data independent" execution using the Function
+   	Execution Service
+<pre>
+    DistributedSystem ds;
+    Function memberSetupFunction;
+    Object args;
+    ResultCollector rc = FunctionService.onMembers(ds)
+                                        .withArgs(args)
+                                        .execute(memberSetupFunction.getId());
+    //Application can do something else here before retrieving the result
+    Object functionResult = rc.getResult();
+</pre>
+</p>
+
+<p>
+   	Example of a "Function" to be executed which sends result to ResultCollector using ResultSender.
+<pre>
+
+	public class MYFunction extends FunctionAdapter {
+	
+	  public void execute(FunctionContext context) {
+		for(int i =0 ;i< 10; i++)        
+			context.getResultSender().sendResult(i);
+		context.getResultSender.lastResult(10);
+	  }
+	
+	  public String getId() {
+	    return "MYFunction";
+	  }
+	
+	  public boolean hasResult() {
+	    return true;
+	  }
+	
+	}
+</pre>
+</p>
+
+<p>
+Some scenarios where function execution can be useful:
+<ol>
+<li>Any arbitrary aggregation operation that requires iteration over
+	  local data sets done more efficiently through a single call
+	  to the cache server</li>
+<li> Application wants to execute a server side behaviour.</li>
+<li> Application wants to operate on many regions at a time. Like having function which need data from many regions. This can be 
+achieved in an efficient way using function service.</li>
+<li> Application wants to initialize some of its components once on
+each server which might be used later by executed functions, for example initialization of a 3rd party service.</li>
+</ol>
+</p>
+</BODY>
+</HTML>

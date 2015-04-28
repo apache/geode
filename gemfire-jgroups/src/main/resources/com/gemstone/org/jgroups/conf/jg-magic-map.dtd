@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  A fully qualified Java class name 
+  Used to dynamically load classes in the classpath
+-->
+<!ELEMENT class-name (#PCDATA)>
+
+<!-- A free text description of an configuration element -->
+<!ELEMENT description (#PCDATA)>
+
+<!-- 
+  Integer (java int) value for magic number to class mapping - 
+  has to be unique within this file/one magic number per class
+-->
+<!ELEMENT magic-number (#PCDATA)>
+
+<!--
+  the preload element determines whether a class is preloaded or not 
+  true means that the JGroups configurator will load the class upon parsing this file (pro-performance)
+  false means that the class will not get loaded until used (pro-memory saving)
+-->
+<!ELEMENT preload (#PCDATA)>
+
+<!-- 
+  Initialization parameters for preloaded classes (Address, Header) 
+  By default the Header and the Address base class have methods init(HashMap params)
+  This method will get called with the values from the configuration file. This allows each individual
+  class to have startup parameters
+-->
+<!ELEMENT init-param EMPTY>
+<!ATTLIST init-param
+	name CDATA #REQUIRED
+	value CDATA #REQUIRED
+>
+
+<!-- 
+  A list of initialization parameters
+-->  
+<!ELEMENT init-params (init-param+)>
+
+<!-- 
+  The definition of an address class.
+  A class is defined by the class-name and the magic number. 
+  The magic is number is unique, ie, within this file, a magic number can not 
+  appear more than once.
+  If that happens, the JGroups configurator will throw an exception upon parsing this file.
+-->  
+<!ELEMENT class (description, class-name, preload, magic-number, init-params?)>
+
+<!-- 
+      magic-number-class-mapping allows you to configure magic numbers for addresses and headers
+      these classes can also be configured to be preloaded or not
+-->
+<!ELEMENT magic-number-class-mapping (class*)>
+

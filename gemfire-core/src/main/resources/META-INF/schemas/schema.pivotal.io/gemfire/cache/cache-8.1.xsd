@@ -1,0 +1,1496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+    targetNamespace="http://schema.pivotal.io/gemfire/cache"
+    xmlns:gf="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    version="8.1">
+  <xsd:annotation>
+    <xsd:documentation><![CDATA[
+This is the XML Schema for the GemFire distributed cache declarative
+caching XML file.  All declarative cache files must include a schema
+of the following form:
+
+  <cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+    version="8.1">
+
+If you are declaring a client cache then use this schema:
+
+  <client-cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+    version="8.1">
+
+The contents of a declarative XML file correspond to APIs found in the
+com.gemstone.gemfire.cache and com.gemstone.gemfire.cache.client
+packages.  A declarative caching XML file is used to populate a Cache
+or a ClientCache when it is created.
+
+The top-level element in this syntax is "cache" or "client-cache".
+All elements are listed here in alphabetical order.
+
+The following conventions apply to all GemFire distributed cache
+declarative caching XML file elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+  
+  ]]></xsd:documentation>
+  </xsd:annotation>
+
+    <!--
+-->
+  <xsd:element name="cache">
+    <xsd:annotation>
+      <xsd:documentation>
+        The "cache" element is the root element of the declarative cache file on a peer or server. This element configures a GemFire Cache and
+        describes the root regions it contains, if any.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element maxOccurs="1" minOccurs="0" name="cache-transaction-manager" type="gf:cache-transaction-manager-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="dynamic-region-factory" type="gf:dynamic-region-factory-type" />
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-hub">
+          <xsd:annotation>
+            <xsd:documentation>
+              The "gateway-hub" element specifies a Gateway Hub that is
+              initialized when the Cache is declaratively initialized.
+            </xsd:documentation>
+          </xsd:annotation>
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway">
+                <xsd:annotation>
+                  <xsd:documentation>
+                    The "gateway" element specifies a Gateway that is
+                    initialized when a GatewayHub is declaratively initialized.
+                  </xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                  <xsd:sequence>
+                    <xsd:choice>
+                      <xsd:element maxOccurs="unbounded" minOccurs="1" name="gateway-endpoint">
+                        <xsd:annotation>
+                          <xsd:documentation>
+                            The "gateway-endpoint" element specifies an endpoint that is
+                            initialized when a Gateway is declaratively
+                            initialized.
+                          </xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                          <xsd:attribute name="host" type="xsd:string" use="required" />
+                          <xsd:attribute name="id" type="xsd:string" use="required" />
+                          <xsd:attribute name="port" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                      </xsd:element>
+                      <xsd:element maxOccurs="unbounded" minOccurs="1" name="gateway-listener">
+                        <xsd:annotation>
+                          <xsd:documentation>
+                            The "gateway-listener" element specifies a listener that is
+                            initialized when a Gateway is declaratively initialized.
+                          </xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element name="class-name" type="gf:class-name-type" />
+                            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                    </xsd:choice>
+                    <xsd:element maxOccurs="1" minOccurs="0" name="gateway-queue">
+                      <xsd:annotation>
+                        <xsd:documentation>
+                          The "gateway-queue" element specifies a queue that is
+                          initialized when a Gateway is declaratively initialized.
+                          As of
+                          6.5 overflow-directory is deprecated. Use disk-store-name instead.
+                          As of 6.5 roll-oplogs is deprecated. Use disk-store-name instead.
+                        </xsd:documentation>
+                      </xsd:annotation>
+                      <xsd:complexType>
+                        <xsd:attribute name="alert-threshold" type="xsd:string" use="optional" />
+                        <xsd:attribute name="batch-conflation" type="xsd:boolean" use="optional" />
+                        <xsd:attribute name="batch-size" type="xsd:string" use="optional" />
+                        <xsd:attribute name="batch-time-interval" type="xsd:string" use="optional" />
+                        <xsd:attribute name="enable-persistence" type="xsd:boolean" use="optional" />
+                        <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+                        <xsd:attribute name="roll-oplogs" type="xsd:boolean" use="optional" />
+                        <xsd:attribute name="maximum-queue-memory" type="xsd:string" use="optional" />
+                        <xsd:attribute name="overflow-directory" type="xsd:string" use="optional" />
+                      </xsd:complexType>
+                    </xsd:element>
+                  </xsd:sequence>
+                  <xsd:attribute name="early-ack" type="xsd:boolean" use="optional" />
+                  <xsd:attribute name="id" type="xsd:string" use="required" />
+                  <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
+                  <xsd:attribute name="socket-read-timeout" type="xsd:string" use="optional" />
+                  <xsd:attribute name="concurrency-level" type="xsd:string" use="optional" />
+                  <xsd:attribute name="order-policy" type="xsd:string" use="optional" />
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="required" />
+            <xsd:attribute name="bind-address" type="xsd:string" use="optional" />
+            <xsd:attribute name="maximum-time-between-pings" type="xsd:string" use="optional" />
+            <xsd:attribute name="port" type="xsd:string" use="optional" />
+            <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
+            <xsd:attribute name="startup-policy" use="optional">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="primary" />
+                  <xsd:enumeration value="secondary" />
+                  <xsd:enumeration value="none" />
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:attribute>
+            <xsd:attribute name="manual-start" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="max-connections" type="xsd:integer" use="optional" />
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-sender">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-event-filter" type="gf:class-with-parameters-type" />
+              <xsd:element maxOccurs="1" minOccurs="0" name="gateway-event-substitution-filter" type="gf:class-with-parameters-type" />
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-transport-filter" type="gf:class-with-parameters-type" />
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="required" />
+            <xsd:attribute name="remote-distributed-system-id" type="xsd:string" use="required" />
+            <xsd:attribute name="parallel" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="manual-start" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
+            <xsd:attribute name="socket-read-timeout" type="xsd:string" use="optional" />
+            <xsd:attribute name="enable-batch-conflation" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="batch-size" type="xsd:string" use="optional" />
+            <xsd:attribute name="batch-time-interval" type="xsd:string" use="optional" />
+            <xsd:attribute name="enable-persistence" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+            <xsd:attribute name="disk-synchronous" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="maximum-queue-memory" type="xsd:string" use="optional" />
+            <xsd:attribute name="alert-threshold" type="xsd:string" use="optional" />
+            <xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional" />
+            <xsd:attribute name="order-policy" type="xsd:string" use="optional" />
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-receiver">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-transport-filter" type="gf:class-with-parameters-type" />
+            </xsd:sequence>
+            <xsd:attribute name="start-port" type="xsd:string" use="optional" />
+            <xsd:attribute name="end-port" type="xsd:string" use="optional" />
+            <xsd:attribute name="bind-address" type="xsd:string" use="optional" />
+            <xsd:attribute name="maximum-time-between-pings" type="xsd:string" use="optional" />
+            <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
+            <xsd:attribute name="hostname-for-senders" type="xsd:string" use="optional" />
+            <xsd:attribute name="manual-start" type="xsd:boolean" use="optional" />
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element maxOccurs="1" minOccurs="0" name="gateway-conflict-resolver">
+          <xsd:annotation>
+            <xsd:documentation>
+              A "gateway-conflict-resolver" element describes a region's GatewayConflictResolver.
+              It is used to resolve inter-system concurrency
+              conflicts.
+            </xsd:documentation>
+          </xsd:annotation>
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="class-name" type="gf:class-name-type" />
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="async-event-queue">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-event-filter" type="gf:class-with-parameters-type" />
+              <xsd:element maxOccurs="1" minOccurs="0" name="gateway-event-substitution-filter" type="gf:class-with-parameters-type" />
+              <xsd:element name="async-event-listener" type="gf:class-with-parameters-type">
+                <xsd:annotation>
+                  <xsd:documentation>
+                    A "async-event-listener" element describes a region's AsyncEventListener.
+                  </xsd:documentation>
+                </xsd:annotation>
+              </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="required" />
+            <xsd:attribute name="parallel" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="batch-size" type="xsd:string" use="optional" />
+            <xsd:attribute name="batch-time-interval" type="xsd:string" use="optional" />
+            <xsd:attribute name="enable-batch-conflation" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="maximum-queue-memory" type="xsd:string" use="optional" />
+            <xsd:attribute name="persistent" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+            <xsd:attribute name="disk-synchronous" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional" />
+            <xsd:attribute name="order-policy" type="xsd:string" use="optional" />
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="cache-server">
+          <xsd:annotation>
+            <xsd:documentation>
+              The "cache-server" element specifies a Cache Server that will accept requests from clients and that is started when the Cache is
+              declaratively initialized.
+            </xsd:documentation>
+          </xsd:annotation>
+          <xsd:complexType>
+            <xsd:complexContent>
+              <xsd:extension base="gf:server-type">
+                <xsd:attribute name="tcp-no-delay" type="xsd:boolean" use="optional" />
+              </xsd:extension>
+            </xsd:complexContent>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="bridge-server" type="gf:server-type">
+          <xsd:annotation>
+            <xsd:documentation>
+              The "bridge-server" element specifies a Cache Bridge Server that is started when the Cache is declaratively initialized.
+              NOTE: as
+              of 5.7 this element is deprecated; use the "cache-server" element instead.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="pool" type="gf:pool-type" />
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="disk-store" type="gf:disk-store-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="pdx" type="gf:pdx-type" />
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="region-attributes" type="gf:region-attributes-type" />
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="jndi-bindings" type="gf:jndi-bindings-type" />
+          <xsd:element name="region" type="gf:region-type" />
+          <xsd:element name="vm-root-region" type="gf:region-type">
+            <xsd:annotation>
+              <xsd:appinfo>deprecated</xsd:appinfo>
+              <xsd:documentation>
+                A "vm-root-region" element is the same as "region".
+                This element exists for backwards compatiblity and should not be used
+                in new xml files.
+              </xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:choice>
+        <xsd:element maxOccurs="1" minOccurs="0" name="function-service" type="gf:function-service-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="resource-manager" type="gf:resource-manager-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="serialization-registration" type="gf:serialization-registration-type" />
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="backup" type="xsd:string">
+          <xsd:annotation>
+            <xsd:documentation>
+              The backup element defines files or directories that should
+              be backed up when the system wide backup command is invoked.
+              Disk
+              stores with persistent data are automatically backed up,
+              they do not need to be listed with this element.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element maxOccurs="1" minOccurs="0" name="initializer" type="gf:initializer-type" />
+        <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+      <xsd:attribute name="copy-on-read" type="xsd:boolean" use="optional" />
+      <xsd:attribute name="is-server" type="xsd:boolean" use="optional" />
+      <xsd:attribute name="lock-timeout" type="xsd:string" use="optional" />
+      <xsd:attribute name="lock-lease" type="xsd:string" use="optional" />
+      <xsd:attribute name="message-sync-interval" type="xsd:string" use="optional" />
+      <xsd:attribute name="search-timeout" type="xsd:string" use="optional" />
+      <xsd:attribute name="version" type="gf:versionType" use="required" fixed="8.1" />
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="client-cache">
+    <xsd:annotation>
+      <xsd:documentation>
+        The "client-cache" element is the root element of the declarative cache file on a client. This element configures a GemFire ClientCache
+        and describes the root regions it contains, if any.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element maxOccurs="1" minOccurs="0" name="cache-transaction-manager" type="gf:cache-transaction-manager-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="dynamic-region-factory" type="gf:dynamic-region-factory-type" />
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="pool" type="gf:pool-type" />
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="disk-store" type="gf:disk-store-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="pdx" type="gf:pdx-type" />
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="region-attributes" type="gf:region-attributes-type" />
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="jndi-bindings" type="gf:jndi-bindings-type" />
+          <xsd:element name="region" type="gf:region-type" />
+        </xsd:choice>
+        <xsd:element maxOccurs="1" minOccurs="0" name="function-service" type="gf:function-service-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="resource-manager" type="gf:resource-manager-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="serialization-registration" type="gf:serialization-registration-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="initializer" type="gf:initializer-type" />
+      </xsd:sequence>
+      <xsd:attribute name="copy-on-read" type="xsd:boolean" use="optional" />
+      <xsd:attribute name="version" type="gf:versionType" use="required" fixed="8.1" />
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:complexType name="region-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "region" element describes a region (and its entries) in GemFire
+        distributed cache. It may be used to create a new region or may be
+        used to add new entries to an existing region. Note that the "name"
+        attribute specifies the simple name of the region; it cannot contain a
+        "/".
+        If "refid"
+        is set then it defines the default region attributes to use for this region.
+        A nested "region-attributes" element can override these defaults.
+        If the
+        nested "region-attributes" element has its own "refid" then it will cause the
+        "refid" on the region to be ignored.
+        "refid" can be set to the name of a
+        RegionShortcut or a ClientRegionShortcut
+        (see the javadocs of those enum classes for their names).
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="region-attributes" type="gf:region-attributes-type" />
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="index">
+        <xsd:annotation>
+          <xsd:documentation>
+            An "index" element describes an index to be created on a region.
+            The index node, if any, should all come immediately after the
+            "region-attributes" node. There can be any number of functional types
+            of index on a Region, but only at max one index of type "primary-key". The
+            "name" attribute is a required field which identifies the name of the index.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:choice minOccurs="0">
+            <xsd:element name="functional">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A functional type of index needs a from-clause, expression which are mandatory.
+                  The import string is used for specifying the
+                  type of Object in the region or
+                  the type of Object which the indexed expression evaluates to.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:attribute name="expression" type="xsd:string" use="required" />
+                <xsd:attribute name="from-clause" type="xsd:string" use="required" />
+                <xsd:attribute name="imports" type="xsd:string" use="optional" />
+              </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="primary-key">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A primary-key type of index needs a field attribute which is mandatory.
+                  There should be only one or zero primary-index defined
+                  for a region
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:attribute name="field" type="xsd:string" use="required" />
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:choice>
+          <xsd:attribute name="name" type="xsd:string" use="required" />
+          <xsd:attribute name="expression" type="xsd:string" use="optional" />
+          <xsd:attribute name="from-clause" type="xsd:string" use="optional" />
+          <xsd:attribute name="imports" type="xsd:string" use="optional" />
+          <xsd:attribute name="key-index" type="xsd:boolean" use="optional" />
+          <xsd:attribute default="range" name="type" use="optional">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="range" />
+                <xsd:enumeration value="hash" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="entry">
+        <xsd:annotation>
+          <xsd:documentation>
+            An "entry" element desribes an entry to be added to a region. Note
+            that if an entry with the given key already exists in the region,
+            it
+            will be replaced.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="key">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A "key" element describes the key in a Region entry.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:choice>
+                  <xsd:element name="string" type="gf:string-type" />
+                  <xsd:element name="declarable" type="gf:declarable-type" />
+                </xsd:choice>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="value">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A "value" element describes the value in a Region entry
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:choice>
+                  <xsd:element name="string" type="gf:string-type" />
+                  <xsd:element name="declarable" type="gf:declarable-type" />
+                </xsd:choice>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="region" type="gf:region-type" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+    <xsd:attribute name="refid" type="xsd:string" use="optional" />
+  </xsd:complexType>
+    <!-- ======================================================= -->
+    <!--
+A "region-attributes" element describes the attributes of a region to
+be created.
+As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name instead.
+-->
+  <xsd:complexType name="region-attributes-type">
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="key-constraint">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "key-constraint" element specifies the name of a class to which the
+            keys of a region are constrained.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="1" minOccurs="0" name="value-constraint" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "value-constraint" element specifies the name of a class to which the
+            values of a region are constrained.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="1" minOccurs="0" name="region-time-to-live">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "region-time-to-live" element specifies a Region's time to live.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="expiration-attributes" type="gf:expiration-attributes-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="region-idle-time">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "region-idle-time" element specifies a Region's idle time.
+            Note that the APIs that correspond to this element add "out" to their
+            name.
+            See getRegionIdleTimeout and setRegionIdleTimeout.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="expiration-attributes" type="gf:expiration-attributes-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="entry-time-to-live">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "entry-time-to-live" element specifies a Region's entries' time to
+            live.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="expiration-attributes" type="gf:expiration-attributes-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="entry-idle-time">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "entry-idle-time" element specifies a Region's entries' idle time.
+            Note that the APIs that correspond to this element add "out" to
+            their name.
+            See getEntryIdleTimeout and setEntryIdleTimeout.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="expiration-attributes" type="gf:expiration-attributes-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="disk-write-attributes">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "disk-write-attributes" element describes how entry data is written
+            to disk. Deprecated as of 6.5 use disk-store instead.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:choice>
+            <xsd:element name="asynchronous-writes">
+              <xsd:annotation>
+                <xsd:documentation>
+                  An "asynchronous-writes" element specifies how entry data should be
+                  written to disk asynchronous.
+                  Deprecated as of 6.5 use
+                  disk-store instead.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:attribute name="bytes-threshold" type="xsd:string" use="required" />
+                <xsd:attribute name="time-interval" type="xsd:string" use="required" />
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="synchronous-writes">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A "synchronous-writes" element specifies that entry data should be
+                  written to disk synchronously.
+                </xsd:documentation>
+              </xsd:annotation>
+            </xsd:element>
+          </xsd:choice>
+          <xsd:attribute name="max-oplog-size" type="xsd:string" use="optional" />
+          <xsd:attribute name="roll-oplogs" type="xsd:string" use="optional" />
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="disk-dirs" type="gf:disk-dirs-type" />
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="partition-attributes">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "partition-attributes" element configures a region for partitioned
+            data storage.
+
+            local-max-memory attribute added to
+            partition-attributes in release 5.1
+            total-max-memory attribute added to partition-attributes in release 5.1
+            total-num-buckets attribute added to
+            partition-attributes in release 5.1
+            partition-resolver attribute added to partition-attributes in release 5.7
+            partition-listener attribute added to
+            partition-attributes in release 6.1
+            colocated-with attribute added to partition-attributes in release 5.7
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="1" minOccurs="0" name="partition-resolver">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A "partition-resolver" element describes a partitioned region's custom
+                  PartitionResolver.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element name="class-name" type="gf:class-name-type" />
+                  <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+                </xsd:sequence>
+                <xsd:attribute name="name" type="xsd:string" use="optional" />
+              </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="partition-listener">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A "partition-listener" element describes a partitioned region's custom
+                  PartitionListener.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element name="class-name" type="gf:class-name-type" />
+                  <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="fixed-partition-attributes">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A "fixed-partition-attributes" element describes characteristics of a
+                  partition in a Fixed Partitioned Region.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:attribute name="partition-name" type="xsd:string" use="required" />
+                <xsd:attribute name="is-primary" type="xsd:boolean" use="optional" />
+                <xsd:attribute name="num-buckets" type="xsd:string" use="optional" />
+              </xsd:complexType>
+            </xsd:element>
+
+          </xsd:sequence>
+          <xsd:attribute name="local-max-memory" type="xsd:string" use="optional" />
+          <xsd:attribute name="recovery-delay" type="xsd:string" use="optional" />
+          <xsd:attribute name="redundant-copies" type="xsd:string" use="optional" />
+          <xsd:attribute name="startup-recovery-delay" type="xsd:string" use="optional" />
+          <xsd:attribute name="total-max-memory" type="xsd:string" use="optional" />
+          <xsd:attribute name="total-num-buckets" type="xsd:string" use="optional" />
+          <xsd:attribute name="colocated-with" type="xsd:string" use="optional" />
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="membership-attributes">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "membership-attributes" element configures a region for membership
+            constraints based on required roles.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="required-role">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A "required-role" element specifies a role that is required for reliable
+                  access to the region
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:attribute name="name" type="xsd:string" use="required" />
+              </xsd:complexType>
+            </xsd:element>
+
+          </xsd:sequence>
+          <xsd:attribute name="loss-action" use="optional">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="full-access" />
+                <xsd:enumeration value="limited-access" />
+                <xsd:enumeration value="no-access" />
+                <xsd:enumeration value="reconnect" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+          <xsd:attribute name="resumption-action" use="optional">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="none" />
+                <xsd:enumeration value="reinitialize" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="subscription-attributes">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "subscription-attributes" element configures how a region subscribes
+            to remote distributed regions.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:attribute name="interest-policy" use="optional">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="all" />
+                <xsd:enumeration value="cache-content" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="cache-loader" type="gf:cache-loader-type" />
+      <xsd:element maxOccurs="1" minOccurs="0" name="cache-writer" type="gf:cache-writer-type" />
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="cache-listener">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "cache-listener" element describes a region's CacheListener.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="compressor">
+        <xsd:annotation>
+          <xsd:documentation>
+            A compressor registers a custom class which extends Compressor
+            to support compression on a region.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="1" minOccurs="0" name="eviction-attributes">
+        <xsd:annotation>
+          <xsd:documentation>
+            Create eviction attributes that monitor and control the size of the Region.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:choice>
+            <xsd:element name="lru-entry-count">
+              <xsd:annotation>
+                <xsd:documentation>
+                  Create an LRU eviction controller which performs the action if the
+                  Region has more than the maximum number of Entries in the
+                  Region.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:attribute name="action" type="gf:enum-action-destroy-overflow" use="optional" />
+                <xsd:attribute name="maximum" type="xsd:string" use="optional" />
+              </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="lru-heap-percentage">
+              <xsd:annotation>
+                <xsd:documentation>
+                  Create an LRU which evicts entries using the specified action
+                  when the heap is over the resource manager
+                  critical-heap-percentage.
+                  When the threshold has been exceeded each create or put operation
+                  is required to evict the same size of data which was
+                  added. The
+                  optional class-name and parameters allow for the declaration
+                  of an ObjectSizer, which will be used to determine data size.
+                  The class
+                  must implement the ObjectSizer interface.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:sequence minOccurs="0">
+                  <xsd:element name="class-name" type="gf:class-name-type" />
+                  <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+                </xsd:sequence>
+                <xsd:attribute name="action" type="gf:enum-action-destroy-overflow" use="optional" />
+              </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="lru-memory-size">
+              <xsd:annotation>
+                <xsd:documentation>
+                  Create an LRU that performs the action when the memory size of the Region is
+                  over the maximum. The optional class-name and
+                  parameters allow for the
+                  declaration an ObjectSizer, which is used to measure the size of each Object
+                  in the Region. The class must implement
+                  the ObjectSizer interface.
+                </xsd:documentation>
+              </xsd:annotation>
+              <xsd:complexType>
+                <xsd:sequence minOccurs="0">
+                  <xsd:element name="class-name" type="gf:class-name-type" />
+                  <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+                </xsd:sequence>
+                <xsd:attribute name="action" type="gf:enum-action-destroy-overflow" use="optional" />
+                <xsd:attribute name="maximum" type="xsd:string" use="optional" />
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:choice>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="concurrency-level" type="xsd:string" use="optional" />
+    <xsd:attribute name="data-policy" type="gf:region-attributesData-policy" use="optional" />
+    <xsd:attribute name="early-ack" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="enable-async-conflation" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="enable-gateway" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="enable-subscription-conflation" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="gateway-sender-ids" type="xsd:string" use="optional" />
+    <xsd:attribute name="async-event-queue-ids" type="xsd:string" use="optional" />
+    <xsd:attribute name="hub-id" type="xsd:string" use="optional" />
+    <xsd:attribute name="id" type="xsd:string" use="optional" />
+    <xsd:attribute name="ignore-jta" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="index-update-type" type="gf:region-attributesIndex-update-type" use="optional" />
+    <xsd:attribute name="initial-capacity" type="xsd:string" use="optional" />
+    <xsd:attribute name="is-lock-grantor" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="load-factor" type="xsd:string" use="optional" />
+    <xsd:attribute name="mirror-type" type="gf:region-attributesMirror-type" use="optional" />
+    <xsd:attribute name="multicast-enabled" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="persist-backup" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="pool-name" type="xsd:string" use="optional" />
+    <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+    <xsd:attribute name="disk-synchronous" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="publisher" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="refid" type="xsd:string" use="optional" />
+    <xsd:attribute name="scope" type="gf:region-attributesScope" use="optional" />
+    <xsd:attribute name="statistics-enabled" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="cloning-enabled" type="xsd:boolean" use="optional" />
+    <xsd:attribute default="true" name="concurrency-checks-enabled" type="xsd:boolean" use="optional" />
+  </xsd:complexType>
+  <xsd:simpleType name="region-attributesData-policy">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="empty" />
+      <xsd:enumeration value="normal" />
+      <xsd:enumeration value="partition" />
+      <xsd:enumeration value="persistent-replicate" />
+      <xsd:enumeration value="preloaded" />
+      <xsd:enumeration value="replicate" />
+      <xsd:enumeration value="persistent-partition" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="region-attributesIndex-update-type">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="asynchronous" />
+      <xsd:enumeration value="synchronous" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="region-attributesMirror-type">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="keys" />
+      <xsd:enumeration value="keys-values" />
+      <xsd:enumeration value="none" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="region-attributesScope">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="distributed-ack" />
+      <xsd:enumeration value="distributed-no-ack" />
+      <xsd:enumeration value="global" />
+      <xsd:enumeration value="local" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="enum-readable-writable">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="readable" />
+      <xsd:enumeration value="writable" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+    <!-- ======================================================= -->
+    <!--
+-->
+    <!-- ======================================================= -->
+    <!--
+-->
+    <!-- ======================================================= -->
+    <!--
+-->
+    <!-- ======================================================= -->
+    <!--
+-->
+    <!-- ======================================================= -->
+    <!--
+-->
+    <!-- ======================================================= -->
+    <!--
+-->
+    <!-- ======================================================= -->
+    <!-- ======================================================= -->
+
+  <xsd:complexType name="server-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        The "bridge-server" element specifies a Cache Bridge Server that is started when the Cache is declaratively initialized.
+        NOTE: as
+        of 5.7
+        this element is deprecated; use the "cache-server" element instead.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="group" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "group" element specifies a single server group.
+            Deprecated as of 7.0 use the groups gemfire property instead.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="1" minOccurs="0" name="client-subscription">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "client-subscription" element describes the eviction policy, capacity and overflow-directory for client subscription
+            config. The
+            overflow-directory attribute is deprecated as of 6.5 use disk-store-name instead.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:attribute name="eviction-policy" use="required">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="entry" />
+                <xsd:enumeration value="mem" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+          <xsd:attribute name="capacity" type="xsd:string" use="required" />
+          <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+          <xsd:attribute name="overflow-directory" type="xsd:string" use="optional" />
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element maxOccurs="1" minOccurs="0" name="custom-load-probe">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "custom-load-probe" element describes a callback that reports the load on a cache-server.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="bind-address" type="xsd:string" use="optional" />
+    <xsd:attribute name="hostname-for-clients" type="xsd:string" use="optional" />
+    <xsd:attribute name="max-connections" type="xsd:string" use="optional" />
+    <xsd:attribute name="maximum-message-count" type="xsd:string" use="optional" />
+    <xsd:attribute name="maximum-time-between-pings" type="xsd:string" use="optional" />
+    <xsd:attribute name="max-threads" type="xsd:string" use="optional" />
+    <xsd:attribute name="message-time-to-live" type="xsd:string" use="optional" />
+    <xsd:attribute name="notify-by-subscription" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="port" type="xsd:string" use="optional" />
+    <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
+    <xsd:attribute name="load-poll-interval" type="xsd:string" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="resource-manager-type">
+    <xsd:annotation>
+      <xsd:appinfo>deprecated</xsd:appinfo>
+      <xsd:documentation>
+        The "resource manager" element configures the behavior of the resource manager.
+        The resource manager provides support for resource
+        management of its associated Cache
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="critical-heap-percentage" type="xsd:string" use="optional" />
+    <xsd:attribute name="eviction-heap-percentage" type="xsd:string" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="function-service-type">
+    <xsd:annotation>
+      <xsd:documentation>The "function service" element configures the behavior of the function service.
+        The function service allows users to execute functions
+        on data stored in
+        GemFire
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="function">
+        <xsd:annotation>
+          <xsd:documentation>
+            The "function" element defines a function for registration in the function service
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="cache-loader-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "cache-loader" element describes a region's CacheLoader.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="class-name" type="gf:class-name-type" />
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="cache-transaction-manager-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "cache-transaction-manager" element allows insertion of cache-level
+        transaction listeners.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="transaction-listener">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "transaction-listener" describes a TransactionListener.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element maxOccurs="1" minOccurs="0" name="transaction-writer">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "transaction-writer" describes a TransactionWriter.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="cache-writer-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "cache-writer" element describes a region's CacheWriter.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="class-name" type="gf:class-name-type" />
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="serialization-registration-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A serialization-registration contains a set of serializer or
+        instantiator tags to register customer DataSerializer extensions
+        or
+        DataSerializable implementations respectively.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="serializer">
+        <xsd:annotation>
+          <xsd:documentation>
+            A serializer registers a custom class which extends DataSerializer
+            to support custom serialization of non-modifiable object types
+            inside
+            GemFire. The class must have a public zero-arg constructor.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="instantiator">
+        <xsd:annotation>
+          <xsd:documentation>
+            An instantiator registers a custom class which implements the
+            DataSerializable interface to support custom object serialization
+            inside GemFire. The class must have a public zero-arg constructor.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+          </xsd:sequence>
+          <xsd:attribute name="id" type="xsd:string" use="required">
+            <xsd:annotation>
+              <xsd:documentation>
+                The id that the instantiator should associate with the DataSerializable
+                type.
+              </xsd:documentation>
+            </xsd:annotation>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:simpleType name="class-name-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "class-name" element specifies the name of a class, an
+        instance of which is created when a declarative cache XML file is
+        read.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="disk-store-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "disk-store" element specifies a DiskStore for persistence.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="disk-dirs" type="gf:disk-dirs-type" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+    <xsd:attribute name="auto-compact" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="compaction-threshold" type="xsd:string" use="optional" />
+    <xsd:attribute name="allow-force-compaction" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="max-oplog-size" type="xsd:string" use="optional" />
+    <xsd:attribute name="time-interval" type="xsd:string" use="optional" />
+    <xsd:attribute name="write-buffer-size" type="xsd:string" use="optional" />
+    <xsd:attribute name="queue-size" type="xsd:string" use="optional" />
+    <xsd:attribute name="disk-usage-warning-percentage" type="xsd:string" use="optional" />
+    <xsd:attribute name="disk-usage-critical-percentage" type="xsd:string" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="pdx-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "pdx" element specifies the configuration for the portable data exchange (PDX) method of serialization.
+        The "read-serialized"
+        attribute is "early access".
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="pdx-serializer">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "pdx-serializer" element describes a serializer used to serialize objects in the portable data exchange format.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:sequence>
+    <xsd:attribute name="read-serialized" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="ignore-unread-fields" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="persistent" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="pool-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "pool" element specifies a client to server connection pool.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="locator">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "locator" element specifies the host and port that a server locator is listening on
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:attribute name="host" type="xsd:string" use="required" />
+          <xsd:attribute name="port" type="xsd:string" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="server">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "server" element specifies the host and port that a cache server is listening on
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:attribute name="host" type="xsd:string" use="required" />
+          <xsd:attribute name="port" type="xsd:string" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:choice>
+    <xsd:attribute name="free-connection-timeout" type="xsd:string" use="optional" />
+    <xsd:attribute name="load-conditioning-interval" type="xsd:string" use="optional" />
+    <xsd:attribute name="min-connections" type="xsd:string" use="optional" />
+    <xsd:attribute name="max-connections" type="xsd:string" use="optional" />
+    <xsd:attribute name="retry-attempts" type="xsd:string" use="optional" />
+    <xsd:attribute name="idle-timeout" type="xsd:string" use="optional" />
+    <xsd:attribute name="ping-interval" type="xsd:string" use="optional" />
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+    <xsd:attribute name="read-timeout" type="xsd:string" use="optional" />
+    <xsd:attribute name="server-group" type="xsd:string" use="optional" />
+    <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
+    <xsd:attribute name="subscription-enabled" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="subscription-message-tracking-timeout" type="xsd:string" use="optional" />
+    <xsd:attribute name="subscription-ack-interval" type="xsd:string" use="optional" />
+    <xsd:attribute name="subscription-redundancy" type="xsd:string" use="optional" />
+    <xsd:attribute name="statistic-interval" type="xsd:string" use="optional" />
+    <xsd:attribute name="thread-local-connections" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="pr-single-hop-enabled" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="multiuser-authentication" type="xsd:boolean" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="declarable-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "declarable" element specifies a Declarable object to be placed in a
+        Region entry.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="class-name" type="gf:class-name-type" />
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="disk-dir-type" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "disk-dir" element specifies one of a region or diskstore's disk directories.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="dir-size" type="xsd:string" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="disk-dirs-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "disk-dirs" element specifies the region's disk directories.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="disk-dir" type="gf:disk-dir-type" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="dynamic-region-factory-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "dynamic-region-factory" element configures a dynamic region factory for
+        this cache. If this optional element is missing then the
+        cache does not
+        support dynamic regions.
+
+        The optional "disk-dir" sub-element can be used to specify the directory to
+        store the persistent files that are
+        used for dynamic region bookkeeping.
+        It defaults to the current directory.
+
+        The pool-name attribute can be used to set the name of the connection
+        pool used
+        by client applications in a client/server cache configuration.
+        It should not be specified in servers or peers.
+
+        The optional "cache-loader" and
+        "cache-writer" are for legacy client client
+        applications that doen't use a connection pool. They must be a
+        bridge-loader and a bridge-writer. They should
+        not be specified in
+        servers or peers.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="disk-dir" type="gf:disk-dir-type" />
+      <xsd:element maxOccurs="1" minOccurs="0" name="cache-loader" type="gf:cache-loader-type" />
+      <xsd:element maxOccurs="1" minOccurs="0" name="cache-writer" type="gf:cache-writer-type" />
+    </xsd:sequence>
+    <xsd:attribute name="disable-persist-backup" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="disable-register-interest" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="pool-name" type="xsd:string" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="expiration-attributes-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        An "expiration-attributes" element describes expiration.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="custom-expiry">
+        <xsd:annotation>
+          <xsd:documentation>
+            The "custom-expiry" element specifies a callback that specifies
+            custom expiration attributes. See the CustomExpiry class.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+
+    <xsd:attribute name="action" use="optional">
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="destroy" />
+          <xsd:enumeration value="invalidate" />
+          <xsd:enumeration value="local-destroy" />
+          <xsd:enumeration value="local-invalidate" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute name="timeout" type="xsd:string" use="required" />
+  </xsd:complexType>
+
+  <xsd:complexType name="initializer-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "initializer" element specifies a Declarable object whose init method
+        will be called after all other cache.xml initialization is
+        complete.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="class-name" type="gf:class-name-type" />
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="class-with-parameters-type">
+    <xsd:sequence>
+      <xsd:element name="class-name" type="gf:class-name-type" />
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="jndi-bindings-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A jndi-bindings element will contain the jndi-binding for each of the
+        datasources which are to be bound with the JNDI Context.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="jndi-binding">
+        <xsd:annotation>
+          <xsd:documentation>
+            For every datasource which is bound to the JNDI tree, there will exist one
+            jndi-binding tag. This tag will describe the property
+            and
+            configuration of the
+            datasource. The attributes of jndi-binding are used for configuration by
+            GemFire, while the property element is used to
+            configure
+            the custom property
+            for the datasource.
+
+            The "xa-datasource-class" must be set when type is XAPooledDataSource,
+            "conn-pooled-datasource-class" must be
+            set when type is PooledDataSource,
+            and "jdbc-driver-class" msut be set when the type is SimpleDataSource.
+            It
+            is advisable to set the user-name and
+            password as attributes
+            rather than as a property element.
+            Alternatively, they may both be set as attributes of
+            the jndi-binding tag
+            as well as an
+            attribute of the property tag.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="config-property">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element name="config-property-name" type="xsd:string" />
+                  <xsd:element name="config-property-type" type="xsd:string" />
+                  <xsd:element name="config-property-value" type="xsd:string" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+
+          </xsd:sequence>
+          <xsd:attribute name="blocking-timeout-seconds" type="xsd:string" use="optional" />
+          <xsd:attribute name="conn-pooled-datasource-class" type="xsd:string" use="optional" />
+          <xsd:attribute name="connection-url" type="xsd:string" use="optional" />
+          <xsd:attribute name="idle-timeout-seconds" type="xsd:string" use="optional" />
+          <xsd:attribute name="init-pool-size" type="xsd:string" use="optional" />
+          <xsd:attribute name="jdbc-driver-class" type="xsd:string" use="optional" />
+          <xsd:attribute name="jndi-name" type="xsd:string" use="required" />
+          <xsd:attribute name="login-timeout-seconds" type="xsd:string" use="optional" />
+          <xsd:attribute name="managed-conn-factory-class" type="xsd:string" use="optional" />
+          <xsd:attribute name="max-pool-size" type="xsd:string" use="optional" />
+          <xsd:attribute name="password" type="xsd:string" use="optional" />
+          <xsd:attribute name="transaction-type" type="xsd:string" use="optional" />
+          <xsd:attribute name="type" use="required">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="ManagedDataSource" />
+                <xsd:enumeration value="SimpleDataSource" />
+                <xsd:enumeration value="PooledDataSource" />
+                <xsd:enumeration value="XAPooledDataSource" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+          <xsd:attribute name="user-name" type="xsd:string" use="optional" />
+          <xsd:attribute name="xa-datasource-class" type="xsd:string" use="optional" />
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:simpleType name="enum-action-destroy-overflow">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="local-destroy" />
+      <xsd:enumeration value="overflow-to-disk" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="parameter-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "parameter" element describes a parameter used to initialize a
+        Declarable object.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice>
+      <xsd:element name="string" type="gf:string-type" />
+      <xsd:element name="declarable" type="gf:declarable-type" />
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+  </xsd:complexType>
+
+  <xsd:complexType name="string-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "string" element specifies a String to be placed in a Region entry.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string"></xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:simpleType name="versionType">
+    <xsd:annotation>
+      <xsd:documentation>
+        Decimal version type.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:pattern value="\.?[0-9]+(\.[0-9]+)*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+<!-- TODO -->
+    <!-- Will put refid later.....refid   IDREF #IMPLIED -->
+
+</xsd:schema>
