@@ -26,10 +26,12 @@ allprojects {
     buildDir = buildRoot + project.path.replace(":", "/") + "/build"
   }
 
-  tasks.withType(Tar){
-    compression = Compression.GZIP
-    extension = 'tar.gz'
-  }
+  gradle.taskGraph.whenReady( { graph ->
+    tasks.withType(Tar).each { tar ->
+      tar.compression = Compression.GZIP
+      tar.extension = 'tar.gz'
+    }
+  })
 }
 
 def testResultsDir(def parent, def name) {
