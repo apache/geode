@@ -31,14 +31,14 @@ Geode includes the following features:
 
 # Geode in 5 minutes
 
-Obtain the source archive from Pivotal.  Extract and build from source (note: currently Geode supports jdk1.7.75):
+Extract and build from source (note: currently Geode supports jdk1.7.75):
 
     $ cd geode
     $ ./gradlew build installDist
 
 Start a locator and server:
 
-    $ cd gemfire-assembly/build/install/geode
+    $ cd gemfire-assembly/build/install/apache-geode
     $ ./bin/gfsh
     gfsh> start locator --name=locator
     gfsh> start server --name=server
