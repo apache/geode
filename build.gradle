@@ -16,7 +16,7 @@ allprojects {
     maven { url "http://dist.gemstone.com/maven/release" }
   }
 
-  group = "io.pivotal.gemfire"
+  group = "org.apache.geode"
 
   apply plugin: 'idea'
   apply plugin: 'eclipse'
@@ -24,6 +24,11 @@ allprojects {
   buildRoot = buildRoot.trim()
   if (!buildRoot.isEmpty()) {
     buildDir = buildRoot + project.path.replace(":", "/") + "/build"
+  }
+
+  tasks.withType(Tar){
+    compression = Compression.GZIP
+    extension = 'tar.gz'
   }
 }
 
