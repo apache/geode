@@ -147,7 +147,9 @@ distributions {
         // Copying from provided configuration is only for supporting Spring Data GemFire.
         // If there are more dependencies added to provided configuration, this will need
         // to change
-        from project(":gemfire-core").configurations.provided
+        from (project(":gemfire-core").configurations.provided) {
+          include 'spring-data-gemfire-*'
+        }
         from project(":gemfire-core").configurations.archives.allArtifacts.files
 
         // include this jar        
