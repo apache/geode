@@ -4,6 +4,7 @@
 #
 # see git help gitignore for more details
 build/
+.idea/
 .gradle/
 .classpath
 .project
