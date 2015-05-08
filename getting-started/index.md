@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Apache Geode | Getting Started
+title: Apache Geode (incubating) | Getting Started
 slug: getting-started
 ---
 

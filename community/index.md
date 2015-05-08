@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Apache Geode | Community
+title: Apache Geode (incubating) | Community
 slug: community
 ---
 
