@@ -2,6 +2,9 @@ To build with gradle, just run
 
 ./gradlew build
 
+This will create the binary artifacts and run all of the tests but 
+if for some reason you want to skip running the tests include -Dskip.tests=true on the gradle invocation.
+
 To create a distribution run
 
 ./gradlew distTar
