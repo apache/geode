@@ -16,7 +16,7 @@ allprojects {
     maven { url "http://dist.gemstone.com/maven/release" }
   }
 
-  group = "io.pivotal.gemfire"
+  group = "org.apache.geode"
 
   apply plugin: 'idea'
   apply plugin: 'eclipse'
@@ -25,6 +25,13 @@ allprojects {
   if (!buildRoot.isEmpty()) {
     buildDir = buildRoot + project.path.replace(":", "/") + "/build"
   }
+
+  gradle.taskGraph.whenReady( { graph ->
+    tasks.withType(Tar).each { tar ->
+      tar.compression = Compression.GZIP
+      tar.extension = 'tar.gz'
+    }
+  })
 }
 
 def testResultsDir(def parent, def name) {
