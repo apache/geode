@@ -305,6 +305,7 @@ public class Gfsh extends JLineShell {
       synchronized (INSTANCE_LOCK) {
         if (instance == null) {
           instance = new Gfsh(launchShell, args, gfshConfig);
+          instance.executeInitFileIfPresent();
         }
       }
     }
@@ -342,6 +343,26 @@ public class Gfsh extends JLineShell {
 
   public void waitForComplete() throws InterruptedException {
     runner.join();
+  }
+
+  /* If an init file is provided, as a system property or in the default
+   * location, run it as a command script.
+   */
+  private void executeInitFileIfPresent() {
+
+    String initFileName = this.gfshConfig.getInitFileName();
+    if (initFileName != null) {
+      this.gfshFileLogger.info("Using " + initFileName);
+      try {
+        File gfshInitFile = new File(initFileName);
+        boolean continueOnError = false;
+        this.executeScript(gfshInitFile, isQuietMode(), continueOnError);
+      } catch (Exception exception) {
+        this.gfshFileLogger.severe(initFileName, exception);
+        setLastExecutionStatus(-1);
+      }
+    }
+
   }
 
   //////////////////// JLineShell Class Methods Start //////////////////////////
