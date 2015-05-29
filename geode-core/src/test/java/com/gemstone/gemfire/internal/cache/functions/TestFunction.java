@@ -71,6 +71,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
   public static final String TEST_FUNCTION_SOCKET_TIMEOUT = "SocketTimeOutFunction";
   public static final String TEST_FUNCTION_TIMEOUT = "executeTimeOut";
   public static final String TEST_FUNCTION_HA = "executeFunctionHA";
+  public static final String TEST_FUNCTION_NONHA = "executeFunctionNonHA";
   public static final String TEST_FUNCTION_HA_SERVER = "executeFunctionHAOnServer";
   public static final String TEST_FUNCTION_NONHA_SERVER = "executeFunctionNonHAOnServer";
   public static final String TEST_FUNCTION_NONHA_REGION = "executeFunctionNonHAOnRegion";
@@ -163,6 +164,9 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
       executeSocketTimeOut(context);
     }
     else if(id.equals(TEST_FUNCTION_HA)){
+      executeHA(context);
+    }
+    else if(id.equals(TEST_FUNCTION_NONHA)){
       executeHA(context);
     }
     else if(id.equals(TEST_FUNCTION_HA_SERVER) || id.equals(TEST_FUNCTION_NONHA_SERVER)){
@@ -1136,10 +1140,11 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
   
   @Override
   public boolean isHA() {
+    
     if (getId().equals(TEST_FUNCTION10)) {
       return true;
     }
-    if (getId().equals(TEST_FUNCTION_NONHA_SERVER) || getId().equals(TEST_FUNCTION_NONHA_REGION) || getId().equals(TEST_FUNCTION_NONHA_NOP)) {
+    if (getId().equals(TEST_FUNCTION_NONHA_SERVER) || getId().equals(TEST_FUNCTION_NONHA_REGION) || getId().equals(TEST_FUNCTION_NONHA_NOP) || getId().equals(TEST_FUNCTION_NONHA)) {
       return false;
     }
     return Boolean.valueOf(this.props.getProperty(HAVE_RESULTS)).booleanValue();

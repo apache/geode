@@ -134,6 +134,9 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
       }
       ((AbstractExecution)execution).setIgnoreDepartedMembers(true);
     }
+    if(!functionObject.isHA()) {
+      ((AbstractExecution)execution).setWaitOnExceptionFlag(true);
+    }
     if (function instanceof String) {
       execution.execute(functionObject.getId()).getResult();
     } else {

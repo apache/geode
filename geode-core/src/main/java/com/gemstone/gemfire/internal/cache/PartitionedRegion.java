@@ -3546,6 +3546,9 @@ public class PartitionedRegion extends LocalRegion implements
                                           localBucketSet,
                                           resultSender,
                                           execution.isReExecute());
+      if (logger.isDebugEnabled()) {
+        logger.debug("FunctionService: Executing on local node with keys.{}"+  localKeys);
+      }
       execution.executeFunctionOnLocalPRNode(function, prContext, resultSender, dm, isTX());
     }
 
@@ -3563,7 +3566,9 @@ public class PartitionedRegion extends LocalRegion implements
                 execution.isFnSerializationReqd());
         recipMap.put(recip, context);
       }
-
+      if (logger.isDebugEnabled()) {
+        logger.debug("FunctionService: Executing on remote nodes with member to keys map.{}" + memberToKeysMap);
+      }
       PartitionedRegionFunctionResultWaiter resultReciever = new PartitionedRegionFunctionResultWaiter(
           getSystem(), this.getPRId(), localResultCollector, function,
           resultSender);
@@ -3674,9 +3679,9 @@ public class PartitionedRegion extends LocalRegion implements
         .singleton(targetNode);
     execution.validateExecution(function, singleMember);
     execution.setExecutionNodes(singleMember);
-    if (targetNode.equals(localVm)) {
-      final LocalResultCollector<?, ?> localRC = execution
+    LocalResultCollector<?, ?> localRC = execution
           .getLocalResultCollector(function, rc);
+    if (targetNode.equals(localVm)) {
       final DM dm = getDistributionManager();
       PartitionedRegionFunctionResultSender resultSender = new PartitionedRegionFunctionResultSender(
           dm, PartitionedRegion.this, 0, localRC, execution.getServerResultSender(), true, false, execution.isForwardExceptions(), function, buckets);
@@ -3690,7 +3695,7 @@ public class PartitionedRegion extends LocalRegion implements
     }
     else {
       return executeFunctionOnRemoteNode(targetNode, function, execution
-          .getArgumentsForMember(targetNode.getId()), routingKeys, rc, buckets,
+          .getArgumentsForMember(targetNode.getId()), routingKeys, function.isHA()? rc :localRC, buckets,
           execution.getServerResultSender(), execution);
     }
   }

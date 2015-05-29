@@ -29,9 +29,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
@@ -128,6 +128,7 @@ public class SingleHopClientExecutor {
         throw new InternalGemFireException(e.getMessage());
       }
       if (futures != null) {
+        GemFireException functionExecutionException = null;
         Iterator futureItr = futures.iterator();
         Iterator taskItr = callableTasks.iterator();
         final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -161,31 +162,42 @@ public class SingleHopClientExecutor {
               reexecute = true;
               failedNodes.addAll(((InternalFunctionInvocationTargetException)ee
                   .getCause()).getFailedNodeSet());
-              rc.clearResults();
-              if (!isHA) {
+              // Clear the results only if isHA so that partial results can be returned.
+              if (isHA) {
+                rc.clearResults();
+              } else {
                 if (ee.getCause().getCause() != null) {
-                  throw new FunctionInvocationTargetException(ee.getCause()
-                      .getCause());
+                  functionExecutionException = new FunctionInvocationTargetException(
+                      ee.getCause().getCause());
                 } else {
-                  throw new FunctionInvocationTargetException(
+                  functionExecutionException = new FunctionInvocationTargetException(
                       new BucketMovedException(
                           LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE
                               .toLocalizedString()));
                 }
               }
-                
             }
             else if (ee.getCause() instanceof FunctionException) {
               if (isDebugEnabled) {
                 logger.debug("ExecuteRegionFunctionSingleHopOp#ExecutionException.FunctionException : Caused by :{}", ee.getCause());
               }
-              throw (FunctionException)ee.getCause();
+              FunctionException fe = (FunctionException)ee.getCause();
+              if (isHA) {
+                throw fe;
+              } else {
+                functionExecutionException = fe;
+              }
             }
             else if (ee.getCause() instanceof ServerOperationException) {
               if (isDebugEnabled) {
                 logger.debug("ExecuteRegionFunctionSingleHopOp#ExecutionException.ServerOperationException : Caused by :{}", ee.getCause());
               }
-              throw (ServerOperationException)ee.getCause();
+              ServerOperationException soe = (ServerOperationException)ee.getCause();
+              if (isHA) {
+                throw soe;
+              } else {
+                functionExecutionException = soe;
+              }
             }
             else if (ee.getCause() instanceof ServerConnectivityException) {
               if (isDebugEnabled) {
@@ -199,17 +211,21 @@ public class SingleHopClientExecutor {
               }
               cms.removeBucketServerLocation(server);
               cms.scheduleGetPRMetaData(region, false);
-              reexecute = true;
-              rc.clearResults();
-              if (!isHA) {
-                reexecute = false;
-                throw (ServerConnectivityException) ee.getCause();
+              // Clear the results only if isHA so that partial results can be returned.
+              if (isHA) {
+                reexecute = true;
+                rc.clearResults();
+              } else {
+                functionExecutionException = (ServerConnectivityException) ee.getCause();
               }
             }
             else {
               throw executionThrowable(ee.getCause());
             }
           }
+        }
+        if (functionExecutionException != null) {
+          throw functionExecutionException;
         }
       }
     }
