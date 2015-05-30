@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Apache Geode (incubating) | Contribute</title>
+    <title>README</title>
 
     <link rel="stylesheet" href="/stylesheets/styles.css">
     <link rel="stylesheet" href="/stylesheets/pygment_trac.css">
@@ -28,7 +28,7 @@
     </script>
 
   </head>
-  <body id='contribute'>
+  <body id='readme'>
     <div id='viewport'>
       <div class='billboard-bg'></div>
       <div class='main'>
@@ -44,15 +44,18 @@
           </div>
         </header>
         <div id='content'>
-            <h1>Contribute</h1><p>Development of the code base for Geode began in 2002 as the commercial product GemFire. The open source version of Geode was released in April, 2015. </p><p>The <a href="https://wiki.apache.org/incubator/GeodeProposal">primary contributors</a> include long standing members of the GemFire engineering team, implementers and customers with long standing relationships.</p><p>The Apache Incubator Proposal for Geode can be found <a href="https://wiki.apache.org/incubator/GeodeProposal">here</a></p><p>Ideas for extending Geode code can be found in the wiki <a href="https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute">here</a>.</p><p>There are many ways to <a href="http://opensource.com/business/14/12/8-ways-contribute-open-source-without-writing-code">support an open source software project beyond contributing code</a> to the master branch. For Geode, here are some ways you can contribute today:</p>
+            <h3>URL</h3><p><a href="http://geode.incubator.apache.org">http://geode.incubator.apache.org</a></p><h3>Changes</h3><p>To add to or change the header, navigation or footer, use the _layouts/default.html file.</p><p>To add a new top-level page (e.g. /download), follow the existing format (folder using the name you want and then an index.md inside). New pages will need to have the "YAML Front Matter" at the top (the information bracketed by triple dashes).</p><p>To add a second-level page (e.g. /community/secondarypage), add a .md file to the correct directory using the name you want and the correct YAML front matter at the top of the file.</p><h3>Technologies</h3>
 <ul>
-  <li><p><strong>Post Issues:</strong> Build and run the <a href="https://github.com/apache/incubator-geode">Geode source</a>, and <a href="https://issues.apache.org/jira/browse/GEODE">post issues</a> on the Apache Geode (incubating) JIRA.</p></li>
-  <li><p><strong>Documentation:</strong> <a href="https://github.com/project-geode/docs">Add to the documentation</a>, and <a href="https://cwiki.apache.org/confluence/display/GEODE/">submit new articles</a> to the wiki for best practices and <a href="https://github.com/project-geode/training">user training</a>.</p></li>
-  <li><p><strong>Website:</strong> Improve the website itself. It runs out of the <a href="https://github.com/apache/incubator-geode/tree/asf-site">asf-site branch</a>, but its source is GitHub flavored markdown that lives in our ASF repo.</p></li>
-  <li><p><strong>Art &amp; Design:</strong> Offer to help with art &amp; design of Geode. Pivotal has donated an initial look and feel, but the logos, branding, and identity are property of the Project.</p></li>
-  <li><p><strong>Discuss:</strong> Start and weigh in on discussions. Currently we are hosting threaded discussions on the <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-dev/">Geode mailing lists</a>. It’s also common to find <a href="http://stackoverflow.com/questions/tagged/geode+or+gemfire">Stack Overflow questions covering GemFire and Geode</a>. </p></li>
-  <li><p><strong>Present:</strong> Give a presentation or create a video about the project. We are already beginning to add presentations and <a href="https://github.com/project-geode/training">training materials</a> as they are created. Feel free to download and use. If you are hosting an event, put it into the community calendar on the site. If you create a new presentation, please check it into the project GitHub.</p></li>
-</ul>
+  <li>GitHub Pages use <a href="http://jekyllrb.com/">Jekyll</a></li>
+  <li>.md files are Markdown (<a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet">Cheat sheet</a>) .md can also support HTML.</li>
+  <li>.scss allows both SASS and CSS (<a href="http://sass-cheatsheet.brunoscopelliti.com/">SASS cheat sheet</a>)</li>
+</ul><h3>Run locally</h3><p>Ignore the _site directory. This directory is rebuilt every time Jekyll rebuilds the site and will not be committed to GitHub.</p>
+<pre><code>git clone git@github.com:apache/incubator-geode.git
+cd docs
+git checkout asf-site
+gem install jekyll
+jekyll serve
+</code></pre>
         </div>
       </div>
       <footer id="footer">
