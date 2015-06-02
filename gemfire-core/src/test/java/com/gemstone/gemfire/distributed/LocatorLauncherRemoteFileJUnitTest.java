@@ -56,9 +56,7 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
    * Override because FileProcessController cannot request status with PID
    */
   public void testStatusUsingPid() throws Throwable {
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -135,9 +133,7 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
    * Override because FileProcessController cannot request stop with PID
    */
   public void testStopUsingPid() throws Throwable {
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());

@@ -27,8 +27,7 @@ public class ObjectSizerJUnitTest extends TestCase {
   }
 
   public void test() throws IllegalArgumentException, IllegalAccessException {
-    long size = ObjectGraphSizer.size(new Object());
-    assertEquals(OBJECT_SIZE, 8, size);
+    assertEquals(roundup(OBJECT_SIZE), ObjectGraphSizer.size(new Object()));
     
     assertEquals(roundup(OBJECT_SIZE + 4), ObjectGraphSizer.size(new TestObject1()));
     assertEquals(roundup(OBJECT_SIZE + 4), ObjectGraphSizer.size(new TestObject2()));
@@ -37,6 +36,7 @@ public class ObjectSizerJUnitTest extends TestCase {
     assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE), ObjectGraphSizer.size(new TestObject4()));
     assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE) + roundup(OBJECT_SIZE + 4), ObjectGraphSizer.size(new TestObject5()));
     assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE) + roundup(OBJECT_SIZE + REFERENCE_SIZE * 4 + 4) + roundup(OBJECT_SIZE + 4), ObjectGraphSizer.size(new TestObject6()));
+    assertEquals(roundup(OBJECT_SIZE + 7), ObjectGraphSizer.size(new TestObject7()));
   }
   
   private static class TestObject1 {
@@ -66,5 +66,15 @@ public class ObjectSizerJUnitTest extends TestCase {
       array[3] = new TestObject1();
       array[2] = array[3];
     }
+  }
+  
+  private static class TestObject7 {
+    byte b1;
+    byte b2;
+    byte b3;
+    byte b4;
+    byte b5;
+    byte b6;
+    byte b7;
   }
 }

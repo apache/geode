@@ -58,7 +58,7 @@ public final class MinimumSystemRequirements {
     minimumSystemRequirementsMet &= checkJavaVersion();
 
     if (!minimumSystemRequirementsMet) {
-      logger.fatal(LocalizedMessage.create(LocalizedStrings.MinimumSystemRequirements_NOT_MET));
+      logger.warn(LocalizedMessage.create(LocalizedStrings.MinimumSystemRequirements_NOT_MET));
     }
 
     return minimumSystemRequirementsMet;
@@ -76,7 +76,7 @@ public final class MinimumSystemRequirements {
       return true;
     }
 
-    logger.fatal(LocalizedMessage.create(LocalizedStrings.MinimumSystemRequirements_JAVA_VERSION, JAVA_VERSION));
+    logger.warn(LocalizedMessage.create(LocalizedStrings.MinimumSystemRequirements_JAVA_VERSION, JAVA_VERSION));
     return false;
   }
 
