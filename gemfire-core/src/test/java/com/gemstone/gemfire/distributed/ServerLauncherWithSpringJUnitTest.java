@@ -15,6 +15,7 @@ import org.springframework.data.gemfire.support.SpringContextBootstrappingInitia
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
@@ -47,6 +48,7 @@ public class ServerLauncherWithSpringJUnitTest extends AbstractServerLauncherJUn
       .setForce(true)
       .setMemberName(getUniqueName())
       .setSpringXmlLocation("spring/spring-gemfire-context.xml")
+      .set(DistributionConfig.MCAST_PORT_NAME, "0")
       .build();
 
     assertNotNull(this.launcher);

@@ -109,7 +109,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
       } while (clazz != null);
 
       if (lastField != null) {
-        size = lastFieldOffset + sizeType(lastField.getClass());
+        size = lastFieldOffset + sizeType(lastField.getType());
       } else {
         // class with no fields
         size = OBJECT_SIZE;
@@ -123,7 +123,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
         Field[] fields = clazz.getDeclaredFields();
         for(Field field: fields) {
           if(!Modifier.isStatic(field.getModifiers())) {
-            size += sizeType(field.getClass());
+            size += sizeType(field.getType());
           }
         }
         clazz = clazz.getSuperclass();
