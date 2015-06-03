@@ -30,7 +30,6 @@ Commits: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commi
 </div>
 
 
-
 ## Conferences
 
 <img class='event-image' src='/images/events/oscon.png'>
@@ -40,6 +39,12 @@ Commits: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commi
 ##### July 20-24 2015 &nbsp; • &nbsp; Portland, OR
 
 <div class='description'>OSCON is where all of the pieces come of the open source software movement come together: developers, innovators, businesspeople, and investors. </div>
+
+***
+
+## Events
+
+<div id="feed"></div>
 
 ***
 

@@ -154,6 +154,22 @@ footer {
     footer a:hover {
       color: #c8f2ff; }
 
+.small {
+  font-size: 13px;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.dark {
+  color: #3f4256;
+}
+
+.bold {
+  font-weight: 400;
+}
+
 /* Home */
 body#home .billboard-home {
   background: url(/images/bg-crystals-home.png) no-repeat bottom center;
@@ -222,7 +238,7 @@ body#community #content h3, body#community #content h5 {
 body#community #content .event-image {
   float: left;
   margin: 8px 20px 40px 0;
-  border: 1px solid #ececec; }
+  /*border: 1px solid #ececec;*/ }
 body#community #content .description {
   font-size: 15px;
   margin: 20px 0; }
