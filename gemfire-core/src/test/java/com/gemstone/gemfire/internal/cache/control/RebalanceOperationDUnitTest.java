@@ -9,9 +9,12 @@ package com.gemstone.gemfire.internal.cache.control;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BrokenBarrierException;
@@ -31,6 +34,8 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
@@ -1734,7 +1739,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   public void testMoveBucketsWithRedundancySimulation() {
     moveBucketsWithRedundancy(true);
   }
-  
+
   public void testMoveBucketsWithRedundancy() {
     moveBucketsWithRedundancy(false);
   }
@@ -1850,6 +1855,227 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
       vm1.invoke(checkBalance);
       vm2.invoke(checkBalance);
     }
+  }
+  
+  /** A test that the stats when overflowing entries to disk
+   * are correct and we still rebalance correctly
+   */
+  public void testMoveBucketsOverflowToDisk() throws Throwable {
+    
+    System.setProperty("gemfire.LOG_REBALANCE", "true");
+    invokeInEveryVM(new SerializableCallable() {
+      
+      @Override
+      public Object call() throws Exception {
+        System.setProperty("gemfire.LOG_REBALANCE", "true");
+        return null;
+      }
+    });
+
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+    VM vm3 = host.getVM(3);
+
+    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      public void run()
+      {
+        Cache cache = getCache();
+        AttributesFactory attr = new AttributesFactory();
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        paf.setRedundantCopies(1);
+        paf.setRecoveryDelay(-1);
+        paf.setStartupRecoveryDelay(-1);
+        PartitionAttributes prAttr = paf.create();
+        attr.setPartitionAttributes(prAttr);
+        attr.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
+        cache.createRegion("region1", attr.create());
+      }
+    };
+    
+    //Create the region in two VMs
+    vm0.invoke(createPrRegion);
+    vm1.invoke(createPrRegion);
+    
+    //Create some buckets
+    vm0.invoke(new SerializableRunnable("createSomeBuckets") {
+      
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion("region1");
+        for(int i =0; i < 12; i++) {
+          Map m = new HashMap();
+          for (int j = 0; j < 200; j++) {
+            m.put(Integer.valueOf(i + 113*j), "A");
+          }
+          region.putAll(m);
+        }
+      }
+    });
+
+    //Do some puts and gets, to trigger eviction
+    SerializableRunnable doOps = new SerializableRunnable("doOps") {
+      
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion("region1");
+        
+        Random rand = new Random();
+        
+        for(int count = 0; count < 5000; count++) {
+          int bucket = (int) (count % 12);
+          int key = rand.nextInt(20);
+          region.put(Integer.valueOf(bucket + 113*key), "B");
+        }
+        
+        for(int count = 0; count < 500; count++) {
+          int bucket = (int) (count % 12);
+          int key = rand.nextInt(20);
+          region.get(Integer.valueOf(bucket + 113*key));
+        }
+      }
+    };
+    
+    //Do some operations
+    vm0.invoke(doOps);
+    
+    //Create the region in one more VM.
+    vm2.invoke(createPrRegion);
+    
+    //Now do a rebalance
+    final Long totalSize = (Long) vm0.invoke(new SerializableCallable("simulateRebalance") {
+      
+      public Object call() {
+        Cache cache = getCache();
+        ResourceManager manager = cache.getResourceManager();
+        RebalanceResults results = doRebalance(false, manager);
+        assertEquals(0, results.getTotalBucketCreatesCompleted());
+        //We don't know how many primaries will move, it depends on
+        //if the move bucket code moves the primary or a redundant bucket
+        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        assertEquals(8, results.getTotalBucketTransfersCompleted());
+        assertTrue(0 < results.getTotalBucketTransferBytes());
+        Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
+        assertEquals(1, detailSet.size());
+        PartitionRebalanceInfo details = detailSet.iterator().next();
+        assertEquals(0, details.getBucketCreatesCompleted());
+        assertTrue(0 < details.getBucketTransferBytes());
+        assertEquals(8, details.getBucketTransfersCompleted());
+        
+        long totalSize = 0;
+        Set<PartitionMemberInfo> beforeDetails = details.getPartitionMemberDetailsAfter();
+        for(PartitionMemberInfo memberDetails: beforeDetails) {
+          totalSize += memberDetails.getSize();
+        }
+        
+        long afterSize = 0;
+        Set<PartitionMemberInfo> afterDetails = details.getPartitionMemberDetailsAfter();
+        assertEquals(3, afterDetails.size());
+        for(PartitionMemberInfo memberDetails: afterDetails) {
+          assertEquals(8, memberDetails.getBucketCount());
+          assertEquals(4, memberDetails.getPrimaryCount());
+          afterSize += memberDetails.getSize();
+        }
+        assertEquals(totalSize, afterSize);
+        verifyStats(manager, results);
+        
+        return Long.valueOf(totalSize);
+      }
+    });
+
+    SerializableRunnable checkBalance = new SerializableRunnable("checkBalance") {
+
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion("region1");
+        PartitionRegionInfo details = PartitionRegionHelper.getPartitionRegionInfo(region);
+        assertEquals(12, details.getCreatedBucketCount());
+        assertEquals(1,details.getActualRedundantCopies());
+        assertEquals(0,details.getLowRedundancyBucketCount());
+        getLogWriter().info("details=" + details.getPartitionMemberInfo());
+        long afterSize = 0;
+        for(PartitionMemberInfo memberDetails: details.getPartitionMemberInfo()) {
+          assertEquals(8, memberDetails.getBucketCount());
+          assertEquals(4, memberDetails.getPrimaryCount());
+          afterSize += memberDetails.getSize();
+        }
+        //assertEquals(totalSize.longValue(), afterSize);
+      }
+    };
+
+    vm0.invoke(checkBalance);
+    vm1.invoke(checkBalance);
+    vm2.invoke(checkBalance);
+    
+    //Create the region in one more VM.
+    vm3.invoke(createPrRegion);
+    
+    //Do another rebalance
+    vm0.invoke(new SerializableCallable("simulateRebalance") {
+      
+      public Object call() {
+        Cache cache = getCache();
+        ResourceManager manager = cache.getResourceManager();
+        RebalanceResults results = doRebalance(false, manager);
+        assertEquals(0, results.getTotalBucketCreatesCompleted());
+        //We don't know how many primaries will move, it depends on
+        //if the move bucket code moves the primary or a redundant bucket
+        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        assertEquals(6, results.getTotalBucketTransfersCompleted());
+        assertTrue(0 < results.getTotalBucketTransferBytes());
+        Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
+        assertEquals(1, detailSet.size());
+        PartitionRebalanceInfo details = detailSet.iterator().next();
+        assertEquals(0, details.getBucketCreatesCompleted());
+        assertTrue(0 < details.getBucketTransferBytes());
+        assertEquals(6, details.getBucketTransfersCompleted());
+        
+        long totalSize = 0;
+        Set<PartitionMemberInfo> beforeDetails = details.getPartitionMemberDetailsAfter();
+        for(PartitionMemberInfo memberDetails: beforeDetails) {
+          totalSize += memberDetails.getSize();
+        }
+        
+        long afterSize = 0;
+        Set<PartitionMemberInfo> afterDetails = details.getPartitionMemberDetailsAfter();
+        assertEquals(4, afterDetails.size());
+        for(PartitionMemberInfo memberDetails: afterDetails) {
+          assertEquals(6, memberDetails.getBucketCount());
+//          assertEquals(3, memberDetails.getPrimaryCount());
+          afterSize += memberDetails.getSize();
+        }
+        assertEquals(totalSize, afterSize);
+        //TODO - need to fix verifyStats to handle a second rebalance
+//        verifyStats(manager, results);
+        
+        return Long.valueOf(totalSize);
+      }
+    });
+
+      checkBalance = new SerializableRunnable("checkBalance") {
+
+        public void run() {
+          Cache cache = getCache();
+          Region region = cache.getRegion("region1");
+          PartitionRegionInfo details = PartitionRegionHelper.getPartitionRegionInfo(region);
+          assertEquals(12, details.getCreatedBucketCount());
+          assertEquals(1,details.getActualRedundantCopies());
+          assertEquals(0,details.getLowRedundancyBucketCount());
+          getLogWriter().info("details=" + details.getPartitionMemberInfo());
+          long afterSize = 0;
+          for(PartitionMemberInfo memberDetails: details.getPartitionMemberInfo()) {
+            assertEquals(6, memberDetails.getBucketCount());
+            //            assertEquals(3, memberDetails.getPrimaryCount());
+            afterSize += memberDetails.getSize();
+          }
+          //assertEquals(totalSize.longValue(), afterSize);
+        }
+      };
+
+      vm0.invoke(checkBalance);
+      vm1.invoke(checkBalance);
+      vm2.invoke(checkBalance);
   }
   
   /**
