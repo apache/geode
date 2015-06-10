@@ -38,6 +38,7 @@ public class DiskRegionStats {
   private static final int removeTimeId;
   private static final int numOverflowOnDiskId;
   private static final int numEntriesInVMId;
+  private static final int numOverflowBytesOnDiskId;
 
   private static final int localInitializationsId;
   private static final int remoteInitializationsId;
@@ -67,6 +68,8 @@ public class DiskRegionStats {
       "The total amount of time spent removing from disk";
     final String numOverflowOnDiskDesc =
       "The current number of entries whose value is on disk and is not in memory. This is true of overflowed entries. It is also true of recovered entries that have not yet been faulted in.";
+    final String numOverflowBytesOnDiskDesc =
+        "The current number bytes on disk and not in memory. This is true of overflowed entries. It is also true of recovered entries that have not yet been faulted in.";
     final String numEntriesInVMDesc =
       "The current number of entries whose value resides in the VM. The value may also have been written to disk.";
     final String localInitializationsDesc =
@@ -87,6 +90,7 @@ public class DiskRegionStats {
          f.createLongCounter("removes", removesDesc, "ops"),
          f.createLongCounter("removeTime", removeTimeDesc, "nanoseconds"),
          f.createLongGauge("entriesOnlyOnDisk", numOverflowOnDiskDesc, "entries"),
+         f.createLongGauge("bytesOnlyOnDisk", numOverflowBytesOnDiskDesc, "bytes"),
          f.createLongGauge("entriesInVM", numEntriesInVMDesc, "entries"),
          f.createIntGauge("writesInProgress", "current number of oplog writes that are in progress", "writes"),
          f.createIntGauge("localInitializations", localInitializationsDesc, "initializations"),
@@ -104,6 +108,7 @@ public class DiskRegionStats {
     removesId = type.nameToId("removes");
     removeTimeId = type.nameToId("removeTime");
     numOverflowOnDiskId = type.nameToId("entriesOnlyOnDisk");
+    numOverflowBytesOnDiskId = type.nameToId("bytesOnlyOnDisk");
     numEntriesInVMId = type.nameToId("entriesInVM");
 
     localInitializationsId = type.nameToId("localInitializations");
@@ -198,6 +203,15 @@ public class DiskRegionStats {
   public long getNumOverflowOnDisk() {
     return this.stats.getLong(numOverflowOnDiskId);
   }
+  
+  /**
+   * Returns the current number of entries whose value has been
+   * overflowed to disk.  This value will decrease when a value is
+   * faulted in. 
+   */
+  public long getNumOverflowBytesOnDisk() {
+    return this.stats.getLong(numOverflowBytesOnDiskId);
+  }
 
   /**
    * Returns the current number of entries whose value resides in the
@@ -222,6 +236,14 @@ public class DiskRegionStats {
    */
   public void incNumEntriesInVM(long delta) {
     this.stats.incLong(numEntriesInVMId, delta);
+  }
+  
+  /**
+   * Increments the current number of entries whose value has been
+   * overflowed to disk by a given amount.
+   */
+  public void incNumOverflowBytesOnDisk(long delta) {
+    this.stats.incLong(numOverflowBytesOnDiskId, delta);
   }
 
   /**

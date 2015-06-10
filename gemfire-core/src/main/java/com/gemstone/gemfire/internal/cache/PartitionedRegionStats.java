@@ -165,6 +165,8 @@ public class PartitionedRegionStats {
   
   private static final int prMetaDataSentCountId;
   
+  private static final int localMaxMemoryId;
+  
   static {
     final boolean largerIsBetter = true;
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -549,6 +551,10 @@ public class PartitionedRegionStats {
                 "prMetaDataSentCount",
                 "total number of times meta data refreshed sent on client's request.",
                 "operation", false),    
+                
+        f.createLongGauge("localMaxMemory", 
+            "local max memory in bytes for this region on this member", 
+            "bytes")
             
       });
     
@@ -651,6 +657,8 @@ public class PartitionedRegionStats {
     putLocalTimeId = type.nameToId("putLocalTime");
     
     prMetaDataSentCountId = type.nameToId("prMetaDataSentCount");
+    
+    localMaxMemoryId = type.nameToId("localMaxMemory");
   }
   
   private final Statistics stats;
@@ -999,7 +1007,9 @@ type, name /* fixes bug 42343 */);
   public void setConfiguredRedundantCopies(int val) {
     this.stats.setInt(configuredRedundantCopiesId, val);
   }
-  
+  public void setLocalMaxMemory(long l) {
+    this.stats.setLong(localMaxMemoryId, l);
+  }
   public int getActualRedundantCopies() {
     return this.stats.getInt(actualRedundantCopiesId);
   }
