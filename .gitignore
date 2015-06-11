@@ -9,6 +9,7 @@ build/
 .classpath
 .project
 .settings/
+.idea/
 build-eclipse/
 /tags
 
