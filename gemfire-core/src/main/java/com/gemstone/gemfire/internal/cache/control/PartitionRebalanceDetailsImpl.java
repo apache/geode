@@ -48,26 +48,26 @@ Serializable, Comparable<PartitionRebalanceDetailsImpl> {
     this.region = region;
   }
 
-  public void incCreates(long bytes, long time) {
+  public synchronized void incCreates(long bytes, long time) {
     bucketCreateBytes+= bytes;
     bucketCreateTime += time;
     bucketCreatesCompleted++;
   }
   
-  public void incRemoves(long bytes, long time) {
+  public synchronized void incRemoves(long bytes, long time) {
     bucketRemoveBytes+= bytes;
     bucketRemoveTime += time;
     bucketRemovesCompleted++; 
     
   }
   
-  public void incTransfers(long bytes, long time) {
+  public synchronized void incTransfers(long bytes, long time) {
     bucketTransferBytes+= bytes;
     bucketTransferTime += time;
     bucketTransfersCompleted++;
   }
   
-  public void incPrimaryTransfers(long time) {
+  public synchronized void incPrimaryTransfers(long time) {
     primaryTransfersCompleted++;
     primaryTransferTime += time;
   }

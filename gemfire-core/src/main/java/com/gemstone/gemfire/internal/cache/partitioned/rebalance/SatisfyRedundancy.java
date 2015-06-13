@@ -39,7 +39,12 @@ public class SatisfyRedundancy extends RebalanceDirectorAdapter {
 
   @Override
   public boolean nextStep() {
-    return satisfyRedundancy();
+    if(satisfyRedundancy()) {
+      return true;
+    }  else {
+      model.waitForOperations();
+      return satisfyRedundancy();
+    }
   }
 
   /**

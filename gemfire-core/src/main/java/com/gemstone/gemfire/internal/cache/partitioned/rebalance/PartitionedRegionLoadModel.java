@@ -363,14 +363,20 @@ public class PartitionedRegionLoadModel {
     return colocatedRegionSizes;
   }
 
-  public void createRedundantBucket(BucketRollup bucket,
-      Member targetMember) {
+  /**
+   * Trigger the creation of a redundant bucket, potentially asynchronously.
+   * 
+   * This method will find the best node to create a redundant bucket and 
+   * invoke the bucket operator to create a bucket on that node. Because the bucket
+   * operator is asynchronous, the bucket may not be created immediately, but
+   * the model will be updated regardless. Invoke {@link #waitForOperations()}
+   * to wait for those operations to actually complete
+   */
+  public void createRedundantBucket(final BucketRollup bucket,
+      final Member targetMember) {
     Map<String, Long> colocatedRegionSizes = getColocatedRegionSizes(bucket);
-    Move move = new Move(null, targetMember, bucket);
+    final Move move = new Move(null, targetMember, bucket);
     
-    if(!this.operator.createRedundantBucket(targetMember.getMemberId(), bucket.getId(), colocatedRegionSizes)) {
-      this.attemptedBucketCreations.add(move);
-    } else {
       this.lowRedundancyBuckets.remove(bucket);
       bucket.addMember(targetMember);
       //put the bucket back into the list if we still need to satisfy redundancy for
@@ -379,7 +385,24 @@ public class PartitionedRegionLoadModel {
         this.lowRedundancyBuckets.add(bucket);
       }
       resetAverages();
+    
+    this.operator.createRedundantBucket(targetMember.getMemberId(), bucket.getId(), colocatedRegionSizes, new BucketOperator.Completion() {
+      @Override
+      public void onSuccess() {
     }
+
+      @Override
+      public void onFailure() {
+        //If the bucket creation failed, we need to undo the changes
+        //we made to the model
+        attemptedBucketCreations.add(move);
+        bucket.removeMember(targetMember);
+        if(bucket.getRedundancy() < requiredRedundancy) {
+          lowRedundancyBuckets.add(bucket);
+        }
+        resetAverages();
+      }
+    });
   }
   
   
@@ -840,6 +863,14 @@ public class PartitionedRegionLoadModel {
     }
     
     return variance;
+  }
+  
+  /**
+   * Wait for the bucket operator to complete
+   * any pending asynchronous operations.
+   */
+  public void waitForOperations() {
+    operator.waitForOperations();
   }
   
   @Override

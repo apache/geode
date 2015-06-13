@@ -2753,17 +2753,19 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     assertEquals(0, stats.getRebalanceBucketCreatesInProgress());
     assertEquals(results.getTotalBucketCreatesCompleted(), stats.getRebalanceBucketCreatesCompleted());
     assertEquals(0, stats.getRebalanceBucketCreatesFailed());
-//    assertEquals(results.getTotalBucketCreateTime(), TimeUnit.NANOSECONDS.toMillis(stats.getRebalanceBucketCreateTime()));
+    //The time stats may not be exactly the same, because they are not
+    //incremented at exactly the same time.
+    assertEquals(results.getTotalBucketCreateTime(), TimeUnit.NANOSECONDS.toMillis(stats.getRebalanceBucketCreateTime()), 2000);
     assertEquals(results.getTotalBucketCreateBytes(), stats.getRebalanceBucketCreateBytes());
     assertEquals(0, stats.getRebalanceBucketTransfersInProgress());
     assertEquals(results.getTotalBucketTransfersCompleted(), stats.getRebalanceBucketTransfersCompleted());
     assertEquals(0, stats.getRebalanceBucketTransfersFailed());
-    //assertEquals(results.getTotalBucketTransferTime(), TimeUnit.NANOSECONDS.toMillis(stats.getRebalanceBucketTransfersTime()));
+    assertEquals(results.getTotalBucketTransferTime(), TimeUnit.NANOSECONDS.toMillis(stats.getRebalanceBucketTransfersTime()), 2000);
     assertEquals(results.getTotalBucketTransferBytes(), stats.getRebalanceBucketTransfersBytes());
     assertEquals(0, stats.getRebalancePrimaryTransfersInProgress());
     assertEquals(results.getTotalPrimaryTransfersCompleted(), stats.getRebalancePrimaryTransfersCompleted());
     assertEquals(0, stats.getRebalancePrimaryTransfersFailed());
-//    assertEquals(results.getTotalPrimaryTransferTime(), TimeUnit.NANOSECONDS.toMillis(stats.getRebalancePrimaryTransferTime()));
+    assertEquals(results.getTotalPrimaryTransferTime(), TimeUnit.NANOSECONDS.toMillis(stats.getRebalancePrimaryTransferTime()), 2000);
   }
   
   private Set<Integer> getBucketList(final String regionName, VM vm0) {
