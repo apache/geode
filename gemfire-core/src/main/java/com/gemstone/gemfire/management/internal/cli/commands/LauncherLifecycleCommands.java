@@ -1519,6 +1519,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       help = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE__HELP)
                             final Integer socketBufferSize)
   {
+
     try {
       if (workingDirectory == null) {
         // attempt to use or make sub-directory using memberName...
@@ -1591,6 +1592,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         .setMaxThreads(maxThreads)
         .setMessageTimeToLive(messageTimeToLive)
         .setSocketBufferSize(socketBufferSize)
+        .setHostNameForClients(hostNameForClients)
         .build();
 
       String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesPathname,
@@ -1811,6 +1813,10 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
     if (launcher.getMaxThreads() != null) {
       commandLine.add("--" + CliStrings.START_SERVER__MAX__THREADS + "=" + launcher.getMaxThreads());
+    }
+
+    if (launcher.getHostNameForClients() != null) {
+      commandLine.add("--" + CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS + "=" + launcher.getHostNameForClients());
     }
 
     return commandLine.toArray(new String[commandLine.size()]);

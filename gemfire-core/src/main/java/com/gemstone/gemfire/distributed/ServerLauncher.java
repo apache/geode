@@ -912,7 +912,11 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       if (getSocketBufferSize() != null) {
         cacheServer.setSocketBufferSize(getSocketBufferSize());
       }
-      
+
+      if (getHostNameForClients() != null) {
+        cacheServer.setHostnameForClients(getHostNameForClients());
+      }
+
       cacheServer.start();
     }
   }
@@ -1434,6 +1438,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       parser.accepts(CliStrings.START_SERVER__MAX__THREADS).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE).withRequiredArg().ofType(Integer.class);
+      parser.accepts(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS).withRequiredArg().ofType(String.class);
 
       return parser;
     }
@@ -1518,7 +1523,12 @@ public final class ServerLauncher extends AbstractLauncher<String> {
         if (options.hasArgument(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE)) {
           setSocketBufferSize(Integer.parseInt(ObjectUtils.toString(options.valueOf(
             CliStrings.START_SERVER__SOCKET__BUFFER__SIZE))));
-        } 
+        }
+
+        if (options.hasArgument(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS)) {
+          setHostNameForClients(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS)));
+        }
+
       }
       catch (OptionException e) {
         throw new IllegalArgumentException(LocalizedStrings.Launcher_Builder_PARSE_COMMAND_LINE_ARGUMENT_ERROR_MESSAGE
