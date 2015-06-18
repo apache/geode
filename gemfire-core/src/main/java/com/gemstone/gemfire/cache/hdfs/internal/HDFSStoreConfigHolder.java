@@ -13,13 +13,9 @@ import java.io.Serializable;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributes;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator.HDFSCompactionConfigMutator;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator.HDFSEventQueueAttributesMutator;
 import com.gemstone.gemfire.cache.hdfs.StoreExistsException;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -43,11 +39,23 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
   private float blockCacheSize = DEFAULT_BLOCK_CACHE_SIZE;
   private int maxFileSize = DEFAULT_MAX_WRITE_ONLY_FILE_SIZE;
   private int fileRolloverInterval = DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL;
-  protected boolean isAutoCompact = HDFSCompactionConfig.DEFAULT_AUTO_COMPACTION;
-
-  private AbstractHDFSCompactionConfigHolder compactionConfig = null;
-
-  private HDFSEventQueueAttributes hdfsEventQueueAttrs = new HDFSEventQueueAttributesFactory().create();
+  protected boolean isAutoCompact = DEFAULT_MINOR_COMPACTION;
+  protected boolean autoMajorCompact = DEFAULT_MAJOR_COMPACTION;
+  protected int maxConcurrency = DEFAULT_MINOR_COMPACTION_THREADS;
+  protected int majorCompactionConcurrency = DEFAULT_MAJOR_COMPACTION_THREADS;
+  protected int majorCompactionIntervalMins = DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS;
+  protected int maxInputFileSizeMB = DEFAULT_MAX_INPUT_FILE_SIZE_MB;
+  protected int maxInputFileCount = DEFAULT_MAX_INPUT_FILE_COUNT;
+  protected int minInputFileCount = DEFAULT_MIN_INPUT_FILE_COUNT;
+  protected int oldFileCleanupIntervalMins = DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS;
+  
+  protected int batchSize = DEFAULT_BATCH_SIZE_MB;
+  protected int batchIntervalMillis = DEFAULT_BATCH_INTERVAL_MILLIS;
+  protected int maximumQueueMemory = DEFAULT_MAX_BUFFER_MEMORY;
+  protected boolean isPersistenceEnabled = DEFAULT_BUFFER_PERSISTANCE;
+  protected String diskStoreName = null;
+  protected boolean diskSynchronous = DEFAULT_DISK_SYNCHRONOUS; 
+  protected int dispatcherThreads = DEFAULT_DISPATCHER_THREADS;
   
   private static final Logger logger = LogService.getLogger();
   protected final String logPrefix;
@@ -62,9 +70,6 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
   public HDFSStoreConfigHolder(HDFSStore config) {
     this.logPrefix = "<" + getName() + "> ";
     if (config == null) {
-      // initialize default compaction strategy and leave the rest for getting
-      // set later
-      this.compactionConfig = AbstractHDFSCompactionConfigHolder.createInstance(null);
       return;
     }
     
@@ -72,12 +77,26 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     this.namenodeURL = config.getNameNodeURL();
     this.homeDir = config.getHomeDir();
     this.clientConfigFile = config.getHDFSClientConfigFile();
-    setHDFSCompactionConfig(config.getHDFSCompactionConfig());
     this.blockCacheSize = config.getBlockCacheSize();
-    setHDFSEventQueueAttributes(config.getHDFSEventQueueAttributes());
-    this.maxFileSize = config.getMaxFileSize();
-    this.fileRolloverInterval = config.getFileRolloverInterval();
-    setMinorCompaction(config.getMinorCompaction());
+    this.maxFileSize = config.getMaxWriteOnlyFileSize();
+    this.fileRolloverInterval = config.getWriteOnlyFileRolloverInterval();
+    isAutoCompact = config.getMinorCompaction();
+    maxConcurrency = config.getMinorCompactionThreads();
+    autoMajorCompact = config.getMajorCompaction();
+    majorCompactionConcurrency = config.getMajorCompactionThreads();
+    majorCompactionIntervalMins = config.getMajorCompactionInterval();
+    maxInputFileSizeMB = config.getMaxInputFileSizeMB();
+    maxInputFileCount = config.getMaxInputFileCount();
+    minInputFileCount = config.getMinInputFileCount();
+    oldFileCleanupIntervalMins = config.getPurgeInterval();
+    
+    batchSize = config.getBatchSize();
+    batchIntervalMillis = config.getBatchInterval();
+    maximumQueueMemory = config.getMaxMemory();
+    isPersistenceEnabled = config.getBufferPersistent();
+    diskStoreName = config.getDiskStoreName();
+    diskSynchronous = config.getSynchronousDiskWrite();
+    dispatcherThreads = config.getDispatcherThreads();
   }
   
   public void resetDefaultValues() {
@@ -89,40 +108,83 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     maxFileSize = -1;
     fileRolloverInterval = -1;
     
-    compactionConfig.resetDefaultValues();
     isAutoCompact = false;
+    maxConcurrency = -1;
+    maxInputFileSizeMB = -1;
+    maxInputFileCount = -1;
+    minInputFileCount = -1;
+    oldFileCleanupIntervalMins = -1;
+
+    autoMajorCompact = false;
+    majorCompactionConcurrency = -1;
+    majorCompactionIntervalMins = -1;
     
-    // TODO reset hdfseventqueueattributes;
+    batchSize = -1;
+    batchIntervalMillis = -1;
+    maximumQueueMemory = -1;
+    isPersistenceEnabled = false;
+    diskStoreName = null;
+    diskSynchronous = false; 
+    dispatcherThreads = -1;
   }
   
   public void copyFrom(HDFSStoreMutator mutator) {
-    if (mutator.getFileRolloverInterval() >= 0) {
-      logAttrMutation("fileRolloverInterval", mutator.getFileRolloverInterval());
-      setFileRolloverInterval(mutator.getFileRolloverInterval());
+    if (mutator.getWriteOnlyFileRolloverInterval() >= 0) {
+      logAttrMutation("fileRolloverInterval", mutator.getWriteOnlyFileRolloverInterval());
+      setWriteOnlyFileRolloverInterval(mutator.getWriteOnlyFileRolloverInterval());
     }
-    if (mutator.getMaxFileSize() >= 0) {
-      logAttrMutation("MaxFileSize", mutator.getFileRolloverInterval());
-      setMaxFileSize(mutator.getMaxFileSize());
+    if (mutator.getMaxWriteOnlyFileSize() >= 0) {
+      logAttrMutation("MaxFileSize", mutator.getWriteOnlyFileRolloverInterval());
+      setMaxWriteOnlyFileSize(mutator.getMaxWriteOnlyFileSize());
     }
     
-    compactionConfig.copyFrom(mutator.getCompactionConfigMutator());
     if (mutator.getMinorCompaction() != null) {
       logAttrMutation("MinorCompaction", mutator.getMinorCompaction());
       setMinorCompaction(mutator.getMinorCompaction());
     }
     
-    HDFSEventQueueAttributesFactory newFactory = new HDFSEventQueueAttributesFactory(hdfsEventQueueAttrs);
-    HDFSEventQueueAttributesMutator qMutator = mutator.getHDFSEventQueueAttributesMutator();
-
-    if (qMutator.getBatchSizeMB() >= 0) {
-      logAttrMutation("batchSizeMB", mutator.getFileRolloverInterval());
-      newFactory.setBatchSizeMB(qMutator.getBatchSizeMB());
+    if (mutator.getMinorCompactionThreads() >= 0) {
+      logAttrMutation("MaxThreads", mutator.getMinorCompactionThreads());
+      setMinorCompactionThreads(mutator.getMinorCompactionThreads());
     }
-    if (qMutator.getBatchTimeInterval() >= 0) {
-      logAttrMutation("batchTimeInterval", mutator.getFileRolloverInterval());
-      newFactory.setBatchTimeInterval(qMutator.getBatchTimeInterval());
+    
+    if (mutator.getMajorCompactionInterval() > -1) {
+      logAttrMutation("MajorCompactionIntervalMins", mutator.getMajorCompactionInterval());
+      setMajorCompactionInterval(mutator.getMajorCompactionInterval());
     }
-    hdfsEventQueueAttrs = newFactory.create();
+    if (mutator.getMajorCompactionThreads() >= 0) {
+      logAttrMutation("MajorCompactionMaxThreads", mutator.getMajorCompactionThreads());
+      setMajorCompactionThreads(mutator.getMajorCompactionThreads());
+    }
+    if (mutator.getMajorCompaction() != null) {
+      logAttrMutation("AutoMajorCompaction", mutator.getMajorCompaction());
+      setMajorCompaction(mutator.getMajorCompaction());
+    }
+    if (mutator.getMaxInputFileCount() >= 0) {
+      logAttrMutation("maxInputFileCount", mutator.getMaxInputFileCount());
+      setMaxInputFileCount(mutator.getMaxInputFileCount());
+    }
+    if (mutator.getMaxInputFileSizeMB() >= 0) {
+      logAttrMutation("MaxInputFileSizeMB", mutator.getMaxInputFileSizeMB());
+      setMaxInputFileSizeMB(mutator.getMaxInputFileSizeMB());
+    }
+    if (mutator.getMinInputFileCount() >= 0) {
+      logAttrMutation("MinInputFileCount", mutator.getMinInputFileCount());
+      setMinInputFileCount(mutator.getMinInputFileCount());
+    }    
+    if (mutator.getPurgeInterval() >= 0) {
+      logAttrMutation("OldFilesCleanupIntervalMins", mutator.getPurgeInterval());
+      setPurgeInterval(mutator.getPurgeInterval());
+    }
+    
+    if (mutator.getBatchSize() >= 0) {
+      logAttrMutation("batchSizeMB", mutator.getWriteOnlyFileRolloverInterval());
+      setBatchSize(mutator.getBatchSize());
+    }
+    if (mutator.getBatchInterval() >= 0) {
+      logAttrMutation("batchTimeInterval", mutator.getWriteOnlyFileRolloverInterval());
+      setBatchInterval(mutator.getBatchInterval());
+    }
   }
 
   void logAttrMutation(String name, Object value) {
@@ -185,59 +247,25 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     return blockCacheSize;
   }
   
-  /**
-   * Sets the HDFS event queue attributes
-   * This causes the store to use the {@link HDFSEventQueueAttributes}.
-   * @param hdfsEventQueueAttrs the attributes of the HDFS Event queue
-   */
-  public HDFSStoreFactory setHDFSEventQueueAttributes(HDFSEventQueueAttributes hdfsEventQueueAttrs) {
-    this.hdfsEventQueueAttrs  = hdfsEventQueueAttrs;
-    return this;
-  }
   @Override
-  public HDFSEventQueueAttributes getHDFSEventQueueAttributes() {
-    return hdfsEventQueueAttrs;
-  }
-
-  @Override
-  public AbstractHDFSCompactionConfigHolder getHDFSCompactionConfig() {
-    return compactionConfig;
-  }
-  @Override
-  public HDFSStoreConfigHolder setHDFSCompactionConfig(HDFSCompactionConfig config) {
-    if (config == null) {
-      return this;
-    }
-    
-    String s = config.getCompactionStrategy();
-    compactionConfig = AbstractHDFSCompactionConfigHolder.createInstance(s);
-    compactionConfig.copyFrom(config);
-    return this;
-  }
-  @Override
-  public HDFSCompactionConfigFactory createCompactionConfigFactory(String name) {
-    return AbstractHDFSCompactionConfigHolder.createInstance(name);
-  }
-  
-  @Override
-  public HDFSStoreFactory setMaxFileSize(int maxFileSize) {
+  public HDFSStoreFactory setMaxWriteOnlyFileSize(int maxFileSize) {
     assertIsPositive(CacheXml.HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL, maxFileSize);
     this.maxFileSize = maxFileSize;
     return this;
   }
   @Override
-  public int getMaxFileSize() {
+  public int getMaxWriteOnlyFileSize() {
     return maxFileSize;
   }
 
   @Override
-  public HDFSStoreFactory setFileRolloverInterval(int count) {
+  public HDFSStoreFactory setWriteOnlyFileRolloverInterval(int count) {
     assertIsPositive(CacheXml.HDFS_TIME_FOR_FILE_ROLLOVER, count);
     this.fileRolloverInterval = count;
     return this;
   }
   @Override
-  public int getFileRolloverInterval() {
+  public int getWriteOnlyFileRolloverInterval() {
     return fileRolloverInterval;
   }
   
@@ -251,255 +279,102 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     return this;
   }
 
-  /**
-   * Abstract config class for compaction configuration. A concrete class must
-   * extend setters for all configurations it consumes. This class will throw an
-   * exception for any unexpected configuration. Concrete class must also
-   * validate the configuration
-   * 
-   * @author ashvina
-   */
-  public static abstract class AbstractHDFSCompactionConfigHolder implements
-      HDFSCompactionConfig, HDFSCompactionConfigFactory , Serializable{
-    protected int maxInputFileSizeMB = HDFSCompactionConfig.DEFAULT_MAX_INPUT_FILE_SIZE_MB;
-    protected int maxInputFileCount = HDFSCompactionConfig.DEFAULT_MAX_INPUT_FILE_COUNT;
-    protected int minInputFileCount = HDFSCompactionConfig.DEFAULT_MIN_INPUT_FILE_COUNT;
+  @Override
+  public HDFSStoreFactory setMinorCompactionThreads(int count) {
+    assertIsPositive(CacheXml.HDFS_MINOR_COMPACTION_THREADS, count);
+    this.maxConcurrency = count;
+    return this;
+  }
+  @Override
+  public int getMinorCompactionThreads() {
+    return maxConcurrency;
+  }
 
-    protected int maxConcurrency = HDFSCompactionConfig.DEFAULT_MAX_THREADS;
-    
-    protected boolean autoMajorCompact = HDFSCompactionConfig.DEFAULT_AUTO_MAJOR_COMPACTION;
-    protected int majorCompactionConcurrency = HDFSCompactionConfig.DEFAULT_MAJOR_COMPACTION_MAX_THREADS;
-    protected int majorCompactionIntervalMins = HDFSCompactionConfig.DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS;
-    protected int oldFileCleanupIntervalMins = HDFSCompactionConfig.DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS;
-    
-    
-    public AbstractHDFSCompactionConfigHolder() {
-      
-    }
-    
-    void copyFrom(HDFSCompactionConfig config) {
-      setMaxInputFileSizeMB(config.getMaxInputFileSizeMB());
-      setMaxInputFileCount(config.getMaxInputFileCount());
-      setMinInputFileCount(config.getMinInputFileCount());
-      setMaxThreads(config.getMaxThreads());
-      setAutoMajorCompaction(config.getAutoMajorCompaction());
-      setMajorCompactionMaxThreads(config.getMajorCompactionMaxThreads());
-      setMajorCompactionIntervalMins(config.getMajorCompactionIntervalMins());
-      setOldFilesCleanupIntervalMins(config.getOldFilesCleanupIntervalMins());
-    }
-    
-    void copyFrom(HDFSCompactionConfigMutator mutator) {
-      if (mutator.getMaxInputFileCount() >= 0) {
-        logAttrMutation("maxInputFileCount", mutator.getMaxInputFileCount());
-        setMaxInputFileCount(mutator.getMaxInputFileCount());
-      }
-      if (mutator.getMaxInputFileSizeMB() >= 0) {
-        logAttrMutation("MaxInputFileSizeMB", mutator.getMaxInputFileSizeMB());
-        setMaxInputFileSizeMB(mutator.getMaxInputFileSizeMB());
-      }
-      if (mutator.getMaxThreads() >= 0) {
-        logAttrMutation("MaxThreads", mutator.getMaxThreads());
-        setMaxThreads(mutator.getMaxThreads());
-      }
-      if (mutator.getMinInputFileCount() >= 0) {
-        logAttrMutation("MinInputFileCount", mutator.getMinInputFileCount());
-        setMinInputFileCount(mutator.getMinInputFileCount());
-      }
-      
-      if (mutator.getMajorCompactionIntervalMins() > -1) {
-        logAttrMutation("MajorCompactionIntervalMins", mutator.getMajorCompactionIntervalMins());
-        setMajorCompactionIntervalMins(mutator.getMajorCompactionIntervalMins());
-      }
-      if (mutator.getMajorCompactionMaxThreads() >= 0) {
-        logAttrMutation("MajorCompactionMaxThreads", mutator.getMajorCompactionMaxThreads());
-        setMajorCompactionMaxThreads(mutator.getMajorCompactionMaxThreads());
-      }
-      if (mutator.getAutoMajorCompaction() != null) {
-        logAttrMutation("AutoMajorCompaction", mutator.getAutoMajorCompaction());
-        setAutoMajorCompaction(mutator.getAutoMajorCompaction());
-      }
-      
-      if (mutator.getOldFilesCleanupIntervalMins() >= 0) {
-        logAttrMutation("OldFilesCleanupIntervalMins", mutator.getOldFilesCleanupIntervalMins());
-        setOldFilesCleanupIntervalMins(mutator.getOldFilesCleanupIntervalMins());
-      }
-    }
-    
-    void logAttrMutation(String name, Object value) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Alter " + name + ":" + value);
-      }
-    }
-    
-    public void resetDefaultValues() {
-      maxInputFileSizeMB = -1;
-      maxInputFileCount = -1;
-      minInputFileCount = -1;
-      maxConcurrency = -1;
+  @Override
+  public HDFSStoreFactory setMajorCompaction(boolean auto) {
+    this.autoMajorCompact = auto;
+    return this;
+  }
+  @Override
+  public boolean getMajorCompaction() {
+    return autoMajorCompact;
+  }
 
-      autoMajorCompact = false;
-      majorCompactionConcurrency = -1;
-      majorCompactionIntervalMins = -1;
-      oldFileCleanupIntervalMins = -1;
-    }
+  @Override
+  public HDFSStoreFactory setMajorCompactionInterval(int count) {
+    HDFSStoreCreation.assertIsPositive(CacheXml.HDFS_MAJOR_COMPACTION_INTERVAL, count);
+    this.majorCompactionIntervalMins = count;
+    return this;
+  }
+  @Override
+  public int getMajorCompactionInterval() {
+    return majorCompactionIntervalMins;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setMaxInputFileSizeMB(int size) {
-      throw new GemFireConfigException("This configuration is not applicable to configured compaction strategy");
-    }
-    @Override
-    public int getMaxInputFileSizeMB() {
-      return maxInputFileSizeMB;
-    }
-
-    @Override
-    public HDFSCompactionConfigFactory setMinInputFileCount(int count) {
-      throw new GemFireConfigException("This configuration is not applicable to configured compaction strategy");
-    }
-    @Override
-    public int getMinInputFileCount() {
-      return minInputFileCount;
-    }
-
-    @Override
-    public HDFSCompactionConfigFactory setMaxInputFileCount(int size) {
-      throw new GemFireConfigException("This configuration is not applicable to configured compaction strategy");
-    }
-    @Override
-    public int getMaxInputFileCount() {
-      return maxInputFileCount;
-    }
-
-    @Override
-    public HDFSCompactionConfigFactory setMaxThreads(int count) {
-      assertIsPositive(CacheXml.HDFS_MINOR_COMPACTION_THREADS, count);
-      this.maxConcurrency = count;
-      return this;
-    }
-    @Override
-    public int getMaxThreads() {
-      return maxConcurrency;
-    }
-
-    @Override
-    public HDFSCompactionConfigFactory setAutoMajorCompaction(boolean auto) {
-      this.autoMajorCompact = auto;
-      return this;
-    }
-    @Override
-    public boolean getAutoMajorCompaction() {
-      return autoMajorCompact;
-    }
-
-    @Override
-    public HDFSCompactionConfigFactory setMajorCompactionIntervalMins(int count) {
-      throw new GemFireConfigException("This configuration is not applicable to configured compaction strategy");
-    }
-    @Override
-    public int getMajorCompactionIntervalMins() {
-      return majorCompactionIntervalMins;
-    }
-
-    @Override
-    public HDFSCompactionConfigFactory setMajorCompactionMaxThreads(int count) {
-      throw new GemFireConfigException("This configuration is not applicable to configured compaction strategy");
-    }
-    @Override
-    public int getMajorCompactionMaxThreads() {
-      return majorCompactionConcurrency;
-    }
-    
-    
-    @Override
-    public int getOldFilesCleanupIntervalMins() {
-      return oldFileCleanupIntervalMins ;
-    }    
-    @Override
-    public HDFSCompactionConfigFactory setOldFilesCleanupIntervalMins(int interval) {
-      assertIsPositive(CacheXml.HDFS_PURGE_INTERVAL, interval);
-      this.oldFileCleanupIntervalMins = interval;
-      return this;
-    }
-
-    @Override
-    public HDFSCompactionConfig getConfigView() {
-      return (HDFSCompactionConfig) this;
-    }
-    
-    @Override
-    public HDFSCompactionConfig create() throws GemFireConfigException {
-      AbstractHDFSCompactionConfigHolder config = createInstance(getCompactionStrategy());
-      config.copyFrom(this);
-      config.validate();
-      return config;
-    }
-    
-    protected void validate() {
-    }
-
-    public static AbstractHDFSCompactionConfigHolder createInstance(String name) {
-      if (name == null) {
-        name = DEFAULT_STRATEGY;
-      }
-
-      if (name.equalsIgnoreCase(SIZE_ORIENTED)) {
-        return new SizeTieredHdfsCompactionConfigHolder();
-      }
-
-      return new InvalidCompactionConfigHolder();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder builder = new StringBuilder();
-      builder.append("AbstractHDFSCompactionConfigHolder@");
-      builder.append(System.identityHashCode(this));
-      builder.append("[autoMajorCompact=");
-      builder.append(autoMajorCompact);
-      builder.append(", ");
-      if (maxInputFileSizeMB > -1) {
-        builder.append("maxInputFileSizeMB=");
-        builder.append(maxInputFileSizeMB);
-        builder.append(", ");
-      }
-      if (maxInputFileCount > -1) {
-        builder.append("maxInputFileCount=");
-        builder.append(maxInputFileCount);
-        builder.append(", ");
-      }
-      if (minInputFileCount > -1) {
-        builder.append("minInputFileCount=");
-        builder.append(minInputFileCount);
-        builder.append(", ");
-      }
-      if (maxConcurrency > -1) {
-        builder.append("maxConcurrency=");
-        builder.append(maxConcurrency);
-        builder.append(", ");
-      }
-      if (majorCompactionConcurrency > -1) {
-        builder.append("majorCompactionConcurrency=");
-        builder.append(majorCompactionConcurrency);
-        builder.append(", ");
-      }
-      if (majorCompactionIntervalMins > -1) {
-        builder.append("majorCompactionIntervalMins=");
-        builder.append(majorCompactionIntervalMins);
-        builder.append(", ");
-      }
-      if (oldFileCleanupIntervalMins > -1) {
-        builder.append("oldFileCleanupIntervalMins=");
-        builder.append(oldFileCleanupIntervalMins);
-      }
-      builder.append("]");
-      return builder.toString();
-    }
+  @Override
+  public HDFSStoreFactory setMajorCompactionThreads(int count) {
+    HDFSStoreCreation.assertIsPositive(CacheXml.HDFS_MAJOR_COMPACTION_THREADS, count);
+    this.majorCompactionConcurrency = count;
+    return this;
+  }
+  @Override
+  public int getMajorCompactionThreads() {
+    return majorCompactionConcurrency;
   }
   
-  public static class InvalidCompactionConfigHolder extends AbstractHDFSCompactionConfigHolder {
-    @Override
-    public String getCompactionStrategy() {
-      return INVALID;
+  @Override
+  public HDFSStoreFactory setMaxInputFileSizeMB(int size) {
+    HDFSStoreCreation.assertIsPositive("HDFS_COMPACTION_MAX_INPUT_FILE_SIZE_MB", size);
+    this.maxInputFileSizeMB = size;
+    return this;
+  }
+  @Override
+  public int getMaxInputFileSizeMB() {
+    return maxInputFileSizeMB;
+  }
+
+  @Override
+  public HDFSStoreFactory setMinInputFileCount(int count) {
+    HDFSStoreCreation.assertIsPositive("HDFS_COMPACTION_MIN_INPUT_FILE_COUNT", count);
+    this.minInputFileCount = count;
+    return this;
+  }
+  @Override
+  public int getMinInputFileCount() {
+    return minInputFileCount;
+  }
+
+  @Override
+  public HDFSStoreFactory setMaxInputFileCount(int count) {
+    HDFSStoreCreation.assertIsPositive("HDFS_COMPACTION_MAX_INPUT_FILE_COUNT", count);
+    this.maxInputFileCount = count;
+    return this;
+  }
+  @Override
+  public int getMaxInputFileCount() {
+    return maxInputFileCount;
+  }
+
+  @Override
+  public int getPurgeInterval() {
+    return oldFileCleanupIntervalMins ;
+  }    
+  @Override
+  public HDFSStoreFactory setPurgeInterval(int interval) {
+    assertIsPositive(CacheXml.HDFS_PURGE_INTERVAL, interval);
+    this.oldFileCleanupIntervalMins = interval;
+    return this;
+  }
+  
+  protected void validate() {
+    if (minInputFileCount > maxInputFileCount) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.HOPLOG_MIN_IS_MORE_THAN_MAX
+          .toLocalizedString(new Object[] {
+              "HDFS_COMPACTION_MIN_INPUT_FILE_COUNT",
+              minInputFileCount,
+              "HDFS_COMPACTION_MAX_INPUT_FILE_COUNT",
+              maxInputFileCount }));
     }
   }
 
@@ -535,54 +410,59 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     StringBuilder builder = new StringBuilder();
     builder.append("HDFSStoreConfigHolder@");
     builder.append(System.identityHashCode(this));
-    builder.append(" [name=");
-    builder.append(name);
-    builder.append(", ");
-    if (namenodeURL != null) {
-      builder.append("namenodeURL=");
-      builder.append(namenodeURL);
-      builder.append(", ");
-    }
-    if (homeDir != null) {
-      builder.append("homeDir=");
-      builder.append(homeDir);
-      builder.append(", ");
-    }
-    if (clientConfigFile != null) {
-      builder.append("clientConfigFile=");
-      builder.append(clientConfigFile);
-      builder.append(", ");
-    }
+    builder.append(" [");
+    appendStrProp(builder, name, "name");
+    appendStrProp(builder, namenodeURL, "namenodeURL");
+    appendStrProp(builder, homeDir, "homeDir");
+    appendStrProp(builder, clientConfigFile, "clientConfigFile");
     if (blockCacheSize > -1) {
       builder.append("blockCacheSize=");
       builder.append(blockCacheSize);
       builder.append(", ");
     }
-    if (maxFileSize > -1) {
-      builder.append("maxFileSize=");
-      builder.append(maxFileSize);
-      builder.append(", ");
-    }
-    if (fileRolloverInterval > -1) {
-      builder.append("fileRolloverInterval=");
-      builder.append(fileRolloverInterval);
-      builder.append(", ");
-    }
-    builder.append("minorCompaction=");
-    builder.append(isAutoCompact);
-    builder.append(", ");
+    appendIntProp(builder, maxFileSize, "maxFileSize");
+    appendIntProp(builder, fileRolloverInterval, "fileRolloverInterval");
+    appendBoolProp(builder, isAutoCompact, "isAutoCompact");
+    appendBoolProp(builder, autoMajorCompact, "autoMajorCompact");
+    appendIntProp(builder, maxConcurrency, "maxConcurrency");
+    appendIntProp(builder, majorCompactionConcurrency, "majorCompactionConcurrency");
+    appendIntProp(builder, majorCompactionIntervalMins, "majorCompactionIntervalMins");
+    appendIntProp(builder, maxInputFileSizeMB, "maxInputFileSizeMB");
+    appendIntProp(builder, maxInputFileCount, "maxInputFileCount");
+    appendIntProp(builder, minInputFileCount, "minInputFileCount");
+    appendIntProp(builder, oldFileCleanupIntervalMins, "oldFileCleanupIntervalMins");
+    appendIntProp(builder, batchSize, "batchSize");
+    appendIntProp(builder, batchIntervalMillis, "batchInterval");
+    appendIntProp(builder, maximumQueueMemory, "maximumQueueMemory");
+    appendIntProp(builder, dispatcherThreads, "dispatcherThreads");
+    appendBoolProp(builder, isPersistenceEnabled, "isPersistenceEnabled");
+    appendStrProp(builder, diskStoreName, "diskStoreName");
+    appendBoolProp(builder, diskSynchronous, "diskSynchronous");
 
-    if (compactionConfig != null) {
-      builder.append("compactionConfig=");
-      builder.append(compactionConfig);
-      builder.append(", ");
-    }
-    if (hdfsEventQueueAttrs != null) {
-      builder.append("hdfsEventQueueAttrs=");
-      builder.append(hdfsEventQueueAttrs);
-    }
     builder.append("]");
     return builder.toString();
+  }
+
+  private void appendStrProp(StringBuilder builder, String value, String name) {
+    if (value != null) {
+      builder.append(name + "=");
+      builder.append(value);
+      builder.append(", ");
+    }
+  }
+
+  private void appendIntProp(StringBuilder builder, int value, String name) {
+    if (value > -1) {
+      builder.append(name + "=");
+      builder.append(value);
+      builder.append(", ");
+    }
+  }
+  
+  private void appendBoolProp(StringBuilder builder, boolean value, String name) {
+    builder.append(name + "=");
+    builder.append(value);
+    builder.append(", ");
   }
 
   @Override
@@ -597,5 +477,75 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     // as part of alter execution, hdfs store will replace the config holder
     // completely. Hence mutator at the config holder is not needed
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String getDiskStoreName() {
+    return this.diskStoreName;
+  }
+  @Override
+  public HDFSStoreFactory setDiskStoreName(String name) {
+    this.diskStoreName = name;
+    return this;
+  }
+
+  @Override
+  public int getBatchInterval() {
+    return this.batchIntervalMillis;
+  }
+  @Override
+  public HDFSStoreFactory setBatchInterval(int intervalMillis){
+    this.batchIntervalMillis = intervalMillis;
+    return this;
+  }
+  
+  @Override
+  public boolean getBufferPersistent() {
+    return isPersistenceEnabled;
+  }
+  @Override
+  public HDFSStoreFactory setBufferPersistent(boolean isPersistent) {
+    this.isPersistenceEnabled = isPersistent;
+    return this;
+  }
+
+  @Override
+  public int getDispatcherThreads() {
+    return dispatcherThreads;
+  }
+  @Override
+  public HDFSStoreFactory setDispatcherThreads(int dispatcherThreads) {
+    this.dispatcherThreads = dispatcherThreads;
+    return this;
+  }
+  
+  @Override
+  public int getMaxMemory() {
+    return this.maximumQueueMemory;
+  }
+  @Override
+  public HDFSStoreFactory setMaxMemory(int memory) {
+    this.maximumQueueMemory = memory;
+    return this;
+  }
+  
+  @Override
+  public int getBatchSize() {
+    return this.batchSize;
+  }
+  @Override
+  public HDFSStoreFactory setBatchSize(int size){
+    this.batchSize = size;
+    return this;
+  }
+  
+  @Override
+  public boolean getSynchronousDiskWrite() {
+    return this.diskSynchronous;
+  }
+  @Override
+  public HDFSStoreFactory setSynchronousDiskWrite(boolean isSynchronous) {
+    this.diskSynchronous = isSynchronous;
+    return this;
   }
 }

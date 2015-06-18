@@ -8,18 +8,22 @@
 
 package com.gemstone.gemfire.cache.hdfs;
 
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+
 /**
- * Provides HDFS storage for one or more regions. The regions in the same HDFS
- * store will share the same persistence attributes.
+ * HDFS stores provide a means of persisting data on HDFS. There can be multiple
+ * instance of HDFS stores in a cluster. The regions connected using a HDFS
+ * store will share the same HDFS persistence attributes. A user will normally
+ * perform the following steps to enable HDFS persistence for a region:
+ * <ol>
+ * <li>[Optional] Creates a Disk store for reliability
+ * <li>HDFS buffers will use local persistence till it is persisted on HDFS
+ * <li>Creates a HDFS Store
+ * <li>Creates a Region connected to HDFS Store Uses region API to create and
+ * query data
+ * </ol>
  * <p>
  * Instances of this interface are created using {@link HDFSStoreFactory#create}
- * So to create a <code>HDFSStore</code> named <code>myDiskStore</code> do
- * this:
- * 
- * <PRE>
- * new HDFSStoreFactory().create(&quot;myDiskStore&quot;);
- * </PRE>
- * <p>
  * 
  * @author Hemant Bhanawat
  * @author Ashvin Agrawal
@@ -29,27 +33,78 @@ public interface HDFSStore {
   public static final String DEFAULT_HOME_DIR = "gemfire";
   public static final float DEFAULT_BLOCK_CACHE_SIZE = 10f;
   public static final int DEFAULT_MAX_WRITE_ONLY_FILE_SIZE = 256; 
-  public static final int DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL = 3600; 
+  public static final int DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL = 3600;
+  
+  public static final int DEFAULT_BATCH_SIZE_MB = 32;
+  public static final int DEFAULT_BATCH_INTERVAL_MILLIS = 60000;
+  public static final boolean DEFAULT_WRITEONLY_HDFSSTORE = false;
+  public static final boolean DEFAULT_BUFFER_PERSISTANCE = GatewaySender.DEFAULT_PERSISTENCE_ENABLED;
+  public static final boolean DEFAULT_DISK_SYNCHRONOUS = GatewaySender.DEFAULT_DISK_SYNCHRONOUS;
+  public static final int DEFAULT_MAX_BUFFER_MEMORY = GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY;
+  public static final int DEFAULT_DISPATCHER_THREADS = GatewaySender.DEFAULT_HDFS_DISPATCHER_THREADS;
+  
+  public static final boolean DEFAULT_MINOR_COMPACTION = true;
+  public static final int DEFAULT_MINOR_COMPACTION_THREADS = 10;
+  public static final boolean DEFAULT_MAJOR_COMPACTION = true;
+  public static final int DEFAULT_MAJOR_COMPACTION_THREADS = 2;
+  public static final int DEFAULT_MAX_INPUT_FILE_SIZE_MB = 512;
+  public static final int DEFAULT_MAX_INPUT_FILE_COUNT = 10;
+  public static final int DEFAULT_MIN_INPUT_FILE_COUNT = 4;
+  
+  public static final int DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS = 720;
+  public static final int DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS = 30;
 
   /**
-   * @return name of HDFSStore provided at while creating the instance
+   * @return A unique identifier for the HDFSStore
    */
   public String getName();
 
   /**
-   * @return Namenode URL associated with this store
+   * HDFSStore persists data on a HDFS cluster identified by cluster's NameNode
+   * URL or NameNode Service URL. NameNode URL can also be provided via
+   * hdfs-site.xml (see HDFSClientConfigFile). If the NameNode url is missing
+   * HDFSStore creation will fail. HDFS client can also load hdfs configuration
+   * files in the classpath. NameNode URL provided in this way is also fine.
+   * 
+   * @return Namenode url explicitly configured by user
    */
   public String getNameNodeURL();
 
   /**
-   * @return Home directory where regions using this store will be persisted
+   * HomeDir is the HDFS directory path in which HDFSStore stores files. The
+   * value must not contain the NameNode URL. The owner of this node's JVM
+   * process must have read and write access to this directory. The path could
+   * be absolute or relative. If a relative path for HomeDir is provided, then
+   * the HomeDir is created relative to /user/JVM_owner_name or, if specified,
+   * relative to directory specified by the hdfs-root-dir property. As a best
+   * practice, HDFS store directories should be created relative to a single
+   * HDFS root directory. As an alternative, an absolute path beginning with the
+   * "/" character to override the default root location can be provided.
+   * 
+   * @return path
    */
   public String getHomeDir();
 
   /**
-   * @return hdfs client configuration referred by this store
+   * The full path to the HDFS client configuration file, for e.g. hdfs-site.xml
+   * or core-site.xml. This file must be accessible to any node where an
+   * instance of this HDFSStore will be created. If each node has a local copy
+   * of this configuration file, it is important for all the copies to be
+   * "identical". Alternatively, by default HDFS client can also load some HDFS
+   * configuration files if added in the classpath.
+   * 
+   * @return path
    */
   public String getHDFSClientConfigFile();
+
+  /**
+   * The maximum amount of memory in megabytes to be used by HDFSStore.
+   * HDFSStore buffers data in memory to optimize HDFS IO operations. Once the
+   * configured memory is utilized, data may overflow to disk.
+   * 
+   * @return max memory in MB
+   */
+  public int getMaxMemory();
 
   /**
    * @return the percentage of the heap to use for the block cache in the range
@@ -58,124 +113,185 @@ public interface HDFSStore {
   public float getBlockCacheSize();
 
   /**
-   * For write only tables, data is written to a single file until the file 
-   * reaches a size specified by this API or the time 
-   * for file rollover specified by {@link #getFileRolloverInterval()} has passed.
-   * Default is 256 MB.  
-   *   
-   * @return max file size in MB. 
+   * HDFSStore buffer data is persisted on HDFS in batches. The BatchSize
+   * defines the maximum size (in megabytes) of each batch that is written to
+   * HDFS. This parameter, along with BatchInterval determines the rate at which
+   * data is persisted on HDFS. A higher value means that less number of bigger
+   * batches are persisted to HDFS and hence big files are created on HDFS. But,
+   * bigger batches consume memory.
+   * 
+   * @return batchsize in MB
    */
-  public int getMaxFileSize();
+  public int getBatchSize();
   
   /**
-   * For write only tables, data is written to a single file until the file 
-   * reaches a certain size specified by {@link #getMaxFileSize()} or the time 
-   * for file rollover has passed. Default is 3600 seconds. 
-   *   
-   * @return time in seconds after which a file will be rolled over into a new file
+   * HDFSStore buffer data is persisted on HDFS in batches, and the
+   * BatchInterval defines the maximum time that can elapse between writing
+   * batches to HDFS. This parameter, along with BatchSize determines the rate
+   * at which data is persisted on HDFS.
+   * 
+   * @return interval in seconds
    */
-  public int getFileRolloverInterval();
+  public int getBatchInterval();
   
   /**
-   * @return true if auto compaction is enabled
+   * The maximum number of threads (per region) used to write batches to HDFS.
+   * If you have a large number of clients that add or update data in a region,
+   * then you may need to increase the number of dispatcher threads to avoid
+   * bottlenecks when writing data to HDFS.
+   * 
+   * @return The maximum number of threads
+   */
+  public int getDispatcherThreads();
+  
+  /**
+   * Configure if HDFSStore in-memory buffer data, that has not been persisted
+   * on HDFS yet, should be persisted to a local disk to buffer prevent data
+   * loss. Persisting data may impact write performance. If performance is
+   * critical and buffer data loss is acceptable, disable persistence.
+   * 
+   * @return true if buffer is persisted locally
+   */
+  public boolean getBufferPersistent();
+
+  /**
+   * The named DiskStore to use for any local disk persistence needs of
+   * HDFSStore, for e.g. store's buffer persistence and buffer overflow. If you
+   * specify a value, the named DiskStore must exist. If you specify a null
+   * value or you omit this option, default DiskStore is used.
+   * 
+   * @return disk store name
+   */
+  public String getDiskStoreName();
+
+  /**
+   * Synchronous flag indicates if synchronous disk writes are enabled or not.
+   * 
+   * @return true if enabled
+   */
+  public boolean getSynchronousDiskWrite();
+  
+  /**
+   * For HDFS write-only regions, this defines the maximum size (in megabytes)
+   * that an HDFS log file can reach before HDFSStore closes the file and begins
+   * writing to a new file. This clause is ignored for HDFS read/write regions.
+   * Keep in mind that the files are not available for MapReduce processing
+   * until the file is closed; you can also set WriteOnlyFileRolloverInterval to
+   * specify the maximum amount of time an HDFS log file remains open.
+   * 
+   * @return max file size in MB.
+   */
+  public int getMaxWriteOnlyFileSize();
+  
+  /**
+   * For HDFS write-only regions, this defines the maximum time that can elapse
+   * before HDFSStore closes an HDFS file and begins writing to a new file. This
+   * configuration is ignored for HDFS read/write regions.
+   * 
+   * @return interval in seconds 
+   */
+  public int getWriteOnlyFileRolloverInterval();
+  
+  /**
+   * Minor compaction reorganizes data in files to optimize read performance and
+   * reduce number of files created on HDFS. Minor compaction process can be
+   * I/O-intensive, tune the performance of minor compaction using
+   * MinorCompactionThreads.
+   * 
+   * @return true if auto minor compaction is enabled
    */
   public boolean getMinorCompaction();
 
   /**
-   * Return the HDFSEventQueueAttributes associated with this HDFSStore
-   */
-  public HDFSEventQueueAttributes getHDFSEventQueueAttributes();
-  
-  /**
-   * Destroys this hdfs store. Removes the disk store from the cache. All
-   * regions on this store must be closed.
+   * The maximum number of threads that HDFSStore uses to perform minor
+   * compaction. You can increase the number of threads used for compaction as
+   * necessary in order to fully utilize the performance of your HDFS cluster.
    * 
+   * @return maximum number of threads executing minor compaction
    */
-  public void destroy();
+  public int getMinorCompactionThreads();
 
   /**
-   * @return Instance of compaction configuration associated with this store
+   * Major compaction removes old values of a key and deleted records from the
+   * HDFS files, which can save space in HDFS and improve performance when
+   * reading from HDFS. As major compaction process can be long-running and
+   * I/O-intensive, tune the performance of major compaction using
+   * MajorCompactionInterval and MajorCompactionThreads.
+   * 
+   * @return true if auto major compaction is enabled
    */
-  public HDFSCompactionConfig getHDFSCompactionConfig();
+  public boolean getMajorCompaction();
+
+  /**
+   * The amount of time after which HDFSStore performs the next major compaction
+   * cycle.
+   * 
+   * @return interval in seconds
+   */
+  public int getMajorCompactionInterval();
+
+  /**
+   * The maximum number of threads that HDFSStore uses to perform major
+   * compaction. You can increase the number of threads used for compaction as
+   * necessary in order to fully utilize the performance of your HDFS cluster.
+   * 
+   * @return maximum number of threads executing major compaction
+   */
+  public int getMajorCompactionThreads();
   
   /**
-   * @return instance of mutator object that can be used to alter properties of
-   *         this store
+   * HDFSStore creates new files as part of periodic maintenance activity.
+   * Existing files are deleted asynchronously. PurgeInterval defines the amount
+   * of time old files remain available and could be externally, e.g. read by MR
+   * jobs. After this interval has passed, old files are deleted.
+   * 
+   * @return interval configuration that guides deletion of old files
+   */
+  public int getPurgeInterval();
+  
+  /**
+   * Permanently deletes all HDFS files associated with this this
+   * {@link HDFSStore}. This operation will fail ( {@link IllegalStateException}
+   * ) if any region is still using this store for persistence.
+   */
+  public void destroy();
+  
+  /**
+   * @return new instance of mutator object that can be used to alter properties
+   *         of this store
    */
   public HDFSStoreMutator createHdfsStoreMutator();
   
   /**
-   * Applies new attribute values provided using mutator to this instance
-   * dynmically.
+   * Identifies attributes configured in {@link HDFSStoreMutator} and applies
+   * the new attribute values to this instance of {@link HDFSStore} dynamically.
+   * Any property which is not set in {@link HDFSStoreMutator} remains
+   * unaltered. In most cases altering the attributes does not cause existing
+   * operations to terminate. The altered attributes are used in the next cycle
+   * of the operation they impact.
    * 
-   * @param mutator
-   *          contains the changes
-   * @return hdfsStore reference representing the old store configuration
+   * @return hdfsStore reference representing the old {@link HDFSStore}
    */
   public HDFSStore alter(HDFSStoreMutator mutator);
-      
-  public static interface HDFSCompactionConfig {
-    public static final String INVALID = "invalid";
-    public static final String SIZE_ORIENTED = "size-oriented";
-    public static final String DEFAULT_STRATEGY = SIZE_ORIENTED;
-    
-    public static final boolean DEFAULT_AUTO_COMPACTION = true;
-    public static final boolean DEFAULT_AUTO_MAJOR_COMPACTION = true;
-    public static final int DEFAULT_MAX_INPUT_FILE_SIZE_MB = 512;
-    public static final int DEFAULT_MAX_INPUT_FILE_COUNT = 10;
-    public static final int DEFAULT_MIN_INPUT_FILE_COUNT = 4;
-    public static final int DEFAULT_MAX_THREADS = 10;
-    
-    public static final int DEFAULT_MAJOR_COMPACTION_MAX_THREADS = 2;
-    public static final int DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS = 720;
-    public static final int DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS = 30;
-    
-    /**
-     * @return name of the compaction strategy configured for this store
-     */
-    public String getCompactionStrategy();
 
-    /**
-     * @return size threshold (in MB). A file larger than this size will not be
-     *         considered for compaction
-     */
-    public int getMaxInputFileSizeMB();
+  /**
+   * This advanced configuration affects minor compaction.
+   * @return size threshold (in MB). A file larger than this size will not be
+   *         considered for compaction
+   */
+  public int getMaxInputFileSizeMB();
 
-    /**
-     * @return minimum count threshold. Compaction cycle will commence if the
-     *         number of files to be compacted is more than this number
-     */
-    public int getMinInputFileCount();
+  /**
+   * This advanced configuration affects minor compaction.
+   * @return minimum count threshold. Compaction cycle will commence if the
+   *         number of files to be compacted is more than this number
+   */
+  public int getMinInputFileCount();
 
-    /**
-     * @return maximum count threshold.  Compaction cycle will not include more
-     *          files than the maximum
-     */
-    public int getMaxInputFileCount();
-
-    /**
-     * @return maximum number of threads executing minor compaction
-     */
-    public int getMaxThreads();
-
-    /**
-     * @return true if auto major compaction is enabled
-     */
-    public boolean getAutoMajorCompaction();
-
-    /**
-     * @return interval configuration that guides major compaction frequency
-     */
-    public int getMajorCompactionIntervalMins();
-
-    /**
-     * @return maximum number of threads executing major compaction
-     */
-    public int getMajorCompactionMaxThreads();
-    
-    /**
-     * @return interval configuration that guides deletion of old files
-     */
-    public int getOldFilesCleanupIntervalMins();
-  }
+  /**
+   * This advanced configuration affects minor compaction.
+   * @return maximum count threshold.  Compaction cycle will not include more
+   *          files than the maximum
+   */
+  public int getMaxInputFileCount();
 }

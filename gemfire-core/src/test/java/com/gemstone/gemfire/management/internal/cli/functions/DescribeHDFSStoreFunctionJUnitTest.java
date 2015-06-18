@@ -30,10 +30,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributes;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSEventQueueAttributesImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreConfigHolder;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreConfigHolder.AbstractHDFSCompactionConfigHolder;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -56,7 +53,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest
  * @see org.junit.Assert
  * @see org.junit.Test
  */
-@SuppressWarnings( { "null", "unused" })
+@SuppressWarnings( { "unused" })
 @Category({IntegrationTest.class, HoplogTest.class})
 public class DescribeHDFSStoreFunctionJUnitTest {
 
@@ -124,13 +121,24 @@ public class DescribeHDFSStoreFunctionJUnitTest {
     assertEquals(hdfsStoreName, hdfsStoreDetails.getName());
     assertEquals("hdfs://localhost:9000", hdfsStoreDetails.getNameNodeURL());
     assertEquals("testDir", hdfsStoreDetails.getHomeDir());
-    assertEquals(1024, hdfsStoreDetails.getMaxFileSize());
-    assertEquals(20, hdfsStoreDetails.getFileRolloverInterval());
+    assertEquals(1024, hdfsStoreDetails.getMaxWriteOnlyFileSize());
+    assertEquals(20, hdfsStoreDetails.getWriteOnlyFileRolloverInterval());
     assertFalse(hdfsStoreDetails.getMinorCompaction());
     assertEquals("0.25", Float.toString(hdfsStoreDetails.getBlockCacheSize()));
     assertNull(hdfsStoreDetails.getHDFSClientConfigFile());
-    assertCompactionConfig(hdfsStoreDetails.getHDFSCompactionConfig());
-    assertEventQueueAttributes(hdfsStoreDetails.getHDFSEventQueueAttributes());
+    assertTrue(hdfsStoreDetails.getMajorCompaction());
+    assertEquals(20, hdfsStoreDetails.getMajorCompactionInterval());
+    assertEquals(20, hdfsStoreDetails.getMajorCompactionThreads());
+    assertEquals(10, hdfsStoreDetails.getMinorCompactionThreads());
+    assertEquals(100, hdfsStoreDetails.getPurgeInterval());
+
+    assertEquals(20, hdfsStoreDetails.getBatchSize());
+    assertEquals(20, hdfsStoreDetails.getBatchInterval());
+    assertNull(hdfsStoreDetails.getDiskStoreName());
+    assertFalse(hdfsStoreDetails.getSynchronousDiskWrite());
+    assertEquals(0, hdfsStoreDetails.getDispatcherThreads());
+    assertEquals(1024, hdfsStoreDetails.getMaxMemory());
+    assertFalse(hdfsStoreDetails.getBufferPersistent());
   }
 
   
@@ -245,65 +253,49 @@ public class DescribeHDFSStoreFunctionJUnitTest {
       final boolean majorCompact, final int majorCompactionInterval, final int majorCompactionThreads,
       final int minorCompactionThreads, final int purgeInterval) {
 
-    final AbstractHDFSCompactionConfigHolder mockCompactionConfig = mockContext.mock(
-        AbstractHDFSCompactionConfigHolder.class, storeName + "CompactionConfig");
-    final HDFSEventQueueAttributesImpl mockEventQueue = mockContext.mock(HDFSEventQueueAttributesImpl.class, storeName
-        + "EventQueueImpl");
     final HDFSStoreImpl mockHdfsStore = mockContext.mock(HDFSStoreImpl.class, storeName);
 
     mockContext.checking(new Expectations() {
       {
-        oneOf(mockCompactionConfig).getAutoMajorCompaction();
+        oneOf(mockHdfsStore).getMajorCompaction();
         will(returnValue(majorCompact));
-        oneOf(mockCompactionConfig).getMajorCompactionIntervalMins();
+        oneOf(mockHdfsStore).getMajorCompactionInterval();
         will(returnValue(majorCompactionInterval));
-        oneOf(mockCompactionConfig).getMajorCompactionMaxThreads();
+        oneOf(mockHdfsStore).getMajorCompactionThreads();
         will(returnValue(majorCompactionThreads));
-        oneOf(mockCompactionConfig).getMaxThreads();
+        oneOf(mockHdfsStore).getMinorCompactionThreads();
         will(returnValue(minorCompactionThreads));
-        oneOf(mockCompactionConfig).getOldFilesCleanupIntervalMins();
+        oneOf(mockHdfsStore).getPurgeInterval();
         will(returnValue(purgeInterval));
-        oneOf(mockCompactionConfig).getMaxInputFileCount();
+        oneOf(mockHdfsStore).getMaxInputFileCount();
         will(returnValue(10));
-        oneOf(mockCompactionConfig).getMaxInputFileSizeMB();
+        oneOf(mockHdfsStore).getMaxInputFileSizeMB();
         will(returnValue(1024));
-        oneOf(mockCompactionConfig).getMinInputFileCount();
+        oneOf(mockHdfsStore).getMinInputFileCount();
         will(returnValue(2));
-        oneOf(mockCompactionConfig).getCompactionStrategy();
-        will(returnValue(null));
-      }
-    });
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockEventQueue).getBatchSizeMB();
+        oneOf(mockHdfsStore).getBatchSize();
         will(returnValue(batchSize));
-        oneOf(mockEventQueue).getBatchTimeInterval();
+        oneOf(mockHdfsStore).getBatchInterval();
         will(returnValue(batchInterval));
-        oneOf(mockEventQueue).getDiskStoreName();
+        oneOf(mockHdfsStore).getDiskStoreName();
         will(returnValue(diskStoreName));
-        oneOf(mockEventQueue).isDiskSynchronous();
+        oneOf(mockHdfsStore).getSynchronousDiskWrite();
         will(returnValue(syncDiskwrite));
-        oneOf(mockEventQueue).isPersistent();
+        oneOf(mockHdfsStore).getBufferPersistent();
         will(returnValue(bufferPersistent));
-        oneOf(mockEventQueue).getDispatcherThreads();
+        oneOf(mockHdfsStore).getDispatcherThreads();
         will(returnValue(dispatcherThreads));
-        oneOf(mockEventQueue).getMaximumQueueMemory();
+        oneOf(mockHdfsStore).getMaxMemory();
         will(returnValue(maxMemory));
-      }
-    });
-
-    mockContext.checking(new Expectations() {
-      {
         oneOf(mockHdfsStore).getName();
         will(returnValue(storeName));
         oneOf(mockHdfsStore).getNameNodeURL();
         will(returnValue(namenode));
         oneOf(mockHdfsStore).getHomeDir();
         will(returnValue(homeDir));
-        oneOf(mockHdfsStore).getMaxFileSize();
+        oneOf(mockHdfsStore).getMaxWriteOnlyFileSize();
         will(returnValue(maxFileSize));
-        oneOf(mockHdfsStore).getFileRolloverInterval();
+        oneOf(mockHdfsStore).getWriteOnlyFileRolloverInterval();
         will(returnValue(fileRolloverInterval));
         oneOf(mockHdfsStore).getMinorCompaction();
         will(returnValue(minorCompact));
@@ -311,10 +303,6 @@ public class DescribeHDFSStoreFunctionJUnitTest {
         will(returnValue(blockCachesize));
         allowing(mockHdfsStore).getHDFSClientConfigFile();
         will(returnValue(clientConfigFile));
-        oneOf(mockHdfsStore).getHDFSEventQueueAttributes();
-        will(returnValue(mockEventQueue));
-        oneOf(mockHdfsStore).getHDFSCompactionConfig();
-        will(returnValue(mockCompactionConfig));
       }
     });
     return mockHdfsStore;
@@ -322,26 +310,6 @@ public class DescribeHDFSStoreFunctionJUnitTest {
 
   protected TestDescribeHDFSStoreFunction createDescribeHDFSStoreFunction(final Cache cache, DistributedMember member) {
     return new TestDescribeHDFSStoreFunction(cache, member);
-  }
-
-  private void assertCompactionConfig(AbstractHDFSCompactionConfigHolder compactionConfig) {
-    assertNotNull(compactionConfig);
-    assertTrue(compactionConfig.getAutoMajorCompaction());
-    assertEquals(20, compactionConfig.getMajorCompactionIntervalMins());
-    assertEquals(20, compactionConfig.getMajorCompactionMaxThreads());
-    assertEquals(10, compactionConfig.getMaxThreads());
-    assertEquals(100, compactionConfig.getOldFilesCleanupIntervalMins());
-  }
-
-  private void assertEventQueueAttributes(HDFSEventQueueAttributes eventQueueAttr) {
-    assertNotNull(eventQueueAttr);
-    assertEquals(20, eventQueueAttr.getBatchSizeMB());
-    assertEquals(20, eventQueueAttr.getBatchTimeInterval());
-    assertNull(eventQueueAttr.getDiskStoreName());
-    assertFalse(eventQueueAttr.isDiskSynchronous());
-    assertEquals(0, eventQueueAttr.getDispatcherThreads());
-    assertEquals(1024, eventQueueAttr.getMaximumQueueMemory());
-    assertFalse(eventQueueAttr.isPersistent());
   }
 
   protected static class TestDescribeHDFSStoreFunction extends DescribeHDFSStoreFunction {

@@ -9,28 +9,12 @@
 package com.gemstone.gemfire.cache.hdfs.internal;
 
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributes;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore.HDFSCompactionConfig;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
 import com.gemstone.gemfire.cache.hdfs.StoreExistsException;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreConfigHolder.AbstractHDFSCompactionConfigHolder;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
- * HDFS store configuration.
- * 
- * <pre>
- * {@code
- * <hdfs-store name="" home-dir="" namenode-url="">
- * <hdfs-compaction strategy="" auto-compact="" max-input-file-size-mb="" 
- *                  min-input-file-count="" max-input-file-count="" 
- *                  max-concurrency="" auto-major-compaction="" 
- *                  major-compaction-interval-mins="" major-compaction-concurrency=""/>
- * </hdfs-store>
- * }
- * </pre>
- * 
  * @author ashvina
  */
 public class HDFSStoreCreation implements HDFSStoreFactory {
@@ -45,8 +29,7 @@ public class HDFSStoreCreation implements HDFSStoreFactory {
    * @param config configuration source for creating this instance 
    */
   public HDFSStoreCreation(HDFSStoreCreation config) {
-    this.configHolder = new HDFSStoreConfigHolder(config == null ? null
-        : config.configHolder);
+    this.configHolder = new HDFSStoreConfigHolder(config == null ? null : config.configHolder);
   }
 
   @Override
@@ -79,43 +62,15 @@ public class HDFSStoreCreation implements HDFSStoreFactory {
     return this;
   }
   
-  /**
-   * Sets the HDFS event queue attributes
-   * This causes the store to use the {@link HDFSEventQueueAttributes}.
-   * @param hdfsEventQueueAttrs the attributes of the HDFS Event queue
-   * @return a reference to this RegionFactory object
-   * 
-   */
-  public HDFSStoreFactory setHDFSEventQueueAttributes(HDFSEventQueueAttributes hdfsEventQueueAttrs) {
-    configHolder.setHDFSEventQueueAttributes(hdfsEventQueueAttrs);
-    return this;
-  }
-  
   @Override
-  public HDFSEventQueueAttributes getHDFSEventQueueAttributes() {
-    return configHolder.getHDFSEventQueueAttributes();
-  }
-
-  @Override
-  public HDFSStoreFactory setHDFSCompactionConfig(HDFSCompactionConfig config) {
-    configHolder.setHDFSCompactionConfig(config);
+  public HDFSStoreFactory setMaxWriteOnlyFileSize(int maxFileSize) {
+    configHolder.setMaxWriteOnlyFileSize(maxFileSize);
     return this;
   }
 
   @Override
-  public HDFSCompactionConfigFactory createCompactionConfigFactory(String name) {
-    return configHolder.createCompactionConfigFactory(name);
-  }
-  @Override
-  
-  public HDFSStoreFactory setMaxFileSize(int maxFileSize) {
-    configHolder.setMaxFileSize(maxFileSize);
-    return this;
-  }
-
-  @Override
-  public HDFSStoreFactory setFileRolloverInterval(int count) {
-    configHolder.setFileRolloverInterval(count);
+  public HDFSStoreFactory setWriteOnlyFileRolloverInterval(int count) {
+    configHolder.setWriteOnlyFileRolloverInterval(count);
     return this;
   }
 
@@ -125,84 +80,94 @@ public class HDFSStoreCreation implements HDFSStoreFactory {
     return this;
   }
   
-  /**
-   * Config class for compaction configuration. A concrete class must
-   * extend setters for all configurations it consumes. This class will throw an
-   * exception for any unexpected configuration. Concrete class must also
-   * validate the configuration
-   * 
-   * @author ashvina
-   */
-  public static class HDFSCompactionConfigFactoryImpl implements
-      HDFSCompactionConfigFactory {
-    private AbstractHDFSCompactionConfigHolder configHolder;
+  @Override
+  public HDFSStoreFactory setMinorCompactionThreads(int count) {
+    configHolder.setMinorCompactionThreads(count);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setMaxInputFileSizeMB(int size) {
-      configHolder.setMaxInputFileSizeMB(size);
-      return this;
-    }
+  @Override
+  public HDFSStoreFactory setMajorCompaction(boolean auto) {
+    configHolder.setMajorCompaction(auto);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setMinInputFileCount(int count) {
-      configHolder.setMinInputFileCount(count);
-      return this;
-    }
+  @Override
+  public HDFSStoreFactory setMajorCompactionInterval(int count) {
+    configHolder.setMajorCompactionInterval(count);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setMaxInputFileCount(int count) {
-      configHolder.setMaxInputFileCount(count);
-      return this;
-    }
+  @Override
+  public HDFSStoreFactory setMajorCompactionThreads(int count) {
+    configHolder.setMajorCompactionThreads(count);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setMaxThreads(int count) {
-      configHolder.setMaxThreads(count);
-      return this;
-    }
+  @Override
+  public HDFSStoreFactory setMaxInputFileSizeMB(int size) {
+    configHolder.setMaxInputFileSizeMB(size);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setAutoMajorCompaction(boolean auto) {
-      configHolder.setAutoMajorCompaction(auto);
-      return this;
-    }
+  @Override
+  public HDFSStoreFactory setMinInputFileCount(int count) {
+    configHolder.setMinInputFileCount(count);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setMajorCompactionIntervalMins(int count) {
-      configHolder.setMajorCompactionIntervalMins(count);
-      return this;
-    }
+  @Override
+  public HDFSStoreFactory setMaxInputFileCount(int count) {
+    configHolder.setMaxInputFileCount(count);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfigFactory setMajorCompactionMaxThreads(int count) {
-      configHolder.setMajorCompactionMaxThreads(count);
-      return this;
-    }
-        
-    @Override
-    public HDFSCompactionConfigFactory setOldFilesCleanupIntervalMins(int interval) {
-      configHolder.setOldFilesCleanupIntervalMins(interval);
-      return this;
-    }
+  @Override
+  public HDFSStoreFactory setPurgeInterval(int interval) {
+    configHolder.setPurgeInterval(interval);
+    return this;
+  }
 
-    @Override
-    public HDFSCompactionConfig getConfigView() {
-      return configHolder.getConfigView();
-    }
-    
-    @Override
-    public HDFSCompactionConfig create() throws GemFireConfigException {
-      HDFSCompactionConfigFactoryImpl config = createInstance(configHolder.getCompactionStrategy());
-      config.configHolder.copyFrom(this.configHolder);
-      config.configHolder.validate();
-      return (HDFSCompactionConfig) config.configHolder;
-    }
-    
-    private static HDFSCompactionConfigFactoryImpl createInstance(String name) {
-      HDFSCompactionConfigFactoryImpl impl = new HDFSCompactionConfigFactoryImpl();
-      impl.configHolder = AbstractHDFSCompactionConfigHolder.createInstance(name);
-      return impl;
-    }
+  @Override
+  public HDFSStoreFactory setDiskStoreName(String name) {
+    configHolder.setDiskStoreName(name);
+    return this;
+  }
+
+  @Override
+  public HDFSStoreFactory setMaxMemory(int memory) {
+    configHolder.setMaxMemory(memory);
+    return this;
+  }
+
+  @Override
+  public HDFSStoreFactory setBatchInterval(int intervalMillis) {
+    configHolder.setBatchInterval(intervalMillis);
+    return this;
+  }
+
+  @Override
+  public HDFSStoreFactory setBatchSize(int size) {
+    configHolder.setBatchSize(size);
+    return this;
+  }
+
+  @Override
+  public HDFSStoreFactory setBufferPersistent(boolean isPersistent) {
+    configHolder.setBufferPersistent(isPersistent);
+    return this;
+  }
+
+  @Override
+  public HDFSStoreFactory setSynchronousDiskWrite(boolean isSynchronous) {
+    configHolder.setSynchronousDiskWrite(isSynchronous);
+    return this;
+  }
+
+  @Override
+  public HDFSStoreFactory setDispatcherThreads(int dispatcherThreads) {
+    configHolder.setDispatcherThreads(dispatcherThreads);
+    return this;
   }
   
   /**

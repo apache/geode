@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -16,19 +15,10 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributes;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory.HDFSCompactionConfigFactory;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator.HDFSCompactionConfigMutator;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator.HDFSEventQueueAttributesMutator;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreConfigHolder;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreConfigHolder.AbstractHDFSCompactionConfigHolder;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreMutatorImpl;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.lang.ClassUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.cli.Result;
@@ -200,7 +190,6 @@ public class HDFSStoreCommands   extends AbstractCommandsSupport {
       Integer majorCompactionThreads, Integer minorCompactionThreads, Integer purgeInterval, Integer maxMemory) {
 
     XmlEntity xmlEntity = null;
-    Logger logger = LogService.getLogger();
 
     Set<DistributedMember> targetMembers = null;
 
@@ -216,52 +205,44 @@ public class HDFSStoreCommands   extends AbstractCommandsSupport {
       configHolder.setBlockCacheSize(readCacheSize);
 
     if (fileRolloverInterval != null)
-      configHolder.setFileRolloverInterval(fileRolloverInterval);
+      configHolder.setWriteOnlyFileRolloverInterval(fileRolloverInterval);
     if (clientConfigFile != null)
       configHolder.setHDFSClientConfigFile(clientConfigFile);
     if (homeDir != null)
       configHolder.setHomeDir(homeDir);
     if (maxWriteonlyFileSize != null)
-      configHolder.setMaxFileSize(maxWriteonlyFileSize);
+      configHolder.setMaxWriteOnlyFileSize(maxWriteonlyFileSize);
     if (namenode != null)
       configHolder.setNameNodeURL(namenode);
 
-    HDFSCompactionConfigFactory compactionConfig = configHolder.createCompactionConfigFactory(null);
     if (minorCompact != null)
       configHolder.setMinorCompaction(minorCompact);
     if (majorCompact != null)
-      compactionConfig.setAutoMajorCompaction(majorCompact);
+      configHolder.setMajorCompaction(majorCompact);
     if (majorCompactionInterval != null)
-      compactionConfig.setMajorCompactionIntervalMins(majorCompactionInterval);
+      configHolder.setMajorCompactionInterval(majorCompactionInterval);
     if (majorCompactionThreads != null)
-      compactionConfig.setMajorCompactionMaxThreads(majorCompactionThreads);
+      configHolder.setMajorCompactionThreads(majorCompactionThreads);
     if (minorCompactionThreads != null)
-      compactionConfig.setMaxThreads(minorCompactionThreads);
+      configHolder.setMinorCompactionThreads(minorCompactionThreads);
     if (purgeInterval != null)
-      compactionConfig.setOldFilesCleanupIntervalMins(purgeInterval);
-
-    configHolder.setHDFSCompactionConfig(compactionConfig.create());
-
-    HDFSEventQueueAttributesFactory eventQueue = new HDFSEventQueueAttributesFactory();
+      configHolder.setPurgeInterval(purgeInterval);
 
     if (batchSize != null)
-      eventQueue.setBatchSizeMB(batchSize);
+      configHolder.setBatchSize(batchSize);
     if (batchInterval != null)
-      eventQueue.setBatchTimeInterval(batchInterval);
+      configHolder.setBatchInterval(batchInterval);
     if (diskStoreName != null)
-      eventQueue.setDiskStoreName(diskStoreName);
+      configHolder.setDiskStoreName(diskStoreName);
     if (syncDiskWrite != null)
-      eventQueue.setDiskSynchronous(syncDiskWrite);
+      configHolder.setSynchronousDiskWrite(syncDiskWrite);
     if (dispatcherThreads != null)
-      eventQueue.setDispatcherThreads(dispatcherThreads);
+      configHolder.setDispatcherThreads(dispatcherThreads);
     if (maxMemory != null)
-      eventQueue.setMaximumQueueMemory(maxMemory);
+      configHolder.setMaxMemory(maxMemory);
     if (bufferPersistent != null)
-      eventQueue.setPersistent(bufferPersistent);
+      configHolder.setBufferPersistent(bufferPersistent);
 
-    configHolder.setHDFSEventQueueAttributes(eventQueue.create());
-
-    
     ResultCollector<?, ?> resultCollector = getMembersFunctionExecutor(targetMembers)
     .withArgs(configHolder).execute(new CreateHDFSStoreFunction());
     
@@ -374,29 +355,25 @@ public class HDFSStoreCommands   extends AbstractCommandsSupport {
     hdfsStoreSection.addData("Name Node URL", storePrms.getNameNodeURL());
     hdfsStoreSection.addData("Home Dir", storePrms.getHomeDir());
     hdfsStoreSection.addData("Block Cache", storePrms.getBlockCacheSize());
-    hdfsStoreSection.addData("File RollOver Interval", storePrms.getFileRolloverInterval());
-    hdfsStoreSection.addData("Max WriteOnly File Size", storePrms.getMaxFileSize());
+    hdfsStoreSection.addData("File RollOver Interval", storePrms.getWriteOnlyFileRolloverInterval());
+    hdfsStoreSection.addData("Max WriteOnly File Size", storePrms.getMaxWriteOnlyFileSize());
 
     hdfsStoreSection.addData("Client Configuration File", storePrms.getHDFSClientConfigFile());
 
-    HDFSEventQueueAttributes queueAttr = storePrms.getHDFSEventQueueAttributes();
+    hdfsStoreSection.addData("Disk Store Name", storePrms.getDiskStoreName());
+    hdfsStoreSection.addData("Batch Size In MB", storePrms.getBatchSize());
+    hdfsStoreSection.addData("Batch Interval Time", storePrms.getBatchInterval());
+    hdfsStoreSection.addData("Maximum Memory", storePrms.getMaxMemory());
+    hdfsStoreSection.addData("Dispatcher Threads", storePrms.getDispatcherThreads());
+    hdfsStoreSection.addData("Buffer Persistence", storePrms.getBufferPersistent());
+    hdfsStoreSection.addData("Synchronous Persistence", storePrms.getSynchronousDiskWrite());
 
-    hdfsStoreSection.addData("Disk Store Name", queueAttr.getDiskStoreName());
-    hdfsStoreSection.addData("Batch Size In MB", queueAttr.getBatchSizeMB());
-    hdfsStoreSection.addData("Batch Interval Time", queueAttr.getBatchTimeInterval());
-    hdfsStoreSection.addData("Maximum Memory", queueAttr.getMaximumQueueMemory());
-    hdfsStoreSection.addData("Dispatcher Threads", queueAttr.getDispatcherThreads());
-    hdfsStoreSection.addData("Buffer Persistence", queueAttr.isPersistent());
-    hdfsStoreSection.addData("Synchronous Persistence", queueAttr.isDiskSynchronous());
-
-    AbstractHDFSCompactionConfigHolder compaction = storePrms.getHDFSCompactionConfig();
-
-    hdfsStoreSection.addData("Major Compaction Enabled", compaction.getAutoMajorCompaction());
-    hdfsStoreSection.addData("Major Compaction Threads", compaction.getMajorCompactionMaxThreads());
-    hdfsStoreSection.addData("Major compaction Interval", compaction.getMajorCompactionIntervalMins());
+    hdfsStoreSection.addData("Major Compaction Enabled", storePrms.getMajorCompaction());
+    hdfsStoreSection.addData("Major Compaction Threads", storePrms.getMajorCompactionThreads());
+    hdfsStoreSection.addData("Major compaction Interval", storePrms.getMajorCompactionInterval());
     hdfsStoreSection.addData("Minor Compaction Enabled", storePrms.getMinorCompaction());
-    hdfsStoreSection.addData("Minor Compaction Threads", compaction.getMaxThreads());
-    hdfsStoreSection.addData("Purge Interval", compaction.getOldFilesCleanupIntervalMins());
+    hdfsStoreSection.addData("Minor Compaction Threads", storePrms.getMinorCompactionThreads());
+    hdfsStoreSection.addData("Purge Interval", storePrms.getPurgeInterval());
 
     return ResultBuilder.buildResult(hdfsStoreCompositeResult);
   } 

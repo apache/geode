@@ -525,7 +525,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
       if (creation.getHDFSStoreName() != null)
       {
         HDFSStoreImpl store = cache.findHDFSStore(creation.getHDFSStoreName());
-        if(store == null || store.getHDFSEventQueueAttributes() == null) {
+        if(store == null) {
           HDFSIntegrationUtil.createDefaultAsyncQueueForHDFS((Cache)cache, creation.getHDFSWriteOnly(), id);
         }
       }
