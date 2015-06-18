@@ -35,27 +35,27 @@ slug=home
 	<div class='container'>
 		<div class='nextstep'>
 			<h3>Community</h3>
-
-			<p>To get in touch with other users and contributors of the Apache Geode (incubating) community:</p>
-	<ul>
-			          <li>
-Contributors: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-dev/">dev@geode.incubator.apache.org</a>
+			<p>
+				To get in touch with other users and contributors of the Apache Geode (incubating) community:
+			</p>
+			<p>
+				Contributors: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-dev/">dev@geode.incubator.apache.org</a>
                             (<a href="mailto:dev-subscribe@geode.incubator.apache.org">subscribe</a>,
                             <a href="mailto:dev-unsubscribe@geode.incubator.apache.org"> unsubscribe</a>, <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-dev/"> archive</a>)
-                        </li>
-                        <li>
-JIRA notifications: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-issues/">issues@geode.incubator.apache.org</a>
+   			<br>
+				JIRA notifications: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-issues/">issues@geode.incubator.apache.org</a>
                             (<a href="mailto:issues-subscribe@geode.incubator.apache.org">subscribe</a>, 
                             <a href="mailto:issues-unsubscribe@geode.incubator.apache.org"> unsubscribe</a>, <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-issues/"> archive</a>)
-                        </li>
-                        <li>
-Commits: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commits/">commits@geode.incubator.apache.org</a>
+				<br>
+				Commits: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commits/">commits@geode.incubator.apache.org</a>
                             (<a href="mailto:commits-subscribe@geode.incubator.apache.org">subscribe</a>, <a href="mailto:commits-unsubscribe@geode.incubator.apache.org"> unsubscribe</a>,<a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commits/"> archive</a>)
-                        </li>
-			<li>User questions at <a href="http://stackoverflow.com/questions/tagged/geode+or+gemfire" target="_blank">Stack Overflow</a></li>
-			<li>We use the <a href="https://issues.apache.org/jira/browse/GEODE" target="_blank">Apache Geode JIRA for issue tracking</a></li>
-			<li>For other ways to contribute, see the <a href="/community/">Apache Geode (incubating) community page</a></li>
-			</ul>
+				<br>
+				User questions at <a href="http://stackoverflow.com/questions/tagged/geode+or+gemfire" target="_blank">Stack Overflow</a>
+				<br>
+				We use the <a href="https://issues.apache.org/jira/browse/GEODE" target="_blank">Apache Geode JIRA for issue tracking</a>
+				<br>
+				For other ways to contribute, see the <a href="/community/">Apache Geode (incubating) community page</a>
+			</p>
                 </div>
 		<div class='nextstep'>
 	    <h3>Contributors</h3>
@@ -66,9 +66,11 @@ Commits: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commi
 		</div>
 		<div class='nextstep'>
 	    <h3>Getting Started</h3>
-				<li>Read the <a href='https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes'>quick start guide</a>.</li>
-				<li><a href='/getting-started/'>Check out the Getting Started page</a></li>
-			</ul>
+	    <p>
+	    	Read the <a href='https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes'>quick start guide</a>.
+	    	<br>
+				Check out the <a href='/getting-started/'>Getting Started</a> page.
+			</p>
 		</div>
 	</div>
 </div>

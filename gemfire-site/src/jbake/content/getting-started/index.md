@@ -7,12 +7,8 @@ slug=getting-started
 
 # Getting Started
 
-## Download Geode 
-<div class='button'><a href='/download'>Download</a></div>
 
-***
-
-##Learn the Basics (Videos) 
+<!-- ##Learn the Basics (Videos) 
 (NOTE: GemFire is a commercial version of Geode)
 
 [Introduction to GemFire](https://s3.amazonaws.com/gemfire-intro/Lesson+00+Introduction.mp4)
@@ -29,35 +25,57 @@ slug=getting-started
 
 
 ***
-
-
-##Understand Some Examples
-[Geode Demo Application - Fast Foot Shoes](https://cwiki.apache.org/confluence/display/GEODE/Index)
-
-[Getting Started with Geode](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes)
-
-[Caching Data with Spring Data GemFire](http://www.javabeat.net/spring-data-gemfire-cache/)
-
-[Spatial Indexing Example with GemFire](http://blogs.vmware.com/vfabric/2012/12/gemfire-patternspart-1-the-value-architecture-code-for-building-geography-based-apps.html)
-
-
-
-***
-
+ -->
 
 ##Dive into How Tos
 
-Develop | Design | Troubleshoot
- ------ | ----------- | --------
-[Cache Listeners and Writers](https://cwiki.apache.org/confluence/display/GEODE/CacheWriter+and+CacheListener+Best+Practices) | Data Architecture in Geode | [What to Monitor](https://cwiki.apache.org/confluence/display/GEODE/What+To+Monitor)
-[Function Best Practices](https://cwiki.apache.org/confluence/display/GEODE/Function+Best+Practices+in+Geode) | [Running in Embedded Mode](https://cwiki.apache.org/confluence/display/GEODE/Running+in+Embedded+Mode) | [Troubleshooting CPU](https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+CPU)
-[Persistence Best Practices](https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals) | Client Server Architecture |    [Troubleshooting Disk Space](https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Disk+Space)
-[PDX Serialization Internals](https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals) | [Moving from memcached to gemcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached) |    [Troubleshooting File Descriptors](https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+File+Descriptors)
-Querying Geode | [Sizing a Geode Cluster](https://cwiki.apache.org/confluence/display/GEODE/Sizing+a+Geode+Cluster) |    [Troubleshooting Garbage Collection Pauses](https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Garbage+Collection+Pauses)
-[Debugging Geode Applications](https://cwiki.apache.org/confluence/display/GEODE/Debugging+Geode+Applications) | [Network Configuration Best Practices](https://cwiki.apache.org/confluence/display/GEODE/Network+Configuration+Best+Practices) |    [Troubleshooting Heap](https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Heap)
-[Reliable Messaging](https://cwiki.apache.org/confluence/display/GEODE/Reliable+Messaging) |  [Geode Security Framework](https://cwiki.apache.org/confluence/display/GEODE/Geode+Security+Framework) |    [Troubleshooting Load Average](https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Load+Average)
- |   [Resource Management in Geode](https://cwiki.apache.org/confluence/display/GEODE/Resource+Management+in+Geode) |    [Troubleshooting Native Memory](https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Native+Memory)
-
+<table>
+	<tr>
+		<th>Develop</th>
+		<th>Design</th>
+		<th>Troubleshoot</th>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/CacheWriter+and+CacheListener+Best+Practices'>Cache Listeners and Writers</a> </td>
+		<td> Data Architecture in Geode  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/What+To+Monitor'>What to Monitor</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Function+Best+Practices+in+Geode'>Function Best Practices</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Running+in+Embedded+Mode'>Running in Embedded Mode</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+CPU'>Troubleshooting CPU</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals'>Persistence Best Practices</a>  </td>
+		<td> Client Server Architecture  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Disk+Space'>Troubleshooting Disk Space</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals'>PDX Serialization Internals</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached'>Moving from memcached to gemcached</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+File+Descriptors'>Troubleshooting File Descriptors</a></td>
+	</tr>
+	<tr>
+		<td> Querying Geode  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Sizing+a+Geode+Cluster'>Sizing a Geode Cluster</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Garbage+Collection+Pauses'>Troubleshooting Garbage Collection Pauses</a> </td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Debugging+Geode+Applications'>Debugging Geode Applications</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Network+Configuration+Best+Practices'>Network Configuration Best Practices</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Heap'>Troubleshooting Heap</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Reliable+Messaging'>Reliable Messaging</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Geode+Security+Framework'>Geode Security Framework</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Load+Average'>Troubleshooting Load Average</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Resource+Management+in+Geode'>Resource Management in Geode</a>  </td>
+		<td></td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Native+Memory'>Troubleshooting Native Memory</a> </td>
+	</tr>
+</table>
 
 ***
 
@@ -67,11 +85,4 @@ Querying Geode | [Sizing a Geode Cluster](https://cwiki.apache.org/confluence/di
 ### Training Materials
 Geode Introductory Training materials are open source and can be found [here](https://github.com/project-geode/training).
 
-
-### Documentation
-Find the latest Geode Documentation [here](http://geode-docs.cfapps.io/docs/about_geode.html).
-
-
-+ [Download](/download) the latest release — you can run locally on your laptop natively, or as a VM.
-+ Read the [quick start guide](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes).
 

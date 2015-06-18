@@ -7,11 +7,27 @@ slug=contribute
 
 # Contribute
 
-Development of the code base for Geode began in 2002 as the commercial product GemFire. The open source version of Geode was released in April, 2015. 
-
-The [primary contributors](https://wiki.apache.org/incubator/GeodeProposal) include long standing members of the GemFire engineering team, implementers and customers with long standing relationships.
-
-The Apache Incubator Proposal for Geode can be found [here](https://wiki.apache.org/incubator/GeodeProposal)
+<div class='sidebar'>
+<p>Here is how to get in touch with other users and contributors of the Apache Geode (incubating) community:</p>
+	<ul>
+			          <li>
+Contributors: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-dev/">dev@geode.incubator.apache.org</a>
+                            (<a href="mailto:dev-subscribe@geode.incubator.apache.org">subscribe</a>,
+                            <a href="mailto:dev-unsubscribe@geode.incubator.apache.org"> unsubscribe</a>, <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-dev/"> archive</a>)
+                        </li>
+                        <li>
+JIRA notifications: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-issues/">issues@geode.incubator.apache.org</a>
+                            (<a href="mailto:issues-subscribe@geode.incubator.apache.org">subscribe</a>, 
+                            <a href="mailto:issues-unsubscribe@geode.incubator.apache.org"> unsubscribe</a>, <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-issues/"> archive</a>)
+                        </li>
+                        <li>
+Commits: <a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commits/">commits@geode.incubator.apache.org</a>
+                            (<a href="mailto:commits-subscribe@geode.incubator.apache.org">subscribe</a>, <a href="mailto:commits-unsubscribe@geode.incubator.apache.org"> unsubscribe</a>,<a href="http://mail-archives.apache.org/mod_mbox/incubator-geode-commits/"> archive</a>)
+                        </li>
+			<li>User questions at <a href="http://stackoverflow.com/questions/tagged/geode+or+gemfire" target="_blank">Stack Overflow</a></li>
+			<li>We use the <a href="https://issues.apache.org/jira/browse/GEODE" target="_blank">Apache Geode JIRA for issue tracking</a></li>
+			</ul>
+</div>
 
 Ideas for extending Geode code can be found in the wiki [here](https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute).
 
