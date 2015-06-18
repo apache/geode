@@ -37,28 +37,96 @@
           <a id='logo' href='/'></a>
           <div id='navigation'>
             <ul>
-              <li><a href='/getting-started'>Getting Started</a></li>
-              <li><a href='/community'>Community</a></li>
-              <li><a href='/contribute'>Contribute</a></li>
-              <li><a href='/download'>Download</a></li>
+              <li id='gettingstartedlink'><a href='/getting-started'>Getting Started</a></li>
+              <li id='communitylink'><a href='/community'>Community</a></li>
+              <li id='contributelink'><a href='/contribute'>Contribute</a></li>
+              <li id='docslink'><a href='/docs'>Docs</a></li>
+              <li id='aboutlink'><a href='/about'>About</a></li>
+              <li id='downloadlink'><a href='/download'>Download</a></li>
             </ul>
           </div>
         </header>
         <div id='content'>
-            <h1>Getting Started</h1><h2>Download Geode</h2>
-<div class='button'><a href='/download'>Download</a></div>
-<hr/><h2>Learn the Basics (Videos)</h2><p>(NOTE: GemFire is a commercial version of Geode)</p><p><a href="https://s3.amazonaws.com/gemfire-intro/Lesson+00+Introduction.mp4">Introduction to GemFire</a></p><p><a href="https://s3.amazonaws.com/gemfire-intro/Lesson+01+Gem+Architecture.mp4">Introduction to GemFire: Architecture and Use Cases</a></p><p><a href="https://s3.amazonaws.com/gemfire-intro/Lesson+02+Gem+Install+and+Config.mp4">Introduction to GemFire: Installation and Configuration</a></p><p><a href="https://s3.amazonaws.com/gemfire-intro/Lesson+03+Gem+Tools.mp4">Introduction to GemFire: Tools</a></p><p><a href="https://s3.amazonaws.com/gemfire-intro/Lesson+04+Gem+Advance+Features.mp4">Introduction to GemFire: Advanced Features</a></p><p><a href="https://s3.amazonaws.com/gemfire-intro/Lesson+05+Conclusion.mp4">Introduction to GemFire: Conclusion</a></p>
-<hr/><h2>Understand Some Examples</h2><p><a href="https://cwiki.apache.org/confluence/display/GEODE/Index">Geode Demo Application - Fast Foot Shoes</a></p><p><a href="https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes">Getting Started with Geode</a></p><p><a href="http://www.javabeat.net/spring-data-gemfire-cache/">Caching Data with Spring Data GemFire</a></p><p><a href="http://blogs.vmware.com/vfabric/2012/12/gemfire-patternspart-1-the-value-architecture-code-for-building-geography-based-apps.html">Spatial Indexing Example with GemFire</a></p>
-<hr/><h2>Dive into How Tos</h2><p>Develop | Design | Troubleshoot<br/> ------ | ----------- | --------<br/><a href="https://cwiki.apache.org/confluence/display/GEODE/CacheWriter+and+CacheListener+Best+Practices">Cache Listeners and Writers</a> | Data Architecture in Geode | <a href="https://cwiki.apache.org/confluence/display/GEODE/What+To+Monitor">What to Monitor</a><br/><a href="https://cwiki.apache.org/confluence/display/GEODE/Function+Best+Practices+in+Geode">Function Best Practices</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Running+in+Embedded+Mode">Running in Embedded Mode</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+CPU">Troubleshooting CPU</a><br/><a href="https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals">Persistence Best Practices</a> | Client Server Architecture | <a href="https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Disk+Space">Troubleshooting Disk Space</a><br/><a href="https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals">PDX Serialization Internals</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached">Moving from memcached to gemcached</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+File+Descriptors">Troubleshooting File Descriptors</a><br/>Querying Geode | <a href="https://cwiki.apache.org/confluence/display/GEODE/Sizing+a+Geode+Cluster">Sizing a Geode Cluster</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Garbage+Collection+Pauses">Troubleshooting Garbage Collection Pauses</a><br/><a href="https://cwiki.apache.org/confluence/display/GEODE/Debugging+Geode+Applications">Debugging Geode Applications</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Network+Configuration+Best+Practices">Network Configuration Best Practices</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Heap">Troubleshooting Heap</a><br/><a href="https://cwiki.apache.org/confluence/display/GEODE/Reliable+Messaging">Reliable Messaging</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Geode+Security+Framework">Geode Security Framework</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Load+Average">Troubleshooting Load Average</a><br/> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Resource+Management+in+Geode">Resource Management in Geode</a> | <a href="https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Native+Memory">Troubleshooting Native Memory</a></p>
-<hr/><h2>Other Resources</h2><h3>Training Materials</h3><p>Geode Introductory Training materials are open source and can be found <a href="https://github.com/project-geode/training">here</a>.</p><h3>Documentation</h3><p>Find the latest Geode Documentation <a href="http://geode-docs.cfapps.io/docs/about_geode.html">here</a>.</p>
-<ul>
-  <li><a href="/download">Download</a> the latest release — you can run locally on your laptop natively, or as a VM.</li>
-  <li>Read the <a href="https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes">quick start guide</a>.</li>
-</ul>
+            <h1>Getting Started</h1>
+<!-- ##Learn the Basics (Videos) 
+(NOTE: GemFire is a commercial version of Geode)
+
+[Introduction to GemFire](https://s3.amazonaws.com/gemfire-intro/Lesson+00+Introduction.mp4)
+
+[Introduction to GemFire: Architecture and Use Cases](https://s3.amazonaws.com/gemfire-intro/Lesson+01+Gem+Architecture.mp4)
+
+[Introduction to GemFire: Installation and Configuration](https://s3.amazonaws.com/gemfire-intro/Lesson+02+Gem+Install+and+Config.mp4)
+
+[Introduction to GemFire: Tools](https://s3.amazonaws.com/gemfire-intro/Lesson+03+Gem+Tools.mp4)
+
+[Introduction to GemFire: Advanced Features](https://s3.amazonaws.com/gemfire-intro/Lesson+04+Gem+Advance+Features.mp4)
+
+[Introduction to GemFire: Conclusion](https://s3.amazonaws.com/gemfire-intro/Lesson+05+Conclusion.mp4)
+
+
+***
+ --><h2>Dive into How Tos</h2>
+<table>
+	<tr>
+		<th>Develop</th>
+		<th>Design</th>
+		<th>Troubleshoot</th>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/CacheWriter+and+CacheListener+Best+Practices'>Cache Listeners and Writers</a> </td>
+		<td> Data Architecture in Geode  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/What+To+Monitor'>What to Monitor</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Function+Best+Practices+in+Geode'>Function Best Practices</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Running+in+Embedded+Mode'>Running in Embedded Mode</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+CPU'>Troubleshooting CPU</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals'>Persistence Best Practices</a>  </td>
+		<td> Client Server Architecture  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Disk+Space'>Troubleshooting Disk Space</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals'>PDX Serialization Internals</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached'>Moving from memcached to gemcached</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+File+Descriptors'>Troubleshooting File Descriptors</a></td>
+	</tr>
+	<tr>
+		<td> Querying Geode  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Sizing+a+Geode+Cluster'>Sizing a Geode Cluster</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Garbage+Collection+Pauses'>Troubleshooting Garbage Collection Pauses</a> </td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Debugging+Geode+Applications'>Debugging Geode Applications</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Network+Configuration+Best+Practices'>Network Configuration Best Practices</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Heap'>Troubleshooting Heap</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Reliable+Messaging'>Reliable Messaging</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Geode+Security+Framework'>Geode Security Framework</a>  </td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Load+Average'>Troubleshooting Load Average</a></td>
+	</tr>
+	<tr>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Resource+Management+in+Geode'>Resource Management in Geode</a>  </td>
+		<td></td>
+		<td> <a href='https://cwiki.apache.org/confluence/display/GEODE/Troubleshooting+Native+Memory'>Troubleshooting Native Memory</a> </td>
+	</tr>
+</table>
+<hr/><h2>Other Resources</h2><h3>Training Materials</h3><p>Geode Introductory Training materials are open source and can be found <a href="https://github.com/project-geode/training">here</a>.</p>
         </div>
       </div>
       <footer id="footer">
         <div class="container">
+            <ul>
+              <li><a href='http://stackoverflow.com/questions/tagged/geode+or+gemfire'>Stack Overflow</a></li>
+              <li>•</li>
+              <li><a href='https://issues.apache.org/jira/browse/GEODE'>JIRA</a></li>
+              <li>•</li>
+              <li><a href='http://mail-archives.apache.org/mod_mbox/incubator-geode-dev/'>Dev Mailing List</a></li>
+              <li>•</li>
+              <li><a href='https://cwiki.apache.org/confluence/display/GEODE/Index'>Wiki</a></li>
+            </ul>
             <div class="row">
                 <div class="col-md-4 col-sm-5">
                     <div class="logo"><a href="#wrapper"><img src="/images/egg-logo1.png"></a></div>

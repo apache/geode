@@ -154,6 +154,17 @@ footer {
     footer a:hover {
       color: #c8f2ff; }
 
+footer ul {
+  margin: 0 auto 40px;
+  padding: 0;
+  font-size: 18px;
+}
+footer li {
+  list-style-type: none;
+  display: inline-block;
+  padding: 0 5px;
+}
+
 .small {
   font-size: 13px;
 }
@@ -242,6 +253,29 @@ body#community #content .event-image {
 body#community #content .description {
   font-size: 15px;
   margin: 20px 0; }
+body#community .sidebar h2 {
+  margin-top: 0;
+}
+body#contribute .sidebar {
+  border: 1px solid #ccc;
+  padding: 10px 30px;
+}
+
+body#getting-started #gettingstartedlink a,
+body#community #communitylink a,
+body#contribute #contributelink a,
+body#docs #docslink a,
+body#about #aboutlink a {
+  color: #1e90ff;
+  text-shadow: 0px 1px 0px #333;
+}
+
+body#download #downloadlink a {
+  color: #1e90ff;
+}
+body#download #downloadlink {
+  background: white;
+}
 
 /* Responsive */
 @media (max-width: 1200px) {
@@ -251,10 +285,14 @@ body#community #content .description {
   body#home .nextsteps .nextstep,
   body#home .benefits .benefit {
     width: 100%; } }
-@media (max-width: 850px) {
+@media (max-width:1030px) {
   #navigation li a {
-    padding: 15px 5px; } }
+    padding: 15px 5px;
+    font-size: 14px; } }
 @media (max-width: 770px) {
+   #navigation li a {
+    font-size: 18px;
+   }
   header {
     overflow: auto; }
 
@@ -272,7 +310,7 @@ body#community #content .description {
 
   .sidebar {
     float: none;
-    width: 100%;
+    width: 80%;
     margin-left: 0; } }
 @media (max-width: 480px) {
   body#home .billboard-home {
