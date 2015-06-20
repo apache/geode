@@ -111,6 +111,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
     helpMap.put("rebalance", LocalizedStrings.ServerLauncher_SERVER_REBALANCE_HELP.toLocalizedString());
     helpMap.put("redirect-output", LocalizedStrings.ServerLauncher_SERVER_REDIRECT_OUTPUT_HELP.toLocalizedString());
     helpMap.put("server-bind-address", LocalizedStrings.ServerLauncher_SERVER_BIND_ADDRESS_HELP.toLocalizedString());
+    helpMap.put("hostname-for-clients", LocalizedStrings.ServerLauncher_SERVER_HOSTNAME_FOR_CLIENT_HELP.toLocalizedString());
     helpMap.put("server-port", LocalizedStrings.ServerLauncher_SERVER_PORT_HELP.toLocalizedString(String.valueOf(getDefaultServerPort())));
   }
 
