@@ -27,17 +27,25 @@ dependencies {
   archives project(':gemfire-core')  
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
+
+  testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
+  testCompile project(path: ':gemfire-core', configuration: 'testOutput')
 }
 
 sourceSets {
   // need to remove this since we use the dependencies jar out of the install dir
-  test.runtimeClasspath -= configurations.provided
+  //test.runtimeClasspath -= configurations.provided
 }
 
 test {
   // test from the actual classpath not the gradle classpath
   dependsOn installDist
-  classpath += files "$buildDir/install/${distributions.main.baseName}/lib/gemfire-core-dependencies.jar"
+  // @TODO: this doesn't seem to be working need to get basename first.
+  classpath += files "$buildDir/install/apache-geode/lib/gemfire-core-dependencies.jar"
+}
+
+tasks.withType(Test){
+  environment 'GEMFIRE', "$buildDir/install/${distributions.main.baseName}/lib"
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {

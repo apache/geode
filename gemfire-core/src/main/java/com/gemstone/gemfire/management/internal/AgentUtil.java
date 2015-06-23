@@ -42,6 +42,7 @@ public class AgentUtil {
   private static final String LIB_API_WAR = "/lib/gemfire-api-";
   private static final String TOOLS_PULSE_WAR = "/tools/Pulse/pulse.war";
   private static final String LIB_PULSE_WAR = "/lib/pulse.war";
+  public static final String ERROR_VARIABLE_NOT_SET = "The GEMFIRE environment variable must be set!";
 
   private String gemfireVersion = null;
 
@@ -49,9 +50,9 @@ public class AgentUtil {
     this.gemfireVersion = gemfireVersion;
   }
 
-  String getGemFireWebApiWarLocation() {
+  public String getGemFireWebApiWarLocation() {
     String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) : "The GEMFIRE environment variable must be set!";
+    assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
     logger.warn(gemfireHome + TOOLS_WEB_API_WAR + gemfireVersion + ".war");
 
     if (new File(gemfireHome + TOOLS_WEB_API_WAR + gemfireVersion + ".war").isFile()) {
@@ -69,9 +70,9 @@ public class AgentUtil {
    * $GEMFIRE/lib directory Finally, if we cannot find Management WAR file then
    * return null...
    */
-  String getGemFireWebWarLocation() {
+  public String getGemFireWebWarLocation() {
     String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) : "The GEMFIRE environment variable must be set!";
+    assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
 
     if (new File(gemfireHome + TOOLS_WEB_WAR + gemfireVersion + ".war").isFile()) {
       return gemfireHome + TOOLS_WEB_WAR + gemfireVersion + ".war";
@@ -82,9 +83,9 @@ public class AgentUtil {
     }
   }
 
-  String getGemfireApiWarLocation() {
+  public String getGemfireApiWarLocation() {
     String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) : "The GEMFIRE environment variable must be set!";
+    assert !StringUtils.isBlank(gemfireHome) :ERROR_VARIABLE_NOT_SET;
 
     if (new File(gemfireHome + TOOLS_API_WAR + gemfireVersion + ".war").isFile()) {
       return gemfireHome + TOOLS_API_WAR + gemfireVersion + ".war";
@@ -99,9 +100,9 @@ public class AgentUtil {
   // First, look in the $GEMFIRE/tools/Pulse directory
   // Second, look in the $GEMFIRE/lib directory
   // Finally, if we cannot find the Management WAR file then return null...
-  String getPulseWarLocation() {
+  public String getPulseWarLocation() {
     String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) : "The GEMFIRE environment variable must be set!";
+    assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
 
     if (new File(gemfireHome + TOOLS_PULSE_WAR).isFile()) {
       return gemfireHome + TOOLS_PULSE_WAR;
@@ -112,11 +113,11 @@ public class AgentUtil {
     }
   }
 
-  boolean isWebApplicationAvailable(final String warFileLocation) {
+  public boolean isWebApplicationAvailable(final String warFileLocation) {
     return !StringUtils.isBlank(warFileLocation);
   }
 
-  boolean isWebApplicationAvailable(final String... warFileLocations) {
+  public boolean isWebApplicationAvailable(final String... warFileLocations) {
     for (String warFileLocation : warFileLocations) {
       if (isWebApplicationAvailable(warFileLocation)) {
         return true;
@@ -126,10 +127,11 @@ public class AgentUtil {
     return false;
   }
 
-  String getGemFireHome() {
+  public String getGemFireHome() {
 
     String gemFireHome = System.getenv("GEMFIRE");
 
+    logger.info("GEMFIRE HOME:" + gemFireHome);
     // Check for empty variable. if empty, then log message and exit HTTP server
     // startup
     if (StringUtils.isBlank(gemFireHome)) {
@@ -143,7 +145,7 @@ public class AgentUtil {
     return gemFireHome;
   }
 
-  boolean isGemfireHomeDefined() {
+  public boolean isGemfireHomeDefined() {
     String gemfireHome = getGemFireHome();
     return !StringUtils.isBlank(gemfireHome);
   }

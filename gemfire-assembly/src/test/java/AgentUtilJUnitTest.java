@@ -15,29 +15,32 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal;
+import com.gemstone.gemfire.management.internal.AgentUtil;
+import com.gemstone.junit.IntegrationTest;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.util.Assert;
-
-import com.gemstone.junit.UnitTest;
-
-@Category(UnitTest.class)
-public class AgentUtilJUnitTest extends TestCase {
+@Category(IntegrationTest.class)
+public class AgentUtilJUnitTest {
 
   private AgentUtil agentUtil;
   private String version;
 
+  @Before
   public void setUp() {
     version = getGemfireVersion();
     agentUtil = new AgentUtil(version);
@@ -46,7 +49,7 @@ public class AgentUtilJUnitTest extends TestCase {
   @Test
   public void testRESTApiExists() {
     String gemFireWarLocation = agentUtil.getGemFireWebApiWarLocation();
-    Assert.notNull(gemFireWarLocation, "GemFire REST API WAR File was not found");
+    assertNotNull(gemFireWarLocation, "GemFire REST API WAR File was not found");
   }
 
   /*
@@ -55,7 +58,7 @@ public class AgentUtilJUnitTest extends TestCase {
   // @Test
   // public void testPulseWarExists() {
   // String gemFireWarLocation = agentUtil.getPulseWarLocation();
-  // Assert.notNull(gemFireWarLocation, "Pulse WAR File was not found");
+  // assertNotNull(gemFireWarLocation, "Pulse WAR File was not found");
   // }
 
   private String getGemfireVersion() {
