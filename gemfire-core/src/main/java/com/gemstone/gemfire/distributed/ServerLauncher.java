@@ -111,6 +111,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
     helpMap.put("rebalance", LocalizedStrings.ServerLauncher_SERVER_REBALANCE_HELP.toLocalizedString());
     helpMap.put("redirect-output", LocalizedStrings.ServerLauncher_SERVER_REDIRECT_OUTPUT_HELP.toLocalizedString());
     helpMap.put("server-bind-address", LocalizedStrings.ServerLauncher_SERVER_BIND_ADDRESS_HELP.toLocalizedString());
+    helpMap.put("hostname-for-clients", LocalizedStrings.ServerLauncher_SERVER_HOSTNAME_FOR_CLIENT_HELP.toLocalizedString());
     helpMap.put("server-port", LocalizedStrings.ServerLauncher_SERVER_PORT_HELP.toLocalizedString(String.valueOf(getDefaultServerPort())));
   }
 
@@ -912,7 +913,11 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       if (getSocketBufferSize() != null) {
         cacheServer.setSocketBufferSize(getSocketBufferSize());
       }
-      
+
+      if (getHostNameForClients() != null) {
+        cacheServer.setHostnameForClients(getHostNameForClients());
+      }
+
       cacheServer.start();
     }
   }
@@ -1434,6 +1439,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       parser.accepts(CliStrings.START_SERVER__MAX__THREADS).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE).withRequiredArg().ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE).withRequiredArg().ofType(Integer.class);
+      parser.accepts(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS).withRequiredArg().ofType(String.class);
 
       return parser;
     }
@@ -1518,7 +1524,12 @@ public final class ServerLauncher extends AbstractLauncher<String> {
         if (options.hasArgument(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE)) {
           setSocketBufferSize(Integer.parseInt(ObjectUtils.toString(options.valueOf(
             CliStrings.START_SERVER__SOCKET__BUFFER__SIZE))));
-        } 
+        }
+
+        if (options.hasArgument(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS)) {
+          setHostNameForClients(ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS)));
+        }
+
       }
       catch (OptionException e) {
         throw new IllegalArgumentException(LocalizedStrings.Launcher_Builder_PARSE_COMMAND_LINE_ARGUMENT_ERROR_MESSAGE
