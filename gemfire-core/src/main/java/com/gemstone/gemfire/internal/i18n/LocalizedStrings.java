@@ -1888,7 +1888,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId ServerLauncher_SERVER_REDIRECT_OUTPUT_HELP = new StringIdImpl(5295, "An option to cause the Server to redirect standard out and standard error to the GemFire log file.");
   public static final StringId ServerLauncher_SERVER_HOSTNAME_FOR_CLIENT_HELP = new StringIdImpl(5296, "An option to specify the hostname or IP address to send to clients so they can connect to this Server. The default is to use the IP address to which the Server is bound.");
 
-  public static final StringId PoolFactoryImpl_HOSTNAME_UNKNOWN = new StringIdImpl(5300, "Hostname is unknown: {0}");
+  public static final StringId PoolFactoryImpl_HOSTNAME_UNKNOWN = new StringIdImpl(5300, "Hostname is unknown: {0}. Creating pool with unknown host in case the host becomes known later.");
   public static final StringId GatewaySenderEventRemoteDispatcher_GATEWAY_SENDER_0_RECEIVED_ACK_FOR_BATCH_ID_1_OF_2_EVENTS = new StringIdImpl(5301, "Gateway Sender {0} : Received ack for batch id {1} of {2} events.");
   public static final StringId GatewaySenderEventRemoteDispatcher_GATEWAY_SENDER_0_RECEIVED_ACK_FOR_BATCH_ID_1_WITH_EXCEPTION = new StringIdImpl(5302, "Gateway Sender {0} : Received ack for batch id {1} with exception:");
 
