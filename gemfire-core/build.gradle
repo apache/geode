@@ -64,10 +64,46 @@ dependencies {
 
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile << {
-  ext.gitBranch = 'master'
-  ext.commitId = '1366ff2d4fcbf54bfad684e9ba9822db2a2b0ff5'
-  ext.sourceDate = '2015-04-06 14:54:51 -0700'
-  
+
+  def gitFolder = new File ("${rootProject.projectDir}/.git")
+  if ( gitFolder.exists() ) {
+    new ByteArrayOutputStream().withStream { gitBranchStream ->
+      def result = exec {
+        standardOutput = gitBranchStream
+        executable = "git"
+        args = ['rev-parse', '--abbrev-ref', 'HEAD']
+      }
+      ext.gitBranchString = gitBranchStream.toString()
+      ext.gitBranch = ext.gitBranchString.trim()
+    }
+
+    new ByteArrayOutputStream().withStream { commitStream ->
+      def result = exec {
+        standardOutput = commitStream
+        executable = "git"
+        args = ['rev-parse', 'HEAD']
+      }
+      ext.commitIdString = commitStream.toString()
+      ext.commitId = ext.commitIdString.trim()
+    }
+
+    new ByteArrayOutputStream().withStream { sourceDateStream ->
+      def result = exec {
+        standardOutput = sourceDateStream
+        executable = "git"
+        args = ['show', '-s', '--format=%ci', "${ext.commitId}"]
+      }
+      ext.sourceDateString = sourceDateStream.toString()
+      ext.sourceDate = ext.sourceDateString.trim()
+    }
+  }
+  else {
+    // Not in SCM workspace, use default values
+    ext.gitBranch = 'UNKNOWN'
+    ext.commitId = 'UNKNOWN'
+    ext.sourceDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
+  }
+
   ext.osArch = System.getProperty('os.arch')
   ext.osName = System.getProperty('os.name')
   ext.osVersion = System.getProperty('os.version')
