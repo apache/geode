@@ -8,6 +8,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Logger;
 
@@ -18,6 +19,7 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 import com.gemstone.gemfire.internal.cache.lru.LRUClockNode;
@@ -29,6 +31,15 @@ import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.Releasable;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
@@ -62,6 +73,20 @@ public interface DiskEntry extends RegionEntry {
    * @param value an entry value.
    */
   public void setValueWithContext(RegionEntryContext context,Object value);
+  
+  /**
+   * In some cases we need to do something just before we drop the value
+   * from a DiskEntry that is being moved (i.e. overflowed) to disk.
+   * @param context
+   */
+  public void handleValueOverflow(RegionEntryContext context);
+  
+  /**
+   * In some cases we need to do something just after we unset the value
+   * from a DiskEntry that has been moved (i.e. overflowed) to disk.
+   * @param context
+   */
+  public void afterValueOverflow(RegionEntryContext context);
 
   /**
    * Returns true if the DiskEntry value is equal to {@link Token#DESTROYED}, {@link Token#REMOVED_PHASE1}, or {@link Token#REMOVED_PHASE2}.
@@ -172,13 +197,26 @@ public interface DiskEntry extends RegionEntry {
      * @since 5.1
      */
     static Object getValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr, RegionEntryContext context) {
-      Object v = getOffHeapValueOnDiskOrBuffer(entry, dr, context);
+      @Released Object v = getOffHeapValueOnDiskOrBuffer(entry, dr, context);
       if (v instanceof CachedDeserializable) {
+        if (v instanceof Chunk) {
+          @Released Chunk ohv = (Chunk) v;
+          try {
+            v = ohv.getDeserializedValue(null, null);
+            if (v == ohv) {
+              throw new IllegalStateException("sqlf tried to use getValueOnDiskOrBuffer");
+            }
+          } finally {
+            ohv.release(); // OFFHEAP the offheap ref is decremented here
+          }
+        } else {
           v = ((CachedDeserializable)v).getDeserializedValue(null, null);
+        }
       }
       return v;
     }
     
+    @Retained
     static Object getOffHeapValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr, RegionEntryContext context) {
       DiskId did = entry.getDiskId();
       Object syncObj = did;
@@ -191,7 +229,7 @@ public interface DiskEntry extends RegionEntry {
       try {
         synchronized (syncObj) {
           if (did != null && did.isPendingAsync()) {
-            Object v = entry._getValueUse(context, true); // TODO:KIRK:OK Rusty had Object v = entry.getValueWithContext(context);
+            @Retained Object v = entry._getValueRetain(context, true); // TODO:KIRK:OK Rusty had Object v = entry.getValueWithContext(context);
             if (Token.isRemovedFromDisk(v)) {
               v = null;
             }
@@ -277,7 +315,7 @@ public interface DiskEntry extends RegionEntry {
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry,
                                DiskRegion dr, DM mgr, ByteArrayDataInput in, RegionEntryContext context) {
-      Object v = null;
+      @Retained @Released Object v = null;
       DiskId did;
       synchronized (de) {
         did = de.getDiskId();
@@ -293,7 +331,9 @@ public interface DiskEntry extends RegionEntry {
       synchronized (syncObj) {
         entry.setLastModified(mgr, de.getLastModified());
                               
-        v = de._getValueUse(context, true); // OFFHEAP copied to heap entry; todo allow entry to refer to offheap since it will be copied to network.
+        SimpleMemoryAllocatorImpl.setReferenceCountOwner(entry);
+        v = de._getValueRetain(context, true); // OFFHEAP copied to heap entry; todo allow entry to refer to offheap since it will be copied to network.
+        SimpleMemoryAllocatorImpl.setReferenceCountOwner(null);
         if (v == null) {
           if (did == null) {
             // fix for bug 41449
@@ -342,9 +382,23 @@ public interface DiskEntry extends RegionEntry {
         // fix for bug 31757
         return false;
       } else if (v instanceof CachedDeserializable) {
-          {
+        try {
+          if (v instanceof StoredObject && !((StoredObject) v).isSerialized()) {
+            entry.setSerialized(false);
+            entry.value = ((StoredObject) v).getDeserializedForReading();
+            
+            //For SQLFire we prefer eager deserialized
+//            if(v instanceof ByteSource) {
+//              entry.setEagerDeserialize();
+//            }
+          } else {
             // don't serialize here if it is not already serialized
+            
             Object tmp = ((CachedDeserializable)v).getValue();
+          //For SQLFire we prefer eager deserialized
+//            if(v instanceof ByteSource) {
+//              entry.setEagerDeserialize();
+//            }
             if (tmp instanceof byte[]) {
               byte[] bb = (byte[])tmp;
               entry.value = bb;
@@ -371,6 +425,14 @@ public interface DiskEntry extends RegionEntry {
               }
             }
           }
+        } finally {
+          // If v == entry.value then v is assumed to be an OffHeapByteSource
+          // and release() will be called on v after the bytes have been read from
+          // off-heap.
+          if (v != entry.value) {
+            OffHeapHelper.releaseWithNoTracking(v);
+          }
+        }
       }
       else if (v instanceof byte[]) {
         entry.value = v;
@@ -390,10 +452,23 @@ public interface DiskEntry extends RegionEntry {
         entry.setLocalInvalid();
       } else if (v == Token.TOMBSTONE) {
         entry.setTombstone();
-      } else {
+      }
+      else {
+        Object preparedValue = v;
+        if (preparedValue != null) {
+          preparedValue = AbstractRegionEntry.prepareValueForGII(preparedValue);
+          if (preparedValue == null) {
+            return false;
+          }
+        }
+      if (CachedDeserializableFactory.preferObject()) {
+        entry.value = preparedValue;
+        entry.setEagerDeserialize();
+      }
+      else {
         try {
           HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
-          BlobHelper.serializeTo(v, hdos);
+          BlobHelper.serializeTo(preparedValue, hdos);
           hdos.trim();
           entry.value = hdos;
           entry.setSerialized(true);
@@ -402,6 +477,7 @@ public interface DiskEntry extends RegionEntry {
           e2.initCause(e);
           throw e2;
         }
+      }
       }
       return true;
     }
@@ -441,7 +517,8 @@ public interface DiskEntry extends RegionEntry {
           incrementBucketStats(r, 0/*InVM*/, 1/*OnDisk*/, did.getValueLength());
         }
         else {
-          entry.setValueWithContext(drv, AbstractRegionMap.prepareValueForCache((RegionEntryContext) r, re.getValue()));
+          entry.setValueWithContext(drv, entry.prepareValueForCache((RegionEntryContext) r,
+              re.getValue(), false));
           drv.incNumEntriesInVM(1L);
           incrementBucketStats(r, 1/*InVM*/, 0/*OnDisk*/, 0);
         }
@@ -456,9 +533,320 @@ public interface DiskEntry extends RegionEntry {
       }
     }
     
+    private static final ValueWrapper INVALID_VW = new ByteArrayValueWrapper(true, INVALID_BYTES);
+    private static final ValueWrapper LOCAL_INVALID_VW = new ByteArrayValueWrapper(true, LOCAL_INVALID_BYTES);
+    private static final ValueWrapper TOMBSTONE_VW = new ByteArrayValueWrapper(true, TOMBSTONE_BYTES);
+    
+    public static interface ValueWrapper {
+      public boolean isSerialized();
+      public int getLength();
+      public byte getUserBits();
+      public void sendTo(ByteBuffer bb, Flushable flushable) throws IOException;
+      public String getBytesAsString();
+    }
+    public static interface Flushable {
+      public void flush() throws IOException;
+
+      public void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException;
+    }
+    public static class ByteArrayValueWrapper implements ValueWrapper {
+      public final boolean isSerializedObject;
+      public final byte[] bytes;
+      
+     public ByteArrayValueWrapper(boolean isSerializedObject, byte[] bytes) {
+        this.isSerializedObject = isSerializedObject;
+        this.bytes = bytes;
+      }
+
+      @Override
+      public boolean isSerialized() {
+        return this.isSerializedObject;
+      }
+
+      @Override
+      public int getLength() {
+        return (this.bytes != null) ? this.bytes.length : 0;
+      }
+
+      private boolean isInvalidToken() {
+        return this == INVALID_VW;
+      }
+
+      private boolean isLocalInvalidToken() {
+        return this == LOCAL_INVALID_VW;
+      }
+
+      private boolean isTombstoneToken() {
+        return this == TOMBSTONE_VW;
+      }
+
+      @Override
+      public byte getUserBits() {
+        byte userBits = 0x0;
+        if (isSerialized()) {
+          if (isTombstoneToken()) {
+            userBits = EntryBits.setTombstone(userBits, true);
+          } else if (isInvalidToken()) {
+            userBits = EntryBits.setInvalid(userBits, true);
+          } else if (isLocalInvalidToken()) {
+            userBits = EntryBits.setLocalInvalid(userBits, true);
+          } else {
+            if (this.bytes == null) {
+              throw new IllegalStateException("userBits==1 and value is null");
+            } else if (this.bytes.length == 0) {
+              throw new IllegalStateException("userBits==1 and value is zero length");
+            }
+            userBits = EntryBits.setSerialized(userBits, true);
+          }
+        }
+        return userBits;
+      }
+
+      @Override
+      public void sendTo(ByteBuffer bb, Flushable flushable) throws IOException {
+        int offset = 0;
+        final int maxOffset = getLength();
+        while (offset < maxOffset) {
+          int bytesThisTime = maxOffset - offset;
+          boolean needsFlush = false;
+          if (bytesThisTime > bb.remaining()) {
+            needsFlush = true;
+            bytesThisTime = bb.remaining();
+          }
+          bb.put(this.bytes, offset, bytesThisTime);
+          offset += bytesThisTime;
+          if (needsFlush) {
+            flushable.flush();
+          }
+        }
+      }
+
+      @Override
+      public String getBytesAsString() {
+        if (this.bytes == null) {
+          return "null";
+        }
+        StringBuffer sb = new StringBuffer();
+        int len = getLength();
+        for (int i = 0; i < len; i++) {
+          sb.append(this.bytes[i]).append(", ");
+        }
+        return sb.toString();
+      }
+    }
+    
+    /**
+     * This class is a bit of a hack used by the compactor.
+     * For the compactor always copies to a byte[] so
+     * this class is just a simple wrapper.
+     * It is possible that the length of the byte array is greater
+     * than the actual length of the wrapped data.
+     * At the time we create this we are all done with isSerialized
+     * and userBits so those methods are not supported.
+     */
+    public static class CompactorValueWrapper extends ByteArrayValueWrapper {
+      private final int length;
+      
+      public CompactorValueWrapper(byte[] bytes, int length) {
+        super(false, bytes);
+        this.length = length;
+      }
+      
+      @Override
+      public boolean isSerialized() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public int getLength() {
+        return this.length;
+      }
+
+      @Override
+      public byte getUserBits() {
+        throw new UnsupportedOperationException();
+      }
+    }
+    
+    /**
+     * Note that the Chunk this ValueWrapper is created with
+     * is unretained so it must be used before the owner of
+     * the chunk releases it.
+     * Since the RegionEntry that has the value we are writing to
+     * disk has it retained we are ok as long as this ValueWrapper's
+     * life ends before the RegionEntry sync is released.
+     * Note that this class is only used with uncompressed chunks.
+     */
+    public static class ChunkValueWrapper implements ValueWrapper {
+      private final @Unretained Chunk chunk;
+      public ChunkValueWrapper(Chunk c) {
+        assert !c.isCompressed();
+        this.chunk = c;
+      }
+      @Override
+      public boolean isSerialized() {
+        return this.chunk.isSerialized();
+      }
+      @Override
+      public int getLength() {
+        return this.chunk.getDataSize();
+      }
+      @Override
+      public byte getUserBits() {
+        byte userBits = 0x0;
+        if (isSerialized()) {
+          userBits = EntryBits.setSerialized(userBits, true);
+        }
+        return userBits;
+      }
+      @Override
+      public void sendTo(ByteBuffer bb, Flushable flushable) throws IOException {
+        final int maxOffset = getLength();
+        if (maxOffset == 0) {
+          return;
+        }
+        if (maxOffset > bb.capacity()) {
+          ByteBuffer chunkbb = this.chunk.createDirectByteBuffer();
+          if (chunkbb != null) {
+            flushable.flush(bb, chunkbb);
+            return;
+          }
+        }
+        final long bbAddress = Chunk.getDirectByteBufferAddress(bb);
+        if (bbAddress != 0L) {
+          int bytesRemaining = maxOffset;
+          int availableSpace = bb.remaining();
+          long addrToWrite = bbAddress + bb.position();
+          long addrToRead = this.chunk.getAddressForReading(0, maxOffset);
+          if (bytesRemaining > availableSpace) {
+            do {
+              UnsafeMemoryChunk.copyMemory(addrToRead, addrToWrite, availableSpace);
+              bb.position(bb.position()+availableSpace);
+              addrToRead += availableSpace;
+              bytesRemaining -= availableSpace;
+              flushable.flush();
+              addrToWrite = bbAddress + bb.position();
+              availableSpace = bb.remaining();
+            } while (bytesRemaining > availableSpace);
+          }
+          UnsafeMemoryChunk.copyMemory(addrToRead, addrToWrite, bytesRemaining);
+          bb.position(bb.position()+bytesRemaining);
+        } else {
+          long addr = this.chunk.getAddressForReading(0, maxOffset);
+          final long endAddr = addr + maxOffset;
+          while (addr != endAddr) {
+            bb.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+            addr++;
+            if (!bb.hasRemaining()) {
+              flushable.flush();
+            }
+          }
+        }
+      }
+      @Override
+      public String getBytesAsString() {
+        return this.chunk.getStringForm();
+      }
+    }
+
+    public static ValueWrapper createValueWrapper(Object value, EntryEventImpl event) {
+      if (value == Token.INVALID) {
+        // even though it is not serialized we say it is because
+        // bytes will never be an empty array when it is serialized
+        // so that gives us a way to specify the invalid value
+        // given a byte array and a boolean flag.
+        return INVALID_VW;
+      }
+      else if (value == Token.LOCAL_INVALID) {
+        // even though it is not serialized we say it is because
+        // bytes will never be an empty array when it is serialized
+        // so that gives us a way to specify the local-invalid value
+        // given a byte array and a boolean flag.
+        return LOCAL_INVALID_VW;
+      }
+      else if (value == Token.TOMBSTONE) {
+        return TOMBSTONE_VW;
+      }
+      else {
+        boolean isSerializedObject = true;
+        byte[] bytes;
+        if (value instanceof CachedDeserializable) {
+          CachedDeserializable proxy = (CachedDeserializable)value;
+          if (proxy instanceof Chunk) {
+            return new ChunkValueWrapper((Chunk) proxy);
+          }
+          if (proxy instanceof StoredObject) {
+            StoredObject ohproxy = (StoredObject) proxy;
+            isSerializedObject = ohproxy.isSerialized();
+            if (isSerializedObject) {
+              bytes = ohproxy.getSerializedValue();
+            } else {
+              bytes = (byte[]) ohproxy.getDeserializedForReading();
+            }
+          } else {
+            bytes = proxy.getSerializedValue();
+          }
+          if (event != null && isSerializedObject) {
+            event.setCachedSerializedNewValue(bytes);
+          }
+        }
+        else if (value instanceof byte[]) {
+          isSerializedObject = false;
+          bytes = (byte[])value;
+        }
+        else {
+          Assert.assertTrue(!Token.isRemovedFromDisk(value));
+          if (event != null && event.getCachedSerializedNewValue() != null) {
+            bytes = event.getCachedSerializedNewValue();
+          } else {
+            bytes = EntryEventImpl.serialize(value);
+            if (bytes.length == 0) {
+              throw new IllegalStateException("serializing <" + value + "> produced empty byte array");
+            }
+            if (event != null) {
+              event.setCachedSerializedNewValue(bytes);
+            }
+          }
+        }
+        return new ByteArrayValueWrapper(isSerializedObject, bytes);
+      }
+    }
+    public static ValueWrapper createValueWrapperFromEntry(DiskEntry entry, LocalRegion region, EntryEventImpl event) {
+      if (event != null) {
+        // For off-heap it should be faster to pass a reference to the
+        // StoredObject instead of using the cached byte[] (unless it is also compressed).
+        // Since NIO is used if the chunk of memory is large we can write it
+        // to the file with using the off-heap memory with no extra copying.
+        // So we give preference to getRawNewValue over getCachedSerializedNewValue
+        Object rawValue = null;
+        if (!event.hasDelta()) {
+          // We don't do this for the delta case because getRawNewValue returns delta
+          // and we want to write the entire new value to disk.
+          rawValue = event.getRawNewValue();
+          if (rawValue instanceof Chunk) {
+            return new ChunkValueWrapper((Chunk) rawValue);
+          }
+        }
+        if (event.getCachedSerializedNewValue() != null) {
+          return new ByteArrayValueWrapper(true, event.getCachedSerializedNewValue());
+        }
+        if (rawValue != null) {
+          return createValueWrapper(rawValue, event);
+        }
+      }
+      // TODO OFFHEAP: No need to retain since we hold the sync on entry but we need a flavor of _getValue that will decompress
+      @Retained Object value = entry._getValueRetain(region, true);
+      try {
+        return createValueWrapper(value, event);
+      } finally {
+        OffHeapHelper.release(value);
+      }
+    }
+    
     private static void writeToDisk(DiskEntry entry, LocalRegion region, boolean async) throws RegionClearedException {
       writeToDisk(entry, region, async, null);
     }
+
     /**
      * Writes the key/value object stored in the given entry to disk
      * @throws RegionClearedException
@@ -466,75 +854,14 @@ public interface DiskEntry extends RegionEntry {
      * @see DiskRegion#put
      */
     private static void writeToDisk(DiskEntry entry, LocalRegion region, boolean async, EntryEventImpl event) throws RegionClearedException {
-      DiskRegion dr = region.getDiskRegion();
-      byte[] bytes = null;
-      boolean isSerializedObject = true;
-
-      if (event != null && event.getCachedSerializedNewValue() != null) {
-        bytes = event.getCachedSerializedNewValue();
-      } else {
-        // If event != null then we could get the new value from it.
-        // Getting it from the entry is expensive on a compressed region.
-        Object value;
-        if (event != null && !event.hasDelta() && event.getRawNewValue() != null) {
-          // We don't do this for the delta case because getRawNewValue returns delta
-          // and we want to write the entire new value to disk.
-          value = event.getRawNewValue();
-        } else {
-          value = entry._getValueUse(region, true);
-        }
-
-      if (value == Token.INVALID) {
-        // even though it is not serialized we say it is because
-        // bytes will never be an empty array when it is serialized
-        // so that gives us a way to specify the invalid value
-        // given a byte array and a boolean flag.
-        bytes = INVALID_BYTES;
-      }
-      else if (value == Token.LOCAL_INVALID) {
-        // even though it is not serialized we say it is because
-        // bytes will never be an empty array when it is serialized
-        // so that gives us a way to specify the local-invalid value
-        // given a byte array and a boolean flag.
-        bytes = LOCAL_INVALID_BYTES;
-      }
-      else if (value == Token.TOMBSTONE) {
-        bytes = TOMBSTONE_BYTES;
-      }
-      else if (value instanceof byte[]) {
-        isSerializedObject = false;
-        bytes = (byte[])value;
-      }
-      else if (value instanceof CachedDeserializable) {
-        CachedDeserializable proxy = (CachedDeserializable)value;
-        bytes = proxy.getSerializedValue();
-        if (event != null) {
-          event.setCachedSerializedNewValue(bytes);
-        }
-      }
-      else {
-        Assert.assertTrue(!Token.isRemovedFromDisk(value));
-        if (event != null && event.getCachedSerializedNewValue() != null) {
-          bytes = event.getCachedSerializedNewValue();
-        } else {
-          bytes = EntryEventImpl.serialize(value);
-          if (bytes.length == 0) {
-            throw new IllegalStateException("serializing <" + value + "> produced empty byte array");
-          }
-          if (event != null) {
-            event.setCachedSerializedNewValue(bytes);
-          }
-        }
-      }
-      }
-
-      {
-        DiskId did = entry.getDiskId();
-        // @todo does the following unmark need to be called when an async
-        // write is scheduled or is it ok for doAsyncFlush to do it?
-        did.unmarkForWriting();
-        dr.put(entry, region, bytes, isSerializedObject, async);
-      }
+      writeBytesToDisk(entry, region, async, createValueWrapperFromEntry(entry, region, event));
+    }
+    
+    private static void writeBytesToDisk(DiskEntry entry, LocalRegion region, boolean async, ValueWrapper vw) throws RegionClearedException {
+      // @todo does the following unmark need to be called when an async
+      // write is scheduled or is it ok for doAsyncFlush to do it?
+      entry.getDiskId().unmarkForWriting();
+      region.getDiskRegion().put(entry, region, vw, async);
     }
 
     public static void update(DiskEntry entry, LocalRegion region, Object newValue) throws RegionClearedException {
@@ -628,25 +955,53 @@ public interface DiskEntry extends RegionEntry {
           // Second, do the stats done for the current recovered value
           if (re.getRecoveredKeyId() < 0) {
             if (!entry.isValueNull()) {
-              entry.setValueWithContext(region, null); // fixes bug 41119
+              try {
+                entry.handleValueOverflow(region);
+                entry.setValueWithContext(region, null); // fixes bug 41119
+              }finally {
+                entry.afterValueOverflow(region);
+              }
+              
             }
             dr.incNumOverflowOnDisk(1L);
             incrementBucketStats(region, 0/*InVM*/, 1/*OnDisk*/,
                                  did.getValueLength());
           } else {
-            entry.setValueWithContext(region, AbstractRegionMap.prepareValueForCache(region, re.getValue()));
+            entry.setValueWithContext(region, entry.prepareValueForCache(region, re.getValue(), false));
             dr.incNumEntriesInVM(1L);
             incrementBucketStats(region, 1/*InVM*/, 0/*OnDisk*/, 0);
           }
         }
         else {
-          entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+          //The new value in the entry needs to be set after the disk writing 
+          // has succeeded. If not , for GemFireXD , it is possible that other thread
+          // may pick this transient value from region entry ( which for 
+          //offheap will eventually be released ) as index key, 
+          //given that this operation is bound to fail in case of
+          //disk access exception.
+          
+          //entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
           if (dr.isBackup()) {
             dr.testIsRecoveredAndClear(did); // fixes bug 41409
             oldValueLength = getValueLength(did);
             if (dr.isSync()) {
-              writeToDisk(entry, region, false, event);
+              //In case of compression the value is being set first 
+              // because atleast for now , GemFireXD does not support compression
+              // if and when it does support, this needs to be taken care of else
+              // we risk Bug 48965
+              if (AbstractRegionEntry.isCompressible(dr, newValue)) {
+                entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+                
+                // newValue is prepared and compressed. We can't write compressed values to disk.
+                writeToDisk(entry, region, false, event);
+              } else {
+                writeBytesToDisk(entry, region, false, createValueWrapper(newValue, event));
+                entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+              }
+              
             } else if (did.isPendingAsync() && !maintainRVV) {
+              entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+              
               // nothing needs to be done except
               // fixing up LRU stats
               // @todo fixup LRU stats if needed
@@ -665,14 +1020,20 @@ public interface DiskEntry extends RegionEntry {
               if(stamp != null) {
                 tag = stamp.asVersionTag();
               }
+              entry.setValueWithContext(region, newValue); 
             }
           } else if (did != null) {
+            entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+            
             // Mark the id as needing to be written
             // The disk remove that this section used to do caused bug 30961
             // @todo this seems wrong. How does leaving it on disk fix the bug?
             did.markForWriting();
             //did.setValueSerializedSize(0);
+          }else {
+            entry.setValueWithContext(region, newValue);
           }
+          
           if (Token.isRemovedFromDisk(oldValue)) {
             // Note we now initialize entries removed and then set their
             // value once we find no existing entry.
@@ -744,10 +1105,16 @@ public interface DiskEntry extends RegionEntry {
         did.setUserBits(newValue.getUserBits());
         did.setValueLength(newValue.getValueLength());
         if (newValue.getRecoveredKeyId() >= 0) {
-          entry.setValueWithContext(context, AbstractRegionMap.prepareValueForCache(drv, newValue.getValue()));
+          entry.setValueWithContext(context, entry.prepareValueForCache(drv, newValue.getValue(), 
+              false));
         } else {
           if (!oldValueWasNull) {
-            entry.setValueWithContext(context,null); // fixes bug 41119
+            try {
+              entry.handleValueOverflow(context);
+              entry.setValueWithContext(context,null); // fixes bug 41119
+            }finally {
+              entry.afterValueOverflow(context);
+            }
           }
         }
         if (entry instanceof LRUEntry) {
@@ -765,19 +1132,24 @@ public interface DiskEntry extends RegionEntry {
     }
 
     public static Object getValueInVMOrDiskWithoutFaultIn(DiskEntry entry, LocalRegion region) {
-      Object result = getValueOffHeapOrDiskWithoutFaultIn(entry, region);
+      Object result = OffHeapHelper.copyAndReleaseIfNeeded(getValueOffHeapOrDiskWithoutFaultIn(entry, region));
       if (result instanceof CachedDeserializable) {
         result = ((CachedDeserializable)result).getDeserializedValue(null, null);
+      }
+      if (result instanceof StoredObject) {
+        ((StoredObject) result).release();
+        throw new IllegalStateException("sqlf tried to use getValueInVMOrDiskWithoutFaultIn");
       }
       return result;
     }
     
+    @Retained
     public static Object getValueOffHeapOrDiskWithoutFaultIn(DiskEntry entry, LocalRegion region) {
-      Object v = entry._getValueUse(region, true); // TODO:KIRK:OK Object v = entry.getValueWithContext(region);
+      @Retained Object v = entry._getValueRetain(region, true); // TODO:KIRK:OK Object v = entry.getValueWithContext(region);
       if (v == null || Token.isRemovedFromDisk(v)
           && !region.isIndexCreationThread()) {
         synchronized (entry) {
-          v = entry._getValueUse(region, true); // TODO:KIRK:OK v = entry.getValueWithContext(region);
+          v = entry._getValueRetain(region, true); // TODO:KIRK:OK v = entry.getValueWithContext(region);
           if (v == null) {
             v = Helper.getOffHeapValueOnDiskOrBuffer(entry, region.getDiskRegion(),region);
           }
@@ -786,9 +1158,17 @@ public interface DiskEntry extends RegionEntry {
       if (Token.isRemovedFromDisk(v)) {
         // fix for bug 31800
         v = null;
+//      } else if (v instanceof ByteSource) {
+//        // If the ByteSource contains a Delta or ListOfDelta then we want to deserialize it
+//        Object deserVal = ((CachedDeserializable)v).getDeserializedForReading();
+//        if (deserVal != v) {
+//          OffHeapHelper.release(v);
+//          v = deserVal;
+//        }
       }
       return v;
     }
+
     /**
      * 
      * @param entry
@@ -796,13 +1176,24 @@ public interface DiskEntry extends RegionEntry {
      * @return Value
      * @throws DiskAccessException
      */
-
-    public static Object faultInValue(DiskEntry entry, LocalRegion region)
+    public static Object faultInValue(DiskEntry entry, LocalRegion region) {
+      return faultInValue(entry, region, false);
+    }
+    @Retained
+    public static Object faultInValueRetain(DiskEntry entry, LocalRegion region) {
+      return faultInValue(entry, region, true);
+    }
+    /**
+     * @param retainResult if true then the result may be a retained off-heap reference
+     */
+    @Retained
+    private static Object faultInValue(DiskEntry entry, LocalRegion region, boolean retainResult)
     {
       DiskRegion dr = region.getDiskRegion();
-      Object v = entry._getValueUse(region, true); // TODO:KIRK:OK Object v = entry.getValueWithContext(region);
+      @Retained Object v = entry._getValueRetain(region, true); // TODO:KIRK:OK Object v = entry.getValueWithContext(region);
       boolean lruFaultedIn = false;
       boolean done = false;
+      try {
       //Asif: If the entry is instance of LRU then DidkRegion cannot be null.
       //Since SqlFabric is accessing this method direcly & it passes the owning region,
       //if the region happens to be persistent PR type, the owning region passed is PR,
@@ -837,9 +1228,9 @@ public interface DiskEntry extends RegionEntry {
       if (!done
           && (v == null || Token.isRemovedFromDisk(v) && !region.isIndexCreationThread())) {
         synchronized (entry) {
-          v = entry._getValueUse(region, true); // TODO:KIRK:OK v = entry.getValueWithContext(region);
+          v = entry._getValueRetain(region, true); // TODO:KIRK:OK v = entry.getValueWithContext(region);
           if (v == null) {
-            v = readValueFromDisk(entry, region, -1, false, null);
+            v = readValueFromDisk(entry, region);
             if (entry instanceof LRUEntry) {
               if (v != null && !Token.isInvalid(v)) {
                 lruEntryFaultIn((LRUEntry) entry, region);
@@ -848,6 +1239,12 @@ public interface DiskEntry extends RegionEntry {
               }
             }
           }
+        }
+      }
+      } finally {
+        if (!retainResult) {
+          v = OffHeapHelper.copyAndReleaseIfNeeded(v);
+          // At this point v should be either a heap object
         }
       }
       if (Token.isRemoved(v)) {
@@ -866,12 +1263,30 @@ public interface DiskEntry extends RegionEntry {
       boolean lruFaultedIn = false;
       synchronized (entry) {
         if (entry.isValueNull()) {
-          Object v = readValueFromDisk(entry, recoveryStore, oplogId, true, in); // OFFHEAP: Off heap value ok since only used for token check
-          if (entry instanceof LRUEntry) {
-            if (v != null && !Token.isInvalid(v)) {
-              lruEntryFaultIn((LRUEntry) entry, recoveryStore);
-              
-              lruFaultedIn = true;
+          DiskId did = entry.getDiskId();
+          if (did != null) {
+            Object value = null;
+            DiskRecoveryStore region = recoveryStore;
+            DiskRegionView dr = region.getDiskRegionView();
+            dr.acquireReadLock();
+            try {
+              synchronized (did) {
+                // don't read if the oplog has changed.
+                if (oplogId == did.getOplogId()) {
+                  value = getValueFromDisk(dr, did, in);
+                  if (value != null) {
+                    setValueOnFaultIn(value, did, entry, dr, region);
+                  }
+                }
+              }
+            } finally {
+              dr.releaseReadLock();
+            }
+            if (entry instanceof LRUEntry) {
+              if (value != null && !Token.isInvalid(value)) {
+                lruEntryFaultIn((LRUEntry) entry, recoveryStore);
+                lruFaultedIn = true;
+              }
             }
           }
         }
@@ -879,6 +1294,38 @@ public interface DiskEntry extends RegionEntry {
       if (lruFaultedIn) {
         lruUpdateCallback(recoveryStore);
       }
+    }
+    
+    /**
+     *  Caller must have "did" synced.
+     */
+    private static Object getValueFromDisk(DiskRegionView dr, DiskId did, ByteArrayDataInput in) {
+      Object value;
+      if (dr.isBackup() && did.getKeyId() == DiskRegion.INVALID_ID) {
+        // must have been destroyed
+        value = null;
+      } else {
+        if (did.isKeyIdNegative()) {
+          did.setKeyId(- did.getKeyId());
+        }
+        // if a bucket region then create a CachedDeserializable here instead of object
+        value = dr.getRaw(did); // fix bug 40192
+        if (value instanceof BytesAndBits) {
+          BytesAndBits bb = (BytesAndBits)value;
+          if (EntryBits.isInvalid(bb.getBits())) {
+            value = Token.INVALID;
+          } else if (EntryBits.isLocalInvalid(bb.getBits())) {
+            value = Token.LOCAL_INVALID;
+          } else if (EntryBits.isTombstone(bb.getBits())) {
+            value = Token.TOMBSTONE;
+          } else if (EntryBits.isSerialized(bb.getBits())) {
+            value = readSerializedValue(bb.getBytes(), bb.getVersion(), in, false);
+          } else {
+            value = readRawValue(bb.getBytes(), bb.getVersion(), in);
+          }
+        }
+      }
+      return value;
     }
     
     private static void lruUpdateCallback(DiskRecoveryStore recoveryStore) {
@@ -920,10 +1367,11 @@ public interface DiskEntry extends RegionEntry {
      * Sets the value in the entry.
      * This is only called by the faultIn code once it has determined that
      * the value is no longer in memory.
+     * return the result will only be off-heap if the value is a sqlf ByteSource. Otherwise result will be on-heap.
+     * Caller must have "entry" synced.
      */
-    private static Object readValueFromDisk(DiskEntry entry,
-        DiskRecoveryStore region, long oplogId, boolean checkOplogId,
-        ByteArrayDataInput in) {
+    @Retained
+    private static Object readValueFromDisk(DiskEntry entry, DiskRecoveryStore region) {
 
       DiskRegionView dr = region.getDiskRegionView();
       DiskId did = entry.getDiskId();
@@ -933,54 +1381,46 @@ public interface DiskEntry extends RegionEntry {
       dr.acquireReadLock();
       try {
       synchronized (did) {
-        // long id = diskId.getKeyId();
-        if (dr.isBackup() && did.getKeyId() == DiskRegion.INVALID_ID) {
-          return null; // must have been destroyed
+        Object value = getValueFromDisk(dr, did, null);
+        if (value == null) return null;
+        @Unretained Object preparedValue = setValueOnFaultIn(value, did, entry, dr, region);
+        // For Sqlfire we want to return the offheap representation.
+        // So we need to retain it for the caller to release.
+        /*if (preparedValue instanceof ByteSource) {
+          // This is the only case in which we return a retained off-heap ref.
+          ((ByteSource)preparedValue).retain();
+          return preparedValue;
+        } else */{
+          return value;
         }
-        if(checkOplogId) {
-          // If we're only supposed to read from this specific oplog, don't
-          // read if the oplog has changed.
-          if(oplogId != did.getOplogId()) {
-            return null;
-          }
-        }
-        if (did.isKeyIdNegative()) {
-          did.setKeyId(- did.getKeyId());
-        }
-        // if a bucket region then create a CachedDeserializable here instead of object
-        Object value = dr.getRaw(did); // fix bug 40192
-        if (value instanceof BytesAndBits) {
-          BytesAndBits bb = (BytesAndBits)value;
-          if (EntryBits.isInvalid(bb.getBits())) {
-            value = Token.INVALID;
-          } else if (EntryBits.isLocalInvalid(bb.getBits())) {
-            value = Token.LOCAL_INVALID;
-          } else if (EntryBits.isTombstone(bb.getBits())) {
-            value = Token.TOMBSTONE;
-          } else if (EntryBits.isSerialized(bb.getBits())) {
-            value = readSerializedValue(bb.getBytes(), bb.getVersion(),
-                in, false);
-          } else {
-            value = readRawValue(bb.getBytes(), bb.getVersion(), in);
-          }
-        }
-        int bytesOnDisk = getValueLength(did);
-        Assert.assertTrue(value != null);
-        Object preparedValue = AbstractRegionMap.prepareValueForCache((RegionEntryContext) region, value);
-        region.updateSizeOnFaultIn(entry.getKey(), region.calculateValueSize(preparedValue), bytesOnDisk);
-        //did.setValueSerializedSize(0);
-        // I think the following assertion is true but need to run
-        // a regression with it. Reenable this post 6.5
-        //Assert.assertTrue(entry._getValue() == null);
-        entry.setValueWithContext((RegionEntryContext) region, preparedValue);
-        dr.incNumEntriesInVM(1L);
-        dr.incNumOverflowOnDisk(-1L);
-        incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -bytesOnDisk);
-        return value; // OFFHEAP: off heap value return ok
       }
       } finally {
         dr.releaseReadLock();
       }
+    }
+    
+    /**
+     * Caller must have "entry" and "did" synced and "dr" readLocked.
+     * @return the unretained result must be used by the caller before it releases the sync on "entry".
+     */
+    @Unretained
+    private static Object setValueOnFaultIn(Object value, DiskId did, DiskEntry entry, DiskRegionView dr, DiskRecoveryStore region) {
+//    dr.getOwner().getCache().getLogger().info("DEBUG: faulting in entry with key " + entry.getKey());
+      int bytesOnDisk = getValueLength(did);
+      // Retained by the prepareValueForCache call for the region entry.
+      // NOTE that we return this value unretained because the retain is owned by the region entry not the caller.
+      @Retained Object preparedValue = entry.prepareValueForCache((RegionEntryContext) region, value,
+          false);
+      region.updateSizeOnFaultIn(entry.getKey(), region.calculateValueSize(preparedValue), bytesOnDisk);
+      //did.setValueSerializedSize(0);
+      // I think the following assertion is true but need to run
+      // a regression with it. Reenable this post 6.5
+      //Assert.assertTrue(entry._getValue() == null);
+      entry.setValueWithContext((RegionEntryContext) region, preparedValue);
+      dr.incNumEntriesInVM(1L);
+      dr.incNumOverflowOnDisk(-1L);
+      incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -bytesOnDisk);
+      return preparedValue;
     }
 
     static Object readSerializedValue(byte[] valueBytes, Version version,
@@ -1055,7 +1495,13 @@ public interface DiskEntry extends RegionEntry {
         ((LRUEntry)entry).setDelayedDiskId(region);
         did = entry.getDiskId();
       }
-
+      
+      // Notify the SQLFire IndexManager if present
+     /* final IndexUpdater indexUpdater = region.getIndexUpdater();
+      if(indexUpdater != null && dr.isSync()) {
+        indexUpdater.onOverflowToDisk(entry);
+      }*/
+      
       int change = 0;
       boolean scheduledAsyncHere = false;
       dr.acquireReadLock();
@@ -1091,7 +1537,12 @@ public interface DiskEntry extends RegionEntry {
         } else {
           region.updateSizeOnEvict(entry.getKey(), oldSize);
           //did.setValueSerializedSize(byteSizeOnDisk);
-          entry.setValueWithContext(region,null);
+          try {
+            entry.handleValueOverflow(region);
+            entry.setValueWithContext(region,null);
+          }finally {
+            entry.afterValueOverflow(region);
+          }
           movedValueToDisk = true;
           change = ((LRUClockNode)entry).updateEntrySize(ccHelper);
         }
@@ -1169,7 +1620,12 @@ public interface DiskEntry extends RegionEntry {
                 // onDisk was already inced so just do the valueLength here
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      did.getValueLength());
-                entry.setValueWithContext(region,null);
+                try {
+                  entry.handleValueOverflow(region);
+                  entry.setValueWithContext(region,null);
+                }finally {
+                  entry.afterValueOverflow(region);
+                }
               }
               
               //See if we the entry we wrote to disk has the same tag
@@ -1199,6 +1655,7 @@ public interface DiskEntry extends RegionEntry {
     }
     
     public static void doAsyncFlush(VersionTag tag, LocalRegion region) {
+      if (region.isThisRegionBeingClosedOrDestroyed()) return;
       DiskRegion dr = region.getDiskRegion();
       if (!dr.isBackup()) {
         return;
@@ -1218,6 +1675,7 @@ public interface DiskEntry extends RegionEntry {
      * @since prPersistSprint1
      */
     public static void doAsyncFlush(DiskEntry entry, LocalRegion region, VersionTag tag) {
+      if (region.isThisRegionBeingClosedOrDestroyed()) return;
       DiskRegion dr = region.getDiskRegion();
       dr.setClearCountReference();
       synchronized (entry) { // fixes 40116
@@ -1239,6 +1697,7 @@ public interface DiskEntry extends RegionEntry {
             boolean remove = false;
             try {
               if (Token.isRemovedFromDisk(entryVal)) {
+                if (region.isThisRegionBeingClosedOrDestroyed()) return;
                 // onDisk was already deced so just do the valueLength here
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      -did.getValueLength());
@@ -1280,7 +1739,12 @@ public interface DiskEntry extends RegionEntry {
                 // onDisk was already inced so just do the valueLength here
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      did.getValueLength());
-                entry.setValueWithContext(region,null);
+                try {
+                 entry.handleValueOverflow(region);
+                 entry.setValueWithContext(region,null);
+                }finally {
+                  entry.afterValueOverflow(region);
+                }
               }
             } catch (RegionClearedException ignore) {
               // no need to do the op since it was clobbered by a region clear

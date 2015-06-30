@@ -42,7 +42,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    *
    * @since 5.5
    */
-  public static final String VERSION_LATEST = CacheXml.VERSION_8_1;
+  public static final String VERSION_LATEST = CacheXml.VERSION_9_0;
   
   /**
    * @deprecated As of 8.1 use {@link #NAMESPACE}
@@ -75,7 +75,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * 
    * @since 8.1
    */
-  public static final String LATEST_SCHEMA_LOCATION = CacheXml.SCHEMA_8_1_LOCATION;
+  public static final String LATEST_SCHEMA_LOCATION = CacheXml.SCHEMA_9_0_LOCATION;
   
   /**
    * Location of the latest DTD file for Gemfire
@@ -93,11 +93,24 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_8_1 = "8.1";
   
   /**
-   * The location of the GemFire 8.1 scheam file.
+   * Version string for GemFire 9.0
+   * 
+   * @since 9.0
+   */
+  public static final String VERSION_9_0 = "9.0";
+  
+  /**
+   * The location of the GemFire 8.1 schema file.
    * 
    * @since 8.1
    */
   protected static final String SCHEMA_8_1_LOCATION = "http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd";
+  /**
+   * The location of the GemFire 9.0 schema file.
+   * 
+   * @since 9.0
+   */
+  protected static final String SCHEMA_9_0_LOCATION = "http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd";
 
   //---------------------------------
   /** Version string for GemFire 8.0 */
@@ -459,6 +472,8 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String PERSISTENT_REPLICATE_DP = "persistent-replicate";
   protected static final String PARTITION_DP = "partition";
   protected static final String PERSISTENT_PARTITION_DP = "persistent-partition";
+  protected static final String HDFS_PARTITION_DP = "hdfs-partition";
+  protected static final String HDFS_PERSISTENT_PARTITION_DP = "hdfs-persistent-partition";
 
   /** The name of the <code>keep-alive-timeout</code> attribute */
   protected static final String KEEP_ALIVE_TIMEOUT = "keep-alive-timeout";
@@ -726,13 +741,50 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String CRITICAL_HEAP_PERCENTAGE = "critical-heap-percentage";
   /** The name of the <code>eviction-heap-percentage</code> attribute of the resource-manager*/
   protected static final String EVICTION_HEAP_PERCENTAGE = "eviction-heap-percentage";
+  /** The name of the <code>critical-off-heap-percentage</code> attribute of the resource-manager*/
+  protected static final String CRITICAL_OFF_HEAP_PERCENTAGE = "critical-off-heap-percentage";
+  /** The name of the <code>eviction-off-heap-percentage</code> attribute of the resource-manager*/
+  protected static final String EVICTION_OFF_HEAP_PERCENTAGE = "eviction-off-heap-percentage";
   
   protected static final String ASYNC_EVENT_LISTENER = "async-event-listener";
   public static final String ASYNC_EVENT_QUEUE = "async-event-queue";
   protected static final String ASYNC_EVENT_QUEUE_IDS = "async-event-queue-ids";
   
+  protected static final String HDFS_EVENT_QUEUE = "hdfs-event-queue";
+  protected static final String HDFS_STORE_NAME = "hdfs-store-name";
+  public static final String HDFS_STORE = "hdfs-store";
+  protected static final String HDFS_HOME_DIR = "home-dir";
+  protected static final String HDFS_READ_CACHE_SIZE = "read-cache-size";
+  protected static final String HDFS_MAX_MEMORY = "max-memory";
+  protected static final String HDFS_BATCH_SIZE = "batch-size";
+  protected static final String HDFS_BATCH_INTERVAL = "batch-interval";
+  protected static final String HDFS_DISPATCHER_THREADS = "dispatcher-threads";
+  protected static final String HDFS_BUFFER_PERSISTENT = "buffer-persistent";
+  protected static final String HDFS_SYNCHRONOUS_DISK_WRITE = "synchronous-disk-write";
+  protected static final String HDFS_DISK_STORE = "disk-store";
+  protected static final String HDFS_MAX_WRITE_ONLY_FILE_SIZE = "max-write-only-file-size";
+  public static final String HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL = "write-only-file-rollover-interval";
+  
+  protected static final String HDFS_NAMENODE_URL = "namenode-url";
+  protected static final String HDFS_CLIENT_CONFIG_FILE = "hdfs-client-config-file";
+  public static final String HDFS_PURGE_INTERVAL = "purge-interval";
+  public static final String HDFS_MAJOR_COMPACTION = "major-compaction";
+  public static final String HDFS_MAJOR_COMPACTION_INTERVAL = "major-compaction-interval";
+  public static final String HDFS_MAJOR_COMPACTION_THREADS = "major-compaction-threads";
+  public static final String HDFS_MINOR_COMPACTION = "minor-compaction";
+  public static final String HDFS_MINOR_COMPACTION_THREADS = "minor-compaction-threads";   
+  
+  public static final String HDFS_TIME_FOR_FILE_ROLLOVER = "file-rollover-time-secs";
+  
+  protected static final String HDFS_WRITE_ONLY = "hdfs-write-only";
+  protected static final String HDFS_QUEUE_BATCH_SIZE = "batch-size-mb";
+  
   /** The name of the <code>compressor</code> attribute */
   protected static final String COMPRESSOR = "compressor";
+  /** The name of the <code>off-heap</code> attribute
+   * @since 9.0
+   */
+  protected static final String OFF_HEAP = "off-heap";
  
   protected static final String TCP_NO_DELAY = "tcp-no-delay";
   

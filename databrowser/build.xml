@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="main-build" default="usage">
+
+  <taskdef resource="com/gemstone/tools/ant/taskdefs/buildtasks.properties"
+           classpath="${basedir}/buildfiles/taskdefsV10.jar"/>
+  <property environment="myenv"/>  <!-- Get environment variables -->
+  <property name="gcm.dir" value="${myenv.GCMDIR}"/>
+ 
+  <!-- include external xml files here -->
+  <import file="buildfiles/dependencies.xml"/>
+  <import file="buildfiles/utilities.xml"/>
+  <import file="buildfiles/generic.xml"/>
+  <import file="buildfiles/impl.xml"/>
+  <!-- end of include section -->
+
+  <target name="build-all" 
+          depends="build-all-impl"
+          description="Build the product and test code"/>
+  <target name="build-installer" 
+          depends="build-installer-impl"
+          description="Builds a self extracting jar installer"/>
+  <target name="build-product" 
+          depends="build-product-impl"
+          description="Build product tree into {osbuild.dir}"/>
+  <target name="clean" 
+          depends="clean-impl" 
+          description="Cleans all byproducts of building"/>
+  <target name="clean-tests" 
+          depends=""
+          description="Clears all output from compile-tests"/>
+  <target name="compile-tests" 
+          depends="compile-tests-impl"
+          description="Compiles all test code"/>
+  <target name="execute-battery" 
+          depends="execute-battery-impl"
+          description="Compiles test code then runs a Hydra test&#10;
+                         -Dbt.file=[bt to run]     (required)&#10;
+                         -Dbt.result.dir=[dir]     (optional)&#10;
+                         -Dlocal.conf=[file]       (optional)&#10;
+                         -DmergeLogFiles=[boolean] (default=false)&#10;
+                         -DNukeHungTests=[boolean] (default=false)&#10;
+                         -DlogLevel=[log level]    (default=fine)"/> 
+  <target name="execute-battery-nobuild" 
+          depends="execute-battery-nobuild-impl"
+          description="Run bt without compiling tests"/>
+  <target name="update-svn" 
+          depends="update-svn-impl"
+          description="Updates this SVN checkout"/>
+  <target name="precheckin" 
+          depends="precheckin-impl"
+          description="svn update, build, and run unit tests"/>
+  <target name="run-all-tests" 
+          depends="run-all-tests-impl"
+          description="Run all of the unit tests"/>
+  <target name="run-dunit-tests" 
+          depends="run-dunit-tests-impl"
+          description="Runs the Distributed unit tests&#10;
+                         -Ddunit.testcase=tClass  (optional)&#10;
+                         -Ddunit.testcase=pattern (optional)"/>
+  <target name="run-junit-tests" 
+          depends="run-junit-tests-impl"
+          description="Runs the Java unit tests&#10;
+                         -Djunit.testcase=tClass  (optional)&#10;
+                         -Djunit.excludes=pattern (optional)"/>
+  <target name="usage" 
+          depends="usage-impl"
+          description="Display all public ant targets"/>
+</project>

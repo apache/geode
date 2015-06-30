@@ -41,16 +41,19 @@ public class CompiledBindArgument extends AbstractCompiledValue {
   public void generateCanonicalizedExpression(StringBuffer clauseBuffer,
       ExecutionContext context) throws AmbiguousNameException,
       TypeMismatchException, NameResolutionException {
-    Object rgn;
-    if ((rgn = context.getBindArgument(this.index)) instanceof Region) {
-      clauseBuffer.insert(0, ((Region)rgn).getFullPath());
-    }
-    else {
-      super.generateCanonicalizedExpression(clauseBuffer, context);
+
+    Object bindArg;
+    if (context.isBindArgsSet() && (bindArg = context.getBindArgument(this.index)) instanceof Region ) {
+      clauseBuffer.insert(0, ((Region) bindArg).getFullPath());
+    }else {
+      clauseBuffer.insert(0, "$" + this.index);      
     }
   }
     
     public Object evaluate(ExecutionContext context) {
+      if(!context.isBindArgsSet()) {
+        return null;
+      }
       Object obj = context.getBindArgument(this.index);
       // check for BucketRegion substitution
       if (obj instanceof Region) {

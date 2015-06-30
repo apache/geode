@@ -50,7 +50,7 @@ public interface DiskRegionView extends PersistentMemberView, RegionEntryContext
                         float loadFactor, boolean statisticsEnabled,
                         boolean isBucket, EnumSet<DiskRegionFlag> flags,
                         String partitionName, int startingBucketId,
-                        String compressorClassName);
+                        String compressorClassName, boolean offHeap);
   public byte getLruAlgorithm();
   public byte getLruAction();
   public int getLruLimit();
@@ -95,4 +95,6 @@ public interface DiskRegionView extends PersistentMemberView, RegionEntryContext
   public boolean isEntriesMapIncompatible();
   public String getCompressorClassName();
   public void oplogRecovered(long oplogId);
+  public boolean getOffHeap();
+  public void close();
 }

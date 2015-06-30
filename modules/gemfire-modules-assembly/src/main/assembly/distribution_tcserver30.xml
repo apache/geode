@@ -1,0 +1,53 @@
+<assembly
+    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+  <id>tcServer30</id>
+
+  <!--
+  This assembly descriptor produces output like:
+    gemfire-p2p
+      bin
+        gemfire.sh
+        gemfire.bat
+      conf/
+        cache-peer.xml
+        context-fragment.xml
+      configuration-prompts.properties
+      lib/
+        gemfire.modules-version.jar
+        gemfire.jar
+    gemfire-cs
+      bin
+        cacheserver.sh
+        cacheserver.bat
+        gemfire.sh
+        gemfire.bat
+      conf/
+        cache-client.xml
+        cache-server.xml
+        context-fragment.xml
+      configuration-prompts.properties
+      lib/
+        gemfire.modules-version.jar
+        gemfire.jar
+  -->
+
+  <!-- Format as zip and tar.gz -->
+  <formats>
+    <format>zip</format>
+  </formats>
+
+  <!-- Don't include a base directory -->
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <componentDescriptors>
+    <componentDescriptor>
+      src/main/assembly/distribution_tcserver30_template_cs.xml
+    </componentDescriptor>
+    <componentDescriptor>
+      src/main/assembly/distribution_tcserver30_template_p2p.xml
+    </componentDescriptor>
+  </componentDescriptors>
+
+</assembly>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE client-cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_6.dtd">
+  
+<client-cache>
+
+  <pool name="sessions" subscription-enabled="true">
+    <locator host="{{host}}" port="{{port}}"/>
+  </pool>
+  
+</client-cache>

@@ -47,6 +47,7 @@ import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.ObjToByteArraySerializer;
+import com.gemstone.gemfire.internal.Sendable;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.EventID;
@@ -55,6 +56,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
@@ -1473,7 +1475,9 @@ public abstract class DataSerializer {
     throws IOException {
     Object object = obj;
     if (obj instanceof CachedDeserializable) {
-      object = ((CachedDeserializable) obj).getSerializedValue();
+     // if( ( !(obj instanceof ByteSource) || ((StoredObject) obj).isSerialized())) {
+        object = ((CachedDeserializable) obj).getSerializedValue();
+     // }
     }
     if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
       if (object == null) {
@@ -1486,7 +1490,10 @@ public abstract class DataSerializer {
       writeByteArray((byte[])object, out);
     } else if (out instanceof ObjToByteArraySerializer) {
       ((ObjToByteArraySerializer)out).writeAsSerializedByteArray(object);
-    } else {
+    }/*else if (obj instanceof Sendable) {
+      ((Sendable)obj).sendTo(out); 
+    } */ 
+    else {
       HeapDataOutputStream hdos;
       if (object instanceof HeapDataOutputStream) {
         hdos = (HeapDataOutputStream)object;

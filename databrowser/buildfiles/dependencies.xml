@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="dependencies">
+  
+  <dependency property="svnant.dir" artifact="where/java/svnant/svnant-1.4.dev"/>
+  <dependency property="ant-contrib.jar" artifact="where/java/ant/ant-contrib/ant-contrib-1.0b3/ant-contrib-1.0b3.jar"/>
+  <dependency property="antelopeTasks.dir" artifact="where/java/AntelopeTasks_3.5.1"/>
+  
+</project>

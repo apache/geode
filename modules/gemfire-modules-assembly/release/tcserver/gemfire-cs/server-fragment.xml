@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Server>
+
+    <add:Listener className="com.gemstone.gemfire.modules.session.catalina.ClientServerCacheLifecycleListener"
+      cache-xml-file="${cache.configuration.file:cache-client.xml}"
+      criticalHeapPercentage="${critical.heap.percentage:0.0}"
+      evictionHeapPercentage="${eviction.heap.percentage:80.0}"
+      log-file="${log.file:gemfire_modules.log}"
+      statistic-archive-file="${statistic.archive.file:gemfire_modules.gfs}"
+      statistic-sampling-enabled="${statistic.sampling.enabled:false}"/>
+
+</Server>

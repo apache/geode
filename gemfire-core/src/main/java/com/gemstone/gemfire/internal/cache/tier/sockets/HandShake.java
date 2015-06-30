@@ -1437,6 +1437,9 @@ public class HandShake implements ClientHandShake
     try {
       return (DistributedMember)DataSerializer.readObject(dis);
     }
+    catch (EOFException e) {
+      throw e;
+    }
     catch (Exception e) {
       throw new InternalGemFireException(LocalizedStrings.HandShake_UNABLE_TO_DESERIALIZE_MEMBER.toLocalizedString(), e);
     }

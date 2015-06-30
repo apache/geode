@@ -1,0 +1,289 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.jta;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.UserTransaction;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+/**
+ * Test TransactionManagerImpl methods not tested by UserTransactionImplTest
+ * 
+ * @author Mitul Bid
+ * @author Kirk Lund
+ */
+@Category(IntegrationTest.class)
+public class TransactionManagerImplJUnitTest {
+
+  private static DistributedSystem ds;
+  private static TransactionManagerImpl tm;
+  
+  protected UserTransaction utx;
+  
+  @BeforeClass
+  public static void beforeClass() throws Exception{
+    Properties props = new Properties();
+    props.setProperty("mcast-port", "0");
+    ds = DistributedSystem.connect(props);
+    tm = TransactionManagerImpl.getTransactionManager();
+  }
+  
+  @AfterClass
+  public static void afterClass() {
+    ds.disconnect();
+    ds = null;
+    tm = null;
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    utx = new UserTransactionImpl();
+  }
+
+  @After
+  public void tearDown() {
+  }
+
+  @Test
+  public void testGetTransaction() throws Exception {
+    assertEquals(Status.STATUS_NO_TRANSACTION, tm.getStatus());
+    utx.begin();
+    assertEquals(Status.STATUS_ACTIVE, tm.getStatus());
+    Thread thread = Thread.currentThread();
+    Transaction txn1 = (Transaction) tm.getTransactionMap().get(thread);
+    Transaction txn2 = tm.getTransaction();
+    assertTrue("GetTransaction not returning the correct transaction", txn1 == txn2);
+    utx.commit();
+    assertEquals(Status.STATUS_NO_TRANSACTION, tm.getStatus());
+  }
+
+  @Test
+  public void testGetTransactionImpl() throws Exception {
+    utx.begin();
+    Thread thread = Thread.currentThread();
+    Transaction txn1 = (Transaction) tm.getTransactionMap().get(thread);
+    Transaction txn2 = tm.getTransaction();
+    assertTrue("GetTransactionImpl not returning the correct transaction", txn1 == txn2);
+    utx.commit();
+  }
+
+  @Test
+  public void testGetGlobalTransaction() throws Exception {
+    utx.begin();
+    Thread thread = Thread.currentThread();
+    Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
+    GlobalTransaction gTxn1 = (GlobalTransaction) tm.getGlobalTransactionMap().get(txn);
+    GlobalTransaction gTxn2 = tm.getGlobalTransaction();
+    assertTrue("Get Global Transaction not returning the correct global transaction", gTxn1 == gTxn2);
+    utx.commit();
+  }
+
+  @Test
+  public void testNotifyBeforeCompletionException() throws Exception {
+    //Asif : Test Notify BeforeCompletion Exception handling
+    utx.begin();
+    Thread thread = Thread.currentThread();
+    Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
+    txn.registerSynchronization(new Synchronization() {
+
+      public void beforeCompletion() {
+        throw new RuntimeException("MyException");
+      }
+
+      public void afterCompletion(int status) {
+        assertTrue(status == Status.STATUS_ROLLEDBACK);
+      }
+    });
+    try {
+      utx.commit();
+      fail("The commit should have thrown RolledBackException");
+    } catch (RollbackException expected) {
+      // success
+    }
+    assertTrue(tm.getGlobalTransactionMap().isEmpty());
+  }
+
+  @Test
+  public void testSetRollBackOnly() throws Exception {
+    //    Asif : Test Exception when marking transaction for rollbackonly
+    utx.begin();
+    Thread thread = Thread.currentThread();
+    Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
+    txn.registerSynchronization(new Synchronization() {
+
+      public void beforeCompletion() {
+        try {
+          utx.setRollbackOnly();
+        } catch (Exception se) {
+          fail("Set Roll Back only caused failure.Exception =" + se);
+        }
+      }
+
+      public void afterCompletion(int status) {
+        assertTrue(status == Status.STATUS_ROLLEDBACK);
+      }
+    });
+    try {
+      utx.commit();
+      fail("The commit should have thrown RolledBackException");
+    } catch (RollbackException expected) {
+      // success
+    }
+    assertTrue(tm.getGlobalTransactionMap().isEmpty());
+  }
+
+  @Test
+  public void testXAExceptionInCommit() throws Exception {
+    utx.begin();
+    Thread thread = Thread.currentThread();
+    Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
+    txn.registerSynchronization(new Synchronization() {
+
+      public void beforeCompletion() {
+      }
+
+      public void afterCompletion(int status) {
+        assertTrue(status == Status.STATUS_ROLLEDBACK);
+      }
+    });
+    txn.enlistResource(new XAResourceAdaptor() {
+
+      public void commit(Xid arg0, boolean arg1) throws XAException {
+        throw new XAException(5);
+      }
+
+      public void rollback(Xid arg0) throws XAException {
+        throw new XAException(6);
+      }
+    });
+    try {
+      utx.commit();
+      fail("The commit should have thrown SystemException");
+    } catch (SystemException expected) {
+      // success
+    }
+    assertTrue(tm.getGlobalTransactionMap().isEmpty());
+  }
+
+  @Test
+  public void testXAExceptionRollback() throws Exception {
+    utx.begin();
+    Thread thread = Thread.currentThread();
+    Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
+    txn.registerSynchronization(new Synchronization() {
+
+      public void beforeCompletion() {
+        fail("Notify Before Completion should not be called in rollback");
+      }
+
+      public void afterCompletion(int status) {
+        assertTrue(status == Status.STATUS_ROLLEDBACK);
+      }
+    });
+    txn.enlistResource(new XAResourceAdaptor() {
+
+      public void commit(Xid arg0, boolean arg1) throws XAException {
+      }
+
+      public void rollback(Xid arg0) throws XAException {
+        throw new XAException(6);
+      }
+    });
+    try {
+      utx.rollback();
+      fail("The rollback should have thrown SystemException");
+    } catch (SystemException expected) {
+      // success
+    }
+    assertTrue(tm.getGlobalTransactionMap().isEmpty());
+  }
+
+  @Test
+  public void testRollback() throws Exception{
+    utx.begin();
+    Thread thread = Thread.currentThread();
+    Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
+    txn.registerSynchronization(new Synchronization() {
+
+      public void beforeCompletion() {
+        fail("Notify Before Completion should not be called in rollback");
+      }
+
+      public void afterCompletion(int status) {
+        assertTrue(status == Status.STATUS_ROLLEDBACK);
+      }
+    });
+    txn.enlistResource(new XAResourceAdaptor() {
+    });
+    utx.rollback();
+    assertTrue(tm.getGlobalTransactionMap().isEmpty());
+    System.out.println("RolledBack successfully");
+  }
+}
+
+//Asif :Added helper class to test XAException situations while
+// commit/rollback etc
+class XAResourceAdaptor implements XAResource {
+
+  public int getTransactionTimeout() throws XAException {
+    return 0;
+  }
+
+  public boolean setTransactionTimeout(int arg0) throws XAException {
+    return false;
+  }
+
+  public boolean isSameRM(XAResource arg0) throws XAException {
+    return false;
+  }
+
+  public Xid[] recover(int arg0) throws XAException {
+    return null;
+  }
+
+  public int prepare(Xid arg0) throws XAException {
+    return 0;
+  }
+
+  public void forget(Xid arg0) throws XAException {
+  }
+
+  public void rollback(Xid arg0) throws XAException {
+  }
+
+  public void end(Xid arg0, int arg1) throws XAException {
+  }
+
+  public void start(Xid arg0, int arg1) throws XAException {
+  }
+
+  public void commit(Xid arg0, boolean arg1) throws XAException {
+  }
+}

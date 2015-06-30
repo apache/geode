@@ -1,0 +1,736 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="generic-build-targets">
+
+  <!-- determine OS -->
+  <condition property="gf.os" value="sol">
+    <os name="SunOs"/>
+  </condition>
+  <condition property="gf.os" value="linux">
+    <os name="Linux"/>
+  </condition>
+  <condition property="gf.os" value="mac">
+    <os family="mac"/>
+  </condition>
+  <condition property="gf.os" value="win">
+    <os family="windows"/>
+  </condition>
+  <condition property="gf.os" value="aix">
+    <os name="AIX"/>
+  </condition>
+  
+  <property file="${basedir}/build${gf.os}.properties"/>
+    <available file="${basedir}/build${gf.os}.properties" 
+               property="build.os.exists"/>
+    <conditional if="build.os.exists"> 
+      <echo message="Loading properties from ${basedir}/build${gf.os}.properties:" level="info"/>
+      <concat>
+        <filelist dir="${basedir}" files="build${gf.os}.properties"/>
+      </concat>
+    </conditional> 
+   
+    <property file="${basedir}/build.properties"/>
+    <available file="${basedir}/build.properties" property="build.props.exists"/>  
+    <conditional if="build.props.exists">
+      <echo message="Loading properties from ${basedir}/build.properties:" 
+            level="info"/> 
+      <concat>
+        <filelist dir="${basedir}" files="build.properties"/>
+      </concat>
+    </conditional>
+    <property file="${basedir}/buildfiles/config.properties"/>
+    
+	<dependency property="javac.primary"
+                jdkVersion="${javac.primary.version}"
+                is64Bit="false" artifact="where/jdk"/>
+    <dependency property="javac.secondary"
+                jdkVersion="${javac.secondary.version}"
+                is64Bit="false" artifact="where/jdk"/>
+    <dependency property="default.testVM"
+                jdkVersion="${java.test.version}"
+                is64Bit="false" artifact="where/jdk"/>
+    <dependency property="default.testVM64"
+                jdkVersion="${java.test.version}"
+                is64Bit="true" artifact="where/jdk"/>
+	
+  <target name="build-all-impl" depends="build-product, compile-tests"/>
+  <target name="build-installer-impl" depends="props, define-classpath-refids">
+    <property file="${build.dir}/build.number" prefix="installer."/>
+    <!-- basic clean up and setup -->
+    <delete dir="${installer.dir}" quiet="true"/>
+    <delete dir="${installer.tmp}" quiet="true"/>
+    <mkdir dir="${installer.dir}"/>
+    <mkdir dir="${installer.tmp}"/>
+    <copy todir="${installer.tmp}">
+      <fileset dir="${basedir}/release/installer">
+        <include name="i18n*.properties"/>
+        <include name="EULA.txt"/>
+        <include name="INSTALL.txt"/>
+        <include name="build.xml"/>
+      </fileset>
+    </copy>
+    <touch file="${installer.vernum}"/>
+    <echo file="${installer.vernum}" level="info">installer_vernum=${product.short.name}${product.version}
+    </echo>
+    <replace file="${installer.vernum}" token="." value=""/>
+    <replace file="${installer.vernum}" token=" " value=""/>
+
+    <property file="${installer.vernum}"/>
+    <property name="installer.name" value="${installer_vernum}_Installer"/>
+    <property name="installer.jar" value="${installer.name}.jar"/>
+
+    <!-- Build and copy the INSTALL.txt into place -->
+    <copy todir="${installer.tmp}">
+      <fileset dir="${basedir}/release/installer">
+        <include name="INSTALL.txt"/>
+      </fileset>
+    </copy>
+
+    <replace file="${installer.tmp}/INSTALL.txt" token="__JAR_NAME__"
+      value="${installer.jar}" summary="yes"/>
+    <replace file="${installer.tmp}/INSTALL.txt" token="__VERSION__"
+      value="${product.version} build ${installer.build.number}" summary="yes"/>
+    <replace file="${installer.tmp}/INSTALL.txt" token="__SIZE__"
+      value="10" summary="yes"/>
+    <replace file="${installer.tmp}/INSTALL.txt" token="__PRODUCT_DIR__"
+      value="${installer_vernum}" summary="yes"/>
+    <replace file="${installer.tmp}/i18n.properties" token="__PRODUCT_DIR__"
+      value="${installer_vernum}" summary="yes"/>
+    <replace file="${installer.tmp}/i18n.properties" token="__PRODUCT_NAME__"
+        value="${product.short.name.lowercase}" summary="yes"/>
+
+    <copy file="${installer.tmp}/INSTALL.txt" tofile="${product.dir}/docs/${installer_vernum}_INSTALL.txt"/>
+    <copy file="${installer.tmp}/INSTALL.txt" tofile="${installer.dir}/${installer_vernum}_INSTALL.txt"/>
+
+    <compile-java src.dir="${installer.src.dir}" 
+                  output.dir="${installer.classes.dir}"
+                  classpath.refid="empty.classpath"/>
+    <mkdir dir="${installer.tmp}/${installer_vernum}/opensource"/>
+    <jar destfile="${installer.tmp}/${installer_vernum}/opensource/${installer.oss.jar}">
+      <manifest/>
+    </jar>
+
+    <jar destfile="${installer.dir}/${installer.jar}">
+      <manifest>
+        <attribute name="Main-Class" value="${installer.classname}"/>
+      </manifest>
+      <zipfileset dir="${product.dir}" prefix="${installer_vernum}"/>
+      <fileset dir="${installer.tmp}">
+        <include name="**.class"/>
+        <include name="${installer_vernum}/opensource/${installer.oss.jar}"/>
+        <include name="i18n*.properties"/>
+        <include name="EULA.txt"/>
+      </fileset>
+    </jar>
+  </target>    
+  <target name="build-product-impl" 
+          depends="jar-product, pack-core"/>
+  <target name="clean-impl" depends="props">
+    <echo message="Cleaning osbuild.dir excludes=saved-results" level="info"/>
+
+    <!-- Remove osbuild.dir now with exclude -->
+    <delete includeEmptyDirs="true">
+      <fileset dir="${osbuild.dir}" 
+               defaultexcludes="false" 
+               excludes="**/saved-results/**"/>
+    </delete>
+  </target>
+  <target name="clean-tests-impl" depends="props">
+    <delete dir="${tests.junit.classes.dir}"/>
+    <delete dir="${tests.dunit.classes.dir}"/>
+    <delete dir="${tests.battery.classes.dir}"/>
+  </target>
+  <target name="compile-tests-impl" depends="define-classpath-refids">
+    <compile-java src.dir="${tests.src.dir}/junit" 
+                  output.dir="${tests.junit.classes.dir}" 
+                  classpath.refid="tests.classpath"/>
+    <compile-java src.dir="${tests.src.dir}/dunit" 
+                  output.dir="${tests.dunit.classes.dir}"
+                  classpath.refid="tests.classpath"/>
+    <compile-java src.dir="${tests.src.dir}/battery"
+                  output.dir="${tests.battery.classes.dir}"
+                  classpath.refid="tests.classpath"/>
+    <!-- Copy all bt, conf, inc, and props into osbuild.dir -->
+    <copy todir="${tests.battery.classes.dir}">
+      <fileset dir="${tests.src.dir}/battery">
+        <include name="**/*.bt"/>
+        <include name="**/*.conf"/>
+        <include name="**/*.inc"/>
+        <include name="**/*.properties"/>
+        <include name="**/*.props"/>
+      </fileset>
+    </copy>
+  </target>
+  <target name="execute-battery-impl" 
+          depends="compile-tests, execute-battery-nobuild"/>
+  <target name="execute-battery-nobuild-impl" 
+          depends="props, define-classpath-refids, clean-hydra-results">
+      <mkdir dir="${bt.result.dir}"/>
+
+      <!-- Execute a hydra test (single .conf file) -->
+      <conditional if="hydra.conf">
+        <property name="bt.file" location="${bt.result.dir}/exec_hydra.bt"/>
+        <echo file="${bt.file}" message="${hydra.conf}" level="info"/>
+      </conditional>
+
+      <echo message="Executing .bt file  ${bt.file}" level="info"/>
+
+      <conditional if="local.conf">
+        <copy file="${local.conf}" tofile="${bt.result.dir}/local.conf"/>
+      </conditional>
+      <conditional if="mergeLogFiles">
+        <echo append="true" 
+              file="${bt.result.dir}/local.conf" 
+              message="hydra.log.LogPrms-mergeLogFiles = true;" 
+              level="info"/>
+      </conditional>
+      <conditional unless="mergeLogFiles">
+          <conditional unless="local.conf">
+            <echo file="${bt.result.dir}/local.conf" 
+                  message="hydra.log.LogPrms-mergeLogFiles = onFailure;" 
+                  level="info"/>
+          </conditional>
+      </conditional>
+      <conditional if="bt.args">
+        <property name="extra.bt.args" value="${bt.args}"/>
+      </conditional> 
+      <conditional unless="bt.args">
+        <property name="extra.bt.args" value=""/>
+      </conditional> 
+      <conditional if="myenv.JPROBE_HOME">
+        <property name="jprobe.home" value="${myenv.JPROBE_HOME}"/>
+      </conditional> 
+      <conditional unless="jprobe.home">
+        <property name="jprobe.home" value="/dummyjprobedir"/>
+      </conditional>
+      <property name="bt.log" location="${bt.result.dir}/batterytest.log"/>
+      <property name="oneliner.txt" location="${bt.result.dir}/oneliner.txt"/>
+      <property name="bt.nukeHungTest" value="${NukeHungTests}"/>
+      <property name="bt.numTimesToRun" value="1"/>
+  
+      <parallel>
+        <sequential> 
+          <java classname="batterytest.BatteryTest" 
+                jvm="${testJVM}" fork="true"
+                dir="${bt.result.dir}" failonerror="false">
+            <classpath>
+              <pathelement location="${classes.dir}"/>
+              <pathelement location="${external.dir}/classes"/>
+              <pathelement location="${tests.battery.classes.dir}"/>
+              <pathelement location="${junit.dir}/junit.jar"/>
+              <path refid="src.classpath"/>
+            </classpath>
+
+            <env key="GEMFIRE" value="${external.dir}/product"/>
+            <env key="${library.path}" value="${hiddenlib.dir}"/>
+            <env key="PATH" 
+                 path="${product.dir}/bin;${hiddenlib.dir};${myenv.PATH}"/>
+            <sysproperty key="GEMFIRE" value="${external.dir}/product"/>
+            <sysproperty key="JPROBE" value="${jprobe.home}"/>
+  
+            <sysproperty key="JTESTS" value="${external.dir}/classes"/>
+            <sysproperty key="EXTRA_JTESTS" value="${tests.battery.classes.dir}"/>
+            <sysproperty key="testFileName" value="${bt.file}"/>
+            <sysproperty key="resultDir" value="${bt.result.dir}"/>
+            <sysproperty key="numTimesToRun" value="${bt.numTimesToRun}"/>
+    
+            <sysproperty key="nukeHungTest" value="${bt.nukeHungTest}"/>
+            <sysproperty key="useSSH" value="${useSSH}"/>
+  
+            <arg line="${extra.bt.args}"/>
+          </java>
+          <!-- find the output and determine if we failed. -->
+          <loadfile property="bt.log.content" srcFile="${bt.log}"/>
+          <condition property="bt.test.failed">
+            <contains string="${bt.log.content}" substring="runbattery() returned false"/>
+          </condition>
+          <loadfile property="oneliner.txt.content" srcFile="${oneliner.txt}"/>
+          <echo message="${oneliner.txt.content}" level="info"/>
+          <if>
+            <istrue value="${bt.isdunit}"/>
+            <then>
+              <conditional if="bt.test.failed">
+                <property name="dunit.tests.failed" value="${bt.test.failed}"/>
+                <antcall target="dunit-list-failures"/>
+              </conditional>
+            </then>
+          <else>
+            <fail if="bt.test.failed"/>
+          </else>
+        </if>
+      </sequential>
+      <sequential>
+        <waitfor maxwait="30" maxwaitunit="second">
+          <available file="${bt.log}"/>
+        </waitfor>
+        <echo message="Started batterytest, see log ${bt.log}" level="info"/>
+      </sequential>
+    </parallel>
+  </target>
+  <target name="precheckin-impl"
+          depends="update-svn, clean, build-all, run-all-tests"/>
+  <target name="run-all-tests-impl" 
+          depends="run-junit-tests, run-dunit-tests"/>
+  <target name="run-junit-tests-impl" 
+          depends="props, -keep-going, define-test-groups">
+    <run-junit results="${tests.results.dir}/junit"/>
+  </target> 
+  <target name="run-dunit-tests-impl" 
+          depends="props, -keep-going, 
+                   define-classpath-refids, define-test-groups">
+    <delete dir="${tests.results.dir}/dunit"/>
+    <dunit-generate-config/>
+    <unitTest-battery type="dunit" 
+                      bt.file="${tests.results.dir}/dunit/dunit-tests.bt"
+                      resultsDir="${tests.results.dir}"
+                      skipHydraClean="true"/>
+  </target> 
+  <target name="update-svn-impl" depends="props">
+    <delete file="${svn.logfile}" quiet="true"/>
+
+    <!-- failonerror set to false for svn update because it may actually
+         perform a lot of updates before failing, and we need to capture
+         those in .svn-history.log -->
+    <exec executable="svn" failonerror="false" output="${svn.logfile}">
+      <arg value="update"/>
+    </exec>
+
+    <exec executable="svn" append="true" output="${svn.logfile}">
+      <arg value="status"/>
+    </exec>
+
+    <antcall inheritAll="true" target="make-last-update"/>
+
+    <concat append="true" fixlastline="true" destfile="${svn.hist.logfile}" >
+==============================
+</concat>  <!-- Leave the two lines above as is so they concat properly -->
+
+    <concat append="true" fixlastline="true" destfile="${svn.hist.logfile}">
+      <filelist dir="${basedir}" files="build-artifacts/build.number"/>
+      <filelist dir="${basedir}" files="${svn.logfile}"/>
+    </concat>
+
+    <echo message="Checking for update conflicts in ${svn.logfile}" level="info"/>
+
+    <exec executable="grep" resultproperty="grepExitStatus">
+      <arg value="^C "/>
+      <arg value="${svn.logfile}"/>
+    </exec>
+    <condition property="grepFailed">
+      <equals arg1="${grepExitStatus}" arg2="0"/>
+    </condition>
+
+    <fail if="grepFailed" message="SVN update conflicts detected."/>
+  </target>
+  <target name="usage-impl">
+    <java classname="org.apache.tools.ant.Main">
+      <arg value="-projecthelp"/>
+      <classpath>
+        <fileset dir="${ant.library.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+    </java>
+  </target>
+
+  <!-- Begin support target definitions -->
+  <target name="-keep-going" depends="props">
+    <keepgoing haltOnFailure="${haltOnFailure}"/>
+  </target>
+  <target depends="props" name="clean-hydra-results">
+    <if>
+      <istrue value="${skip.hydra.clean}"/>
+    <then>
+    </then>
+    <else>
+      <property location="${tests.results.dir}/battery" name="bt.result.dir"/>
+      <delete dir="${bt.result.dir}"/>
+    </else>
+    </if>
+  </target>
+  <target name="check-gemfire-dir" 
+          depends="props, gemfire-dir-exists" 
+          unless="gemfire.dir.exists">
+    <fail message="Directory &quot;${gemfire.dir}&quot; does not exist. Check your &#36;{gemfire.dir} setting."/>
+  </target>
+  <target name="gemfire-dir-exists">
+    <available file="${gemfire.dir}" 
+               property="gemfire.dir.exists"/>
+  </target>
+  <target name="fetch-dependencies" depends="props,check-gemfire-dir">
+    <copy todir="${hidden.dir}">
+      <fileset dir="${hydra.dir}/../hidden">
+        <include name="gemfireLicense.zip"/>
+      </fileset>
+    </copy>
+    <copy todir="${external.dir}">
+      <!-- Gemfire and license -->
+      <fileset dir="${gemfire.dir}">
+        <include name="product/lib/*.jar"/>
+        <include name="product/lib/*.properties"/>
+        <include name="hidden/**"/>
+      </fileset>
+
+      <!-- Hydra -->
+      <fileset dir="${hydra.dir}">
+        <include name="classes/com/**"/>
+        <include name="classes/admin/jmx/**"/>
+        <include name="classes/bsh/**"/>
+        <include name="classes/batterytest/**"/>
+        <include name="classes/bt/**"/>
+        <include name="classes/hydra*/**"/>
+        <include name="classes/lib/*.dll"/>
+        <include name="classes/util/**"/>
+        <include name="classes/perffmwk/**"/>
+        <include name="classes/junit.jar"/>
+        <include name="classes/diskReg/**"/>
+        <include name="classes/objects/**"/>
+        <include name="classes/query/**"/>
+        <include name="classes/resultsUtil/**"/>
+        <include name="classes/swarm/**"/>
+      </fileset>
+
+      <!-- DUnit -->
+      <fileset dir="${hydra.dir}">
+        <include name="classes/dunit/*.class"/>
+        <include name="classes/dunit/impl/*.class"/>
+        <include name="classes/dunit/impl/dunit.inc"/>
+        <include name="classes/dunit/impl/dunitN.inc"/>
+        <include name="classes/dunit/eclipse/*.class"/>
+      </fileset>
+    </copy>
+  </target>
+  <target name="make-last-update" unless="skipLastUpdate">
+    <property name="build.dir" value="${basedir}/build-artifacts"/>
+    <property name="last.update.file" value="${build.dir}/lastUpdate.txt"/>
+    <mkdir dir="${build.dir}"/>
+    <echo message="Creating new lastUpdate.txt file..." level="info"/>
+    <delete file="${last.update.file}" quiet="true"/>
+    <!-- Make Last Update File with SVN workspace -->
+    <if>
+      <available file=".svn" type="dir"/>
+      <then>
+        <echo level="info" message="Querying SVN Workspace Information" />
+        <svnSetting client="cli" dateformatter="MM/dd/yyyy HH:mm:ss z" id="svn.settings"/>
+        <!-- Get svn info of the SVN workspace -->
+        <svn refid="svn.settings">
+          <info target="${basedir}"/>
+        </svn>
+        <propertyregex property="source.branch"
+          input="${svn.info.url}"
+          regexp="^https\:\/\/svn\.gemstone\.com\/repos\/"
+          replace=""
+          casesensitive="false" />
+        
+        <!-- Create LastUpdate Property File -->
+        <propertyfile comment="Information about an SVN Checkout" file="${last.update.file}">
+          <entry key="source.branch" value="${source.branch}"/>
+          <entry key="source.date" value="${svn.info.lastDate}"/>
+          <entry key="source.revision" value="${svn.info.lastRev}"/>
+        </propertyfile>
+      </then>
+      <else>
+        <property name="source.branch" value="UNKNOWN"/>
+        <property name="source.date" value="UNKNOWN"/>
+        <property name="source.revision" value="UNKNOWN"/>
+        <property name="build.number" value="DEV"/>
+      </else>
+    </if>
+    
+    <!-- The svn revision number now becomes the build.number -->
+    <property file="${last.update.file}"/>
+    <propertyfile comment="Build Number File" file="${build.dir}/build.number">
+      <entry key="build.number" value="${source.revision}"/>
+    </propertyfile>
+
+    <property file="${build.dir}/build.number"/>
+    <echo message=""/>
+    <echo message="========================================="/>
+    <echo message="Version: ${product.version} ${user.name} ${build.number}"/>
+    <echo message="Source-branch: ${source.branch}"/>
+    <echo message="Source-Date: ${source.date}"/>
+    <echo message="Source-Svn-Revision: ${source.revision}"/>
+    <echo message="========================================="/>
+  </target>
+
+  <target name="props" unless="props.already.done">
+    <property name="props.already.done" value="flag to prevent repetition"/>
+
+    <property name="testJVM" value="${default.testVM}/bin/java"/>
+
+    <condition property="library.path" value="DYLD_LIBRARY_PATH">
+        <os family="mac"/>
+    </condition>
+
+    <condition property="library.path" value="LD_LIBRARY_PATH">
+        <not><os family="mac"/></not>
+    </condition>
+
+    <exec executable="bash" outputproperty="host.name" failonerror="true" failifexecutionfails="true">
+      <arg line="-c hostname"/>
+    </exec>
+
+    <echo message="osbuild.dir is ${osbuild.dir}" level="info"/>
+    <echo message="Running on ${host.name}" level="info"/>
+
+    <!-- Do not allow build artifacts to be place on the filer -->
+    <fail message="Build artifacts cannot reside on the filer (${osbuild.dir}).  Please use a build properties file">
+      <condition>
+        <contains string="${osbuild.dir}" substring="shared_build"
+                  casesensitive="false"/>
+      </condition>
+    </fail>
+
+    <mkdir dir="${osbuild.dir}"/>
+
+    <!-- If a "last update" file doesn't exist, then create one -->
+    <available file="${build.dir}/${last.update.file}" 
+               property="last.update.exists"/>
+
+    <conditional unless="last.update.exists">
+      <echo message="Updating lastUpdate.txt as it doesn't exist..." 
+            level="info"/>
+      <antcall target="make-last-update"/>
+      <property name="skipLastUpdate"  value="true"/>
+    </conditional>
+
+    <!-- If svn was manually run then update lastUpdate.txt and build.number -->
+    <uptodate property="makelastupdate.Required"
+      srcfile="${last.update.file}"
+      targetfile="${basedir}/.svn/entries"/>
+
+    <conditional if="makelastupdate.Required">
+      <antcall target="make-last-update"/>
+      <property name="skipLastUpdate"  value="true"/>
+    </conditional>
+  </target>
+  
+  <!-- Begin macrodef definitions -->
+  <macrodef name="compile-java">
+    <attribute name="src.dir"/>
+    <attribute name="output.dir"/>
+    <attribute name="classpath.refid"/>
+    <sequential>
+      <mkdir dir="@{output.dir}"/>
+      <javac executable="${javac.primary}/bin/javac" 
+             fork="yes" 
+             memoryMaximumSize="${javac.mmx}"
+             debug="${javac.debug}"
+             deprecation="${javac.deprecation}"
+             destdir="@{output.dir}" 
+             includeAntRuntime="false"
+             nowarn="off" optimize="off" encoding="UTF-8" target="${javac.target}">
+        <src path="@{src.dir}"/>
+        <include name="**/*.java"/>
+        <classpath>
+          <path refid="@{classpath.refid}"/>
+        </classpath>
+      </javac>
+    </sequential>
+  </macrodef>
+  <macrodef name="dunit-generate-config">
+    <attribute name="dunitOutDir" default="${tests.results.dir}/dunit"/>
+    <attribute name="dunit.testlist" default="${dunit.testlist}"/>
+    <attribute name="dunit.classes.dir" default="${tests.dunit.classes.dir}"/>
+    <attribute name="extra-classpath-ref" default="empty.classpath"/>
+    <sequential>
+      <mkdir dir="@{dunitOutDir}"/>
+ 
+      <conditional if="myenv.JPROBE_HOME">
+        <property name="jprobe.home" value="${myenv.JPROBE_HOME}"/>
+      </conditional>
+      <conditional unless="jprobe.home">
+        <property name="jprobe.home" value="/dummyjprobedir"/>
+      </conditional>
+
+      <echo message="Running dunit tests in @{dunitOutDir}..." level="info"/>
+
+      <!-- Load the DUnit config task. -->
+      <taskdef classname="dunit.impl.DUnitConfigAntTask" name="dunitconfig">
+        <classpath>
+          <pathelement location="${external.dir}/product/lib/gemfire.jar"/>
+          <pathelement location="${external.dir}/classes"/>
+        </classpath>
+
+      </taskdef>
+
+      <property name="dunitconfig.classes.dir" value="@{dunit.classes.dir}"/>
+      <property name="dunit.extra.product.jar" value=""/>
+
+      <dunitconfig btFile="@{dunitOutDir}/dunit-tests.bt"
+           confFile="@{dunitOutDir}/dunit-tests.conf" debugJavaGroups="false"
+           includeFile="${dunit.inc.file}"
+           logLevel="${logLevel}"
+           dunitSites="${dunitSites}"
+           systemCount="2"
+           verbose="true"
+           useIPv6="${useIPv6}"
+           extraVMArgs="-ea -Xms125m -Xmx250m ${dunit-jvm-args} -Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10000000 -Dp2p.defaultConcurrencyLevel=6 -DBridgeServer.SELECTOR=false -DBridgeServer.SELECTOR_POOL_SIZE=10 -DDUNIT.MAX_PUTTERS=100 -DDUNIT.MAX_PUT_OPS=50000 -DDUNIT.PUT_SIZE=1 -DDUNIT.PUT_TIMEOUT=10000 -DBridgeServer.MAX_INCOMING_DATA=-1 -DBridgeServer.MAX_INCOMING_MSGS=-1 -Dgemfire.disable-event-old-value=false -Dgemfire.enable-time-statistics=true -Dgemfire.ack-wait-threshold=60 -DJUnitTestSuite.maxRunSecs=${junit.timeout} -Dack-threshold-exception=false -Xdebug -Xrunjdwp:transport=dt_socket,suspend=n,server=y -DBridgeServer.handShakeTimeout=3000 -Dgemfire.statsDisabled=false
+                   -DDistributionManager.DISCONNECT_WAIT=20000 -Dgemfire.disallowMcastDefaults=true -Dgf.ldap.server=ldap -Dgf.ldap.basedn=ou=ldapTesting,dc=pune,dc=gemstone,dc=com" > 
+
+        <extraClientClassPath>
+          <pathelement location="${classes.dir}"/>
+          <pathelement location="${tests.dunit.classes.dir}"/>
+          <pathelement location="${external.dir}/classes"/>
+          <pathelement location="${ant.home}/lib/ant.jar"/>
+          <pathelement location="${ant.home}/lib/ant-junit.jar"/>
+          <pathelement location="${junit.dir}/junit.jar"/>
+          <path refid="src.classpath"/>
+          <path refid="@{extra-classpath-ref}"/>
+        </extraClientClassPath>
+
+        <tests dir="${dunitconfig.classes.dir}">
+          <patternset refid="@{dunit.testlist}"/>
+        </tests>
+      </dunitconfig>
+    </sequential>
+  </macrodef>
+  <macrodef name="run-junit">
+    <attribute name="testGroup" default="${junit.testlist}"/>
+    <attribute name="results" default="NOT_SET"/>
+    <attribute name="extra-classpath-ref" default="empty.classpath"/>
+    <attribute name="suite" default="junit"/>
+
+    <attribute name="jvm" default="${testJVM}"/>
+    <attribute name="junitTestsDir" default="${tests.junit.classes.dir}"/>
+    <attribute name="dprop" default="${d32prop}"/>
+    <attribute name="ld.library.dir"
+    default="${product.library.dir}${path.separator}${hiddenlib.dir}"/>
+    <attribute name="extra.jtests.dir" default="NOT_SET"/>
+
+    <sequential>  
+      <delete dir="@{results}" quiet="true"/>
+      <mkdir dir="@{results}/failures"/>
+      <mkdir dir="@{results}/xml-reports"/>
+      <!-- check for empty fileset -->
+      <fileset dir="@{junitTestsDir}" id="@{suite}.fileset">
+        <patternset refid="@{testGroup}"/>
+      </fileset>
+      <pathconvert targetos="unix" refid="@{suite}.fileset" 
+                   property="@{suite}.fileset.notempty" setonempty="false"/>
+      <fail message="Empty testGroup for @{suite}, @{testgroup}. You may have mistyped your testcase."
+            unless="@{suite}.fileset.notempty"/>
+      <taskdef classname="com.gemstone.gemfire.internal.AvailablePortTask" 
+               classpath="${product.dir}/lib/gemfire.jar" 
+               name="available-port"/>
+      <available-port portProperty="jg.port" protocol="socket"/>
+
+      <echo file="@{results}/gemfire.properties" level="info">
+            mcast-port=${jg.port}
+            log-level=${logLevel}
+      </echo>
+
+      <echo message="Running @{suite} tests  ... " level="info"/>
+      <junit dir="@{results}"
+             failureProperty="@{suite}.unit.tests.failed"
+             haltOnFailure="false" jvm="bash"
+             includeantruntime="false" tempdir="@{results}">
+        <jvmarg value="--norc"/>
+        <assertions> <enable/> </assertions>
+        <jvmarg value="${tests.bin.dir}/runtest.sh"/>
+        <jvmarg value="${product.dir}"/>
+        <jvmarg value="@{results}/failures"/>
+        <jvmarg value="@{jvm}"/>
+        <classpath>
+          <pathelement location="${tests.out.dir}/classes/junit.jar"/>
+          <pathelement location="${product.dir}/lib/gemfire.jar"/>
+          <pathelement location="${product.dir}/lib/mail.jar"/>
+          <pathelement location="${product.dir}/lib/gfSecurityImpl.jar"/>
+          <pathelement location="${ant.home}/lib/ant-junit.jar"/>
+          <pathelement location="${ant.home}/lib/ant.jar"/>
+          <pathelement location="${tests.lib.dir}/XMLJUnitFormatterTerse.jar"/>
+          <pathelement location="${tests.lib.dir}/derby.jar"/>
+          <pathelement location="${tests.lib.dir}/cache.xml"/>
+          <pathelement location="${hiddenlib.dir}/license.jar"/>
+          <pathelement location="${tests.out.dir}/classes"/>
+          <pathelement location="${product.dir}/examples/dist/classes"/>
+          <pathelement location="${product.dir}/lib/antlr.jar"/>
+          <pathelement location="@{results}"/>
+          <path refid="@{extra-classpath-ref}"/>
+        </classpath>
+        <env key="GEMFIRE" value="${product.dir}"/>
+        <env key="QUERYXMLFILE" value="${tests.lib.dir}/cachequery.xml"/>
+        <env key="JTAXMLFILE" value="${tests.lib.dir}/cachejta.xml"/>
+        <env key="${library.path}" value="@{ld.library.dir}"/>
+        <env key="PATH" value="${product.dir}/bin${path.separator}${myenv.PATH}"/>
+        <sysproperty key="GEMFIRE" value="${product.dir}"/>
+        <sysproperty key="QUERYXMLFILE" value="${tests.lib.dir}/cachequery.xml"/>
+        <sysproperty key="JTAXMLFILE" value="${tests.lib.dir}/cachejta.xml"/>
+        <sysproperty key="EXTRA_JTESTS" value="@{extra.jtests.dir}"/>
+        <sysproperty key="TESTDIR" value="${tests.src.dir}"/>
+        <sysproperty key="DistributionManager.VERBOSE" value="true"/>
+        <sysproperty key="gemfire.DEFAULT_MAX_OPLOG_SIZE" value="10000000"/>
+        <sysproperty key="gemfire.disallowMcastDefaults" value="true"/>
+        <sysproperty key="gemfire.debug" value="${gemfire.debug}"/>
+        <sysproperty key="java.library.path" value="${product.library.dir}${path.separator}${hiddenlib.dir}${path.separator}${java.library.path}"/>
+
+        <jvmarg value="-Xmx256M"/>
+        <jvmarg value="@{dprop}"/>
+        <jvmarg line="${dunit-extra-jvm-args}"/>
+
+        <!--  we set usefile to false because the runtest.sh takes care of
+              creating the output file -->
+        <formatter type="plain" usefile="false"/>
+        <formatter classname="org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatterTerse" extension=".xml"/>
+        <!-- Use the above batchtest if the 'testcase' system property is defined, otherwise use the batchtest below. -->
+        <batchtest fork="yes" todir="@{results}/xml-reports">
+          <fileset dir="@{junitTestsDir}">
+            <patternset refid="@{testGroup}"/>
+          </fileset>
+        </batchtest>
+      </junit>
+
+      <available file="@{results}/com.gemstone.gemfire.admin.internal.BindDistributedSystemTest.txt" property="@{suite}.txtFile.exists"/>
+      <conditional if="@{suite}.txtFile.exists">
+        <move file="@{results}/com.gemstone.gemfire.admin.internal.BindDistributedSystemTest.txt" tofile="@{results}/com.gemstone.gemfire.admin.internal.BindDistributedSystemTest" failonerror="false"/>
+      </conditional>
+
+      <conditional if="@{suite}.unit.tests.failed">
+        <echo message="FAILED: @{suite} tests failures in @{results}/failures" level="error"/>
+        <echo append="true" file="@{results}/TestFailures" message="FAILED: @{suite} tests failures in @{results}/failures" level="error"/>
+        <fail message="FAILED: One or more @{suite} tests failed"/>
+      </conditional>
+      <conditional unless="@{suite}.unit.tests.failed">
+        <echo level="info" message="Info: all @{suite} tests ran successfully."/>
+        <delete dir="@{results}/failures" quiet="true"/>
+      </conditional>
+    </sequential>  
+  </macrodef>
+  <macrodef name="unitTest-battery">
+    <attribute name="resultsDir"/>
+    <attribute name="jvm" default="${testJVM}"/>
+    <attribute name="bt.file"/>
+    <attribute name="type"/>
+    <attribute name="dprop" default="${d32prop}"/>
+    <!-- Needed because dunit-tests.bt is generated within the results directory -->
+    <attribute name="skipHydraClean" default=""/>
+    <attribute name="extra.dtests.dir" default=""/>
+    <attribute name="threshold.dunit" default="${default.threshold}"/>
+    <sequential>
+      <if>
+        <and>
+          <equals arg1="${os.name}" arg2="SunOS"/>
+          <equals arg1="@{dprop}" arg2="${d64prop}"/>
+        </and>
+        <then>
+          <!--touch the file so the append succeeds.-->
+          <mkdir dir="@{resultsDir}/@{type}"/>
+          <touch file="@{resultsDir}/@{type}/local.conf"/>
+          <echo append="true"
+                file="@{resultsDir}/@{type}/local.conf" level="info">
+hydra.VmPrms-type = d64;
+          </echo>
+        </then>
+      </if>
+      <antcall target="execute-battery-nobuild">
+        <param name="skip.hydra.clean" value="@{skipHydraClean}"/>
+        <param name="testJVM" value="@{jvm}"/>
+        <param name="bt.file" value="@{bt.file}"/>
+        <param name="bt.result.dir" value="@{resultsDir}/@{type}"/>
+        <param name="bt.nukeHungTest" value="${NukeHungTests}"/>
+        <param name="unittest.type" value="@{type}"/>
+        <param name="extra.jtests.dir" value="@{extra.dtests.dir}"/>
+        <param name="threshold.dunit" value="@{threshold.dunit}"/>
+      </antcall>
+    </sequential>
+  </macrodef>
+</project>

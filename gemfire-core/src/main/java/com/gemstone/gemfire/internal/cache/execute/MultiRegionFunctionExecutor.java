@@ -33,7 +33,7 @@ import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
@@ -216,10 +216,10 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     }
     final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (function.optimizeForWrite() && cache != null
-        && cache.getResourceManager().containsHeapCriticalMembers(dest)
-        && !InternalResourceManager.isLowMemoryExceptionDisabled()) {
-      Set<InternalDistributedMember> hcm = cache.getResourceManager()
-          .getHeapCriticalMembers();
+        && cache.getResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
+        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      Set<InternalDistributedMember> hcm = cache.getResourceAdvisor()
+          .adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);
       throw new LowMemoryException(
           LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
@@ -395,10 +395,10 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
         }
       }
     }
-    if (function.optimizeForWrite() && cache.getResourceManager().
+    if (function.optimizeForWrite() && cache.getResourceManager().getHeapMonitor().
         containsHeapCriticalMembers(targetMembers) &&
-        !InternalResourceManager.isLowMemoryExceptionDisabled()) {
-      Set<InternalDistributedMember> hcm  = cache.getResourceManager().getHeapCriticalMembers();
+        !MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      Set<InternalDistributedMember> hcm  = cache.getResourceAdvisor().adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, targetMembers);
       throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1.toLocalizedString(
           new Object[] {function.getId(), sm}), sm);

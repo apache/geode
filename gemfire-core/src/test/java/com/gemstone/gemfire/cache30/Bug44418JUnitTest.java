@@ -1,0 +1,164 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/**
+ * 
+ */
+package com.gemstone.gemfire.cache30;
+
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CustomExpiry;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Region.Entry;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+
+/**
+ * Test for Bug 44418.
+ * 
+ * @author darrel
+ * @since 7.0
+ */
+@Category(IntegrationTest.class)
+public class Bug44418JUnitTest {
+
+  DistributedSystem ds;
+  Cache cache;
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Test
+  public void testPut() throws Exception {
+
+    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
+    try {
+      final Region r = this.cache.createRegionFactory(RegionShortcut.LOCAL)
+      .setStatisticsEnabled(true)
+      .setCustomEntryTimeToLive(new CustomExpiry() {
+        @Override
+        public void close() {
+        }
+        @Override
+        public ExpirationAttributes getExpiry(Entry entry) {
+          ExpirationAttributes result;
+          if (entry.getValue().equals("longExpire")) {
+            result = new ExpirationAttributes(5000);
+          } else {
+            result = new ExpirationAttributes(1);
+          }
+          //Bug44418JUnitTest.this.cache.getLogger().info("in getExpiry result=" + result, new RuntimeException("STACK"));
+          return result;
+        }
+      })
+      .create("bug44418");
+      r.put("key", "longExpire");
+      // should take 5000 ms to expire.
+      // Now update it with a short expire time
+      r.put("key", "quickExpire");
+      // now wait to see it expire. We only wait
+      // 1000 ms. If we need to wait that long
+      // for a 1 ms expire then the expiration
+      // is probably still set at 5000 ms.
+      long giveup = System.currentTimeMillis() + 10000;
+      boolean done = false;
+      do {
+        Thread.sleep(10);
+        done = r.containsValueForKey("key");
+      } while (!done && System.currentTimeMillis() < giveup);
+
+      if (r.containsValueForKey("key")) {
+        fail("1 ms expire did not happen after waiting 1000 ms");
+      }
+    } finally {
+      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+    }
+  }
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Test
+  public void testGet() throws Exception {
+
+    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
+    try {
+      final Region r = this.cache.createRegionFactory(RegionShortcut.LOCAL)
+      .setStatisticsEnabled(true)
+      .setCustomEntryIdleTimeout(new CustomExpiry() {
+        private boolean secondTime;
+        @Override
+        public void close() {
+        }
+        @Override
+        public ExpirationAttributes getExpiry(Entry entry) {
+          ExpirationAttributes result;
+          if (!this.secondTime) {
+            result = new ExpirationAttributes(5000);
+            this.secondTime = true;
+          } else {
+            result = new ExpirationAttributes(1);
+          }
+          Bug44418JUnitTest.this.cache.getLogger().info("in getExpiry result=" + result, new RuntimeException("STACK"));
+          return result;
+        }
+      })
+      .create("bug44418");
+      r.put("key", "longExpire");
+      // should take 5000 ms to expire.
+      r.get("key");
+      // now wait to see it expire. We only wait
+      // 1000 ms. If we need to wait that long
+      // for a 1 ms expire then the expiration
+      // is probably still set at 5000 ms.
+      long giveup = System.currentTimeMillis() + 1000;
+      boolean done = false;
+      do {
+        Thread.sleep(10);
+        // If the value is gone then we expired and are done
+        done = r.containsValueForKey("key");
+      } while (!done && System.currentTimeMillis() < giveup);
+
+      if (r.containsValueForKey("key")) {
+        fail("1 ms expire did not happen after waiting 1000 ms");
+      }
+    } finally {
+      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+    }
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (this.cache != null) {
+      this.cache.close();
+      this.cache = null;
+    }
+    if (this.ds != null) {
+      this.ds.disconnect();
+      this.ds = null;
+    }
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("mcast-port", "0");
+    props.setProperty("locators", "");
+    this.ds = DistributedSystem.connect(props);
+    this.cache = CacheFactory.create(this.ds);
+  }
+
+}

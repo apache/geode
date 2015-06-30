@@ -9,49 +9,84 @@
 
 package com.gemstone.gemfire.internal.cache.control;
 
-import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.Thresholds;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
+
 /**
  * @author sbawaska
- *
+ * @author David Hoots
  */
-public interface MemoryEvent extends ResourceEvent<MemoryEventType> {
-  /**
-   * @return the member where the event took place
-   */
-  public DistributedMember getMember();
-  /**
-   * @return current percentage of tenured/old generation used.
-   */
-  public int getCurrentHeapUsagePercent();
-  /**
-   * @return current number of used bytes in tenured/old generation.
-   */
-  public long getCurrentHeapBytesUsed();
+public class MemoryEvent implements ResourceEvent {
+  private final ResourceType type;
+  private volatile MemoryState state;
+  private final MemoryState previousState;
+  private final DistributedMember member;
+  private final long bytesUsed;
+  private final boolean isLocal;
+  private final MemoryThresholds thresholds;
+  private final long eventTime;
+ 
+  public MemoryEvent(final ResourceType type, final MemoryState previousState, final MemoryState state,
+      final DistributedMember member, final long bytesUsed, final boolean isLocal, final MemoryThresholds thresholds) {
+    this.type = type;
+    this.previousState = previousState;
+    this.state = state;
+    this.member = member;
+    this.bytesUsed = bytesUsed;
+    this.isLocal = isLocal;
+    this.thresholds = thresholds;
+    this.eventTime = System.currentTimeMillis();
+  }
 
-  /**
-   * Gets the difference between threshold and the current bytes used.
-   * For UP events, it is the bytes above threshold, for DOWN events, it is the bytes below
-   * threshold. For DISABLE events returns zero.
-   * @return the difference in bytes from threshold
-   */
-  public long getBytesFromThreshold();
+  @Override
+  public ResourceType getType() {
+    return this.type;
+  }
+  
+  public MemoryState getPreviousState() {
+    return this.previousState;
+  }
+  
+  public MemoryState getState() {
+    return this.state;
+  }
 
-  /**
-   * Determine if the event's origin is local
-   * @return true if local otherwise false
-   */
-  public boolean isLocal();
+  @Override
+  public DistributedMember getMember() {
+    return this.member;
+  }
 
-  /**
-   * Get the memory thresholds the Resource Manager was configured with
-   * when the event was fired.  Memory thresholds are mutable and they may
-   * change at any time which makes using {@link ResourceManager#getCriticalHeapPercentage()}
-   * {@link ResourceManager#getEvictionHeapPercentage()} a risk with respect to the
-   * conditions that fired this event.
-   * @return the threshold configuration for this event
-   */
-  public Thresholds getThresholds();
+  public long getBytesUsed() {
+    return this.bytesUsed;
+  }
+  
+  @Override
+  public boolean isLocal() {
+    return this.isLocal;
+  }
+  
+  public long getEventTime() {
+    return this.eventTime;
+  }
+
+  public MemoryThresholds getThresholds() {
+    return this.thresholds;
+  }
+  
+  @Override
+  public String toString() {
+    return new StringBuilder().append("MemoryEvent@")
+        .append(System.identityHashCode(this))
+        .append("[Member:" + this.member)
+        .append(",type:" + this.type)
+        .append(",previousState:" + this.previousState)
+        .append(",state:" + this.state)
+        .append(",bytesUsed:" + this.bytesUsed)
+        .append(",isLocal:" + this.isLocal)
+        .append(",eventTime:" + this.eventTime)
+        .append(",thresholds:" + this.thresholds + "]")
+        .toString();
+  }
 }
 

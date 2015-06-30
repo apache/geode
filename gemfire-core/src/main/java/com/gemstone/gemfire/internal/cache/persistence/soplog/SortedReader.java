@@ -11,6 +11,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
+import org.apache.hadoop.io.RawComparator;
 
 /**
  * Defines a means to read sorted data including performing range scans.
@@ -62,20 +63,7 @@ public interface SortedReader<V> extends Closeable {
   /**
    * Allows comparisons between serialized objects.
    */
-  public interface SerializedComparator extends Comparator<byte[]> {
-    /**
-     * Compares two byte arrays, byte-by-byte according to the comparator contract.
-     * 
-     * @param bytes1 the first array
-     * @param start1 the first starting position
-     * @param length1 the first length
-     * @param bytes2 the second array
-     * @param start2 the second starting position
-     * @param length2 the second length
-     * @return -1, 0, 1 as bytes1 is <,=,> bytes2 
-     */
-    public int compare(byte[] bytes1, int start1, int length1, 
-        byte[] bytes2, int start2, int length2); 
+  public interface SerializedComparator extends RawComparator<byte[]> {
   }
   
   /**

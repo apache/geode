@@ -1,0 +1,60 @@
+ INSTALLATION OF vFabric GFDataBrowser
+ -------------------------------------
+
+ This document describes installation of DataBrowser __VERSION__
+
+  To install GFDataBrowser, you will need:
+
+   * Java Runtime Environment 1.5.0 or higher.
+   * vFabric GemFire (required at runtime) 
+
+ Minimum System Requirements
+   * Windows XP SP2 on Intel 2 GHz Pentium 4 (or equivalent) 1 GB RAM
+   * Linux Intel 2GHz Pentium 4 (or equivalent) 1 GB RAM
+
+ Running the Installer 
+ ---------------------
+
+ Invoke the installer with this command line:
+
+ Windows:
+   %JAVA_HOME%\bin\java.exe -jar __JAR_NAME__
+  
+ UNIX and Linux:
+   ${JAVA_HOME}/bin/java -jar __JAR_NAME__
+
+   1) A License Agreement (EULA) will be displayed
+   2) You will then be prompted to choose an installation directory.
+     The product will be expanded into the directory specified. 
+     The total disk space required is approximately __SIZE__ Megabytes.
+
+ If you have difficulties getting the installer to work correctly 
+ you have the option of unzipping the jar file directly using
+ any common zip extraction tool. 
+
+ Optional Installer System Properties
+ ------------------------------------
+
+ -Dgemstone.installer.directory=<path>
+
+ Specifies the directory to install GFDataBrowser into and causes the 
+ installer to run in an unattended mode suitable for automation. The 
+ directory <path>/__PRODUCT_DIR__ will be created. The installation 
+ will fail rather than overwrite preexisting files.
+
+ Uninstalling GFDataBrowser 
+ --------------------
+ 
+ To uninstall GFDataBrowser delete the product tree.
+ No additional registry entries or system modifications are needed.
+
+ Contacting Support 
+ ---------------------------
+ VMware Support Services can be accessed from the VMware Web site 
+ or via the phone. Access varies by license type, support offering 
+ (contract or per-incident) and product. For instructions on how to 
+ file a Support Request, please see the VMware web page below on 
+ "How to File a Support Request". 
+
+ https://www.vmware.com/support/policies/howto.html
+

@@ -10,6 +10,7 @@ package com.gemstone.gemfire.pdx.internal;
 import java.nio.ByteBuffer;
 
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 import com.gemstone.gemfire.pdx.PdxFieldAlreadyExistsException;
 import com.gemstone.gemfire.pdx.PdxUnreadFields;
 
@@ -42,7 +43,7 @@ public class PdxUnreadData implements PdxUnreadFields {
     int i = 0;
     for (int idx: indexes) {
       
-      ByteBuffer field = reader.getRaw(idx);
+      ByteSource field = reader.getRaw(idx);
      
       //Copy the unread data into a new byte array
       this.unreadData[i] = new byte[field.capacity()];

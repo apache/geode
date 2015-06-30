@@ -11,6 +11,7 @@ package com.gemstone.gemfire.internal;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -134,6 +135,8 @@ public class Banner {
             out.println("    " + key + " = " + "********");
           }
         }
+        out.println("Log4J 2 Configuration:");
+        out.println("    " + LogService.getConfigInformation());
         }
 	out.println(SEPERATOR);
     }

@@ -1870,6 +1870,16 @@ public interface DistributionConfig extends Config, LogConfig {
   public static final String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
   /** @since 5.7 */
   public static final String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
+  
+     
+  /** @since 9.0 */
+  public static final String DISTRIBUTED_TRANSACTIONS_NAME = "distributed-transactions";
+  public static final boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
+
+  public boolean getDistributedTransactions();
+
+  public void setDistributedTransactions(boolean value);
+  
   /**
    * Returns the value of the <a
    * href="../DistributedSystem.html#conflate-events">"conflate-events"</a>
@@ -2511,6 +2521,42 @@ public interface DistributionConfig extends Config, LogConfig {
    public String getJmxManagerSSLProtocols( );
 
   /**
+   * Returns the value of the <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * property.
+   * @since 9.0
+   */
+  public String getOffHeapMemorySize();
+  /**
+   * Sets the value of the <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * property.
+   * @since 9.0
+   */
+  public void setOffHeapMemorySize(String value);
+  /**
+   * Returns true if the value of the <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * property can be modified. Some attributes can not be modified while the 
+   * system is running.
+   * @since 9.0
+   */
+  public boolean isOffHeapMemorySizeModifiable();
+  /** 
+   * The name of the "off-heap-memory-size" property 
+   * @since 9.0
+   */
+  public static final String OFF_HEAP_MEMORY_SIZE_NAME = "off-heap-memory-size";
+  /** 
+   * The default <a 
+   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a>
+   * value of <code>""</code>. 
+   * @since 9.0
+   */
+  public static final String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
+
+  
+  /**
    * Sets the value of the <a
    * href="../DistributedSystem.html#jmx-manager-ssl-protocols">"jmx-manager-ssl-protocols"</a>
    * property.
@@ -2791,6 +2837,31 @@ public interface DistributionConfig extends Config, LogConfig {
   public boolean isMemcachedBindAddressModifiable();
   public static String MEMCACHED_BIND_ADDRESS_NAME = "memcached-bind-address";
   public static String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
+  
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#redis-port">"redis-port"</a> property
+   * @return the port on which GemFireRedisServer should be started
+   * @since 8.0
+   */
+  public int getRedisPort();
+  public void setRedisPort(int value);
+  public boolean isRedisPortModifiable();
+  public static String REDIS_PORT_NAME = "redis-port";
+  public static int DEFAULT_REDIS_PORT = 0;
+
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#redis-bind-address">"redis-bind-address"</a> property
+   * @return the bind address for GemFireRedisServer
+   * @since 8.0
+   */
+  public String getRedisBindAddress();
+  public void setRedisBindAddress(String bindAddress);
+  public boolean isRedisBindAddressModifiable();
+  public static String REDIS_BIND_ADDRESS_NAME = "redis-bind-address";
+  public static String DEFAULT_REDIS_BIND_ADDRESS = "";
+
 
   //Added for the HTTP service
   
@@ -3545,4 +3616,25 @@ public interface DistributionConfig extends Config, LogConfig {
   public Properties getGatewaySSLProperties();
 
   public ConfigSource getConfigSource(String attName);
+
+ 
+  /**
+   * The name of the "lock-memory" property.  Used to cause pages to be locked
+   * into memory, thereby preventing them from being swapped to disk.
+   * @since 9.0
+   */
+  public static String LOCK_MEMORY_NAME = "lock-memory";
+  public static final boolean DEFAULT_LOCK_MEMORY = false;
+  /**
+   * Gets the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
+   * @since 9.0
+   */
+  public boolean getLockMemory();
+  /**
+   * Set the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
+   * @param value the new setting
+   * @since 9.0
+   */
+  public void setLockMemory(boolean value);
+  public boolean isLockMemoryModifiable();
 }

@@ -7,6 +7,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -16,19 +18,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.junit.UnitTest;
-
-import junit.framework.TestCase;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * @author dsmith
  *
  */
 @Category(UnitTest.class)
-public class FileUtilJUnitTest extends TestCase {
+public class FileUtilJUnitTest {
   
+  @Test
   public void testCopyFile() throws IOException {
     File source = File.createTempFile("FileUtilJUnitTest", null);
     File dest = File.createTempFile("FileUtilJUnitTest", null);
@@ -60,4 +62,17 @@ public class FileUtilJUnitTest extends TestCase {
     }
   }
 
+  @Test
+  public void testStripOffExtension() {
+    String fileName = "filename";
+    assertEquals("filename", FileUtil.stripOffExtension(fileName));
+    fileName = "filename.txt";
+    assertEquals("filename", FileUtil.stripOffExtension(fileName));
+    fileName = "filename.txt.txt";
+    assertEquals("filename.txt", FileUtil.stripOffExtension(fileName));
+    fileName = "filename.txt.log";
+    assertEquals("filename.txt", FileUtil.stripOffExtension(fileName));
+    fileName = "/dir/dir/dir/dir/filename.txt.log";
+    assertEquals("/dir/dir/dir/dir/filename.txt", FileUtil.stripOffExtension(fileName));
+  }
 }

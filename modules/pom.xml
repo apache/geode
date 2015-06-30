@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.gemstone</groupId>
+  <artifactId>gemfire-modules-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>gemfire-modules-parent</name>
+  <url>http://maven.apache.org</url>
+
+  <modules>
+    <module>gemfire-modules</module>
+    <module>gemfire-modules-tomcat7</module>
+    <module>gemfire-modules-session</module>
+    <module>gemfire-modules-session-external</module>
+    <module>gemfire-modules-session-integration-test</module>
+    <module>gemfire-modules-slf4j-weblogic</module>
+    <module>gemfire-modules-hibernate</module>
+    <module>gemfire-modules-assembly</module>
+  </modules>
+
+  <!--
+    Versions should be defined here. This makes script filtering possible
+    where we have explicit versions of jar referenced.
+  -->
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <gemfire.version>8.1.0</gemfire.version>
+    <gemfire.modules.version>8.1.0</gemfire.modules.version>
+    <slf4j.version>1.7.7</slf4j.version>
+    <log4j.version>2.1</log4j.version>
+    <servlet-api.version>2.5</servlet-api.version>
+    <httpunit.version>1.7.2</httpunit.version>
+    <tomcat.version>6.0.29</tomcat.version>
+    <s3-url>s3://dist.gemstone.com/maven/release</s3-url>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.gemstone</groupId>
+        <artifactId>gemfire-modules</artifactId>
+        <version>${gemfire.modules.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gemstone</groupId>
+        <artifactId>gemfire-modules-tomcat7</artifactId>
+        <version>${gemfire.modules.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gemstone</groupId>
+        <artifactId>gemfire-modules-hibernate</artifactId>
+        <version>${gemfire.modules.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gemstone</groupId>
+        <artifactId>gemfire-modules-session</artifactId>
+        <version>${gemfire.modules.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gemstone</groupId>
+        <artifactId>gemfire-modules-session-external</artifactId>
+        <version>${gemfire.modules.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gemstone</groupId>
+        <artifactId>gemfire-modules-slf4j-weblogic</artifactId>
+        <version>${gemfire.modules.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.10</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.tomcat</groupId>
+        <artifactId>catalina</artifactId>
+        <version>${tomcat.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gemstone.gemfire</groupId>
+        <artifactId>gemfire</artifactId>
+        <version>${gemfire.version}</version>
+        <scope>compile</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-modeler</groupId>
+            <artifactId>commons-modeler</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.eclipse.jdt.core.compiler</groupId>
+            <artifactId>ecj</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-logging-juli</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>net.sourceforge.jline</groupId>
+            <artifactId>jline</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-gemfire</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-expression</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework.shell</groupId>
+            <artifactId>spring-shell</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-logging-juli</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>${servlet-api.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.tomcat</groupId>
+        <artifactId>coyote</artifactId>
+        <version>${tomcat.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.httpunit</groupId>
+        <artifactId>httpunit</artifactId>
+        <version>${httpunit.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>rhino</groupId>
+        <artifactId>js</artifactId>
+        <version>1.7R2</version>
+        <scope>test</scope>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>2.4.1</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${java.io.tmpdir}/gemfire_modules-${user.name}
+              </directory>
+              <includes>
+                <include>**</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+      <!--
+        Only a subset of the artifacts need to be pushed to S3 for Cloud Foundry
+        Java Buildpack consumption. Thus each relevant module needs a profile section
+        where this plugin is NOT skipped.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <extensions>
+      <extension>
+        <groupId>org.springframework.build</groupId>
+        <artifactId>aws-maven</artifactId>
+        <version>5.0.0.RELEASE</version>
+      </extension>
+    </extensions>
+  </build>
+
+  <repositories>
+    <repository>
+      <id>gemstone-nexus</id>
+      <name>Internal Gemstone Maven Repository</name>
+      <url>http://nexus.gemstone.com:8081/nexus/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>aws-gemstone-release-repo</id>
+      <name>AWS Gemstone Release Repository</name>
+      <url>http://dist.gemstone.com/maven/release</url>
+    </repository>
+  </repositories>
+
+  <!--
+    In order to deploy to S3, you need to use the 's3' profile. run maven with:
+      mvn -P s3 deploy
+  -->
+  <profiles>
+    <profile>
+      <id>default</id>
+      <distributionManagement>
+        <repository>
+          <id>gemstone-internal-release</id>
+          <name>Internal Gemstone Maven Release Repository</name>
+          <url>http://nexus.gemstone.com:8081/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+          <id>gemstone-internal-snapshot</id>
+          <name>Internal Gemstone Maven Snapshot Repository</name>
+          <url>http://nexus.gemstone.com:8081/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>s3</id>
+      <distributionManagement>
+        <repository>
+          <id>modules-s3-release</id>
+          <name>AWS S3 Gemstone Maven Release Repository</name>
+          <url>${s3-url}</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
+
+</project>

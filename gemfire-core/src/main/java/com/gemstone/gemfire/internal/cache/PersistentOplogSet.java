@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.DiskAccessException;
 import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
 import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
@@ -174,15 +175,15 @@ public class PersistentOplogSet implements OplogSet {
   }
   
   @Override
-  public void create(LocalRegion region, DiskEntry entry, byte[] value,
-      boolean isSerializedObject, boolean async) {
-    getChild().create(region, entry, value, isSerializedObject, async);
+  public void create(LocalRegion region, DiskEntry entry, ValueWrapper value,
+      boolean async) {
+    getChild().create(region, entry, value, async);
   }
   
   @Override
-  public void modify(LocalRegion region, DiskEntry entry, byte[] value,
-      boolean isSerializedObject, boolean async) {
-    getChild().modify(region, entry, value, isSerializedObject, async);
+  public void modify(LocalRegion region, DiskEntry entry, ValueWrapper value,
+      boolean async) {
+    getChild().modify(region, entry, value, async);
   }
   
   public void offlineModify(DiskRegionView drv, DiskEntry entry, byte[] value, boolean isSerializedObject) {

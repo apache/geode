@@ -25,11 +25,15 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
@@ -292,12 +296,80 @@ public class Message  {
   public void addObjPart(Object o) {
     addObjPart(o, false);
   }
+  /**
+   * Like addObjPart(Object) but also prefers to reference
+   * objects in the part instead of copying them into a byte buffer.
+   */
+  public void addObjPartNoCopying(Object o) {
+    if (o == null || o instanceof byte[]) {
+      addRawPart((byte[])o, false);
+    } else {
+      serializeAndAddPartNoCopying(o);
+    }
+  }
   public void addObjPart(Object o, boolean zipValues) {
     if (o == null || o instanceof byte[]) {
       addRawPart((byte[])o, false);
     } else {
       serializeAndAddPart(o, zipValues);
     }
+  }
+  public void addPartInAnyForm(@Unretained Object o, boolean isObject) {
+    if (o == null) {
+      addRawPart((byte[])o, false);
+    } else if (o instanceof byte[]) {
+      addRawPart((byte[])o, isObject);
+    } else if (o instanceof StoredObject) {
+      // It is possible it is an off-heap StoredObject that contains a simple non-object byte[].
+      this.messageModified = true;
+      Part part = partsList[this.currentPart];
+      part.setPartState((StoredObject)o, isObject);
+      this.currentPart++;
+    } else {
+      serializeAndAddPart(o, false);
+    }
+  }
+  
+  private void serializeAndAddPartNoCopying(Object o) {
+    HeapDataOutputStream hdos;
+    Version v = destVersion;
+    if (destVersion.equals(Version.CURRENT)){
+      v = null;
+    }
+    // create the HDOS with a flag telling it that it can keep any byte[] or ByteBuffers/ByteSources passed to it.
+    hdos = new HeapDataOutputStream(chunkSize, v, true);
+    // TODO OFFHEAP: Change Part to look for an HDOS and just pass a reference to its DirectByteBuffer.
+    // Then change HDOS sendTo(SocketChannel...) to use the GatheringByteChannel to write a bunch of bbs.
+    // TODO OFFHEAP This code optimizes one part which works pretty good for getAll since all the values are
+    // returned in one part. But the following seems even better...
+    // BETTER: change Message to consolidate all the part hdos bb lists into a single bb array and have it do the GatheringByteChannel write.
+    // Message can use slice for the small parts (msg header and part header) that are not in the parts data (its a byte array, Chunk, or HDOS).
+    // EVEN BETTER: the message can have a single HDOS which owns a direct comm buffer. It can reserve space if it does not yet know the value to write (for example the size of the message or part).
+    // If we write something to the HDOS that is direct then it does not need to be copied.
+    // But large heap byte arrays will need to be copied to the hdos (the socket write does this anyway).
+    // If the direct buffer is full then we can allocate another one. If a part is already in a heap byte array
+    // then we could defer copying it by slicing the current direct bb and then adding the heap byte array
+    // as bb using ByteBuffer.wrap. Once we have all the data in the HDOS we can finally generate the header
+    // and then start working on sending the ByteBuffers to the channel. If we have room in a direct bb then
+    // we can copy a heap bb to it. Otherwise we can write the bb ahead of it which would free up room to copy
+    // the heap bb to the existing direct bb without needing to allocate extra direct bbs.
+    // Delaying the flush uses more direct memory but reduces the number of system calls.
+    try {
+//      logger.fine("hitesh before serializatino: " );
+//      
+//      if (o != null ){
+//        logger.fine("hitesh before serializatino: " + o.toString());
+//        logger.fine("hitesh before serializatino: " + o.getClass().getName());
+//      }
+      BlobHelper.serializeTo(o, hdos);
+    } catch (IOException ex) {
+      throw new SerializationException("failed serializing object", ex);
+    }
+    this.messageModified = true;
+    Part part = partsList[this.currentPart];
+    part.setPartState(hdos, true);
+    this.currentPart++;
+    
   }
 
   private void serializeAndAddPart(Object o, boolean zipValues) {
@@ -422,7 +494,7 @@ public class Message  {
     if (this.socket != null) {
       getCommBuffer().clear();
     }
-    flush();
+    clearParts();
     if (len != 0 && this.dataLimiter != null) {
       this.dataLimiter.release(len);
       this.dataLimiter = null;
@@ -547,7 +619,7 @@ public class Message  {
             if (this.sockCh != null) {
               part.sendTo(this.sockCh, cb);
             } else {
-              part.sendTo(this.os);
+              part.sendTo(this.os, cb);
             }
             if (this.msgStats != null) {
               this.msgStats.incSentBytes(partLen);
@@ -563,7 +635,7 @@ public class Message  {
         }
       }
       if(clearMessage) {
-        flush();
+        clearParts();
       }
     }
     else {
@@ -589,7 +661,7 @@ public class Message  {
 
   private void read()
   throws IOException {
-    flush();
+    clearParts();
     //TODO:Hitesh ??? for server changes make sure sc is not null as this class also used by client :(
     readHeaderAndPayload();
   }
@@ -1003,14 +1075,17 @@ public class Message  {
   }
 
   /**
-   * Flushes any previously unwritten information and resets this
-   * <code>Message</code> object for reuse.
+   * Gets rid of all the parts that have been added to this message.
    */
-  public void flush() {
+  public void clearParts() {
     for (int i=0; i< partsList.length; i++){
       partsList[i].clear();
     }
     this.currentPart=0;
+  }
+  public void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
+    this.sc = sc;
+    setComms(socket, bb, msgStats);
   }
 
   public void setComms(Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
@@ -1057,7 +1132,7 @@ public class Message  {
   
   public void send(ServerConnection servConn)
   throws IOException {
-    this.sc = servConn;
+    if (this.sc != servConn) throw new IllegalStateException("this.sc was not correctly set");
     send(true);
   }
   
@@ -1068,16 +1143,6 @@ public class Message  {
   public void send(boolean clearMessage)
   throws IOException {
     sendBytes(clearMessage);
-  }
-
-  public void send(ServerConnection servConn, int transactionId) throws IOException {
-    this.sc = servConn;
-    sendBytes(true);
-  }
-
-  public void send(int transactionId)
-    throws IOException {
-    sendBytes(true);
   }
 
   /**

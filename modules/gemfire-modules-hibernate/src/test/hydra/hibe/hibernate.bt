@@ -1,0 +1,8 @@
+gemfirePlugins/p2pJPAB.conf 
+   locatorHosts=1 locatorVMsPerHost=1 locatorThreadsPerVM=1
+
+gemfirePlugins/hctJPAB.conf 
+   locatorHosts=1 locatorVMsPerHost=1 locatorThreadsPerVM=1
+   A=client clientHosts=1 clientVMsPerHost=4 clientThreadsPerVM=1
+   B=hibernate hibernateHosts=1 hibernateVMsPerHost=1 hibernateThreadsPerVM=1
+

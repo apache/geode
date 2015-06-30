@@ -1,0 +1,18 @@
+test {
+  include '**/HibernateTestCase.class'
+  include '**/SecondVMTest.class'
+
+  testLogging {
+    exceptionFormat = 'full'
+  }
+}
+
+dependencies {
+  compile project(':gemfire-modules')
+  compile 'org.hibernate:hibernate-core:3.5.0-Final'
+  compile 'org.hibernate:hibernate-annotations:3.5.5-Final'
+
+  testRuntime 'org.slf4j:slf4j-jdk14:1.7.7'
+  testRuntime 'org.hsqldb:hsqldb:2.0.0'
+  testRuntime 'org.javassist:javassist:3.13.0-GA'
+}

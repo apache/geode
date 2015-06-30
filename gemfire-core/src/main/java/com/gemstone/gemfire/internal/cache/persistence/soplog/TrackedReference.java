@@ -7,6 +7,8 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence.soplog;
 
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -16,12 +18,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @param <T> the reference type
  */
-public class TrackedReference<T> {
+public final class TrackedReference<T> {
   /** the referent */
   private final T ref;
   
   /** the number of uses */
   private final AtomicInteger uses;
+  
+  /** list of users using this reference. Mainly for debugging */
+  final ConcurrentHashMap<String, AtomicInteger> users;
 
   /**
    * Decrements the use count of each reference.
@@ -36,13 +41,14 @@ public class TrackedReference<T> {
   public TrackedReference(T ref) {
     this.ref = ref;
     uses = new AtomicInteger(0);
+    users = new ConcurrentHashMap<String, AtomicInteger>();
   }
   
   /**
    * Returns the referent.
    * @return the referent
    */
-  public T get() {
+  public final T get() {
     return ref;
   }
   
@@ -76,7 +82,24 @@ public class TrackedReference<T> {
    * @return the current uses
    */
   public int increment() {
+    return increment(null);
+  }
+  
+  /**
+   * Increments the use counter and returns the current count.
+   * @return the current uses
+   */
+  public int increment(String user) {
     int val = uses.incrementAndGet();
+    if (user != null) {
+      AtomicInteger counter = users.get(user);
+      if (counter == null) {
+        counter = new AtomicInteger();
+        users.putIfAbsent(user, counter);
+        counter = users.get(user);
+      }
+      counter.incrementAndGet();
+    }
     assert val >= 1;
     
     return val;
@@ -87,14 +110,36 @@ public class TrackedReference<T> {
    * @return the current uses
    */
   public int decrement() {
+    return decrement(null);
+  }
+  
+  /**
+   * Decrements the use counter and returns the current count.
+   * @return the current uses
+   */
+  public int decrement(String user) {
     int val = uses.decrementAndGet();
     assert val >= 0;
-
+    if (user != null) {
+      AtomicInteger counter = users.get(user);
+      if (counter != null) {
+        counter.decrementAndGet();
+      }
+    }
+    
     return val;
   }
   
   @Override
   public String toString() {
+    if (users != null) {
+      StringBuffer sb = new StringBuffer();
+      sb.append(ref.toString()).append(": ").append(uses());
+      for (Entry<String, AtomicInteger> user : users.entrySet()) {
+        sb.append(" ").append(user.getKey()).append(":").append(user.getValue().intValue());
+      }
+      return sb.toString();
+    }
     return uses() + ": " + ref.toString();
   }
 }

@@ -66,6 +66,8 @@ public final class ClientMetadataService {
   /** random number generator used in pruning */
   private final Random rand = new Random();
   
+  private volatile boolean isMetadataStable = true; 
+  
   public ClientMetadataService(Cache cache) {
     this.cache = cache;
   }
@@ -264,13 +266,14 @@ public final class ClientMetadataService {
       ClientPartitionAdvisor prAdvisor, Set<Integer> bucketSet,
       boolean primaryOnly) {
     if (primaryOnly) {
-      Set<Integer> bucketsWithoutServer = new HashSet<Integer>();
       HashMap<ServerLocation, HashSet<Integer>> serverToBucketsMap = new HashMap<ServerLocation, HashSet<Integer>>();
       for (Integer bucketId : bucketSet) {
         ServerLocation server = prAdvisor.advisePrimaryServerLocation(bucketId);
         if (server == null) {
-          bucketsWithoutServer.add(bucketId);          
-          continue;
+          //If we don't have the metadata for some buckets, return
+          //null, indicating that we don't have any metadata. This
+          //will cause us to use the non-single hop path.
+          return null;
         }
         HashSet<Integer> buckets = serverToBucketsMap.get(server);
         if (buckets == null) {
@@ -280,11 +283,6 @@ public final class ClientMetadataService {
         buckets.add(bucketId);
       }
 
-      if (!serverToBucketsMap.isEmpty() ) {
-        serverToBucketsMap.entrySet().iterator().next().getValue().addAll(
-            bucketsWithoutServer);
-      }
-      
       if (logger.isDebugEnabled()) {
         logger.debug("ClientMetadataService: The server to bucket map is : {}", serverToBucketsMap);
       }
@@ -304,7 +302,6 @@ public final class ClientMetadataService {
     if (isDebugEnabled) {
       logger.debug("ClientMetadataService: The buckets to be pruned are: {}", buckets);
     }
-    Set<Integer> bucketSetWithoutServer =  new HashSet<Integer>();
     HashMap<ServerLocation, HashSet<Integer>> serverToBucketsMap = new HashMap<ServerLocation, HashSet<Integer>>();
     HashMap<ServerLocation, HashSet<Integer>> prunedServerToBucketsMap = new HashMap<ServerLocation, HashSet<Integer>>();
 
@@ -314,9 +311,11 @@ public final class ClientMetadataService {
       if (isDebugEnabled) {
         logger.debug("ClientMetadataService: For bucketId {} the server list is {}", bucketId, serversList);
       }
-      if ((serversList == null || serversList.size() == 0) ) {       
-        bucketSetWithoutServer.add(bucketId);        
-        continue;
+      if (serversList == null || serversList.size() == 0) {
+        //If we don't have the metadata for some buckets, return
+        //null, indicating that we don't have any metadata. This
+        //will cause us to use the non-single hop path.
+        return null;
       }
       
       if (isDebugEnabled) {
@@ -385,9 +384,6 @@ public final class ClientMetadataService {
       }
       serverToBucketsMap.remove(server);
     }
-    prunedServerToBucketsMap.entrySet().iterator().next().getValue().addAll(
-        bucketSetWithoutServer);
-    
     
     if (isDebugEnabled) {
       logger.debug("ClientMetadataService: The final prunedServerToBucket calculated is : {}", prunedServerToBucketsMap);
@@ -508,6 +504,7 @@ public final class ClientMetadataService {
     if(this.nonPRs.contains(region.getFullPath())){
       return;
     }
+    this.setMetadataStable(false);
     region.getCachePerfStats().incNonSingleHopsCount();
     if (isRecursive) {
       try {
@@ -830,6 +827,14 @@ public final class ClientMetadataService {
     return HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP;
   }
   
+  public boolean isMetadataStable() {
+    return isMetadataStable;
+  }
+
+  public void setMetadataStable(boolean isMetadataStable) {
+    this.isMetadataStable = isMetadataStable;
+  }
+
   private boolean isMetadataRefreshed_TEST_ONLY = false;
 
 }

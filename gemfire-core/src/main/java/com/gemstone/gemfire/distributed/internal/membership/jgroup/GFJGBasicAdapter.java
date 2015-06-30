@@ -20,6 +20,7 @@ import java.util.Properties;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -40,8 +41,9 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.org.jgroups.Address;
 import com.gemstone.org.jgroups.Header;
 import com.gemstone.org.jgroups.Message;
-import com.gemstone.org.jgroups.stack.GFBasicAdapter;
+import com.gemstone.org.jgroups.spi.GFBasicAdapter;
 import com.gemstone.org.jgroups.stack.IpAddress;
+import com.gemstone.org.jgroups.util.ExternalStrings;
 import com.gemstone.org.jgroups.util.GFLogWriter;
 import com.gemstone.org.jgroups.util.GemFireTracer;
 import com.gemstone.org.jgroups.util.SockCreator;
@@ -86,7 +88,11 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
   @Override
   public <T> T readObject(DataInput in) throws IOException,
       ClassNotFoundException {
-    return DataSerializer.readObject(in);
+    try {
+      return DataSerializer.readObject(in);
+    } catch (InternalGemFireError e) {
+      throw new IOException(e.getMessage(), e);
+    }
   }
 
   @Override
@@ -138,11 +144,14 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
   
   static final byte CACHE_OP = 1; // GemStoneAddition
   static final byte HIGH_PRIORITY = 8; // GemStoneAddition
+  
+  static boolean DEBUG_SERIALIZATION = false;
 
 
   
   @Override
   public void serializeJGMessage(Message msg, DataOutputStream out) throws IOException {
+    GemFireTracer log = GemFireTracer.getLog(GFJGBasicAdapter.class);
     //int begIdx = out.size(); // GemStoneAddition
     byte leading=0;
 
@@ -157,6 +166,9 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
       out = new VersionedDataOutputStream(out, Version.fromOrdinalNoThrow(serVersion, false));
     }
     Version.writeOrdinal(out, serVersion, true);
+    if (DEBUG_SERIALIZATION) {
+      log.info("wrote version " + serVersion);
+    }
 
     if(msg.getSrc() != null) {
         leading+=SRC_SET;
@@ -172,6 +184,9 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
 
     // 1. write the leading byte first
     out.write(leading);
+    if (DEBUG_SERIALIZATION) {
+      log.info("wrote leading byte " + leading);
+    }
 
     // 2. dest_addr
 //    if(dest_addr != null) {
@@ -185,9 +200,15 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
     if(msg.getSrc() != null) {
         if(msg.getSrc() instanceof IpAddress) {
            InternalDataSerializer.invokeToData(((IpAddress)msg.getSrc()), out); // GemStoneAddition
+           if (DEBUG_SERIALIZATION) {
+             log.info("wrote Ipaddress " + msg.getSrc());
+           }
         }
         else {
             Util.writeAddress(msg.getSrc(), out);
+            if (DEBUG_SERIALIZATION) {
+              log.info("wrote address using Util " + msg.getSrc());
+            }
         }
         //eidx = out.size();
         //if ( (eidx - sidx) > src_addr.size() ) {
@@ -202,20 +223,27 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
     if (msg.isHighPriority)
       gfFlags += HIGH_PRIORITY;
     out.write(gfFlags);
+    if (DEBUG_SERIALIZATION) {
+      log.info("wrote gfFlags " + gfFlags);
+    }
     
     // 4. buf
     if(msg.getRawBuffer() != null) {
-        out.writeInt(msg.getLength()-msg.getOffset());
-        out.write(msg.getRawBuffer(), msg.getOffset(), msg.getLength());
+        int length = msg.getLength();
+        out.writeInt(length);
+        out.write(msg.getRawBuffer(), msg.getOffset(), length);
+        if (DEBUG_SERIALIZATION) {
+          log.info("wrote " + length + " payload bytes");
+        }
     }
 
     // 5. headers
     short size=(short)msg.getHeaders().size();
     out.writeShort(size);
     Map.Entry        entry;
-//    if (log.isTraceEnabled()) {
-//      log.trace("writing " + size + " headers");
-//    }
+    if (DEBUG_SERIALIZATION) {
+      log.info("writing " + size + " headers");
+    }
     //long estSize, startPos, endPos; // GemStoneAddition
     for(Iterator it=msg.getHeaders().entrySet().iterator(); it.hasNext();) {
         entry=(Map.Entry)it.next();
@@ -234,9 +262,9 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
         msg.writeHeader((Header)entry.getValue(), hdos);
         hdos.flush();
         byte[] headerBytes = baos.toByteArray();
-//        if (log.isTraceEnabled()) {
-//          log.trace("writing header " + entry.getKey() + " length=" + headerBytes.length);
-//        }
+        if (DEBUG_SERIALIZATION) {
+          log.info("writing header " + entry.getKey() + " length=" + headerBytes.length);
+        }
         out.writeInt(headerBytes.length);
         out.write(headerBytes);
         //endPos = out.size();
@@ -257,9 +285,14 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
     String hdr_name;
     Header hdr = null;
 
+    GemFireTracer log = GemFireTracer.getLog(GFJGBasicAdapter.class);
+
     // create a versioned stream if a different version
     // was used to multicast this message
     short sv = Version.readOrdinal(in);
+    if (DEBUG_SERIALIZATION) {
+      log.info("read version " + sv);
+    }
     msg.setVersion(sv);
     
     if (0 < msg.getVersion()  &&  msg.getVersion() < Version.CURRENT_ORDINAL) {
@@ -272,6 +305,9 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
 
     // 1. read the leading byte first
     leading=in.readByte();
+    if (DEBUG_SERIALIZATION) {
+      log.info("read leading byte " + leading);
+    }
 
     // 2. dest_addr
 //    if((leading & DEST_SET) == DEST_SET) {
@@ -291,6 +327,9 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
             IpAddress src_addr=new IpAddress();
             try {
               InternalDataSerializer.invokeFromData(((IpAddress)src_addr), in);
+              if (DEBUG_SERIALIZATION) {
+                log.info("read src_addr " + src_addr);
+              }
             } catch (ClassNotFoundException e) {
               throw new IOException(e);
             } // GemStoneAddition
@@ -299,11 +338,17 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
         }
         else {
             msg.setSrc(Util.readAddress(in));
+            if (DEBUG_SERIALIZATION) {
+              log.info("read address using Util " + msg.getSrc());
+            }
         }
     }
     
     // GemStoneAddition
     byte gfFlags = in.readByte();
+    if (DEBUG_SERIALIZATION) {
+      log.info("read gfFlags " + gfFlags);
+    }
     if ( (gfFlags & CACHE_OP) != 0 )
       msg.isCacheOperation = true;
     if ( (gfFlags & HIGH_PRIORITY) != 0 )
@@ -312,6 +357,14 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
     // 4. buf
     if((leading & BUF_SET) == BUF_SET) {
         len=in.readInt();
+        if (65535 < len  ||  len < 0) {
+          String sender = msg.getSrc() != null?  msg.getSrc().toString() : "(unknown sender)";
+          log.getLogWriter().warning(ExternalStrings.CORRUPTED_MESSAGE_RECEIVED, sender);
+          throw new IOException(ExternalStrings.CORRUPTED_MESSAGE_RECEIVED.toLocalizedString(sender));
+        }
+        if (DEBUG_SERIALIZATION) {
+          log.info("reading " + len + " payload bytes");
+        }
         try { // GemStoneAddition -- flag this as a problem
           msg.setBuffer(new byte[len]);
         }
@@ -330,12 +383,15 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
     if (msg.getHeaders() == null) {
       msg.setHeaders(msg.createHeaders(len));
     }
+    if (DEBUG_SERIALIZATION) {
+      log.info("reading " + len + " headers");
+    }
     for(int i=0; i < len; i++) {
         hdr_name=in.readUTF();
         int hlen = in.readInt();
-//        if (log.isTraceEnabled()) {
-//          log.trace("reading header " + hdr_name + " of length " + hlen);
-//        }
+        if (DEBUG_SERIALIZATION) {
+          log.info("reading header " + hdr_name + " of length " + hlen);
+        }
         byte[] headerBytes = new byte[hlen];
         in.readFully(headerBytes);
         ByteArrayInputStream bais = new ByteArrayInputStream(headerBytes);
@@ -351,12 +407,12 @@ public class GFJGBasicAdapter implements GFBasicAdapter {
         }
         try {
           hdr=msg.readHeader(dis);
-//          if (log.isTraceEnabled()) {
-//            log.trace("read " + hdr.toString());
-//          }
+          if (DEBUG_SERIALIZATION) {
+            log.info("read " + hdr.toString());
+          }
           msg.getHeaders().put(hdr_name, hdr);
         } catch (Exception e) {
-          GemFireTracer log = GemFireTracer.getLog(getClass());
+          log = GemFireTracer.getLog(getClass());
           if (log.isErrorEnabled()) {
             log.error("Failed to deserialize a header " + hdr_name + " of length " + hlen, e);
           }

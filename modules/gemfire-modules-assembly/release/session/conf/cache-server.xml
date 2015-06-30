@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_6.dtd">
+  
+<cache>
+
+  <!-- Uncomment the following gateway-hub element to create a gateway hub -->
+  <!--
+  <gateway-hub id="NY" port="11110">
+    <gateway id="LN">
+      <gateway-endpoint id="LN-1" host="localhost" port="22220"/>
+      <gateway-queue disk-store-name="NY_GATEWAY"/>
+    </gateway>
+  </gateway-hub>
+  -->
+
+  <!-- Uncomment the following cache-server element to modify the listen port -->
+  <!--
+  <cache-server port="44444"/>
+  -->
+
+  <!-- Uncomment the following disk-store element to modify the default disk store directory -->
+  <!--
+  <disk-store name="DEFAULT">
+    <disk-dirs>
+      <disk-dir>/path/to/persistent/data</disk-dir>
+    </disk-dirs>
+  </disk-store>
+  -->
+  
+  <!-- Uncomment the following disk-store element to create the NY_GATEWAY disk store
+       (for the gateway-hub element defined above) -->
+  <!--
+  <disk-store name="NY_GATEWAY">
+    <disk-dirs>
+      <disk-dir>/path/to/persistent/data</disk-dir>
+    </disk-dirs>
+  </disk-store>
+  -->
+  
+  <!-- This is the definition of the default session region -->
+  <!--
+  <region name="gemfire_modules_sessions">
+    <region-attributes enable-gateway="false" data-policy="partition" statistics-enabled="true">
+      <partition-attributes redundant-copies="1" total-num-buckets="113"/>
+    </region-attributes>
+  </region>
+  -->
+
+</cache>

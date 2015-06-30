@@ -52,7 +52,7 @@ public class GetPdxTypes70 extends BaseCommand {
     responseMsg.setNumberOfParts(1);
     responseMsg.setTransactionId(msg.getTransactionId());
     responseMsg.addObjPart(types);
-    responseMsg.send(servConn, msg.getTransactionId());
+    responseMsg.send(servConn);
     servConn.setAsTrue(RESPONDED);
   }
 }

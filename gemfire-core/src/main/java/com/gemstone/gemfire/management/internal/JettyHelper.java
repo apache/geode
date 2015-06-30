@@ -147,6 +147,7 @@ public class JettyHelper {
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath);
     webapp.setParentLoaderPriority(false);
+    webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
 
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));
     tmpPath.mkdirs();

@@ -523,10 +523,12 @@ public class AcceptorImpl extends Acceptor implements Runnable
       }
       {
         InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-        DM dm = ds.getDistributionManager();
-        if (dm.getDistributionManagerId().getPort() == 0 && (dm instanceof LonerDistributionManager)) {
-          // a server with a loner distribution manager - update it's port number
-          ((LonerDistributionManager)dm).updateLonerPort(port);
+        if (ds != null) {
+          DM dm = ds.getDistributionManager();
+          if (dm != null && dm.getDistributionManagerId().getPort() == 0 && (dm instanceof LonerDistributionManager)) {
+            // a server with a loner distribution manager - update it's port number
+            ((LonerDistributionManager)dm).updateLonerPort(port);
+          }
         }
       }
       this.localPort = port;
@@ -1669,30 +1671,32 @@ public class AcceptorImpl extends Acceptor implements Runnable
         this.hsPool.shutdownNow();
         this.stats.close();
         GemFireCacheImpl myCache = (GemFireCacheImpl)cache;
-        Set<PartitionedRegion> prs = myCache.getPartitionedRegions();
-        for (PartitionedRegion pr : prs) {
-          Map<Integer, BucketAdvisor.BucketProfile> profiles = new HashMap<Integer, BucketAdvisor.BucketProfile>();
-          // get all local real bucket advisors
-          Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor()
-              .getAllBucketAdvisors();
-          for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
-            BucketAdvisor advisor = entry.getValue();
-            BucketProfile bp = (BucketProfile)advisor.createProfile();
-            advisor.updateServerBucketProfile(bp);
-            profiles.put(entry.getKey(), bp);
-          }
-          Set receipients = new HashSet();
-          receipients = pr.getRegionAdvisor().adviseAllPRNodes();
-          // send it to all in one messgae
-          ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(
-              receipients, pr.getDistributionManager(), pr.getPRId(), profiles,
-              true);
-          if (reply != null) {
-            reply.waitForRepliesUninterruptibly();
-          }
-
-          if (logger.isDebugEnabled()) {
-            logger.debug("sending messages to all peers for removing this server..");
+        if (!myCache.forcedDisconnect()) {
+          Set<PartitionedRegion> prs = myCache.getPartitionedRegions();
+          for (PartitionedRegion pr : prs) {
+            Map<Integer, BucketAdvisor.BucketProfile> profiles = new HashMap<Integer, BucketAdvisor.BucketProfile>();
+            // get all local real bucket advisors
+            Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor()
+                .getAllBucketAdvisors();
+            for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
+              BucketAdvisor advisor = entry.getValue();
+              BucketProfile bp = (BucketProfile)advisor.createProfile();
+              advisor.updateServerBucketProfile(bp);
+              profiles.put(entry.getKey(), bp);
+            }
+            Set receipients = new HashSet();
+            receipients = pr.getRegionAdvisor().adviseAllPRNodes();
+            // send it to all in one messgae
+            ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(
+                receipients, pr.getDistributionManager(), pr.getPRId(), profiles,
+                true);
+            if (reply != null) {
+              reply.waitForRepliesUninterruptibly();
+            }
+  
+            if (logger.isDebugEnabled()) {
+              logger.debug("sending messages to all peers for removing this server..");
+            }
           }
         }
 

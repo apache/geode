@@ -118,7 +118,7 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
           }
           responseMsg.addObjPart(leaderRegionPath);
           responseMsg.send();
-          msg.flush();
+          msg.clearParts();
         }
         catch (Exception e) {
           writeException(msg, e, false, servConn);

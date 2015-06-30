@@ -7,6 +7,8 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence.soplog;
 
+import org.apache.hadoop.hbase.util.Bytes;
+
 import com.gemstone.gemfire.internal.cache.persistence.soplog.SortedReader.SerializedComparator;
 
 /**
@@ -40,14 +42,6 @@ public class ByteComparator implements SerializedComparator {
    */
   
   public static int compareBytes(byte[] r, int rOff, int rLen, byte[] l, int lOff, int lLen) {
-    int rLast = rOff + rLen;
-    int lLast = lOff + lLen;
-    for (int i = rOff, j = lOff; i < rLast && j < lLast; i++, j++) {
-      int diff = (r[i] & 0xff) - (l[j] & 0xff);
-      if (diff != 0) {
-        return diff;
-      }
-    }
-    return rLen - lLen;
+    return Bytes.compareTo(r, rOff, rLen, l, lOff, lLen);
   }
 }

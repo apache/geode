@@ -10,11 +10,14 @@ package com.gemstone.gemfire.internal.cache;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.cache.TXEntryState.DistTxThinEntryState;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 import java.util.*;
 import java.util.Map.Entry;
+
+import org.apache.logging.log4j.Logger;
 
 /** TXRegionState is the entity that tracks all the changes a transaction
  * has made to a region.
@@ -26,16 +29,22 @@ import java.util.Map.Entry;
  * @see TXManagerImpl
  */
 public class TXRegionState {
+  private static final Logger logger = LogService.getLogger();
+  
   // A map of Objects (entry keys) -> TXEntryState
   private final HashMap<Object, TXEntryState> entryMods;
   // A map of Objects (entry keys) -> TXEntryUserAttrState
   private HashMap uaMods;
   private Set<InternalDistributedMember> otherMembers = null;
-  private LocalRegion region;
   private TXState txState;
+  private LocalRegion region;
   private final boolean needsRefCounts;
   private boolean cleanedUp;
-  
+  /*
+   * For Distributed Tx
+   * Created during precommit, to apply changes on secondaries/replicates from coordinator.
+   */
+  private boolean createdDuringCommit;
 
   public TXRegionState(LocalRegion r,TXState txState) 
   {
@@ -74,7 +83,15 @@ public class TXRegionState {
   }
   public TXEntryState createReadEntry(LocalRegion r, Object entryKey, RegionEntry re, Object vId, Object pendingValue) {
     GemFireCacheImpl cache = r.getCache();
-    TXEntryState result = cache.getTXEntryStateFactory().createEntry(re, vId, pendingValue, entryKey, this);
+    boolean isDistributed = false;
+    if (cache.getTxManager().getTXState() != null) {
+      isDistributed = cache.getTxManager().getTXState().isDistTx(); 
+    }
+    else {
+      // TXCoordinator and datanode are same
+      isDistributed = cache.getTxManager().isDistributed();
+    }
+    TXEntryState result = cache.getTXEntryStateFactory().createEntry(re, vId, pendingValue, entryKey, this, isDistributed);
     this.entryMods.put(entryKey, result);
     return result;
   }
@@ -132,6 +149,10 @@ public class TXRegionState {
     }
     return result;
   }
+  
+  TXEntryState getTXEntryState(Object key) {
+    return this.entryMods.get(key);
+  }
 
   /**
    * Fills in a set of any entries created by this transaction for the provided region.
@@ -154,12 +175,23 @@ public class TXRegionState {
     if (this.uaMods == null && this.entryMods.isEmpty()) {
       return;
     }
+    if (this.txState.logger.isDebugEnabled()) {
+      this.txState.logger.debug("TXRegionState.createLockRequest 1 "
+          + r.getClass().getSimpleName() + " region-state=" + this);
+    }
     if (r.getScope().isDistributed()) {
+      // [DISTTX] Do not take lock for RR on replicates
+      if (this.isCreatedDuringCommit()) {
+        return;
+      }
       DistributedRegion dr = (DistributedRegion)r;
       Set<InternalDistributedMember> advice = dr.getCacheDistributionAdvisor().adviseTX();
       if (!advice.isEmpty()) {
         this.otherMembers = advice; // remember for when it is time to distribute
       }
+    }
+    if (this.txState.logger.isDebugEnabled()) {
+      this.txState.logger.debug("TXRegionState.createLockRequest 2");
     }
     //Bypass D-lock for Pr TX
     boolean byPassDLock = false;
@@ -216,6 +248,9 @@ public class TXRegionState {
   }
     
   void checkForConflicts(LocalRegion r) throws CommitConflictException {
+    if (this.isCreatedDuringCommit()) {
+      return;
+    }
     {
       Iterator it = this.entryMods.entrySet().iterator();
       while (it.hasNext()) {
@@ -308,8 +343,7 @@ public class TXRegionState {
       // passed. So do nothing.
     }
   }
-  
-  
+    
   void buildCompleteMessage(LocalRegion r, TXCommitMessage msg) {
     try {
       if (!this.entryMods.isEmpty()) {
@@ -440,5 +474,99 @@ public class TXRegionState {
   public TXState getTXState() {
     // TODO Auto-generated method stub
     return txState;
+  }
+
+  public void close() {
+    for (TXEntryState e: this.entryMods.values()) {
+      e.close();
+    }
+  }
+  
+  @Override
+  public String toString() {
+    StringBuilder str = new StringBuilder();
+    str.append("{").append(super.toString()).append(" ");
+    str.append(" ,entryMods=").append(this.entryMods);
+    str.append(" ,isCreatedDuringCommit=").append(this.isCreatedDuringCommit());
+    str.append("}");
+    return str.toString();
+  }
+
+  /**
+   * @return the createdDuringCommit
+   */
+  public boolean isCreatedDuringCommit() {
+    return createdDuringCommit;
+  }
+
+  /**
+   * @param createdDuringCommit
+   *          the createdDuringCommit to set
+   */
+  public void setCreatedDuringCommit(boolean createdDuringCommit) {
+    this.createdDuringCommit = createdDuringCommit;
+  }
+  
+  public boolean populateDistTxEntryStateList(
+      ArrayList<DistTxThinEntryState> entryStateList) {
+    String regionFullPath = this.getRegion().getFullPath();
+    try {
+      if (!this.entryMods.isEmpty()) {
+        // [DISTTX] TODO Sort this first
+        for (Entry<Object, TXEntryState> em : this.entryMods.entrySet()) {
+          Object mKey = em.getKey();
+          TXEntryState txes = em.getValue();
+          DistTxThinEntryState thinEntryState = txes.getDistTxEntryStates();
+          entryStateList.add(thinEntryState);
+          if (logger.isDebugEnabled()) {
+            logger.debug("TXRegionState.populateDistTxEntryStateList Added "
+                + thinEntryState + " for key=" + mKey + " ,op="
+                + txes.opToString() + " ,region=" + regionFullPath);
+          }
+        }
+      }
+      return true;
+    } catch (RegionDestroyedException ex) {
+      // region was destroyed out from under us; after conflict checking
+      // passed. So act as if the region destroy happened right after the
+      // commit. We act this way by doing nothing; including distribution
+      // of this region's commit data.
+    } catch (CancelException ex) {
+      // cache was closed out from under us; after conflict checking
+      // passed. So do nothing.
+    }
+    if (logger.isDebugEnabled()) {
+      logger
+          .debug("TXRegionState.populateDistTxEntryStateList Got exception for region "
+              + regionFullPath);
+    }
+    return false;
+  }
+  
+  public void setDistTxEntryStates(
+      ArrayList<DistTxThinEntryState> entryEventList) {
+    String regionFullPath = this.getRegion().getFullPath();
+    int entryModsSize = this.entryMods.size();
+    int entryEventListSize = entryEventList.size();
+    if (entryModsSize != entryEventListSize) {
+      throw new UnsupportedOperationInTransactionException(
+          LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString(
+              "entry size of " + entryModsSize + " for region "
+                  + regionFullPath, entryEventListSize));
+    }
+
+    int index = 0;
+    // [DISTTX] TODO Sort this first
+    for (Entry<Object, TXEntryState> em : this.entryMods.entrySet()) {
+      Object mKey = em.getKey();
+      TXEntryState txes = em.getValue();
+      DistTxThinEntryState thinEntryState = entryEventList.get(index++);
+      txes.setDistTxEntryStates(thinEntryState);
+      if (logger.isDebugEnabled()) {
+        logger.debug("TxRegionState.setDistTxEntryStates Added "
+            + thinEntryState + " for key=" + mKey + " ,op=" + txes.opToString()
+            + " ,region=" + regionFullPath);
+      }
+    }
   }
 }

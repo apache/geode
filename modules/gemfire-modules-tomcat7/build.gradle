@@ -1,0 +1,10 @@
+test  {
+  include '**/AllTests.class'
+}
+
+dependencies {
+  compile 'org.apache.tomcat:tomcat-catalina:7.0.30'
+  compile 'org.apache.tomcat:tomcat-coyote:7.0.30'
+
+  compile project(':gemfire-modules')
+}

@@ -115,14 +115,7 @@ public class ExternalStrings {
   public static final StringId Digest_DIGEST_TO_BE_MERGED_WITH_IS_NULL = new GFStringIdImpl(15085, "digest to be merged with is null");
   public static final StringId Digest_SENDER__0__OR_ENTRY__1_IS_NULL_WILL_NOT_ADD_ENTRY = new GFStringIdImpl(15086, "sender ( {0} ) or entry ( {1} )is null, will not add entry");
   public static final StringId Digest_SENDER__NULL = new GFStringIdImpl(15087, "sender == null");
-  public static final StringId DirAck_ACKHEADER_TYPE__0__NOT_KNOWN_ = new GFStringIdImpl(15088, "AckHeader type  {0}  not known !");
-  public static final StringId DirAck_EXCEPTION_READING_ACKNOWLEDGEMENT_TO_DIRECT_ACK_MESSAGE = new GFStringIdImpl(15089, "Exception reading acknowledgement to direct-ack message");
-  public static final StringId DirAck_UNABLE_TO_ALLOCATE_SOCKET_FOR_DISTRIBUTED_ACK_OPERATION_WILL_USE_FALLBACK_PROTOCOL = new GFStringIdImpl(15090, "Unable to allocate socket for distributed-ack operation.  Will use fallback protocol");
-  public static final StringId DirAck_UNABLE_TO_ALLOCATE_THREAD_DATA_FOR_ACK_TRANSMISSION_USING_COMMON_SOCKET = new GFStringIdImpl(15091, "Unable to allocate thread data for ack transmission.  Using common socket");
-  public static final StringId DirAck_UNABLE_TO_CLOSE_DIRACK_SOCKET = new GFStringIdImpl(15092, "Unable to close DirAck socket");
-  public static final StringId DirAck_UNABLE_TO_INITIALIZE_ACK_BUFFER = new GFStringIdImpl(15093, "unable to initialize ack buffer");
-  public static final StringId DirAck_UNABLE_TO_SEND_ACKNOWLEDGMENT_OF_MESSAGE_0_TO_1_INETADDR_2 = new GFStringIdImpl(15094, "unable to send acknowledgment of message {0} to {1} (inetaddr={2})");
-  public static final StringId DirAck_WAIT_FOR_REPLIES_COMPLETED_DIRACK = new GFStringIdImpl(15095, "wait for replies completed (DirAck)");
+  // 15087 - 15096 available for reuse
   public static final StringId Discovery_THE_FOLLOWING_PROPERTIES_ARE_NOT_RECOGNIZED__0 = new GFStringIdImpl(15096, "The following properties are not recognized:  {0}");
   public static final StringId Discovery_TIMEOUT_MUST_BE__0 = new GFStringIdImpl(15097, "timeout must be > 0");
   public static final StringId DistributedHashtable_EXCEPTION_0 = new GFStringIdImpl(15098, "exception= {0}");
@@ -362,14 +355,7 @@ public class ExternalStrings {
   public static final StringId JChannel_RECONNECTING_TO_GROUP__0 = new GFStringIdImpl(15332, "reconnecting to group  {0}");
   public static final StringId JChannel_STATE_TRANSFER_FAILED = new GFStringIdImpl(15333, "state transfer failed");
   public static final StringId JChannel_STATE_WAS_RETRIEVED_SUCCESSFULLY = new GFStringIdImpl(15334, "state was retrieved successfully");
-  public static final StringId JMS_CLASSNOTFOUNDEXCEPTION___0 = new GFStringIdImpl(15335, "ClassNotFoundException :  {0}");
-  public static final StringId JMS_EXCEPTION_IS__0 = new GFStringIdImpl(15336, "exception is  {0}");
-  public static final StringId JMS_FINISHING_JMS_TRANSPORT_LAYER = new GFStringIdImpl(15337, "finishing JMS transport layer.");
-  public static final StringId JMS_IOEXCEPTION___0 = new GFStringIdImpl(15338, "IOException :  {0}");
-  public static final StringId JMS_JMSEXCEPTION___0 = new GFStringIdImpl(15339, "JMSException :  {0}");
-  public static final StringId JMS_MSG_IS__0 = new GFStringIdImpl(15340, "msg is  {0}");
-  public static final StringId JMS_TTL_PROPERTY_DOES_NOT_CONTAIN_NUMERIC_VALUE = new GFStringIdImpl(15341, "ttl property does not contain numeric value.");
-  public static final StringId JMS_TTL_PROPERTY_NOT_FOUND = new GFStringIdImpl(15342, "ttl property not found.");
+  // 15335 - 15342 available for reuse
   public static final StringId Link_LINKSEND1_SENDING_FAILED_RETRYING = new GFStringIdImpl(15343, "Link.send1(): sending failed; retrying");
   public static final StringId Link_LINKSEND_CONNECTION_NOT_ESTABLISHED_DISCARDING_MESSAGE = new GFStringIdImpl(15344, "Link.send(): connection not established, discarding message");
   public static final StringId LinkedListQueue_EXCEPTION_0 = new GFStringIdImpl(15345, "exception= {0}");
@@ -812,13 +798,8 @@ public class ExternalStrings {
   public static final StringId FD_SOCK_FAILURE_DETECTION_RECEIVED_NOTIFICATION_THAT_0_IS_NO_LONGER_SUSPECT = new GFStringIdImpl(15783, "failure detection received notification that {0} is no longer suspect");
   public static final StringId FD_SOCK_BROADCASTING_SUSPECT_MESSAGE_SUSPECTED_MBRS_0_TO_GROUP = new GFStringIdImpl(15784, "broadcasting SUSPECT message (suspected_mbrs={0}) to group");
   public static final StringId ClientGmsImpl_ATTEMPTING_TO_JOIN_DS_WHOSE_MEMBERSHIP_COORDINATOR_IS_0_USING_ID_1 = new GFStringIdImpl(15785, "Attempting to join distributed system whose membership coordinator is {0} using membership ID {1}");
-  public static final StringId DirAck_0_1_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLIES_FROM_2 = new GFStringIdImpl(15786, "{0} {1} seconds have elapsed while waiting for replies from: {2}");
-  public static final StringId DirAck_DETECTED_INTERRUPTEDIOEXCEPTION = new GFStringIdImpl(15787, "Detected InterruptedIOException");
-  public static final StringId DirAck_DIRECTACK_WAIT_PERIOD_INTERRUPTED_RETURNING = new GFStringIdImpl(15788, "direct-ack wait period interrupted, returning.");
-  public static final StringId DirAck_RETRANSMITTING_A_MESSAGE_OF_LENGTH_0_FOR_THE_10TH_TIME_TO_1_CONSIDER_INCREASING_ITS_2 = new GFStringIdImpl(15789, "retransmitting a message of length {0} for the 10th time to {1}. Consider increasing its {2}.");
-  public static final StringId DirAck_UNABLE_TO_CLOSE_DIRACK_SOCKET_0 = new GFStringIdImpl(15790, "Unable to close DirAck socket: {0}");
+  // 15786 - 15790 available for reuse
   public static final StringId FC_FLOW_CONTROL_WAS_UNBLOCKED_AFTER_WAITING_0_SECONDS = new GFStringIdImpl(15791, "Flow-control was unblocked after waiting {0} seconds");
-  
   public static final StringId GossipServer_INITIAL_DISCOVERY_SET_IS_0 = new GFStringIdImpl(15792, "Initial discovery set is {0}");
   public static final StringId UNABLE_TO_FIND_FREE_PORT = new GFStringIdImpl(15793, "Unable to find a free port in the membership-port-range");
   public static final StringId MEMBER_DID_NOT_ACKNOWLEDGE_VIEW = new GFStringIdImpl(15794, "Member failed to acknowledge a membership view");
@@ -831,11 +812,12 @@ public class ExternalStrings {
   public static final StringId ABLE_TO_CONNECT_TO_DC_PORT = new GFStringIdImpl(15801, "able to connect to direct channel port of {0}: {1}");
   public static final StringId UnexpectedException = new GFStringIdImpl(15802, "unexpected exception");
   public static final StringId IGNORING_MULTICAST_MESSAGE_WITH_HIGHER_VERSION_FROM_0_1_2 = new GFStringIdImpl(15803, "Ignoring multicast message with higher version from {0}.  Message version is {1} and my version is {2}");
-  public static final StringId CHECKING_FAILED_TO_ACK_MEMBERS = new GFStringIdImpl(15804, "Checking failed to ack members: {0}");
-  public static final StringId SUSPECTING_MEMBER_WHICH_DIDNT_ACK = new GFStringIdImpl(15805, "Suspecting member which did not ACK: {0}");
+  // 15804 available for reuse
+  public static final StringId SUSPECTING_MEMBER_WHICH_DIDNT_ACK = new GFStringIdImpl(15805, "Checking member {0}");
   public static final StringId COORD_REJECTING_OLD_MEMBER_BECAUSE_UPGRADE_HAS_BEGUN = new GFStringIdImpl(15806, "Rejecting the attempt of a member using an older version of the product to join an upgraded distributed system.  Please restart the process using the new version of the product: {0}");
   public static final StringId FD_SOCK_WATCHING_0 = new GFStringIdImpl(15807, "GemFire failure detection is now monitoring {0}");
   public static final StringId WAITING_FOR_LOCATOR_TO_START = new GFStringIdImpl(15808, "GemFire startup was unable to contact a locator. Waiting for one to start.  Configured locators are {0}.");
   public static final StringId WAITING_FOR_LOCATOR_TO_START_COMPLETED = new GFStringIdImpl(15809, "Wait for locator completed.  Continuing startup.");
+  public static final StringId CORRUPTED_MESSAGE_RECEIVED = new GFStringIdImpl(15810, "Received corrupted UDP message from {0}");
   /**Testing strings, messageId 90000-99999 **/
 }

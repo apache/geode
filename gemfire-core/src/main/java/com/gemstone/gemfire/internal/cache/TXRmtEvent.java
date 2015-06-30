@@ -178,7 +178,7 @@ public class TXRmtEvent implements TransactionEvent
     if (r.isUsedForPartitionedRegionBucket()) {
       eventRegion = r.getPartitionedRegion();
     }
-    EntryEventImpl event = new EntryEventImpl(
+    EntryEventImpl event = EntryEventImpl.create(
         eventRegion, op, key, newValue,
         aCallbackArgument, // callbackArg
         true, // originRemote
@@ -220,5 +220,15 @@ public class TXRmtEvent implements TransactionEvent
   public Cache getCache()
   {
     return this.cache;
+  }
+
+  public void freeOffHeapResources() {
+    if (this.events != null) {
+      for (EntryEventImpl e: (List<EntryEventImpl>)this.events) {
+        e.release();
+      }
+    }
+    // TODO Auto-generated method stub
+    
   }
 }

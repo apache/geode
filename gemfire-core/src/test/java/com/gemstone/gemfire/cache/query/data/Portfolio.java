@@ -233,7 +233,12 @@ public class Portfolio implements Serializable, DataSerializable {
   }
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.ID = in.readInt();
+    boolean isNull = DataSerializer.readPrimitiveBoolean(in);
+    if(!isNull) {
+      this.shortID = DataSerializer.readShort(in);
+    }
     this.pkid = DataSerializer.readString(in);
+    
     this.position1 = (Position)DataSerializer.readObject(in);
     this.position2 = (Position)DataSerializer.readObject(in);
     this.positions = (HashMap)DataSerializer.readObject(in);
@@ -258,6 +263,13 @@ public class Portfolio implements Serializable, DataSerializable {
   
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.ID);
+    if(this.shortID == null) {
+      DataSerializer.writePrimitiveBoolean(true, out);  
+    }else {
+      DataSerializer.writePrimitiveBoolean(false, out);
+      DataSerializer.writeShort(this.shortID, out);
+    }
+    
     DataSerializer.writeString(this.pkid, out);
     DataSerializer.writeObject(this.position1, out);
     DataSerializer.writeObject(this.position2, out);

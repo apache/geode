@@ -1,0 +1,6 @@
+[behave]
+#lxxogging_clear_handlers=false
+#lxxogging_filter=-paramiko
+log_capture=false
+stdout_capture=false
+stop=true

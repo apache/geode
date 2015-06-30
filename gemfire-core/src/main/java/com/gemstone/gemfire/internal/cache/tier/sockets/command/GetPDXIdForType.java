@@ -60,7 +60,7 @@ public class GetPDXIdForType extends BaseCommand {
     responseMsg.setNumberOfParts(1);
     responseMsg.setTransactionId(msg.getTransactionId());
     responseMsg.addIntPart(pdxId);
-    responseMsg.send(servConn, msg.getTransactionId());
+    responseMsg.send(servConn);
     servConn.setAsTrue(RESPONDED);
   }
 }

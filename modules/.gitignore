@@ -1,0 +1,9 @@
+.idea
+*.pyc
+robot/*html
+robot/*xml
+*.swp
+*.iml
+build/
+.gradle/
+target

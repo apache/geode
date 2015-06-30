@@ -1,0 +1,235 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+configurations {
+  slf4jDeps
+}
+
+configurations {
+  servletApiDeps
+}
+
+dependencies {
+  slf4jDeps 'org.slf4j:slf4j-api:1.7.7'
+  slf4jDeps 'org.slf4j:slf4j-jdk14:1.7.7'
+}
+
+dependencies {
+  servletApiDeps 'javax.servlet:servlet-api:2.5'
+}
+
+def configureTcServerAssembly = {
+  archiveName = "Pivotal_GemFire_Modules-${version}-tcServer.zip"
+
+  // All client-server files
+  into('gemfire-cs/lib') {
+    from project(':gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+  into('gemfire-cs/bin') {
+    from('release/scripts') {
+      include '*'
+    }
+    from('release/tcserver/gemfire-cs') {
+      include 'modules.env'
+    }
+    // TODO: Replace with tokens once we drop maven
+    filter {
+      line -> line.replaceAll('gemfire.modules.version', "${version}")
+    }
+  }
+  into('gemfire-cs/conf') {
+    from('release/conf') {
+      exclude 'cache-peer.xml'
+    }
+    from('release/tcserver/gemfire-cs') {
+      include 'context-fragment.xml'
+      include 'server-fragment.xml'
+    }
+  }
+  into('gemfire-cs') {
+    from('release/tcserver/gemfire-cs') {
+      include 'configuration-prompts.properties'
+      include 'README.txt'
+      filter(ReplaceTokens, tokens: [VERSION: version])
+    }
+  }
+
+  // Tomncat 7 specifics
+  into('gemfire-cs-tomcat-7/conf') {
+    from('release/tcserver/gemfire-cs-tomcat-7') {
+      include 'context-fragment.xml'
+    }
+  }
+  into('gemfire-cs-tomcat-7/bin') {
+    from('release/tcserver/gemfire-cs-tomcat-7') {
+      include 'modules.env'
+    }
+  }
+  // All peer-to-peer files
+  into('gemfire-p2p/lib') {
+    from project(':gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+  into('gemfire-p2p/bin') {
+    from('release/scripts') {
+      include 'gemfire.*'
+      include 'setenv.properties'
+    }
+    from('release/tcserver/gemfire-p2p') {
+      include 'modules.env'
+    }
+  }
+  into('gemfire-p2p/conf') {
+    from('release/conf') {
+      include 'cache-peer.xml'
+    }
+    from('release/tcserver/gemfire-p2p') {
+      include 'context-fragment.xml'
+      include 'server-fragment.xml'
+    }
+  }
+  into('gemfire-p2p') {
+    from('release/tcserver/gemfire-p2p') {
+      include 'configuration-prompts.properties'
+      include 'README.txt'
+      filter(ReplaceTokens, tokens: [VERSION: version])
+    }
+  }
+
+  // Tomncat 7 specifics
+  into('gemfire-p2p-tomcat-7/conf') {
+    from('release/tcserver/gemfire-p2p-tomcat-7') {
+      include 'context-fragment.xml'
+    }
+  }
+  into('gemfire-p2p-tomcat-7/bin') {
+    from('release/tcserver/gemfire-p2p-tomcat-7') {
+      include 'modules.env'
+    }
+  }
+}
+
+def configureTcServer30Assembly = {
+  archiveName = "Pivotal_GemFire_Modules-${version}-tcServer30.zip"
+
+  into('gemfire-cs-tomcat-8/bin') {
+    from('release/tcserver/gemfire-cs-tomcat-8') {
+      include 'modules.env'
+    }
+  }
+  into('gemfire-cs-tomcat-8/conf') {
+    from('release/tcserver/gemfire-cs-tomcat-8') {
+      include 'context-fragment.xml'
+    }
+  }
+
+  into('gemfire-p2p-tomcat-8/bin') {
+    from('release/tcserver/gemfire-p2p-tomcat-8') {
+      include 'modules.env'
+    }
+  }
+  into('gemfire-p2p-tomcat-8/conf') {
+    from('release/tcserver/gemfire-p2p-tomcat-8') {
+      include 'context-fragment.xml'
+    }
+  }
+}
+
+task distTomcat(type: Zip) {
+  archiveName = "Pivotal_GemFire_Modules-${version}-Tomcat.zip"
+
+  // All client-server files
+  into('lib') {
+    from project(':gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+  into('bin') {
+    from('release/scripts') {
+      include '*'
+      exclude 'setenv.properties'
+    }
+  }
+  into('conf') {
+    from('release/conf') {
+      include '*'
+    }
+  }
+
+  from('release/tomcat') {
+    include 'readme.txt'
+    filter(ReplaceTokens, tokens: [VERSION: version])
+  }
+}
+
+task distHibernate(type: Zip) {
+  archiveName = "Pivotal_GemFire_Modules-${version}-Hibernate.zip"
+
+  into('lib') {
+    from project(':gemfire-modules-hibernate').configurations.archives.allArtifacts.files
+  }
+  from('release/hibernate') {
+    include 'readme.txt'
+    filter(ReplaceTokens, tokens: [VERSION: version])
+  }
+}
+
+task distAppServer(type: Zip) {
+  archiveName = "Pivotal_GemFire_Modules-${version}-AppServer.zip"
+
+  into('lib') {
+    from project(':gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':gemfire-modules-session').configurations.archives.allArtifacts.files
+    from project(':gemfire-modules-session-external').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from configurations.servletApiDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+
+  into('bin') {
+    from('release/session/bin') {
+      include 'modify_war'
+      include 'cacheserver.*'
+      include 'gemfire.*'
+      include 'setenv.properties'
+    }
+    // TODO: Replace with tokens once we drop maven
+    filter { it.replaceAll('\\$\\{gemfire.modules.version\\}', "${version}") }
+    filter { it.replaceAll('\\$\\{slf4j.version\\}', "${slf4j_version}") }
+    filter { it.replaceAll('\\$\\{servlet-api.version\\}', "${servlet_api_version}") }
+    filter { it.replaceAll('\\$\\{gemfire.version\\}', "${gemfire_version}") }
+  }
+
+  into('conf') {
+    from('release/session/conf')
+  }
+
+  from('release/session') {
+    include 'readme.txt'
+    filter(ReplaceTokens, tokens: [VERSION: version])
+  }
+}
+
+task distTcServer(type: Zip, dependsOn: 'build') {
+  configure(configureTcServerAssembly)
+}
+
+task distTcServer30(type: Zip, dependsOn: 'build') {
+  configure(configureTcServerAssembly)
+  configure(configureTcServer30Assembly)
+}
+
+task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distHibernate', 'distAppServer'])

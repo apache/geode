@@ -267,13 +267,13 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public Object findObject(KeyInfo keyInfo, boolean isCreate,
       boolean generateCallbacks, Object value, boolean peferCD,
       ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent) {
+      EntryEventImpl clientEvent, boolean allowReadFromHDFS) {
     Object retVal = null;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();
     PartitionedRegion pr = (PartitionedRegion)region;
     try {
-      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false);
+      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false, allowReadFromHDFS);
     } catch (TransactionException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e.getCause());
@@ -378,7 +378,11 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       } catch (Exception ex) {
         // If failed at other exception
         EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+        try {
           partialKeys.saveFailedKey(firstEvent.getKey(), ex);
+        } finally {
+          firstEvent.release();
+        }
       }
     }
     pr.prStats.endPutAll(startTime);
@@ -465,7 +469,11 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     InternalDistributedMember currentTarget = pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
     if(!currentTarget.equals(this.state.getTarget())) {
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+      try {
         throw new TransactionDataNotColocatedException(LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION.toLocalizedString(firstEvent.getKey()));
+      } finally {
+        firstEvent.release();
+      }
     }
     try {
       return pr.tryToSendOnePutAllMessage(prMsg,currentTarget);

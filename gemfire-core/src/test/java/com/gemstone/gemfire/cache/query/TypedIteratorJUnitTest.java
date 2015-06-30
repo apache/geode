@@ -1,0 +1,124 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/*
+ * TypedIteratorJUnitTest.java
+ * JUnit based test
+ *
+ * Created on March 22, 2005, 2:01 PM
+ */
+
+package com.gemstone.gemfire.cache.query;
+
+import static org.junit.Assert.fail;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+/**
+ *
+ * @author ericz
+ */
+@Category(IntegrationTest.class)
+public class TypedIteratorJUnitTest {
+  Region region;
+  QueryService qs;
+  Cache cache;
+  
+  @Test
+  public void testUntyped() throws QueryException {
+    // one untyped iterator is now resolved fine
+    Query q = this.qs.newQuery("SELECT DISTINCT * " +
+                "FROM /pos " +
+                "WHERE ID = 3 ");
+    q.execute();
+    
+    // if there are two untyped iterators, then it's a problem, see bug 32251 and BugTest
+    q = this.qs.newQuery("SELECT DISTINCT * FROM /pos, positions WHERE ID = 3");
+    try {
+      q.execute();
+      fail("Expected a TypeMismatchException");
+    }
+    catch (TypeMismatchException e) {
+      // pass
+    }
+  }
+  
+  @Test
+  public void testTyped() throws QueryException {
+    Query q = this.qs.newQuery( // must quote "query" because it is a reserved word
+      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;\n" +       
+      "SELECT DISTINCT *\n" +
+      "FROM /pos TYPE Portfolio\n" +
+      "WHERE ID = 3  ");
+    Object r = q.execute();
+    CacheUtils.getLogger().fine(Utils.printResult(r));
+
+    
+    q = this.qs.newQuery( // must quote "query" because it is a reserved word
+      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;\n" +       
+      "SELECT DISTINCT *\n" +
+      "FROM /pos ptfo TYPE Portfolio\n" +
+      "WHERE ID = 3  ");
+    r = q.execute();
+    CacheUtils.getLogger().fine(Utils.printResult(r));
+  }  
+  
+  
+  @Test
+  public void testTypeCasted() throws QueryException {
+    Query q = this.qs.newQuery( // must quote "query" because it is a reserved word
+      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;\n" +       
+      "SELECT DISTINCT *\n" +
+      "FROM (collection<Portfolio>)/pos\n" +
+      "WHERE ID = 3  ");
+//    com.gemstone.gemfire.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
+    Object r = q.execute();
+    CacheUtils.getLogger().fine(Utils.printResult(r));
+    
+    q = this.qs.newQuery( // must quote "query" because it is a reserved word
+      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;\n" +       
+      "SELECT DISTINCT *\n" +
+      "FROM /pos p, (collection<Position>)p.positions.values\n" +
+      "WHERE secId = 'IBM'");
+//    com.gemstone.gemfire.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
+    r = q.execute();
+    CacheUtils.getLogger().fine(Utils.printResult(r));
+  }
+  
+  @Before
+  public void setUp() throws Exception {
+    CacheUtils.startCache();
+    cache = CacheUtils.getCache();
+    AttributesFactory attributesFactory = new AttributesFactory();
+//    attributesFactory.setValueConstraint(Portfolio.class);
+    RegionAttributes regionAttributes = attributesFactory.create();
+    
+    region = cache.createRegion("pos",regionAttributes);
+    region.put("0",new Portfolio(0));
+    region.put("1",new Portfolio(1));
+    region.put("2",new Portfolio(2));
+    region.put("3",new Portfolio(3));
+    
+    qs = cache.getQueryService();
+  }
+  
+  @After
+  public void tearDown() throws Exception {
+    CacheUtils.closeCache();
+  }
+  
+}

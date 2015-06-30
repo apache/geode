@@ -27,7 +27,7 @@ import java.util.Set;
 
 import com.gemstone.gemfire.internal.lang.Filter;
 import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

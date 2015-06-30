@@ -7,21 +7,20 @@
  */
 package com.gemstone.gemfire.internal;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.internal.LinuxProcessStats;
-import com.gemstone.gemfire.internal.LinuxSystemStats;
+import org.apache.logging.log4j.Logger;
 
-class LinuxProcFsStatistics {
+public class LinuxProcFsStatistics {
   private enum CPU { 
     USER, NICE, SYSTEM, IDLE, IOWAIT, IRQ, SOFTIRQ,
     /** stands for aggregation of all columns not present in the enum list*/
@@ -199,6 +198,38 @@ class LinuxProcFsStatistics {
     }
   }
 
+  /**
+   * Returns the available system memory (free + cached).
+   * @param logger the logger
+   * @return the available memory in bytes
+   */
+  public static long getAvailableMemory(Logger logger) {
+    try {
+      BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("/proc/meminfo")));
+      try {
+        long free = 0;
+        Pattern p = Pattern.compile("(.*)?:\\s+(\\d+)( kB)?");
+        
+        String line;
+        while ((line = br.readLine()) != null) {
+          Matcher m = p.matcher(line);
+          if (m.matches() && ("MemFree".equals(m.group(1)) || "Cached".equals(m.group(1)))) {
+            free += Long.parseLong(m.group(2));
+          }
+        }
+        
+        // convert to bytes
+        return 1024 * free;
+        
+      } finally {
+        br.close();
+      }
+    } catch (IOException e) {
+      logger.warn("Error determining free memory", e);
+      return Long.MAX_VALUE;
+    }
+  }
+  
   // Example of /proc/meminfo
   //          total:    used:    free:  shared: buffers:  cached:
   //Mem:  4118380544 3816050688 302329856        0 109404160 3060326400

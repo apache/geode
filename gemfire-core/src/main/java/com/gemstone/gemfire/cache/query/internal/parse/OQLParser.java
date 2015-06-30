@@ -1,4 +1,4 @@
-// $ANTLR : "oql.g" -> "OQLParser.java"$
+// $ANTLR 2.7.4: "oql.g" -> "OQLParser.java"$
 
 package com.gemstone.gemfire.cache.query.internal.parse;
 import java.util.*;
@@ -80,7 +80,7 @@ public OQLParser(ParserSharedInputState state) {
 			declaration();
 			astFactory.addASTChild(currentAST, returnAST);
 			{
-			_loop5085:
+			_loop107:
 			do {
 				if ((LA(1)==TOK_SEMIC) && (_tokenSet_2.member(LA(2)))) {
 					match(TOK_SEMIC);
@@ -88,7 +88,7 @@ public OQLParser(ParserSharedInputState state) {
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop5085;
+					break _loop107;
 				}
 				
 			} while (true);
@@ -239,7 +239,7 @@ public OQLParser(ParserSharedInputState state) {
 		iteratorDef();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5093:
+		_loop115:
 		do {
 			if ((LA(1)==TOK_COMMA)) {
 				match(TOK_COMMA);
@@ -247,7 +247,7 @@ public OQLParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5093;
+				break _loop115;
 			}
 			
 		} while (true);
@@ -278,10 +278,10 @@ public OQLParser(ParserSharedInputState state) {
 		AST id2_AST = null;
 		AST t2_AST = null;
 		
-		boolean synPredMatched5131 = false;
+		boolean synPredMatched153 = false;
 		if (((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (LA(2)==LITERAL_in))) {
-			int _m5131 = mark();
-			synPredMatched5131 = true;
+			int _m153 = mark();
+			synPredMatched153 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -290,12 +290,12 @@ public OQLParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched5131 = false;
+				synPredMatched153 = false;
 			}
-			rewind(_m5131);
-inputState.guessing--;
+			rewind(_m153);
+			inputState.guessing--;
 		}
-		if ( synPredMatched5131 ) {
+		if ( synPredMatched153 ) {
 			identifier();
 			id1_AST = (AST)returnAST;
 			match(LITERAL_in);
@@ -402,7 +402,7 @@ inputState.guessing--;
 			projection();
 			astFactory.addASTChild(currentAST, returnAST);
 			{
-			_loop5142:
+			_loop164:
 			do {
 				if ((LA(1)==TOK_COMMA)) {
 					match(TOK_COMMA);
@@ -410,7 +410,7 @@ inputState.guessing--;
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop5142;
+					break _loop164;
 				}
 				
 			} while (true);
@@ -425,8 +425,8 @@ inputState.guessing--;
 			}
 		}
 		else if ((LA(1)==TOK_STAR)) {
-			AST tmp17_AST = null;
-			tmp17_AST = astFactory.create(LT(1));
+			com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp17_AST = null;
+			tmp17_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
 			astFactory.addASTChild(currentAST, tmp17_AST);
 			match(TOK_STAR);
 		}
@@ -470,7 +470,7 @@ inputState.guessing--;
 			identifier();
 			astFactory.addASTChild(currentAST, returnAST);
 			{
-			_loop5113:
+			_loop135:
 			do {
 				if ((LA(1)==TOK_COMMA)) {
 					match(TOK_COMMA);
@@ -480,7 +480,7 @@ inputState.guessing--;
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop5113;
+					break _loop135;
 				}
 				
 			} while (true);
@@ -575,7 +575,7 @@ inputState.guessing--;
 		astFactory.addASTChild(currentAST, returnAST);
 		}
 		{
-		_loop5105:
+		_loop127:
 		do {
 			if ((LA(1)==TOK_COMMA)) {
 				match(TOK_COMMA);
@@ -583,7 +583,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5105;
+				break _loop127;
 			}
 			
 		} while (true);
@@ -603,7 +603,7 @@ inputState.guessing--;
 		identifier();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5108:
+		_loop130:
 		do {
 			if ((LA(1)==TOK_DOT)) {
 				match(TOK_DOT);
@@ -611,7 +611,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5108;
+				break _loop130;
 			}
 			
 		} while (true);
@@ -661,7 +661,7 @@ inputState.guessing--;
 		importQuery();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5100:
+		_loop122:
 		do {
 			if ((LA(1)==TOK_SEMIC) && (LA(2)==LITERAL_import)) {
 				match(TOK_SEMIC);
@@ -669,7 +669,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5100;
+				break _loop122;
 			}
 			
 		} while (true);
@@ -1104,14 +1104,14 @@ inputState.guessing--;
 		match(LITERAL_select);
 		{
 		if ((LA(1)==LITERAL_distinct) && (_tokenSet_9.member(LA(2)))) {
-			AST tmp55_AST = null;
-			tmp55_AST = astFactory.create(LT(1));
+			com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp55_AST = null;
+			tmp55_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
 			astFactory.addASTChild(currentAST, tmp55_AST);
 			match(LITERAL_distinct);
 		}
 		else if ((LA(1)==LITERAL_all)) {
-			AST tmp56_AST = null;
-			tmp56_AST = astFactory.create(LT(1));
+			com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp56_AST = null;
+			tmp56_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
 			astFactory.addASTChild(currentAST, tmp56_AST);
 			match(LITERAL_all);
 		}
@@ -1123,18 +1123,8 @@ inputState.guessing--;
 		
 		}
 		{
-		if (((LA(1) >= LITERAL_sum && LA(1) <= LITERAL_count)) && (LA(2)==TOK_LPAREN)) {
-			aggregateExpr();
-			astFactory.addASTChild(currentAST, returnAST);
-		}
-		else if ((_tokenSet_9.member(LA(1))) && (_tokenSet_10.member(LA(2)))) {
-			projectionAttributes();
-			astFactory.addASTChild(currentAST, returnAST);
-		}
-		else {
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		
+		projectionAttributes();
+		astFactory.addASTChild(currentAST, returnAST);
 		}
 		fromClause();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -1216,7 +1206,7 @@ inputState.guessing--;
 		hintIdentifier();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5149:
+		_loop173:
 		do {
 			if ((LA(1)==TOK_COMMA)) {
 				match(TOK_COMMA);
@@ -1224,7 +1214,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5149;
+				break _loop173;
 			}
 			
 		} while (true);
@@ -1234,106 +1224,20 @@ inputState.guessing--;
 		returnAST = hintCommand_AST;
 	}
 	
-	public final void aggregateExpr() throws RecognitionException, TokenStreamException {
-		
-		returnAST = null;
-		ASTPair currentAST = new ASTPair();
-		AST aggregateExpr_AST = null;
-		
-		{
-		if (((LA(1) >= LITERAL_sum && LA(1) <= LITERAL_avg))) {
-			{
-			switch ( LA(1)) {
-			case LITERAL_sum:
-			{
-				AST tmp61_AST = null;
-				tmp61_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp61_AST);
-				match(LITERAL_sum);
-				break;
-			}
-			case LITERAL_min:
-			{
-				AST tmp62_AST = null;
-				tmp62_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp62_AST);
-				match(LITERAL_min);
-				break;
-			}
-			case LITERAL_max:
-			{
-				AST tmp63_AST = null;
-				tmp63_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp63_AST);
-				match(LITERAL_max);
-				break;
-			}
-			case LITERAL_avg:
-			{
-				AST tmp64_AST = null;
-				tmp64_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp64_AST);
-				match(LITERAL_avg);
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(LT(1), getFilename());
-			}
-			}
-			}
-			match(TOK_LPAREN);
-			query();
-			astFactory.addASTChild(currentAST, returnAST);
-			match(TOK_RPAREN);
-		}
-		else if ((LA(1)==LITERAL_count)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTCount tmp67_AST = null;
-			tmp67_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCount)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCount");
-			astFactory.makeASTRoot(currentAST, tmp67_AST);
-			match(LITERAL_count);
-			match(TOK_LPAREN);
-			{
-			if ((_tokenSet_3.member(LA(1)))) {
-				query();
-				astFactory.addASTChild(currentAST, returnAST);
-			}
-			else if ((LA(1)==TOK_STAR)) {
-				AST tmp69_AST = null;
-				tmp69_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp69_AST);
-				match(TOK_STAR);
-			}
-			else {
-				throw new NoViableAltException(LT(1), getFilename());
-			}
-			
-			}
-			match(TOK_RPAREN);
-		}
-		else {
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		
-		}
-		aggregateExpr_AST = (AST)currentAST.root;
-		returnAST = aggregateExpr_AST;
-	}
-	
 	public final void fromClause() throws RecognitionException, TokenStreamException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		AST fromClause_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTCombination tmp71_AST = null;
-		tmp71_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCombination)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCombination");
-		astFactory.makeASTRoot(currentAST, tmp71_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTCombination tmp61_AST = null;
+		tmp61_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCombination)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCombination");
+		astFactory.makeASTRoot(currentAST, tmp61_AST);
 		match(LITERAL_from);
 		iteratorDef();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5128:
+		_loop150:
 		do {
 			if ((LA(1)==TOK_COMMA)) {
 				match(TOK_COMMA);
@@ -1341,7 +1245,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5128;
+				break _loop150;
 			}
 			
 		} while (true);
@@ -1369,12 +1273,12 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST groupClause_AST = null;
 		
-		AST tmp74_AST = null;
-		tmp74_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp74_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy tmp64_AST = null;
+		tmp64_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy");
+		astFactory.makeASTRoot(currentAST, tmp64_AST);
 		match(LITERAL_group);
 		match(LITERAL_by);
-		fieldList();
+		groupByList();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
 		if ((LA(1)==LITERAL_having)) {
@@ -1399,15 +1303,15 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST orderClause_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy tmp77_AST = null;
-		tmp77_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy");
-		astFactory.makeASTRoot(currentAST, tmp77_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy tmp67_AST = null;
+		tmp67_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy");
+		astFactory.makeASTRoot(currentAST, tmp67_AST);
 		match(LITERAL_order);
 		match(LITERAL_by);
 		sortCriterion();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5153:
+		_loop177:
 		do {
 			if ((LA(1)==TOK_COMMA)) {
 				match(TOK_COMMA);
@@ -1415,7 +1319,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5153;
+				break _loop177;
 			}
 			
 		} while (true);
@@ -1435,15 +1339,15 @@ inputState.guessing--;
 		match(LITERAL_limit);
 		{
 		if ((LA(1)==TOK_DOLLAR)) {
-			AST tmp81_AST = null;
-			tmp81_AST = astFactory.create(LT(1));
+			AST tmp71_AST = null;
+			tmp71_AST = astFactory.create(LT(1));
 			match(TOK_DOLLAR);
-			AST tmp82_AST = null;
-			tmp82_AST = astFactory.create(LT(1));
+			AST tmp72_AST = null;
+			tmp72_AST = astFactory.create(LT(1));
 			match(NUM_INT);
 			if ( inputState.guessing==0 ) {
 				limitClause_AST = (AST)currentAST.root;
-				limitClause_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LIMIT,"limitParam","com.gemstone.gemfire.cache.query.internal.parse.ASTParameter")).add(tmp82_AST));
+				limitClause_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LIMIT,"limitParam","com.gemstone.gemfire.cache.query.internal.parse.ASTParameter")).add(tmp72_AST));
 				currentAST.root = limitClause_AST;
 				currentAST.child = limitClause_AST!=null &&limitClause_AST.getFirstChild()!=null ?
 					limitClause_AST.getFirstChild() : limitClause_AST;
@@ -1477,28 +1381,67 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST projection_AST = null;
 		AST lb1_AST = null;
-		AST ex1_AST = null;
-		AST ex2_AST = null;
+		AST tok1_AST = null;
+		AST tok2_AST = null;
+		AST tok3_AST = null;
+		AST tok4_AST = null;
 		AST lb2_AST = null;
+		AST node  = null;
 		
 		if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (LA(2)==TOK_COLON)) {
 			identifier();
 			lb1_AST = (AST)returnAST;
 			match(TOK_COLON);
-			expr();
-			ex1_AST = (AST)returnAST;
+			{
+			if (((LA(1) >= LITERAL_sum && LA(1) <= LITERAL_count)) && (LA(2)==TOK_LPAREN)) {
+				aggregateExpr();
+				tok1_AST = (AST)returnAST;
+				if ( inputState.guessing==0 ) {
+					node = tok1_AST;
+				}
+			}
+			else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_14.member(LA(2)))) {
+				expr();
+				tok2_AST = (AST)returnAST;
+				if ( inputState.guessing==0 ) {
+					node = tok2_AST;
+				}
+			}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
+			}
 			if ( inputState.guessing==0 ) {
 				projection_AST = (AST)currentAST.root;
-				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","com.gemstone.gemfire.cache.query.internal.parse.ASTProjection")).add(ex1_AST).add(lb1_AST));
+				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","com.gemstone.gemfire.cache.query.internal.parse.ASTProjection")).add(node).add(lb1_AST));
 				currentAST.root = projection_AST;
 				currentAST.child = projection_AST!=null &&projection_AST.getFirstChild()!=null ?
 					projection_AST.getFirstChild() : projection_AST;
 				currentAST.advanceChildToEnd();
 			}
 		}
-		else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_14.member(LA(2)))) {
-			expr();
-			ex2_AST = (AST)returnAST;
+		else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_15.member(LA(2)))) {
+			{
+			if (((LA(1) >= LITERAL_sum && LA(1) <= LITERAL_count)) && (LA(2)==TOK_LPAREN)) {
+				aggregateExpr();
+				tok3_AST = (AST)returnAST;
+				if ( inputState.guessing==0 ) {
+					node = tok3_AST;
+				}
+			}
+			else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_15.member(LA(2)))) {
+				expr();
+				tok4_AST = (AST)returnAST;
+				if ( inputState.guessing==0 ) {
+					node = tok4_AST;
+				}
+			}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
+			}
 			{
 			if ((LA(1)==LITERAL_as)) {
 				match(LITERAL_as);
@@ -1514,7 +1457,7 @@ inputState.guessing--;
 			}
 			if ( inputState.guessing==0 ) {
 				projection_AST = (AST)currentAST.root;
-				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","com.gemstone.gemfire.cache.query.internal.parse.ASTProjection")).add(ex2_AST).add(lb2_AST));
+				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","com.gemstone.gemfire.cache.query.internal.parse.ASTProjection")).add(node).add(lb2_AST));
 				currentAST.root = projection_AST;
 				currentAST.child = projection_AST!=null &&projection_AST.getFirstChild()!=null ?
 					projection_AST.getFirstChild() : projection_AST;
@@ -1528,44 +1471,194 @@ inputState.guessing--;
 		returnAST = projection_AST;
 	}
 	
-	public final void fieldList() throws RecognitionException, TokenStreamException {
+	public final void aggregateExpr() throws RecognitionException, TokenStreamException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
-		AST fieldList_AST = null;
+		AST aggregateExpr_AST = null;
+		AST tokExpr1_AST = null;
+		AST tokExpr2_AST = null;
+		int aggFunc = -1; boolean distinctOnly = false;
 		
-		identifier();
-		astFactory.addASTChild(currentAST, returnAST);
-		match(TOK_COLON);
-		expr();
-		astFactory.addASTChild(currentAST, returnAST);
+		switch ( LA(1)) {
+		case LITERAL_sum:
+		case LITERAL_avg:
 		{
-		_loop5242:
-		do {
-			if ((LA(1)==TOK_COMMA)) {
-				match(TOK_COMMA);
-				identifier();
-				astFactory.addASTChild(currentAST, returnAST);
-				match(TOK_COLON);
+			{
+			if ((LA(1)==LITERAL_sum)) {
+				match(LITERAL_sum);
+				if ( inputState.guessing==0 ) {
+					aggFunc = SUM;
+				}
+			}
+			else if ((LA(1)==LITERAL_avg)) {
+				match(LITERAL_avg);
+				if ( inputState.guessing==0 ) {
+					aggFunc = AVG;
+				}
+			}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
+			}
+			AST tmp77_AST = null;
+			tmp77_AST = astFactory.create(LT(1));
+			match(TOK_LPAREN);
+			{
+			if ((LA(1)==LITERAL_distinct) && (_tokenSet_4.member(LA(2)))) {
+				match(LITERAL_distinct);
+				if ( inputState.guessing==0 ) {
+					distinctOnly = true;
+				}
+			}
+			else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_16.member(LA(2)))) {
+			}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
+			}
+			expr();
+			tokExpr1_AST = (AST)returnAST;
+			AST tmp79_AST = null;
+			tmp79_AST = astFactory.create(LT(1));
+			match(TOK_RPAREN);
+			if ( inputState.guessing==0 ) {
+				aggregateExpr_AST = (AST)currentAST.root;
+				aggregateExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(AGG_FUNC,"aggregate","com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc")).add(tokExpr1_AST)); 
+				((ASTAggregateFunc)aggregateExpr_AST).setAggregateFunctionType(aggFunc);
+				((ASTAggregateFunc)aggregateExpr_AST).setDistinctOnly(distinctOnly);
+				
+				currentAST.root = aggregateExpr_AST;
+				currentAST.child = aggregateExpr_AST!=null &&aggregateExpr_AST.getFirstChild()!=null ?
+					aggregateExpr_AST.getFirstChild() : aggregateExpr_AST;
+				currentAST.advanceChildToEnd();
+			}
+			break;
+		}
+		case LITERAL_min:
+		case LITERAL_max:
+		{
+			{
+			if ((LA(1)==LITERAL_min)) {
+				match(LITERAL_min);
+				if ( inputState.guessing==0 ) {
+					aggFunc = MIN;
+				}
+			}
+			else if ((LA(1)==LITERAL_max)) {
+				match(LITERAL_max);
+				if ( inputState.guessing==0 ) {
+					aggFunc = MAX;
+				}
+			}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
+			}
+			AST tmp82_AST = null;
+			tmp82_AST = astFactory.create(LT(1));
+			match(TOK_LPAREN);
+			expr();
+			tokExpr2_AST = (AST)returnAST;
+			AST tmp83_AST = null;
+			tmp83_AST = astFactory.create(LT(1));
+			match(TOK_RPAREN);
+			if ( inputState.guessing==0 ) {
+				aggregateExpr_AST = (AST)currentAST.root;
+				aggregateExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(AGG_FUNC,"aggregate","com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc")).add(tokExpr2_AST)); 
+				((ASTAggregateFunc)aggregateExpr_AST).setAggregateFunctionType(aggFunc);               
+				
+				currentAST.root = aggregateExpr_AST;
+				currentAST.child = aggregateExpr_AST!=null &&aggregateExpr_AST.getFirstChild()!=null ?
+					aggregateExpr_AST.getFirstChild() : aggregateExpr_AST;
+				currentAST.advanceChildToEnd();
+			}
+			break;
+		}
+		case LITERAL_count:
+		{
+			com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc tmp84_AST = null;
+			tmp84_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc");
+			astFactory.makeASTRoot(currentAST, tmp84_AST);
+			match(LITERAL_count);
+			match(TOK_LPAREN);
+			{
+			if ((LA(1)==TOK_STAR)) {
+				com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp86_AST = null;
+				tmp86_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
+				astFactory.addASTChild(currentAST, tmp86_AST);
+				match(TOK_STAR);
+			}
+			else if ((_tokenSet_4.member(LA(1)))) {
+				{
+				if ((LA(1)==LITERAL_distinct) && (_tokenSet_4.member(LA(2)))) {
+					match(LITERAL_distinct);
+					if ( inputState.guessing==0 ) {
+						distinctOnly = true;
+					}
+				}
+				else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_16.member(LA(2)))) {
+				}
+				else {
+					throw new NoViableAltException(LT(1), getFilename());
+				}
+				
+				}
 				expr();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5242;
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
+			}
+			match(TOK_RPAREN);
+			if ( inputState.guessing==0 ) {
+				aggregateExpr_AST = (AST)currentAST.root;
+				
+				((ASTAggregateFunc)aggregateExpr_AST).setAggregateFunctionType(COUNT);
+				aggregateExpr_AST.setText("aggregate");
+				((ASTAggregateFunc)aggregateExpr_AST).setDistinctOnly(distinctOnly);
+				
+			}
+			aggregateExpr_AST = (AST)currentAST.root;
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		returnAST = aggregateExpr_AST;
+	}
+	
+	public final void groupByList() throws RecognitionException, TokenStreamException {
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		AST groupByList_AST = null;
+		
+		expr();
+		astFactory.addASTChild(currentAST, returnAST);
+		{
+		_loop268:
+		do {
+			if ((LA(1)==TOK_COMMA)) {
+				match(TOK_COMMA);
+				expr();
+				astFactory.addASTChild(currentAST, returnAST);
+			}
+			else {
+				break _loop268;
 			}
 			
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
-			fieldList_AST = (AST)currentAST.root;
-			fieldList_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(COMBO,"fieldList","com.gemstone.gemfire.cache.query.internal.parse.ASTCombination")).add(fieldList_AST));
-			currentAST.root = fieldList_AST;
-			currentAST.child = fieldList_AST!=null &&fieldList_AST.getFirstChild()!=null ?
-				fieldList_AST.getFirstChild() : fieldList_AST;
-			currentAST.advanceChildToEnd();
-		}
-		fieldList_AST = (AST)currentAST.root;
-		returnAST = fieldList_AST;
+		groupByList_AST = (AST)currentAST.root;
+		returnAST = groupByList_AST;
 	}
 	
 	public final void hintIdentifier() throws RecognitionException, TokenStreamException {
@@ -1656,10 +1749,10 @@ inputState.guessing--;
 		Token  lp = null;
 		com.gemstone.gemfire.cache.query.internal.parse.ASTTypeCast lp_AST = null;
 		
-		boolean synPredMatched5159 = false;
-		if (((LA(1)==TOK_LPAREN) && (_tokenSet_15.member(LA(2))))) {
-			int _m5159 = mark();
-			synPredMatched5159 = true;
+		boolean synPredMatched183 = false;
+		if (((LA(1)==TOK_LPAREN) && (_tokenSet_17.member(LA(2))))) {
+			int _m183 = mark();
+			synPredMatched183 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1670,12 +1763,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched5159 = false;
+				synPredMatched183 = false;
 			}
-			rewind(_m5159);
-inputState.guessing--;
+			rewind(_m183);
+			inputState.guessing--;
 		}
-		if ( synPredMatched5159 ) {
+		if ( synPredMatched183 ) {
 			lp = LT(1);
 			lp_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTTypeCast)astFactory.create(lp,"com.gemstone.gemfire.cache.query.internal.parse.ASTTypeCast");
 			astFactory.makeASTRoot(currentAST, lp_AST);
@@ -1690,7 +1783,7 @@ inputState.guessing--;
 			astFactory.addASTChild(currentAST, returnAST);
 			castExpr_AST = (AST)currentAST.root;
 		}
-		else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_16.member(LA(2)))) {
+		else if ((_tokenSet_4.member(LA(1))) && (_tokenSet_18.member(LA(2)))) {
 			orExpr();
 			astFactory.addASTChild(currentAST, returnAST);
 			castExpr_AST = (AST)currentAST.root;
@@ -1712,7 +1805,7 @@ inputState.guessing--;
 		orelseExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5162:
+		_loop186:
 		do {
 			if ((LA(1)==LITERAL_or)) {
 				match(LITERAL_or);
@@ -1723,7 +1816,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5162;
+				break _loop186;
 			}
 			
 		} while (true);
@@ -1751,7 +1844,7 @@ inputState.guessing--;
 		andExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5165:
+		_loop189:
 		do {
 			if ((LA(1)==LITERAL_orelse)) {
 				match(LITERAL_orelse);
@@ -1762,7 +1855,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5165;
+				break _loop189;
 			}
 			
 		} while (true);
@@ -1789,7 +1882,7 @@ inputState.guessing--;
 		quantifierExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5168:
+		_loop192:
 		do {
 			if ((LA(1)==LITERAL_and)) {
 				match(LITERAL_and);
@@ -1800,7 +1893,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5168;
+				break _loop192;
 			}
 			
 		} while (true);
@@ -1825,9 +1918,9 @@ inputState.guessing--;
 		AST quantifierExpr_AST = null;
 		
 		if ((LA(1)==LITERAL_for)) {
-			AST tmp94_AST = null;
-			tmp94_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp94_AST);
+			AST tmp96_AST = null;
+			tmp96_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp96_AST);
 			match(LITERAL_for);
 			match(LITERAL_all);
 			inClause();
@@ -1838,10 +1931,10 @@ inputState.guessing--;
 			quantifierExpr_AST = (AST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched5171 = false;
+			boolean synPredMatched195 = false;
 			if (((LA(1)==LITERAL_exists) && (LA(2)==QuotedIdentifier||LA(2)==Identifier))) {
-				int _m5171 = mark();
-				synPredMatched5171 = true;
+				int _m195 = mark();
+				synPredMatched195 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1851,15 +1944,15 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched5171 = false;
+					synPredMatched195 = false;
 				}
-				rewind(_m5171);
-inputState.guessing--;
+				rewind(_m195);
+				inputState.guessing--;
 			}
-			if ( synPredMatched5171 ) {
-				AST tmp97_AST = null;
-				tmp97_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp97_AST);
+			if ( synPredMatched195 ) {
+				AST tmp99_AST = null;
+				tmp99_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp99_AST);
 				match(LITERAL_exists);
 				inClause();
 				astFactory.addASTChild(currentAST, returnAST);
@@ -1868,7 +1961,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 				quantifierExpr_AST = (AST)currentAST.root;
 			}
-			else if ((_tokenSet_17.member(LA(1))) && (_tokenSet_18.member(LA(2)))) {
+			else if ((_tokenSet_19.member(LA(1))) && (_tokenSet_20.member(LA(2)))) {
 				andthenExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 				quantifierExpr_AST = (AST)currentAST.root;
@@ -1905,7 +1998,7 @@ inputState.guessing--;
 		equalityExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5175:
+		_loop199:
 		do {
 			if ((LA(1)==LITERAL_andthen)) {
 				match(LITERAL_andthen);
@@ -1916,7 +2009,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5175;
+				break _loop199;
 			}
 			
 		} while (true);
@@ -1944,21 +2037,21 @@ inputState.guessing--;
 		{
 		if ((LA(1)==TOK_EQ||LA(1)==TOK_NE)) {
 			{
-			int _cnt5181=0;
-			_loop5181:
+			int _cnt205=0;
+			_loop205:
 			do {
 				if ((LA(1)==TOK_EQ||LA(1)==TOK_NE)) {
 					{
 					if ((LA(1)==TOK_EQ)) {
-						com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp101_AST = null;
-						tmp101_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
-						astFactory.makeASTRoot(currentAST, tmp101_AST);
+						com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp103_AST = null;
+						tmp103_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+						astFactory.makeASTRoot(currentAST, tmp103_AST);
 						match(TOK_EQ);
 					}
 					else if ((LA(1)==TOK_NE)) {
-						com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp102_AST = null;
-						tmp102_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
-						astFactory.makeASTRoot(currentAST, tmp102_AST);
+						com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp104_AST = null;
+						tmp104_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+						astFactory.makeASTRoot(currentAST, tmp104_AST);
 						match(TOK_NE);
 					}
 					else {
@@ -1970,25 +2063,25 @@ inputState.guessing--;
 					switch ( LA(1)) {
 					case LITERAL_all:
 					{
-						AST tmp103_AST = null;
-						tmp103_AST = astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp103_AST);
+						AST tmp105_AST = null;
+						tmp105_AST = astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp105_AST);
 						match(LITERAL_all);
 						break;
 					}
 					case LITERAL_any:
 					{
-						AST tmp104_AST = null;
-						tmp104_AST = astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp104_AST);
+						AST tmp106_AST = null;
+						tmp106_AST = astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp106_AST);
 						match(LITERAL_any);
 						break;
 					}
 					case LITERAL_some:
 					{
-						AST tmp105_AST = null;
-						tmp105_AST = astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp105_AST);
+						AST tmp107_AST = null;
+						tmp107_AST = astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp107_AST);
 						match(LITERAL_some);
 						break;
 					}
@@ -2014,9 +2107,9 @@ inputState.guessing--;
 					case LITERAL_last:
 					case LITERAL_unique:
 					case LITERAL_sum:
+					case LITERAL_avg:
 					case LITERAL_min:
 					case LITERAL_max:
-					case LITERAL_avg:
 					case LITERAL_count:
 					case LITERAL_is_undefined:
 					case LITERAL_is_defined:
@@ -2050,27 +2143,27 @@ inputState.guessing--;
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					if ( _cnt5181>=1 ) { break _loop5181; } else {throw new NoViableAltException(LT(1), getFilename());}
+					if ( _cnt205>=1 ) { break _loop205; } else {throw new NoViableAltException(LT(1), getFilename());}
 				}
 				
-				_cnt5181++;
+				_cnt205++;
 			} while (true);
 			}
 		}
-		else if ((_tokenSet_19.member(LA(1)))) {
+		else if ((_tokenSet_21.member(LA(1)))) {
 			{
-			_loop5183:
+			_loop207:
 			do {
 				if ((LA(1)==LITERAL_like)) {
-					com.gemstone.gemfire.cache.query.internal.parse.ASTLike tmp106_AST = null;
-					tmp106_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLike)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLike");
-					astFactory.makeASTRoot(currentAST, tmp106_AST);
+					com.gemstone.gemfire.cache.query.internal.parse.ASTLike tmp108_AST = null;
+					tmp108_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLike)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLike");
+					astFactory.makeASTRoot(currentAST, tmp108_AST);
 					match(LITERAL_like);
 					relationalExpr();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop5183;
+					break _loop207;
 				}
 				
 			} while (true);
@@ -2094,40 +2187,40 @@ inputState.guessing--;
 		additiveExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5189:
+		_loop213:
 		do {
-			if ((_tokenSet_20.member(LA(1)))) {
+			if ((_tokenSet_22.member(LA(1)))) {
 				{
 				switch ( LA(1)) {
 				case TOK_LT:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp107_AST = null;
-					tmp107_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
-					astFactory.makeASTRoot(currentAST, tmp107_AST);
+					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp109_AST = null;
+					tmp109_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					astFactory.makeASTRoot(currentAST, tmp109_AST);
 					match(TOK_LT);
 					break;
 				}
 				case TOK_GT:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp108_AST = null;
-					tmp108_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
-					astFactory.makeASTRoot(currentAST, tmp108_AST);
+					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp110_AST = null;
+					tmp110_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					astFactory.makeASTRoot(currentAST, tmp110_AST);
 					match(TOK_GT);
 					break;
 				}
 				case TOK_LE:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp109_AST = null;
-					tmp109_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
-					astFactory.makeASTRoot(currentAST, tmp109_AST);
+					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp111_AST = null;
+					tmp111_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					astFactory.makeASTRoot(currentAST, tmp111_AST);
 					match(TOK_LE);
 					break;
 				}
 				case TOK_GE:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp110_AST = null;
-					tmp110_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
-					astFactory.makeASTRoot(currentAST, tmp110_AST);
+					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp112_AST = null;
+					tmp112_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					astFactory.makeASTRoot(currentAST, tmp112_AST);
 					match(TOK_GE);
 					break;
 				}
@@ -2138,7 +2231,7 @@ inputState.guessing--;
 				}
 				}
 				{
-				if ((_tokenSet_17.member(LA(1)))) {
+				if ((_tokenSet_19.member(LA(1)))) {
 					additiveExpr();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
@@ -2147,25 +2240,25 @@ inputState.guessing--;
 					switch ( LA(1)) {
 					case LITERAL_all:
 					{
-						AST tmp111_AST = null;
-						tmp111_AST = astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp111_AST);
+						AST tmp113_AST = null;
+						tmp113_AST = astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp113_AST);
 						match(LITERAL_all);
 						break;
 					}
 					case LITERAL_any:
 					{
-						AST tmp112_AST = null;
-						tmp112_AST = astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp112_AST);
+						AST tmp114_AST = null;
+						tmp114_AST = astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp114_AST);
 						match(LITERAL_any);
 						break;
 					}
 					case LITERAL_some:
 					{
-						AST tmp113_AST = null;
-						tmp113_AST = astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp113_AST);
+						AST tmp115_AST = null;
+						tmp115_AST = astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp115_AST);
 						match(LITERAL_some);
 						break;
 					}
@@ -2185,7 +2278,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5189;
+				break _loop213;
 			}
 			
 		} while (true);
@@ -2203,48 +2296,48 @@ inputState.guessing--;
 		multiplicativeExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5193:
+		_loop217:
 		do {
-			if ((_tokenSet_21.member(LA(1)))) {
+			if ((_tokenSet_23.member(LA(1)))) {
 				{
 				switch ( LA(1)) {
 				case TOK_PLUS:
 				{
-					AST tmp114_AST = null;
-					tmp114_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp114_AST);
+					AST tmp116_AST = null;
+					tmp116_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp116_AST);
 					match(TOK_PLUS);
 					break;
 				}
 				case TOK_MINUS:
 				{
-					AST tmp115_AST = null;
-					tmp115_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp115_AST);
+					AST tmp117_AST = null;
+					tmp117_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp117_AST);
 					match(TOK_MINUS);
 					break;
 				}
 				case TOK_CONCAT:
 				{
-					AST tmp116_AST = null;
-					tmp116_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp116_AST);
+					AST tmp118_AST = null;
+					tmp118_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp118_AST);
 					match(TOK_CONCAT);
 					break;
 				}
 				case LITERAL_union:
 				{
-					AST tmp117_AST = null;
-					tmp117_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp117_AST);
+					AST tmp119_AST = null;
+					tmp119_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp119_AST);
 					match(LITERAL_union);
 					break;
 				}
 				case LITERAL_except:
 				{
-					AST tmp118_AST = null;
-					tmp118_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp118_AST);
+					AST tmp120_AST = null;
+					tmp120_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp120_AST);
 					match(LITERAL_except);
 					break;
 				}
@@ -2258,7 +2351,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5193;
+				break _loop217;
 			}
 			
 		} while (true);
@@ -2276,40 +2369,40 @@ inputState.guessing--;
 		inExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5197:
+		_loop221:
 		do {
-			if ((_tokenSet_22.member(LA(1)))) {
+			if ((_tokenSet_24.member(LA(1)))) {
 				{
 				switch ( LA(1)) {
 				case TOK_STAR:
 				{
-					AST tmp119_AST = null;
-					tmp119_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp119_AST);
+					AST tmp121_AST = null;
+					tmp121_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp121_AST);
 					match(TOK_STAR);
 					break;
 				}
 				case TOK_SLASH:
 				{
-					AST tmp120_AST = null;
-					tmp120_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp120_AST);
+					AST tmp122_AST = null;
+					tmp122_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp122_AST);
 					match(TOK_SLASH);
 					break;
 				}
 				case LITERAL_mod:
 				{
-					AST tmp121_AST = null;
-					tmp121_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp121_AST);
+					AST tmp123_AST = null;
+					tmp123_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp123_AST);
 					match(LITERAL_mod);
 					break;
 				}
 				case LITERAL_intersect:
 				{
-					AST tmp122_AST = null;
-					tmp122_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp122_AST);
+					AST tmp124_AST = null;
+					tmp124_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp124_AST);
 					match(LITERAL_intersect);
 					break;
 				}
@@ -2323,7 +2416,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop5197;
+				break _loop221;
 			}
 			
 		} while (true);
@@ -2342,14 +2435,14 @@ inputState.guessing--;
 		astFactory.addASTChild(currentAST, returnAST);
 		{
 		if ((LA(1)==LITERAL_in)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTIn tmp123_AST = null;
-			tmp123_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTIn)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTIn");
-			astFactory.makeASTRoot(currentAST, tmp123_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTIn tmp125_AST = null;
+			tmp125_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTIn)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTIn");
+			astFactory.makeASTRoot(currentAST, tmp125_AST);
 			match(LITERAL_in);
 			unaryExpr();
 			astFactory.addASTChild(currentAST, returnAST);
 		}
-		else if ((_tokenSet_23.member(LA(1)))) {
+		else if ((_tokenSet_25.member(LA(1)))) {
 		}
 		else {
 			throw new NoViableAltException(LT(1), getFilename());
@@ -2367,9 +2460,9 @@ inputState.guessing--;
 		AST unaryExpr_AST = null;
 		
 		{
-		_loop5203:
+		_loop227:
 		do {
-			if ((_tokenSet_24.member(LA(1)))) {
+			if ((_tokenSet_26.member(LA(1)))) {
 				{
 				switch ( LA(1)) {
 				case TOK_PLUS:
@@ -2379,25 +2472,25 @@ inputState.guessing--;
 				}
 				case TOK_MINUS:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTUnary tmp125_AST = null;
-					tmp125_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUnary");
-					astFactory.makeASTRoot(currentAST, tmp125_AST);
+					com.gemstone.gemfire.cache.query.internal.parse.ASTUnary tmp127_AST = null;
+					tmp127_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUnary");
+					astFactory.makeASTRoot(currentAST, tmp127_AST);
 					match(TOK_MINUS);
 					break;
 				}
 				case LITERAL_abs:
 				{
-					AST tmp126_AST = null;
-					tmp126_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp126_AST);
+					AST tmp128_AST = null;
+					tmp128_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp128_AST);
 					match(LITERAL_abs);
 					break;
 				}
 				case LITERAL_not:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTUnary tmp127_AST = null;
-					tmp127_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUnary");
-					astFactory.makeASTRoot(currentAST, tmp127_AST);
+					com.gemstone.gemfire.cache.query.internal.parse.ASTUnary tmp129_AST = null;
+					tmp129_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUnary");
+					astFactory.makeASTRoot(currentAST, tmp129_AST);
 					match(LITERAL_not);
 					break;
 				}
@@ -2409,7 +2502,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5203;
+				break _loop227;
 			}
 			
 		} while (true);
@@ -2430,7 +2523,7 @@ inputState.guessing--;
 		primaryExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop5208:
+		_loop232:
 		do {
 			if ((LA(1)==TOK_LBRACK)) {
 				match(TOK_LBRACK);
@@ -2459,7 +2552,7 @@ inputState.guessing--;
 					methodInvocation(false);
 					astFactory.addASTChild(currentAST, returnAST);
 				}
-				else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (_tokenSet_25.member(LA(2)))) {
+				else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (_tokenSet_27.member(LA(2)))) {
 					identifier();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
@@ -2473,7 +2566,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5208;
+				break _loop232;
 			}
 			
 		} while (true);
@@ -2522,9 +2615,9 @@ inputState.guessing--;
 			break;
 		}
 		case LITERAL_sum:
+		case LITERAL_avg:
 		case LITERAL_min:
 		case LITERAL_max:
-		case LITERAL_avg:
 		case LITERAL_count:
 		{
 			aggregateExpr();
@@ -2588,17 +2681,17 @@ inputState.guessing--;
 		}
 		case RegionPath:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath tmp134_AST = null;
-			tmp134_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath");
-			astFactory.addASTChild(currentAST, tmp134_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath tmp136_AST = null;
+			tmp136_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath");
+			astFactory.addASTChild(currentAST, tmp136_AST);
 			match(RegionPath);
 			break;
 		}
 		default:
-			boolean synPredMatched5222 = false;
+			boolean synPredMatched246 = false;
 			if (((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (LA(2)==TOK_LPAREN))) {
-				int _m5222 = mark();
-				synPredMatched5222 = true;
+				int _m246 = mark();
+				synPredMatched246 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2609,12 +2702,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched5222 = false;
+					synPredMatched246 = false;
 				}
-				rewind(_m5222);
-inputState.guessing--;
+				rewind(_m246);
+				inputState.guessing--;
 			}
-			if ( synPredMatched5222 ) {
+			if ( synPredMatched246 ) {
 				objectConstruction();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
@@ -2622,7 +2715,7 @@ inputState.guessing--;
 				methodInvocation(true);
 				astFactory.addASTChild(currentAST, returnAST);
 			}
-			else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (_tokenSet_25.member(LA(2)))) {
+			else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (_tokenSet_27.member(LA(2)))) {
 				identifier();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
@@ -2648,7 +2741,7 @@ inputState.guessing--;
 			{
 			if ((LA(1)==TOK_COMMA||LA(1)==TOK_RBRACK)) {
 				{
-				_loop5214:
+				_loop238:
 				do {
 					if ((LA(1)==TOK_COMMA)) {
 						match(TOK_COMMA);
@@ -2656,16 +2749,16 @@ inputState.guessing--;
 						astFactory.addASTChild(currentAST, returnAST);
 					}
 					else {
-						break _loop5214;
+						break _loop238;
 					}
 					
 				} while (true);
 				}
 			}
 			else if ((LA(1)==TOK_COLON)) {
-				AST tmp136_AST = null;
-				tmp136_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp136_AST);
+				AST tmp138_AST = null;
+				tmp138_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp138_AST);
 				match(TOK_COLON);
 				expr();
 				astFactory.addASTChild(currentAST, returnAST);
@@ -2677,9 +2770,9 @@ inputState.guessing--;
 			}
 		}
 		else if ((LA(1)==TOK_STAR)) {
-			AST tmp137_AST = null;
-			tmp137_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp137_AST);
+			AST tmp139_AST = null;
+			tmp139_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp139_AST);
 			match(TOK_STAR);
 		}
 		else {
@@ -2744,7 +2837,7 @@ inputState.guessing--;
 			expr();
 			astFactory.addASTChild(currentAST, returnAST);
 			{
-			_loop5218:
+			_loop242:
 			do {
 				if ((LA(1)==TOK_COMMA)) {
 					match(TOK_COMMA);
@@ -2752,7 +2845,7 @@ inputState.guessing--;
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop5218;
+					break _loop242;
 				}
 				
 			} while (true);
@@ -2787,33 +2880,33 @@ inputState.guessing--;
 			switch ( LA(1)) {
 			case LITERAL_listtoset:
 			{
-				AST tmp140_AST = null;
-				tmp140_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp140_AST);
+				AST tmp142_AST = null;
+				tmp142_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp142_AST);
 				match(LITERAL_listtoset);
 				break;
 			}
 			case LITERAL_element:
 			{
-				com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp141_AST = null;
-				tmp141_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
-				astFactory.makeASTRoot(currentAST, tmp141_AST);
+				com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp143_AST = null;
+				tmp143_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
+				astFactory.makeASTRoot(currentAST, tmp143_AST);
 				match(LITERAL_element);
 				break;
 			}
 			case LITERAL_distinct:
 			{
-				AST tmp142_AST = null;
-				tmp142_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp142_AST);
+				AST tmp144_AST = null;
+				tmp144_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp144_AST);
 				match(LITERAL_distinct);
 				break;
 			}
 			case LITERAL_flatten:
 			{
-				AST tmp143_AST = null;
-				tmp143_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp143_AST);
+				AST tmp145_AST = null;
+				tmp145_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp145_AST);
 				match(LITERAL_flatten);
 				break;
 			}
@@ -2833,9 +2926,9 @@ inputState.guessing--;
 		{
 			{
 			{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp146_AST = null;
-			tmp146_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
-			astFactory.makeASTRoot(currentAST, tmp146_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp148_AST = null;
+			tmp148_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
+			astFactory.makeASTRoot(currentAST, tmp148_AST);
 			match(LITERAL_nvl);
 			}
 			match(TOK_LPAREN);
@@ -2852,9 +2945,9 @@ inputState.guessing--;
 		{
 			{
 			{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp150_AST = null;
-			tmp150_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
-			astFactory.makeASTRoot(currentAST, tmp150_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp152_AST = null;
+			tmp152_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
+			astFactory.makeASTRoot(currentAST, tmp152_AST);
 			match(LITERAL_to_date);
 			}
 			match(TOK_LPAREN);
@@ -2887,33 +2980,33 @@ inputState.guessing--;
 		switch ( LA(1)) {
 		case LITERAL_first:
 		{
-			AST tmp154_AST = null;
-			tmp154_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp154_AST);
+			AST tmp156_AST = null;
+			tmp156_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp156_AST);
 			match(LITERAL_first);
 			break;
 		}
 		case LITERAL_last:
 		{
-			AST tmp155_AST = null;
-			tmp155_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp155_AST);
+			AST tmp157_AST = null;
+			tmp157_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp157_AST);
 			match(LITERAL_last);
 			break;
 		}
 		case LITERAL_unique:
 		{
-			AST tmp156_AST = null;
-			tmp156_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp156_AST);
+			AST tmp158_AST = null;
+			tmp158_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp158_AST);
 			match(LITERAL_unique);
 			break;
 		}
 		case LITERAL_exists:
 		{
-			AST tmp157_AST = null;
-			tmp157_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp157_AST);
+			AST tmp159_AST = null;
+			tmp159_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp159_AST);
 			match(LITERAL_exists);
 			break;
 		}
@@ -2939,15 +3032,15 @@ inputState.guessing--;
 		
 		{
 		if ((LA(1)==LITERAL_is_undefined)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp160_AST = null;
-			tmp160_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
-			astFactory.makeASTRoot(currentAST, tmp160_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp162_AST = null;
+			tmp162_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
+			astFactory.makeASTRoot(currentAST, tmp162_AST);
 			match(LITERAL_is_undefined);
 		}
 		else if ((LA(1)==LITERAL_is_defined)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp161_AST = null;
-			tmp161_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
-			astFactory.makeASTRoot(currentAST, tmp161_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp163_AST = null;
+			tmp163_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
+			astFactory.makeASTRoot(currentAST, tmp163_AST);
 			match(LITERAL_is_defined);
 		}
 		else {
@@ -2993,9 +3086,9 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST structConstruction_AST = null;
 		
-		AST tmp165_AST = null;
-		tmp165_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp165_AST);
+		AST tmp167_AST = null;
+		tmp167_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp167_AST);
 		match(LITERAL_struct);
 		match(TOK_LPAREN);
 		fieldList();
@@ -3017,25 +3110,25 @@ inputState.guessing--;
 			switch ( LA(1)) {
 			case LITERAL_array:
 			{
-				AST tmp168_AST = null;
-				tmp168_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp168_AST);
+				AST tmp170_AST = null;
+				tmp170_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp170_AST);
 				match(LITERAL_array);
 				break;
 			}
 			case LITERAL_set:
 			{
-				com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction tmp169_AST = null;
-				tmp169_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction");
-				astFactory.makeASTRoot(currentAST, tmp169_AST);
+				com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction tmp171_AST = null;
+				tmp171_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction");
+				astFactory.makeASTRoot(currentAST, tmp171_AST);
 				match(LITERAL_set);
 				break;
 			}
 			case LITERAL_bag:
 			{
-				AST tmp170_AST = null;
-				tmp170_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp170_AST);
+				AST tmp172_AST = null;
+				tmp172_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp172_AST);
 				match(LITERAL_bag);
 				break;
 			}
@@ -3049,13 +3142,13 @@ inputState.guessing--;
 			astFactory.addASTChild(currentAST, returnAST);
 		}
 		else if ((LA(1)==LITERAL_list)) {
-			AST tmp171_AST = null;
-			tmp171_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp171_AST);
+			AST tmp173_AST = null;
+			tmp173_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp173_AST);
 			match(LITERAL_list);
-			AST tmp172_AST = null;
-			tmp172_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp172_AST);
+			AST tmp174_AST = null;
+			tmp174_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp174_AST);
 			match(TOK_LPAREN);
 			{
 			if ((_tokenSet_4.member(LA(1)))) {
@@ -3063,27 +3156,27 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 				{
 				if ((LA(1)==TOK_DOTDOT)) {
-					AST tmp173_AST = null;
-					tmp173_AST = astFactory.create(LT(1));
-					astFactory.addASTChild(currentAST, tmp173_AST);
+					AST tmp175_AST = null;
+					tmp175_AST = astFactory.create(LT(1));
+					astFactory.addASTChild(currentAST, tmp175_AST);
 					match(TOK_DOTDOT);
 					expr();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else if ((LA(1)==TOK_RPAREN||LA(1)==TOK_COMMA)) {
 					{
-					_loop5249:
+					_loop278:
 					do {
 						if ((LA(1)==TOK_COMMA)) {
-							AST tmp174_AST = null;
-							tmp174_AST = astFactory.create(LT(1));
-							astFactory.addASTChild(currentAST, tmp174_AST);
+							AST tmp176_AST = null;
+							tmp176_AST = astFactory.create(LT(1));
+							astFactory.addASTChild(currentAST, tmp176_AST);
 							match(TOK_COMMA);
 							expr();
 							astFactory.addASTChild(currentAST, returnAST);
 						}
 						else {
-							break _loop5249;
+							break _loop278;
 						}
 						
 					} while (true);
@@ -3102,9 +3195,9 @@ inputState.guessing--;
 			}
 			
 			}
-			AST tmp175_AST = null;
-			tmp175_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp175_AST);
+			AST tmp177_AST = null;
+			tmp177_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp177_AST);
 			match(TOK_RPAREN);
 		}
 		else {
@@ -3199,12 +3292,52 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST stringLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp176_AST = null;
-		tmp176_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.addASTChild(currentAST, tmp176_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp178_AST = null;
+		tmp178_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.addASTChild(currentAST, tmp178_AST);
 		match(StringLiteral);
 		stringLiteral_AST = (AST)currentAST.root;
 		returnAST = stringLiteral_AST;
+	}
+	
+	public final void fieldList() throws RecognitionException, TokenStreamException {
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		AST fieldList_AST = null;
+		
+		identifier();
+		astFactory.addASTChild(currentAST, returnAST);
+		match(TOK_COLON);
+		expr();
+		astFactory.addASTChild(currentAST, returnAST);
+		{
+		_loop271:
+		do {
+			if ((LA(1)==TOK_COMMA)) {
+				match(TOK_COMMA);
+				identifier();
+				astFactory.addASTChild(currentAST, returnAST);
+				match(TOK_COLON);
+				expr();
+				astFactory.addASTChild(currentAST, returnAST);
+			}
+			else {
+				break _loop271;
+			}
+			
+		} while (true);
+		}
+		if ( inputState.guessing==0 ) {
+			fieldList_AST = (AST)currentAST.root;
+			fieldList_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(COMBO,"fieldList","com.gemstone.gemfire.cache.query.internal.parse.ASTCombination")).add(fieldList_AST));
+			currentAST.root = fieldList_AST;
+			currentAST.child = fieldList_AST!=null &&fieldList_AST.getFirstChild()!=null ?
+				fieldList_AST.getFirstChild() : fieldList_AST;
+			currentAST.advanceChildToEnd();
+		}
+		fieldList_AST = (AST)currentAST.root;
+		returnAST = fieldList_AST;
 	}
 	
 	public final void objectLiteral() throws RecognitionException, TokenStreamException {
@@ -3216,27 +3349,27 @@ inputState.guessing--;
 		switch ( LA(1)) {
 		case LITERAL_nil:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp177_AST = null;
-			tmp177_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp177_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp182_AST = null;
+			tmp182_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp182_AST);
 			match(LITERAL_nil);
 			objectLiteral_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_null:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp178_AST = null;
-			tmp178_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp178_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp183_AST = null;
+			tmp183_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp183_AST);
 			match(LITERAL_null);
 			objectLiteral_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_undefined:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp179_AST = null;
-			tmp179_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp179_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp184_AST = null;
+			tmp184_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp184_AST);
 			match(LITERAL_undefined);
 			objectLiteral_AST = (AST)currentAST.root;
 			break;
@@ -3257,15 +3390,15 @@ inputState.guessing--;
 		
 		{
 		if ((LA(1)==LITERAL_true)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp180_AST = null;
-			tmp180_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp180_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp185_AST = null;
+			tmp185_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp185_AST);
 			match(LITERAL_true);
 		}
 		else if ((LA(1)==LITERAL_false)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp181_AST = null;
-			tmp181_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp181_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp186_AST = null;
+			tmp186_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp186_AST);
 			match(LITERAL_false);
 		}
 		else {
@@ -3287,33 +3420,33 @@ inputState.guessing--;
 		switch ( LA(1)) {
 		case NUM_INT:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp182_AST = null;
-			tmp182_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp182_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp187_AST = null;
+			tmp187_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp187_AST);
 			match(NUM_INT);
 			break;
 		}
 		case NUM_LONG:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp183_AST = null;
-			tmp183_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp183_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp188_AST = null;
+			tmp188_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp188_AST);
 			match(NUM_LONG);
 			break;
 		}
 		case NUM_FLOAT:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp184_AST = null;
-			tmp184_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp184_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp189_AST = null;
+			tmp189_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp189_AST);
 			match(NUM_FLOAT);
 			break;
 		}
 		case NUM_DOUBLE:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp185_AST = null;
-			tmp185_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp185_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp190_AST = null;
+			tmp190_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp190_AST);
 			match(NUM_DOUBLE);
 			break;
 		}
@@ -3333,13 +3466,13 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST charLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp186_AST = null;
-		tmp186_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp186_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp191_AST = null;
+		tmp191_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp191_AST);
 		match(LITERAL_char);
-		AST tmp187_AST = null;
-		tmp187_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp187_AST);
+		AST tmp192_AST = null;
+		tmp192_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp192_AST);
 		match(StringLiteral);
 		charLiteral_AST = (AST)currentAST.root;
 		returnAST = charLiteral_AST;
@@ -3351,13 +3484,13 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST dateLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp188_AST = null;
-		tmp188_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp188_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp193_AST = null;
+		tmp193_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp193_AST);
 		match(LITERAL_date);
-		AST tmp189_AST = null;
-		tmp189_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp189_AST);
+		AST tmp194_AST = null;
+		tmp194_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp194_AST);
 		match(StringLiteral);
 		dateLiteral_AST = (AST)currentAST.root;
 		returnAST = dateLiteral_AST;
@@ -3369,13 +3502,13 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST timeLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp190_AST = null;
-		tmp190_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp190_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp195_AST = null;
+		tmp195_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp195_AST);
 		match(LITERAL_time);
-		AST tmp191_AST = null;
-		tmp191_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp191_AST);
+		AST tmp196_AST = null;
+		tmp196_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp196_AST);
 		match(StringLiteral);
 		timeLiteral_AST = (AST)currentAST.root;
 		returnAST = timeLiteral_AST;
@@ -3387,13 +3520,13 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		AST timestampLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp192_AST = null;
-		tmp192_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp192_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp197_AST = null;
+		tmp197_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp197_AST);
 		match(LITERAL_timestamp);
-		AST tmp193_AST = null;
-		tmp193_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp193_AST);
+		AST tmp198_AST = null;
+		tmp198_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp198_AST);
 		match(StringLiteral);
 		timestampLiteral_AST = (AST)currentAST.root;
 		returnAST = timestampLiteral_AST;
@@ -3461,6 +3594,12 @@ inputState.guessing--;
 		"SORT_CRITERION",
 		"LIMIT",
 		"HINT",
+		"AGG_FUNC",
+		"SUM",
+		"AVG",
+		"COUNT",
+		"MAX",
+		"MIN",
 		"\"trace\"",
 		"\"import\"",
 		"\"as\"",
@@ -3507,9 +3646,9 @@ inputState.guessing--;
 		"\"last\"",
 		"\"unique\"",
 		"\"sum\"",
+		"\"avg\"",
 		"\"min\"",
 		"\"max\"",
-		"\"avg\"",
 		"\"count\"",
 		"\"is_undefined\"",
 		"\"is_defined\"",
@@ -3551,134 +3690,144 @@ inputState.guessing--;
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { -6917526699697455072L, 297237573265260573L, 32651L, 0L, 0L, 0L};
+		long[] data = { 2327943626784L, 576460615267125096L, 2089665L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 2327970839714L, -50577222L, 32767L, 0L, 0L, 0L};
+		long[] data = { 2327970839714L, -3236942208L, 2097151L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { -6917529027641081856L, 5L, 0L, 0L};
+		long[] data = { 0L, 360L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 2327943626784L, 297237573265260568L, 32651L, 0L, 0L, 0L};
+		long[] data = { 2327943626784L, 576460615267124736L, 2089665L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	private static final long[] mk_tokenSet_4() {
-		long[] data = { 2327939432480L, 297237573265260560L, 32651L, 0L, 0L, 0L};
+		long[] data = { 2327939432480L, 576460615267124224L, 2089665L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { 210L, 36352L, 0L, 0L};
+		long[] data = { 210L, 2326528L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { 4611688346398227698L, -50557000L, 32767L, 0L, 0L, 0L};
+		long[] data = { 2327970839794L, -3235647984L, 2097151L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { 210L, 36608L, 0L, 0L};
+		long[] data = { 210L, 2342912L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { 25778192594L, 36352L, 0L, 0L};
+		long[] data = { 25778192594L, 2326528L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { 2327939563552L, 297237573265260560L, 32651L, 0L, 0L, 0L};
+		long[] data = { 2327939563552L, 576460615267124224L, 2089665L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { 4611688346398228064L, -50593544L, 32767L, 0L, 0L, 0L};
+		long[] data = { 2327970840160L, -3237986800L, 2097151L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
-		long[] data = { 146L, 35840L, 0L, 0L};
+		long[] data = { 146L, 2293760L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 146L, 33792L, 0L, 0L};
+		long[] data = { 146L, 2162688L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
 	private static final long[] mk_tokenSet_13() {
-		long[] data = { 146L, 1024L, 0L, 0L};
+		long[] data = { 146L, 65536L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
 	private static final long[] mk_tokenSet_14() {
-		long[] data = { 4611688346398227554L, -50593544L, 32767L, 0L, 0L, 0L};
+		long[] data = { 2327970839650L, -3237986816L, 2097151L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
 	private static final long[] mk_tokenSet_15() {
-		long[] data = { 25769803776L, -562949953421312L, 127L, 0L, 0L, 0L};
+		long[] data = { 2327970839650L, -3237986800L, 2097151L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
 	private static final long[] mk_tokenSet_16() {
-		long[] data = { 4611688346431782898L, 297237575356100600L, 32651L, 0L, 0L, 0L};
+		long[] data = { 2327970839600L, -3237990912L, 2097151L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
 	private static final long[] mk_tokenSet_17() {
-		long[] data = { 2327939432480L, 297237573263163408L, 32651L, 0L, 0L, 0L};
+		long[] data = { 25769803776L, -36028797018963968L, 8191L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
 	private static final long[] mk_tokenSet_18() {
-		long[] data = { 4611688346431782898L, 297237575356100568L, 32651L, 0L, 0L, 0L};
+		long[] data = { 2328004394994L, 576460749080886800L, 2089665L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());
 	private static final long[] mk_tokenSet_19() {
-		long[] data = { 4611686044230747090L, 77573952L, 0L, 0L};
+		long[] data = { 2327939432480L, 576460615132906496L, 2089665L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_19 = new BitSet(mk_tokenSet_19());
 	private static final long[] mk_tokenSet_20() {
-		long[] data = { 13369344L, 0L, 0L};
+		long[] data = { 2328004394994L, 576460749080884752L, 2089665L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_20 = new BitSet(mk_tokenSet_20());
 	private static final long[] mk_tokenSet_21() {
-		long[] data = { 53248L, 402653184L, 0L, 0L};
+		long[] data = { 25803359186L, 4964732944L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_21 = new BitSet(mk_tokenSet_21());
 	private static final long[] mk_tokenSet_22() {
-		long[] data = { 196608L, 1610612736L, 0L, 0L};
+		long[] data = { 13369344L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_22 = new BitSet(mk_tokenSet_22());
 	private static final long[] mk_tokenSet_23() {
-		long[] data = { 4611686044245423058L, 2090839872L, 0L, 0L};
+		long[] data = { 53248L, 25769803776L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_23 = new BitSet(mk_tokenSet_23());
 	private static final long[] mk_tokenSet_24() {
-		long[] data = { 49152L, 6442450944L, 0L, 0L};
+		long[] data = { 196608L, 103079215104L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_24 = new BitSet(mk_tokenSet_24());
 	private static final long[] mk_tokenSet_25() {
-		long[] data = { 4611686044262203346L, 2090840000L, 0L, 0L};
+		long[] data = { 25818035154L, 133813751824L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_25 = new BitSet(mk_tokenSet_25());
+	private static final long[] mk_tokenSet_26() {
+		long[] data = { 49152L, 412316860416L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_26 = new BitSet(mk_tokenSet_26());
+	private static final long[] mk_tokenSet_27() {
+		long[] data = { 25834815442L, 133813760016L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_27 = new BitSet(mk_tokenSet_27());
 	
 	}

@@ -9,7 +9,6 @@
 package com.gemstone.gemfire.internal.cache;
 
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,6 +31,7 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -124,14 +124,20 @@ public class PoolManagerImpl {
    */
   public void close(boolean keepAlive) {
     // destroying connection pools
+    boolean foundClientPool = false;
     synchronized(poolLock) {
       for (Iterator<Map.Entry<String,Pool>> itr = pools.entrySet().iterator(); itr.hasNext(); ) {
         Map.Entry<String,Pool> entry = itr.next();
         PoolImpl pool = (PoolImpl)entry.getValue();
         pool.basicDestroy(keepAlive);
+        foundClientPool = true;
       }
       pools = Collections.emptyMap();
       itrForEmergencyClose = null;
+      if (foundClientPool) {
+        // Now that the client has all the pools destroyed free up the pooled comm buffers
+        ServerConnection.emptyCommBufferPool();
+      }
     }
   }
   

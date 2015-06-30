@@ -8,6 +8,8 @@
 
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -84,6 +86,8 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
@@ -919,8 +923,9 @@ public class InitialImageOperation  {
                           .create((byte[])tmpValue);
                     }
                     // dummy EntryEvent to pass for SQLF index maintenance
-                    final EntryEventImpl ev = new EntryEventImpl(this.region,
+                    final EntryEventImpl ev = EntryEventImpl.create(this.region,
                         Operation.CREATE, null, null, null, true, null, false, false);
+                    try {
                     ev.setKeyInfo(this.region.getKeyInfo(entry.key,
                         tmpValue, null));
                     ev.setNewValue(tmpValue);
@@ -930,6 +935,9 @@ public class InitialImageOperation  {
                     } finally {
                       indexUpdater.postEvent(this.region, ev, re,
                           success);
+                    }
+                    } finally {
+                      ev.release();
                     }
                   }
                   continue;

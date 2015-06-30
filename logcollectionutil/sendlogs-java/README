@@ -1,0 +1,103 @@
+Pivotal GemFire Log Collection Utility
+======================================
+
+This utility is used to gather log files from a GemFire cluster.  In the default mode
+this requires that a GemFire process be running on each machine that this tool is to gather
+logs from.  If you would like to collect log files from machines in which a GemFire process
+is not running, you can use the "Static Copy Mode".  See the "Current Usage" section for
+details on using "Static Copy Mode".
+
+This utility provides an alternative to using gfsh and doesn't require GemFire members to
+be in a healthy state as it doesn't use the internal GemFire communication protocols to 
+complete operations. Unlike gfsh this log collection utility is also not interactive and 
+focused at the host level to gather all logs and stats from members.   
+
+The gfsh command list for 7.0.X can be reviewed at the following URL which includes 
+the "export stack-traces" and "export logs" command which overlap in terms of functinality.
+
+See section on "GemFire Monitoring": 
+http://gemfire702.docs.pivotal.io/7.0.2/userguide/tools_modules/gfsh/quick_ref_commands_by_area.html
+
+Default Usage
+=============
+java -jar gfe-logcollect.jar -c <company> -o <output dir> [OPTIONS]
+
+Required arguments:
+        -c company name to append to output filename
+        -o output directory to store all collected log files
+
+Optional arguments:
+        -a comma separated list of hosts with no spaces. EG. host1,host2,host3 (defaults to localhost)
+        -u username to use to connect via ssh (defaults to current user)
+        -i identity file to use for PKI based ssh (defaults to ~/.ssh/id_[dsa|rsa]
+        -p prompt for a password to use for ssh connections
+        -t ticket number to append to created zip file
+        -d don't clean up collected log files after the zip has been created
+        -s send the zip file to Pivotal support
+        -f ftp server to upload collected logs to.  Defaults to ftp.gemstone.com
+        -v print version of this utility
+        -h print this help information
+
+Static Copy Mode
+================
+java -jar gfe-logcollect.jar -c <company> -o <output dir> -m <filename> [OPTIONS]
+
+Required arguments:
+        -c company name to append to output filename
+        -o output directory to store all collected log files
+        -m <file> Use a file with log locations instead of scanning for logs.
+           Entries should be in the format hostname:/log/location
+        -a should not be used with the -m option
+		All other commandline options work as expected
+		
+Known Limitations
+=================
+1. Only supports Linux hosts.
+2. Requires SSH access between machines.
+3. Requires that the username be the same for each host that this app scans.
+   EG. you can't specify user@host1, anotherUser@host2, etc.
+4. Requires that SSH access is available across all hosts using either the same
+   password or the same public key.
+5. In order to get stacks using jstack, this process must be ran as the same user
+   who owns the GFE process.
+6. Requires 'jps' (typically in $JAVA_HOME/bin) to be in the user's PATH on each
+   machine.
+7. Requires 'jstack' (typically in $JAVA_HOME/bin) to be in the users PATH on each
+   machine.
+8. Requires Java 7 on the host running the utility. 
+
+Additional Information on Usage
+===============================
+The default way that log collector works is by using ssh and then issuing a series of
+shell commands to collect data about the processes running on each host listed via the
+"-a hostname,hostname...". The utility initially logs into each host via ssh and 
+attempts to identify the running GemFire processes and PID's by issuing the "jps -l" 
+command and looking for Java runtimes with the sub strings "com.vmware","com.gemstone",
+"io.pivotal", "com.pivotal" or "gemfire" in their names. If zero possible GemFire processes
+are found, a second attampt will be made via "ps -fa | grep java" and looking for 
+any process with "classpath" and "gemfire.jar" that are listed.  Once the PID's have
+been identified, the utility issues via ssh the command "jstack -l <pid>" to each 
+process to dump a thread stack which gets collected. In the next step the utility issues
+the command "ls -l /proc/<pid>/fd" listing the process file handles in which to look for 
+log files. From the possible list of directories found via the file handles, the utility
+copies any file with the extensions ".log", ".err", ".cfg", ".gfs", ".stack", ".xml",
+".properties" and ".txt" to the output directory. If the "-s" option is used then the
+zip file created in the output directory is sent to the ftp server at ftp.gemstone.com
+and placed in the public/incoming directory for the support team. There is no notification
+on the uploaded files and so the user will need to create a support ticket and in the
+ticket should reference uploaded files.
+
+The static copy mode will not attempt to collect stack traces and differs by fetching the files
+only from the hosts and directories specified in the file provided via the "-m" option. As
+such no GemFire processes need to be running for the collection of available artifacts to occur.   
+
+It is recommended that users review and inspect any artifacts collected to insure that
+these do not violate company policies in regards to sharing data with outside parties including
+Pivotal support.
+
+Copyright
+=========
+2015 Pivotal Software, Inc.  All Rights Reserved. This
+product is protected by U.S. and international copyright and
+intellectual property laws. Pivotal products are covered by one
+or more patents listed at http://www.pivotal.io/patents.

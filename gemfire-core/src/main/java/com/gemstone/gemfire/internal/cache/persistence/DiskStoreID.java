@@ -144,4 +144,15 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
   public String abbrev() {
     return Long.toHexString(mostSig).substring(8);
   }
+  
+  @Override
+  public int getSizeInBytes() {
+  
+    int size = 0;
+  
+    // two longs 
+    size += 16;
+    
+    return size;    
+  }
 }

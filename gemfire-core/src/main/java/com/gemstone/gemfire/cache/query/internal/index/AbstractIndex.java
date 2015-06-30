@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.internal.Bag;
 import com.gemstone.gemfire.cache.query.internal.CompiledID;
 import com.gemstone.gemfire.cache.query.internal.CompiledIndexOperation;
 import com.gemstone.gemfire.cache.query.internal.CompiledIteratorDef;
@@ -43,13 +44,11 @@ import com.gemstone.gemfire.cache.query.internal.CqEntry;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
 import com.gemstone.gemfire.cache.query.internal.IndexInfo;
-import com.gemstone.gemfire.cache.query.internal.LinkedStructSet;
 import com.gemstone.gemfire.cache.query.internal.QRegion;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
 import com.gemstone.gemfire.cache.query.internal.QueryUtils;
-import com.gemstone.gemfire.cache.query.internal.ResultsBag;
 import com.gemstone.gemfire.cache.query.internal.RuntimeIterator;
-import com.gemstone.gemfire.cache.query.internal.StructBag;
+import com.gemstone.gemfire.cache.query.internal.StructFields;
 import com.gemstone.gemfire.cache.query.internal.StructImpl;
 import com.gemstone.gemfire.cache.query.internal.Support;
 import com.gemstone.gemfire.cache.query.internal.index.IndexStore.IndexStoreEntry;
@@ -67,6 +66,9 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 
@@ -275,7 +277,7 @@ public abstract class AbstractIndex implements IndexProtocol
   }
 
   public void query(Object key, int operator, Collection results,
-      CompiledValue iterOp, RuntimeIterator indpndntIr,
+      @Retained CompiledValue iterOp, RuntimeIterator indpndntIr,
       ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection)
   throws TypeMismatchException, FunctionDomainException,
@@ -544,7 +546,7 @@ public abstract class AbstractIndex implements IndexProtocol
     return value;
   }
 
-  private void addToResultsBagWithUnionOrIntersection(Collection results,
+  private void addToResultsWithUnionOrIntersection(Collection results,
       SelectResults intermediateResults, boolean isIntersection, Object value)
   {
     value = verifyAndGetPdxDomainObject(value);
@@ -567,7 +569,7 @@ public abstract class AbstractIndex implements IndexProtocol
     }
   }
 
-  private void addToStructBagWithUnionOrIntersection(Collection results,
+  private void addToStructsWithUnionOrIntersection(Collection results,
       SelectResults intermediateResults, boolean isIntersection, Object[] values)
   {
     for (int i=0; i < values.length; i++) {
@@ -575,38 +577,45 @@ public abstract class AbstractIndex implements IndexProtocol
     }
     
     if (intermediateResults == null) {
-      if( results instanceof StructBag) {
-        ((StructBag)results).addFieldValues(values);
+      if( results instanceof StructFields) {
+        ((StructFields)results).addFieldValues(values);
       }else {
-        LinkedStructSet lss = (LinkedStructSet)results;
-        StructImpl structImpl = new StructImpl( (StructTypeImpl)lss.getCollectionType().getElementType(), values);
-        lss.add(structImpl);
+        //The results could be LinkedStructSet or SortedResultsBag or StructSet
+        //LinkedStructSet lss = (LinkedStructSet)results;
+        SelectResults sr = (SelectResults)results;
+        StructImpl structImpl = new StructImpl( (StructTypeImpl)sr.getCollectionType().getElementType(), values);
+        //lss.add(structImpl);
+        sr.add(structImpl);
       }
     }
     else {
       if (isIntersection) {
-        if(results instanceof StructBag) {
-          int numOcc = ((StructBag)intermediateResults).occurrences(values);
+        if(results instanceof StructFields) {
+          int numOcc = intermediateResults.occurrences(values);
           if (numOcc > 0) {
-            ((StructBag)results).addFieldValues(values);
-            ((StructBag)intermediateResults).removeFieldValues(values);
+            ((StructFields)results).addFieldValues(values);
+            ((StructFields)intermediateResults).removeFieldValues(values);
           }
         }else {
-          LinkedStructSet lss = (LinkedStructSet)results;
-          StructImpl structImpl = new StructImpl( (StructTypeImpl)lss.getCollectionType().getElementType(), values);
-          if( ((LinkedStructSet)intermediateResults).remove(structImpl)) {
-            lss.add(structImpl);
+          //LinkedStructSet lss = (LinkedStructSet)results;
+          // could be LinkedStructSet or SortedResultsBag
+          SelectResults sr = (SelectResults)results;
+          StructImpl structImpl = new StructImpl( (StructTypeImpl)sr.getCollectionType().getElementType(), values);
+          if( intermediateResults.remove(structImpl)) {
+            sr.add(structImpl);
           }          
         }
       }
       else {
-        if( results instanceof StructBag) {
-          ((StructBag)results).addFieldValues(values);
+        if( results instanceof StructFields) {
+          ((StructFields)results).addFieldValues(values);
         }else {
-          LinkedStructSet lss = (LinkedStructSet)results;
-          StructImpl structImpl = new StructImpl( (StructTypeImpl)lss.getCollectionType().getElementType(), values);
-          if( ((LinkedStructSet)intermediateResults).remove(structImpl)) {
-            lss.add(structImpl);
+          // could be LinkedStructSet or SortedResultsBag
+          SelectResults sr = (SelectResults)results;
+          //LinkedStructSet lss = (LinkedStructSet)results;
+          StructImpl structImpl = new StructImpl( (StructTypeImpl)sr.getCollectionType().getElementType(), values);
+          if( ((SelectResults)intermediateResults).remove(structImpl)) {
+            sr.add(structImpl);
           }
         }
       }
@@ -621,11 +630,17 @@ public abstract class AbstractIndex implements IndexProtocol
   {
     if (projAttrib == null) {
       iterValue = deserializePdxForLocalDistinctQuery(context, iterValue);
-      this.addToResultsBagWithUnionOrIntersection(result, intermediateResults,
+      this.addToResultsWithUnionOrIntersection(result, intermediateResults,
           isIntersection, iterValue);
     }
     else {
-      if (result instanceof StructBag || result instanceof LinkedStructSet) {
+      //TODO : Asif : Optimize this . This condition looks ugly.
+     /* if (result instanceof StructBag || result instanceof LinkedStructSet
+          || result instanceof LinkedStructBag) {*/
+      boolean isStruct = result instanceof SelectResults 
+          && ((SelectResults)result).getCollectionType().getElementType() != null
+          && ((SelectResults)result).getCollectionType().getElementType().isStructType();
+      if (isStruct) {
         int projCount = projAttrib.size();
         Object[] values = new Object[projCount];
         Iterator projIter = projAttrib.iterator();
@@ -635,13 +650,13 @@ public abstract class AbstractIndex implements IndexProtocol
           values[i] = deserializePdxForLocalDistinctQuery(context, ((CompiledValue)projDef[1]).evaluate(context));
           i++;
         }
-        this.addToStructBagWithUnionOrIntersection(result, intermediateResults,
+        this.addToStructsWithUnionOrIntersection(result, intermediateResults,
             isIntersection, values);
       }
       else {
         Object[] temp = (Object[])projAttrib.get(0);
         Object val = deserializePdxForLocalDistinctQuery(context, ((CompiledValue)temp[1]).evaluate(context));
-        this.addToResultsBagWithUnionOrIntersection(result,
+        this.addToResultsWithUnionOrIntersection(result,
             intermediateResults, isIntersection, val);
       }
     }
@@ -673,7 +688,7 @@ public abstract class AbstractIndex implements IndexProtocol
     return val;
   }
   
-  private void removeFromResultsBagWithUnionOrIntersection(Collection results,
+  private void removeFromResultsWithUnionOrIntersection(Collection results,
       SelectResults intermediateResults, boolean isIntersection, Object value)
   {
     if (intermediateResults == null) {
@@ -681,7 +696,7 @@ public abstract class AbstractIndex implements IndexProtocol
     }
     else {
       if (isIntersection) {
-        int numOcc = ((ResultsBag)results).occurrences(value);
+        int numOcc = ((SelectResults)results).occurrences(value);
         if (numOcc > 0) {
           results.remove(value);
           intermediateResults.add(value);
@@ -693,23 +708,24 @@ public abstract class AbstractIndex implements IndexProtocol
     }
   }
 
-  private void removeFromStructBagWithUnionOrIntersection(Collection results,
+  private void removeFromStructsWithUnionOrIntersection(Collection results,
       SelectResults intermediateResults, boolean isIntersection,
-      Object values[])
+      Object values[], ExecutionContext context)
   {
-    if (intermediateResults == null) {
-      ((StructBag)results).removeFieldValues(values);
+    if (intermediateResults == null) {      
+        ((StructFields)results).removeFieldValues(values);      
     }
     else {
       if (isIntersection) {
-        int numOcc = ((StructBag)results).occurrences(values);
+        int numOcc = ((SelectResults)results).occurrences(values);
         if (numOcc > 0) {
-          ((StructBag)results).removeFieldValues(values);
-          ((StructBag)intermediateResults).addFieldValues(values);
+            ((StructFields)results).removeFieldValues(values);
+            ((StructFields)intermediateResults).addFieldValues(values);
+          
         }
       }
-      else {
-        ((StructBag)results).removeFieldValues(values);
+      else {        
+        ((StructFields)results).removeFieldValues(values);        
       }
     }
   }
@@ -721,11 +737,11 @@ public abstract class AbstractIndex implements IndexProtocol
       QueryInvocationTargetException
   {
     if (projAttrib == null) {
-      this.removeFromResultsBagWithUnionOrIntersection(result,
+      this.removeFromResultsWithUnionOrIntersection(result,
           intermediateResults, isIntersection, iterValue);
     }
     else {
-      if (result instanceof StructBag) {
+      if (result instanceof StructFields) {
         int projCount = projAttrib.size();
         Object[] values = new Object[projCount];
         Iterator projIter = projAttrib.iterator();
@@ -734,13 +750,13 @@ public abstract class AbstractIndex implements IndexProtocol
           Object projDef[] = (Object[])projIter.next();
           values[i++] = ((CompiledValue)projDef[1]).evaluate(context);
         }
-        this.removeFromStructBagWithUnionOrIntersection(result,
-            intermediateResults, isIntersection, values);
+        this.removeFromStructsWithUnionOrIntersection(result,
+            intermediateResults, isIntersection, values, context);
       }
       else {
         Object[] temp = (Object[])projAttrib.get(0);
         Object val = ((CompiledValue)temp[1]).evaluate(context);
-        this.removeFromResultsBagWithUnionOrIntersection(result,
+        this.removeFromResultsWithUnionOrIntersection(result,
             intermediateResults, isIntersection, val);
       }
     }
@@ -1400,17 +1416,14 @@ public abstract class AbstractIndex implements IndexProtocol
    * @return true if limit is satisfied.
    */
   protected boolean verifyLimit(Collection result, int limit,
-      ExecutionContext context) {
+      ExecutionContext context) {   
     if (limit > 0) {
-      if (((DefaultQuery)context.getQuery()).getSimpleSelect().isDistinct()) {
-        if (result instanceof ResultsBag) {
-          return (((ResultsBag)result).distinctElementsSize() == limit);
-        } else if (result instanceof StructBag) {
-          return (((StructBag)result).distinctElementsSize() == limit);
-        }
+     /* if (!context.isDistinct()) {
+        return ((Bag)result).size() == limit;
       } else if (result.size() == limit) {
         return true;
-      }
+      }*/
+      return result.size() == limit;
     }
     return false;
   }
@@ -1458,13 +1471,23 @@ public abstract class AbstractIndex implements IndexProtocol
         valuesInRegion = evaluateIndexIteratorsFromRE(re, context);
         valueInIndex = verifyAndGetPdxDomainObject(value);
       } else{
-        Object val = re.getValueInVM(context.getPartitionedRegion()); // OFFHEAP incrc, deserialize, decrc
+        @Released Object val = re.getValueInVM(context.getPartitionedRegion());
+        Chunk valToFree = null;
+        if (val instanceof Chunk) {
+          valToFree = (Chunk)val;
+        }
+        try {
         if (val instanceof CachedDeserializable) {
           val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), re);
         }
         val = verifyAndGetPdxDomainObject(val);   
         valueInIndex = verifyAndGetPdxDomainObject(value);
         valuesInRegion = evaluateIndexIteratorsFromRE(val, context);
+        } finally {
+          if (valToFree != null) {
+            valToFree.release();
+          }
+        }
       }
     } catch (Exception e) {
       // TODO: Create a new LocalizedString for this.
@@ -2110,14 +2133,10 @@ public abstract class AbstractIndex implements IndexProtocol
     }
 
     private boolean verifylimit(Collection result, int limit,
-        ExecutionContext context) {
+        ExecutionContext context) {     
       if (limit > 0) {
-        if (((DefaultQuery)context.getQuery()).getSimpleSelect().isDistinct()) {
-          if (result instanceof ResultsBag) {
-            return (((ResultsBag)result).distinctElementsSize() == limit);
-          } else if (result instanceof StructBag) {
-            return (((StructBag)result).distinctElementsSize() == limit);
-          }
+        if (!context.isDistinct()) {
+          return ((Bag)result).size() == limit;
         } else if (result.size() == limit) {
           return true;
         }

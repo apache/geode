@@ -28,8 +28,10 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer.Sendable;
+import com.gemstone.gemfire.internal.Sendable;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
@@ -259,8 +261,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
       case DOUBLE_ARRAY:
       case STRING_ARRAY:
       case ARRAY_OF_BYTE_ARRAYS: {
-        ByteBuffer buffer = ur.getRaw(ft);
-        if (!buffer.equals(ft.getFieldType().getDefaultBytes())) {
+        ByteSource buffer = ur.getRaw(ft);
+        if (!buffer.equals(ByteSourceFactory.create(ft.getFieldType().getDefaultBytes()))) {
           hashCode = hashCode *31  + buffer.hashCode();
         }
         break;
@@ -281,7 +283,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
         } else if (objectValue.getClass().isArray()) {
           Class<?> myComponentType = objectValue.getClass().getComponentType();
           if (myComponentType.isPrimitive()) {
-            ByteBuffer buffer = getRaw(ft);
+            ByteSource buffer = getRaw(ft);
             hashCode = hashCode *31  + buffer.hashCode();
           } else {
             hashCode = hashCode *31  + Arrays.deepHashCode((Object[])objectValue);
@@ -361,8 +363,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
         case DOUBLE_ARRAY:
         case STRING_ARRAY:
         case ARRAY_OF_BYTE_ARRAYS: {
-          ByteBuffer myBuffer = ur1.getRaw(myType);
-          ByteBuffer otherBuffer = ur2.getRaw(otherType);
+          ByteSource myBuffer = ur1.getRaw(myType);
+          ByteSource otherBuffer = ur2.getRaw(otherType);
           if(!myBuffer.equals(otherBuffer)) {
             //GemFireCacheImpl.getInstance().getLogger().info("DEBUG equals#4 o1=<" + this + "> o2=<" + obj + ">");
             return false;
@@ -398,8 +400,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
                 return false;
               }
               if (myComponentType.isPrimitive()) {
-                ByteBuffer myBuffer = getRaw(myType);
-                ByteBuffer otherBuffer = other.getRaw(otherType);
+                ByteSource myBuffer = getRaw(myType);
+                ByteSource otherBuffer = other.getRaw(otherType);
                 if(!myBuffer.equals(otherBuffer)) {
                   //GemFireCacheImpl.getInstance().getLogger().info("DEBUG equals#9 o1=<" + this + "> o2=<" + obj + ">");
                   return false;
@@ -592,7 +594,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
 
   // override getRaw to fix bug 43569
   @Override
-  protected synchronized ByteBuffer getRaw(PdxField ft) {
+  protected synchronized ByteSource getRaw(PdxField ft) {
     return super.getRaw(ft);
   }
 

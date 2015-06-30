@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>gemfire-modules-parent</artifactId>
+    <groupId>com.gemstone</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>com.gemstone</groupId>
+  <artifactId>gemfire-modules-slf4j-weblogic</artifactId>
+  <version>${gemfire.modules.version}</version>
+  <name>gemfire-modules-slf4j-weblogic</name>
+  <url>http://maven.apache.org</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.bea.core</groupId>
+      <artifactId>i18n</artifactId>
+      <version>1.7.0.0</version>
+      <scope>system</scope>
+      <systemPath>
+        ${basedir}/src/main/resources/lib/com.bea.core.i18n_1.7.0.0.jar
+      </systemPath>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.1</version>
+        <configuration>
+          <!--
+              Unfortunately a scope of 'system' causes the jar to be
+              included in our final artifact which is not desired.
+          -->
+          <excludes>
+            <exclude>**/com.bea.core.i18n*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+</project>

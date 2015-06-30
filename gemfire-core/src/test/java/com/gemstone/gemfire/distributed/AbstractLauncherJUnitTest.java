@@ -9,7 +9,6 @@
 package com.gemstone.gemfire.distributed;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,11 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,34 +39,7 @@ import org.junit.experimental.categories.Category;
 @Category(UnitTest.class)
 public class AbstractLauncherJUnitTest extends CommonLauncherTestSuite {
 
-  private static final String GEMFIRE_PROPERTIES_FILE_NAME = "gemfire.properties";
-  private static final String TEMPORARY_FILE_NAME = "beforeAbstractLauncherJUnitTest_" + GEMFIRE_PROPERTIES_FILE_NAME;
-  
-  @BeforeClass
-  public static void setUp() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(TEMPORARY_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
-  
-  @AfterClass
-  public static void tearDown() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(TEMPORARY_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
-
-  protected AbstractLauncher createAbstractLauncher(final String memberName, final String memberId) {
+  protected AbstractLauncher<?> createAbstractLauncher(final String memberName, final String memberId) {
     return new TestServiceLauncher(memberName, memberId);
   }
 
@@ -135,9 +104,6 @@ public class AbstractLauncherJUnitTest extends CommonLauncherTestSuite {
 
   @Test
   public void testLoadGemFirePropertiesFromFile() throws IOException {
-    // TODO fix this test on Windows; the File renameTo and delete in finally fails on Windows
-    assumeFalse(SystemUtils.isWindows());
-
     final Properties expectedGemfireProperties = new Properties();
 
     expectedGemfireProperties.setProperty(DistributionConfig.NAME_NAME, "memberOne");
@@ -149,22 +115,16 @@ public class AbstractLauncherJUnitTest extends CommonLauncherTestSuite {
     assertNotNull(gemfirePropertiesFile);
     assertTrue(gemfirePropertiesFile.isFile());
 
-    try {
-      final Properties actualGemFireProperties = AbstractLauncher.loadGemFireProperties(
-        gemfirePropertiesFile.toURI().toURL());
+    final Properties actualGemFireProperties = AbstractLauncher.loadGemFireProperties(
+      gemfirePropertiesFile.toURI().toURL());
 
-      assertNotNull(actualGemFireProperties);
-      assertEquals(expectedGemfireProperties, actualGemFireProperties);
-    }
-    finally {
-      assertTrue(gemfirePropertiesFile.delete());
-      assertFalse(gemfirePropertiesFile.isFile());
-    }
+    assertNotNull(actualGemFireProperties);
+    assertEquals(expectedGemfireProperties, actualGemFireProperties);
   }
 
   @Test
   public void testGetDistributedSystemProperties() {
-    AbstractLauncher launcher = createAbstractLauncher("memberOne", "1");
+    AbstractLauncher<?> launcher = createAbstractLauncher("memberOne", "1");
 
     assertNotNull(launcher);
     assertEquals("1", launcher.getMemberId());
@@ -212,7 +172,7 @@ public class AbstractLauncherJUnitTest extends CommonLauncherTestSuite {
 
   @Test
   public void testGetDistributedSystemPropertiesWithDefaults() {
-    AbstractLauncher launcher = createAbstractLauncher("TestMember", "123");
+    AbstractLauncher<?> launcher = createAbstractLauncher("TestMember", "123");
 
     assertNotNull(launcher);
     assertEquals("123", launcher.getMemberId());
@@ -231,7 +191,7 @@ public class AbstractLauncherJUnitTest extends CommonLauncherTestSuite {
 
   @Test
   public void testGetMember() {
-    AbstractLauncher launcher = createAbstractLauncher("memberOne", "123");
+    AbstractLauncher<?> launcher = createAbstractLauncher("memberOne", "123");
 
     assertNotNull(launcher);
     assertEquals("123", launcher.getMemberId());

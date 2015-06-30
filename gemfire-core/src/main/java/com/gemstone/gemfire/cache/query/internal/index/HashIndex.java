@@ -70,6 +70,9 @@ import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * A HashIndex is an index that can be used for equal and not equals queries It
@@ -815,12 +818,20 @@ public class HashIndex extends AbstractIndex {
     return ((LocalRegion) getRegion()).new NonTXEntry(entry);
   }
   
+  // TODO OFFHEAP: may return PdxInstance
   private Object getTargetObjectForUpdate(RegionEntry entry) {
     if (this.indexOnValues) {
-      Object o = entry.getValueInVMOrDiskWithoutFaultIn((LocalRegion) getRegion()); // OFFHEAP: incrc, deserialize, decrc
+      Object o = entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
       try {
-        if (o instanceof CachedDeserializable) {
-          return ((CachedDeserializable) o).getDeserializedForReading();
+        if (o instanceof Chunk) {
+          Chunk ohval = (Chunk) o;
+          try {
+            o = ohval.getDeserializedForReading();
+          } finally {
+            ohval.release();
+          }
+        } else if (o instanceof CachedDeserializable) {
+          o = ((CachedDeserializable)o).getDeserializedForReading();
         }
       } catch (EntryDestroyedException ede) {
         return Token.INVALID;
@@ -1416,6 +1427,7 @@ public class HashIndex extends AbstractIndex {
 
     Object evaluateKey(Object object) {
       Object value = object;
+      
       ExecutionContext newContext = null;
 
       if (object instanceof RegionEntry) {

@@ -1,0 +1,47 @@
+
+{
+ "name": "j-feed",
+ "description" : "A format to describe Feeds",
+ "url": "http://example.org/schemas/j-feed",
+ "type": "object",
+ "members":
+ [
+    { "name": "nvFeed" },
+    { "name": "htmlUrl" },
+    { "name": "title" },
+    { "name": "description" },
+    {
+      "name": "items",
+      "type": "array",
+      "members": {
+ "name": "j-feed-item",
+ "description": "A format to describe Feed items",
+ "url": "http://example.org/schemas/j-feed-item",
+ "type": "object",
+ "members":
+ [
+    { "name": "id" },
+    { "name": "title" },
+    { "name": "content" },
+    { "name": "author" },
+    { "name": "date" },
+    {
+      "name": "enclosures",
+      "type": "array",
+      "members": {
+ "name": "j-feed-enclosure",
+ "description": "A format to describe Feed enclosures",
+ "url": "http://example.org/schemas/j-feed-enclosure",
+ "type": "object",
+ "members":
+ [
+    { "name": "url" },
+    { "name": "type" }
+ ]
+}
+    }
+ ]
+}
+    }
+ ]
+}

@@ -19,6 +19,7 @@ import javax.transaction.Synchronization;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CommitConflictException;
 import com.gemstone.gemfire.cache.TransactionId;
+import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -79,6 +80,11 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @since 5.0
    */
   public boolean needsLargeModCount();
+  
+  /*
+   * Only applicable for Distributed transaction.
+   */
+  public void precommit() throws CommitConflictException, UnsupportedOperationInTransactionException;
 
   public void commit() throws CommitConflictException;
 
@@ -110,7 +116,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @param updateStats TODO
    */
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
-      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones);
+      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadsFromHDFS, boolean retainResult);
 
   public TXEvent getEvent();
 
@@ -177,5 +183,33 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * record a transactional operation for possible later replay
    */
   public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key, Object arguments[]);
-}
 
+  public void close();
+  
+  /*
+   * Determine if its TxState or not
+   */
+  public boolean isTxState();
+  
+  /*
+   * Determine if is TxStateStub or not
+   */
+  public boolean isTxStateStub();
+  
+  /*
+   * Determine if is TxStateProxy or not
+   */
+  public boolean isTxStateProxy();
+  
+  /*
+   * Is class related to Distributed Transaction, and not colocated transaction
+   */
+  public boolean isDistTx();
+  
+  /*
+   * Is class meant for Coordinator for Distributed Transaction
+   * 
+   * Will be true for DistTXCoordinatorInterface
+   */
+  public boolean isCreatedOnDistTxCoordinator();
+}

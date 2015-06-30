@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_6.dtd">
+  
+<cache>
+
+  <cache-server port="44444"/>
+
+  <!-- This is the definition of the default session region -->
+  <region name="{{region_name}}">
+    <region-attributes id="sessionAttr" enable-gateway="false" data-policy="partition" statistics-enabled="true">
+      <partition-attributes redundant-copies="1" total-num-buckets="113"/>
+    </region-attributes>
+  </region>
+
+
+  <initializer><class-name>com.vmware.gemfire.rest.JsonFunction</class-name></initializer>
+</cache>

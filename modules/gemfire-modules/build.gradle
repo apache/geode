@@ -1,0 +1,11 @@
+
+test  {
+  include '**/TestSessions.class'
+  workingDir = "${projectDir}"
+}
+
+dependencies {
+  compile "org.apache.tomcat:catalina:${tomcat_version}"
+  compile "org.apache.tomcat:catalina-ha:${tomcat_version}"
+  testCompile "org.slf4j:slf4j-jdk14:${slf4j_version}"
+}

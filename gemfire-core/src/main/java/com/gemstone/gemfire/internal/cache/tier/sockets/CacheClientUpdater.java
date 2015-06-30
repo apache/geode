@@ -135,6 +135,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
    * The buffer upon which we receive messages
    */
   private final ByteBuffer commBuffer;
+  private boolean commBufferReleased;
 
   private final CCUStats stats;
   
@@ -352,7 +353,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
         } 
         catch (SocketException ignore) {
         }
-        cb = ServerConnection.allocateCommBuffer(bufSize);
+        cb = ServerConnection.allocateCommBuffer(bufSize, mySock);
       }
       {
         // create a "server" memberId we currently don't know much about the
@@ -436,6 +437,19 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
           } 
           catch (IOException ioe) {
             logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientUpdater_CLOSING_SOCKET_IN_0_FAILED, this), ioe);
+          }
+        }
+      }
+    }
+  }
+  
+  private void releaseCommBuffer() {
+    if (!this.commBufferReleased) {
+      if (this.commBuffer != null) {
+        synchronized (this.commBuffer) {
+          if (!this.commBufferReleased) {
+            this.commBufferReleased = true;
+            ServerConnection.releaseCommBuffer(this.commBuffer);
           }
         }
       }
@@ -582,7 +596,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
             logger.debug(t.getMessage(), t);
           }
         }
-      } // !isSelfDestroying
+     } // !isSelfDestroying
     } // isAlive
   }
 
@@ -616,6 +630,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
     } catch (Exception e) {
       // ignore
     }
+    releaseCommBuffer();
   }
 
   /**
@@ -756,7 +771,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
         EntryEventImpl newEvent = null;
         try {
           // Create an event and put the entry
-          newEvent = new EntryEventImpl(
+          newEvent = EntryEventImpl.create(
               region,
               ((m.getMessageType() == MessageType.LOCAL_CREATE) ? Operation.CREATE
                   : Operation.UPDATE), key, null /* newValue */,
@@ -789,6 +804,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
                   .getState().getProcessedMarker()
                   || !this.isDurableClient, newEvent, eventId);
           this.isOpCompleted = true;
+        } finally {
+          if (newEvent != null) newEvent.release();
         }
 
         if (isDebugEnabled) {

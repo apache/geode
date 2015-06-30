@@ -1,0 +1,5 @@
+#Eclipse Product File
+#Thu Apr 24 19:59:14 GMT+05:30 2008
+version=1.0.0
+name=Data Browser
+id=com.gemstone.gemfire.tools.product

@@ -9,6 +9,11 @@
 
 package com.gemstone.gemfire.internal.lang;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.StringTokenizer;
+
 /**
  * The SystemUtils class is an abstract utility class for working with, invoking methods and accessing properties
  * of the Java System class.
@@ -158,6 +163,41 @@ public class SystemUtils {
     return isOS(WINDOWS_OS_NAME);
   }
 
+
+  /**
+   * Returns true if the specified location is in the JVM classpath. This may
+   * ignore additions to the classpath that are not reflected by the value in
+   * <code>System.getProperty("java.class.path")</code>.
+   * 
+   * @param location the directory or jar name to test for
+   * @return true if location is in the JVM classpath
+   * @throws MalformedURLException
+   */
+  public static boolean isInClassPath(String location) throws MalformedURLException {
+    return isInClassPath(new File(location).toURI().toURL());
+  }
+  
+  /**
+   * Returns true if the specified location is in the JVM classpath. This may
+   * ignore additions to the classpath that are not reflected by the value in
+   * <code>System.getProperty("java.class.path")</code>.
+   * 
+   * @param location the directory or jar URL to test for
+   * @return true if location is in the JVM classpath
+   * @throws MalformedURLException
+   */
+  public static boolean isInClassPath(URL location) throws MalformedURLException {
+    String classPath = System.getProperty("java.class.path");
+    StringTokenizer st = new StringTokenizer(classPath, File.pathSeparator);
+    while (st.hasMoreTokens()) {
+      String path =st.nextToken();
+      if (location.equals(new File(path).toURI().toURL())) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   // @see java.lang.System#getProperty(String) with "os.name".
   private static boolean isOS(final String expectedOsName) {
     String osName = System.getProperty("os.name");

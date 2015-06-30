@@ -64,6 +64,7 @@ import com.gemstone.gemfire.internal.DummyStatisticsImpl;
 import com.gemstone.gemfire.internal.GemFireStatSampler;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
+import com.gemstone.gemfire.internal.LinuxProcFsStatistics;
 import com.gemstone.gemfire.internal.LocalStatisticsImpl;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.OsStatisticsFactory;
@@ -73,12 +74,14 @@ import com.gemstone.gemfire.internal.StatisticsManager;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
+import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.execute.FunctionServiceStats;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
+import com.gemstone.gemfire.internal.cache.xmlcache.BridgeServerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -88,6 +91,8 @@ import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
+import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
@@ -116,15 +121,15 @@ public final class InternalDistributedSystem
    */
   public static volatile DistributedSystem systemAttemptingReconnect;
 
+  public static final CreationStackGenerator DEFAULT_CREATION_STACK_GENERATOR = new CreationStackGenerator() {
+    @Override
+    public Throwable generateCreationStack(final DistributionConfig config) {
+      return null;
+    }
+  };
+
   // the following is overridden from DistributedTestCase to fix #51058
-  public static final AtomicReference<CreationStackGenerator> TEST_CREATION_STACK_GENERATOR = new AtomicReference<CreationStackGenerator>(
-      new CreationStackGenerator() {
-        @Override
-        public Throwable generateCreationStack(final DistributionConfig config) {
-          return null;
-        }
-      });
-  
+  public static final AtomicReference<CreationStackGenerator> TEST_CREATION_STACK_GENERATOR = new AtomicReference<CreationStackGenerator>(DEFAULT_CREATION_STACK_GENERATOR);
   
   /** The distribution manager that is used to communicate with the
    * distributed system. */
@@ -493,6 +498,12 @@ public final class InternalDistributedSystem
     return this.isLoner;
   }
 
+  private MemoryAllocator offHeapStore = null;
+  
+  public MemoryAllocator getOffHeapStore() {
+    return this.offHeapStore;
+  }
+  
   /**
    * Initializes this connection to a distributed system with the
    * current configuration state.
@@ -577,6 +588,30 @@ public final class InternalDistributedSystem
     catch (Exception ex) {
       throw new GemFireSecurityException(
         LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION.toLocalizedString(), ex);
+    }
+
+    final long offHeapMemorySize = OffHeapStorage.parseOffHeapMemorySize(getConfig().getOffHeapMemorySize());
+
+    this.offHeapStore = OffHeapStorage.createOffHeapStorage(getLogWriter(), this, offHeapMemorySize, this);
+    
+    // Note: this can only happen on a linux system
+    if (getConfig().getLockMemory()) {
+      // This calculation is not exact, but seems fairly close.  So far we have
+      // not loaded much into the heap and the current RSS usage is already 
+      // included the available memory calculation.
+      long avail = LinuxProcFsStatistics.getAvailableMemory(logger);
+      long size = offHeapMemorySize + Runtime.getRuntime().totalMemory();
+      if (avail < size) {
+        if (GemFireCacheImpl.ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
+          logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT_WARN, size - avail));
+        } else {
+          throw new IllegalStateException(LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT.toLocalizedString(avail, size));
+        }
+      }
+      
+      logger.info("Locking memory. This may take a while...");
+      GemFireCacheImpl.lockMemory();
+      logger.info("Finished locking memory.");
     }
 
     try {
@@ -1346,6 +1381,11 @@ public final class InternalDistributedSystem
     }
     finally {
       try {
+        if (getOffHeapStore() != null) {
+          getOffHeapStore().close();
+        }
+      } finally {
+      try {
         removeSystem(this);
         // Close the config object
         this.config.close();
@@ -1354,6 +1394,7 @@ public final class InternalDistributedSystem
         // Finally, mark ourselves as disconnected
         setDisconnected();
         SystemFailure.stopThreads();
+      }
       }
     }
   }
@@ -2528,6 +2569,8 @@ public final class InternalDistributedSystem
     // the membership manager when forced-disconnect starts.  If we're
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
+    List<BridgeServerCreation> cacheServerCreation = null;
+    
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     boolean inhibitCacheForSQLFire = false;
     if (cache != null) {
@@ -2535,6 +2578,7 @@ public final class InternalDistributedSystem
         inhibitCacheForSQLFire = true;
       } else {
         cacheXML = cache.getCacheConfig().getCacheXMLDescription();
+        cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
       }
     }
     
@@ -2616,7 +2660,7 @@ public final class InternalDistributedSystem
           }
         }
     
-        logger.info(LocalizedMessage.create(LocalizedStrings.DISTRIBUTED_SYSTEM_RECONNECTING, new Object[]{reconnectAttemptCounter}));
+        logger.info("Disconnecting old DistributedSystem to prepare for a reconnect attempt");
 //        logger.info("IDS@"+System.identityHashCode(this));
         
         try {
@@ -2790,6 +2834,21 @@ public final class InternalDistributedSystem
               config.setCacheXMLDescription(cacheXML);
             }
             cache = GemFireCacheImpl.create(this.reconnectDS, config);
+            if (cacheServerCreation != null) {
+              for (BridgeServerCreation bridge: cacheServerCreation) {
+                BridgeServerImpl impl = (BridgeServerImpl)cache.addCacheServer();
+                impl.configureFrom(bridge);
+                try {
+                  if (!impl.isRunning()) {
+                    impl.start();
+                  }
+                } catch (IOException ex) {
+                  throw new GemFireIOException(
+                      LocalizedStrings.CacheCreation_WHILE_STARTING_BRIDGE_SERVER_0
+                          .toLocalizedString(impl), ex);
+                }
+              }
+            }
             if (cache.getCachePerfStats().getReliableRegionsMissing() == 0){
               reconnectAttemptCounter = 0;
               if (isDebugEnabled) {

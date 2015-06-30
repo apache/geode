@@ -1,0 +1,9 @@
+dependencies {
+  compile project(':gemfire-modules-session')
+
+  testCompile 'javax.servlet:servlet-api:2.5'
+  testCompile 'org.slf4j:slf4j-jdk14:1.7.7'
+  testCompile('com.mockrunner:mockrunner-servlet:1.0.8') {
+    exclude group: 'jboss'
+  }
+}

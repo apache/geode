@@ -42,6 +42,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.oracle.jrockit.jfr.DataType;
 
 public class GatewaySenderAdvisor extends DistributionAdvisor {
   private static final Logger logger = LogService.getLogger();
@@ -546,7 +547,27 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       this.senderEventListenerClassNames = DataSerializer.readArrayList(in);
       this.isDiskSynchronous = in.readBoolean();
       this.dispatcherThreads = in.readInt();
-      this.orderPolicy = DataSerializer.readObject(in);
+      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
+          Version.CURRENT) < 0) {
+        com.gemstone.gemfire.cache.util.Gateway.OrderPolicy oldOrderPolicy = DataSerializer
+            .readObject(in);
+        if (oldOrderPolicy != null) {
+          if (oldOrderPolicy.name().equals(OrderPolicy.KEY.name())) {
+            this.orderPolicy = OrderPolicy.KEY;
+          }
+          else if (oldOrderPolicy.name().equals(OrderPolicy.THREAD.name())) {
+            this.orderPolicy = OrderPolicy.THREAD;
+          }
+          else {
+            this.orderPolicy = OrderPolicy.PARTITION;
+          }}
+        else {
+          this.orderPolicy = null;
+        }
+      }
+      else {
+        this.orderPolicy = DataSerializer.readObject(in);
+      }
       boolean serverLocationFound = DataSerializer.readPrimitiveBoolean(in);
       if (serverLocationFound) {
           this.serverLocation = new ServerLocation();
@@ -572,7 +593,24 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       DataSerializer.writeArrayList(senderEventListenerClassNames, out);
       out.writeBoolean(isDiskSynchronous);
       out.writeInt(dispatcherThreads);
-      DataSerializer.writeObject(orderPolicy, out);
+      if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
+          Version.CURRENT) < 0 && this.orderPolicy != null) {
+        String orderPolicyName = this.orderPolicy.name();
+        if (orderPolicyName.equals(com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.KEY.name())) {
+          DataSerializer.writeObject(
+              com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.KEY, out);
+        }
+        else if(orderPolicyName.equals(com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.THREAD.name())) {
+          DataSerializer.writeObject(
+              com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.THREAD, out);
+        }else{
+          DataSerializer.writeObject(
+              com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.PARTITION, out);
+        }
+      }
+      else {
+        DataSerializer.writeObject(orderPolicy, out);
+      }
       boolean serverLocationFound = (this.serverLocation != null);
       DataSerializer.writePrimitiveBoolean(serverLocationFound, out);
       if(serverLocationFound) {

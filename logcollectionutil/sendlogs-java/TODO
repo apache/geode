@@ -1,0 +1,38 @@
+Needs better build script to compile utility and package for distribution (gradle or maven)
+
+Packaging for distribution needs to be fixed so that bin directory is clean of extra
+files not required to use tool or build artifacts
+
+Open source the tool
+
+Need test to validate handling of bad data in CollectLogsFromFileMap.java 
+and -m <filename> option (blank lines, bad text, incorrect format)
+
+Add command line option to not zip results
+
+Add command line option to only collect thread dumps
+
+Add command line option to collect heap histogram (jmap -histo:live <pid> )
+
+Add command line option to send generic commands ( similar to parallel ssh shells)
+
+Improve documentation to include what and how the tool works
+alone with additional best practices
+
+Create example/quickstart 
+
+Command line short options (-a)  should have corresponding long values (--hostnames)
+
+Need to update build script to run junit tests
+
+Need test to validate handling of bad data in CollectLogsFromFileMap.java
+and -m <filename> option (blank lines, bad text, incorrect format)
+
+Update package from com.pivotal.gemfire to io.pivotal.gemfire
+
+Need to reformat code for consisent readability
+
+
+
+
+

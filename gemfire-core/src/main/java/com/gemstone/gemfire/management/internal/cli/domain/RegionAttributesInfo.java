@@ -73,6 +73,10 @@ public class RegionAttributesInfo implements Serializable{
 	private String	entryIdleTimeoutAction = ExpirationAction.INVALIDATE.toString();
 	private String regionIdleTimeoutAction = ExpirationAction.INVALIDATE.toString();
 	
+	private boolean offHeap;
+	private String hdfsStoreName;
+	private Boolean hdfsWriteOnly;
+	
 	
 	
 	/***
@@ -169,6 +173,9 @@ public class RegionAttributesInfo implements Serializable{
 			evictionAttributesInfo = new EvictionAttributesInfo(evictionAttributes);
 		
 		}
+		this.offHeap = ra.getOffHeap();
+		this.hdfsStoreName = ra.getHDFSStoreName();
+		this.hdfsWriteOnly = ra.getHDFSWriteOnly();
 	}
 	
 	
@@ -294,6 +301,19 @@ public class RegionAttributesInfo implements Serializable{
 		return regionTimeToLiveAction;
 	}
 	
+	public boolean getOffHeap() {
+	  return this.offHeap;
+	}
+	
+	public String getHdfsStoreName() {
+		return hdfsStoreName;
+	}
+
+
+	public Boolean getHdfsWriteOnly() {
+		return hdfsWriteOnly;
+	}
+	
 	@Override
 	public boolean equals(Object arg0) {
 		return super.equals(arg0);
@@ -330,12 +350,12 @@ public class RegionAttributesInfo implements Serializable{
 			}
 			
 			
-			if (dataPolicy.equals(RegionAttributesDefault.DATA_POLICY)) {
+			if (!dataPolicy.equals(RegionAttributesDefault.DATA_POLICY)) {
 				nonDefaultAttributes.put(RegionAttributesNames.DATA_POLICY, dataPolicy.toString());
 			}
 			
 			
-			if (diskStoreName != null && diskStoreName.equals(RegionAttributesDefault.DISK_STORE_NAME)) {
+			if (diskStoreName != null && !diskStoreName.equals(RegionAttributesDefault.DISK_STORE_NAME)) {
 				nonDefaultAttributes.put(RegionAttributesNames.DISK_STORE_NAME, diskStoreName);
 			}
 			
@@ -386,7 +406,7 @@ public class RegionAttributesInfo implements Serializable{
 			}
 			
 		
-			if (scope.equals(RegionAttributesDefault.SCOPE)) {
+			if (!scope.equals(RegionAttributesDefault.SCOPE)) {
 				nonDefaultAttributes.put(RegionAttributesNames.SCOPE, scope.toString());
 			}
 			
@@ -449,6 +469,14 @@ public class RegionAttributesInfo implements Serializable{
 			if (cacheWriterClassName != null && !cacheWriterClassName.isEmpty()) {
 				nonDefaultAttributes.put(RegionAttributesNames.CACHE_WRITER, cacheWriterClassName);
 			}
+			
+            if (this.offHeap != RegionAttributesDefault.OFF_HEAP) {
+                nonDefaultAttributes.put(RegionAttributesNames.OFF_HEAP, Boolean.toString(this.offHeap));
+             }            
+            if (this.hdfsStoreName != null ) {
+                nonDefaultAttributes.put(RegionAttributesNames.HDFSSTORE, this.hdfsStoreName);
+                nonDefaultAttributes.put(RegionAttributesNames.HDFS_WRITEONLY, Boolean.toString(this.hdfsWriteOnly));
+             }
 		}
 		return this.nonDefaultAttributes;
 	}

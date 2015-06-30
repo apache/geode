@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE client-cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_6.dtd">
+  
+<client-cache>
+
+  <!-- The default pool connects to a cache server running on  localhost at
+       port 40404. To connect to a different server host and port, modify
+       the following pool server host and port. -->
+  <pool name="sessions" subscription-enabled="true">
+    <server host="localhost" port="40404"/>
+  </pool>
+
+  <!-- To configure the client to use a locator instead of a server, replace
+       the server pool above with the locator pool below and modify the locator
+       host and port as necessary. -->
+  <!--
+  <pool name="sessions" subscription-enabled="true">
+    <locator host="localhost" port="10334"/>
+  </pool>
+  -->
+  
+</client-cache>

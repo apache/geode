@@ -159,10 +159,11 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   private void authenticateIfRequired(Connection conn) {
     cancelCriterion.checkCancelInProgress(null);
     if (!pool.isUsedByGateway() && !pool.getMultiuserAuthentication()) {
-      if (conn.getServer().getRequiresCredentials()) {
-        if (conn.getServer().getUserId() == -1) {
+      ServerLocation server = conn.getServer();
+      if (server.getRequiresCredentials()) {
+        if (server.getUserId() == -1) {
           Long uniqueID = (Long)AuthenticateUserOp.executeOn(conn, pool);
-          conn.getServer().setUserId(uniqueID);
+          server.setUserId(uniqueID);
           if (logger.isDebugEnabled()) {
             logger.debug("CFI.authenticateIfRequired() Completed authentication on {}", conn);
           }

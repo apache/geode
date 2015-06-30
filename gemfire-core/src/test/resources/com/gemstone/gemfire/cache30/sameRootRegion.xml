@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN"
+    "http://www.gemstone.com/dtd/cache4_1.dtd">
+
+<!-- This file contains a cache with the same root region declared
+     twice -->
+
+<cache>
+  <vm-root-region name="root">
+    <region-attributes>
+      <value-constraint>java.lang.String</value-constraint>
+    </region-attributes>
+  </vm-root-region>
+  <vm-root-region name="root">
+    <region-attributes>
+      <value-constraint>java.lang.String</value-constraint>
+    </region-attributes>
+  </vm-root-region>
+</cache>

@@ -12,7 +12,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization.User;
 import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class JSONAuthorizationTest extends TestCase {

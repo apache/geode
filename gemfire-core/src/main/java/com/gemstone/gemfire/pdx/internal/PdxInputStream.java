@@ -13,9 +13,11 @@ package com.gemstone.gemfire.pdx.internal;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
+
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
 import com.gemstone.gemfire.internal.tcp.ImmutableByteBufferInputStream;
 
@@ -63,6 +65,10 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
   
   public PdxInputStream() {
     // for serialization
+  }
+
+  public PdxInputStream(Chunk blob) {
+    super(blob);
   }
 
   public String readString(int positionForField) {
@@ -406,7 +412,7 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
   }
   
   @Override
-  public ByteBuffer slice(int startOffset, int endOffset) {
+  public ByteSource slice(int startOffset, int endOffset) {
     try {
       return super.slice(startOffset, endOffset);
     } catch (IllegalArgumentException e) {

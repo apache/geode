@@ -1,0 +1,250 @@
+
+VMWARE END USER LICENSE AGREEMENT
+
+IMPORTANT-READ CAREFULLY: BY DOWNLOADING, INSTALLING, OR USING THE SOFTWARE, 
+YOU (THE INDIVIDUAL OR LEGAL ENTITY) AGREE TO BE BOUND BY THE TERMS OF THIS 
+END USER LICENSE AGREEMENT ("EULA"). IF YOU DO NOT AGREE TO THE TERMS OF THIS 
+EULA, YOU MUST NOT DOWNLOAD, INSTALL, OR USE THE SOFTWARE, AND YOU MUST 
+DELETE OR RETURN THE UNUSED SOFTWARE TO THE VENDOR FROM WHICH YOU ACQUIRED IT 
+WITHIN THIRTY (30) DAYS AND REQUEST A REFUND OF THE LICENSE FEE, IF ANY, THAT 
+YOU PAID FOR THE SOFTWARE.
+EVALUATION LICENSE.: If You are licensing the Software for evaluation 
+purposes, your use of the Software is only permitted in a non-production 
+environment and for the period limited by the Software License Key. 
+Notwithstanding any other provision in this EULA, an Evaluation License of 
+the Software is provided "AS-IS" without support or warranty of any kind, 
+expressed or implied.
+1. DEFINITIONS.
+1.1  "Documentation" means, collectively, the operation instructions, release 
+notes, user manuals and/or help files for the Software in electronic or 
+written form.
+1.2  "Guest Operating Systems" means instances of third-party operating 
+systems licensed separately by You and installed in a Virtual Machine.
+1.3  "Software" means software products that are licensed to You under this 
+EULA, including, but not limited to, any related components purchased or 
+provided with the Software, Documentation, and any maintenance releases 
+thereto.
+1.4 "Software License Key" means a valid serial number issued to You to 
+activate and use the Software.
+1.5  "Open Source Software" means various software components including open 
+source software, that may be part of the Software, each licensed to You under 
+its own applicable license terms and conditions, which can be found in the 
+open_source_licenses.txt file, the Documentation or as applicable, the 
+corresponding source files for the Software available 
+athttp://www.vmware.com/download/open_source.html.
+1.6  "Virtual Machine" means a software container that can run its own 
+operating system and execute applications like a physical machine.
+2. GRANT AND USE RIGHTS FOR SOFTWARE
+2.1  License Grant.  The Software is licensed, not sold. Subject to the terms 
+of this EULA, VMware grants You a non-exclusive, non-transferable license, 
+without rights to sublicense, to use the Software in the country where You 
+are invoiced in accordance with the Documentation and the VMware license 
+model (per device, per processor, per server, per single user, per virtual 
+machine, or any other VMware approved license model) specified in Section 8 
+of this EULA for which You have paid the applicable license fees, if any. If 
+You were invoiced in the European Union for the Software, You may use that 
+Software in any of the European Union member states. For VMware Workstation 
+and Fusion, You may use the Software without the invoice-country restriction. 
+You may allow third party consultants or contractors to access and use the 
+Software on Your behalf solely for Your internal business operations, 
+provided, they are bound by an agreement with You protecting VMware's 
+intellectual property with terms no less stringent than this EULA and You 
+ensure that such third party use of the Software complies with the terms of 
+this EULA. You may make one backup, unmodified copy of the Software solely 
+for archival purpose. If You upgrade or exchange the Software from a previous 
+validly licensed version, You must cease use of the prior version of that 
+Software. You agree to provide written certification of destruction of the 
+previous version of the Software upon VMware's request.
+2.2  Restrictions. Except as expressly permitted by this EULA or by 
+applicable law, You may not (i) sell, lease, assign, license, sublicense, 
+distribute or otherwise transfer in whole or in part the Software; (ii) 
+permit any use of or access to the Software by any third party, or operate 
+the Software on behalf of or for the benefit of any third party, including 
+the operation of any service that is accessed by a third party; (iii) 
+decompile, disassemble, reverse engineer, or otherwise attempt to derive 
+source code from the Software; (iv) modify or create derivative works based 
+upon the Software; or (v) create, develop, license, install, use, or deploy 
+any software or services to circumvent, enable, modify or provide access, 
+permissions or rights which violate the technical restrictions in the 
+Software. If You wish to exercise any rights to reverse engineer to ensure 
+interoperability in accordance with applicable law, You must first provide 
+VMware with written notice and all reasonably requested information 
+toinfo@vmware.com within 30 days and permit VMware to assess your claim and, 
+at VMware's sole discretion, to make an offer to provide alternatives that 
+reduce any adverse impact on VMware's intellectual property or other rights.
+2.3  VMware Tools.  You may use or distribute the suite of utilities and 
+drivers that may be part of the Software ("VMware Tools") to any third party 
+provided that (i) You only distribute the VMware Tools as a whole in object 
+code format, whether or not as part of the Virtual Machine You create with 
+the Software; and (ii) You agree to indemnify, hold harmless, and defend 
+VMware from and against any claims or lawsuits, including attorneys' fees, 
+that relate to your distribution of VMware Tools.
+2.4  Benchmarking.  You may use the Software to conduct internal performance 
+testing and benchmarking studies, the results of which only You may publish 
+or publicly disseminate, provided that VMware has reviewed and approved of 
+the methodology, assumptions and other parameters of your testing and 
+studies. Please contact VMware at benchmark@vmware.com to request such 
+review. For VMware Workstation and Fusion benchmarks, You may publish or 
+publicly disseminate the results without VMware's prior review and approval.
+2.5  Third-party Software.  You are responsible for separately obtaining and 
+complying with any licenses necessary to operate third-party software, 
+including but not limited to, Guest Operating Systems and application 
+programs which the Software enables You to run.
+2.6  Data Collection and Privacy.  You agree that VMware may collect, use, 
+store and transmit technical and related information about your use of the 
+Software which may include internet protocol address, hardware 
+identification, operating system, application software, peripheral hardware, 
+and non-personally identifiable Software usage statistics ("Collected Data") 
+to facilitate the provisioning of updates, support, invoicing or online 
+services to You. Collected Data is subject to VMware's Privacy Policy at 
+http://www.vmware.com/help/privacy.html.
+2.7  Audit Rights.  During the term of this EULA and for two (2) years after 
+termination or expiration of the EULA or support and subscription services 
+for the applicable Software, VMware, or an independent third party designated 
+by VMware, may audit, upon written notice to You, your books, records, and 
+computing devices to determine your compliance with this EULA and your 
+payment of the applicable license and support services fees, if any, for the 
+Software. VMware may conduct no more than one (1) audit in any twelve (12) 
+month period. In the event that any such audit reveals an underpayment by You 
+of more than five percent (5%) of the license amounts due to VMware in the 
+period being audited, or that You have breached any term of the EULA, then, 
+in addition to any other remedies VMware may have, You will promptly pay to 
+VMware any underpayments and the cost of the audit.
+3. TITLE.  VMware retains all right, title, and interest in and to the 
+Software, the Software License Key(s) and all related intellectual property 
+rights. VMware retains all rights not expressly granted to You in this EULA.
+4. SUPPORT AND SUBSCRIPTION SERVICES. Except as expressly specified in 
+Section 8 of this EULA, VMware does not provide any support or subscription 
+services for the Software under this EULA. You have no rights to any updates, 
+upgrades or extensions or enhancements to the Software developed by VMware 
+unless you separately purchase VMware support or subscription services. These 
+support or subscription services are subject to VMware's then-current Support 
+and Subscription Contract Terms and Conditions.
+5.  TERMINATION.  VMware may terminate this EULA immediately upon notice if 
+You fail to comply with any term of this EULA. In the event of termination, 
+You must remove and destroy all copies of the Software and Software License 
+Key(s), including all backup copies, from the server and all computers and 
+terminals You own, possess or control and on which the Software is installed. 
+Any obligations to pay fees incurred prior to termination and Sections 1, 2, 
+3, 6, and 7 of this EULA shall survive termination for any reason.
+6. LIMITED WARRANTY AND LIMITATION OF LIABILITY 
+6.1  Limited Warranty.  VMware warrants that (i) the physical media, if any, 
+on which the Software is delivered will be free of defects in materials and 
+workmanship; and (ii) that the Software will substantially conform to the 
+functional description set forth in the standard Documentation accompanying 
+the Software for a period of 90 days after the date of delivery of the 
+Software License Key to You ("Warranty Period"). If the physical media is 
+defective and is returned to VMware within the Warranty Period, your 
+exclusive remedy will be VMware's option to repair or replace the defective 
+physical media.. To return the defective physical media, send an email to 
+sales@vmware.com to request a return authorization number. If during the 
+Warranty Period the Software does not substantially conform to the functional 
+description set forth in the Documentation, your exclusive remedy will be 
+that VMware shall, at its sole option, correct the defects in the Software or 
+refund the license fees You paid, if any, for the Software provided that (i) 
+the Software has been properly installed and used at all times and in 
+accordance with the Documentation; (ii) no modification, deletion or addition 
+has been made to the Software by persons other than VMware or its authorized 
+representative; and (iii) VMware receives written notice of the 
+non-conformity within the Warranty Period. EXCEPT FOR THE PRECEDING EXPRESS 
+LIMITED WARRANTY, TO THE MAXIMUM EXTENT MANDATED BY LAW, VMWARE AND ITS 
+LICENSORS PROVIDE THE SOFTWARE WITHOUT ANY WARRANTIES OF ANY KIND, EXPRESS, 
+IMPLIED, STATUTORY, OR IN ANY OTHER PROVISION OF THIS EULA OR COMMUNICATION 
+WITH YOU, AND VMWARE AND ITS LICENSORS SPECIFICALLY DISCLAIM ANY IMPLIED 
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND 
+NON-INFRINGEMENT.
+6.2  LIMITATION OF LIABILITY. TO THE MAXIMUM EXTENT MANDATED BY LAW, IN NO 
+EVENT WILL VMWARE AND ITS LICENSORS BE LIABLE FOR ANY LOST PROFITS OR 
+BUSINESS OPPORTUNITIES, LOSS OF USE, BUSINESS INTERRUPTION, LOSS OF DATA, OR 
+ANY OTHER INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES UNDER ANY 
+THEORY OF LIABILITY, WHETHER BASED IN CONTRACT, TORT, NEGLIGENCE, PRODUCT 
+LIABILITY, OR OTHERWISE. BECAUSE SOME JURISDICTIONS DO NOT ALLOW THE 
+EXCLUSION OR LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES, 
+THE PRECEDING LIMITATION MAY NOT APPLY TO YOU. VMWARE'S AND ITS LICENSORS' 
+LIABILITY UNDER THIS EULA WILL NOT, IN ANY EVENT, EXCEED THE LICENSE FEES YOU 
+PAID FOR THE SOFTWARE, IF ANY. THE FOREGOING LIMITATIONS SHALL APPLY 
+REGARDLESS OF WHETHER VMWARE OR ITS LICENSORS HAVE BEEN ADVISED OF THE 
+POSSIBILITY OF SUCH DAMAGES AND REGARDLESS OF WHETHER ANY REMEDY FAILS OF ITS 
+ESSENTIAL PURPOSE.
+7. GENERAL
+7.1  Entire Agreement. This EULA represents the entire agreement between the 
+parties with respect to the Software, and supersedes any prior or 
+contemporaneous oral or written agreements concerning the subject matter 
+contained herein.
+7.2 Headings. Headings under this EULA are intended only for convenience and 
+shall not affect the interpretation of this EULA.
+7.3 Waiver and Modification.  No failure of either party to exercise or 
+enforce any of its rights under this EULA will act as a waiver of those 
+rights. This EULA may only be modified, or any rights under it waived, by a 
+written agreement executed by the party against which it is asserted.
+7.4 Severability.  If any provision of this EULA is found illegal or 
+unenforceable, it will be enforced to the maximum extent permissible, and the 
+legality and enforceability of the other provisions of this EULA will not be 
+affected.
+7.5  Export Controls.  The Software is of United States origin and is 
+provided subject to the U.S. Export Administration Regulations. Diversion 
+contrary to U.S. law is prohibited. Without limiting the foregoing, you agree 
+that (1) you are not, and are not acting on behalf of, any person who is a 
+citizen, national, or resident of, or who is controlled by the government of, 
+Cuba, Iran, North Korea, Sudan, or Syria, or any other country to which the 
+United States has prohibited export transactions; (2) you are not, and are 
+not acting on behalf of, any person or entity listed on the U.S. Treasury 
+Department list of Specially Designated Nationals and Blocked Persons, or the 
+U.S. Commerce Department Denied Persons List or Entity List; and (3) you will 
+not use the Software for, and will not permit the Software to be used for, 
+any purposes prohibited by law, including, without limitation, for any 
+prohibited development, design, manufacture or production of missiles or 
+nuclear, chemical or biological weapons.
+7.6  U.S. Government Restricted Rights.  The Software and Documentation are 
+deemed to be "commercial computer software" and "commercial computer software 
+documentation," respectively, pursuant to DFAR Section 227.7202 and FAR 
+Section 12.212(b), as applicable. Any use, modification, reproduction, 
+release, performance, display, or disclosure of the Software by the U.S. 
+Government shall be governed solely by the terms of this EULA.
+7.7  Governing Law.  This EULA is governed by the laws of the State of 
+California, United States of America, unless mandated by other law. The 
+United Nations Convention for the International Sale of Goods shall not apply.
+7.8  Contact Information.  Please direct legal notices or other 
+correspondence to VMware, Inc., 3401 Hillview Avenue, Palo Alto, California 
+94304, United States of America. If You have any questions concerning this 
+EULA, please send an email to info@vmware.com.
+Copyright (c) 1998-2011 VMware, Inc. All rights reserved. VMware software 
+products are protected by one or more U.S. Patent Numbers D617,808, D617,809, 
+D617,810, D617,811, 6,075,938, 6,397,242, 6,496,847, 6,704,925, 6,711,672, 
+6,725,289, 6,735,601, 6,785,886, 6,789,156, 6,795,966, 6,880,022, 6,883,095, 
+6,940,980, 6,944,699, 6,961,806, 6,961,941, 6,970,562, 7,017,041, 7,055,032, 
+7,065,642, 7,069,413, 7,069,435, 7,082,598, 7,089,377, 7,111,086, 7,111,145, 
+7,117,481, 7,149,310, 7,149,843, 7,155,558, 7,222,221, 7,260,815, 7,260,820, 
+7,269,683, 7,275,136, 7,277,998, 7,277,999, 7,278,030, 7,281,102, 7,290,253, 
+7,343,599, 7,356,679, 7,386,720, 7,409,487, 7,412,492, 7,412,702, 7,424,710, 
+7,428,636, 7,433,951, 7,434,002, 7,447,854, 7,447,903, 7,467,067, 7,475,002, 
+7,478,173, 7,478,180, 7,478,218, 7,478,388, 7,484,208, 7,487,313, 7,487,314, 
+7,490,216, 7,500,048, 7,506,122, 7,516,453, 7,529,897, 7,543,301, 7,555,747, 
+7,565,527, 7,571,471, 7,577,722, 7,581,064, 7,590,715, 7,590,982, 7,594,111, 
+7,596,594, 7,596,697, 7,599,493, 7,603,704, 7,606,868, 7,620,523, 7,620,766, 
+7,620,955, 7,624,240, 7,630,493, 7,636,831, 7,657,659, 7,657,937, 7,665,088, 
+7,672,814, 7,680,919, 7,689,986, 7,693,996, 7,694,101, 7,702,843, 7,707,185, 
+7,707,285, 7,707,578, 7,716,446, 7,734,045, 7,734,911, 7,734,912, 7,735,136, 
+7,743,389, 7,761,917, 7,765,543, 7,774,391, 7,779,091, 7,783,779, 7,783,838, 
+7,793,279, 7,797,748, 7,801,703, 7,802,000, 7,802,248, 7,805,676, 7,814,495, 
+7,823,145, 7,831,661, 7,831,739, 7,831,761, 7,831,773, 7,840,790, 7,840,839, 
+7,840,993, 7,844,954, 7,849,098, 7,853,744, 7,853,960, 7,856,419, 7,856,531, 
+7,856,637, 7,865,663, 7,869,967, 7,886,127, 7,886,148, 7,886,346, 7,890,754, 
+7,895,437, 7,908,646, 7,912,951, 7,921,197, 7,925,850, 7,933,981, 7,934,017, 
+7,934,020, 7,941,401, 7,941,470, 7,945,436, 7,945,761, 7,945,908, 7,945,958, 
+7,958,558, 7,962,647, 7,966,315, 7,966,615, 7,970,938, 7,971,015, 7,971,047, 
+7,971,182, 7,975,165; patents pending.
+Do you agree to be bound by the terms of this EULA and affirm the following:
+* You are not, and are not acting on behalf of, any person who is a citizen, 
+national, or resident of, or who is controlled by the government of, Cuba, 
+Iran, North Korea, Sudan, or Syria, or any other country to which the United 
+States has prohibited export transactions.
+* You are not, and are not acting on behalf of, any person or entity listed 
+on the U.S. Treasury Department list of Specially Designated Nationals and 
+Blocked Persons, or the U.S. Commerce Department Denied Persons List or 
+Entity List.
+* You will not use the Software for, and will not permit the Software to be 
+used for, any purposes prohibited by law, including, without limitation, for 
+the development, design, manufacture or production of missiles or nuclear, 
+chemical or biological weapons.
+

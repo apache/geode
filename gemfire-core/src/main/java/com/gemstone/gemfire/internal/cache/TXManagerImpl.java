@@ -137,15 +137,21 @@ public final class TXManagerImpl implements CacheTransactionManager,
   public static boolean ALLOW_PERSISTENT_TRANSACTIONS = Boolean.getBoolean("gemfire.ALLOW_PERSISTENT_TRANSACTIONS");
 
   /**
-   * this keeps track of all the transactions that were initiated locally. Could have been
-   * a set, is a Map to allow concurrent operations.
+   * this keeps track of all the transactions that were initiated locally.
    */
-  private ConcurrentMap<TXId, Boolean> localTxMap = new ConcurrentHashMap<TXId, Boolean>();
+  private ConcurrentMap<TXId, TXStateProxy> localTxMap = new ConcurrentHashMap<TXId, TXStateProxy>();
 
   /**
    * the time in minutes after which any suspended transaction are rolled back. default is 30 minutes
    */
   private volatile long suspendedTXTimeout = Long.getLong("gemfire.suspendedTxTimeout", 30);
+  
+  /**
+   * Thread-specific flag to indicate whether the transactions managed by this
+   * CacheTransactionManager for this thread should be distributed
+   */
+  private final ThreadLocal<Boolean> isTXDistributed;
+  
 
   /** Constructor that implements the {@link CacheTransactionManager}
    * interface. Only only one instance per {@link com.gemstone.gemfire.cache.Cache}
@@ -163,6 +169,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
     this.cachePerfStats = cachePerfStats;
     this.hostedTXStates = new HashMap<TXId, TXStateProxy>();
     this.txContext = new ThreadLocal<TXStateProxy>();
+    this.isTXDistributed = new ThreadLocal<Boolean>();
     currentInstance = this;
   }
 
@@ -284,8 +291,14 @@ public final class TXManagerImpl implements CacheTransactionManager,
       }
     }
     TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
-    setTXState(new TXStateProxyImpl(this, id, null));
-    this.localTxMap.put(id, Boolean.TRUE);
+    TXStateProxyImpl proxy = null;
+    if (isDistributed()) {
+      proxy = new DistTXStateProxyImplOnCoordinator(this, id, null);  
+    } else {
+      proxy = new TXStateProxyImpl(this, id, null);  
+    }
+    setTXState(proxy);
+    this.localTxMap.put(id, proxy);
   }
 
 
@@ -298,11 +311,33 @@ public final class TXManagerImpl implements CacheTransactionManager,
   public TXStateProxy beginJTA() {
     checkClosed();
     TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
-    TXStateProxy newState = new TXStateProxyImpl(this, id, true);
+    TXStateProxy newState = null;
+    
+    if (isDistributed()) {
+      newState = new DistTXStateProxyImplOnCoordinator(this, id, true);
+    } else {
+      newState = new TXStateProxyImpl(this, id, true);
+    }
     setTXState(newState);
     return newState;
   }
 
+  /*
+   * Only applicable for Distributed transaction.
+   */
+  public void precommit() throws CommitConflictException {
+    checkClosed();
+
+    final TXStateProxy tx = getTXState();
+    if (tx == null) {
+      throw new IllegalStateException(LocalizedStrings.TXManagerImpl_THREAD_DOES_NOT_HAVE_AN_ACTIVE_TRANSACTION.toLocalizedString());
+    }
+    
+    tx.checkJTA(LocalizedStrings.TXManagerImpl_CAN_NOT_COMMIT_THIS_TRANSACTION_BECAUSE_IT_IS_ENLISTED_WITH_A_JTA_TRANSACTION_USE_THE_JTA_MANAGER_TO_PERFORM_THE_COMMIT.toLocalizedString());
+  
+    tx.precommit();
+  }
+  
   /** Complete the transaction associated with the current
    *  thread. When this method completes, the thread is no longer
    *  associated with a transaction.
@@ -326,9 +361,11 @@ public final class TXManagerImpl implements CacheTransactionManager,
     } catch (CommitConflictException ex) {
       saveTXStateForClientFailover(tx, TXCommitMessage.CMT_CONFLICT_MSG); //fixes #43350
       noteCommitFailure(opStart, lifeTime, tx);
+      cleanup(tx.getTransactionId()); // fixes #52086
       throw ex;
     } catch (TransactionDataRebalancedException reb) {
       saveTXStateForClientFailover(tx, TXCommitMessage.REBALANCE_MSG);
+      cleanup(tx.getTransactionId()); // fixes #52086
       throw reb;
     } catch (UnsupportedOperationInTransactionException e) {
       // fix for #42490
@@ -336,6 +373,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
       throw e;
     } catch (RuntimeException e) {
       saveTXStateForClientFailover(tx, TXCommitMessage.EXCEPTION_MSG);
+      cleanup(tx.getTransactionId()); // fixes #52086
       throw e;
     }
     saveTXStateForClientFailover(tx);
@@ -348,10 +386,12 @@ public final class TXManagerImpl implements CacheTransactionManager,
     this.cachePerfStats.txFailure(opEnd - opStart,
                                   lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
-    if(tx.isFireCallbacks()) {
+    if (tx.isFireCallbacks() && listeners.length > 0) {
+      final TXEvent e = tx.getEvent();
+      try {
       for (int i=0; i < listeners.length; i++) {
         try {
-          listeners[i].afterFailedCommit(tx.getEvent());
+          listeners[i].afterFailedCommit(e);
         } 
         catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
@@ -369,6 +409,9 @@ public final class TXManagerImpl implements CacheTransactionManager,
           logger.error(LocalizedMessage.create(LocalizedStrings.TXManagerImpl_EXCEPTION_OCCURRED_IN_TRANSACTIONLISTENER), t);
         }
       }
+      } finally {
+        e.release();
+      }
     }
   }
 
@@ -376,11 +419,13 @@ public final class TXManagerImpl implements CacheTransactionManager,
     long opEnd = CachePerfStats.getStatTime();
     this.cachePerfStats.txSuccess(opEnd - opStart,
                                   lifeTime, tx.getChanges());
-    if(tx.isFireCallbacks()) {
-      TransactionListener[] listeners = getListeners();
-      for (int i=0; i < listeners.length; i++) {
+    TransactionListener[] listeners = getListeners();
+    if (tx.isFireCallbacks() && listeners.length > 0) {
+      final TXEvent e = tx.getEvent();
+      try {
+      for (final TransactionListener listener : listeners) {
         try {
-          listeners[i].afterCommit(tx.getEvent());
+          listener.afterCommit(e);
         } 
         catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
@@ -397,6 +442,9 @@ public final class TXManagerImpl implements CacheTransactionManager,
           SystemFailure.checkFailure();
           logger.error(LocalizedMessage.create(LocalizedStrings.TXManagerImpl_EXCEPTION_OCCURRED_IN_TRANSACTIONLISTENER), t);
         }
+      }
+      } finally {
+        e.release();
       }
     }
   }
@@ -439,10 +487,12 @@ public final class TXManagerImpl implements CacheTransactionManager,
     this.cachePerfStats.txRollback(opEnd - opStart,
                                    lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
-    if(tx.isFireCallbacks()) {
-      for (int i=0; i < listeners.length; i++) {
+    if (tx.isFireCallbacks() && listeners.length > 0) {
+      final TXEvent e = tx.getEvent();
+      try {
+      for (int i = 0; i < listeners.length; i++) {
         try {
-          listeners[i].afterRollback(tx.getEvent());
+          listeners[i].afterRollback(e);
         } 
         catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
@@ -460,6 +510,9 @@ public final class TXManagerImpl implements CacheTransactionManager,
           logger.error(LocalizedMessage.create(LocalizedStrings.TXManagerImpl_EXCEPTION_OCCURRED_IN_TRANSACTIONLISTENER), t);
         }
       }
+      } finally {
+        e.release();
+      }
     }
   }
 
@@ -467,7 +520,10 @@ public final class TXManagerImpl implements CacheTransactionManager,
    * Called from Commit and Rollback to unblock waiting threads
    */
   private void cleanup(TransactionId txId) {
-    this.localTxMap.remove(txId);
+    TXStateProxy proxy = this.localTxMap.remove(txId);
+    if (proxy != null) {
+      proxy.close();
+    }
     Queue<Thread> waitingThreads = this.waitMap.get(txId);
     if (waitingThreads != null && !waitingThreads.isEmpty()) {
       for (Thread waitingThread : waitingThreads) {
@@ -535,6 +591,12 @@ public final class TXManagerImpl implements CacheTransactionManager,
       return;
     }
     this.closed = true;
+    for (TXStateProxy proxy: this.hostedTXStates.values()) {
+      proxy.close();
+    }
+    for (TXStateProxy proxy: this.localTxMap.values()) {
+      proxy.close();
+    }
     {
       TransactionListener[] listeners = getListeners();
       for (int i=0; i < listeners.length; i++) {
@@ -665,8 +727,13 @@ public final class TXManagerImpl implements CacheTransactionManager,
       synchronized(this.hostedTXStates) {
         val = this.hostedTXStates.get(key);
         if (val == null && msg.canStartRemoteTransaction()) {
-          val = new TXStateProxyImpl(this, key, msg.getTXOriginatorClient());
-          val.setLocalTXState(new TXState(val,true));
+          if (msg.isTransactionDistributed()) {
+            val = new DistTXStateProxyImplOnDatanode(this, key, msg.getTXOriginatorClient());
+            val.setLocalTXState(new DistTXState(val,true));
+          } else {
+            val = new TXStateProxyImpl(this, key, msg.getTXOriginatorClient());
+            val.setLocalTXState(new TXState(val,true));
+          }
           this.hostedTXStates.put(key, val);
         }
       }
@@ -676,6 +743,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
         val.getLock().lock();
       }
     }
+
     setTXState(val);
     return val;
   }
@@ -701,8 +769,14 @@ public final class TXManagerImpl implements CacheTransactionManager,
       synchronized(this.hostedTXStates) {
         val = this.hostedTXStates.get(key);
         if (val == null && msg.canStartRemoteTransaction()) {
-          val = new TXStateProxyImpl(this, key,memberId);
-//          val.setLocalTXState(new TXState(val,true));
+          // [sjigyasu] TODO: Conditionally create object based on distributed or non-distributed tx mode 
+          if (msg instanceof TransactionMessage && ((TransactionMessage)msg).isTransactionDistributed()) {
+            val = new DistTXStateProxyImplOnDatanode(this, key, memberId);
+            //val.setLocalTXState(new DistTXState(val,true));
+          } else {
+            val = new TXStateProxyImpl(this, key, memberId);
+            //val.setLocalTXState(new TXState(val,true));
+          }
           this.hostedTXStates.put(key, val);
         }
       }
@@ -757,7 +831,11 @@ public final class TXManagerImpl implements CacheTransactionManager,
    */
   public TXStateProxy removeHostedTXState(TXId txId) {
     synchronized (this.hostedTXStates) {
-      return this.hostedTXStates.remove(txId);
+      TXStateProxy result = this.hostedTXStates.remove(txId);
+      if (result != null) {
+        result.close();
+      }
+      return result;
     }
   }
   
@@ -771,6 +849,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
       while (iterator.hasNext()) {
         Entry<TXId, TXStateProxy> entry = iterator.next();
         if (entry.getValue().isOnBehalfOfClient()) {
+          entry.getValue().close();
           if (logger.isDebugEnabled()) {
             logger.debug("Cleaning up TXStateProxy for {}", entry.getKey());
           }
@@ -809,13 +888,18 @@ public final class TXManagerImpl implements CacheTransactionManager,
       return this.hostedTXStates.size();
     }
   }
+  public int localTransactionsInProgressForTest() {
+    return this.localTxMap.size();
+  }
 
   public void memberDeparted(InternalDistributedMember id, boolean crashed) {
     synchronized (this.hostedTXStates) {
-      Iterator<TXId> iterator = this.hostedTXStates.keySet().iterator();
+      Iterator<Map.Entry<TXId,TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
       while (iterator.hasNext()) {
-        TXId txId = iterator.next();
+        Map.Entry<TXId,TXStateProxy> me = iterator.next();
+        TXId txId = me.getKey();
         if (txId.getMemberId().equals(id)) {
+          me.getValue().close();
           if (logger.isDebugEnabled()) {
             logger.debug("Received memberDeparted, cleaning up txState:{}", txId);
           }
@@ -863,6 +947,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
       while (iterator.hasNext()) {
         Map.Entry<TXId,TXStateProxy> entry = iterator.next();
         if (txIds.contains(entry.getKey())) {
+          entry.getValue().close();
           iterator.remove();
         }
       }
@@ -1366,4 +1451,47 @@ public final class TXManagerImpl implements CacheTransactionManager,
       return true;
     }
   }
+
+  // Used by tests
+  public Set<TXId> getLocalTxIds() {
+    return this.localTxMap.keySet();
+  }
+
+  // Used by tests
+  public ArrayList<TXId> getHostedTxIds() {
+    synchronized (this.hostedTXStates) {
+      return new ArrayList<TXId>(this.hostedTXStates.keySet());
+    }
+  }
+  
+  public void setDistributed(boolean flag) {
+    checkClosed();
+    TXStateProxy tx = getTXState();
+    // Check whether given flag and current flag are different and whether a transaction is in progress
+    if (tx != null && flag != isDistributed()) {
+      // Cannot change mode in the middle of a transaction
+      throw new java.lang.IllegalStateException(
+          LocalizedStrings.TXManagerImpl_CANNOT_CHANGE_TRANSACTION_MODE_WHILE_TRANSACTIONS_ARE_IN_PROGRESS
+              .toLocalizedString());
+    } else {
+      isTXDistributed.set(new Boolean(flag));
+    }
+  }
+
+  /*
+   * If explicitly set using setDistributed, this returns that value.
+   * If not, it returns the value of gemfire property "distributed-transactions" if set.
+   * If this is also not set, it returns the default value of this property.
+   */
+  public boolean isDistributed() {
+    
+     Boolean value = isTXDistributed.get();
+    // This can be null if not set in setDistributed().
+    if (value == null) {
+      return InternalDistributedSystem.getAnyInstance().getOriginalConfig().getDistributedTransactions();
+    } else {
+      return value.booleanValue();
+    }
+  }
+  
 }

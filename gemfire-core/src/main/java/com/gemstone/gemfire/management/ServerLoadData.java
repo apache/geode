@@ -23,6 +23,10 @@ public class ServerLoadData {
   private float loadPerConnection;
   private float loadPerSubscriber;
 
+  /**
+   * This constructor is to be used by internal JMX framework only. User
+   * should not try to create an instance of this class.
+   */
   @ConstructorProperties( { "connectionLoad", "subscriberLoad",
       "loadPerConnection", "loadPerSubscriber" })
   public ServerLoadData(float connectionLoad, float subscriberLoad,
@@ -66,6 +70,9 @@ public class ServerLoadData {
     return loadPerSubscriber;
   }
 
+  /**
+   * String representation of ServerLoadData
+   */
   @Override
   public String toString() {
 

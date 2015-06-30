@@ -14,9 +14,6 @@ import java.io.InputStreamReader;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
@@ -25,33 +22,34 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * @author Kirk Lund
  * @since 7.0
  */
-public final class ProcessStreamReader implements Runnable {
+public abstract class ProcessStreamReader implements Runnable {
   private static final Logger logger = LogService.getLogger();
  
-  private final InputStream inputStream;
-  private final InputListener listener;
+  protected final Process process;
+  protected final InputStream inputStream;
+  protected final InputListener inputListener;
 
   private Thread thread;
 
-  public ProcessStreamReader(final InputStream inputStream) {
-    this.inputStream = inputStream;
-    this.listener = new InputListener() {
-      @Override
-      public void notifyInputLine(String line) {
-        // do nothing
-      }
-      @Override
-      public String toString() {
-        return "NullInputListener";
-      }
-    };
+  protected ProcessStreamReader(final Builder builder) {
+    this.process = builder.process;
+    this.inputStream = builder.inputStream;
+    if (builder.inputListener == null) {
+      this.inputListener = new InputListener() {
+        @Override
+        public void notifyInputLine(String line) {
+          // do nothing
+        }
+        @Override
+        public String toString() {
+          return "NullInputListener";
+        }
+      };
+    } else {
+      this.inputListener = builder.inputListener;
+    }
   }
-
-  public ProcessStreamReader(final InputStream inputStream, final InputListener listener) {
-    this.inputStream = inputStream;
-    this.listener = listener;
-  }
-
+  
   @Override
   public void run() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -63,7 +61,7 @@ public final class ProcessStreamReader implements Runnable {
       reader = new BufferedReader(new InputStreamReader(inputStream));
       String line;
       while ((line = reader.readLine()) != null) {
-        this.listener.notifyInputLine(line);
+        this.inputListener.notifyInputLine(line);
       }
     } catch (IOException e) {
       if (isDebugEnabled) {
@@ -87,6 +85,7 @@ public final class ProcessStreamReader implements Runnable {
     synchronized (this) {
       if (this.thread == null) {
         this.thread = new Thread(this, createThreadName());
+        this.thread.setDaemon(true);
         this.thread.start();
       } else if (this.thread.isAlive()){
         throw new IllegalStateException(this + " has already started");
@@ -111,6 +110,25 @@ public final class ProcessStreamReader implements Runnable {
         }
       }
     }
+    return this;
+  }
+
+  public ProcessStreamReader stopAsync(final long delayMillis) {
+    Runnable delayedStop = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(delayMillis);
+        } catch (InterruptedException e) {
+        } finally {
+          stop();
+        }
+      }
+    };
+    String threadName = getClass().getSimpleName() + " stopAfterDelay Thread @" + Integer.toHexString(hashCode());
+    Thread thread = new Thread(delayedStop, threadName);
+    thread.setDaemon(true);
+    thread.start();
     return this;
   }
   
@@ -158,7 +176,7 @@ public final class ProcessStreamReader implements Runnable {
     final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append(" Thread").append(" #").append(System.identityHashCode(this));
     sb.append(" alive=").append(isRunning()); //this.thread == null ? false : this.thread.isAlive());
-    sb.append(" listener=").append(this.listener);
+    sb.append(" listener=").append(this.inputListener);
     return sb.toString();
   }
   
@@ -171,5 +189,68 @@ public final class ProcessStreamReader implements Runnable {
    */
   public static interface InputListener {
     public void notifyInputLine(String line);
+  }
+
+  /** Default ReadingMode is BLOCKING */
+  public static enum ReadingMode {
+    BLOCKING,
+    NON_BLOCKING;
+  }
+  
+  /**
+   * Builds a ProcessStreamReader.
+   * 
+   * @author Kirk Lund
+   * @since 8.2
+   */
+  public static class Builder {
+    protected Process process;
+    protected InputStream inputStream;
+    protected InputListener inputListener;
+    protected long continueReadingMillis = 0;
+    protected ReadingMode readingMode = ReadingMode.BLOCKING;
+    
+    public Builder(final Process process) {
+      this.process = process;
+    }
+    
+    public Builder inputStream(final InputStream inputStream) {
+      this.inputStream = inputStream;
+      return this;
+    }
+    
+    /** InputListener callback to invoke with read data */
+    public Builder inputListener(final InputListener inputListener) {
+      this.inputListener = inputListener;
+      return this;
+    }
+    
+    /** millis to continue reading InputStream after Process terminates */
+    public Builder continueReadingMillis(final long continueReadingMillis) {
+      this.continueReadingMillis = continueReadingMillis;
+      return this;
+    }
+    
+    /** ReadingMode to use for reading InputStream */
+    public Builder readingMode(final ReadingMode readingMode) {
+      this.readingMode = readingMode;
+      return this;
+    }
+    
+    public ProcessStreamReader build() {
+      if (process == null) {
+        throw new NullPointerException("process may not be null");
+      }
+      if (inputStream == null) {
+        throw new NullPointerException("inputStream may not be null");
+      }
+      if (continueReadingMillis < 0) {
+        throw new IllegalArgumentException("continueReadingMillis must zero or positive");
+      }
+      switch (this.readingMode) {
+        case NON_BLOCKING: return new NonBlockingProcessStreamReader(this);
+        default: return new BlockingProcessStreamReader(this);
+      }
+    }
   }
 }

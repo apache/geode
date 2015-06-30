@@ -121,7 +121,7 @@ public interface DiskInitFileInterpreter {
                               float loadFactor, boolean statisticsEnabled,
                               boolean isBucket, EnumSet<DiskRegionFlag> flags,
                               String partitionName, int startingBucketId,
-                              String compressorClassName);
+                              String compressorClassName, boolean offHeap);
 
   void cmnKrfCreate(long oplogId);
   

@@ -1,6 +1,6 @@
 # Overview
 
-Geode is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
+Geode is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.  
 
 Geode pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
 
@@ -31,14 +31,14 @@ Geode includes the following features:
 
 # Geode in 5 minutes
 
-Extract and build from source (note: currently Geode supports jdk1.7.75):
+Obtain the source archive from Pivotal.  Extract and build from source (note: currently Geode supports jdk1.7.75):
 
     $ cd geode
     $ ./gradlew build installDist
 
 Start a locator and server:
 
-    $ cd gemfire-assembly/build/install/apache-geode
+    $ cd gemfire-assembly/build/install/geode
     $ ./bin/gfsh
     gfsh> start locator --name=locator
     gfsh> start server --name=server
@@ -54,7 +54,7 @@ _HelloWorld.java_
     import java.util.Map;
     import com.gemstone.gemfire.cache.Region;
     import com.gemstone.gemfire.cache.client.*;
-
+    
     public class HelloWorld {
       public static void main(String[] args) throws Exception {
         ClientCache cache = new ClientCacheFactory()
@@ -63,10 +63,10 @@ _HelloWorld.java_
         Region<String, String> region = cache
           .<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
           .create("region");
-
+    
         region.put("1", "Hello");
         region.put("2", "World");
-
+        
         for (Map.Entry<String, String>  entry : region.entrySet()) {
           System.out.format("key = %s, value = %s\n", entry.getKey(), entry.getValue());
         }
@@ -86,5 +86,5 @@ Geode applications can be written in a number of client technologies:
 * Java using the Geode client API or embedded using the Geode peer API
 * [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
-* [REST](http://geode-docs.cfapps.io/docs/geode_rest/book_intro.html)
+* REST
 * [[memcached|Moving from memcached to gemcached]]

@@ -59,6 +59,8 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   private boolean hasMembershipAttributes = false;
   private boolean hasSubscriptionAttributes = false;
   private boolean hasEvictionAttributes = false;
+  private boolean hasCustomEviction = false;
+
   /**
    * Whether this region has specified a disk store name
    *
@@ -104,12 +106,23 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
    */
   private boolean hasCloningEnabled = false;
   
-  /**
+  private boolean hasHDFSStoreName = false;
+  
+  private boolean hasHDFSWriteOnly = false;
+  
+/**
    * Whether this region has entry value compression.
    * 
    * @since 8.0
    */
   private boolean hasCompressor = false;
+  
+  /**
+   * Whether this region has enable off-heap memory set.
+   * 
+   * @since 9.0
+   */
+  private boolean hasOffHeap = false;
   
   public boolean hasCacheLoader()
   {
@@ -251,8 +264,11 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   {
     return this.hasEvictionAttributes;
   }
-  
-  
+  public boolean hasCustomEviction()
+  {
+    return this.hasCustomEviction;
+  }
+
   public boolean hasPoolName()
   {
     return this.hasPoolName;
@@ -260,6 +276,10 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   
   public boolean hasCompressor() {
     return this.hasCompressor;
+  }
+  
+  public boolean hasOffHeap() {
+    return this.hasOffHeap;
   }
   
   public boolean hasCloningEnabled()
@@ -343,6 +363,10 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   public void setHasEvictionAttributes(boolean hasEvictionAttributes)
   {
     this.hasEvictionAttributes = hasEvictionAttributes;
+  }
+  public void setHasCustomEviction(boolean hasCustomEviction)
+  {
+    this.hasCustomEviction = hasCustomEviction;
   }
   public void setHasIgnoreJTA(boolean hasIgnoreJTA)
   {
@@ -432,6 +456,10 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
     this.hasCompressor = hasCompressor;
   }
   
+  public void setHasOffHeap(boolean hasOffHeap) {
+    this.hasOffHeap = hasOffHeap;
+  }
+  
   public void setAllHasFields(boolean b) {
     int hasCounter = 0;
     Field thisFields[] = UserSpecifiedRegionAttributes.class.getDeclaredFields();
@@ -490,7 +518,7 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   {
     this.hasDiskSynchronous = val;
   }
-  private static final int HAS_COUNT = 39;
+  private static final int HAS_COUNT = 43;
   
   public void initHasFields(UserSpecifiedRegionAttributes<K,V> other)
   {
@@ -565,5 +593,23 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   }
   public List getIndexes() {
     return this.indexes;
+  }
+
+  public boolean hasHDFSStoreName()
+  {
+    return this.hasHDFSStoreName;
+  }
+  public void setHasHDFSStoreName(boolean val)
+  {
+    this.hasHDFSStoreName = val;
+  }
+  
+  public void setHasHDFSWriteOnly(boolean val)
+  {
+    this.hasHDFSWriteOnly = val;
+  }
+  public boolean hasHDFSWriteOnly()
+  {
+    return this.hasHDFSWriteOnly;
   }
 }

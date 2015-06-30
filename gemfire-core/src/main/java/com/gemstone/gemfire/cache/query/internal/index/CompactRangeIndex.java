@@ -741,8 +741,13 @@ public class CompactRangeIndex extends AbstractIndex {
       NameResolutionException, QueryInvocationTargetException {
 
     QueryObserver observer = QueryObserverHolder.getInstance();
-   
-      if (entriesIter == null || verifyLimit(result, limit, context)) {
+      boolean limitApplied = false;
+      if (entriesIter == null || (limitApplied =verifyLimit(result, limit, context))) {
+        if(limitApplied) {          
+          if(observer != null) {
+            observer.limitAppliedAtIndexLevel(this, limit, result);
+          }
+        }
         return;
       }
     

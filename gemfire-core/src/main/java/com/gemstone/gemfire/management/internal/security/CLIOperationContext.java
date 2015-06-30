@@ -86,7 +86,7 @@ public class CLIOperationContext extends ResourceOperationContext {
 		}
 		
 		
-		LogService.getLogger().info("#RegisterCommandSecurity : " + commandName + " code " + code + " op="+op);
+		LogService.getLogger().trace("#RegisterCommandSecurity : " + commandName + " code " + code + " op="+op);
 		
 		if(code!=null) {
 			commandToCodeMapping.put(commandName, code);

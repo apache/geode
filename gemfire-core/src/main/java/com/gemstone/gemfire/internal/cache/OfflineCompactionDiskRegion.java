@@ -24,12 +24,12 @@ public class OfflineCompactionDiskRegion extends DiskRegion implements DiskRecov
           new DummyCancelCriterion(),
           new DummyDiskExceptionHandler(),
           null, drv.getFlags(), drv.getPartitionName(), drv.getStartingBucketId(),
-          drv.getCompressorClassName());
+          drv.getCompressorClassName(), drv.getOffHeap());
     setConfig(drv.getLruAlgorithm(), drv.getLruAction(), drv.getLruLimit(),
               drv.getConcurrencyLevel(), drv.getInitialCapacity(),
               drv.getLoadFactor(), drv.getStatisticsEnabled(),
               drv.isBucket(), drv.getFlags(), drv.getPartitionName(), drv.getStartingBucketId(),
-              drv.getCompressorClassName());
+              drv.getCompressorClassName(), drv.getOffHeap());
   }
   
   static OfflineCompactionDiskRegion create(DiskStoreImpl dsi, DiskRegionView drv) {

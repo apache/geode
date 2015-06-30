@@ -9,7 +9,6 @@
 package com.gemstone.gemfire.distributed;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,14 +21,11 @@ import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import joptsimple.OptionException;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -49,33 +45,6 @@ import org.junit.experimental.categories.Category;
  */
 @Category(UnitTest.class)
 public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
-
-  private static final String GEMFIRE_PROPERTIES_FILE_NAME = "gemfire.properties";
-  private static final String TEMPORARY_FILE_NAME = "beforeLocatorLauncherJUnitTest_" + GEMFIRE_PROPERTIES_FILE_NAME;
-  
-  @BeforeClass
-  public static void setUp() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(TEMPORARY_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(TEMPORARY_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
 
   @Test
   public void testBuilderParseArguments() throws Exception {
@@ -285,6 +254,7 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testSetAndGetPort() {
     Builder builder = new Builder();
@@ -421,14 +391,11 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testBuildWithMemberNameSetInGemfirePropertiesOnStart() {
-    // TODO fix this test on Windows; File renameTo and delete in finally fail on Windows
-    assumeFalse(SystemUtils.isWindows());
-
+  public void testBuildWithMemberNameSetInGemfirePropertiesOnStart() throws Exception {
+    System.setProperty("user.dir", this.temporaryFolder.getRoot().getCanonicalPath());
+    
     Properties gemfireProperties = new Properties();
-
     gemfireProperties.setProperty(DistributionConfig.NAME_NAME, "locator123");
-
     File gemfirePropertiesFile = writeGemFirePropertiesToFile(gemfireProperties, "gemfire.properties",
       String.format("Test gemfire.properties file for %1$s.%2$s.", getClass().getSimpleName(),
         "testBuildWithMemberNameSetInGemfirePropertiesOnStart"));
@@ -436,40 +403,30 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
     assertNotNull(gemfirePropertiesFile);
     assertTrue(gemfirePropertiesFile.isFile());
 
-    try {
-      LocatorLauncher launcher = new Builder().setCommand(Command.START).setMemberName(null).build();
+    LocatorLauncher launcher = new Builder().setCommand(Command.START).setMemberName(null).build();
 
-      assertNotNull(launcher);
-      assertEquals(Command.START, launcher.getCommand());
-      assertNull(launcher.getMemberName());
-    }
-    finally {
-      assertTrue(gemfirePropertiesFile.delete());
-      assertFalse(gemfirePropertiesFile.isFile());
-    }
+    assertNotNull(launcher);
+    assertEquals(Command.START, launcher.getCommand());
+    assertNull(launcher.getMemberName());
   }
 
   @Test
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
-    try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, "locatorXYZ");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, "locatorXYZ");
 
-      LocatorLauncher launcher = new Builder()
-        .setCommand(LocatorLauncher.Command.START)
-        .setMemberName(null)
-        .build();
+    LocatorLauncher launcher = new Builder()
+      .setCommand(LocatorLauncher.Command.START)
+      .setMemberName(null)
+      .build();
 
-      assertNotNull(launcher);
-      assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
-      assertNull(launcher.getMemberName());
-    }
-    finally {
-      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME);
-    }
+    assertNotNull(launcher);
+    assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
+    assertNull(launcher.getMemberName());
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testBuildWithNoMemberNameOnStart() {
+  public void testBuildWithNoMemberNameOnStart() throws Exception {
+    System.setProperty("user.dir", this.temporaryFolder.getRoot().getCanonicalPath());
     try {
       new Builder().setCommand(Command.START).build();
     }
@@ -494,5 +451,4 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
       throw expected;
     }
   }
-
 }

@@ -1,0 +1,127 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.persistence.query;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.junit.experimental.categories.Category;
+
+import junit.framework.TestCase;
+
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
+import com.gemstone.gemfire.internal.cache.persistence.query.IndexMap;
+import com.gemstone.gemfire.internal.cache.persistence.query.IndexMap.IndexEntry;
+import com.gemstone.gemfire.internal.cache.persistence.query.mock.IndexMapImpl;
+import com.gemstone.gemfire.internal.cache.persistence.query.mock.NaturalComparator;
+import com.gemstone.gemfire.internal.cache.persistence.query.mock.Pair;
+import com.gemstone.gemfire.internal.cache.persistence.query.mock.PairComparator;
+import com.gemstone.gemfire.internal.cache.persistence.query.ResultBag;
+import com.gemstone.gemfire.internal.cache.persistence.query.ResultSet;
+import com.gemstone.gemfire.internal.cache.persistence.query.TemporaryResultSetFactory;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
+public class TemporaryResultSetFactoryJUnitTest extends TestCase {
+
+  public void testSortedResultSet() {
+    ResultSet set = new TemporaryResultSetFactory().getSortedResultSet(null, false);
+    set.add(1);
+    set.add(2);
+    set.add(4);
+    set.add(3);
+    set.add(2);
+    
+    assertItrEquals(set.iterator(), 1,2, 3, 4);
+    
+  }
+  
+  public void testSortedResultBag() {
+    ResultBag set = new TemporaryResultSetFactory().getSortedResultBag(null, false);
+    set.add(1);
+    set.add(2);
+    set.add(4);
+    set.add(3);
+    set.add(2);
+    
+    
+    assertItrEquals(set.iterator(), 1,2, 2,3, 4);
+  }
+  
+  public void testResultList() {
+    ResultList set = new TemporaryResultSetFactory().getResultList();
+    set.add(1);
+    set.add(2);
+    set.add(4);
+    set.add(3);
+    set.add(2);
+    
+    
+    assertItrEquals(set.iterator(), 1,2, 4,3, 2);
+    assertItrEquals(set.iterator(2), 4,3, 2);
+  }
+  
+  public void testIndexMap() {
+    IndexMap map = new IndexMapImpl();
+    TreeMap expected = new TreeMap(new PairComparator(new NaturalComparator(), new NaturalComparator()));
+    put("i1", "r1", "v1", map, expected);
+    put("i2", "r2", "v4", map, expected);
+    put("i4", "r4", "v4", map, expected);
+    put("i2", "r5", "v5", map, expected);
+    
+    
+    assertItrEquals(map.keyIterator(), "r1", "r2", "r5", "r4");
+    assertItrEquals(map.keyIterator("i2", true, "i3", true), "r2", "r5");
+    assertItrEquals(map.keyIterator("i2", true, "i2", true), "r2", "r5");
+    assertItrEquals(map.getKey("i2"), "r2", "r5");
+    
+    //See if we can get an entry range
+    assertEntryEquals(map.iterator("i2", true, "i4", true), expected.tailMap(new Pair("i1", "r2")));
+  }
+
+  private void put(String ikey, String rkey, String value, IndexMap map,
+      Map expected) {
+    map.put(ikey, rkey, value);
+    expected.put(new Pair(ikey, rkey), value);
+    
+  }
+
+  private void assertItrEquals(
+      CloseableIterator<CachedDeserializable> iterator, Object ... values) {
+    
+    ArrayList actual = new ArrayList();
+    
+    while(iterator.hasNext()) {
+      actual.add(iterator.next().getDeserializedForReading());
+    }
+    
+    assertEquals(Arrays.asList(values), actual);
+    
+  }
+  
+  private void assertEntryEquals(
+      CloseableIterator<IndexEntry> closeableIterator, Map expected) {
+    
+    LinkedHashMap actual = new LinkedHashMap();
+    
+    while(closeableIterator.hasNext()) {
+      IndexEntry entry = closeableIterator.next();
+      Object ikey = entry.getKey().getDeserializedForReading();
+      Object rkey = entry.getRegionKey().getDeserializedForReading();
+      Object value = entry.getValue().getDeserializedForReading();
+      actual.put(new Pair(ikey, rkey), value);
+    }
+    
+    assertEquals(expected, actual);
+    
+  }
+}

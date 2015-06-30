@@ -15,6 +15,12 @@ import java.util.*;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.internal.NWayMergeResults;
+import com.gemstone.gemfire.cache.query.internal.Ordered;
+import com.gemstone.gemfire.cache.query.internal.ResultsSet;
+import com.gemstone.gemfire.cache.query.internal.SortedResultSet;
+import com.gemstone.gemfire.cache.query.internal.SortedStructSet;
+import com.gemstone.gemfire.cache.query.internal.StructSet;
 import com.gemstone.gemfire.cache.query.types.*;
 
 /**
@@ -65,7 +71,12 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
     Class cls = resolveClass();
     return !Set.class.isAssignableFrom(cls) &&
             !Map.class.isAssignableFrom(cls) &&
-            !Region.class.isAssignableFrom(cls);
+            !Region.class.isAssignableFrom(cls) &&
+            ! StructSet.class.isAssignableFrom(cls) &&
+            ! SortedStructSet.class.isAssignableFrom(cls) &&
+            ! SortedResultSet.class.isAssignableFrom(cls) &&
+            ! ResultsSet.class.isAssignableFrom(cls) 
+            ;
   }
   
   public ObjectType getElementType() {
@@ -74,9 +85,10 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
   
   public boolean isOrdered() {
     Class cls = resolveClass();
-    return List.class.isAssignableFrom(cls) ||
-            SortedSet.class.isAssignableFrom(cls) ||
-            cls.isArray() || LinkedHashSet.class.isAssignableFrom(cls);
+    return List.class.isAssignableFrom(cls) || cls.isArray()           
+            || Ordered.class.isAssignableFrom(cls) || TreeSet.class.isAssignableFrom(cls)
+            || TreeMap.class.isAssignableFrom(cls) || LinkedHashSet.class.isAssignableFrom(cls)
+            || LinkedHashMap.class.isAssignableFrom(cls);
   }
 
   @Override

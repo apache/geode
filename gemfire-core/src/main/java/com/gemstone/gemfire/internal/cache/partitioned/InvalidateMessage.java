@@ -171,7 +171,7 @@ public final class InvalidateMessage extends DestroyMessage {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)key).setRegionContext(r);
     }
-    final EntryEventImpl event = new EntryEventImpl(
+    final EntryEventImpl event = EntryEventImpl.create(
         r,
         getOperation(),
         key,
@@ -181,6 +181,7 @@ public final class InvalidateMessage extends DestroyMessage {
         eventSender,
         true/*generateCallbacks*/,
         false/*initializeId*/);
+    try {
     if (this.versionTag != null) {
       this.versionTag.replaceNullIDs(getSender());
       event.setVersionTag(this.versionTag);
@@ -239,6 +240,10 @@ public final class InvalidateMessage extends DestroyMessage {
     }
     
     return sendReply;
+
+    } finally {
+      event.release();
+    }
   }
 
 

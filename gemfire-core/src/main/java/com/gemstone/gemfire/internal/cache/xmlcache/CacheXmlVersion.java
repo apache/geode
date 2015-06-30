@@ -30,7 +30,8 @@ public enum CacheXmlVersion {
   VERSION_6_6(CacheXml.VERSION_6_6, null, CacheXml.PUBLIC_ID_6_6, CacheXml.SYSTEM_ID_6_6),
   VERSION_7_0(CacheXml.VERSION_7_0, null, CacheXml.PUBLIC_ID_7_0, CacheXml.SYSTEM_ID_7_0),
   VERSION_8_0(CacheXml.VERSION_8_0, null, CacheXml.PUBLIC_ID_8_0, CacheXml.SYSTEM_ID_8_0),
-  VERSION_8_1(CacheXml.VERSION_8_1, CacheXml.SCHEMA_8_1_LOCATION, null, null);
+  VERSION_8_1(CacheXml.VERSION_8_1, CacheXml.SCHEMA_8_1_LOCATION, null, null),
+  VERSION_9_0(CacheXml.VERSION_9_0, CacheXml.SCHEMA_9_0_LOCATION, null, null);
 
   private static final HashMap<String, CacheXmlVersion> valuesForVersion = new HashMap<>();
   static {

@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
 import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
 import com.gemstone.gemfire.distributed.internal.DM;
@@ -233,6 +234,8 @@ public class PartitionedRegionRebalanceOp {
       if(lock != null) {
         try {
           lock.unlock();
+        } catch (CancelException e) {
+          // lock service has been destroyed
         } catch(Exception e) {
          logger.error(LocalizedMessage.create(LocalizedStrings.PartitionedRegionRebalanceOp_UNABLE_TO_RELEASE_RECOVERY_LOCK), e);
         }
@@ -418,7 +421,6 @@ public class PartitionedRegionRebalanceOp {
     
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
-    boolean enforceLocalMaxMemory = !leaderRegion.isEntryEvictionPossible();
     final DM dm = leaderRegion.getDistributionManager();    
     AddressComparor comparor = new AddressComparor() {
       
@@ -435,11 +437,10 @@ public class PartitionedRegionRebalanceOp {
     
     int redundantCopies = leaderRegion.getRedundantCopies();
     int totalNumberOfBuckets = leaderRegion.getTotalNumberOfBuckets();
-    Set<InternalDistributedMember> criticalMembers = resourceManager.getHeapCriticalMembers();
+    Set<InternalDistributedMember> criticalMembers = resourceManager.getResourceAdvisor().adviseCritialMembers();;
     boolean removeOverRedundancy = true;
     model = new PartitionedRegionLoadModel(operator, redundantCopies, 
-        totalNumberOfBuckets, comparor, enforceLocalMaxMemory, 
-        criticalMembers, leaderRegion);
+        totalNumberOfBuckets, comparor, criticalMembers, leaderRegion);
 
     for (Map.Entry<PartitionedRegion, InternalPRInfo> entry : detailsMap.entrySet()) {
       PartitionedRegion region = entry.getKey();
@@ -460,7 +461,8 @@ public class PartitionedRegionRebalanceOp {
       } else {
         offlineDetails = details.getOfflineMembers();
       }
-      model.addRegion(region.getFullPath(), memberDetailSet, offlineDetails);
+      boolean enforceLocalMaxMemory = !region.isEntryEvictionPossible();
+      model.addRegion(region.getFullPath(), memberDetailSet, offlineDetails, enforceLocalMaxMemory);
     }
     
     model.initialize();

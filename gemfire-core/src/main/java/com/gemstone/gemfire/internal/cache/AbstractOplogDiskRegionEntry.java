@@ -13,6 +13,7 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * Abstract implementation class of RegionEntry interface.
@@ -67,9 +68,16 @@ public abstract class AbstractOplogDiskRegionEntry
   }
   
   @Override
+  @Retained
+  public final Object getValueRetain(RegionEntryContext context) {   
+    return Helper.faultInValueRetain(this, (LocalRegion) context);
+  }
+  
+  @Override
   public final Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
     return Helper.getValueInVMOrDiskWithoutFaultIn(this, owner);
   }
+  @Retained
   @Override
   public Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner) {
     return Helper.getValueOffHeapOrDiskWithoutFaultIn(this, owner);

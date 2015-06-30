@@ -1,0 +1,11 @@
+The following jars were removed from this source code. These should be
+downloaded from maven central as part of the build.
+
+lib/CopyLibs/org-netbeans-modules-java-j2seproject-copylibstask.jar
+lib/commons-cli-1.2.jar
+lib/commons-collections-3.2.1.jar
+lib/commons-io-2.0.1.jar
+lib/commons-lang3-3.0.jar
+lib/commons-net-3.0.1.jar
+lib/jcommon-1.0.21.jar
+lib/jfreechart-1.0.17.jar

@@ -22,26 +22,25 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 // According to 8.0 discussions, gfsh should have as less confing as possible
 // hence Persisting GfshConfig is not done
 public class GfshConfig {
-  public  static final String INIT_FILE_PROPERTY            = "gfsh.init-file";
   private static final String LOG_DIR_PROPERTY              = "gfsh.log-dir";
   private static final String LOG_LEVEL_PROPERTY            = "gfsh.log-level";
   private static final String LOG_FILE_SIZE_LIMIT_PROPERTY  = "gfsh.log-file-size-limit";
   private static final String LOG_DISK_SPACE_LIMIT_PROPERTY = "gfsh.log-disk-space-limit";
+
 
   private static final File  HISTORY_FILE   = new File(getHomeGemFireDirectory(), ".gfsh.history");
 
   // History file size
   private static final int MAX_HISTORY_SIZE = 500;
 
-  public  static final String DEFAULT_INIT_FILE_NAME 	= ".gfsh2rc";	
   private static final Level DEFAULT_LOGLEVEL           = Level.OFF;
   private static final int   DEFAULT_LOGFILE_SIZE_LIMIT = 1024*1024*10;
   private static final int   DEFAULT_LOGFILE_DISK_USAGE = 1024*1024*10;
 
+
   private static final String DEFAULT_PROMPT = "{0}gfsh{1}>";
 
   private String historyFileName;
-  private String initFileName;
   private String defaultPrompt;
   private int    historySize;
   private String logDir;
@@ -50,21 +49,15 @@ public class GfshConfig {
   private int    logFileDiskLimit;
 
   public GfshConfig() {
-    this(HISTORY_FILE.getAbsolutePath(), DEFAULT_PROMPT, MAX_HISTORY_SIZE, null, null, null, null, null);
+    this(HISTORY_FILE.getAbsolutePath(), DEFAULT_PROMPT, MAX_HISTORY_SIZE, null, null, null, null);
   }
 
   public GfshConfig(String historyFileName, String defaultPrompt,
       int historySize, String logDir, Level logLevel, Integer logLimit,
-      Integer logCount, String initFileName) {
+      Integer logCount) {
     this.historyFileName = historyFileName;
     this.defaultPrompt   = defaultPrompt;
     this.historySize     = historySize;
-
-    if (initFileName == null) {
-      this.initFileName = this.searchForInitFileName();
-    } else {
-      this.initFileName = initFileName;
-    }
 
     // Logger properties
     if (logDir == null) {
@@ -92,10 +85,6 @@ public class GfshConfig {
 
   public String getHistoryFileName() {
     return historyFileName;
-  }
-
-  public String getInitFileName() {
-    return initFileName;
   }
 
   public String getDefaultPrompt() {
@@ -140,9 +129,6 @@ public class GfshConfig {
 
   private String getLoggerConfig() {
     StringBuilder builder = new StringBuilder();
-    builder.append(
-        "init-file=" + (getInitFileName() == null ? "" : getInitFileName()))
-        .append(Gfsh.LINE_SEPARATOR);
     builder.append("log-file="+getLogFilePath()).append(Gfsh.LINE_SEPARATOR);
     builder.append("log-level="+getLogLevel().getName()).append(Gfsh.LINE_SEPARATOR);
     builder.append("log-file-size-limit="+getLogFileSizeLimit()).append(Gfsh.LINE_SEPARATOR);
@@ -206,9 +192,7 @@ public class GfshConfig {
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append(getClass().getSimpleName());
-    builder.append(" [initFileName=");
-    builder.append(getInitFileName() == null ? "" : getInitFileName());
-    builder.append(", historyFileName=");
+    builder.append(" [historyFileName=");
     builder.append(getHistoryFileName());
     builder.append(", historySize=");
     builder.append(getHistorySize());
@@ -219,27 +203,5 @@ public class GfshConfig {
     builder.append("]");
     return builder.toString();
   }
-
-  /*
-   * Search for the init file using the system property, then the current
-   * directory, then the home directory. It need not exist at all.
-   */
-  private String searchForInitFileName() {
-    String homeDirectoryInitFileName = System.getProperty("user.home")
-        + File.separatorChar + DEFAULT_INIT_FILE_NAME;
-    String currentDirectoryInitFileName = System.getProperty("user.dir")
-        + File.separatorChar + DEFAULT_INIT_FILE_NAME;
-    String systemPropertyInitFileName = System.getProperty(INIT_FILE_PROPERTY);
-
-    String[] initFileNames = { systemPropertyInitFileName,
-        currentDirectoryInitFileName, homeDirectoryInitFileName };
-
-    for (String initFileName : initFileNames) {
-      if (IOUtils.isExistingPathname(initFileName)) {
-        return initFileName;
-      }
-    }
-
-    return null;
-  }
 }
+

@@ -1,0 +1,359 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.ha;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.AvailablePort;
+
+import dunit.DistributedTestCase;
+import dunit.Host;
+import dunit.VM;
+
+/**
+ * This is Dunit test for bug 36109. This test has a cache-client having a primary
+ * and a secondary cache-server as its endpoint. Primary does some operations
+ * and is stopped, the client fails over to secondary and does some operations
+ * and it is verified that the 'invalidates' stats at the client is same as the
+ * total number of operations done by both primary and secondary. The bug was
+ * appearing because invalidate stats was part of Endpoint which used to get
+ * closed during fail over , with the failed endpoint getting closed. This bug
+ * has been fixed by moving the invalidate stat to be part of our implementation.
+ * 
+ * @author Dinesh Patel
+ * 
+ */
+public class StatsBugDUnitDisabledTest extends DistributedTestCase
+{
+  /** primary cache server */
+  VM primary = null;
+
+  /** secondary cache server */
+  VM secondary = null;
+
+  /** the cache client */
+  VM client1 = null;
+
+  /** the cache */
+  private static Cache cache = null;
+
+  /** port for the primary cache server */
+  private static int PORT1;
+
+  /** port for the secondary cache server */
+  private static int PORT2;
+
+  /** name of the test region */
+  private static final String REGION_NAME = "StatsBugDUnitTest_Region";
+
+  /** brige-writer instance( used to get connection proxy handle) */
+  private static PoolImpl pool = null;
+
+  /** total number of cache servers */
+  private static final int TOTAL_SERVERS = 2;
+
+  /** number of puts done by each server */
+  private static final int PUTS_PER_SERVER = 10;
+
+  /** prefix added to the keys of events generated on primary */
+  private static final String primaryPrefix = "primary_";
+
+  /** prefix added to the keys of events generated on secondary */
+  private static final String secondaryPrefix = "secondary_";
+
+  /**
+   * Constructor
+   * 
+   * @param name -
+   *          name for this test instance
+   */
+  public StatsBugDUnitDisabledTest(String name) {
+    super(name);
+  }
+
+  /**
+   * Creates the primary and the secondary cache servers
+   * 
+   * @throws Exception -
+   *           thrown if any problem occurs in initializing the test
+   */
+  public void setUp() throws Exception
+  {
+    disconnectAllFromDS();
+    super.setUp();
+    final Host host = Host.getHost(0);
+    primary = host.getVM(0);
+    secondary = host.getVM(1);
+    client1 = host.getVM(2);
+    PORT1 = ((Integer)primary.invoke(StatsBugDUnitDisabledTest.class,
+        "createServerCache")).intValue();
+    PORT2 = ((Integer)secondary.invoke(StatsBugDUnitDisabledTest.class,
+        "createServerCache")).intValue();
+  }
+
+  /**
+   * Create the cache
+   * 
+   * @param props -
+   *          properties for DS
+   * @return the cache instance
+   * @throws Exception -
+   *           thrown if any problem occurs in cache creation
+   */
+  private Cache createCache(Properties props) throws Exception
+  {
+    DistributedSystem ds = getSystem(props);
+    ds.disconnect();
+    ds = getSystem(props);
+    Cache cache = null;
+    cache = CacheFactory.create(ds);
+    if (cache == null) {
+      throw new Exception("CacheFactory.create() returned null ");
+    }
+    return cache;
+  }
+
+  /**
+   * close the cache instances in server and client during tearDown
+   * 
+   * @throws Exception
+   *           thrown if any problem occurs in closing cache
+   */
+  public void tearDown2() throws Exception
+  {
+    super.tearDown2();
+    // close client
+    client1.invoke(StatsBugDUnitDisabledTest.class, "closeCache");
+
+    // close server
+    primary.invoke(StatsBugDUnitDisabledTest.class, "closeCache");
+    secondary.invoke(StatsBugDUnitDisabledTest.class, "closeCache");
+  }
+
+  /**
+   * This test does the following:<br>
+   * 1)Create and populate the client<br>
+   * 2)Do some operations from the primary cache-server<br>
+   * 3)Stop the primary cache-server<br>
+   * 4)Wait some time to allow client to failover to secondary and do some
+   * operations from secondary<br>
+   * 5)Verify that the invalidates stats at the client accounts for the
+   * operations done by both, primary and secondary.
+   * 
+   * @throws Exception -
+   *           thrown if any problem occurs in test execution
+   */
+  public void testBug36109() throws Exception
+  {
+    getLogWriter().info("testBug36109 : BEGIN");
+    client1.invoke(StatsBugDUnitDisabledTest.class, "createClientCacheForInvalidates", new Object[] {
+        getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
+    client1.invoke(StatsBugDUnitDisabledTest.class, "prepopulateClient");
+    primary.invoke(StatsBugDUnitDisabledTest.class, "doEntryOperations",
+        new Object[] { primaryPrefix });
+    pause(3000);
+    primary.invoke(StatsBugDUnitDisabledTest.class, "stopServer");
+    try {
+      Thread.sleep(5000);
+    }
+    catch (InterruptedException ignore) {
+      fail("interrupted");
+    }
+
+    secondary.invoke(StatsBugDUnitDisabledTest.class, "doEntryOperations",
+        new Object[] { secondaryPrefix });
+    try {
+      Thread.sleep(5000);
+    }
+    catch (InterruptedException ignore) {
+      fail("interrupted");
+    }
+
+    client1.invoke(StatsBugDUnitDisabledTest.class, "verifyNumInvalidates");
+    getLogWriter().info("testBug36109 : END");
+  }
+
+  /**
+   * Creates and starts the cache-server
+   * 
+   * @return - the port on which cache-server is running
+   * @throws Exception -
+   *           thrown if any problem occurs in cache/server creation
+   */
+  public static Integer createServerCache() throws Exception
+  {
+    StatsBugDUnitDisabledTest test = new StatsBugDUnitDisabledTest("temp");
+    Properties props = new Properties();
+    cache = test.createCache(props);
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
+
+    RegionAttributes attrs = factory.create();
+
+    cache.createRegion(REGION_NAME, attrs);
+    BridgeServer server = cache.addBridgeServer();
+    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    server.setPort(port);
+    server.setNotifyBySubscription(false);
+    server.setSocketBufferSize(32768);
+    server.start();
+    getLogWriter().info("Server started at PORT = " + port);
+    return new Integer(port);
+  }
+
+  /**
+   * Initializes the cache client
+   * 
+   * @param port1 -
+   *          port for the primary cache-server
+   * @param port2-port
+   *          for the secondary cache-server
+   * @throws Exception-thrown
+   *           if any problem occurs in initializing the client
+   */
+  public static void createClientCache(String host, Integer port1, Integer port2)
+      throws Exception
+  {
+    StatsBugDUnitDisabledTest test = new StatsBugDUnitDisabledTest("temp");
+    cache = test.createCache(createProperties1());
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    pool = (PoolImpl)BridgeTestCase.configureConnectionPool(factory, host, new int[] {port1.intValue(),port2.intValue()}, true, -1, 3, null);
+    RegionAttributes attrs = factory.create();
+    Region region = cache.createRegion(REGION_NAME, attrs);
+    region.registerInterest("ALL_KEYS");
+    getLogWriter().info("Client cache created");
+  }
+
+  /**
+   * Initializes the cache client
+   * 
+   * @param port1 -
+   *          port for the primary cache-server
+   * @param port2-port
+   *          for the secondary cache-server
+   * @throws Exception-thrown
+   *           if any problem occurs in initializing the client
+   */
+  public static void createClientCacheForInvalidates(String host, Integer port1, Integer port2)
+      throws Exception
+  {
+    StatsBugDUnitDisabledTest test = new StatsBugDUnitDisabledTest("temp");
+    cache = test.createCache(createProperties1());
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    pool = (PoolImpl)BridgeTestCase.configureConnectionPool(factory, host, new int[] {port1.intValue(),port2.intValue()}, true, -1, 3, null);
+    RegionAttributes attrs = factory.create();
+    Region region = cache.createRegion(REGION_NAME, attrs);
+    region.registerInterest("ALL_KEYS", false, false);
+    getLogWriter().info("Client cache created");
+  }
+  
+  /**
+   * Verify that the invalidates stats at the client accounts for the operations
+   * done by both, primary and secondary.
+   * 
+   */
+  public static void verifyNumInvalidates()
+  {
+    long invalidatesRecordedByStats = pool.getInvalidateCount();
+    getLogWriter().info(
+        "invalidatesRecordedByStats = " + invalidatesRecordedByStats);
+
+    int expectedInvalidates = TOTAL_SERVERS * PUTS_PER_SERVER;
+    getLogWriter().info("expectedInvalidates = " + expectedInvalidates);
+
+    if (invalidatesRecordedByStats != expectedInvalidates) {
+      fail("Invalidates received by client(" + invalidatesRecordedByStats
+          + ") does not match with the number of operations("
+          + expectedInvalidates + ") done at server");
+    }
+  }
+
+  /**
+   * Stops the cache server
+   * 
+   */
+  public static void stopServer()
+  {
+    try {
+      Iterator iter = cache.getBridgeServers().iterator();
+      if (iter.hasNext()) {
+        BridgeServer server = (BridgeServer)iter.next();
+        server.stop();
+      }
+    }
+    catch (Exception e) {
+      fail("failed while stopServer()" + e);
+    }
+  }
+
+  /**
+   * create properties for a loner VM
+   */
+  private static Properties createProperties1()
+  {
+    Properties props = new Properties();
+    props.setProperty("mcast-port", "0");
+    props.setProperty("locators", "");
+    return props;
+  }
+
+
+  /**
+   * Do PUT operations
+   * 
+   * @param keyPrefix -
+   *          string prefix for the keys for all the entries do be done
+   * @throws Exception -
+   *           thrown if any exception occurs in doing PUTs
+   */
+  public static void doEntryOperations(String keyPrefix) throws Exception
+  {
+    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    for (int i = 0; i < PUTS_PER_SERVER; i++) {
+      r1.put(keyPrefix + i, keyPrefix + "val-" + i);
+    }
+  }
+
+  /**
+   * Prepopulate the client with the entries that will be done by cache-servers
+   * 
+   * @throws Exception
+   */
+  public static void prepopulateClient() throws Exception
+  {
+    doEntryOperations(primaryPrefix);
+    doEntryOperations(secondaryPrefix);
+  }
+
+  /**
+   * Close the cache
+   * 
+   */
+  public static void closeCache()
+  {
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
+      cache.getDistributedSystem().disconnect();
+    }
+  }
+}

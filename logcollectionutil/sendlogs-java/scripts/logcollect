@@ -1,0 +1,22 @@
+#!/bin/bash
+# If the 'java' command is in $PATH, use it first.
+# If not, fall back to using $JAVA_HOME/bin/java
+
+command -v java > /dev/null 2>&1
+if [[ $? != 0 ]]; then
+    if [[ -n $JAVA_HOME ]]; then
+        command -v $JAVA_HOME/bin/java > /dev/null 2>&1
+        if [[ $? == 0 ]]; then
+            JAVA=$JAVA_HOME/bin/java
+        fi
+    fi
+else
+        JAVA=java
+fi
+
+if [[ -z $JAVA ]]; then
+    echo "Can't find a valid 'java' executable."
+    exit 1
+else
+    $JAVA -jar gfe-logcollect.jar $@
+fi

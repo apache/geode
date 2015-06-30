@@ -1,0 +1,134 @@
+<assembly>
+  <id>AppServer</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>com.gemstone:gemfire-modules</include>
+        <include>com.gemstone:gemfire-modules-session</include>
+        <include>com.gemstone:gemfire-modules-session-external</include>
+        <include>org.slf4j:slf4j-api</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </dependencySet>
+
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>com.gemstone:gemfire-modules-slf4j-weblogic</include>
+        <include>javax.servlet:servlet-api</include>
+        <include>org.slf4j:slf4j-jdk14</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+      <scope>provided</scope>
+    </dependencySet>
+  </dependencySets>
+
+  <files>
+    <file>
+      <source>${project.basedir}/release/session/bin/modify_war</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>0755</fileMode>
+    </file>
+    <file>
+      <source>${project.basedir}/release/session/bin/cacheserver.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>0755</fileMode>
+    </file>
+    <file>
+      <source>${project.basedir}/release/session/bin/cacheserver.bat</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>0755</fileMode>
+    </file>
+    <file>
+      <source>${project.basedir}/release/session/bin/gemfire.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>0755</fileMode>
+    </file>
+    <file>
+      <source>${project.basedir}/release/session/bin/gemfire.bat</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>0755</fileMode>
+    </file>
+    <file>
+      <source>${project.basedir}/release/session/bin/setenv.properties</source>
+      <outputDirectory>bin</outputDirectory>
+      <fileMode>0644</fileMode>
+    </file>
+  </files>
+
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>${project.artifactId}-${project.version}.jar</include>
+      </includes>
+      <fileMode>0644</fileMode>
+      <directoryMode>0755</directoryMode>
+    </fileSet>
+
+    <fileSet>
+      <directory>${basedir}/release/session/conf</directory>
+      <outputDirectory>conf</outputDirectory>
+      <fileMode>0644</fileMode>
+      <directoryMode>0755</directoryMode>
+    </fileSet>
+
+    <!-- This exists to get directory permissions right -->
+    <fileSet>
+      <directory>${basedir}/release/bin</directory>
+      <outputDirectory>bin</outputDirectory>
+      <excludes>
+        <exclude>*</exclude>
+      </excludes>
+      <fileMode>0644</fileMode>
+      <directoryMode>0755</directoryMode>
+    </fileSet>
+
+    <!-- Comment out for GA release
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <includes>
+        <include>
+          GFModules_ReleaseNotes.txt
+        </include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet> -->
+
+    <!-- Include 3rd party OSS/TP file -->
+    <fileSet>
+      <directory>${project.basedir}/release/3rdparty_license</directory>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>
+          open_source_licenses-Pivotal_GemFire_Modules_8.1.0.txt
+        </include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/target/release/session</directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>readme.txt</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</assembly>

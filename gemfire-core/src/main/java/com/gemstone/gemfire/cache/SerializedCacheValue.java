@@ -20,6 +20,8 @@ package com.gemstone.gemfire.cache;
  * by calling {@link EntryEvent#getSerializedOldValue()} then the SerializedCacheValue returned
  * is only valid until your afterUpdate method returns. It is not safe to store instances of this
  * class and use them later when using off heap storage.
+ * Attempts to access off-heap data from this event after it has expired will result in an
+ * IllegalStateException.
  *
  * @author Barry Oglesby
  * @since 5.5
@@ -29,12 +31,14 @@ public interface SerializedCacheValue<V> {
   /**
    * Returns the raw byte[] that represents this cache value.
    * @return the raw byte[] that represents this cache value
+   * @throws IllegalStateException if off-heap and called after the method that was passed the EntryEvent that this serialize value was obtained from returns and this value does not already have the serialized value.
    */
   public byte[] getSerializedValue();
 
   /**
    * Returns the deserialized object for this cache value.
    * @return the deserialized object for this cache value
+   * @throws IllegalStateException if off-heap and called after the method that was passed the EntryEvent that this serialize value was obtained from returns.
    */
   public V getDeserializedValue();
 }

@@ -11,7 +11,6 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
@@ -26,7 +25,9 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.cache.execute.FunctionContextImpl;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -156,9 +157,10 @@ public class ExecuteFunction extends BaseCommand {
             logger.debug("Executing Function on Server: " + servConn.toString() + "with context :" + context.toString());
           }
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+          HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
           if (functionObject.optimizeForWrite() && cache != null &&
-              cache.getResourceManager().isHeapCritical() &&
-              !InternalResourceManager.isLowMemoryExceptionDisabled()) {
+              hmm.getState().isCritical() &&
+              !MemoryThresholds.isLowMemoryExceptionDisabled()) {
             Set<DistributedMember> sm = Collections
                 .<DistributedMember> singleton(cache.getMyId());
             throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1

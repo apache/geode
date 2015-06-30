@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<project name="logcollectionutil" basedir="." default="jar">
+    <property name="src" value="src"/>
+    <property name="output" value="bin"/>
+
+    <target name="compile" depends="create">
+        <javac destdir="bin">            
+            <src path="${src}"/>            
+            <classpath refid="java"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${output}/gfe-logcollect.jar">
+            <fileset dir="${output}"/>
+	    <manifest>
+	<attribute name="Main-Class" 
+	value="com.pivotal.gemfire.sendlogs.driver.Driver" />
+	<attribute name="Class-Path" value="../lib/commons-compress-1.6.jar ../lib/commons-net-3.3.jar ../lib/hamcrest-core-1.3.jar ../lib/commons-io-2.4.jar ../lib/ganymed-ssh2-261.jar ../lib/jopt-simple-4.6.jar ../lib/log4j-1.2.17.jar ../lib/junit-4.11.jar"/>
+	    </manifest>
+        </jar>
+    </target>
+
+
+    <target name="clean">
+        <delete dir="${output}"/>
+	<delete dir="logs"/>
+	<delete file="${output}/gfe-logcollect.jar"/>
+    </target>
+
+    <target name="create" depends="clean">
+        <mkdir dir="${output}"/>
+    </target>
+
+	<target name="run" depends="jar">
+		<java jar="${output}/gfe-logcollect.jar" fork="true"/>
+	</target>
+
+
+    <path id="java">
+        <fileset dir="./lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+</project>

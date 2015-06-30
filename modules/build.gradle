@@ -1,0 +1,43 @@
+ext.slf4j_version = '1.7.7'
+ext.servlet_api_version = '2.5'
+ext.gemfire_version = '8.1.0'
+ext.tomcat_version = '6.0.29'
+
+subprojects {
+  apply plugin: 'java'
+
+  dependencies {
+    testCompile 'junit:junit:4.11'
+    testCompile('org.httpunit:httpunit:1.7.2') {
+      exclude group: 'javax.servlet', module: 'servlet-api'
+    }
+
+    compile "org.slf4j:slf4j-api:${slf4j_version}"
+    compile("com.gemstone.gemfire:gemfire:${gemfire_version}") {
+      exclude group: 'org.springframework.shell', module: 'spring-shell'
+    }
+  }
+
+  test {
+    testLogging {
+      events 'passed', 'skipped', 'failed'
+      exceptionFormat = 'full'
+    }
+  }
+}
+
+allprojects {
+  repositories {
+    mavenCentral()
+    maven { url = 'http://dist.gemstone.com/maven/release' }
+  }
+
+  group = 'com.gemstone.gemfire'
+  version = '8.1.0'
+}
+
+//sourceCompatibility = 1.7
+
+task wrapper(type: Wrapper, description: 'Creates and deploys the Gradle wrapper to the current directory.') {
+  gradleVersion = '2.1'
+}

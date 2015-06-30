@@ -1,0 +1,13 @@
+dependencies {
+  testCompile project(':gemfire-modules-session-external')
+  testCompile 'org.apache.tomcat:tomcat-jasper:7.0.30'
+  testCompile 'org.slf4j:slf4j-jdk14:1.7.7'
+}
+
+test {
+  testLogging {
+    exceptionFormat = 'full'
+  }
+
+  jvmArgs = ['-Xmx1024M', '-XX:MaxPermSize=512M', '-ea']
+}

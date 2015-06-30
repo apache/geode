@@ -1,0 +1,21 @@
+// In order to compile this module you need to reference your wlclient.jar
+// in gradle.properties.
+
+dependencies {
+  compile files(WEBLOGIC_LOGGING_JAR)
+}
+
+compileJava.onlyIf {
+  def buildit = project.hasProperty('WEBLOGIC_LOGGING_JAR') && WEBLOGIC_LOGGING_JAR != ""
+  if (! buildit) {
+    println('')
+    println('****************************************************************')
+    println('***   Warning: NOT building slf4j-weblogic binding!          ***')
+    println('***   See gemfire-modules-slf4j-weblogic/gradle.properties   ***')
+    println('****************************************************************')
+    println('')
+  }
+  return buildit
+}
+
+jar.onlyIf { compileJava.didWork }

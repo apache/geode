@@ -53,7 +53,7 @@ public class GetPdxEnums70 extends BaseCommand {
     responseMsg.setNumberOfParts(1);
     responseMsg.setTransactionId(msg.getTransactionId());
     responseMsg.addObjPart(enums);
-    responseMsg.send(servConn, msg.getTransactionId());
+    responseMsg.send(servConn);
     servConn.setAsTrue(RESPONDED);
   }
 }

@@ -59,7 +59,7 @@ public class GetPDXIdForEnum extends BaseCommand {
     responseMsg.setNumberOfParts(1);
     responseMsg.setTransactionId(msg.getTransactionId());
     responseMsg.addIntPart(enumId);
-    responseMsg.send(servConn, msg.getTransactionId());
+    responseMsg.send(servConn);
     servConn.setAsTrue(RESPONDED);
   }
 }

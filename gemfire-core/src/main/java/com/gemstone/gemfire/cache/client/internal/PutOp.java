@@ -26,6 +26,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -216,7 +217,11 @@ public class PutOp {
           }
         }
         else if (value instanceof CachedDeserializable) {
-          {
+          if (value instanceof StoredObject && !((StoredObject) value).isSerialized()) {
+            // it is a byte[]
+            getMessage().addObjPart(Boolean.FALSE);
+            getMessage().addObjPart(((StoredObject) value).getDeserializedForReading());
+          } else {
             getMessage().addObjPart(Boolean.FALSE);
             Object cdValue = ((CachedDeserializable)value).getValue();
             if (cdValue instanceof byte[]) {
@@ -274,7 +279,11 @@ public class PutOp {
         }
       }
       else if (value instanceof CachedDeserializable) {
-        {
+        if (value instanceof StoredObject && !((StoredObject) value).isSerialized()) {
+          // it is a byte[]
+          getMessage().addObjPart(Boolean.FALSE);
+          getMessage().addObjPart(((StoredObject) value).getDeserializedForReading());
+        } else {
           getMessage().addObjPart(Boolean.FALSE);
           Object cdValue = ((CachedDeserializable)value).getValue();
           if (cdValue instanceof byte[]) {

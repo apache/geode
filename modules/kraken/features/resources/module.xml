@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="com.vmware.gemfire">
+  <resources>
+    <!--
+      These resources are copied into place by AppServer.customize_instance.
+      If any changes are made here, the appropriate change needs to also
+      happen in that method.
+    -->
+    <resource-root path="gemfire.jar"/>
+    <resource-root path="gemfire-modules.jar"/>
+    <resource-root path="gemfire-modules-session.jar"/>
+    <resource-root path="slf4j-api.jar"/>
+    <resource-root path="slf4j-log4j12.jar"/>
+    <resource-root path="rest-json-function.jar"/>
+  </resources>
+
+  <dependencies>
+    <module name="javax.servlet.api"/>
+    <module name="javax.api"/>
+    <module name="javax.transaction.api"/>
+    <module name="org.apache.log4j"/>
+  </dependencies>
+</module>

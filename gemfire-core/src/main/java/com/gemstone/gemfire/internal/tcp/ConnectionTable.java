@@ -435,6 +435,12 @@ public class ConnectionTable  {
       }
     } else {  // we have existing connection
       if (mEntry instanceof PendingConnection) {
+
+        if (AlertAppender.isThreadAlerting()) {
+          // do not change the text of this exception - it is looked for in exception handlers
+          throw new IOException("Cannot form connection to alert listener " + id);
+        }
+        
         result = ((PendingConnection)mEntry).waitForConnect(
             this.owner.getMembershipManager(), startTime,
             ackTimeout, ackSATimeout);

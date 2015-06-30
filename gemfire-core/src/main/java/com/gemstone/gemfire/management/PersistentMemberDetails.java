@@ -24,7 +24,12 @@ public class PersistentMemberDetails {
   private final String directory;
   private final String diskStoreId;
 
-  @ConstructorProperties( { "host", "directory", "diskStoreId" })
+  /**
+   * 
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
+  @ConstructorProperties({ "host", "directory", "diskStoreId" })
   public PersistentMemberDetails(final String host, final String directory, final String diskStoreId) {
     this.host = host;
     this.directory = directory;

@@ -1,0 +1,172 @@
+<component>
+
+  <!-- Include gemfire.jar with no version -->
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>gemfire-cs/lib</outputDirectory>
+      <includes>
+        <include>com.gemstone:gemfire-modules</include>
+        <include>com.gemstone:gemfire-modules-tomcat7</include>
+        <include>org.slf4j:slf4j-api</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </dependencySet>
+
+    <!-- Need a separate set for artifacts with 'provided' scope -->
+    <dependencySet>
+      <outputDirectory>gemfire-cs/lib</outputDirectory>
+      <includes>
+        <include>org.slf4j:slf4j-jdk14</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+      <scope>provided</scope>
+    </dependencySet>
+  </dependencySets>
+
+  <files>
+    <file>
+      <source>${project.basedir}/release/scripts/cacheserver.sh</source>
+      <outputDirectory>gemfire-cs/bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>0755</fileMode>
+    </file>
+    <file>
+      <source>${project.basedir}/release/scripts/cacheserver.bat</source>
+      <outputDirectory>gemfire-cs/bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>0755</fileMode>
+    </file>
+  </files>
+
+  <fileSets>
+
+    <!--  Include scripts -->
+    <fileSet>
+      <directory>${project.basedir}/release/scripts</directory>
+      <outputDirectory>gemfire-cs/bin</outputDirectory>
+      <excludes>
+        <exclude>cacheserver.*</exclude>
+      </excludes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <!--  Include conf directory files -->
+    <fileSet>
+      <directory>${project.basedir}/release/conf</directory>
+      <outputDirectory>gemfire-cs/conf</outputDirectory>
+      <includes>
+        <include>cache-client.xml</include>
+        <include>cache-server.xml</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <!--  Include template fragment file -->
+    <fileSet>
+      <directory>${project.basedir}/release/tcserver/gemfire-cs</directory>
+      <outputDirectory>gemfire-cs/conf</outputDirectory>
+      <includes>
+        <include>context-fragment.xml</include>
+        <include>server-fragment.xml</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/release/tcserver/gemfire-cs</directory>
+      <outputDirectory>gemfire-cs/bin</outputDirectory>
+      <includes>
+        <include>modules.env</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <!--  Include configuration prompts file -->
+    <fileSet>
+      <directory>${project.basedir}/release/tcserver/gemfire-cs</directory>
+      <outputDirectory>gemfire-cs</outputDirectory>
+      <includes>
+        <include>configuration-prompts.properties</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/target/release/tcserver/gemfire-cs
+      </directory>
+      <outputDirectory>gemfire-cs</outputDirectory>
+      <includes>
+        <include>README.txt</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+    <!--  Include template fragment file for Tomcat 7 -->
+    <fileSet>
+      <directory>${project.basedir}/release/tcserver/gemfire-cs-tomcat-7
+      </directory>
+      <outputDirectory>gemfire-cs-tomcat-7/bin</outputDirectory>
+      <includes>
+        <include>modules.env</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/release/tcserver/gemfire-cs-tomcat-7
+      </directory>
+      <outputDirectory>gemfire-cs-tomcat-7/conf</outputDirectory>
+      <includes>
+        <include>context-fragment.xml</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <!-- Include project jar -->
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>gemfire-cs/lib</outputDirectory>
+      <includes>
+        <include>${project.artifactId}-${project.version}.jar</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+    <!-- Comment out for GA release
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <includes>
+        <include>
+          GFModules_ReleaseNotes.txt
+        </include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet> -->
+
+    <!-- Include 3rd party OSS/TP file -->
+    <fileSet>
+      <directory>${project.basedir}/release/3rdparty_license</directory>
+      <outputDirectory>gemfire-cs/lib</outputDirectory>
+      <includes>
+        <include> 
+          open_source_licenses-Pivotal_GemFire_Modules_8.1.0.txt
+        </include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet>
+
+  </fileSets>
+
+</component>

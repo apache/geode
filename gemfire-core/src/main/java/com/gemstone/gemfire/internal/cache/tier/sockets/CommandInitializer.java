@@ -300,10 +300,16 @@ public class CommandInitializer {
       gfe81Commands.put(MessageType.REMOVE_ALL, RemoveAll.getCommand());
       ALL_COMMANDS.put(Version.GFE_81, gfe81Commands);
     }
-    
-    Map<Integer, Command> gfe82Commands = new HashMap<Integer, Command>();
-    gfe82Commands.putAll(ALL_COMMANDS.get(Version.GFE_81));
-    ALL_COMMANDS.put(Version.GFE_82, gfe82Commands);
+    {
+      Map<Integer, Command> gfe82Commands = new HashMap<Integer, Command>();
+      gfe82Commands.putAll(ALL_COMMANDS.get(Version.GFE_81));
+      ALL_COMMANDS.put(Version.GFE_82, gfe82Commands);
+    }
+    {
+      Map<Integer, Command> gfe90Commands = new HashMap<Integer, Command>();
+      gfe90Commands.putAll(ALL_COMMANDS.get(Version.GFE_82));
+      ALL_COMMANDS.put(Version.GFE_90, gfe90Commands);
+    }
   }
 
   public static Map<Integer,Command> getCommands(Version version) {

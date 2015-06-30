@@ -16,6 +16,7 @@ import java.util.Set;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.*;
+import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -79,7 +80,7 @@ public class AuthorizeRequestPP {
       throws NotAuthorizedException {
 
     if (getContext == null) {
-      getContext = new GetOperationContext(key, true);
+      getContext = new GetOperationContextImpl(key, true);
     }
     else {
       getContext.setPostOperation();

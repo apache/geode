@@ -413,16 +413,38 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
                                  writeStringArray(array, out);
                                  return true;
                                }});
-    classesToSerializers.put("java.util.concurrent.TimeUnit",
-                             new WellKnownDS() {
-      @Override
-                               public final boolean toData(Object o, DataOutput out)
-                                 throws IOException {
-                                 TimeUnit unit = (TimeUnit) o;
-                                 out.writeByte(TIME_UNIT);
-                                 writeTimeUnit(unit, out);
-                                 return true;
-                               }});
+    classesToSerializers.put(TimeUnit.NANOSECONDS.getClass().getName(),
+        new WellKnownDS() {
+          @Override public final boolean toData(Object o, DataOutput out)
+            throws IOException {
+            out.writeByte(TIME_UNIT);
+            out.writeByte(TIME_UNIT_NANOSECONDS);
+            return true;
+          }});
+    classesToSerializers.put(TimeUnit.MICROSECONDS.getClass().getName(),
+        new WellKnownDS() {
+          @Override public final boolean toData(Object o, DataOutput out)
+            throws IOException {
+            out.writeByte(TIME_UNIT);
+            out.writeByte(TIME_UNIT_MICROSECONDS);
+            return true;
+          }});
+    classesToSerializers.put(TimeUnit.MILLISECONDS.getClass().getName(),
+        new WellKnownDS() {
+          @Override public final boolean toData(Object o, DataOutput out)
+            throws IOException {
+            out.writeByte(TIME_UNIT);
+            out.writeByte(TIME_UNIT_MILLISECONDS);
+            return true;
+          }});
+    classesToSerializers.put(TimeUnit.SECONDS.getClass().getName(),
+        new WellKnownDS() {
+          @Override public final boolean toData(Object o, DataOutput out)
+            throws IOException {
+            out.writeByte(TIME_UNIT);
+            out.writeByte(TIME_UNIT_SECONDS);
+            return true;
+          }});
     classesToSerializers.put("java.util.Date",
                              new WellKnownPdxDS() {
       @Override
@@ -1562,7 +1584,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       out.writeByte(OBJECT_ARRAY);
       writeObjectArray(array, out, ensurePdxCompatibility);
       return true;
-    } else if (is662SerializationEnabled() && o.getClass().isEnum()) {
+    } else if (is662SerializationEnabled() && (o.getClass().isEnum()
+        /* for bug 52271 */ || (o.getClass().getSuperclass() != null && o.getClass().getSuperclass().isEnum()))) {
       if (isPdxSerializationInProgress()) {
         writePdxEnum((Enum<?>)o, out);
       } else {
@@ -1988,40 +2011,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static final byte TIME_UNIT_SECONDS = -4;
 
   /**
-   * Writes a <code>TimeUnit</code> to a <code>DataOutput</code>.
-   *
-   * @throws IOException
-   *         A problem occurs while writing to <code>out</code>
-   *
-   * @see #readTimeUnit
-   */
-  public static void writeTimeUnit(TimeUnit unit, DataOutput out)
-    throws IOException {
-
-    InternalDataSerializer.checkOut(out);
-
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing TimeUnit: {}", unit);
-    }
-
-    if (unit.equals(TimeUnit.NANOSECONDS)) {
-      out.writeByte(TIME_UNIT_NANOSECONDS);
-
-    } else if (unit.equals(TimeUnit.MICROSECONDS)) {
-      out.writeByte(TIME_UNIT_MICROSECONDS);
-
-    } else if (unit.equals(TimeUnit.MILLISECONDS)) {
-      out.writeByte(TIME_UNIT_MILLISECONDS);
-
-    } else if (unit.equals(TimeUnit.SECONDS)) {
-      out.writeByte(TIME_UNIT_SECONDS);
-
-    } else {
-      throw new InternalGemFireException(LocalizedStrings.DataSerializer_UNSUPPORTED_TIMEUNIT_0.toLocalizedString(unit));
-    }
-  }
-
-  /**
    * Reads a <code>TimeUnit</code> from a <code>DataInput</code>.
    *
    * @throws IOException
@@ -2419,6 +2408,15 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
             //               }
           };
       }
+      boolean wasDoNotCopy = false;
+      if (out instanceof HeapDataOutputStream) {
+        // To fix bug 52197 disable doNotCopy mode
+        // while serialize with an ObjectOutputStream.
+        // The problem is that ObjectOutputStream keeps
+        // an internal byte array that it reuses while serializing.
+        wasDoNotCopy = ((HeapDataOutputStream) out).setDoNotCopy(false);
+      }
+      try {
       ObjectOutput oos = new ObjectOutputStream(stream);
       if ( stream instanceof VersionedDataStream ) {
         Version v = ((VersionedDataStream)stream).getVersion();
@@ -2430,6 +2428,11 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       // To fix bug 35568 just call flush. We can't call close because
       // it calls close on the wrapped OutputStream.
       oos.flush();
+      } finally {
+        if (wasDoNotCopy) {
+          ((HeapDataOutputStream) out).setDoNotCopy(true);
+        }
+      }
     }
   }
   
@@ -2583,7 +2586,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     } catch (CacheClosedException cce) {
       throw cce;
     } catch (Exception ex) {
-      logger.fatal("exception in deserialization", ex);
       SerializationException ex2 = new SerializationException(LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0.toLocalizedString(ds.getClass().getName()), ex);
       throw ex2;
     }
@@ -3860,27 +3862,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     // subclasses need to implement toData
   }
   
-  /**
-   * Interface to implement if your class supports sending itself directly to a DataOutput
-   * during serialization.
-   * Note that you are responsable for sending all the bytes that represent your instance,
-   * even bytes describing your class name if those are required.
-   * 
-   * @author darrel
-   * @since 6.6
-   */
-  public static interface Sendable {
-    /**
-     * Take all the bytes in the object and write them to the data output. It needs
-     * to be written in the GemFire wire format so that it will deserialize correctly.
-     * 
-     * @param out
-     *          the data output to send this object to
-     * @throws IOException
-     */
-    void sendTo(DataOutput out) throws IOException;
-  }
-
   public static void writeObjectArray(Object[] array, DataOutput out, boolean ensureCompatibility)
     throws IOException {
     InternalDataSerializer.checkOut(out);

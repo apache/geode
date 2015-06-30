@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+    "http://www.gemstone.com/dtd/cache6_6.dtd">
+      
+<cache>
+
+  <!-- This is the definition of the default session region -->
+  <region name="{{region_name}}">
+    <region-attributes id="sessionAttr" scope="distributed-ack" enable-gateway="false" data-policy="replicate">
+    <!--
+    <region-attributes id="sessionAttr" scope="distributed-ack" enable-gateway="false" data-policy="replicate" statistics-enabled="true">
+      <entry-idle-time>
+        <expiration-attributes timeout="0" action="invalidate">
+          <custom-expiry>
+            <class-name>com.gemstone.gemfire.modules.util.SessionCustomExpiry</class-name>
+          </custom-expiry>
+        </expiration-attributes>
+      </entry-idle-time>
+    -->
+    </region-attributes>
+  </region>
+
+
+  <initializer><class-name>com.vmware.gemfire.rest.JsonFunction</class-name></initializer>
+</cache>
+

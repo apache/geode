@@ -136,6 +136,8 @@ public final class MemLRUCapacityController extends LRUAlgorithm
   private ObjectSizer sizer;
 
   private int perEntryOverHead = OVERHEAD_PER_ENTRY;
+  
+  private final boolean isOffHeap;
 
   ///////////////////////  Constructors  ///////////////////////
 
@@ -195,7 +197,7 @@ public final class MemLRUCapacityController extends LRUAlgorithm
    *                compute object sizes for MemLRU
    */
   public MemLRUCapacityController( int megabytes , ObjectSizer sizerImpl,Region region)  {
-    this( megabytes, sizerImpl, EvictionAction.DEFAULT_EVICTION_ACTION ,region);
+    this( megabytes, sizerImpl, EvictionAction.DEFAULT_EVICTION_ACTION ,region, false);
   }
 
   /**
@@ -218,10 +220,12 @@ public final class MemLRUCapacityController extends LRUAlgorithm
    * @param sizerImpl
    *                classname of a class that implements ObjectSizer, used to
    *                compute object sizes for MemLRU
+   * @param isOffHeap true if the region that owns this cc is stored off heap
    */
   public MemLRUCapacityController( int megabytes , ObjectSizer sizerImpl,
-                                   EvictionAction evictionAction,Region region )  {
+                                   EvictionAction evictionAction,Region region, boolean isOffHeap)  {
     super(evictionAction,region);
+    this.isOffHeap = isOffHeap;
     setMaximumMegabytes(megabytes);
     setSizer(sizerImpl);
   }
@@ -394,10 +398,14 @@ public final class MemLRUCapacityController extends LRUAlgorithm
           return 0;
         }
         
-        int size = MemLRUCapacityController.this.getPerEntryOverhead();
-        int keySize = sizeof(key);
+        int size = 0;
+        int keySize = 0;
+        if (!MemLRUCapacityController.this.isOffHeap) {
+          size += MemLRUCapacityController.this.getPerEntryOverhead();
+          keySize = sizeof(key);
+        }
         int valueSize = sizeof(value);
-//         com.gemstone.gemfire.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG MemLRUCC: overhead=" + size
+//         com.gemstone.gemfire.internal.cache.GemFireCacheImpl.getInstance().getLogger().info("DEBUG MemLRUCC: overhead=" + size
 //                                                     + " keySize=" + keySize
 //                                                     + " valueSize=" + valueSize);
         size += keySize;

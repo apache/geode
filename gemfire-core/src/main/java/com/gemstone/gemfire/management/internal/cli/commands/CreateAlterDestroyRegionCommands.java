@@ -127,17 +127,63 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                   unspecifiedDefaultValue = "true",
                   specifiedDefaultValue = "true",
                   help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP)
-      boolean skipIfExists, 
-      @CliOption (key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
-                  help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP)
-      String keyConstraint,
-      @CliOption (key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
-                  help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP)
-      String valueConstraint,
+      boolean skipIfExists,
+      
+      // the following should all be in alphabetical order
+      @CliOption (key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
+                  help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP)
+      @CliMetaData (valueSeparator = ",") 
+      String[] asyncEventQueueIds,
+      @CliOption (key = CliStrings.CREATE_REGION__CACHELISTENER,
+                  help = CliStrings.CREATE_REGION__CACHELISTENER__HELP)
+      @CliMetaData (valueSeparator = ",") 
+      String[] cacheListener,
+      @CliOption (key = CliStrings.CREATE_REGION__CACHELOADER,
+                  help = CliStrings.CREATE_REGION__CACHELOADER__HELP)
+      String cacheLoader,
+      @CliOption (key = CliStrings.CREATE_REGION__CACHEWRITER,
+                  help = CliStrings.CREATE_REGION__CACHEWRITER__HELP)
+      String cacheWriter,
+      @CliOption (key = CliStrings.CREATE_REGION__COLOCATEDWITH,
+                  optionContext = ConverterHint.REGIONPATH,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP)
+      String prColocatedWith,
+      @CliOption (key = CliStrings.CREATE_REGION__COMPRESSOR,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__COMPRESSOR__HELP)
+      String compressor,
+      @CliOption (key = CliStrings.CREATE_REGION__CONCURRENCYLEVEL,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__CONCURRENCYLEVEL__HELP)
+      Integer concurrencyLevel,
+      @CliOption (key = CliStrings.CREATE_REGION__DISKSTORE,
+                  help = CliStrings.CREATE_REGION__DISKSTORE__HELP)
+      String diskStore,
+      @CliOption (key = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION__HELP)
+      Boolean enableAsyncConflation,
+      @CliOption (key = CliStrings.CREATE_REGION__CLONINGENABLED,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__CLONINGENABLED__HELP)
+      Boolean cloningEnabled,
+      @CliOption (key = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP)
+      Boolean concurrencyChecksEnabled,
       @CliOption (key = CliStrings.CREATE_REGION__STATISTICSENABLED,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                   help = CliStrings.CREATE_REGION__STATISTICSENABLED__HELP)
       Boolean statisticsEnabled,
+      @CliOption (key = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION__HELP)
+      Boolean enableSubscriptionConflation,
+      @CliOption (key = CliStrings.CREATE_REGION__DISKSYNCHRONOUS,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__DISKSYNCHRONOUS__HELP)
+      Boolean diskSynchronous,
       @CliOption (key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                   help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME__HELP)
@@ -152,6 +198,30 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       @CliOption (key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
                   help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP)
       String entryExpirationTTLAction,
+      @CliOption (key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
+                  help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP)
+      @CliMetaData (valueSeparator = ",") 
+      String[] gatewaySenderIds,
+      @CliOption (key = CliStrings.CREATE_REGION__HDFSSTORE_NAME,
+                  help = CliStrings.CREATE_REGION__HDFSSTORE_NAME__HELP ,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE)
+      String hdfsStoreName,
+      @CliOption (key = CliStrings.CREATE_REGION__HDFSSTORE_WRITEONLY,      
+                  help = CliStrings.CREATE_REGION__HDFSSTORE_WRITEONLY__HELP,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE)
+      Boolean hdfsWriteOnly,      
+      @CliOption (key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
+                  help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP)
+      String keyConstraint,
+      @CliOption (key = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP)
+      Integer prLocalMaxMemory, 
+      @CliOption (key = CliStrings.CREATE_REGION__OFF_HEAP,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  specifiedDefaultValue = "true",
+                  help = CliStrings.CREATE_REGION__OFF_HEAP__HELP)
+      Boolean offHeap,
       @CliOption (key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                   help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP)
@@ -166,60 +236,6 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       @CliOption (key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
                   help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP)
       String regionExpirationTTLAction,      
-      @CliOption (key = CliStrings.CREATE_REGION__DISKSTORE,
-                  help = CliStrings.CREATE_REGION__DISKSTORE__HELP)
-      String diskStore,
-      @CliOption (key = CliStrings.CREATE_REGION__DISKSYNCHRONOUS,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__DISKSYNCHRONOUS__HELP)
-      Boolean diskSynchronous,
-      @CliOption (key = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION__HELP)
-      Boolean enableAsyncConflation,
-      @CliOption (key = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION__HELP)
-      Boolean enableSubscriptionConflation,
-      @CliOption (key = CliStrings.CREATE_REGION__CACHELISTENER,
-                  help = CliStrings.CREATE_REGION__CACHELISTENER__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] cacheListener,
-      @CliOption (key = CliStrings.CREATE_REGION__CACHELOADER,
-                  help = CliStrings.CREATE_REGION__CACHELOADER__HELP)
-      String cacheLoader,
-      @CliOption (key = CliStrings.CREATE_REGION__CACHEWRITER,
-                  help = CliStrings.CREATE_REGION__CACHEWRITER__HELP)
-      String cacheWriter,
-      @CliOption (key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
-                  help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] asyncEventQueueIds,
-      @CliOption (key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
-                  help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] gatewaySenderIds,
-      @CliOption (key = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP)
-      Boolean concurrencyChecksEnabled,
-      @CliOption (key = CliStrings.CREATE_REGION__CLONINGENABLED,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__CLONINGENABLED__HELP)
-      Boolean cloningEnabled,
-      @CliOption (key = CliStrings.CREATE_REGION__CONCURRENCYLEVEL,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__CONCURRENCYLEVEL__HELP)
-      Integer concurrencyLevel,
-      @CliOption (key = CliStrings.CREATE_REGION__COLOCATEDWITH,
-                  optionContext = ConverterHint.REGIONPATH,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP)
-      String prColocatedWith,
-      @CliOption (key = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP)
-      Integer prLocalMaxMemory, 
       @CliOption (key = CliStrings.CREATE_REGION__RECOVERYDELAY,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                   help = CliStrings.CREATE_REGION__RECOVERYDELAY__HELP)
@@ -240,10 +256,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                   help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP)
       Integer prTotalNumBuckets,      
-      @CliOption (key = CliStrings.CREATE_REGION__COMPRESSOR,
-      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-      help = CliStrings.CREATE_REGION__COMPRESSOR__HELP)
-      String compressor
+      @CliOption (key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
+                  help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP)
+      String valueConstraint
+      // NOTICE: keep the region attributes params in alphabetical order
 ) {
     Result result = null;
     XmlEntity xmlEntity = null;
@@ -256,7 +272,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       } else if (regionShortcut == null && useAttributesFrom == null) {
         throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_IS_REQUIRED);
       }
-
+      
       validateRegionPathAndParent(cache, regionPath);
       validateGroups(cache, groups);
 
@@ -282,9 +298,12 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         if (!regionExists(cache, useAttributesFrom)) {
           throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND, new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
         }
+        
+        
         FetchRegionAttributesFunctionResult<Object, Object> regionAttributesResult = getRegionAttributes(cache, useAttributesFrom);
         RegionAttributes<?, ?> regionAttributes = regionAttributesResult.getRegionAttributes();
-
+           
+        
         // give preference to user specified plugins than the ones retrieved from other region
         String[] cacheListenerClasses = cacheListener != null && cacheListener.length != 0 ? cacheListener : regionAttributesResult.getCacheListenerClasses();
         String cacheLoaderClass = cacheLoader != null ? cacheLoader : regionAttributesResult.getCacheLoaderClass();
@@ -300,7 +319,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
             prRedundantCopies, prStartupRecoveryDelay,
             prTotalMaxMemory, prTotalNumBuckets,
-            regionAttributes);
+            offHeap, hdfsStoreName , hdfsWriteOnly,  regionAttributes);
+        
 
         if (regionAttributes.getPartitionAttributes() == null && regionFunctionArgs.hasPartitionAttributes()) {
           throw new IllegalArgumentException(
@@ -319,7 +339,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
           prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
           prRedundantCopies, prStartupRecoveryDelay,
-          prTotalMaxMemory, prTotalNumBuckets, null,compressor);
+          prTotalMaxMemory, prTotalNumBuckets, null,compressor, offHeap , hdfsStoreName , hdfsWriteOnly);
         
         if (!regionShortcut.name().startsWith("PARTITION") && regionFunctionArgs.hasPartitionAttributes()) {
           throw new IllegalArgumentException(
@@ -563,7 +583,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       RegionFunctionArgs regionFunctionArgs = null;
       regionFunctionArgs = new RegionFunctionArgs(regionPath, null, null, false, null, null, null, entryIdle, entryTTL,
         regionIdle, regionTTL, null, null, null, null, cacheListeners, cacheLoader, cacheWriter, asyncEventQueueIds,
-        gatewaySenderIds, null, cloningEnabled, null, null, null, null, null, null, null, null, evictionMax, null);
+        gatewaySenderIds, null, cloningEnabled, null, null, null, null, null, null, null, null, evictionMax, null, null);
 
       Set<String> cacheListenersSet = regionFunctionArgs.getCacheListeners();
       if (cacheListenersSet != null && !cacheListenersSet.isEmpty()) {
@@ -903,6 +923,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         DistributedMember distributedMember = regionAssociatedMembers.iterator().next();
         ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(FetchRegionAttributesFunction.INSTANCE, regionPath, distributedMember);
         List<?> resultsList = (List<?>) resultCollector.getResult();
+        
         if (resultsList != null && !resultsList.isEmpty()) {
           for (int i = 0; i < resultsList.size(); i++) {
             Object object = resultsList.get(i);

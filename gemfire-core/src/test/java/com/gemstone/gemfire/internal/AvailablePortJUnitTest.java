@@ -12,7 +12,7 @@ import static org.junit.Assume.*;
 
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -20,7 +20,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -28,7 +27,6 @@ import org.junit.experimental.categories.Category;
  * @author dsmith
  * @author klund
  */
-@Ignore
 @Category(UnitTest.class)
 public class AvailablePortJUnitTest {
   

@@ -325,4 +325,9 @@ public class QueryObserverAdapter implements QueryObserver {
   public void limitAppliedAtIndexLevel(Index index, int limit , Collection indexResult){
     
   }
+
+  @Override
+  public void orderByColumnsEqual() {
+    
+  }
 }

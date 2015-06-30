@@ -1,0 +1,61 @@
+#!/bin/bash
+databrowser=`dirname $0`
+OLD=${PWD}
+cd ${databrowser}
+databrowser=`dirname ${PWD}`
+cd ${databrowser}
+databrowser=${PWD}
+cd ${OLD}
+
+if [ "x${WINDIR}" != "x" ]; then
+  echo "ERROR: The variable WINDIR is set, indicating this script is running in a Windows OS, please use the .bat file version instead."
+  exit 1
+fi
+
+if [ "x${GEMFIRE}" = "x" ]; then
+  echo "ERROR: GEMFIRE environment variable is not set."
+  exit 1
+fi
+if [ ! -f ${GEMFIRE}/lib/gemfire.jar ]; then
+  echo "ERROR: Could not locate gemfire.jar, expected it at \$GEMFIRE/lib/gemfire.jar"
+  exit 1
+fi
+
+MX4J_JARS=${GEMFIRE}/lib/commons-logging.jar:${GEMFIRE}/lib/commons-modeler-2.0.jar:${GEMFIRE}/lib/mx4j.jar:${GEMFIRE}/lib/mx4j-remote.jar:${GEMFIRE}/lib/mx4j-tools.jar
+TOOL_JARS=${GEMFIRE}/lib/gemfire.jar:${GEMFIRE}/lib/antlr.jar:${MX4J_JARS}:${databrowser}/lib/__UNIX_JARS__:${databrowser}/lib/__JAR_NAME__
+if [ "x${CLASSPATH}" != "x" ]; then
+  TOOL_JARS=${TOOL_JARS}:${CLASSPATH}
+fi
+
+# Detect OS & JVM Data/Architecture Model
+UNAME=`uname`
+GF_JAVA_ARCH=`${GF_JAVA:-java} -classpath ${TOOL_JARS} -Duser.language=us __JVMARCH_CLASS__`
+if [ "x${UNAME}" = "xLinux" ]; then
+  if [ "y${GF_JAVA_ARCH}" = "yx86_64" ]; then
+    TOOL_JARS=${TOOL_JARS}:${databrowser}/lib/__SWT_x86_64.linux__
+  else 
+    TOOL_JARS=${TOOL_JARS}:${databrowser}/lib/__SWT_x86.linux__
+  fi
+fi
+
+# "mkdir -p" the temp directory that will be used by SWT for native libraries
+TEMP_DIR=${PWD}/temp
+TEMP_DIR_ARCH=$TEMP_DIR/$UNAME-$GF_JAVA_ARCH
+mkdir -p ${TEMP_DIR_ARCH} 2>/dev/null
+if [ ! -d ${TEMP_DIR_ARCH} ]; then   
+  echo "ERROR: Could not find/create the required temporary directory ${TEMP_DIR_ARCH}. Please check for write permissions in ${PWD}."
+  exit 1
+fi
+${GF_JAVA:-java} ${JAVA_ARGS} -classpath ${TOOL_JARS} -Duser.language=us -Djava.io.tmpdir=${TEMP_DIR_ARCH} __MAIN_CLASS__ $@
+
+if [ $? -ne 0 ]; then
+  echo "ERROR: trouble starting DataBrowser."
+  echo "This is likely a swt graphics library issue while loading the gtk libraries "
+  echo "or you forgot to set your DISPLAY environment variable."
+  exit 1
+fi
+
+# Try deleting parent temp directory without -f so that libraries remain for other instances
+# Not checking the exit status after 'rm' as 'rm' could fail if the files are in use by other instance running from the same directory
+rm -r --interactive=never ${TEMP_DIR} 2>/dev/null
+

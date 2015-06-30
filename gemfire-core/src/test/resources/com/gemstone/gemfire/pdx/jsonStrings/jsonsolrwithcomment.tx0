@@ -1,0 +1,29 @@
+
+{ 
+"add": {
+  "doc": {
+    "id": "DOC1",
+    "my_boosted_field": {        /* use a map with boost/value for a boosted field */
+      "boost": 2.3,
+      "value": "test"
+    },
+    "my_multivalued_field": [ "aaa", "bbb" ]   /* use an array for a multi-valued field */
+  }
+},
+"add": {
+  "commitWithin": 5000,          /* commit this document within 5 seconds */
+  "overwrite": false,            /* don't check for existing documents with the same uniqueKey */
+  "boost": 3.45,                 /* a document boost */
+  "doc": {
+    "f1": "v1",
+    "f1": "v2"
+  }
+},
+
+"commit": {},
+"optimize": { "waitFlush":false, "waitSearcher":false },
+
+"delete": { "id":"ID" },                               /* delete by ID */
+"delete": { "query":"QUERY" }                          /* delete by query */
+"delete": { "query":"QUERY", 'commitWithin':'500' }    /* delete by query, commit within 500ms */
+}

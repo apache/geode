@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+
+    <add:Manager className="com.gemstone.gemfire.modules.session.catalina.Tomcat6DeltaSessionManager"
+      enableDebugListener="${enable.debug.listener:false}"
+      enableGatewayReplication="${enable.gateway.replication:false}"
+      enableLocalCache="${enable.local.cache:true}"
+      enableCommitValve="${enable.commit.valve:true}"
+      preferDeserializedForm="${prefer.deserialized.form:true}"
+      regionAttributesId="${region.attributes.id:PARTITION_REDUNDANT}"
+      regionName="${region.name:gemfire_modules_sessions}"/>
+
+</Context>

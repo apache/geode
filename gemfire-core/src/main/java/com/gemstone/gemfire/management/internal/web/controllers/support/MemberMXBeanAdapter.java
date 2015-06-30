@@ -75,7 +75,7 @@ public class MemberMXBeanAdapter implements MemberMXBean {
   public String[] listDiskStores(final boolean includeRegionOwned) {
     throw new UnsupportedOperationException("Not Implemented!");
   }
-
+  
   @Override
   public GemFireProperties listGemFireProperties() {
     throw new UnsupportedOperationException("Not Implemented!");
@@ -234,6 +234,11 @@ public class MemberMXBeanAdapter implements MemberMXBean {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
+  public String[] getHDFSStores() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }  
+  
   @Override
   public String[] getRootRegionNames() {
     throw new UnsupportedOperationException("Not Implemented!");
@@ -564,21 +569,6 @@ public class MemberMXBeanAdapter implements MemberMXBean {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
-  @Override
-  public long getMaxMemory() {
-    throw new UnsupportedOperationException("Not Implemented!");
-  }
-  
-  @Override
-  public long getFreeMemory() {
-    throw new UnsupportedOperationException("Not Implemented!");
-  }
-  
-  @Override
-  public long getUsedMemory() {
-    throw new UnsupportedOperationException("Not Implemented!");
-  }
-  
   @Override 
     public int getHostCpuUsage() { 
        throw new UnsupportedOperationException("Not Implemented!"); 
@@ -611,6 +601,51 @@ public class MemberMXBeanAdapter implements MemberMXBean {
 
   @Override
   public int getVisibleNodes() {
-    throw new UnsupportedOperationException("Not Implemented!"); 
-  }   
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public int getOffHeapObjects() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapMaxMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapFreeMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapUsedMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public int getOffHeapFragmentation() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+
+  @Override
+  public long getOffHeapCompactionTime() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }    
+
+  @Override
+  public long getMaxMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+  
+  @Override
+  public long getFreeMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
+  
+  @Override
+  public long getUsedMemory() {
+    throw new UnsupportedOperationException("Not Implemented!");
+  }
 }

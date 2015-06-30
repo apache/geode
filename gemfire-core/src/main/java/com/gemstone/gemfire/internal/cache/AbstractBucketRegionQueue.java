@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
@@ -24,7 +25,11 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
+import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
+import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
@@ -33,9 +38,10 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewa
 import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
   
   /**
     * The maximum size of this single queue before we start blocking puts
@@ -244,8 +250,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             + key, rde);
       }
     } finally {
-      //merge42180: are we considering offheap in cedar. Comment freeOffHeapReference intentionally
-      //event.freeOffHeapReferences();
+      event.release();
     }
 
     this.notifyEntriesRemoved();
@@ -301,16 +306,16 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
                 logger.debug("For bucket {} , enqueing event {} caused exception", getId(), event, e);
               }
             } finally {
-              /*if (event != null) {
-                event.release();  // merge44873: this is offheap related change from cheetah
-              }*/
+              if (event != null) {
+                event.release();
+              }
             }
           }
           } finally {
             if (!tempQueue.isEmpty()) {
-              /*for (GatewaySenderEventImpl e: tempQueue) {
-                e.release(); // merge44873: this is offheap related change from cheetah
-              }*/
+              for (GatewaySenderEventImpl e: tempQueue) {
+                e.release();
+              }
               tempQueue.clear();
             }
             getInitializationLock().writeLock().unlock();
@@ -364,7 +369,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       //if (ov instanceof GatewaySenderEventImpl) {
       //  ((GatewaySenderEventImpl)ov).release();
       //}
-     
+       GatewaySenderEventImpl.release(event.getRawOldValue());
     }
     return success;
     
@@ -378,6 +383,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     //if (rov instanceof GatewaySenderEventImpl) {
     //  ((GatewaySenderEventImpl) rov).release();
     //}
+	GatewaySenderEventImpl.release(event.getRawOldValue());
   }
 
 
@@ -429,21 +435,31 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     // is never stored offheap so this EntryEventImpl values will never be off-heap.
     // So the value that ends up being stored in this region is a GatewaySenderEventImpl
     // which may have a reference to a value stored off-heap.
-    EntryEventImpl event = new EntryEventImpl(this, Operation.UPDATE, key,
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
         value, null, false, getMyId());
     // here avoiding unnecessary validations of key, value. Readniness check
     // will be handled in virtualPut. avoiding extractDelta as this will be new
     // entry everytime
     // EntryEventImpl event = getPartitionedRegion().newUpdateEntryEvent(key,
     // value, null);
-    //event.copyOffHeapToHeap();
+    event.copyOffHeapToHeap();
 
     if (logger.isDebugEnabled()) {
       logger.debug("Value : {}", event.getRawNewValue());
     }
     waitIfQueueFull();
-
+    
+    int sizeOfHdfsEvent = -1;
     try {
+      if (this instanceof HDFSBucketRegionQueue) {
+        // need to fetch the size before event is inserted in queue.
+        // fix for #50016
+        if (this.getBucketAdvisor().isPrimary()) {
+          HDFSGatewayEventImpl hdfsEvent = (HDFSGatewayEventImpl)event.getValue();
+          sizeOfHdfsEvent = hdfsEvent.getSizeOnHDFSInBytes(!((HDFSBucketRegionQueue)this).isBucketSorted);
+        }
+      }
+      
       didPut = virtualPut(event, false, false, null, false, startPut, true);
       
       checkReadiness();
@@ -454,10 +470,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
         throw new ForceReattemptException("Bucket moved", rde);
       }
     } finally {
-      //if (!didPut) {
-      //  GatewaySenderEventImpl gwVal = (GatewaySenderEventImpl) value;
-      //  gwVal.release();
-      //}
+      if (!didPut) {
+        GatewaySenderEventImpl.release(value);
+      }
     }
     
     //check again if the key exists in failedBatchRemovalMessageKeys, 
@@ -467,38 +482,38 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       destroyKey(key);
       didPut = false;
     } else {
-      addToEventQueue(key, didPut, event);
+      addToEventQueue(key, didPut, event, sizeOfHdfsEvent);
     }
     return didPut;
   }
+  @Override
+  public void closeEntries() {
+    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+      @Override
+      public void run() {
+        AbstractBucketRegionQueue.super.closeEntries();
+      }
+    });
+    clearQueues();
+    
+  }
   
-//  @Override
-//  public void closeEntries() {
-//    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
-//      @Override
-//      public void run() {
-//        AbstractBucketRegionQueue.super.closeEntries();
-//      }
-//    });
-//    clearQueues();
-//    
-//  }
-//  
-//  @Override
-//  public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
-//    final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-//    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
-//      @Override
-//      public void run() {
-//        result.set(AbstractBucketRegionQueue.super.clearEntries(rvv));
-//      }
-//    });
-//    clearQueues();
-//    return result.get();
-//  }
+  @Override
+  public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
+    final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
+    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+      @Override
+      public void run() {
+        result.set(AbstractBucketRegionQueue.super.clearEntries(rvv));
+      }
+    });
+    clearQueues();
+    return result.get();
+  }
   
   protected abstract void clearQueues();
-  protected abstract void addToEventQueue(Object key, boolean didPut, EntryEventImpl event);
+  protected abstract void addToEventQueue(Object key, boolean didPut, EntryEventImpl event, 
+      int sizeOfHdfsEvent);
   
   @Override
   public void afterAcquiringPrimaryState() {

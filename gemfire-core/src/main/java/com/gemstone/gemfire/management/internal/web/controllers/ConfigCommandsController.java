@@ -202,10 +202,4 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
     };
   }
 
-  @RequestMapping(method = RequestMethod.GET, value = "/services/cluster-config")
-  @ResponseBody
-  public String statusClusterConfig() {
-    return processCommand(CliStrings.STATUS_SHARED_CONFIG);
-  }
-
 }

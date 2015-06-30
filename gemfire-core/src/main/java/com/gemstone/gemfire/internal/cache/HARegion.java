@@ -221,8 +221,9 @@ public final class HARegion extends DistributedRegion
       throws TimeoutException, CacheWriterException {
     checkReadiness();
 
-    EntryEventImpl event = new EntryEventImpl(this, Operation.UPDATE, key,
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
         value, aCallbackArgument, false, getMyId());
+    try {
 
     Object oldValue = null;
 
@@ -234,6 +235,9 @@ public final class HARegion extends DistributedRegion
       oldValue = event.getOldValue();
     }
     return handleNotAvailable(oldValue);
+    } finally {
+      event.release();
+    }
   }
 
   /**
@@ -360,13 +364,13 @@ public final class HARegion extends DistributedRegion
   
   /**
    * @return the deserialized value
-   * @see DistributedRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
+   * @see DistributedRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean, boolean)
    *      
    */
   @Override
   protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
       TXStateInterface txState, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead,
-      boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones)
+      boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
     throws CacheLoaderException, TimeoutException  {
 
     Object value = null;
@@ -397,10 +401,14 @@ public final class HARegion extends DistributedRegion
             op = Operation.LOCAL_LOAD_UPDATE;
           }
 
-          EntryEventImpl event = new EntryEventImpl(
+          EntryEventImpl event = EntryEventImpl.create(
               this, op, key, value,
               aCallbackArgument, false, getMyId(), generateCallbacks);
+          try {
           re = basicPutEntry(event, 0L);
+          } finally {
+            event.release();
+          }
           if (txState == null) {
           }
         }

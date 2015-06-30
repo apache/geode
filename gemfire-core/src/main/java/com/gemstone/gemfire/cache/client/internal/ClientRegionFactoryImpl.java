@@ -54,7 +54,7 @@ public class ClientRegionFactoryImpl<K,V> implements ClientRegionFactory<K,V>
     RegionAttributes ra = cache.getRegionAttributes(pra.toString());
     if (ra == null) {
       throw new IllegalStateException("The region shortcut " + pra
-                                      + " has been removed.");
+                                      + " has been removed from " + cache.listRegionAttributes());
     }
     this.attrsFactory = new AttributesFactory<K,V>(ra);
     initAttributeFactoryDefaults();

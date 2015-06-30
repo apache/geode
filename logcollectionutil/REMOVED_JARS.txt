@@ -1,0 +1,11 @@
+The following jars were removed from this source code. These should be
+downloaded from maven central as part of the build.
+
+sendlogs-java/lib/commons-compress-1.6.jar
+sendlogs-java/lib/commons-io-2.4.jar
+sendlogs-java/lib/commons-net-3.3.jar
+sendlogs-java/lib/ganymed-ssh2-261.jar
+sendlogs-java/lib/hamcrest-core-1.3.jar
+sendlogs-java/lib/jopt-simple-4.6.jar
+sendlogs-java/lib/junit-4.11.jar
+sendlogs-java/lib/log4j-1.2.17.jar

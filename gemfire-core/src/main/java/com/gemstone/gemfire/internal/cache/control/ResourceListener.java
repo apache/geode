@@ -14,7 +14,7 @@ package com.gemstone.gemfire.internal.cache.control;
  * 
  * @since 6.0
  */
-public interface ResourceListener<T> {
+public interface ResourceListener<T extends ResourceEvent> {
   /**
   * Invoked when a {@link ResourceEvent resource event} occurs.
   * Implementation of this method should be light weight.

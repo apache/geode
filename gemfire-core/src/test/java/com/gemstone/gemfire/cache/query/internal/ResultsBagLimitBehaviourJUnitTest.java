@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 // TODO:Asif: Test for null behaviour in various functions
 
@@ -86,9 +86,9 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.add(wrap("two", bag.getCollectionType().getElementType()));
     bag.add(wrap("three", bag.getCollectionType().getElementType()));
     bag.add(wrap("three", bag.getCollectionType().getElementType()));
-    assertTrue(bag.iterator() instanceof ResultsBag.ResultsBagIterator);
+    assertTrue(bag.iterator() instanceof Bag.BagIterator);
     bag.applyLimit(6);
-    assertTrue(bag.iterator() instanceof ResultsBag.ResultsBagIterator);
+    assertTrue(bag.iterator() instanceof Bag.BagIterator);
     bag = getBagObject(String.class);
     bag.add(wrap("one", bag.getCollectionType().getElementType()));
     bag.add(wrap("two", bag.getCollectionType().getElementType()));
@@ -102,7 +102,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.add(wrap("four", bag.getCollectionType().getElementType()));
     bag.applyLimit(6);
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
   }
 
@@ -344,7 +344,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.applyLimit(8);
     Iterator itr = bag.iterator();
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
     List asList = bag.asList();
 
@@ -380,7 +380,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     bag.applyLimit(8);
     Iterator itr = bag.iterator();
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
     List asList = bag.asList();
 
@@ -403,7 +403,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     i = 0;
     itr = bag.iterator();
     if (!(bag instanceof StructBag)) {
-      assertTrue(bag.iterator() instanceof ResultsBag.LimitResultsBagIterator);
+      assertTrue(bag.iterator() instanceof Bag.LimitBagIterator);
     }
     while (itr.hasNext()) {
       assertEquals(asList.get(i + 5), itr.next());

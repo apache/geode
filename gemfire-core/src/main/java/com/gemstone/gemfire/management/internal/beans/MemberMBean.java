@@ -14,7 +14,6 @@ import java.util.Map;
 import javax.management.NotificationBroadcasterSupport;
 
 import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.management.DiskBackupResult;
 import com.gemstone.gemfire.management.GemFireProperties;
 import com.gemstone.gemfire.management.JVMMetrics;
 import com.gemstone.gemfire.management.MemberMXBean;
@@ -449,6 +448,11 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   }
 
   @Override
+  public String[] getHDFSStores() {
+    return bridge.getHDFSStores();
+  }
+  
+  @Override
   public long getGetsAvgLatency() {
     return bridge.getGetsAvgLatency();
   }
@@ -592,21 +596,6 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   }
 
   @Override
-  public long getMaxMemory() {
-    return bridge.getMaxMemory();
-  }
-  
-  @Override
-  public long getFreeMemory() {
-    return bridge.getFreeMemory();
-  }
-  
-  @Override
-  public long getUsedMemory() {
-    return bridge.getUsedMemory();
-  }
-
-  @Override
   public int getHostCpuUsage() {
     return bridge.getHostCpuUsage();
   }
@@ -641,5 +630,48 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
     return bridge.getVisibleNodes();
   }    
 
+  @Override
+  public int getOffHeapObjects() {
+    return bridge.getOffHeapObjects();
+  }
+
+  @Override
+  public long getOffHeapMaxMemory() {
+    return bridge.getOffHeapMaxMemory();
+  }
+
+  @Override
+  public long getOffHeapFreeMemory() {
+    return bridge.getOffHeapFreeMemory();
+  }
+
+  @Override
+  public long getOffHeapUsedMemory() {
+    return bridge.getOffHeapUsedMemory();
+  }
+
+  @Override
+  public int getOffHeapFragmentation() {
+    return bridge.getOffHeapFragmentation();
+  }
+
+  @Override
+  public long getOffHeapCompactionTime() {
+    return bridge.getOffHeapCompactionTime();
+  }    
+
+  @Override
+  public long getMaxMemory() {
+    return bridge.getMaxMemory();
+ }
   
+  @Override
+  public long getFreeMemory() {
+    return bridge.getFreeMemory();
+  }
+  
+  @Override
+  public long getUsedMemory() {
+    return bridge.getUsedMemory();
+  }
 }

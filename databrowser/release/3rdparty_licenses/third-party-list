@@ -1,0 +1,41 @@
+----------------------------------------------------------------------------
+List of Third-Party Source Code and Jarfiles used in GemFire DataBrowser(TM)
+----------------------------------------------------------------------------
+    
+Sun Microsystems Inc.
+REQUIRED COPYRIGHT: The Java Software technologies are Copyright (C) 1994-2000 Sun Microsystems, Inc. All rights reserved
+ 
+OPEN SOURCE IN DataBrowser 
+
+1.  Eclipse v3.4.1: Selected plugins are taken from this Eclipse distribution to provide the basic Eclipse framework upon which DataBrowser is built.
+	License:  http://www.eclipse.org/org/documents/epl-v10.php
+	Distributor URL:  http://www.eclipse.org 
+	REQUIRED COPYRIGHT: (c) Copyright Eclipse Contributers and others 2000, 2006 
+
+2.  MX4J 2.0.1:  Open Source implementation of Java? Management Extensions (JMX) and of the JMX Remote API (JSR 160)  
+	License: "Apache style" license
+                 http://mx4j.sourceforge.net/docs/ch01s06.html
+	Distributor URL:  http://mx4j.sourceforge.net
+	REQUIRED COPYRIGHT: Copyright (c) 2001-2004 by the MX4J contributors.  All rights reserved. 
+
+3.  JAKARTA COMMONS MODELER PROJECT Jakarta Commons Modeler v2.0:  This is used by GemFire's JMX admin code.
+	License:  "Apache style" license
+	Distributor URL: http://www.apache.org/licenses/LICENSE-2.0
+	REQUIRED COPYRIGHT: Copyright © 2004 Commons Modeler. All rights reserved.
+
+4.  Cairo v1.0.2: This is an Eclipse 2D graphics library with support for multiple output devices containing the libpixregion, libic and slim packages each with separate copyrights.  
+	License:  GNU Lesser General Public License (LGPL) version 2.1
+	Distributor URL: http://dev.eclipse.org/viewsvn/index.cgi/org.eclipse.swt.gtk.linux.ppc/about_files/pixman-licenses.txt?revision=1.1&view=markup 
+    Package: libpixregion
+	REQUIRED COPYRIGHT: Copyright (C) 1987, 1998  The Open Group Copyright (C) 1987 by Digital Equipment Corporation, Maynard, Massachusetts. All Rights Reserved 
+    Package: libic
+	REQUIRED COPYRIGHT: Copyright (C) 2001 Keith Packard 
+    Package: slim
+	REQUIRED COPYRIGHT: Copyright (C) 2003 Richard Henderson
+
+5:  ICU4J v1.3.1: International Components for Unicode (ICU) libraries
+    License: http://source.icu-project.org/repos/icu/icu/trunk/license.html
+    Distributor URL:
+    REQUIRED COPYRIGHT: Copyright (c) 1995-2006 International Business Machines Corporation and others All rights reserved. 
+
+

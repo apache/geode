@@ -89,6 +89,7 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterProfile;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalCacheEvent;
@@ -997,14 +998,10 @@ public class CacheClientNotifier {
   /*
    * this is for server side registration of client queue
    */
-  public static void routeSingleClientMessage(ClientUpdateMessage clientMessage, ClientProxyMembershipID clientProxyMembershiptId) {
+  public static void routeSingleClientMessage(ClientUpdateMessage clientMessage, ClientProxyMembershipID clientProxyMembershipId) {
     CacheClientNotifier instance = ccnSingleton;
     if (instance != null) {
-      HAEventWrapper haEW = new HAEventWrapper(clientMessage);
-      haEW.setPutInProgress(true);
-      HashSet<ClientProxyMembershipID > singleClient = new HashSet<ClientProxyMembershipID >();
-      singleClient.add(clientProxyMembershiptId);
-      instance.singletonRouteClientMessage(clientMessage, singleClient);
+      instance.singletonRouteClientMessage(clientMessage, Collections.singleton(clientProxyMembershipId));
     }
   } 
   
@@ -1138,8 +1135,6 @@ public class CacheClientNotifier {
     }
 //    String regionName = event.getRegion().getFullPath();
     Object keyOfInterest = null;
-    Object value = null;
-    byte valueIsObject = 0x01;
     final EventID eventIdentifier;
     ClientProxyMembershipID membershipID = null;
     boolean isNetLoad = false;
@@ -1158,40 +1153,6 @@ public class CacheClientNotifier {
       keyOfInterest = entryEvent.getKey();
       eventIdentifier = entryEvent.getEventId();
       isNetLoad = entryEvent.isNetLoad();
-
-      // only need a value if notifyBySubscription is true
-      CachedDeserializable serializedNewValue = (CachedDeserializable) entryEvent.getSerializedNewValue();
-      final boolean isTraceEnabled = logger.isTraceEnabled();
-      if (serializedNewValue == null) {
-        if (entryEvent.getCachedSerializedNewValue() != null) {
-          value = entryEvent.getCachedSerializedNewValue();
-          if (isTraceEnabled) {
-            logger.trace("CacheClientNotifier: Using cached serialized new value for operation {}: byte[{}]", operation, entryEvent.getCachedSerializedNewValue().length);
-          }
-        } else {
-        Object newValue = entryEvent.getRawNewValue();
-        if (newValue instanceof byte[]) {
-          // The value is already a byte[]. Set _valueIsObject flag to 0x00
-          // (not an object)
-          value = newValue;
-          valueIsObject = 0x00;
-        }
-        else {
-          // The value is an object. Serialize it.
-          byte[] valueBytes = CacheServerHelper.serialize(newValue);
-          value = valueBytes;
-          entryEvent.setCachedSerializedNewValue(valueBytes);
-        }
-        if (isTraceEnabled)
-          logger.trace("CacheClientNotifier: Using deserialized new value for operation {}: {}", operation, newValue);
-        }
-      } else {
-        value = serializedNewValue.getSerializedValue();
-        // value is a byte[] at since getSerializedValue returns byte[]
-        if (isTraceEnabled) {
-          logger.trace("CacheClientNotifier: Using serialized new value for operation {}: {}", operation, serializedNewValue.getStringForm());
-        }
-      }
     }
     else {
       RegionEventImpl regionEvent = (RegionEventImpl)event;
@@ -1205,8 +1166,14 @@ public class CacheClientNotifier {
 
     // NOTE: If delta is non-null, value MUST be in Object form of type Delta.
     ClientUpdateMessageImpl clientUpdateMsg = new ClientUpdateMessageImpl(operation,
-        (LocalRegion)event.getRegion(), keyOfInterest, value, delta, valueIsObject,
+        (LocalRegion)event.getRegion(), keyOfInterest, null, delta, (byte) 0x01,
         callbackArgument, membershipID, eventIdentifier, versionTag);
+    
+    if (event.getOperation().isEntry()) {
+      EntryEventImpl entryEvent = (EntryEventImpl)event;
+      // only need a value if notifyBySubscription is true
+      entryEvent.exportNewValue(clientUpdateMsg);
+    }
 
     if (isNetLoad) {
       clientUpdateMsg.setIsNetLoad(isNetLoad);

@@ -38,6 +38,8 @@ import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.DataLocationException;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
@@ -112,6 +114,8 @@ public abstract class PartitionMessage extends DistributionMessage implements
   
   protected boolean sendDeltaWithFullValue = true;
 
+  /*TODO [DISTTX] Convert into flag*/
+  protected boolean isTransactionDistributed = false;
 
   public PartitionMessage() {
   }
@@ -127,6 +131,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
       processor.enableSevereAlertProcessing();
     }
     initTxMemberId();
+    setIfTransactionDistributed();
   }
 
   public PartitionMessage(Collection<InternalDistributedMember> recipients, int regionId, ReplyProcessor21 processor) {
@@ -137,12 +142,20 @@ public abstract class PartitionMessage extends DistributionMessage implements
       processor.enableSevereAlertProcessing();
     }
     initTxMemberId();
+    setIfTransactionDistributed();
   }
 
   
   public void initTxMemberId() {
     this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
     TXStateProxy txState = TXManagerImpl.getCurrentTXState();
+    if (txState != null) {
+      // [DISTTX] Lets not throw this exception for Dist Tx
+      if (canStartRemoteTransaction() && txState.isRealDealLocal() && !txState.isDistTx()) {
+        //logger.error("sending rmt txId even though tx is local! txState=" + txState, new RuntimeException("STACK"));
+        throw new IllegalStateException("Sending remote txId even though transaction is local. This should never happen: txState=" + txState);
+      }
+    }
     if(txState!=null && txState.isMemberIdForwardingRequired()) {
       this.txMemberId = txState.getOriginatingMember();
     }
@@ -157,6 +170,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
     this.notificationOnly = other.notificationOnly;
     this.txUniqId = other.getTXUniqId();
     this.txMemberId = other.getTXOriginatorClient();
+    this.isTransactionDistributed = other.isTransactionDistributed;
   }
 
   /*
@@ -488,12 +502,16 @@ public abstract class PartitionMessage extends DistributionMessage implements
    * be symmetric with {@link #toData(DataOutput)}in what it reads
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException
-  {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.flags = in.readShort();
     setBooleans(this.flags, in);
     this.regionId = in.readInt();
+    // extra field post 9.0
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
+        Version.GFE_90) >= 0) {
+      this.isTransactionDistributed = in.readBoolean();
+    }
   }
 
   /**
@@ -512,15 +530,14 @@ public abstract class PartitionMessage extends DistributionMessage implements
       this.txMemberId = (InternalDistributedMember)DataSerializer.readObject(in);
     }
   }
-
+ 
   /**
    * Send the contents of this instance to the DataOutput Required to be a
    * {@link com.gemstone.gemfire.DataSerializable}Note: must be symmetric with
    * {@link #fromData(DataInput)}in what it writes
    */
   @Override
-  public void toData(DataOutput out) throws IOException
-  {
+  public void toData(DataOutput out) throws IOException {
     super.toData(out);
     short compressedShort = 0;
     compressedShort = computeCompressedShort(compressedShort);
@@ -529,6 +546,11 @@ public abstract class PartitionMessage extends DistributionMessage implements
     if (this.txUniqId != TXManagerImpl.NOTX) out.writeInt(this.txUniqId);
     if (this.txMemberId != null) DataSerializer.writeObject(this.txMemberId, out);
     out.writeInt(this.regionId);
+    // extra field post 9.0
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
+        Version.GFE_90) >= 0) {
+      out.writeBoolean(this.isTransactionDistributed);
+    }
   }
 
   /**
@@ -648,6 +670,21 @@ public abstract class PartitionMessage extends DistributionMessage implements
   public boolean canParticipateInTransaction() {
     return true;
   }
+  
+  protected final boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
+    try {
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
+      if (pr == null) {
+        return false;
+      }
+      return pr.notifiesMultipleSerialGateways();
+    } catch (PRLocallyDestroyedException e) {
+      return false;
+    } catch (CancelException ignore) {
+      return false;
+    }
+  }
+
   /**
    * A processor on which to await a response from the {@link PartitionMessage}
    * recipient, capturing any CacheException thrown by the recipient and handle
@@ -771,6 +808,30 @@ public abstract class PartitionMessage extends DistributionMessage implements
     public void process(DistributionMessage msg) {
       this.responseReceived = true;
       super.process(msg);
+    }
+  }
+  
+  @Override
+  public boolean isTransactionDistributed() {
+    return this.isTransactionDistributed;
+  }
+  
+  /*
+   * For Distributed Tx
+   */
+  public void setTransactionDistributed(boolean isDistTx) {
+   this.isTransactionDistributed = isDistTx;
+  }
+  
+  /*
+   * For Distributed Tx
+   */
+  private void setIfTransactionDistributed() {
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if (cache != null) {
+      if (cache.getTxManager() != null) {
+        this.isTransactionDistributed = cache.getTxManager().isDistributed();
+      }
     }
   }
 }

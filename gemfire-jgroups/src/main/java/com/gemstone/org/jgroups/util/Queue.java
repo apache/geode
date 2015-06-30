@@ -259,7 +259,7 @@ public class Queue  {
     public Object remove() throws QueueClosedException
       , InterruptedException  { // GemStoneAddition
         Object retval;
-        if (Thread.interrupted()) throw new InterruptedException(); // GemStoneAddition
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException(); // GemStoneAddition
         synchronized(mutex) {
             /*wait as long as the queue is empty. return when an element is present or queue is closed*/
             while(size == 0) {

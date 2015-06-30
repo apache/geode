@@ -8,6 +8,11 @@
 
 package com.gemstone.gemfire.internal.cache;
 
+import java.util.UUID;
+
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.ConcurrentBag;
+
+
 /**
  * Implementation class of RegionEntry interface.
  * VM -> entries stored in VM memory

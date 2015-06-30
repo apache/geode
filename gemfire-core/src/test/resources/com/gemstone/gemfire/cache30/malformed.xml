@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
+    "http://www.gemstone.com/dtd/cache4_0.dtd">
+
+<!-- This file is malformed -->
+
+<cache>
+  <vm-root-region name="root">
+    <region-attributes>
+  </vm-root-region>
+</cache>

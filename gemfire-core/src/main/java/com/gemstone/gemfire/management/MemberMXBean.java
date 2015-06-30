@@ -220,6 +220,13 @@ public interface MemberMXBean {
   public String[] listDiskStores(boolean includeRegionOwned);
 
   /**
+   * 
+   * @return  list of HDFSStore's present in the Cache
+   */
+  
+  public String[] getHDFSStores();
+
+  /**
    * Returns the GemFire specific properties for this member.
    */
   public GemFireProperties listGemFireProperties();
@@ -416,7 +423,7 @@ public interface MemberMXBean {
    * Returns a list of all disk stores, including those owned by a Region.
    */
   public String[] getDiskStores();
-
+  
   /**
    * Returns a list of all root Region names.
    */
@@ -807,4 +814,34 @@ public interface MemberMXBean {
    * The current number of nodes in this distributed system visible to this member. 
    */
   public int getVisibleNodes();
+
+  /**
+   * Returns the number of off heap objects.
+   */
+  public int getOffHeapObjects();
+  
+  /**
+   * Returns the size of the maximum configured off-heap memory in bytes.
+   */
+  public long getOffHeapMaxMemory();
+  
+  /**
+   * Returns the size of available (or unallocated) off-heap memory in bytes.
+   */
+  public long getOffHeapFreeMemory();
+  
+  /**
+   * Returns the size of utilized off-heap memory in bytes.
+   */
+  public long getOffHeapUsedMemory();
+
+  /**
+   * Returns the percentage of off-heap memory fragmentation.
+   */
+  public int getOffHeapFragmentation();
+  
+  /**
+   * Returns the total time spent compacting in millseconds.
+   */
+  public long getOffHeapCompactionTime();
 }

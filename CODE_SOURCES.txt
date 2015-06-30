@@ -1,0 +1,13 @@
+This branch contains several directories with code that was pulled from other
+repositories. Below are the revisions from the other repositories. The code is
+also tagged with asf-incubation-release-5-28-2015 in each of the other
+repositories.
+
+
+pulse - 5517e639ad87000a2de1c8e1bca96c08f13c67ab
+modules - 97ab922430486346ebcdb356a81e67254ad5ae14
+logcollectionutil - a29f0103fcb33e0e9a2a5c6ace7b5f8653ba2546
+jvsd - fc9ed702ac412b13d8a0b7c367836d345604a49e
+jvsdfx-mm - 2c4642302a9c3e4e67fb655385cbc0f6209ba7e8
+gemfire-spark-connector - 48c4471c6f0c90776ed6a6d944ae693227b756d5
+databrowser - 3160 (svn revision)

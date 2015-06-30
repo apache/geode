@@ -12,6 +12,7 @@ import java.util.Date;
 
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.PdxUnreadFields;
@@ -164,7 +165,7 @@ public class PdxInstanceFactoryImpl implements
   }
 
   public PdxInstanceFactory writeRaw(PdxField field, ByteBuffer rawData) {
-    this.writer.writeRawField(field, rawData);
+    this.writer.writeRawField(field, ByteSourceFactory.create(rawData));
     return this;
   }
 

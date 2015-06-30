@@ -174,18 +174,18 @@ public final class EvictionAttributesImpl extends EvictionAttributes
    * 
    * @see EvictionAttributes
    */
-  public LRUAlgorithm createEvictionController(Region region) 
+  public LRUAlgorithm createEvictionController(Region region, boolean isOffHeap) 
   {
     if (this.algorithm == EvictionAlgorithm.LRU_ENTRY) {
       this.evictionController = new LRUCapacityController(this.maximum, this.action,region); 
     } else if (this.algorithm == EvictionAlgorithm.LRU_HEAP) {
       this.evictionController = new HeapLRUCapacityController(this.sizer,this.action,region);       
     } else if (this.algorithm == EvictionAlgorithm.LRU_MEMORY) {
-      this.evictionController = new MemLRUCapacityController(this.maximum, this.sizer, this.action,region);
+      this.evictionController = new MemLRUCapacityController(this.maximum, this.sizer, this.action,region, isOffHeap);
     } else if(this.algorithm == EvictionAlgorithm.LIFO_ENTRY){
       this.evictionController = new LRUCapacityController(this.maximum, this.action,region);
     } else if(this.algorithm == EvictionAlgorithm.LIFO_MEMORY){
-      this.evictionController = new MemLRUCapacityController(this.maximum, this.sizer, this.action,region);
+      this.evictionController = new MemLRUCapacityController(this.maximum, this.sizer, this.action,region, isOffHeap);
     }  else {
       // for all other algorithms, return null
       this.evictionController = null;

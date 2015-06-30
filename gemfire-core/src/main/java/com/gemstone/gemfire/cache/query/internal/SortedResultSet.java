@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.Version;
  * @author Yogesh Mahajan
  * @since 4.0
  */
-public final class SortedResultSet extends TreeSet implements SelectResults,
+public final class SortedResultSet extends TreeSet implements SelectResults, Ordered, 
     DataSerializableFixedID {
   private static final long serialVersionUID = 5184711453750319224L;
 
@@ -81,7 +81,7 @@ public final class SortedResultSet extends TreeSet implements SelectResults,
   }
 
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(TreeSet.class, this.elementType);
+    return new CollectionTypeImpl(SortedResultSet.class, this.elementType);
   }
 
   public boolean isModifiable() {
@@ -116,5 +116,10 @@ public final class SortedResultSet extends TreeSet implements SelectResults,
   @Override
   public Version[] getSerializationVersions() {
      return null;
+  }
+
+  @Override
+  public boolean dataPreordered() {    
+    return false;
   }
 }

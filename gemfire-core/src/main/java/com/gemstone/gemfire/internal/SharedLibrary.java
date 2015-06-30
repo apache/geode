@@ -55,7 +55,7 @@ public class SharedLibrary {
         is64Bit = false;
       } else {
         if (unsafe != null) {
-          is64Bit = (new UnsafeWrapper()).getAddressSize() == 8;
+          is64Bit = unsafe.getAddressSize() == 8;
         } else {
           is64Bit = false;
         }

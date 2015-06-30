@@ -18,7 +18,7 @@ import java.util.Map;
 
 import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
 import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;

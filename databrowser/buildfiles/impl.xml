@@ -1,0 +1,267 @@
+<project name="impl">
+  <target name="compile-src" 
+          depends="define-classpath-refids, fetch-dependencies, pack-lib">
+    <compile-java src.dir="${src.dir}"
+                  output.dir="${classes.dir}"
+                  classpath.refid="src.classpath"/>
+  </target>
+  <target name="create-version-file" depends="props">
+    <tstamp>
+       <format pattern="yyyy-MM-dd-hh-mm-ss-SSS" property="sys.build.time"/>
+       <format pattern="MM/dd/yyyy HH:mm:ss z" property="build.time"/>
+    </tstamp>
+
+    <!-- load property file to define source.date property -->
+    <property file="${last.update.file}" prefix="version."/>
+    <property file="${build.dir}/build.number" prefix="version."/>
+    <property file="${external.dir}/product/lib/GemFireVersion.properties" prefix="version."/>
+    <mkdir dir="${classes.dir}/com/gemstone/gemfire/tools/utilities"/>
+    <property name="version.resource.file" value="${classes.dir}/com/gemstone/gemfire/tools/utilities/${product.version.filename}"/>
+    <delete file="${version.resource.file}" quiet="true"/>
+    <propertyfile file="${version.resource.file}" comment="Properties that report the ${product.short.name} version. Do not modify these properties.">
+      <entry key="Product-Name" value="${product.long.name}"/>
+      <entry key="${product.short.name}-Product-Version" 
+             value="${product.version}"/>
+      <entry key="Gemfire-Jar-Version" value="${version.gemfire.jar}"/>
+      <entry key="Build-Id" value="${user.name} ${version.build.number}"/>
+      <entry key="Build-Date" value="${build.time}"/>
+      <entry key="Build-Platform" value="${gf.os}"/>
+      <entry key="Build-Java-Version" value="${javac.primary.version}"/>
+      <entry key="Source-Date" value="${version.source.date}"/>
+      <entry key="Source-Revision" value="${version.source.revision}"/>
+      <entry key="Source-Repository" value="${version.source.branch}"/>
+    </propertyfile>
+  </target>
+  <target name="define-test-groups">
+    <conditional if="dunit.testcase">
+      <property name="dunit.testlist" value="dunit-custom-tests"/>
+    </conditional>
+    <conditional unless="dunit.testcase">
+      <property name="dunit.testlist" value="dunit-default-tests"/>
+    </conditional>
+    <conditional if="junit.testcase">
+      <property name="junit.testlist" value="junit-custom-tests"/>
+    </conditional>
+    <conditional unless="junit.testcase">
+      <property name="junit.testlist" value="junit-default-tests"/>
+    </conditional>
+    <!-- custom junit -->
+    <patternset id="junit-custom-tests">
+      <include name="${junit.testcase}"/> 
+      <exclude name="${junit.excludes}" if="junit.excludes"/>
+    </patternset>
+    
+    <!-- standard junit -->
+    <patternset id="junit-default-tests">
+       <include name="**/*Test.class"/> 
+    </patternset>
+
+    <!-- custom dunit -->
+    <patternset id="dunit-custom-tests">
+      <include name="${dunit.testcase}"/> 
+      <exclude name="${dunit.excludes}" if="dunit.excludes"/>
+    </patternset>
+
+    <!-- standard dunit -->
+    <patternset id="dunit-default-tests">
+      <include name="**/*Test.class"/> 
+    </patternset>
+
+  </target>
+  <target name="define-classpath-refids" depends="props">
+    <path id="empty.classpath"/>
+    <path id="gemfire.lib.jars">
+      <pathelement location="${external.dir}/product/lib/gemfire.jar"/>
+      <pathelement location="${external.dir}/product/lib/mx4j.jar"/>
+      <pathelement location="${external.dir}/product/lib/mx4j-remote.jar"/>
+      <pathelement location="${external.dir}/product/lib/mx4j-tools.jar"/>
+      <pathelement location="${external.dir}/product/lib/antlr.jar"/>
+      <pathelement location="${external.dir}/product/lib/commons-logging.jar"/>
+      <pathelement location="${external.dir}/product/lib/commons-modeler-2.0.jar"/>   
+      <pathelement location="${external.dir}/product/lib/gfSecurityImpl.jar"/>
+      <pathelement location="${external.dir}/product/lib/log4j.jar"/>
+    </path>
+    <!-- use Linux as the base copy -->
+    <path id="eclipse.plugins.general">
+      <pathelement location="${eclipse.dir.x86.linux}/plugins/org.eclipse.swt_3.4.1.v3449c.jar"/>
+      <pathelement location="${eclipse.dir.x86.linux}/plugins/org.eclipse.jface_3.4.1.M20080827-2000.jar"/>
+      <pathelement location="${eclipse.dir.x86.linux}/plugins/org.eclipse.core.commands_3.4.0.I20080509-2000.jar"/>
+      <pathelement location="${eclipse.dir.x86.linux}/plugins/org.eclipse.core.jobs_3.4.0.v20080512.jar"/>
+      <pathelement location="${eclipse.dir.x86.linux}/plugins/org.eclipse.equinox.common_3.4.0.v20080421-2006.jar"/>
+      <pathelement location="${eclipse.dir.x86.linux}/plugins/org.eclipse.osgi_3.4.2.R34x_v20080826-1230.jar"/>
+    </path>
+    <property name="swt.x86.Windows_NT.jar" 
+              value="org.eclipse.swt.win32.win32.x86_3.4.1.v3449c.jar"/>
+    <property name="swt.x86_64.Windows_NT.jar" 
+              value="org.eclipse.swt.win32.win32.x86_64_3.4.1.v3449c.jar"/>  	
+    <property name="swt.x86.linux.jar" 
+              value="org.eclipse.swt.gtk.linux.x86_3.4.1.v3449c.jar"/>
+    <property name="swt.x86_64.linux.jar" 
+              value="org.eclipse.swt.gtk.linux.x86_64_3.4.1.v3449c.jar"/>
+    <property name="swt.x86_64.linux.jar" 
+              value="org.eclipse.swt.gtk.linux.x86_64_3.4.1.v3449c.jar"/>
+    <property name="swt.x86.macosx.jar" 
+              value="org.eclipse.swt.carbon.macosx_3.4.1.v3449c.jar"/>
+    <path id="eclipse.plugins.x86.Windows_NT">
+      <pathelement location="${eclipse.dir.x86.Windows_NT}/plugins/${swt.x86.Windows_NT.jar}"/>
+    </path>
+    <path id="eclipse.plugins.x86_64.Windows_NT">
+      <pathelement location="${eclipse.dir.x86_64.Windows_NT}/plugins/${swt.x86_64.Windows_NT.jar}"/>
+    </path>  	
+    <path id="eclipse.plugins.x86.linux">
+      <pathelement location="${eclipse.dir.x86.linux}/plugins/${swt.x86.linux.jar}"/>
+    </path>
+    <path id="eclipse.plugins.x86_64.linux">
+      <pathelement location="${eclipse.dir.x86_64.linux}/plugins/${swt.x86_64.linux.jar}"/>
+    </path>
+    <!-- ordinarily eclipse.dir.x86.macosx is not set so this is a noop.
+         It is retained to allow debugging on macbooks, not for releases.-->
+    <path id="eclipse.plugins.x86.macosx">
+      <pathelement location="${eclipse.dir.x86.macosx}/plugins/${swt.x86.macosx.jar}"/>
+    </path>
+    <path id="eclipse.plugins">
+      <path refid="eclipse.plugins.general"/>
+      <path refid="eclipse.plugins.x86.linux"/>
+      <path refid="eclipse.plugins.x86_64.linux"/>
+      <path refid="eclipse.plugins.x86.Windows_NT"/>
+      <path refid="eclipse.plugins.x86_64.Windows_NT"/>
+      <!-- Path to macosx plugin causes build failure since eclipse.dir.x86.macosx is not defined -->
+      <!--<path refid="eclipse.plugins.x86.macosx"/>-->
+    </path>
+    <path id="src.classpath">
+      <fileset dir="${product.dir}/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${external.dir}/product/lib">
+        <include name="antlr.jar"/>
+        <include name="gemfire.jar"/>
+      </fileset>
+    </path>
+    <path id="tests.classpath">
+      <path refid="src.classpath"/>
+      <pathelement location="${tests.junit.classes.dir}"/>
+      <pathelement location="${tests.dunit.classes.dir}"/>
+      <pathelement location="${tests.battery.classes.dir}"/>
+      <pathelement location="${external.dir}/classes"/>
+      <pathelement location="${external.dir}/classes/junit.jar"/>
+    </path>
+  </target>
+  <target name="create-about-file" 
+          depends="create-version-file"> 
+    <concat destfile="${classes.dir}/resources/${product.about.resource}">
+${product.long.name} version ${product.version} ${user.name} ${version.build.number}
+Built on ${build.time} with Java Version ${javac.primary.version}
+Compiled with Gemfire Version ${version.gemfire.jar}
+
+</concat>
+  </target>
+
+  <target name="jar-product" 
+          depends="compile-src, create-about-file"> 
+    <copy todir="${classes.dir}">
+      <fileset dir="${basedir}">
+        <include name="resources/**"/>
+      </fileset>
+    </copy>
+    <manifest file="${product.manifest}">
+      <attribute name="Manifest-Version" value="1.0"/>
+      <attribute name="Created-By" value="GemStone Systems, Inc."/>
+    </manifest>
+    <jar jarfile="${product.dir}/lib/${product.jar.name}"
+         manifest="${product.manifest}">
+      <fileset dir="${classes.dir}">
+        <include name="**" />
+      </fileset> 
+    </jar>
+  </target>
+  <target name="pack-core" depends="pack-bin, pack-docs">
+    <!-- Add open source license file to product-->
+      <copy todir="${product.dir}"
+        file="${basedir}/release/3rdparty_licenses/open_source_licenses-VMware_vFabric_GemFire_DataBrowser_7.0.1.txt"/>
+  </target>
+  <target name="pack-docs" depends="props">
+    <mkdir dir="${product.dir}/docs"/>
+    <copy todir="${product.dir}/docs"
+          file="${basedir}/release/docfiles/index.html"/>
+    <copy todir="${product.dir}/docs"
+          file="${basedir}/release/docfiles/VMwareLogo.png"/>
+  </target>
+  <target name="pack-lib" depends="define-classpath-refids">
+    <mkdir dir="${product.dir}/lib"/>
+    <copy todir="${product.dir}/lib">
+      <path refid="eclipse.plugins"/>
+      <mapper type="flatten"/>
+    </copy>
+  </target>
+  <target name="pack-bin" depends="props">
+    <mkdir dir="${product.dir}/bin"/>
+    <copy todir="${product.dir}/bin">
+      <fileset dir="${basedir}/release/scripts">
+        <include name="${script.name}"/>
+        <include name="${script.name}.bat"/>
+      </fileset>
+    </copy>
+    <fileset id="product.jars.refid" dir="${product.dir}/lib">
+      <include name="*.jar"/> 
+      <exclude name="${product.jar.name}"/> 
+      <exclude name="*win32*"/> 
+      <exclude name="*gtk*"/> 
+      <exclude name="*macosx*"/> 
+    </fileset>
+    <pathconvert property="script.windows.jars" 
+                 pathsep=";&#37;databrowser&#37;\lib\" dirsep="\"
+                 refid="product.jars.refid">
+      <mapper type="flatten"/>
+    </pathconvert>
+    <pathconvert property="script.unix.jars" 
+                 pathsep=":&#36;&#123;databrowser&#125;/lib/" dirsep="/"
+                 refid="product.jars.refid">
+      <mapper type="flatten"/>
+    </pathconvert>
+   
+    <!-- unix script --> 
+    <replace file="${product.dir}/bin/${script.name}" 
+             token="__MAIN_CLASS__"
+             value="${product.main-class}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}" 
+             token="__JVMARCH_CLASS__"
+             value="${product.jvmarch-class}" summary="yes"/>  	
+    <replace file="${product.dir}/bin/${script.name}" 
+             token="__JAR_NAME__"
+             value="${product.jar.name}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}" 
+             token="__UNIX_JARS__"
+             value="${script.unix.jars}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}" 
+             token="__SWT_x86.linux__"
+             value="${swt.x86.linux.jar}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}" 
+             token="__SWT_x86_64.linux__"
+             value="${swt.x86_64.linux.jar}" summary="yes"/>
+
+    <!-- windows script --> 
+    <replace file="${product.dir}/bin/${script.name}.bat" 
+             token="__MAIN_CLASS__"
+             value="${product.main-class}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}.bat" 
+                 token="__JVMARCH_CLASS__"
+                 value="${product.jvmarch-class}" summary="yes"/>  	
+    <replace file="${product.dir}/bin/${script.name}.bat" 
+             token="__JAR_NAME__"
+             value="${product.jar.name}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}.bat" 
+             token="__Windows_NT_JARS__"
+             value="${script.windows.jars}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}.bat" 
+             token="__SWT_x86.Windows_NT__"
+             value="${swt.x86.Windows_NT.jar}" summary="yes"/>
+    <replace file="${product.dir}/bin/${script.name}.bat" 
+             token="__SWT_x86_64.Windows_NT__"
+             value="${swt.x86_64.Windows_NT.jar}" summary="yes"/>  	
+    <chmod perm="a+x">
+      <fileset dir="${product.dir}/bin">
+        <include name="*"/>
+      </fileset>
+    </chmod>
+  </target>
+</project>

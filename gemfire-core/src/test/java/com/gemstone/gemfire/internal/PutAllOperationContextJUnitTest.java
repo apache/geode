@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.operations.PutAllOperationContext;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import junit.framework.TestCase;
 

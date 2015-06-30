@@ -364,9 +364,14 @@ public class CompiledJunction extends AbstractCompiledValue implements
     currentIters.toArray(rIters);
     ObjectType elementType = intermediateResults.getCollectionType()
         .getElementType();
-    SelectResults resultSet = (elementType.isStructType()) ? ((SelectResults) new StructBag(
-        (StructTypeImpl) elementType, context.getCachePerfStats()))
-        : ((SelectResults) new ResultsBag(elementType, context.getCachePerfStats()));
+    SelectResults resultSet ;
+    if(elementType.isStructType()) {
+      resultSet = QueryUtils.createStructCollection(context, (StructTypeImpl) elementType) ;
+    }else {
+      resultSet = QueryUtils.createResultCollection(context, elementType);
+    }
+        
+     
     QueryObserver observer = QueryObserverHolder.getInstance();
     try {
       observer.startIteration(intermediateResults, operand);

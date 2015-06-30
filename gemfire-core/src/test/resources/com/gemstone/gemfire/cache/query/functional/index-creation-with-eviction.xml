@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN"
+    "http://www.gemstone.com/dtd/cache6_6.dtd">
+
+<!-- Used in IndexCreationTest.testIndexCreationFromXML, this defines a persistent 
+	region with an index and and eviction -->
+<cache>
+    <!-- Define this cache server -->
+    
+    <disk-store name="fileOverflow" auto-compact="true" max-oplog-size="1" queue-size="10000" time-interval="15">
+        <disk-dirs>
+            <disk-dir dir-size="4096">persistData0</disk-dir>
+        </disk-dirs>
+    </disk-store>
+    
+    <region name="mainReportRegion">
+
+        <region-attributes data-policy="persistent-partition" statistics-enabled="true" disk-store-name="fileOverflow"
+            index-update-type="synchronous">
+
+            <partition-attributes redundant-copies="0" total-num-buckets="1" recovery-delay="30000"
+                startup-recovery-delay="3000">
+            </partition-attributes> 
+        <eviction-attributes>
+
+            <lru-heap-percentage action="overflow-to-disk"/>
+
+        </eviction-attributes>
+
+        </region-attributes>
+        
+        <index name="mainCreationDate">
+            <functional expression="mr.value.createTime" from-clause="/mainReportRegion.entrySet mr"/>
+        </index>
+
+    </region>
+
+</cache>

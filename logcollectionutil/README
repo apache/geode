@@ -1,0 +1,42 @@
+gfe-sendlogs.py
+===============
+This is the initial version of the gemfire support utility to collect customer
+log files.  This script requires an active GemFire cluster as it uses gfsh
+to collect logs, stack traces, and configuration.  This python script uses
+core python 2 libraries which should be installed by default on linux hosts.
+
+
+The current usage
+=================
+Usage: gfe-sendlogs.py -c <company> -o <output-dir> [OPTION]
+
+Required arguments
+        -c, --company=COMPANY           company name
+        -o, --output-dir=DIR            directory to stage logs
+
+Optional arguments
+        -l, --locator=LOCATOR           locator to connect to (defaults to localhost)
+        -p, --port=PORT                 locator port to connect to (defaults to 10334)
+        -t, --ticket=TICKET_NUMBER      ticket number
+        -u, --upload                    Upload zip file to pivotal FTP server for the GemFire support team.
+        -d, --do-not-remove-temp        Don't cleanup the logs stored in the temporary location.
+        -f, --ftp-server=FTPSERVER      Specify an FTP server (defaults to ftp.gemstone.com)
+        -v, --version                   Print version of this script.
+
+
+Known Limitations
+==================
+1. The FTP upload action does not support proxies.
+  - This is a limitation of the core python FTP libraries.  In order to use a
+    proxy we would need to resort to "non-standard" libraries which the end user would
+    need to install.
+
+2. This requires an active GemFire cluster.
+  - This script is basically just a wrapper to gfsh and therefore requires that
+    the gemfire cluster be up and running and responding to gfsh queries.
+
+3. This will not gather statistic files.
+  - There is currently no way to get statistic files from a cluster via gfsh.
+    Support for this may be added with a new version of this script that operates
+    outside of GemFire and works at the operating system level or as this feature
+    is implemented in gfsh.

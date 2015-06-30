@@ -125,18 +125,16 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter,
         if (finalList.size() > 1) {
           StructType type = QueryUtils
               .createStructTypeForRuntimeIterators(finalList);
-          return new StructBag((StructTypeImpl)type,
-                               context.getCachePerfStats());
+          return QueryUtils.createStructCollection(context, type);
         }
         else {
           ObjectType type = ((RuntimeIterator) finalList.iterator().next())
               .getElementType();
           if (type instanceof StructType) {
-            return new StructBag((StructTypeImpl)type,
-                                 context.getCachePerfStats());
+            return QueryUtils.createStructCollection(context, (StructTypeImpl)type);
           }
           else {
-            return new ResultsBag(type, context.getCachePerfStats());
+            return QueryUtils.createResultCollection(context, type);
           }
         }
       }

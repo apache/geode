@@ -56,6 +56,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
 
 public final class FetchEntriesMessage extends PartitionMessage
@@ -303,7 +304,8 @@ public final class FetchEntriesMessage extends PartitionMessage
           RegionEntry re = entry.getRegionEntry();
           synchronized(re) {
             // TODO:KIRK:OK Object value = re.getValueInVM(map);
-            Object value = re._getValueUse(map, true);
+            Object value = re._getValueRetain(map, true);
+            try {
             if (value == null) {
               // only possible for disk entry
               value = re.getSerializedValueOnDisk((LocalRegion)entry.getRegion());
@@ -328,6 +330,9 @@ public final class FetchEntriesMessage extends PartitionMessage
               // the ByteBuffer that the chunk is stored in resulting in a copy
               // of the data.
               avgItemSize = mos.size() / itemCount;
+            }
+            } finally {
+              OffHeapHelper.release(value);
             }
           }
         }

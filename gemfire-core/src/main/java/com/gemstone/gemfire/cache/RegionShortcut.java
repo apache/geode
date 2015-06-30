@@ -226,4 +226,54 @@ public enum RegionShortcut {
    * The actual RegionAttributes for a REPLICATE_PROXY region set the {@link DataPolicy} to {@link DataPolicy#EMPTY} and {@link Scope} to {@link Scope#DISTRIBUTED_ACK}.
    */
   REPLICATE_PROXY,  
+  
+  /**
+   * A PARTITION_HDFS has local state that is partitioned across each peer member 
+   * that created the region. 
+   * In addition its state is written to HDFS.
+   * The random access to the data in HDFS is also enabled. 
+   * The actual RegionAttributes for a PARTITION_HDFS region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION}.
+   * The HDFS event queue's property random-access is set to true. 
+   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
+   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
+   */
+  PARTITION_HDFS,  
+  
+  /**
+   * A PARTITION_REDUNDANT_HDFS has local state that is partitioned across each peer member 
+   * that created the region. 
+   * In addition its state is written to HDFS and recovered from HDFS when the region is 
+   * created. The random access to the data in HDFS is also enabled. 
+   * In addition an extra copy of the data is kept in memory.
+   * The actual RegionAttributes for a PARTITION_REDUNDANT_HDFS region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION} 
+   * and the redundant-copies to 1. The HDFS event queue's property random-access is set to true.
+   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
+   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
+   */
+  PARTITION_REDUNDANT_HDFS,  
+  
+  /**
+   * A PARTITION_WRITEONLY_HDFS_STORE has local state that is partitioned across each peer member 
+   * that created the region. 
+   * In addition its state is written to HDFS and recovered from HDFS when the region is 
+   * created. The random access to the data in HDFS is disabled. 
+   * The actual RegionAttributes for a PARTITION_WRITEONLY_HDFS_STORE region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION}. 
+   * The HDFS event queue's property write only is set as true. 
+   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
+   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
+   */
+  PARTITION_WRITEONLY_HDFS_STORE,  
+  
+  /**
+   * A PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE has local state that is partitioned across each peer member 
+   * that created the region. 
+   * In addition its state is written to HDFS and recovered from HDFS when the region is 
+   * created. The random access to the data in HDFS is disabled. 
+   * In addition an extra copy of the data is kept in memory.
+   * The actual RegionAttributes for a PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION} 
+   * and the redundant-copies to 1. The HDFS event queue's property write only is set as true.
+   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
+   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
+   */
+  PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE
 }

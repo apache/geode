@@ -49,10 +49,10 @@ public class TransactionalOperation {
     };
 
 //  private ClientTXStateStub clienttx;
-  private ServerRegionOperation operation;
-  private String regionName;
-  private Object key;
-  private Object[] arguments;
+  protected ServerRegionOperation operation;
+  protected String regionName;
+  protected Object key;
+  protected Object[] arguments;
 
   protected TransactionalOperation(ClientTXStateStub clienttx, String regionName, ServerRegionOperation op, Object key, Object arguments[]) {
 //    this.clienttx = clienttx;

@@ -18,7 +18,7 @@ import org.w3c.dom.Document;
 
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SharedConfiguration}.

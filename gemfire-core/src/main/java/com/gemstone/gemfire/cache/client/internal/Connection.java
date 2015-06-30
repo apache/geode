@@ -10,6 +10,7 @@ package com.gemstone.gemfire.cache.client.internal;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -25,7 +26,7 @@ public interface Connection {
   public static final long DEFAULT_CONNECTION_ID = 26739;
   
   public Socket getSocket();
-  public ByteBuffer getCommBuffer();
+  public ByteBuffer getCommBuffer() throws SocketException;
   public ConnectionStats getStats();
   /**
    * Forcefully close the resources used by this connection.

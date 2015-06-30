@@ -197,4 +197,10 @@ public abstract class TXMessage extends SerialDistributionMessage
   public boolean canParticipateInTransaction() {
     return true;
   }
+
+  @Override
+  public boolean isTransactionDistributed() {
+    return false;
+  }
+
 }

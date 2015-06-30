@@ -28,11 +28,14 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.client.internal.GetAllOp.GetAllOpImpl;
+import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PutAllPartialResultException;
+import com.gemstone.gemfire.internal.cache.execute.BucketMovedException;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -97,7 +100,7 @@ public class SingleHopClientExecutor {
     }
   }
 
-  static boolean submitAllHA(List callableTasks, LocalRegion region,
+  static boolean submitAllHA(List callableTasks, LocalRegion region, boolean isHA,
       ResultCollector rc, Set<String> failedNodes) {
 
     ClientMetadataService cms = region.getCache()
@@ -144,12 +147,24 @@ public class SingleHopClientExecutor {
               catch (CacheClosedException e) {
                 return false;
               }
-              cms.scheduleGetPRMetaData(region, false);
               cms.removeBucketServerLocation(server);
+              cms.scheduleGetPRMetaData(region, false);
               reexecute = true;
               failedNodes.addAll(((InternalFunctionInvocationTargetException)ee
                   .getCause()).getFailedNodeSet());
               rc.clearResults();
+              if (!isHA) {
+                if (ee.getCause().getCause() != null) {
+                  throw new FunctionInvocationTargetException(ee.getCause()
+                      .getCause());
+                } else {
+                  throw new FunctionInvocationTargetException(
+                      new BucketMovedException(
+                          LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE
+                              .toLocalizedString()));
+                }
+              }
+                
             }
             else if (ee.getCause() instanceof FunctionException) {
               if (isDebugEnabled) {
@@ -177,6 +192,10 @@ public class SingleHopClientExecutor {
               cms.scheduleGetPRMetaData(region, false);
               reexecute = true;
               rc.clearResults();
+              if (!isHA) {
+                reexecute = false;
+                throw (ServerConnectivityException) ee.getCause();
+              }
             }
             else {
               throw executionThrowable(ee.getCause());

@@ -1,0 +1,62 @@
+<assembly
+    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+  <id>Hibernate</id>
+
+  <!--
+  This assembly descriptor produces output like:
+    README.txt
+    lib/
+      gemfire.modules-version.jar
+  -->
+
+  <!-- Format as zip and tar.gz -->
+  <formats>
+    <format>zip</format>
+  </formats>
+
+  <!-- Don't include a base directory -->
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <outputFileNameMapping>
+        ${artifact.artifactId}-${artifact.version}.${artifact.extension}
+      </outputFileNameMapping>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>com.gemstone:gemfire-modules-hibernate</include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </dependencySet>
+  </dependencySets>
+
+  <!-- Include project jar and readme -->
+  <fileSets>
+
+    <!--  Include readme file -->
+    <fileSet>
+      <directory>${project.basedir}/target/release/hibernate</directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>readme.txt</include>
+      </includes>
+    </fileSet>
+
+    <!--  Don't include in GA releases
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <includes>
+        <include>
+          GFModules_ReleaseNotes.txt
+        </include>
+      </includes>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+    </fileSet> -->
+
+  </fileSets>
+
+</assembly>

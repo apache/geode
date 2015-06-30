@@ -19,6 +19,7 @@ import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * @author Swapnil Bawaskar
@@ -35,10 +36,13 @@ public interface InternalDataView {
    * @param preferCD 
    * @param clientEvent TODO
    * @param returnTombstones TODO
+   * @param retainResult if true then the result may be a retained off-heap reference
    * @return the object associated with the key
    */
+  @Retained
   Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
-      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones);
+      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, 
+      boolean returnTombstones, boolean allowReadFromHDFS, boolean retainResult);
 
   /**
    * @param event
@@ -172,7 +176,7 @@ public interface InternalDataView {
    */
   Object findObject(KeyInfo key, LocalRegion r, boolean isCreate, boolean generateCallbacks,
       Object value, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones);
+      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS);
 
 
   /**
@@ -219,7 +223,7 @@ public interface InternalDataView {
    * @param returnTombstones TODO
    * @return the serialized value from the cache
    */
-  Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones) throws DataLocationException;
+  Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws DataLocationException;
 
   abstract void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException;
   abstract void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException;

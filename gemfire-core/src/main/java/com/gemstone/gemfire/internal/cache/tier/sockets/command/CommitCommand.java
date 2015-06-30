@@ -117,7 +117,7 @@ public class CommitCommand extends BaseCommand {
       logger.debug("TX: sending a nonNull response for transaction: {}", new TXId((InternalDistributedMember) servConn.getProxyID().getDistributedMember(), origMsg.getTransactionId()));
     }
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
   
   private void sendException(Message msg,

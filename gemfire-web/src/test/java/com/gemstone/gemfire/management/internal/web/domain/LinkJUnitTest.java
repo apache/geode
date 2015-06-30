@@ -17,7 +17,7 @@ import java.util.List;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
 import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
 import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

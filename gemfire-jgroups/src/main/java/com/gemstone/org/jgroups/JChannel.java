@@ -14,15 +14,17 @@ import com.gemstone.org.jgroups.util.ExternalStrings;
 
 
 
+
+
 //import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Element;
 
 import com.gemstone.org.jgroups.conf.ConfiguratorFactory;
 import com.gemstone.org.jgroups.conf.ProtocolStackConfigurator;
 import com.gemstone.org.jgroups.protocols.pbcast.NAKACK;
-import com.gemstone.org.jgroups.stack.GFBasicAdapter;
+import com.gemstone.org.jgroups.spi.GFBasicAdapter;
+import com.gemstone.org.jgroups.spi.GFPeerAdapter;
 import com.gemstone.org.jgroups.stack.GFBasicAdapterImpl;
-import com.gemstone.org.jgroups.stack.GFPeerAdapter;
 import com.gemstone.org.jgroups.stack.ProtocolStack;
 import com.gemstone.org.jgroups.stack.StateTransferInfo;
 import com.gemstone.org.jgroups.util.*;

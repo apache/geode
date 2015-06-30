@@ -4103,6 +4103,17 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
   public boolean isClientSlowReciever(){
     return isClientSlowReciever;
   }
+
+  @Override
+  public void close() {
+    Region r = getRegion();
+    if (r != null && !r.isDestroyed()) {
+      try {
+        r.close();
+      } catch (RegionDestroyedException e) {
+      }
+    }
+  }
   
     /**
      * A simple check to validate that the peek() method has been executed

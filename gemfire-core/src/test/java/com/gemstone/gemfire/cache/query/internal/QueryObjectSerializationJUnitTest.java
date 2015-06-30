@@ -25,7 +25,7 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the Serialization of the Query related class.

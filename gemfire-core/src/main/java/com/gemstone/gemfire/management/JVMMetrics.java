@@ -60,6 +60,10 @@ public class JVMMetrics {
    */
   private int totalThreads;
 
+  /**
+   * This constructor is to be used by internal JMX framework only. User
+   * should not try to create an instance of this class.
+   */
   @ConstructorProperties( { "gcCount", "gcTimeMillis", "initMemory",
       "committedMemory", "usedMemory", "maxMemory", "totalThreads"
   })
@@ -126,6 +130,9 @@ public class JVMMetrics {
     return totalThreads;
   }
 
+  /**
+   * String representation of JVMMetrics
+   */
   @Override
   public String toString() {
     return "{JVMMetrics : gcCount = " + gcCount + " gcTimeMillis = "

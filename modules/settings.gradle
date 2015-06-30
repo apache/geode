@@ -1,0 +1,10 @@
+rootProject.name = 'gemfire-modules'
+
+include 'gemfire-modules'
+include 'gemfire-modules-tomcat7'
+include 'gemfire-modules-session'
+include 'gemfire-modules-session-external'
+include 'gemfire-modules-session-integration-test'
+include 'gemfire-modules-slf4j-weblogic'
+include 'gemfire-modules-hibernate'
+include 'gemfire-modules-assembly'

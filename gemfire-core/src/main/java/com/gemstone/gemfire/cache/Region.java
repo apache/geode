@@ -709,6 +709,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         In some cases <code>null</code> may be returned even
    *         if a previous value exists.
    *         If the region is a client proxy then <code>null</code> is returned.
+   *         If the region is off-heap and the old value was stored in off-heap memory then <code>null</code> is returned.
    *         If the region is partitioned and the put is done on a non-primary then <code>null</code> is returned.
    *         If the value is not currently stored in memory but is on disk
    *         and if the region does not have cqs
@@ -905,6 +906,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         In some cases <code>null</code> may be returned even
    *         if a previous value exists.
    *         If the region is a client proxy then <code>null</code> is returned.
+   *         If the region is off-heap and the old value was stored in off-heap memory then <code>null</code> is returned.
    *         If the region is partitioned and the destroy is done on a non-primary then <code>null</code> is returned.
    *         If the value is not currently stored in memory but is on disk
    *         and if the region does not have cqs
@@ -940,6 +942,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         In some cases <code>null</code> may be returned even
    *         if a previous value exists.
    *         If the region is a client proxy then <code>null</code> is returned.
+   *         If the region is off-heap and the old value was stored in off-heap memory then <code>null</code> is returned.
    *         If the region is partitioned and the destroy is done on a non-primary then <code>null</code> is returned.
    *         If the value is not currently stored in memory but is on disk
    *         and if the region does not have cqs
@@ -1554,6 +1557,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         In some cases <code>null</code> may be returned even
    *         if a previous value exists. 
    *         If the region is a client proxy then <code>null</code> is returned.
+   *         If the region is off-heap and the old value was stored in off-heap memory then <code>null</code> is returned.
    *         If the region is partitioned and the remove is done on a non-primary then <code>null</code> is returned.
    *         If the value is not currently stored in memory but is on disk
    *         and if the region does not have cqs
@@ -2199,6 +2203,8 @@ public boolean containsKeyOnServer(Object key);
   *       return true;
   *   } else return false;</pre>
   * except that the action is performed atomically.
+  *<p>As of 8.5, if value is an Array then Arrays.equals or Arrays.deepEquals is used
+  *instead of Object.equals.
   *<p>ConcurrentMap operations are supported on partitioned and replicated regions
   *and in client caches. They are also supported on non-empty local regions.<p>
   *<p>Please read the notes on ConcurrentMap operations in the javadoc for Region.</p>
@@ -2230,6 +2236,8 @@ public boolean containsKeyOnServer(Object key);
   *       return true;
   *   } else return false;</pre>
   * except that the action is performed atomically.
+  *<p>As of 8.5, if value is an Array then Arrays.equals or Arrays.deepEquals is used
+  *instead of Object.equals.
   *<p>ConcurrentMap operations are supported on partitioned and replicated regions
   *and in client caches. They are also supported on non-empty local regions.</p>
   *<p>Please read the notes on ConcurrentMap operations in the javadoc for Region.</p>
@@ -2373,6 +2381,7 @@ public boolean containsKeyOnServer(Object key);
      *         In some cases <code>null</code> may be returned even
      *         if a previous value exists.
      *         If the region is a client proxy then <code>null</code> is returned.
+     *         If the region is off-heap and the old value was stored in off-heap memory then <code>null</code> is returned.
      *         If the region is partitioned and the setValue is done on a non-primary then <code>null</code> is returned.
      *         If the value is not currently stored in memory but is on disk
      *         and if the region does not have cqs

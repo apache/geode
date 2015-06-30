@@ -26,7 +26,7 @@ import org.apache.bcel.generic.ClassGen;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Test the {@link ClassPathLoader}.

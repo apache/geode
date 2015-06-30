@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests DiskStoreImpl.OplogEntryIdSet

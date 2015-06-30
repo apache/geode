@@ -195,17 +195,6 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
     return STARTUP_RESPONSE_MESSAGE;
   }
   
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    toDataContent(out, Version.CURRENT);
-  }
-
-  @Override
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
-    fromDataContent(in, Version.CURRENT);
-  }
-  
   private void fromDataProblem(String s) {
     if (this.fromDataProblems == null) {
       this.fromDataProblems = new StringBuffer();
@@ -215,18 +204,18 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
     this.fromDataProblems.append(System.getProperty("line.separator", "\n"));
   }
 
-  // versions where serialization changed
-  private static Version[] serializationVersions = new Version[] {
-    Version.GFE_80, Version.GFE_82
-  };
-  
   @Override
   public Version[] getSerializationVersions() {
-    return serializationVersions;
+    return null;
   }
   
-  public void toDataContent(DataOutput out, Version ver) throws IOException {
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    
     super.toData(out);
+    
+    Version ver = InternalDataSerializer.getVersionForDataStream(out);
+    
     out.writeInt(processorId);
     if (ver.compareTo(Version.GFE_80) < 0) {
       out.writeLong(System.currentTimeMillis());
@@ -250,25 +239,21 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
     }
     
     DataSerializer.writeObject(interfaces, out);
-    if (ver.compareTo(Version.GFE_82) < 0) {
+    if (ver.compareTo(Version.GFE_90) < 0) {
       DataSerializer.writeObject(new Properties(), out);
     }
     out.writeInt(distributedSystemId);
     DataSerializer.writeString(redundancyZone, out);
   }
   
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
-    toDataContent(out, Version.GFE_80);
-  }
-
-  public void toDataPre_GFE_8_2_0_0(DataOutput out) throws IOException {
-    toDataContent(out, Version.GFE_82);
-  }
-
-  private void fromDataContent(DataInput in, Version ver)
+  @Override
+  public void fromData(DataInput in)
     throws IOException, ClassNotFoundException {
       
     super.fromData(in);
+    
+    Version ver = InternalDataSerializer.getVersionForDataStream(in);
+    
     this.processorId = in.readInt();
     if (ver.compareTo(Version.GFE_80) < 0) {
       in.readLong();
@@ -301,23 +286,13 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
     } // for
     
     interfaces = (Set)DataSerializer.readObject(in);
-    if (ver.compareTo(Version.GFE_82) < 0) {
+    if (ver.compareTo(Version.GFE_90) < 0) {
       DataSerializer.readObject(in);
     }
     distributedSystemId = in.readInt();
     redundancyZone = DataSerializer.readString(in);
   }
  
-  public void fromDataPre_GFE_8_0_0_0(DataInput in)
-      throws IOException, ClassNotFoundException {
-    fromDataContent(in, Version.GFE_80);
-  }
-  
-  public void fromDataPre_GFE_8_2_0_0(DataInput in)
-      throws IOException, ClassNotFoundException {
-    fromDataContent(in, Version.GFE_82);
-  }
-  
   @Override
   public String toString() {
     return "StartupResponse: rejectionMessage="

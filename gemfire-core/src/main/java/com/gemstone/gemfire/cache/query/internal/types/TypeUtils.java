@@ -132,14 +132,24 @@ public class TypeUtils implements OQLLexerTokenTypes
     */ 
     public static Object compare(Object obj1, Object obj2, int compOp)
     throws TypeMismatchException {
-      // if either object is UNDEFINED, result is UNDEFINED
-      if (obj1 == QueryService.UNDEFINED || obj2 == QueryService.UNDEFINED)
-        return QueryService.UNDEFINED;
       if (obj1 == null || obj2 == null) {
         Boolean result = nullCompare(obj1, obj2, compOp);
         if (result == null)
           return QueryService.UNDEFINED;
         return result;
+      }
+
+      // if either object is UNDEFINED, result is UNDEFINED
+      if (obj1 == QueryService.UNDEFINED || obj2 == QueryService.UNDEFINED) {
+        if (compOp == TOK_NE && !(obj1 == QueryService.UNDEFINED && obj2 == QueryService.UNDEFINED)) {
+          return true;
+        } 
+        else if (compOp == TOK_EQ && obj1.equals(obj2)) {
+          return true;
+        }
+        else {
+          return QueryService.UNDEFINED;
+        }
       }
       
       try {

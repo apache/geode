@@ -69,7 +69,7 @@ public interface TXStateProxy extends TXStateInterface {
    * record a client-side transactional operation for possible later replay
    */
   public void recordTXOperation(ServerRegionDataAccess proxy, ServerRegionOperation op, Object key, Object[] arguments);
-
+  
   /**
    * @return the number of operations performed in this transaction
    */

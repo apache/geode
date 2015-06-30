@@ -166,20 +166,8 @@ public class CacheFactory {
            GatewayException,
            RegionExistsException 
   {
-    GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
-    
-    if (instance != null && !instance.isClosed()) {
-      if (existingOk) {
-        // Check if cache configuration matches.
-        cacheConfig.validateCacheConfig(instance);
-        
-        return instance;
-      } else {
-        // instance.creationStack argument is for debugging...
-        throw new CacheExistsException(instance, LocalizedStrings.CacheFactory_0_AN_OPEN_CACHE_ALREADY_EXISTS.toLocalizedString(instance), instance.creationStack);
-      }
-    }
-    return GemFireCacheImpl.create(system, cacheConfig);
+    // Moved code in this method to GemFireCacheImpl.create
+    return GemFireCacheImpl.create(system, existingOk, cacheConfig);
   }
 
   /**

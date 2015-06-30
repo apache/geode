@@ -1,0 +1,5 @@
+conf/serverTest.conf
+A = bridge  bridgeHosts =  2 bridgeVMsPerHost = 1  bridgeThreadsPerVM = 1
+B = agent   agentHosts  =  1 agentVMsPerHost  = 1  agentThreadsPerVM  = 1
+C = edge    edgeHosts   =  1 edgeVMsPerHost   = 1  edgeThreadsPerVM   = 1
+hc.nPutThreads= 3

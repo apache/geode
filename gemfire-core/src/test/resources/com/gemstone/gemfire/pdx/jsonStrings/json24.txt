@@ -1,0 +1,15 @@
+
+{"options":
+ {"constraint":
+  {"name":"decade", 
+   "range":{"facet":true, "type":"xs:gYear", 
+     "bucket":[{"ge":"1970", "lt":"1980", "name":"1970s",
+       "label":"1970s"},
+    {"ge":"1980", "lt":"1990", "name":"1980s","label":"1980s"},
+    {"ge":"1990", "lt":"2000", "name":"1990s", "label":"1990s"},
+    {"ge":"2000", "name":"2000s", "label":"2000s"}],
+    "facetOption":"limit=10", 
+    "attribute":{"ns":"", "name":"year"},
+    "element":{"ns":"http://marklogic.com/wikipedia",
+       "name":"nominee"}
+}}}}

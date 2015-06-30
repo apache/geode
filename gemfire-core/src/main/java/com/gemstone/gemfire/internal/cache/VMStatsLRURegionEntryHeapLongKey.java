@@ -19,6 +19,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
 // lru: LRU
 // stats: STATS
 // versioned: VERSIONED
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
@@ -33,7 +34,8 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * that contains your build.xml.
  */
 public class VMStatsLRURegionEntryHeapLongKey extends VMStatsLRURegionEntryHeap {
-  public VMStatsLRURegionEntryHeapLongKey (RegionEntryContext context, long key, Object value
+  public VMStatsLRURegionEntryHeapLongKey (RegionEntryContext context, long key,
+      Object value
       ) {
     super(context,
           value
@@ -50,10 +52,12 @@ public class VMStatsLRURegionEntryHeapLongKey extends VMStatsLRURegionEntryHeap 
   private static final AtomicLongFieldUpdater<VMStatsLRURegionEntryHeapLongKey> lastModifiedUpdater
     = AtomicLongFieldUpdater.newUpdater(VMStatsLRURegionEntryHeapLongKey.class, "lastModified");
   private volatile Object value;
-  protected final Object areGetValue() {
+  @Override
+  protected final Object getValueField() {
     return this.value;
   }
-  protected void areSetValue(Object v) {
+  @Override
+  protected void setValueField(Object v) {
     this.value = v;
   }
   protected long getlastModifiedField() {
@@ -97,8 +101,6 @@ public class VMStatsLRURegionEntryHeapLongKey extends VMStatsLRURegionEntryHeap 
                                                 Object value) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize( getKeyForSizing(), value);
-  //   GemFireCacheImpl.getInstance().getLoggerI18n().info("DEBUG updateEntrySize: oldSize=" + oldSize
-  //                                               + " newSize=" + newSize);
     setEntrySize(newSize);
     int delta = newSize - oldSize;
   //   if ( debug ) log( "updateEntrySize key=" + getKey()

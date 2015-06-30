@@ -10,6 +10,8 @@ package com.gemstone.org.jgroups.stack;
 import com.gemstone.org.jgroups.*;
 import com.gemstone.org.jgroups.conf.ClassConfigurator;
 import com.gemstone.org.jgroups.protocols.TP;
+import com.gemstone.org.jgroups.spi.GFBasicAdapter;
+import com.gemstone.org.jgroups.spi.GFPeerAdapter;
 import com.gemstone.org.jgroups.util.ExternalStrings;
 import com.gemstone.org.jgroups.util.Promise;
 import com.gemstone.org.jgroups.util.TimeScheduler;

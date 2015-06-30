@@ -736,7 +736,7 @@ public class SystemAdmin {
         DiskStoreImpl.modifyRegion(diskStoreName, dirs, regionOption,
                                    lruOption, lruActionOption, lruLimitOption,
                                    concurrencyLevelOption, initialCapacityOption, loadFactorOption,
-                                   compressorClassNameOption, statisticsEnabledOption, true);
+                                   compressorClassNameOption, statisticsEnabledOption, null/*offHeap*/, true);
         System.out.println("The region " + regionOption + " was successfully modified in the disk store " + diskStoreName);
       } else if (remove) {
         if (regionOption == null) {

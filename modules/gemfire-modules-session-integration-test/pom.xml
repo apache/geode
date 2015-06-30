@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.gemstone</groupId>
+  <artifactId>gemfire-modules-session-integration-test</artifactId>
+  <version>${gemfire.modules.version}</version>
+  <name>gemfire-modules-integration-test</name>
+  <url>http://maven.apache.org</url>
+
+  <parent>
+    <groupId>com.gemstone</groupId>
+    <artifactId>gemfire-modules-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.gemstone</groupId>
+      <artifactId>gemfire-modules-session</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.gemstone</groupId>
+      <artifactId>gemfire-modules-session-external</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.gemstone</groupId>
+      <artifactId>gemfire-modules</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>jasper</artifactId>
+      <version>6.0.29</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.14.1</version>
+        <configuration>
+          <!--
+              Normally the session manager should only be initialized
+              once. For testing though, we sometimes need to be able
+              to do so repeatedly. This is really a fallout of the
+              singleton nature of the cache.
+          -->
+          <systemPropertyVariables>
+            <gemfire.override.session.manager.count>10000
+            </gemfire.override.session.manager.count>
+          </systemPropertyVariables>
+          <argLine>-XX:MaxPermSize=512m -XX:+CMSClassUnloadingEnabled</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

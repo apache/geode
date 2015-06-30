@@ -74,6 +74,11 @@ public class OSMetrics {
    */
   private double systemLoadAverage;
 
+  /**
+   * 
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
   @ConstructorProperties( { "maxFileDescriptorCount",
       "openFileDescriptorCount", "processCpuTime",
       "committedVirtualMemorySize", "totalPhysicalMemorySize",
@@ -197,6 +202,9 @@ public class OSMetrics {
     return systemLoadAverage;
   }
 
+  /**
+   * String representation of OSMetrics
+   */
   @Override
   public String toString() {
 

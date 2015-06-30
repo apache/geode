@@ -38,8 +38,8 @@ import com.gemstone.gemfire.management.internal.cli.shell.GfshConfig;
  * @since 7.0
  */
 public class LogWrapper {
-  private static Object     INSTANCE_LOCK = new Object();
-  private static LogWrapper INSTANCE      = null;
+  private static Object INSTANCE_LOCK = new Object();
+  private volatile static LogWrapper INSTANCE = null;
 
   private Logger logger;
 

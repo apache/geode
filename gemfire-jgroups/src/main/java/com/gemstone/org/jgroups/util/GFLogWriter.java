@@ -30,7 +30,9 @@ public interface GFLogWriter {
 
   void warning(StringId str);
 
-  void warning(StringId str, Object string, Throwable thr);
+  void warning(StringId str, Object arg, Throwable thr);
+
+  void warning(StringId str, Object[] args, Throwable thr);
 
   void warning(StringId str,
       Object arg);

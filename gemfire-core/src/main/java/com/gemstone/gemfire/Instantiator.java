@@ -186,8 +186,10 @@ public abstract class Instantiator {
    *        method is invoked when an object is data deserialized.
    *
    * @param distribute
-   *        True if the registered <code>DataSerializer</code> has to be
+   *        True if the registered <code>Instantiator</code> has to be
    *        distributed to other members of the distributed system.
+   *        Note that if distribute is set to false it may still be distributed
+   *        in some cases.
    *
    * @throws IllegalArgumentException
    *         If class <code>c</code> is
@@ -196,6 +198,7 @@ public abstract class Instantiator {
    *         <code>classId</code>
    * @throws NullPointerException
    *         If <code>instantiator</code> is <code>null</code>.
+   * @deprecated as of 9.0 use {@link Instantiator#register(Instantiator)} instead
    */
   public static synchronized void register(Instantiator instantiator,
       boolean distribute) {

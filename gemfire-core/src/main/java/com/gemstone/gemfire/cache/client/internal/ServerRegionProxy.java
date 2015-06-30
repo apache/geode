@@ -738,42 +738,42 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     int retryAttempts = pool.getRetryAttempts();
 
     if (this.pool.getPRSingleHopEnabled()) {
-      ClientMetadataService cms = region.getCache()
-      .getClientMetadataService();
-      if (serverRegionExecutor.getFilter().isEmpty()) {
-        HashMap<ServerLocation, HashSet<Integer>> serverToBuckets = cms
-        .groupByServerToAllBuckets(this.region, function.optimizeForWrite());
-        if (serverToBuckets == null || serverToBuckets.isEmpty()) {
-          ExecuteRegionFunctionOp.execute(this.pool, rgnName, function,
-              serverRegionExecutor, resultCollector, hasResult, retryAttempts);
-          cms.scheduleGetPRMetaData(region, false);
+      ClientMetadataService cms = region.getCache().getClientMetadataService();
+      if (cms.isMetadataStable()) {
+        if (serverRegionExecutor.getFilter().isEmpty()) {
+          HashMap<ServerLocation, HashSet<Integer>> serverToBuckets = cms
+              .groupByServerToAllBuckets(this.region,
+                  function.optimizeForWrite());
+          if (serverToBuckets == null || serverToBuckets.isEmpty()) {
+            ExecuteRegionFunctionOp
+                .execute(this.pool, rgnName, function, serverRegionExecutor,
+                    resultCollector, hasResult, retryAttempts);
+            cms.scheduleGetPRMetaData(region, false);
+          } else {
+            ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
+                function, serverRegionExecutor, resultCollector, hasResult,
+                serverToBuckets, retryAttempts, true);
+          }
+        } else {
+          boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
+          Map<ServerLocation, HashSet> serverToFilterMap = cms
+              .getServerToFilterMap(serverRegionExecutor.getFilter(), region,
+                  function.optimizeForWrite(), isBucketFilter);
+          if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
+            ExecuteRegionFunctionOp
+                .execute(this.pool, rgnName, function, serverRegionExecutor,
+                    resultCollector, hasResult, retryAttempts);
+            cms.scheduleGetPRMetaData(region, false);
+          } else {
+            ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
+                function, serverRegionExecutor, resultCollector, hasResult,
+                serverToFilterMap, retryAttempts, isBucketFilter);
+          }
         }
-        else {
-          ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
-              function, serverRegionExecutor, resultCollector, hasResult,
-              serverToBuckets, retryAttempts, true);
-        }
-      }
-      else {
-        boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-        Map<ServerLocation, HashSet> serverToFilterMap = cms
-        .getServerToFilterMap(serverRegionExecutor.getFilter(), region,
-            function.optimizeForWrite(), isBucketFilter);
-        if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {         
-          ExecuteRegionFunctionOp.execute(this.pool, rgnName, function,
-              serverRegionExecutor, resultCollector, hasResult, retryAttempts);
-            cms.scheduleGetPRMetaData(region, false);          
-        }
-        else {
-          //Asif: In case of withBucketFilter , the serverToFilterMap is nothing but
-          // serverToBucketsMap, so allBuckets flag should be true in that case 
-          // so allBuckets flag is governed by isBucketFilter flag
-          ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
-              function, serverRegionExecutor, resultCollector, hasResult,
-              serverToFilterMap, retryAttempts, isBucketFilter);
-          
-         
-        }
+      } else {
+        cms.scheduleGetPRMetaData(region, false);
+        ExecuteRegionFunctionOp.execute(this.pool, rgnName, function,
+            serverRegionExecutor, resultCollector, hasResult, retryAttempts);
       }
     }
     else {
@@ -793,39 +793,46 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           Boolean.valueOf(isHA), Boolean.valueOf(optimizeForWrite));
     
     int retryAttempts = pool.getRetryAttempts();
-
     if (this.pool.getPRSingleHopEnabled()) {
       ClientMetadataService cms = this.region.getCache()
-      .getClientMetadataService();
-      if (serverRegionExecutor.getFilter().isEmpty()) {
-        HashMap<ServerLocation, HashSet<Integer>> serverToBuckets = cms
-        .groupByServerToAllBuckets(this.region, optimizeForWrite);
-        if (serverToBuckets == null || serverToBuckets.isEmpty()) {
-          ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId,
-              serverRegionExecutor, resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
-          cms.scheduleGetPRMetaData(this.region, false);
+          .getClientMetadataService();
+      if (cms.isMetadataStable()) {
+        if (serverRegionExecutor.getFilter().isEmpty()) {
+          HashMap<ServerLocation, HashSet<Integer>> serverToBuckets = cms
+              .groupByServerToAllBuckets(this.region, optimizeForWrite);
+          if (serverToBuckets == null || serverToBuckets.isEmpty()) {
+            ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId,
+                serverRegionExecutor, resultCollector, hasResult,
+                retryAttempts, isHA, optimizeForWrite);
+            cms.scheduleGetPRMetaData(this.region, false);
+          } else {
+            ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
+                functionId, serverRegionExecutor, resultCollector, hasResult,
+                serverToBuckets, retryAttempts, true, isHA, optimizeForWrite);
+          }
+        } else {
+          boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
+          Map<ServerLocation, HashSet> serverToFilterMap = cms
+              .getServerToFilterMap(serverRegionExecutor.getFilter(), region,
+                  optimizeForWrite, isBucketsAsFilter);
+          if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
+            ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId,
+                serverRegionExecutor, resultCollector, hasResult,
+                retryAttempts, isHA, optimizeForWrite);
+            cms.scheduleGetPRMetaData(region, false);
+          } else {
+            ExecuteRegionFunctionSingleHopOp
+                .execute(this.pool, this.region, functionId,
+                    serverRegionExecutor, resultCollector, hasResult,
+                    serverToFilterMap, retryAttempts, false, isHA,
+                    optimizeForWrite);
+          }
         }
-        else {
-          ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
-              functionId, serverRegionExecutor, resultCollector, hasResult,
-              serverToBuckets, retryAttempts, true, isHA, optimizeForWrite);
-        }
-      }
-      else {
-        boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-        Map<ServerLocation, HashSet> serverToFilterMap = cms
-        .getServerToFilterMap(serverRegionExecutor.getFilter(), region,
-            optimizeForWrite, isBucketsAsFilter);
-        if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {         
-          ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId,
-              serverRegionExecutor, resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
-            cms.scheduleGetPRMetaData(region, false);          
-        }
-        else {
-          ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
-              functionId, serverRegionExecutor, resultCollector, hasResult,
-              serverToFilterMap, retryAttempts, false, isHA, optimizeForWrite);
-        }
+      } else {
+        cms.scheduleGetPRMetaData(region, false);
+        ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId,
+            serverRegionExecutor, resultCollector, hasResult, retryAttempts,
+            isHA, optimizeForWrite);
       }
     }
     else {

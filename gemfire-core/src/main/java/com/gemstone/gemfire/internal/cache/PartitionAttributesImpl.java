@@ -19,23 +19,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.FixedPartitionResolver;
+import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.cache.PartitionResolver;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
-
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Internal implementation of PartitionAttributes. New attributes existing   
@@ -48,7 +50,10 @@ import com.gemstone.gemfire.cache.partition.PartitionListener;
 public class PartitionAttributesImpl implements PartitionAttributes,
       Cloneable, DataSerializable
 {
+  private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = -7120239286748961954L;
+  
+  private static final int OFF_HEAP_LOCAL_MAX_MEMORY_PLACEHOLDER = 1;
 
   /** Partition resolver. */
   private transient PartitionResolver partitionResolver;
@@ -74,15 +79,27 @@ public class PartitionAttributesImpl implements PartitionAttributes,
    *  LOCAL_MAX_MEMORY_PROPERTY - deprecated, use setLocalMaxMemory
    */
   private Properties globalProperties = new Properties();
-    
-  // transient ExpirationAttributes entryTimeToLiveExpiration = ExpirationAttributes.DEFAULT;
-
-  // transient ExpirationAttributes entryIdleTimeoutExpiration = ExpirationAttributes.DEFAULT;
+  
+  /*
+   * This is used to artificially set the amount of available off-heap memory
+   * when no distributed system is available. This value works the same way as
+   * specifying off-heap as a GemFire property, so "100m" = 100 megabytes,
+   * "100g" = 100 gigabytes, etc.
+   */
+  private static String testAvailableOffHeapMemory = null;
 
   /** the amount of local memory to use, in megabytes */
   private int localMaxMemory = PartitionAttributesFactory.LOCAL_MAX_MEMORY_DEFAULT;
   private transient boolean hasLocalMaxMemory;
+  private transient boolean localMaxMemoryExists;
 
+  /** Used to determine how to calculate the default local max memory.
+   * This was made transient since we do not support p2p backwards compat changes to values stored in a region
+   * and our PR implementation stores this object in the internal PRRoot internal region.
+   */
+  private transient boolean offHeap = false;
+  private transient boolean hasOffHeap;
+  
   /** placeholder for javadoc for this variable */
   private int totalNumBuckets = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
   private transient boolean hasTotalNumBuckets;
@@ -135,8 +152,17 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     this.localProperties.setProperty(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY,
                                      String.valueOf(this.localMaxMemory));
     this.hasLocalMaxMemory = true;
+    this.localMaxMemoryExists = true;
   }
     
+  public void setOffHeap(final boolean offHeap) {
+    this.offHeap = offHeap;
+    this.hasOffHeap = true;
+    if (this.offHeap && !this.hasLocalMaxMemory) {
+      this.localMaxMemory = computeOffHeapLocalMaxMemory();
+    }
+  }
+  
   public void setColocatedWith(String colocatedRegionFullPath) {
     this.colocatedRegionName = colocatedRegionFullPath;
     this.hasColocatedRegionName = true;
@@ -213,7 +239,55 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     return this.totalMaxMemory;
   }
     
+  public boolean getOffHeap() {
+    return this.offHeap;
+  }
+  
+  /**
+   * Returns localMaxMemory that must not be a temporary placeholder for
+   * offHeapLocalMaxMemory if off-heap. This must return the true final value
+   * of localMaxMemory which requires the DistributedSystem to be created if
+   * off-heap. See bug #52003.
+   * 
+   * @throws IllegalStateException if off-heap and the actual value is not yet known (because the DistributedSystem has not yet been created)
+   * @see #getLocalMaxMemoryForValidation()
+   */
   public int getLocalMaxMemory() {
+    if (this.offHeap && !this.localMaxMemoryExists) {
+      int value = computeOffHeapLocalMaxMemory();
+      if (this.localMaxMemoryExists) { // real value now exists so set it and return
+        this.localMaxMemory = value;
+      }
+    }
+    checkLocalMaxMemoryExists();
+    return this.localMaxMemory;
+  }
+  /**
+   * @throws IllegalStateException if off-heap and the actual value is not yet known (because the DistributedSystem has not yet been created)
+   */
+  private void checkLocalMaxMemoryExists() {
+    if (this.offHeap && !this.localMaxMemoryExists) { // real value does NOT yet exist so throw IllegalStateException
+      throw new IllegalStateException("Attempting to use localMaxMemory for off-heap but value is not yet known (default value is equal to off-heap-memory-size)");
+    }
+  }
+  
+  /**
+   * Returns localMaxMemory for validation of attributes before Region is 
+   * created (possibly before DistributedSystem is created). Returned value may 
+   * be the temporary placeholder representing offHeapLocalMaxMemory which 
+   * cannot be calculated until the DistributedSystem is created. See bug 
+   * #52003.
+   * 
+   * @see #OFF_HEAP_LOCAL_MAX_MEMORY_PLACEHOLDER 
+   * @see #getLocalMaxMemory()
+   */
+  public int getLocalMaxMemoryForValidation() {
+    if (this.offHeap && !this.hasLocalMaxMemory && !this.localMaxMemoryExists) {
+      int value = computeOffHeapLocalMaxMemory();
+      if (this.localMaxMemoryExists) { // real value now exists so set it and return
+        this.localMaxMemory = value;
+      }
+    }
     return this.localMaxMemory;
   }
     
@@ -284,22 +358,22 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   }
 
   @Override
-    public String toString()
-    {
-      StringBuffer s = new StringBuffer();
-      return s.append("PartitionAttributes@")
-        .append(System.identityHashCode(this))
-        .append("[redundantCopies=").append(getRedundantCopies())
-        .append(";localMaxMemory=").append(this.localMaxMemory)
-        .append(";totalMaxMemory=").append(this.totalMaxMemory)
-        .append(";totalNumBuckets=").append(this.totalNumBuckets)
-        .append(";partitionResolver=").append(this.partitionResolver)
-        .append(";colocatedWith=").append(this.colocatedRegionName)
-        .append(";recoveryDelay=").append(this.recoveryDelay)
-        .append(";startupRecoveryDelay=").append(this.startupRecoveryDelay)
-        .append(";FixedPartitionAttributes=").append(this.fixedPAttrs)
-        .append(";partitionListeners=").append(this.partitionListeners)
-        .append("]") .toString();
+  public String toString()
+  {
+    StringBuffer s = new StringBuffer();
+    return s.append("PartitionAttributes@")
+      .append(System.identityHashCode(this))
+      .append("[redundantCopies=").append(getRedundantCopies())
+      .append(";localMaxMemory=").append(getLocalMaxMemory())
+      .append(";totalMaxMemory=").append(this.totalMaxMemory)
+      .append(";totalNumBuckets=").append(this.totalNumBuckets)
+      .append(";partitionResolver=").append(this.partitionResolver)
+      .append(";colocatedWith=").append(this.colocatedRegionName)
+      .append(";recoveryDelay=").append(this.recoveryDelay)
+      .append(";startupRecoveryDelay=").append(this.startupRecoveryDelay)
+      .append(";FixedPartitionAttributes=").append(this.fixedPAttrs)
+      .append(";partitionListeners=").append(this.partitionListeners)
+      .append("]") .toString();
   }
 
   public String getStringForSQLF() {
@@ -312,31 +386,35 @@ public class PartitionAttributesImpl implements PartitionAttributes,
         ",startupRecoveryDelay=").append(this.startupRecoveryDelay).toString();
   }
 
-    public void toData(DataOutput out) throws IOException {
-      out.writeInt(this.redundancy);
-      out.writeLong(this.totalMaxMemory);
-      out.writeInt(this.localMaxMemory);
-      out.writeInt(this.totalNumBuckets);
-      DataSerializer.writeString(this.colocatedRegionName, out);
-      DataSerializer.writeObject(this.localProperties, out);
-      DataSerializer.writeObject(this.globalProperties, out);
-      out.writeLong(this.recoveryDelay);
-      out.writeLong(this.startupRecoveryDelay);
-      DataSerializer.writeObject(this.fixedPAttrs, out);
-    }
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
-      this.redundancy = in.readInt();
-      this.totalMaxMemory = in.readLong();
-      this.localMaxMemory = in.readInt();
-      this.totalNumBuckets = in.readInt();
-      this.colocatedRegionName = DataSerializer.readString(in);
-      this.localProperties = (Properties)DataSerializer.readObject(in);
-      this.globalProperties = (Properties)DataSerializer.readObject(in);
-      this.recoveryDelay = in.readLong();
-      this.startupRecoveryDelay = in.readLong();
-      this.fixedPAttrs = DataSerializer.readObject(in);
-    }
+  /**
+   * @throws IllegalStateException if off-heap and the actual value is not yet known (because the DistributedSystem has not yet been created)
+   */
+  public void toData(DataOutput out) throws IOException {
+    checkLocalMaxMemoryExists();
+    out.writeInt(this.redundancy);
+    out.writeLong(this.totalMaxMemory);
+    out.writeInt(getLocalMaxMemory()); // call the gettor to force it to be computed in the offheap case
+    out.writeInt(this.totalNumBuckets);
+    DataSerializer.writeString(this.colocatedRegionName, out);
+    DataSerializer.writeObject(this.localProperties, out);
+    DataSerializer.writeObject(this.globalProperties, out);
+    out.writeLong(this.recoveryDelay);
+    out.writeLong(this.startupRecoveryDelay);
+    DataSerializer.writeObject(this.fixedPAttrs, out);
+  }
+  
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    this.redundancy = in.readInt();
+    this.totalMaxMemory = in.readLong();
+    this.localMaxMemory = in.readInt();
+    this.totalNumBuckets = in.readInt();
+    this.colocatedRegionName = DataSerializer.readString(in);
+    this.localProperties = (Properties)DataSerializer.readObject(in);
+    this.globalProperties = (Properties)DataSerializer.readObject(in);
+    this.recoveryDelay = in.readLong();
+    this.startupRecoveryDelay = in.readLong();
+    this.fixedPAttrs = DataSerializer.readObject(in);
+  }
     
   public static PartitionAttributesImpl createFromData(DataInput in)
     throws IOException, ClassNotFoundException {
@@ -351,37 +429,37 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   }
 
   @Override
-    public boolean equals(final Object obj) {
-      if (this == obj) { 
-        return true;
-      }
-      
-    if (! (obj instanceof PartitionAttributesImpl)) {
-      return false;
+  public boolean equals(final Object obj) {
+    if (this == obj) { 
+      return true;
     }
-      
-    PartitionAttributesImpl other = (PartitionAttributesImpl) obj;
-      
-      if (this.redundancy != other.getRedundantCopies()
-          || this.localMaxMemory != other.getLocalMaxMemory()
-          || this.totalNumBuckets != other.getTotalNumBuckets()
-          || this.totalMaxMemory != other.getTotalMaxMemory()
-          || this.startupRecoveryDelay != other.getStartupRecoveryDelay()
-          || this.recoveryDelay != other.getRecoveryDelay()
+    
+  if (! (obj instanceof PartitionAttributesImpl)) {
+    return false;
+  }
+    
+  PartitionAttributesImpl other = (PartitionAttributesImpl) obj;
+    
+    if (this.redundancy != other.getRedundantCopies()
+        || getLocalMaxMemory() != other.getLocalMaxMemory()
+        || this.offHeap != other.getOffHeap()
+        || this.totalNumBuckets != other.getTotalNumBuckets()
+        || this.totalMaxMemory != other.getTotalMaxMemory()
+        || this.startupRecoveryDelay != other.getStartupRecoveryDelay()
+        || this.recoveryDelay != other.getRecoveryDelay()
 //          || ! this.localProperties.equals(other.getLocalProperties())
 //          || ! this.globalProperties.equals(other.getGlobalProperties())
-          || ((this.partitionResolver == null) != (other.getPartitionResolver() == null))
-          || (this.partitionResolver != null && !this.partitionResolver
-            .equals(other.getPartitionResolver()))
-          || ((this.colocatedRegionName == null) != (other.getColocatedWith() == null))
-          || (this.colocatedRegionName != null && !this.colocatedRegionName
-            .equals(other.getColocatedWith()))
-          ||((this.fixedPAttrs == null) != (other.getFixedPartitionAttributes()== null))
-          ||(this.fixedPAttrs != null && !this.fixedPAttrs.equals(other.getFixedPartitionAttributes()))
-          ) {
-        //throw new RuntimeException("this="+this.toString() + "   other=" + other.toString());
-        return false;
-        
+        || ((this.partitionResolver == null) != (other.getPartitionResolver() == null))
+        || (this.partitionResolver != null && !this.partitionResolver
+          .equals(other.getPartitionResolver()))
+        || ((this.colocatedRegionName == null) != (other.getColocatedWith() == null))
+        || (this.colocatedRegionName != null && !this.colocatedRegionName
+          .equals(other.getColocatedWith()))
+        ||((this.fixedPAttrs == null) != (other.getFixedPartitionAttributes()== null))
+        ||(this.fixedPAttrs != null && !this.fixedPAttrs.equals(other.getFixedPartitionAttributes()))
+        ) {
+      //throw new RuntimeException("this="+this.toString() + "   other=" + other.toString());
+      return false;
     }
 
     PartitionListener[] otherPListeners = other.getPartitionListeners();
@@ -645,6 +723,9 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     if (pa.hasLocalMaxMemory) {
       setLocalMaxMemory(pa.getLocalMaxMemory());
     }
+    if (pa.hasOffHeap) {
+      setOffHeap(pa.getOffHeap());
+    }
     if (pa.hasTotalMaxMemory) {
       setTotalMaxMemory(pa.getTotalMaxMemory());
     }
@@ -670,20 +751,69 @@ public class PartitionAttributesImpl implements PartitionAttributes,
       this.addPartitionListeners(pa.partitionListeners);
     }
   }
-
   
-    @SuppressWarnings("unchecked")
-    public void setAll(@SuppressWarnings("rawtypes") PartitionAttributes pa) {
-      setRedundantCopies(pa.getRedundantCopies());
-      setLocalProperties(pa.getLocalProperties());
-      setGlobalProperties(pa.getGlobalProperties());
-      setLocalMaxMemory(pa.getLocalMaxMemory());
-      setTotalMaxMemory(pa.getTotalMaxMemory());
-      setTotalNumBuckets(pa.getTotalNumBuckets());
-      setPartitionResolver(pa.getPartitionResolver());
-      setColocatedWith(pa.getColocatedWith());
-      setRecoveryDelay(pa.getRecoveryDelay());
-      setStartupRecoveryDelay(pa.getStartupRecoveryDelay());
-      addFixedPartitionAttributes(pa.getFixedPartitionAttributes());
-    }
+  @SuppressWarnings("unchecked")
+  public void setAll(@SuppressWarnings("rawtypes")
+  PartitionAttributes pa) {
+    setRedundantCopies(pa.getRedundantCopies());
+    setLocalProperties(pa.getLocalProperties());
+    setGlobalProperties(pa.getGlobalProperties());
+    setLocalMaxMemory(pa.getLocalMaxMemory());
+    setTotalMaxMemory(pa.getTotalMaxMemory());
+    setTotalNumBuckets(pa.getTotalNumBuckets());
+    setPartitionResolver(pa.getPartitionResolver());
+    setColocatedWith(pa.getColocatedWith());
+    setRecoveryDelay(pa.getRecoveryDelay());
+    setStartupRecoveryDelay(pa.getStartupRecoveryDelay());
+    setOffHeap(((PartitionAttributesImpl) pa).getOffHeap());
+    addFixedPartitionAttributes(pa.getFixedPartitionAttributes());
   }
+  
+  /**
+   * Only used for testing. Sets the amount of available off-heap memory when no
+   * distributed system is available. This method must be called before any
+   * instances of PartitionAttributesImpl are created. Specify the value the
+   * same way the off-heap memory property is specified. So, "100m" = 100
+   * megabytes, etc.
+   * 
+   * @param newTestAvailableOffHeapMemory The new test value for available
+   * off-heap memory.
+   */
+  public static void setTestAvailableOffHeapMemory(final String newTestAvailableOffHeapMemory) {
+    testAvailableOffHeapMemory = newTestAvailableOffHeapMemory;
+  }
+  
+  /**
+   * By default the partition can use up to 100% of the allocated off-heap
+   * memory.
+   */
+  private int computeOffHeapLocalMaxMemory() {
+    
+    long availableOffHeapMemoryInMB = 0;
+    if (testAvailableOffHeapMemory != null) {
+      availableOffHeapMemoryInMB = OffHeapStorage.parseOffHeapMemorySize(testAvailableOffHeapMemory) / (1024 * 1024);
+    } else if (InternalDistributedSystem.getAnyInstance() == null) {
+      this.localMaxMemoryExists = false;
+      return OFF_HEAP_LOCAL_MAX_MEMORY_PLACEHOLDER; // fix 52033: return non-negative, non-zero temporary placeholder for offHeapLocalMaxMemory
+    } else {
+      String offHeapSizeConfigValue = InternalDistributedSystem.getAnyInstance().getOriginalConfig().getOffHeapMemorySize();
+      availableOffHeapMemoryInMB = OffHeapStorage.parseOffHeapMemorySize(offHeapSizeConfigValue) / (1024 * 1024);
+    }
+    
+    if (availableOffHeapMemoryInMB > Integer.MAX_VALUE) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.PartitionAttributesImpl_REDUCED_LOCAL_MAX_MEMORY_FOR_PARTITION_ATTRIBUTES_WHEN_SETTING_FROM_AVAILABLE_OFF_HEAP_MEMORY_SIZE));
+      return Integer.MAX_VALUE;
+    }
+    
+    this.localMaxMemoryExists = true;
+    return (int) availableOffHeapMemoryInMB;
+  }
+  
+  public int getLocalMaxMemoryDefault() {
+    if (!this.offHeap) {
+      return PartitionAttributesFactory.LOCAL_MAX_MEMORY_DEFAULT;
+    }
+    
+    return computeOffHeapLocalMaxMemory();
+  }
+}

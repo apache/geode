@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.util.AbortableTaskService.AbortableTask;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class AbortableTaskServiceJUnitTest {
@@ -35,14 +35,14 @@ public class AbortableTaskServiceJUnitTest {
   private static final long TIMEOUT_SECONDS = 10;
   
   private volatile CountDownLatch delay;
-  private ExecutorService executor;
+  private ExecutorService futures;
   private AbortableTaskService tasks;
   
   @Before
   public void setUp() {
     this.delay = new CountDownLatch(1);
     this.tasks = new AbortableTaskService(Executors.newSingleThreadExecutor());
-    this.executor = Executors.newSingleThreadExecutor();
+    this.futures = Executors.newSingleThreadExecutor();
   }
   
   @After
@@ -50,11 +50,8 @@ public class AbortableTaskServiceJUnitTest {
     if (this.delay != null && this.delay.getCount() > 0) {
       this.delay.countDown();
     }
-    try {
-      assertTrue(this.executor.shutdownNow().isEmpty());
-    } finally {
-      this.tasks.abortAll();
-    }
+    this.tasks.abortAll();
+    assertTrue(this.futures.shutdownNow().isEmpty());
   }
   
   @Test
@@ -62,7 +59,7 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     this.tasks.execute(dt);
     
-    Future<Boolean> future = this.executor.submit(new Callable<Boolean>() {
+    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();
@@ -83,7 +80,7 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     this.tasks.execute(dt);
     
-    Future<Boolean> future = this.executor.submit(new Callable<Boolean>() {
+    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();
@@ -112,7 +109,7 @@ public class AbortableTaskServiceJUnitTest {
     this.tasks.execute(dt);
     this.tasks.execute(dt2);
     
-    Future<Boolean> future = this.executor.submit(new Callable<Boolean>() {
+    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();

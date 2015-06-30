@@ -17,17 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
 import java.util.concurrent.ScheduledExecutorService;
+
+import junit.framework.TestCase;
 
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
 import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
@@ -38,7 +35,7 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * @author dsmith
@@ -93,11 +90,11 @@ public class OpExecutorImplJUnitTest extends TestCase {
         return true;
       }
     });
-    Assert.assertEquals("hello", result);
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(0, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
+    assertEquals("hello", result);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
 
     reset();
     
@@ -111,15 +108,15 @@ public class OpExecutorImplJUnitTest extends TestCase {
         return true;
       }
     });
-    Assert.fail("Should have got an exception");
+    fail("Should have got an exception");
     } catch(ServerConnectivityException expected) {
       //do nothing
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(3, exchanges);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(4, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(3, exchanges);
+    assertEquals(1, returns);
+    assertEquals(4, invalidateConnections);
+    assertEquals(0, serverCrashes);
     
     reset();
     
@@ -133,14 +130,14 @@ public class OpExecutorImplJUnitTest extends TestCase {
           return true;
         }
       });
-      Assert.fail("Should have got an exception");
+      fail("Should have got an exception");
     } catch(ServerOperationException expected) {
       //do nothing
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(0, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
     
     reset();
     
@@ -154,15 +151,15 @@ public class OpExecutorImplJUnitTest extends TestCase {
           return true;
         }
       });
-      Assert.fail("Should have got an exception");
+      fail("Should have got an exception");
     } catch(ServerConnectivityException expected) {
       //do nothing
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(3, exchanges);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(4, invalidateConnections);
-    Assert.assertEquals(4, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(3, exchanges);
+    assertEquals(1, returns);
+    assertEquals(4, invalidateConnections);
+    assertEquals(4, serverCrashes);
   }
 
   private void reset() {
@@ -189,15 +186,15 @@ public class OpExecutorImplJUnitTest extends TestCase {
           return true;
         }
       });
-      Assert.fail("Should have got an exception");
+      fail("Should have got an exception");
     } catch(ServerConnectivityException expected) {
       //do nothing
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(4, exchanges);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(6, invalidateConnections);
-    Assert.assertEquals(6, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(4, exchanges);
+    assertEquals(1, returns);
+    assertEquals(6, invalidateConnections);
+    assertEquals(6, serverCrashes);
   }
   
   public void testRetryFailedServers() throws Exception {
@@ -214,15 +211,15 @@ public class OpExecutorImplJUnitTest extends TestCase {
           return true;
         }
       });
-      Assert.fail("Should have got an exception");
+      fail("Should have got an exception");
     } catch(ServerConnectivityException expected) {
       //do nothing
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(10, exchanges);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(11, invalidateConnections);
-    Assert.assertEquals(11, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(10, exchanges);
+    assertEquals(1, returns);
+    assertEquals(11, invalidateConnections);
+    assertEquals(11, serverCrashes);
   }
 
   public void testExecuteOn() throws Exception {
@@ -237,11 +234,11 @@ public class OpExecutorImplJUnitTest extends TestCase {
         return true;
       }
     });
-    Assert.assertEquals("hello", result);
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(0, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
+    assertEquals("hello", result);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
 
     reset();
     
@@ -255,14 +252,14 @@ public class OpExecutorImplJUnitTest extends TestCase {
         return true;
       }
     });
-    Assert.fail("Should have got an exception");
+    fail("Should have got an exception");
     } catch(ServerConnectivityException expected) {
       //do nothing
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(1, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(1, invalidateConnections);
+    assertEquals(0, serverCrashes);
     
     reset();
     
@@ -276,14 +273,14 @@ public class OpExecutorImplJUnitTest extends TestCase {
           return true;
         }
       });
-      Assert.fail("Should have got an exception");
+      fail("Should have got an exception");
     } catch(ServerOperationException expected) {
       //do nothing
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(0, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
     
     reset();
 
@@ -304,17 +301,17 @@ public class OpExecutorImplJUnitTest extends TestCase {
               return true;
             }
           });
-        Assert.fail("Should have got an exception");
+        fail("Should have got an exception");
       } catch(ServerConnectivityException expected) {
         //do nothing
       } finally {
         logger.info(removeExpected);
       }
     }
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(1, returns);
-    Assert.assertEquals(1, invalidateConnections);
-    Assert.assertEquals(1, serverCrashes);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(1, invalidateConnections);
+    assertEquals(1, serverCrashes);
   }
   
   public void testExecuteOnAllQueueServers() {
@@ -328,10 +325,10 @@ public class OpExecutorImplJUnitTest extends TestCase {
         return true;
       }
     });
-    Assert.assertEquals(0, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
-    Assert.assertEquals(1, getPrimary);
-    Assert.assertEquals(1, getBackups);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
+    assertEquals(1, getPrimary);
+    assertEquals(1, getBackups);
     
     reset();
     
@@ -346,10 +343,10 @@ public class OpExecutorImplJUnitTest extends TestCase {
       }
     });
     
-    Assert.assertEquals(4, invalidateConnections);
-    Assert.assertEquals(0, serverCrashes);
-    Assert.assertEquals(1, getPrimary);
-    Assert.assertEquals(1, getBackups);
+    assertEquals(4, invalidateConnections);
+    assertEquals(0, serverCrashes);
+    assertEquals(1, getPrimary);
+    assertEquals(1, getBackups);
     
     reset();
     
@@ -369,11 +366,11 @@ public class OpExecutorImplJUnitTest extends TestCase {
       }
     });
     
-    Assert.assertEquals("hello", result);
-    Assert.assertEquals(14, serverCrashes);
-    Assert.assertEquals(14, invalidateConnections);
-    Assert.assertEquals(12, getPrimary);
-    Assert.assertEquals(1, getBackups);
+    assertEquals("hello", result);
+    assertEquals(14, serverCrashes);
+    assertEquals(14, invalidateConnections);
+    assertEquals(12, getPrimary);
+    assertEquals(1, getBackups);
     
   }
 
@@ -392,24 +389,24 @@ public class OpExecutorImplJUnitTest extends TestCase {
     };
     
     exec.execute(op);
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(0, returns);
+    assertEquals(1, borrows);
+    assertEquals(0, returns);
     reset();
     exec.execute(op);
-    Assert.assertEquals(0, borrows);
-    Assert.assertEquals(0, returns);
+    assertEquals(0, borrows);
+    assertEquals(0, returns);
     reset();
     exec.executeOn(server, op);
-    Assert.assertEquals(1, borrows);
-    Assert.assertEquals(0, returns);
+    assertEquals(1, borrows);
+    assertEquals(0, returns);
     reset();
     exec.executeOn(server, op);
-    Assert.assertEquals(0, borrows);
-    Assert.assertEquals(0, returns);
+    assertEquals(0, borrows);
+    assertEquals(0, returns);
     exec.execute(op);
     reset();
-    Assert.assertEquals(0, borrows);
-    Assert.assertEquals(0, returns);
+    assertEquals(0, borrows);
+    assertEquals(0, returns);
   }
   
   public class DummyManager implements ConnectionManager {

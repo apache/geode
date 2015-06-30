@@ -443,4 +443,9 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   public boolean canParticipateInTransaction() {
     return true;
   }
+  
+  @Override
+  public boolean isTransactionDistributed() {
+    return false;
+  }
 }
