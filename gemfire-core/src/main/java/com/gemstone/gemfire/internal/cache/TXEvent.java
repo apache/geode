@@ -9,6 +9,7 @@
 package com.gemstone.gemfire.internal.cache;
 import com.gemstone.gemfire.cache.*;
 import java.util.*;
+import com.gemstone.gemfire.internal.offheap.Releasable;
 
 /** <p>The internal implementation of the {@link TransactionEvent} interface
  * 
@@ -17,7 +18,7 @@ import java.util.*;
  * @since 4.0
  * 
  */
-public class TXEvent implements TransactionEvent {
+public class TXEvent implements TransactionEvent, Releasable {
   private final TXStateInterface localTxState;
   private List events;
   private List createEvents = null;
@@ -121,5 +122,18 @@ public class TXEvent implements TransactionEvent {
 
   public final Cache getCache() {
     return this.cache;
+  }
+
+  @Override
+  public synchronized void release() {
+    if (this.events != null) {
+      Iterator it = getEvents().iterator();
+      while (it.hasNext()) {
+        Object o = it.next();
+        if (o instanceof EntryEventImpl) {
+          ((EntryEventImpl) o).release();
+        }
+      }
+    }
   }
 }

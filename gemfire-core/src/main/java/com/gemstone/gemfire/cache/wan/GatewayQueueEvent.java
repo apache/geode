@@ -9,6 +9,7 @@ package com.gemstone.gemfire.cache.wan;
 
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 
 /**
  * Represents <code>Cache</code> events going through 
@@ -53,6 +54,9 @@ public interface GatewayQueueEvent<K, V> {
    * Returns the deserialized value associated with this event.
    * 
    * @return the deserialized value associated with this event
+   * 
+   * @throws IllegalStateException may be thrown if the event's value was stored off-heap
+   * and {@link AsyncEventListener#processEvents(java.util.List)} has already returned.
    */
   public V getDeserializedValue();
 
@@ -60,6 +64,9 @@ public interface GatewayQueueEvent<K, V> {
    * Returns the serialized form of the value associated with this event.
    * 
    * @return the serialized form of the value associated with this event
+   * 
+   * @throws IllegalStateException may be thrown if the event's value was stored off-heap
+   * and {@link AsyncEventListener#processEvents(java.util.List)} has already returned.
    */
   public byte[] getSerializedValue();
 }

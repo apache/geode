@@ -193,6 +193,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     RemoveAllResponse p = new RemoveAllResponse(event.getRegion().getSystem(), recipients);
     RemoteRemoveAllMessage msg = new RemoteRemoveAllMessage(event, recipients, p,
         removeAllData, removeAllDataCount, useOriginRemote, processorType, possibleDuplicate);
+    msg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
     Set failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(msg));
@@ -330,9 +331,10 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     final DistributedRegion dr = (DistributedRegion)r;
     
     // create a base event and a op for RemoveAllMessage distributed btw redundant buckets
-    EntryEventImpl baseEvent = new EntryEventImpl(
+    EntryEventImpl baseEvent = EntryEventImpl.create(
         r, Operation.REMOVEALL_DESTROY,
         null, null, this.callbackArg, false, eventSender, true);
+    try {
 
     baseEvent.setCausedByMessage(this);
     
@@ -347,6 +349,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
           eventSender, baseEvent, this);
     }
     final DistributedRemoveAllOperation op = new DistributedRemoveAllOperation(baseEvent, removeAllDataCount, false);
+    try {
     final VersionedObjectList versions = new VersionedObjectList(removeAllDataCount, true, dr.concurrencyChecksEnabled);
     dr.syncBulkOp(new Runnable() {
       @SuppressWarnings("synthetic-access")
@@ -354,6 +357,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
         InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
         for (int i = 0; i < removeAllDataCount; ++i) {
           EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i, removeAllData, false, bridgeContext, posDup, false);
+          try {
           ev.setRemoveAllOperation(op);
           if (logger.isDebugEnabled()) {
             logger.debug("invoking basicDestroy with {}", ev);
@@ -364,6 +368,9 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
           }
           removeAllData[i].versionTag = ev.getVersionTag();
           versions.addKeyAndVersion(removeAllData[i].key, ev.getVersionTag());
+          } finally {
+            ev.release();
+          }
         }
       }
     }, baseEvent.getEventId());
@@ -373,6 +380,12 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     RemoveAllReplyMessage.send(getSender(), this.processorId, 
         getReplySender(r.getDistributionManager()), versions, this.removeAllData, this.removeAllDataCount);
     return false;
+    } finally {
+      op.freeOffHeapResources();
+    }
+    } finally {
+      baseEvent.release();
+    }
   }
 
   

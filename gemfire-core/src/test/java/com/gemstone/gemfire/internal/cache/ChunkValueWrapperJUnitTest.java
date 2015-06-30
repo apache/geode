@@ -1,0 +1,172 @@
+package com.gemstone.gemfire.internal.cache;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ChunkValueWrapper;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
+import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
+import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
+public class ChunkValueWrapperJUnitTest {
+
+  private static ChunkValueWrapper createChunkValueWrapper(byte[] bytes, boolean isSerialized) {
+    Chunk c = (Chunk)SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false, null);
+    return new ChunkValueWrapper(c);
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+  }
+
+  @Test
+  public void testIsSerialized() {
+    assertEquals(true, createChunkValueWrapper(new byte[16], true).isSerialized());
+    assertEquals(false, createChunkValueWrapper(new byte[16], false).isSerialized());
+  }
+  
+  @Test
+  public void testGetUserBits() {
+    assertEquals((byte)1, createChunkValueWrapper(new byte[16], true).getUserBits());
+    assertEquals((byte)0, createChunkValueWrapper(new byte[16], false).getUserBits());
+  }
+  
+  @Test
+  public void testGetLength() {
+    assertEquals(32, createChunkValueWrapper(new byte[32], true).getLength());
+    assertEquals(17, createChunkValueWrapper(new byte[17], false).getLength());
+  }
+  
+  @Test
+  public void testGetBytesAsString() {
+    assertEquals("[0, 0, 0, 0, 0, 0, 0, 0]", createChunkValueWrapper(new byte[8], false).getBytesAsString());
+  }
+  
+  @Test
+  public void testSendTo() throws IOException {
+    final ByteBuffer bb = ByteBuffer.allocateDirect(18);
+    bb.limit(8);
+    ChunkValueWrapper vw = createChunkValueWrapper(new byte[]{1,2,3,4,5,6,7,8}, false);
+    vw.sendTo(bb, new Flushable() {
+      @Override
+      public void flush() throws IOException {
+        fail("should not have been called");
+      }
+
+      @Override
+      public void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException {
+        fail("should not have been called");
+      }
+    });
+    assertEquals(8, bb.position());
+    bb.flip();
+    assertEquals(1, bb.get());
+    assertEquals(2, bb.get());
+    assertEquals(3, bb.get());
+    assertEquals(4, bb.get());
+    assertEquals(5, bb.get());
+    assertEquals(6, bb.get());
+    assertEquals(7, bb.get());
+    assertEquals(8, bb.get());
+    
+    bb.clear();
+    bb.limit(8);
+    vw = createChunkValueWrapper(new byte[]{1,2,3,4,5,6,7,8,9}, false);
+    final int[] flushCalls = new int[1];
+    vw.sendTo(bb, new Flushable() {
+      @Override
+      public void flush() throws IOException {
+        if (flushCalls[0] != 0) {
+          fail("expected flush to only be called once");
+        }
+        flushCalls[0]++;
+        assertEquals(8, bb.position());
+        for (int i=0; i < 8; i++) {
+          assertEquals(i+1, bb.get(i));
+        }
+        bb.clear();
+        bb.limit(8);
+      }
+
+      @Override
+      public void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException {
+        fail("should not have been called");
+      }
+    });
+    assertEquals(1, bb.position());
+    bb.flip();
+    assertEquals(9, bb.get());
+    
+    bb.clear();
+    bb.limit(8);
+    flushCalls[0] = 0;
+    vw = createChunkValueWrapper(new byte[]{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17}, false);
+    vw.sendTo(bb, new Flushable() {
+      @Override
+      public void flush() throws IOException {
+        if (flushCalls[0] > 1) {
+          fail("expected flush to only be called twice");
+        }
+        assertEquals(8, bb.position());
+        for (int i=0; i < 8; i++) {
+          assertEquals((flushCalls[0]*8)+i+1, bb.get(i));
+        }
+        flushCalls[0]++;
+        bb.clear();
+        bb.limit(8);
+      }
+
+      @Override
+      public void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException {
+        fail("should not have been called");
+      }
+    });
+    assertEquals(1, bb.position());
+    bb.flip();
+    assertEquals(17, bb.get());
+    
+    // now test with a chunk that will not fit in bb.
+    bb.clear();
+    flushCalls[0] = 0;
+    bb.put((byte) 0);
+    vw = createChunkValueWrapper(new byte[]{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}, false);
+    vw.sendTo(bb, new Flushable() {
+      @Override
+      public void flush() throws IOException {
+        fail("should not have been called");
+      }
+
+      @Override
+      public void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException {
+        flushCalls[0]++;
+        assertEquals(1, bb.position());
+        bb.flip();
+        assertEquals(0, bb.get());
+        assertEquals(19, chunkbb.remaining());
+        for (int i=1; i <= 19; i++) {
+          assertEquals(i, chunkbb.get());
+        }
+      }
+    });
+    assertEquals(1, flushCalls[0]);
+  }
+}

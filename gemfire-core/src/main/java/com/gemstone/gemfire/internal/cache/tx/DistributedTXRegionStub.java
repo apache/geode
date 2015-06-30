@@ -152,7 +152,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   
   public Object findObject(KeyInfo keyInfo, boolean isCreate,
       boolean generateCallbacks, Object value, boolean preferCD,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent) {
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean allowReadFromHDFS) {
     Object retVal = null;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();

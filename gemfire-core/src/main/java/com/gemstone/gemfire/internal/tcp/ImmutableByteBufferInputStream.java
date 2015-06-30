@@ -9,6 +9,8 @@ package com.gemstone.gemfire.internal.tcp;
 
 import java.nio.ByteBuffer;
 
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+
 /**
  * You should only create an instance of this class if the bytes this buffer reads
  * will never change. If you want a buffer than can be refilled with other bytes then
@@ -28,9 +30,7 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
    */
   public ImmutableByteBufferInputStream(ByteBufferInputStream existing,
       int length) {
-    ByteBuffer bb = existing.slice();
-    bb.limit(length);
-    setBuffer(bb);
+    setBuffer(existing.slice(length));
   }
   /**
    * Create an immutable input stream whose contents are the given bytes
@@ -58,6 +58,9 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
     // for serialization
   }
   
+  public ImmutableByteBufferInputStream(Chunk blob) {
+    super(blob);
+  }
   @Override
   public boolean markSupported() {
     return false;

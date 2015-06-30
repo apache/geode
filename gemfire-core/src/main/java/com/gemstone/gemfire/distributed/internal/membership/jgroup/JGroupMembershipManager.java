@@ -42,11 +42,13 @@ import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.BoundedLinkedHashMap;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DSClock;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -77,6 +79,7 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.xmlcache.BridgeServerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -110,8 +113,8 @@ import com.gemstone.org.jgroups.protocols.UDP;
 import com.gemstone.org.jgroups.protocols.VERIFY_SUSPECT;
 import com.gemstone.org.jgroups.protocols.pbcast.GMS;
 import com.gemstone.org.jgroups.protocols.pbcast.NAKACK;
-import com.gemstone.org.jgroups.stack.GFBasicAdapter;
-import com.gemstone.org.jgroups.stack.GFPeerAdapter;
+import com.gemstone.org.jgroups.spi.GFBasicAdapter;
+import com.gemstone.org.jgroups.spi.GFPeerAdapter;
 import com.gemstone.org.jgroups.stack.GossipServer;
 import com.gemstone.org.jgroups.stack.IpAddress;
 import com.gemstone.org.jgroups.stack.ProtocolStack;
@@ -1175,7 +1178,9 @@ public class JGroupMembershipManager implements MembershipManager
       if (JGroupMembershipManager.this.shutdownInProgress) {
         return;  // probably a jgroups race condition
       }
-      saveCacheXmlForReconnect();
+      if (!dconfig.getDisableAutoReconnect()) {
+        saveCacheXmlForReconnect(dconfig.getUseSharedConfiguration());
+      }
       // make sure that we've received a connected channel and aren't responsible
       // for the notification
       if (JGroupMembershipManager.this.puller != null // not shutting down
@@ -1210,6 +1215,13 @@ public class JGroupMembershipManager implements MembershipManager
 //            if (loc.isServerLocator()) {  auto-reconnect requires locator to stop now
               loc.stop(!JGroupMembershipManager.this.dconfig.getDisableAutoReconnect(), false);
 //            }
+          }
+        }
+        InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+        if (system != null) {
+          DM dm = system.getDM();
+          if (dm != null) {
+            dm.setRootCause(e);
           }
         }
         JGroupMembershipManager.this.uncleanShutdown(reason, e);
@@ -2565,6 +2577,8 @@ public class JGroupMembershipManager implements MembershipManager
 //    stubToMemberMap.clear();
 //    memberToStubMap.clear();
     
+    this.timer.cancel();
+    
     if (DEBUG) {
       System.err.println("DEBUG: done closing JGroupMembershipManager");
     }
@@ -2684,28 +2698,32 @@ public class JGroupMembershipManager implements MembershipManager
   }
   
   /** generate XML for the cache before shutting down due to forced disconnect */
-  private void saveCacheXmlForReconnect() {
-    if (!dconfig.getDisableAutoReconnect()) {
-      // first save the current cache description so reconnect can rebuild the cache
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if (cache != null && (cache instanceof Cache)) {
-        if (!Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile")
-            && !cache.isSqlfSystem() && !dconfig.getUseSharedConfiguration()) {
-          try {
-            if (logger.isDebugEnabled()) {
-              logger.debug("generating XML to rebuild the cache after reconnect completes");
-            }
-            StringPrintWriter pw = new StringPrintWriter(); 
-            CacheXmlGenerator.generate((Cache)cache, pw, true, false);
-            String cacheXML = pw.toString();
-            cache.getCacheConfig().setCacheXMLDescription(cacheXML);
-            if (logger.isDebugEnabled()) {
-              logger.debug("XML generation completed: {}", cacheXML);
-            }
-          } catch (CancelException e) {
-            logger.info(LocalizedMessage.create(LocalizedStrings.JGroupMembershipManager_PROBLEM_GENERATING_CACHE_XML), e);
-          }
+  public void saveCacheXmlForReconnect(boolean sharedConfigEnabled) {
+    // first save the current cache description so reconnect can rebuild the cache
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if (cache != null && (cache instanceof Cache)) {
+      if (!Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile")
+          && !cache.isSqlfSystem() && !sharedConfigEnabled) {
+        try {
+          logger.info("generating XML to rebuild the cache after reconnect completes");
+          StringPrintWriter pw = new StringPrintWriter(); 
+          CacheXmlGenerator.generate((Cache)cache, pw, true, false);
+          String cacheXML = pw.toString();
+          cache.getCacheConfig().setCacheXMLDescription(cacheXML);
+          logger.info("XML generation completed: {}", cacheXML);
+        } catch (CancelException e) {
+          logger.info(LocalizedMessage.create(LocalizedStrings.JGroupMembershipManager_PROBLEM_GENERATING_CACHE_XML), e);
         }
+      } else if (sharedConfigEnabled && !cache.getCacheServers().isEmpty()) {
+        // we need to retain a cache-server description if this JVM was started by gfsh
+        List<BridgeServerCreation> list = new ArrayList<BridgeServerCreation>(cache.getCacheServers().size());
+        for (Iterator it = cache.getCacheServers().iterator(); it.hasNext(); ) {
+          CacheServer cs = (CacheServer)it.next();
+          BridgeServerCreation bsc = new BridgeServerCreation(cache, cs);
+          list.add(bsc);
+        }
+        cache.getCacheConfig().setCacheServerCreation(list);
+        logger.info("CacheServer configuration saved");
       }
     }
   }
@@ -2771,7 +2789,9 @@ public class JGroupMembershipManager implements MembershipManager
             }
           }
         }
-        saveCacheXmlForReconnect();
+        if (!dconfig.getDisableAutoReconnect()) {
+          saveCacheXmlForReconnect(dconfig.getUseSharedConfiguration());
+        }
         listener.membershipFailure("Channel closed", problem);
         throw new DistributedSystemDisconnectedException("Channel closed", problem);
       }

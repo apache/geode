@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -124,10 +125,10 @@ public class ConnectionImpl implements Connection {
     out = SocketUtils.getOutputStream(theSocket);//theSocket.getOutputStream();
     in = SocketUtils.getInputStream(theSocket);//theSocket.getInputStream();
     this.status = handShake.greet(this, location, communicationMode);
-    commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize);
+    commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
     if (sender != null) {
       commBufferForAsyncRead = ServerConnection
-          .allocateCommBuffer(socketBufferSize);
+          .allocateCommBuffer(socketBufferSize, theSocket);
     }
     theSocket.setSoTimeout(readTimeout);
     endpoint = endpointManager.referenceEndpoint(location, this.status.getMemberId());
@@ -208,9 +209,29 @@ public class ConnectionImpl implements Connection {
         logger.debug(e.getMessage(), e);
       }
     }
+    releaseCommBuffers();
+  }
+  
+  private void releaseCommBuffers() {
+    ByteBuffer bb = this.commBuffer;
+    if (bb != null) {
+      this.commBuffer = null;
+      ServerConnection.releaseCommBuffer(bb);
+    }
+    bb = this.commBufferForAsyncRead;
+    if (bb != null) {
+      this.commBufferForAsyncRead = null;
+      ServerConnection.releaseCommBuffer(bb);
+    }
   }
 
-  public ByteBuffer getCommBuffer() {
+  public ByteBuffer getCommBuffer() throws SocketException {
+    if (isDestroyed()) {
+      // see bug 52193. Since the code used to see this
+      // as an attempt to use a close socket just throw
+      // a SocketException.
+      throw new SocketException("socket was closed");
+    }
     return commBuffer;
   }
 
@@ -313,7 +334,13 @@ public class ConnectionImpl implements Connection {
     TEST_DURABLE_CLIENT_CRASH = v;
   }
 
-  public ByteBuffer getCommBufferForAsyncRead() {
+  public ByteBuffer getCommBufferForAsyncRead() throws SocketException {
+    if (isDestroyed()) {
+      // see bug 52193. Since the code used to see this
+      // as an attempt to use a close socket just throw
+      // a SocketException.
+      throw new SocketException("socket was closed");
+    }
     return commBufferForAsyncRead;
   }
   

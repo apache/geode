@@ -157,7 +157,7 @@ public class ChunkedMessage extends Message
   
   public void setServerConnection(ServerConnection servConn)
   {    
-    this.sc = servConn;
+    if (this.sc != servConn) throw new IllegalStateException("this.sc was not correctly set");
   }
   
   /**
@@ -230,7 +230,7 @@ public class ChunkedMessage extends Message
      */
     private void readChunk() throws IOException {
       final ByteBuffer cb = getCommBuffer();
-      flush();
+      clearParts();
       cb.clear();
       int totalBytesRead = 0;
       do {
@@ -318,11 +318,8 @@ public class ChunkedMessage extends Message
    * Sends a chunk of this message.
    */
   public void sendChunk(ServerConnection servConn) throws IOException {
-    this.sc = servConn;
-    if (isLastChunk()) {
-      this.headerSent = false;
-    }
-    sendBytes(true);
+    if (this.sc != servConn) throw new IllegalStateException("this.sc was not correctly set");
+    sendChunk();
   }
 
   @Override

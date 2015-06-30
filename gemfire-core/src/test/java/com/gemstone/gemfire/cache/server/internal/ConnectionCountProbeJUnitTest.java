@@ -13,7 +13,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * @author dsmith

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<!-- redundancylevel.xml
+     Configures a region as a client region. The region's loader and writer 
+     connect to a server listening on port 30303.
+-->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.0//EN"
+  "http://www.gemstone.com/dtd/cache5_0.dtd">
+<cache>
+  <region name="root">
+    <region-attributes/> 
+    <region name="exampleRegion">
+      <region-attributes scope="distributed-ack">
+        <cache-writer>
+          <class-name>com.gemstone.gemfire.cache.util.BridgeWriter</class-name>
+          <parameter name="endpoints">
+            <string>server=localhost:30303</string>
+          </parameter>
+          <parameter name="establishCallbackConnection">
+            <string>true</string>
+          </parameter>
+          <parameter name="redundancyLevel">
+            <string>6</string>
+          </parameter>          
+        </cache-writer>
+      </region-attributes>
+    </region>
+  </region>
+</cache>

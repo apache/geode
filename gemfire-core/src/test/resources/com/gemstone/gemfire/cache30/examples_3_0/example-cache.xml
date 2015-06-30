@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- A sample GemFire declarative caching XML File -->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 3.0//EN"
+  "http://www.gemstone.com/dtd/cache3_0.dtd">
+<cache search-timeout="60" lock-lease="300">
+  <vm-root-region name="root">
+    <region-attributes/>
+
+    <!-- Add one entry to the root region -->
+    <entry>
+      <key><string>Application Version</string></key>
+      <value><string>1.0</string></value>
+    </entry>
+
+    <!-- Create a new sub region -->
+    <region name="customers">
+      <region-attributes statistics-enabled="true"
+                         scope="distributed-no-ack">
+
+        <entry-time-to-live>
+          <expiration-attributes action="destroy" timeout="3000"/>
+        </entry-time-to-live>
+
+        <entry-idle-time>
+          <expiration-attributes timeout="600"/>
+        </entry-idle-time>
+
+        <disk-write-attributes>
+          <asynchronous-writes bytes-threshold="1000"
+            time-interval="30000"/>
+        </disk-write-attributes>
+
+
+        <cache-loader>
+          <class-name>com.company.app.DBLoader</class-name>
+          <parameter name="URL">
+            <string>jdbc://12.34.56.78/mydb</string>
+          </parameter>
+        </cache-loader>
+      </region-attributes>
+
+      <!-- Add an entry whose value is a Declarable object -->
+      <entry>
+        <key><string>Louise Jones</string></key>
+        <value>
+          <declarable>
+            <class-name>com.company.app.Customer</class-name>
+            <parameter name="name">
+              <string>Louise Jones</string>
+            </parameter>
+            <parameter name="address1">
+              <string>123 Main Street</string>
+            </parameter>
+            <parameter name="city">
+              <string>New York</string>
+            </parameter>
+            <parameter name="state">
+              <string>NY</string>
+            </parameter>
+            <parameter name="zip">
+              <string>12345</string>
+            </parameter>
+          </declarable>
+        </value>
+      </entry>
+    </region>
+  </vm-root-region>
+</cache>

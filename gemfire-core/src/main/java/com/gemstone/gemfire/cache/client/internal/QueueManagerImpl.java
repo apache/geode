@@ -1206,7 +1206,7 @@ public class QueueManagerImpl implements QueueManager {
 
   protected void recoverAllInterestTypes(final Connection recoveredConnection,
       boolean isFirstNewConnection) {
-    if (PoolImpl.BEFORE_RECOVER_INTERST_CALLBACK_FLAG) {
+    if (PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG) {
       BridgeObserver bo = BridgeObserverHolder.getInstance();
       bo.beforeInterestRecovery();
     }

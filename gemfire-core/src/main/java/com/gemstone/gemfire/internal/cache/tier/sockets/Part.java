@@ -8,6 +8,11 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.DataAsAddress;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
 
 import java.io.*;
 import java.nio.*;
@@ -34,6 +39,7 @@ public class Part {
    * @since 5.1
    */
   private static final byte EMPTY_BYTEARRAY_CODE = 2;
+  private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /** The payload of this part.
    * Could be null, a byte[] or a HeapDataOutputStream on the send side.
@@ -45,8 +51,8 @@ public class Part {
   private byte typeCode;
 
   public void init(byte[] v, byte tc) {
-    if (tc == EMPTY_BYTEARRAY_CODE && v == null) {
-      this.part = new byte[0];
+    if (tc == EMPTY_BYTEARRAY_CODE) {
+      this.part = EMPTY_BYTE_ARRAY;
     }
     else {
       this.part = v;
@@ -90,6 +96,7 @@ public class Part {
       this.typeCode = OBJECT_CODE;
     } else if (b != null && b.length == 0) {
       this.typeCode = EMPTY_BYTEARRAY_CODE;
+      b = EMPTY_BYTE_ARRAY;
     } else {
       this.typeCode = BYTE_CODE;
     }
@@ -98,12 +105,30 @@ public class Part {
   public void setPartState(HeapDataOutputStream os, boolean isObject) {
     if (isObject) {
       this.typeCode = OBJECT_CODE;
+      this.part = os;
     } else if (os != null && os.size() == 0) {
       this.typeCode = EMPTY_BYTEARRAY_CODE;
+      this.part = EMPTY_BYTE_ARRAY;
+    } else {
+      this.typeCode = BYTE_CODE;
+      this.part = os;
+    }
+  }
+  public void setPartState(StoredObject so, boolean isObject) {
+    if (isObject) {
+      this.typeCode = OBJECT_CODE;
+    } else if (so.getValueSizeInBytes() == 0) {
+      this.typeCode = EMPTY_BYTEARRAY_CODE;
+      this.part = EMPTY_BYTE_ARRAY;
+      return;
     } else {
       this.typeCode = BYTE_CODE;
     }
-    this.part = os;
+    if (so instanceof DataAsAddress) {
+      this.part = ((DataAsAddress)so).getRawBytes();
+    } else {
+      this.part = (Chunk)so;
+    }
   }
   public byte getTypeCode() {
     return this.typeCode;
@@ -117,6 +142,8 @@ public class Part {
       return 0;
     } else if (this.part instanceof byte[]) {
       return ((byte[])this.part).length;
+    } else if (this.part instanceof Chunk) {
+      return ((Chunk) this.part).getValueSizeInBytes();
     } else {
       return ((HeapDataOutputStream)this.part).size();
     }
@@ -248,26 +275,63 @@ public class Part {
   
   /**
    * Write the contents of this part to the specified output stream.
+   * This is only called for parts that will not fit into the commBuffer
+   * so they need to be written directly to the stream.
+   * A stream is used because the client is configured for old IO (instead of nio).
+   * @param buf the buffer to use if any data needs to be copied to one
    */
-  public final void sendTo(OutputStream out) throws IOException {
+  public final void sendTo(OutputStream out, ByteBuffer buf) throws IOException {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         byte[] bytes = (byte[])this.part;
         out.write(bytes, 0, bytes.length);
+      } else if (this.part instanceof Chunk) {
+        Chunk c = (Chunk) this.part;
+        ByteBuffer cbb = c.createDirectByteBuffer();
+        if (cbb != null) {
+          HeapDataOutputStream.writeByteBufferToStream(out,  buf, cbb);
+        } else {
+          int bytesToSend = c.getDataSize();
+          long addr = c.getAddressForReading(0, bytesToSend);
+          while (bytesToSend > 0) {
+            if (buf.remaining() == 0) {
+              HeapDataOutputStream.flushStream(out,  buf);
+            }
+            buf.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+            addr++;
+            bytesToSend--;
+          }
+        }
       } else {
         HeapDataOutputStream hdos = (HeapDataOutputStream)this.part;
-        hdos.sendTo(out);
+        hdos.sendTo(out, buf);
         hdos.rewind();
       }
     }
   }
   /**
    * Write the contents of this part to the specified byte buffer.
+   * Precondition: caller has already checked the length of this part
+   * and it will fit into "buf".
    */
   public final void sendTo(ByteBuffer buf) {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         buf.put((byte[])this.part);
+      } else if (this.part instanceof Chunk) {
+        Chunk c = (Chunk) this.part;
+        ByteBuffer bb = c.createDirectByteBuffer();
+        if (bb != null) {
+          buf.put(bb);
+        } else {
+          int bytesToSend = c.getDataSize();
+          long addr = c.getAddressForReading(0, bytesToSend);
+          while (bytesToSend > 0) {
+            buf.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+            addr++;
+            bytesToSend--;
+          }
+        }
       } else {
         HeapDataOutputStream hdos = (HeapDataOutputStream)this.part;
         hdos.sendTo(buf);
@@ -278,6 +342,9 @@ public class Part {
   /**
    * Write the contents of this part to the specified socket channel
    * using the specified byte buffer.
+   * This is only called for parts that will not fit into the commBuffer
+   * so they need to be written directly to the socket.
+   * Precondition: buf contains nothing that needs to be sent
    */
   public final void sendTo(SocketChannel sc, ByteBuffer buf) throws IOException {
     if (getLength() > 0) {
@@ -300,6 +367,37 @@ public class Part {
             sc.write(buf);
           }
           buf.clear();
+        }
+      } else if (this.part instanceof Chunk) {
+        // instead of copying the Chunk to buf try to create a direct ByteBuffer and
+        // just write it directly to the socket channel.
+        Chunk c = (Chunk) this.part;
+        ByteBuffer bb = c.createDirectByteBuffer();
+        if (bb != null) {
+          while (bb.remaining() > 0) {
+            sc.write(bb);
+          }
+        } else {
+          int len = c.getDataSize();
+          long addr = c.getAddressForReading(0, len);
+          buf.clear();
+          while (len > 0) {
+            int bytesThisTime = len;
+            if (bytesThisTime > BUF_MAX) {
+              bytesThisTime = BUF_MAX;
+            }
+            len -= bytesThisTime;
+            while (bytesThisTime > 0) {
+              buf.put(UnsafeMemoryChunk.readAbsoluteByte(addr));
+              addr++;
+              bytesThisTime--;
+            }
+            buf.flip();
+            while (buf.remaining() > 0) {
+              sc.write(buf);
+            }
+            buf.clear();
+          }
         }
       } else {
         HeapDataOutputStream hdos = (HeapDataOutputStream)this.part;

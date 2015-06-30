@@ -48,6 +48,10 @@ public class ParallelGatewaySenderCreation extends AbstractGatewaySender impleme
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public void destroy() {
+  }
+  
   public void fillInProfile(Profile profile) {
     // TODO Auto-generated method stub
     

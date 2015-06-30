@@ -33,7 +33,9 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
+import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.cache.execute.FunctionContextImpl;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
@@ -219,9 +221,10 @@ public class ExecuteFunction66 extends BaseCommand {
             logger.debug("Executing Function on Server: {} with context: {}", servConn, context);
           }
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+          HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
           if (functionObject.optimizeForWrite() && cache != null
-              && cache.getResourceManager().isHeapCritical()
-              && !InternalResourceManager.isLowMemoryExceptionDisabled()) {
+              && hmm.getState().isCritical()
+              && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
             Set<DistributedMember> sm = Collections
                 .singleton((DistributedMember)cache.getMyId());
             Exception e = new LowMemoryException(

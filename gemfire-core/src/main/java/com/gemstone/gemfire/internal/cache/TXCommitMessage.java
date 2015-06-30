@@ -651,6 +651,7 @@ public final class TXCommitMessage extends PooledDistributionMessage implements 
       if (tls.length > 0) {
         txEvent = new TXRmtEvent(this.txIdent, cache);
       }
+      try {
       // Pre-process each Region in the tx
       try {
         {
@@ -714,6 +715,11 @@ public final class TXCommitMessage extends PooledDistributionMessage implements 
       }
     } catch(CancelException e) {
       processCacheRuntimeException(e);
+    } finally {
+      if (txEvent != null) {
+        txEvent.freeOffHeapResources();
+      }
+    }
     }
     finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
@@ -1270,6 +1276,7 @@ public final class TXCommitMessage extends PooledDistributionMessage implements 
          * This happens when we don't have the bucket and are getting adjunct notification
          */
         EntryEventImpl eei = AbstractRegionMap.createCBEvent(this.r, entryOp.op, entryOp.key, entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,entryOp.filterRoutingInfo,this.msg.bridgeContext, null, entryOp.versionTag, entryOp.tailKey);
+        try {
         if(entryOp.filterRoutingInfo!=null) {
           eei.setLocalFilterInfo(entryOp.filterRoutingInfo.getFilterInfo(this.r.getCache().getMyId()));
         }
@@ -1285,6 +1292,9 @@ public final class TXCommitMessage extends PooledDistributionMessage implements 
         // In the latter case we need to invoke listeners
         final boolean skipListeners = !isDuplicate;
         eei.invokeCallbacks(this.r, skipListeners, true);
+        } finally {
+          eei.release();
+        }
         return;
       }
       if (logger.isDebugEnabled()) {

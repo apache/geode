@@ -24,6 +24,7 @@ import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
@@ -799,10 +800,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       int indexFieldsSize = -1;
       SelectResults set = null;
       Boolean orderByClause = (Boolean)context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
-      boolean useLinkedSet = false;      
+      boolean useLinkedDataStructure = false;   
+      boolean nullValuesAtStart = true;
       if(orderByClause != null && orderByClause.booleanValue()) {
         List orderByAttrs = (List)context.cacheGet(CompiledValue.ORDERBY_ATTRIB);        
-        useLinkedSet =orderByAttrs.size()==1; 
+        useLinkedDataStructure =orderByAttrs.size()==1;
+        nullValuesAtStart = !((CompiledSortCriterion)orderByAttrs.get(0)).getCriterion();
       }
       
       if (resultType instanceof StructType) {
@@ -810,11 +813,11 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
           context.getCache().getLogger().fine(
             "StructType resultType.class=" + resultType.getClass().getName());
         }
-        if (useLinkedSet) {
-          set = new LinkedStructSet((StructTypeImpl)resultType) ;
+        if (useLinkedDataStructure) {
+          set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+          : new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
         } else {
-          set = (SelectResults)new StructBag((StructTypeImpl)resultType,
-                                           context.getCachePerfStats());
+          set = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
         }
         indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
       }
@@ -824,10 +827,11 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
             "non-StructType resultType.class="
                 + resultType.getClass().getName());
         }
-        if (useLinkedSet) {
-          set = new LinkedResultSet(resultType); 
+        if (useLinkedDataStructure) {
+          set = context.isDistinct() ? new LinkedResultSet(resultType) : new SortedResultsBag(resultType,
+              nullValuesAtStart); 
         } else {
-          set = new ResultsBag(resultType, context.getCachePerfStats());
+          set = QueryUtils.createResultCollection(context, resultType);
         }
         indexFieldsSize = 1;
       }
@@ -991,21 +995,23 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       int indexFieldsSize = -1;
       SelectResults set = null;
       Boolean orderByClause = (Boolean)context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
-      boolean useLinkedSet = false;      
+      boolean useLinkedDataStructure = false;
+      boolean nullValuesAtStart = true;
       if(orderByClause != null && orderByClause.booleanValue()) {
         List orderByAttrs = (List)context.cacheGet(CompiledValue.ORDERBY_ATTRIB);        
-        useLinkedSet =orderByAttrs.size()==1; 
+        useLinkedDataStructure =orderByAttrs.size()==1; 
+        nullValuesAtStart = !((CompiledSortCriterion)orderByAttrs.get(0)).getCriterion();
       }
       if (resultType instanceof StructType) {
         if (context.getCache().getLogger().fineEnabled()) {
           context.getCache().getLogger().fine(
             "StructType resultType.class=" + resultType.getClass().getName());
         }
-        if (useLinkedSet) {
-          set = new LinkedStructSet((StructTypeImpl)resultType);
+        if (useLinkedDataStructure) {
+          set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+          : new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
         } else {
-          set = (SelectResults)new StructBag((StructTypeImpl)resultType,
-              context.getCachePerfStats());
+          set = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
         }
         indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
       }
@@ -1015,10 +1021,11 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
             "non-StructType resultType.class="
                 + resultType.getClass().getName());
         }
-        if (useLinkedSet) {
-          set = new LinkedResultSet(resultType); 
+        if (useLinkedDataStructure) {
+          set = context.isDistinct() ? new LinkedResultSet(resultType) : new SortedResultsBag(resultType,
+              nullValuesAtStart); 
         } else {
-          set = new ResultsBag(resultType, context.getCachePerfStats());
+          set = QueryUtils.createResultCollection(context, resultType);
         }
         indexFieldsSize = 1;
       }
@@ -1143,10 +1150,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       int indexFieldsSize = -1;
       SelectResults set = null;
       Boolean orderByClause = (Boolean)context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
-      boolean useLinkedSet = false;      
+      boolean useLinkedDataStructure = false; 
+      boolean nullValuesAtStart = true;
       if(orderByClause != null && orderByClause.booleanValue()) {
         List orderByAttrs = (List)context.cacheGet(CompiledValue.ORDERBY_ATTRIB);        
-        useLinkedSet =orderByAttrs.size()==1; 
+        useLinkedDataStructure =orderByAttrs.size()==1;
+        nullValuesAtStart = !((CompiledSortCriterion)orderByAttrs.get(0)).getCriterion();
       }
       
       if (resultType instanceof StructType) {
@@ -1154,11 +1163,11 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
           context.getCache().getLogger().fine(
             "StructType resultType.class=" + resultType.getClass().getName());
         }
-        if(useLinkedSet) {
-          set = new LinkedStructSet((StructTypeImpl)resultType);
+        if(useLinkedDataStructure) {
+          set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+          : new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
         }else {
-          set = new StructBag((StructTypeImpl)resultType,
-                                           context.getCachePerfStats());
+          set = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
         }
         indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
       }
@@ -1168,10 +1177,11 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
             "non-StructType resultType.class="
                 + resultType.getClass().getName());
         }
-        if (useLinkedSet) {
-          set = new  LinkedResultSet(resultType); 
+        if (useLinkedDataStructure) {
+          set = context.isDistinct() ? new  LinkedResultSet(resultType): 
+            new SortedResultsBag(resultType, nullValuesAtStart); 
         } else {
-          set = new ResultsBag(resultType, context.getCachePerfStats());
+          set = QueryUtils.createResultCollection(context, resultType);
         }
         indexFieldsSize = 1;
       }

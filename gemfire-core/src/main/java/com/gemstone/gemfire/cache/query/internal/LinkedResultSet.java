@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
-public class LinkedResultSet extends java.util.LinkedHashSet implements
+public class LinkedResultSet extends java.util.LinkedHashSet implements Ordered,
     SelectResults, DataSerializableFixedID {
 
   private static final long serialVersionUID = 5184711453750319225L;
@@ -83,7 +83,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet implements
   }
 
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(LinkedHashSet.class, this.elementType);
+    return new CollectionTypeImpl(Ordered.class, this.elementType);
   }
 
   public boolean isModifiable() {
@@ -121,6 +121,16 @@ public class LinkedResultSet extends java.util.LinkedHashSet implements
   @Override
   public Version[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public Comparator comparator() {    
+    return null;
+  }
+
+  @Override
+  public boolean dataPreordered() {
+    return true;
   }
 
 }

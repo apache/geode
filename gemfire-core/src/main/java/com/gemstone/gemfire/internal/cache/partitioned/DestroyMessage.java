@@ -210,6 +210,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
                                           p,
                                           event,
                                           expectedOldValue);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures =r.getDistributionManager().putOutgoing(m); 
     if (failures != null && failures.size() > 0 ) {
       throw new ForceReattemptException(LocalizedStrings.DestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -242,17 +243,18 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
        eventSender = getSender();
     }
     EntryEventImpl event = null;
+    try {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)this.key).setRegionContext(r);
     }
     if (this.bridgeContext != null) {
-      event = new EntryEventImpl(r, getOperation(), this.key, null/*newValue*/,
+      event = EntryEventImpl.create(r, getOperation(), this.key, null/*newValue*/,
           getCallbackArg(), false/*originRemote*/, eventSender, 
           true/*generateCallbacks*/);
       event.setContext(this.bridgeContext);
     } // bridgeContext != null
     else {
-      event = new EntryEventImpl(
+      event = EntryEventImpl.create(
         r,
         getOperation(),
         this.key,
@@ -315,10 +317,22 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
     else {
       EntryEventImpl e2 = createListenerEvent(event, r, dm.getDistributionManagerId());
+      try {
       r.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, e2, r.isInitialized(), true);
+      } finally {
+        // if e2 == ev then no need to free it here. The outer finally block will get it.
+        if (e2 != event) {
+          e2.release();
+        }
+      }
     }
 
     return sendReply;
+    } finally {
+      if (event != null) {
+        event.release();
+      }
+    }
   }
 
   @Override
@@ -468,6 +482,11 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     if (filterInfo != null){
       this.filterInfo = filterInfo;
     }
+  }
+  
+  @Override
+  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+    return _mayAddToMultipleSerialGateways(dm);
   }
 
   public static class DestroyReplyMessage extends ReplyMessage {

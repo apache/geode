@@ -152,6 +152,8 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
     protected final InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
+      boolean evReturned = false;
+      try {
       ev.setEventId(this.eventId);
       ev.setOldValueFromRegion();
       if (this.filterRouting != null) {
@@ -159,11 +161,15 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
             .getMyId()));
       }
       ev.setTailKey(tailKey);
+      evReturned = true;
       return ev;
+      } finally {
+        if (!evReturned) ev.release();
+      }
     }
 
     EntryEventImpl createEntryEvent(DistributedRegion rgn) {
-      EntryEventImpl event = new EntryEventImpl(rgn, getOperation(), this.key,
+      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), this.key,
           null, this.callbackArg, true, getSender());
       // event.setNewEventId(); Don't set the event here...
       setOldValueInEvent(event);

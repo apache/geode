@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.DiskAccessException;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -49,20 +50,20 @@ public class OverflowOplogSet implements OplogSet {
   }
   
   @Override
-  public final void modify(LocalRegion lr, DiskEntry entry, byte[] value,
-      boolean isSerializedObject, boolean async) {
+  public final void modify(LocalRegion lr, DiskEntry entry, ValueWrapper value,
+      boolean async) {
     DiskRegion dr = lr.getDiskRegion();
     synchronized (this.overflowMap) {
       if (this.lastOverflowWrite != null) {
-        if (this.lastOverflowWrite.modify(dr, entry, value, isSerializedObject, async)) {
+        if (this.lastOverflowWrite.modify(dr, entry, value, async)) {
           return;
         }
       }
       // Create a new one and put it on the front of the list.
-      OverflowOplog oo = createOverflowOplog(value.length);
+      OverflowOplog oo = createOverflowOplog(value.getLength());
       addOverflow(oo);
       this.lastOverflowWrite = oo;
-      boolean didIt = oo.modify(dr, entry, value, isSerializedObject, async);
+      boolean didIt = oo.modify(dr, entry, value, async);
       assert didIt;
     }
   }
@@ -226,9 +227,9 @@ public class OverflowOplogSet implements OplogSet {
   
   
   @Override
-  public void create(LocalRegion region, DiskEntry entry, byte[] value,
-      boolean isSerializedObject, boolean async) {
-    modify(region, entry, value, isSerializedObject, async);
+  public void create(LocalRegion region, DiskEntry entry, ValueWrapper value,
+      boolean async) {
+    modify(region, entry, value, async);
   }
 
 

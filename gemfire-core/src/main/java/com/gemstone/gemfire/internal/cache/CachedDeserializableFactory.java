@@ -30,6 +30,13 @@ public class CachedDeserializableFactory {
   private static final boolean STORE_ALL_VALUE_FORMS = Boolean.getBoolean("gemfire.STORE_ALL_VALUE_FORMS");
 
   /**
+   * Currently GFE always wants a CachedDeserializable wrapper.
+   */
+  public static final boolean preferObject() {
+    return false;
+  }
+  
+  /**
    * Creates and returns an instance of CachedDeserializable that contains the
    * specified byte array.
    */

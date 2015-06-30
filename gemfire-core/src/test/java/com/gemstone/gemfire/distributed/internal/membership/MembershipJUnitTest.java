@@ -14,7 +14,7 @@ import java.util.Vector;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import com.gemstone.org.jgroups.View;
 import com.gemstone.org.jgroups.ViewId;
 import com.gemstone.org.jgroups.protocols.pbcast.GMS;

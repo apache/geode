@@ -68,12 +68,12 @@ public class ProxyCache implements RegionService {
       if (this.proxyQueryService != null) {
         this.proxyQueryService.closeCqs(keepAlive);
       }
-      UserAttributes.userAttributes.set(this.getUserAttributes());
+      UserAttributes.userAttributes.set(this.userAttributes);
       Iterator<ServerLocation> iter = this.userAttributes.getServerToId()
           .keySet().iterator();
       while (iter.hasNext()) {
         ProxyCacheCloseOp.executeOn(iter.next(), (PoolImpl)this.userAttributes.getPool(),
-            getProperties(), keepAlive);
+            this.userAttributes.getCredentials(), keepAlive);
       }
       ArrayList<ProxyCache> proxyCache = ((PoolImpl)this.userAttributes.getPool()).getProxyCacheList();
       synchronized (proxyCache) {

@@ -190,8 +190,6 @@ public class InternalLocator extends Locator implements ConnectListener {
   
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
   
-  private final ExecutorService _executor;
-  
   private SharedConfiguration sharedConfig;
   
   private volatile boolean isSharedConfigurationStarted = false; 
@@ -215,21 +213,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
   }
   
-  {
-    final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup.createThreadGroup(
-      "WAN Locator Discovery Logger Group", logger);
-
-    final ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable task) {
-        final Thread thread = new Thread(loggingThreadGroup, task, "WAN Locator Discovery Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
-    this._executor = Executors.newCachedThreadPool(threadFactory);
-  }
-
   //////////////////////  Static Methods  /////////////////////
   
   /** the locator hosted by this JVM. As of 7.0 it is a singleton. */
@@ -1064,7 +1047,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     if(stats != null) {
       stats.close();
     }
-
+    
     if(this.locatorListener != null){
       this.locatorListener.clearLocatorInfo();
     }

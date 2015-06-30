@@ -18,10 +18,11 @@ import java.util.StringTokenizer;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.ByteArrayData;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import junit.framework.TestCase;
 
@@ -38,30 +39,6 @@ public class StartupMessageDataJUnitTest extends TestCase {
     super(name);
   }
   
-  public void testSupportedVersion() throws Exception {
-    try {
-      @SuppressWarnings("unused")
-      StartupMessageData data = new StartupMessageData(
-          null, StartupMessageData.SUPPORTED_VERSION);
-      fail("Supported version should have thrown NPE for null DataInput.");
-    } catch (NullPointerException expected) {
-      // passed
-    }
-  }
-
-  // compatibility with 6.6.2 is no longer needed.  If this is needed
-  // in the future we need to change to using the new versioned data
-  // streams
-//  public void testUnsupportedVersion() throws Exception {
-//    try {
-//      @SuppressWarnings("unused")
-//      StartupMessageData data = new StartupMessageData(
-//          null, "6.6.2");
-//      // passed
-//    } catch (NullPointerException e) {
-//      fail("Unsupported version should simply ignore null DataInput.");
-//    }
-//  }
 
   public void testWriteHostedLocatorsWithEmpty() throws Exception {
     Collection<String> hostedLocators = new ArrayList<String>();
@@ -141,7 +118,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -158,7 +135,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -179,7 +156,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -205,7 +182,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    data.toData(out);
+    data.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();
@@ -233,8 +210,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
   public void testNullHostedLocator() throws Exception {
     String locatorString = null;
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
-    StartupMessageData dataToRead = new StartupMessageData(
-        in, StartupMessageData.SUPPORTED_VERSION);
+    StartupMessageData dataToRead = new StartupMessageData();
+    dataToRead.readFrom(in);
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNull(readHostedLocators);
   }
@@ -242,8 +219,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
   public void testEmptyHostedLocator() throws Exception {
     String locatorString = "";
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
-    StartupMessageData dataToRead = new StartupMessageData(
-        in, StartupMessageData.SUPPORTED_VERSION);
+    StartupMessageData dataToRead = new StartupMessageData();
+    dataToRead.readFrom(in);
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNull(readHostedLocators);
   }
@@ -251,8 +228,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
   public void testOneHostedLocator() throws Exception {
     String locatorString = createOneLocatorString();
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
-    StartupMessageData dataToRead = new StartupMessageData(
-        in, StartupMessageData.SUPPORTED_VERSION);
+    StartupMessageData dataToRead = new StartupMessageData();
+    dataToRead.readFrom(in);
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNotNull(readHostedLocators);
     assertEquals(1, readHostedLocators.size());
@@ -300,7 +277,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(testStream.isEmpty());
 
     DataOutputStream out = testStream.getDataOutput();
-    dataToWrite.toData(out);
+    dataToWrite.writeTo(out);
     assertTrue(testStream.size() > 0);
     
     DataInput in = testStream.getDataInput();

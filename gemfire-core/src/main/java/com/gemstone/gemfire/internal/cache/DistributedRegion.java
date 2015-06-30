@@ -8,6 +8,8 @@
 
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -80,6 +82,7 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIIStatus;
 import com.gemstone.gemfire.internal.cache.RemoteFetchVersionMessage.FetchVersionResponse;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionExecutor;
 import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionResultSender;
@@ -101,12 +104,18 @@ import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationE
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueConfigurationException;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderConfigurationException;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.org.jgroups.util.StringId;
@@ -1243,10 +1252,12 @@ public class DistributedRegion extends LocalRegion implements
   private boolean giiMissingRequiredRoles = false;
 
   /**
-   * A reference counter to protected the heapThresholdReached boolean
+   * A reference counter to protected the memoryThresholdReached boolean
    */
-  private final Set<DistributedMember> heapThresholdReachedMembers =
+  private final Set<DistributedMember> memoryThresholdReachedMembers =
     new CopyOnWriteArraySet<DistributedMember>();
+
+  private ConcurrentParallelGatewaySenderQueue hdfsQueue;
 
   /** Sets and returns giiMissingRequiredRoles */
   private boolean checkInitialImageForReliability(
@@ -1323,7 +1334,7 @@ public class DistributedRegion extends LocalRegion implements
     // remote members
     if (!isInternalRegion()) {
       if (!this.isDestroyed) {
-        cache.getResourceManager().addResourceListener(this);
+        cache.getResourceManager().addResourceListener(ResourceType.MEMORY, this);
       }
     }
     
@@ -1530,8 +1541,8 @@ public class DistributedRegion extends LocalRegion implements
       return;
     }
 
-    if (this.entries.size() > 0) {
-      this.entries.clear(null);
+    if (!this.entries.isEmpty()) {
+      closeEntries();
       if (getDiskRegion() != null) {
         getDiskRegion().clear(this, null);
       }
@@ -1709,7 +1720,7 @@ public class DistributedRegion extends LocalRegion implements
         // clear any entries received in the GII that are older than the RVV versions.
         // this can happen if entry chunks were received prior to the clear() being
         // processed
-        this.entries.clear(rvv);
+        clearEntries(rvv);
       }
       //need to do this before we release the afterGetInitialImageLatch
       if(persistenceAdvisor != null) {
@@ -2316,6 +2327,7 @@ public class DistributedRegion extends LocalRegion implements
        this.filterProfile != null && this.filterProfile.hasCQs();
     profile.gatewaySenderIds = getGatewaySenderIds();
     profile.asyncEventQueueIds = getAsyncEventQueueIds();
+    profile.isOffHeap = getOffHeap();
   }
 
   /**
@@ -2398,9 +2410,10 @@ public class DistributedRegion extends LocalRegion implements
 
   /** @return the deserialized value */
   @Override
+  @Retained
   protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
       TXStateInterface txState, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead,
-        boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones)
+        boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
       throws CacheLoaderException, TimeoutException
   {
     checkForLimitedOrNoAccess();
@@ -2418,13 +2431,17 @@ public class DistributedRegion extends LocalRegion implements
     long lastModified = 0L;
     boolean fromServer = false;
     EntryEventImpl event = null;
+    @Retained Object result = null;
+    boolean incrementUseCountForSqlf = false;
+    try {
     {
       if (this.srp != null) {
         EntryEventImpl holder = EntryEventImpl.createVersionTagHolder();
+        try {
         Object value = this.srp.get(key, aCallbackArgument, holder);
         fromServer = value != null;
         if (fromServer) {
-          event = new EntryEventImpl(this, op, key, value,
+          event = EntryEventImpl.create(this, op, key, value,
                                      aCallbackArgument, false,
                                      getMyId(), generateCallbacks);
           event.setVersionTag(holder.getVersionTag());
@@ -2433,12 +2450,15 @@ public class DistributedRegion extends LocalRegion implements
             clientEvent.setVersionTag(holder.getVersionTag());
           }
         }
+        } finally {
+          holder.release();
+        }
       }
     }
     
     if (!fromServer) {
       //Do not generate Event ID
-      event = new EntryEventImpl(this, op, key, null /*newValue*/,
+      event = EntryEventImpl.create(this, op, key, null /*newValue*/,
                                  aCallbackArgument, false,
                                  getMyId(), generateCallbacks);
       if (requestingClient != null) {
@@ -2459,7 +2479,7 @@ public class DistributedRegion extends LocalRegion implements
         processor.release();
       }
     }
-    if (event.hasNewValue() && !isHeapThresholdReachedForLoad()) {
+    if (event.hasNewValue() && !isMemoryThresholdReachedForLoad()) {
       try {
         // Set eventId. Required for interested clients.
         event.setNewEventId(cache.getDistributedSystem());
@@ -2478,7 +2498,7 @@ public class DistributedRegion extends LocalRegion implements
           	((BucketRegion)this).handleWANEvent(event);
           }
           re = basicPutEntry(event, lastModified);
-          
+          incrementUseCountForSqlf = GemFireCacheImpl.sqlfSystem() ;
         } catch (ConcurrentCacheModificationException e) {
           // the cache was modified while we were searching for this entry and
           // the netsearch result was elided.  Return the current value from the cache
@@ -2500,17 +2520,39 @@ public class DistributedRegion extends LocalRegion implements
     if (isCreate) {
       recordMiss(re, key);
     }
-    Object result;
+    
     if (preferCD) {
-      result = event.getRawNewValue();
-      // fix for bug 42895
-      if (!(result instanceof CachedDeserializable)) {
+      if (event.hasDelta()) {
         result = event.getNewValue();
-      }
+      } else {
+        result = event.getRawNewValueAsHeapObject();
+      }    
     } else {
-      result = event.getNewValue();
+      result = event.getNewValue();     
+    }
+    //For SQLFire , we need to increment the use count so that returned
+    //object has use count 2
+    if( incrementUseCountForSqlf && result instanceof Chunk) {
+      ((Chunk)result).retain();
     }
     return result;
+    } finally {
+      if (event != null) {
+        event.release();        
+      }
+    }
+  }
+  
+  protected ConcurrentParallelGatewaySenderQueue getHDFSQueue() {
+    if (this.hdfsQueue == null) {
+      String asyncQId = this.getPartitionedRegion().getHDFSEventQueueName();
+      final AsyncEventQueueImpl asyncQ =  (AsyncEventQueueImpl)this.getCache().getAsyncEventQueue(asyncQId);
+      final AbstractGatewaySender gatewaySender = (AbstractGatewaySender)asyncQ.getSender();
+      AbstractGatewaySenderEventProcessor ep = gatewaySender.getEventProcessor();
+      if (ep == null) return null;
+      hdfsQueue = (ConcurrentParallelGatewaySenderQueue)ep.getQueue();
+    }
+    return hdfsQueue;
   }
 
   /** hook for subclasses to note that a cache load was performed
@@ -4151,13 +4193,17 @@ public class DistributedRegion extends LocalRegion implements
   }
 
   @Override
-  protected void setHeapThresholdFlag(MemoryEvent event) {
+  protected void setMemoryThresholdFlag(MemoryEvent event) {
     Set<InternalDistributedMember> others = getCacheDistributionAdvisor().adviseGeneric();
 
     if (event.isLocal() || others.contains(event.getMember())) {
-      if (event.getType().isCriticalUp()) {
-        setHeapThresholdReachedCounterTrue(event.getMember());
-      } else if (event.getType().isCriticalDown() || event.getType().isCriticalDisabled()) {
+      if (event.getState().isCritical()
+          && !event.getPreviousState().isCritical()
+          && (event.getType() == ResourceType.HEAP_MEMORY || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
+        setMemoryThresholdReachedCounterTrue(event.getMember());
+      } else if (!event.getState().isCritical()
+          && event.getPreviousState().isCritical()
+          && (event.getType() == ResourceType.HEAP_MEMORY || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
         removeMemberFromCriticalList(event.getMember());
       }
     }
@@ -4168,28 +4214,28 @@ public class DistributedRegion extends LocalRegion implements
     if (logger.isDebugEnabled()) {
       logger.debug("DR: removing member {} from critical member list", member);
     }
-    synchronized(this.heapThresholdReachedMembers) {
-      this.heapThresholdReachedMembers.remove(member);
-      if (this.heapThresholdReachedMembers.size() == 0) {
-        heapThresholdReached.set(false);
+    synchronized(this.memoryThresholdReachedMembers) {
+      this.memoryThresholdReachedMembers.remove(member);
+      if (this.memoryThresholdReachedMembers.size() == 0) {
+        memoryThresholdReached.set(false);
       }
     }
   }
   
   @Override
-  public Set<DistributedMember> getHeapThresholdReachedMembers() {
-    synchronized (this.heapThresholdReachedMembers) {
-      return Collections.unmodifiableSet(this.heapThresholdReachedMembers);
+  public Set<DistributedMember> getMemoryThresholdReachedMembers() {
+    synchronized (this.memoryThresholdReachedMembers) {
+      return Collections.unmodifiableSet(this.memoryThresholdReachedMembers);
     }
   }
 
   @Override
-  public void initialCriticalMembers(boolean localHeapIsCritical,
+  public void initialCriticalMembers(boolean localMemoryIsCritical,
       Set<InternalDistributedMember> critialMembers) {
     Set<InternalDistributedMember> others = getCacheDistributionAdvisor().adviseGeneric();
     for (InternalDistributedMember idm: critialMembers) {
       if (others.contains(idm)) {
-        setHeapThresholdReachedCounterTrue(idm);
+        setMemoryThresholdReachedCounterTrue(idm);
       }
     }
   }
@@ -4197,11 +4243,11 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * @param idm member whose threshold has been exceeded
    */
-  private void setHeapThresholdReachedCounterTrue(final DistributedMember idm) {
-    synchronized(this.heapThresholdReachedMembers) {
-      this.heapThresholdReachedMembers.add(idm);
-      if (this.heapThresholdReachedMembers.size() > 0) {
-        heapThresholdReached.set(true);
+  private void setMemoryThresholdReachedCounterTrue(final DistributedMember idm) {
+    synchronized(this.memoryThresholdReachedMembers) {
+      this.memoryThresholdReachedMembers.add(idm);
+      if (this.memoryThresholdReachedMembers.size() > 0) {
+        memoryThresholdReached.set(true);
       }
     }
   }

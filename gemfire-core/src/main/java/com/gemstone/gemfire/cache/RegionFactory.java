@@ -393,6 +393,30 @@ public class RegionFactory<K,V>
   }
 
   /**
+   * Set custom {@link EvictionCriteria} for the region with start time and
+   * interval of evictor task to be run in milliseconds, or evict incoming rows
+   * in case both start and frequency are specified as zero.
+   * 
+   * @param criteria
+   *          an {@link EvictionCriteria} to be used for eviction for HDFS
+   *          persistent regions
+   * @param start
+   *          the start time at which periodic evictor task should be first
+   *          fired to apply the provided {@link EvictionCriteria}; if this is
+   *          zero then current time is used for the first invocation of evictor
+   * @param interval
+   *          the periodic frequency at which to run the evictor task after the
+   *          initial start; if this is if both start and frequency are zero
+   *          then {@link EvictionCriteria} is applied on incoming insert/update
+   *          to determine whether it is to be retained
+   */
+  public RegionFactory<K, V> setCustomEvictionAttributes(
+      EvictionCriteria<K, V> criteria, long start, long interval) {
+    this.attrsFactory.setCustomEvictionAttributes(criteria, start, interval);
+    return this;
+  }
+
+  /**
    * Sets the scope for the next <code>RegionAttributes</code> created.
    *
    * @param scopeType
@@ -878,6 +902,31 @@ public class RegionFactory<K,V>
     this.attrsFactory.addAsyncEventQueueId(asyncEventQueueId);
     return this;
   }
+  /**
+   * Sets the HDFSStore name attribute.
+   * This causes the region to belong to the HDFSStore.
+   * @param name the name of the hdfsstore
+   * @return a reference to this RegionFactory object
+   * 
+   * @see AttributesFactory#setHDFSStoreName
+   * @since 9.0
+   */
+  public RegionFactory<K,V> setHDFSStoreName(String name) {
+    this.attrsFactory.setHDFSStoreName(name);
+    return this;
+  }
+  
+  /**
+   * Sets the HDFS write only attribute. if the region
+   * is configured to be write only to HDFS, events that have 
+   * been evicted from memory cannot be read back from HDFS.
+   * Events are written to HDFS in the order in which they occurred.
+   * @since 9.0
+   */
+  public RegionFactory<K,V> setHDFSWriteOnly(boolean writeOnly) {
+    this.attrsFactory.setHDFSWriteOnly(writeOnly);
+    return this;
+  }
 
   /**
    * Set the compressor to be used by this region for compressing
@@ -888,6 +937,16 @@ public class RegionFactory<K,V>
    */
   public RegionFactory<K,V> setCompressor(Compressor compressor) {
     this.attrsFactory.setCompressor(compressor);
+    return this;
+  }
+  
+  /**
+   * Enables this region's usage of off-heap memory if true.
+   * @param offHeap boolean flag to enable off-heap memory
+   * @since 9.0
+   */
+  public RegionFactory<K,V> setOffHeap(boolean offHeap) {
+    this.attrsFactory.setOffHeap(offHeap);
     return this;
   }
 }

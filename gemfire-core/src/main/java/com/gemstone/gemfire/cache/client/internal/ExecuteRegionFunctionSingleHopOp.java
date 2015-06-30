@@ -72,7 +72,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         hasResult, resultCollector, cms, allBuckets);
 
     reexecute = SingleHopClientExecutor.submitAllHA(callableTasks,
-        (LocalRegion)region, resultCollector, failedNodes);
+        (LocalRegion)region, function.isHA(), resultCollector, failedNodes);
 
     if (isDebugEnabled) {
       logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is : {}", callableTasks.size());
@@ -85,11 +85,11 @@ public class ExecuteRegionFunctionSingleHopOp {
           serverRegionExecutor, resultCollector, hasResult, failedNodes,
           maxRetryAttempts - 1);
       }
-      else {
-        ExecuteRegionFunctionOp.execute(pool, region.getFullPath(), function,
-            serverRegionExecutor, resultCollector, hasResult,
-            maxRetryAttempts - 1);
-      }
+//      else {
+//        ExecuteRegionFunctionOp.execute(pool, region.getFullPath(), function,
+//            serverRegionExecutor, resultCollector, hasResult,
+//            maxRetryAttempts - 1);
+//      }
     }
 
     resultCollector.endResults();
@@ -120,7 +120,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         hasResult, resultCollector, cms, allBuckets, isHA,optimizeForWrite);
 
     reexecute = SingleHopClientExecutor.submitAllHA(callableTasks,
-        (LocalRegion)region, resultCollector, failedNodes);
+        (LocalRegion)region, isHA, resultCollector, failedNodes);
 
     if (isDebugEnabled) {
       logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is: {}, reexecute={}", callableTasks.size(), reexecute);
@@ -133,11 +133,11 @@ public class ExecuteRegionFunctionSingleHopOp {
             functionId, serverRegionExecutor, resultCollector, hasResult,
             failedNodes, maxRetryAttempts - 1, isHA, optimizeForWrite);
       }
-      else {
-        ExecuteRegionFunctionOp.execute(pool, region.getFullPath(), functionId,
-            serverRegionExecutor, resultCollector, hasResult,
-            maxRetryAttempts - 1, isHA, optimizeForWrite);
-      }
+//      else {
+//        ExecuteRegionFunctionOp.execute(pool, region.getFullPath(), functionId,
+//            serverRegionExecutor, resultCollector, hasResult,
+//            maxRetryAttempts - 1, isHA, optimizeForWrite);
+//      }
     }
 
     resultCollector.endResults();

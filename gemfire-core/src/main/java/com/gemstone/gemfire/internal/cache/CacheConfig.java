@@ -7,6 +7,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import java.util.List;
+
+import com.gemstone.gemfire.internal.cache.xmlcache.BridgeServerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
@@ -34,6 +37,11 @@ public class CacheConfig {
    */
   private String cacheXMLDescription = null;
 
+  /**
+   * list of cache servers to create after auto-reconnect if cluster configuration is being used
+   */
+  private List<BridgeServerCreation> cacheServerCreation;
+  
   /**
    * This indicates if the pdxReadSerialized value is set by user. This is used 
    * during cache xml parsing. The value set by user api overrides the 
@@ -128,7 +136,15 @@ public class CacheConfig {
     this.cacheXMLDescription = cacheXMLDescription;
   }
 
-
+  
+  public List<BridgeServerCreation> getCacheServerCreation() {
+    return this.cacheServerCreation;
+  }
+  
+  
+  public void setCacheServerCreation(List<BridgeServerCreation> servers) {
+    this.cacheServerCreation = servers;
+  }
 
   public void validateCacheConfig(GemFireCacheImpl cacheInstance) {
     // To fix bug 44961 only validate our attributes against the existing cache

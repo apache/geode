@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 
 
+
 import com.gemstone.org.jgroups.Address;
 import com.gemstone.org.jgroups.Event;
 import com.gemstone.org.jgroups.Header;
@@ -35,7 +36,7 @@ import com.gemstone.org.jgroups.Message;
 import com.gemstone.org.jgroups.View;
 import com.gemstone.org.jgroups.protocols.pbcast.GMS;
 import com.gemstone.org.jgroups.protocols.pbcast.GMS.GmsHeader;
-import com.gemstone.org.jgroups.stack.GFPeerAdapter;
+import com.gemstone.org.jgroups.spi.GFPeerAdapter;
 import com.gemstone.org.jgroups.stack.IpAddress;
 import com.gemstone.org.jgroups.stack.Protocol;
 import com.gemstone.org.jgroups.util.GemFireTracer;

@@ -70,6 +70,22 @@ public final class ProcessUtils {
   }
   
   /**
+   * Returns true if a process identified by the specified Process is
+   * currently running on this host machine.
+   * 
+   * @param process the Process to check
+   * @return true if the Process is a currently running process
+   */
+  public static boolean isProcessAlive(final Process process) {
+    try {
+      process.exitValue();
+      return false;
+    } catch (IllegalThreadStateException e) {
+      return true;
+    }
+  }
+  
+  /**
    * Returns true if a process identified by the process id was
    * running on this host machine and has been terminated by this operation.
    * 
@@ -89,6 +105,14 @@ public final class ProcessUtils {
     finally {
       IOUtils.close(reader);
     }
+  }
+  
+  /**
+   * Returns true if a fully functional implementation is available. If the
+   * Attach API or JNA NativeCalls are available then this returns true.
+   */
+  public static boolean isAvailable() {
+    return internal.isAvailable();
   }
   
   private static InternalProcessUtils initializeInternalProcessUtils() {
@@ -132,6 +156,10 @@ public final class ProcessUtils {
       public boolean killProcess(int pid) {
         return false;
       }
+      @Override
+      public boolean isAvailable() {
+        return false;
+      }
     };
   }
   
@@ -141,5 +169,6 @@ public final class ProcessUtils {
   interface InternalProcessUtils {
     public boolean isProcessAlive(int pid);
     public boolean killProcess(int pid);
+    public boolean isAvailable();
   }
 }

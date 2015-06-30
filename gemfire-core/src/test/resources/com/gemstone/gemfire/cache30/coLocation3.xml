@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Cache 7.0//EN" "http://www.gemstone.com/dtd/cache7_0.dtd">
+<cache>
+  <region-attributes id="ORDER_ATTS" data-policy="partition">
+      <partition-attributes redundant-copies="1" local-max-memory="100" total-max-memory="500" total-num-buckets="113" colocated-with="Customer"/>
+  </region-attributes>
+  <region name="Customer">
+    <region-attributes data-policy="partition">
+      <partition-attributes redundant-copies="1" local-max-memory="100" total-max-memory="500" total-num-buckets="113" />
+    </region-attributes>
+  </region>
+  <region name="Order" refid="ORDER_ATTS">
+  </region>   
+</cache>

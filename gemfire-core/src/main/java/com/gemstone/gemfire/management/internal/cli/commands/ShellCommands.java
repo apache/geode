@@ -168,7 +168,7 @@ public class ShellCommands implements CommandMarker {
   {
     Result result;
     
-    String passwordToUse           = password;
+    String passwordToUse           = decrypt(password);
     String keystoreToUse           = keystore;
     String keystorePasswordToUse   = keystorePassword;
     String truststoreToUse         = truststore;
@@ -358,7 +358,14 @@ public class ShellCommands implements CommandMarker {
     return result;
   }
 
-  private void configureHttpsURLConnection(Map<String, String> sslConfigProps) throws Exception {
+  private String decrypt(String password) {
+    if (password != null) {
+      return PasswordUtil.decrypt(password);
+    }
+    return null;
+  }
+
+private void configureHttpsURLConnection(Map<String, String> sslConfigProps) throws Exception {
     String keystoreToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE);
     String keystorePasswordToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE_PASSWORD);
     String truststoreToUse = sslConfigProps.get(Gfsh.SSL_TRUSTSTORE);

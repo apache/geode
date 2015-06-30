@@ -62,7 +62,7 @@ import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -118,8 +118,8 @@ public class DefaultQueryService implements QueryService {
         throw new QueryInvalidException(LocalizedStrings.DefaultQueryService_THE_QUERY_STRING_MUST_NOT_BE_NULL.toLocalizedString());
     if (queryString.length() == 0)
         throw new QueryInvalidException(LocalizedStrings.DefaultQueryService_THE_QUERY_STRING_MUST_NOT_BE_EMPTY.toLocalizedString());
-    DefaultQuery query = new DefaultQuery(queryString, this.cache);
     ServerProxy serverProxy = pool == null ? null : new ServerProxy(pool);
+    DefaultQuery query = new DefaultQuery(queryString, this.cache, serverProxy != null);
     query.setServerProxy(serverProxy);
     return query;
   }
@@ -208,11 +208,11 @@ public class DefaultQueryService implements QueryService {
     //  throw new UnsupportedOperationException(LocalizedStrings.DefaultQueryService_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_REGIONS_WHICH_OVERFLOW_TO_DISK_THE_REGION_INVOLVED_IS_0.toLocalizedString(regionPath));
     //}
     // if its a pr the create index on all of the local buckets.
-    if (((LocalRegion)region).heapThresholdReached.get() &&
-        !InternalResourceManager.isLowMemoryExceptionDisabled()) {
+    if (((LocalRegion)region).memoryThresholdReached.get() &&
+        !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       LocalRegion lr = (LocalRegion)region;
       throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_INDEX
-          .toLocalizedString(region.getName()), lr.getHeapThresholdReachedMembers());
+          .toLocalizedString(region.getName()), lr.getMemoryThresholdReachedMembers());
     }
     if (region instanceof PartitionedRegion) {
       try {

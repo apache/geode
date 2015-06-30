@@ -97,11 +97,10 @@ public class RegionMBeanBridge<K, V> {
   
   
 
-  public static RegionMBeanBridge getInstance(Region region) {
+  public static <K, V> RegionMBeanBridge<K, V> getInstance(Region<K, V> region) {
 
     if (region.getAttributes().getPartitionAttributes() != null) {
-
-      RegionMBeanBridge bridge = new PartitionedRegionBridge(region);
+      RegionMBeanBridge<K, V> bridge = PartitionedRegionBridge.getInstance(region);
       PartitionedRegion parRegion = ((PartitionedRegion) region);
       DiskStoreImpl dsi = parRegion.getDiskStore();
       if (dsi != null) {
@@ -121,7 +120,7 @@ public class RegionMBeanBridge<K, V> {
       return bridge;
 
     } else {
-      RegionMBeanBridge bridge = new RegionMBeanBridge(region);
+      RegionMBeanBridge<K, V> bridge = new RegionMBeanBridge<K, V>(region);
 
       LocalRegion localRegion = ((LocalRegion) region);
       DiskStoreImpl dsi = localRegion.getDiskStore();
@@ -585,4 +584,8 @@ public class RegionMBeanBridge<K, V> {
     return -1;
   }
 
+  
+  public long getEstimatedSizeForHDFSRegion() {
+    return -1;
+  }
 }

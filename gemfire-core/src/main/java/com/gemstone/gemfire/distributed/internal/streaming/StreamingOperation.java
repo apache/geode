@@ -26,8 +26,13 @@ import com.gemstone.gemfire.GemFireRethrowable;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
+import com.gemstone.gemfire.cache.query.internal.PRQueryTraceInfo;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
+import com.gemstone.gemfire.cache.query.internal.StructImpl;
+import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -39,6 +44,8 @@ import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionQueryEvaluator;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -473,6 +480,7 @@ public abstract class StreamingOperation {
     public int getDSFID() {
       return STREAMING_REPLY_MESSAGE;
     }
+    
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -482,6 +490,8 @@ public abstract class StreamingOperation {
       this.msgNum = in.readInt();
       this.lastMsg = in.readBoolean();
       this.pdxReadSerialized = in.readBoolean();
+      Version senderVersion = InternalDataSerializer.getVersionForDataStream(in);
+      boolean isSenderAbove_8_1 = senderVersion.compareTo(Version.GFE_81) > 0;
       if (n == -1) {
         this.objectList = null;
       }
@@ -496,6 +506,12 @@ public abstract class StreamingOperation {
         try {
           ReplyProcessor21 messageProcessor = ReplyProcessor21.getProcessor(processorId); 
           boolean isQueryMessageProcessor = messageProcessor instanceof PartitionedRegionQueryEvaluator.StreamingQueryPartitionResponse;
+          ObjectType elementType = null;
+          if(isQueryMessageProcessor) {
+            elementType = ((PartitionedRegionQueryEvaluator.
+                StreamingQueryPartitionResponse)messageProcessor).getResultType();            
+          }
+          
           boolean lowMemoryDetected = false;
           for (int i = 0; i < n; i++) {
             //TestHook used in ResourceManagerWithQueryMonitorDUnitTest.
@@ -508,6 +524,15 @@ public abstract class StreamingOperation {
               break;
             }
             Object o = DataSerializer.readObject(in);
+            if(isQueryMessageProcessor && elementType != null && elementType.isStructType()) {
+              boolean convertToStruct = isSenderAbove_8_1 ;
+              if(convertToStruct && i == 0) {
+                convertToStruct = !(o instanceof PRQueryTraceInfo);
+              }
+              if(convertToStruct) {
+                o = new StructImpl( (StructTypeImpl)elementType, (Object[])o);
+              }
+            }
             this.objectList.add(o);
           }
           if (lowMemoryDetected) {

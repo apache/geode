@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.EnumMap;
 
+import org.apache.hadoop.hbase.io.hfile.BlockCache;
+
 import com.gemstone.gemfire.internal.cache.persistence.soplog.Compactor.MetadataCompactor;
 import com.gemstone.gemfire.internal.cache.persistence.soplog.SortedReader.Metadata;
 import com.gemstone.gemfire.internal.cache.persistence.soplog.SortedReader.SerializedComparator;
@@ -61,6 +63,8 @@ public interface SortedOplogFactory {
     /** the statistics */
     private final SortedOplogStatistics stats;
     
+    private final HFileStoreStatistics storeStats;
+    
     /** true if bloom filters are enabled */
     private boolean bloom;
     
@@ -84,12 +88,16 @@ public interface SortedOplogFactory {
 
     /** metadata comparers */
     private EnumMap<Metadata, MetadataCompactor> metaCompactors;
+
+    private BlockCache blockCache;
+
+    private boolean cacheDataBlocksOnRead;
     
     public SortedOplogConfiguration(String name) {
-      this(name, new SortedOplogStatistics("GridDBRegionStatistics", name));
+      this(name, null, new SortedOplogStatistics("GridDBRegionStatistics", name), new HFileStoreStatistics("GridDBStoreStatistics", name));
     }
     
-    public SortedOplogConfiguration(String name, SortedOplogStatistics stats) {
+    public SortedOplogConfiguration(String name, BlockCache blockCache, SortedOplogStatistics stats, HFileStoreStatistics storeStats) {
       this.name = name;
       this.stats = stats;
       
@@ -101,6 +109,9 @@ public interface SortedOplogFactory {
       compression = Compression.NONE;
       keyEncoding = KeyEncoding.NONE;
       comparator = new ByteComparator();
+      this.cacheDataBlocksOnRead = true;
+      this.storeStats = storeStats;
+      this.blockCache = blockCache;
     }
     
     public SortedOplogConfiguration setBloomFilterEnabled(boolean enabled) {
@@ -157,6 +168,10 @@ public interface SortedOplogFactory {
      */
     public SortedOplogStatistics getStatistics() {
       return stats;
+    }
+    
+    public HFileStoreStatistics getStoreStatistics() {
+      return storeStats;
     }
     
     /**
@@ -226,6 +241,14 @@ public interface SortedOplogFactory {
         return mc;
       }
       return DEFAULT_METADATA_COMPACTOR;
+    }
+
+    public BlockCache getBlockCache() {
+      return this.blockCache;
+    }
+
+    public boolean getCacheDataBlocksOnRead() {
+      return cacheDataBlocksOnRead ;
     }
   }
   

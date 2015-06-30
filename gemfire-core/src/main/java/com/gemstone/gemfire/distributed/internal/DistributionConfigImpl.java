@@ -301,6 +301,20 @@ public class DistributionConfigImpl
    * Bind address for GemFireMemcachedServer
    */
   private String memcachedBindAddress = DEFAULT_MEMCACHED_BIND_ADDRESS;
+  
+  /** Are distributed transactions enabled or not */
+  private boolean distributedTransactions = DEFAULT_DISTRIBUTED_TRANSACTIONS;
+
+  
+  /**
+   * port on which {@link GemFireRedisServer} is started
+   */
+  private int redisPort;
+  
+  /**
+   * Bind address for GemFireRedisServer
+   */
+  private String redisBindAddress = DEFAULT_REDIS_BIND_ADDRESS;
 
   private boolean jmxManager = Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) ? true : DEFAULT_JMX_MANAGER;
   private boolean jmxManagerStart = DEFAULT_JMX_MANAGER_START;
@@ -366,6 +380,12 @@ public class DistributionConfigImpl
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
   
   protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
+  
+  /** "off-heap-memory-size" with value of "" or "<size>[g|m]" */
+  protected String offHeapMemorySize = DEFAULT_OFF_HEAP_MEMORY_SIZE;
+  
+  /** Whether pages should be locked into memory or allowed to swap to disk */
+  private boolean lockMemory = DEFAULT_LOCK_MEMORY;
   
   //////////////////////  Constructors  //////////////////////
 
@@ -487,6 +507,8 @@ public class DistributionConfigImpl
     this.memcachedPort = other.getMemcachedPort();
     this.memcachedProtocol = other.getMemcachedProtocol();
     this.memcachedBindAddress = other.getMemcachedBindAddress();
+    this.redisPort = other.getRedisPort();
+    this.redisBindAddress = other.getRedisBindAddress();
     this.userCommandPackages = other.getUserCommandPackages();
     
     // following added for 8.0
@@ -531,11 +553,17 @@ public class DistributionConfigImpl
     this.httpServiceSSLProperties = other.getHttpServiceSSLProperties();
     
     this.startDevRestApi = other.getStartDevRestApi();
+
+    // following added for 9.0
+    this.offHeapMemorySize = other.getOffHeapMemorySize();
     
     Map<String, ConfigSource> otherSources = ((DistributionConfigImpl)other).sourceMap;
     if (otherSources != null) {
       this.sourceMap = new HashMap<String, ConfigSource>(otherSources);
     }
+    
+    this.lockMemory = other.getLockMemory();
+    this.distributedTransactions = other.getDistributedTransactions();
   }
 
   /**
@@ -2300,6 +2328,16 @@ public class DistributionConfigImpl
     this.jmxManagerUpdateRate = value;
   }
 
+  @Override
+  public boolean getLockMemory() {
+    return this.lockMemory;
+  }
+
+  @Override
+  public void setLockMemory(final boolean value) {
+    this.lockMemory = value;
+  }
+
   ///////////////////////  Utility Methods  ///////////////////////
   /**
    * Two instances of <code>DistributedConfigImpl</code> are equal if all of 
@@ -3168,6 +3206,43 @@ public class DistributionConfigImpl
     checkMemcachedProtocol(protocol);
     this.memcachedProtocol = protocol;
   }
+  
+  @Override
+  public int getRedisPort() {
+    return this.redisPort;
+  }
+  
+  @Override
+  public void setRedisPort(int value) {
+    checkRedisPort(value);
+    this.redisPort = value;
+  }
+
+  @Override
+  public String getRedisBindAddress() {
+    return this.redisBindAddress;
+  }
+  
+  @Override
+  public void setRedisBindAddress(String bindAddress) {
+    checkRedisBindAddress(bindAddress);
+    this.redisBindAddress = bindAddress;
+  }
+  
+  @Override
+  public String getOffHeapMemorySize() {
+    return this.offHeapMemorySize;
+  }
+  
+  @Override 
+  public void setOffHeapMemorySize(String value) {
+    checkOffHeapMemorySize(value);
+    this.offHeapMemorySize = value;
+  }
+  
+  protected void checkOffHeapMemorySize(String value) {
+    super.checkOffHeapMemorySize(value);
+  }
 
   @Override
   public String getMemcachedBindAddress() {
@@ -3523,4 +3598,13 @@ public class DistributionConfigImpl
   public ConfigSource getConfigSource(String attName) {
     return this.sourceMap.get(attName);
   }
+  
+  public boolean getDistributedTransactions() {
+    return this.distributedTransactions;
+  }
+
+  public void setDistributedTransactions(boolean value) {
+    this.distributedTransactions = value;
+  }
+
 }

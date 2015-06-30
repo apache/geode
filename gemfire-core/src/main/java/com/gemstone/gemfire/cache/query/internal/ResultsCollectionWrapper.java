@@ -524,7 +524,7 @@ public final class ResultsCollectionWrapper
    */
   public void toData(DataOutput out) throws IOException {
     // special case when wrapping a ResultsBag.SetView
-    boolean isBagSetView = this.base instanceof ResultsBag.SetView;
+    boolean isBagSetView = this.base instanceof Bag.SetView;
     out.writeBoolean(isBagSetView);
     if (isBagSetView) {
       InternalDataSerializer.writeSet((Set)this.base, out);
@@ -570,12 +570,13 @@ public final class ResultsCollectionWrapper
    * at this time
    */
   private Class getBaseClass() {
-    if (this.base instanceof SortedSet || this.base instanceof LinkedStructSet)
+    if (this.base instanceof Ordered)
     {
-      return SortedSet.class;
-    } else if (this.base instanceof LinkedResultSet) {
-      return LinkedHashSet.class;
-    } else if (this.base instanceof Set) {
+      return Ordered.class;
+    }else if (this.base instanceof TreeSet) {
+      return TreeSet.class;
+    }    
+    else if (this.base instanceof Set) {
       return Set.class;
     } else {
       return this.base.getClass();

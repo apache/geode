@@ -460,7 +460,7 @@ public interface PdxWriter {
    * If no fields are set as identity fields, then all fields will be used in hashCode and equals
    * checks.
    * 
-   * The identity fields should make marked after they are written using a write* method.
+   * The identity fields should be marked after they are written using a write* method.
    * 
    * @param fieldName the name of the field to mark as an identity field.
    * @return this PdxWriter

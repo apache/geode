@@ -1041,6 +1041,7 @@ public class Connection implements Runnable {
           // if we're sending an alert and can't connect, bail out.  A sick
           // alert listener should not prevent cache operations from continuing
           if (AlertAppender.isThreadAlerting()) {
+            // do not change the text of this exception - it is looked for in exception handlers
             throw new IOException("Cannot form connection to alert listener " + key);
           }
             

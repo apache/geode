@@ -1113,7 +1113,7 @@ public abstract class TP extends Protocol  {
         catch(Throwable t) {
 //          if(log.isErrorEnabled()) {
               log.getLogWriter().info(ExternalStrings.TP_FAILED_UNMARSHALLING_MESSAGE_FROM__0,
-                  new Object[]{sender}, t);
+                  sender, t);
 //          }
         }
     }
@@ -1279,6 +1279,9 @@ public abstract class TP extends Protocol  {
         }
         Message msg=new Message(false); // don't create headers, readFrom() will do this
         msg.setVersion(mcastVersion);
+        if (log.isDebugEnabled()) {
+          log.debug("deserializing a message from " + sender);
+        }
         msg.readFrom(instream);
         postUnmarshalling(msg, dest, sender, multicast); // allows for optimization by subclass
         return msg;

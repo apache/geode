@@ -19,6 +19,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.types.*;
+import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.cache.query.internal.types.*;
 
 
@@ -193,6 +194,68 @@ public class PathUtils {
     catch (TypeMismatchException e) {
     }
     return TypeUtils.OBJECT_TYPE;
+  }
+  
+  /**
+   * Collects all the compiled values in the path , starting from the self at
+   * position 0 in the returned List
+   * 
+   * @param expr
+   * @return List of CompiledValues ( includes the RuntimeIterator)
+   * @throws TypeMismatchException
+   * @throws AmbiguousNameException
+   */
+  public static List<CompiledValue> collectCompiledValuesInThePath(
+      CompiledValue expr, ExecutionContext context)
+      throws AmbiguousNameException, TypeMismatchException {
+    boolean toContinue = true;
+    List<CompiledValue> retList = new ArrayList<CompiledValue>();
+
+    int exprType = expr.getType();
+    while (toContinue) {
+      switch (exprType) {
+      case OQLLexerTokenTypes.RegionPath:
+        retList.add(expr);
+        toContinue = false;
+        break;
+      case OQLLexerTokenTypes.METHOD_INV:
+        retList.add(expr);
+        CompiledOperation operation = (CompiledOperation) expr;
+        expr = operation.getReceiver(null/*
+                                          * pass the ExecutionContext as null,
+                                          * thus never implicitly resolving to
+                                          * RuntimeIterator
+                                          */);
+        if (expr == null) {
+          expr = operation;
+          toContinue = false;
+        }
+        break;
+      case CompiledValue.PATH:
+        retList.add(expr);
+        expr = ((CompiledPath) expr).getReceiver();
+        break;
+      case OQLLexerTokenTypes.ITERATOR_DEF:
+        retList.add(expr);
+        toContinue = false;
+        break;
+      case OQLLexerTokenTypes.TOK_LBRACK:
+        retList.add(expr);
+        expr = ((CompiledIndexOperation) expr).getReceiver();
+        break;
+      case OQLLexerTokenTypes.Identifier:
+        CompiledID cid = (CompiledID) expr;
+        expr = context.resolve(cid.getId());
+        break;
+      default:
+        toContinue = false;
+        break;
+      }
+
+      if (toContinue)
+        exprType = expr.getType();
+    }
+    return retList;
   }
 
 }

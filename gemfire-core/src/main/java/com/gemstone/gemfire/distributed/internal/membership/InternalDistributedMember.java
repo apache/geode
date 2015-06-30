@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.net.Inet4Address;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed
@@ -1176,5 +1177,32 @@ public final class InternalDistributedMember
   @Override
   public Version[] getSerializationVersions() {
     return dsfidVersions;
+  }
+
+
+  @Override
+  public int getSizeInBytes() {
+  
+    int size = 0;
+  
+    // ipaddr:  1 byte length + 4 bytes (IPv4) or 16 bytes (IPv6)
+    if (ipAddr.getIpAddress() instanceof Inet4Address){
+      size += 5;
+    } else {
+      size += 17;
+    }
+    
+    // port:  4 bytes
+    // flags: 1 byte
+    //vmKind: 1 byte
+    size += 6;
+    
+    // viewID:  String(1+1+numchars)
+    size += (2+ String.valueOf(this.vmViewId).length());
+    
+    // empty name: String(1+1)
+    size += 2;
+    
+    return size;
   }
 }

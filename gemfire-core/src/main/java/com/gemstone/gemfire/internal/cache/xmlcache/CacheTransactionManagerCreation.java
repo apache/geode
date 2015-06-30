@@ -125,4 +125,12 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
   public boolean exists(TransactionId transactionId) {
     throw new UnsupportedOperationException(LocalizedStrings.CacheTransactionManagerCreation_TRANSACTIONS_NOT_SUPPORTED.toLocalizedString());
   }
+  
+  public void setDistributed(boolean distributed) {
+    throw new UnsupportedOperationException(LocalizedStrings.CacheTransactionManagerCreation_TRANSACTIONS_NOT_SUPPORTED.toLocalizedString());
+  }
+  
+  public boolean isDistributed() {
+    throw new UnsupportedOperationException(LocalizedStrings.CacheTransactionManagerCreation_TRANSACTIONS_NOT_SUPPORTED.toLocalizedString());    
+  }
 }

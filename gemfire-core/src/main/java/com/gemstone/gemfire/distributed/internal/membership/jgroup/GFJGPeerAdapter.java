@@ -53,7 +53,7 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.org.jgroups.Address;
 import com.gemstone.org.jgroups.Header;
 import com.gemstone.org.jgroups.Message;
-import com.gemstone.org.jgroups.stack.GFPeerAdapter;
+import com.gemstone.org.jgroups.spi.GFPeerAdapter;
 import com.gemstone.org.jgroups.stack.IpAddress;
 import com.gemstone.org.jgroups.util.ExternalStrings;
 import com.gemstone.org.jgroups.util.GFLogWriter;

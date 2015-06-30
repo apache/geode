@@ -78,6 +78,10 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributes;
+import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
+import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory.HDFSCompactionConfigFactory;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
@@ -85,7 +89,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.cache.util.BridgeWriter;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
@@ -198,9 +201,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         parser.setProperty(JAXP_SCHEMA_LANGUAGE, XMLConstants.W3C_XML_SCHEMA_NS_URI);
         parser.parse(bis, new DefaultHandlerDelegate(handler));
       } catch (CacheXmlException e) {
-        if (null != e.getCause() &&
-            (e.getCause().getMessage().startsWith("DOCTYPE is disallowed")
-                || e.getCause().getMessage().startsWith("DOCTYPE n'est pas autoris"))) {
+        if (null != e.getCause() && e.getCause().getMessage().contains(DISALLOW_DOCTYPE_DECL_FEATURE)) {
           // Not schema based document, try dtd.
           bis.reset();
           factory.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE, false);
@@ -1006,6 +1007,246 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     stack.push(attrs);
   }
+  /**
+   * When a <code>hdfs-store</code> element is first encountered, we
+   * create a {@link HDFSStoreCreation}, populate it accordingly, and
+   * push it on the stack.
+   * <pre>
+   * {@code
+   * <hdfs-store name="" gemfire-home-dir="" namenode-url="" hdfs-client-config-file="">
+   * ...
+   * </hdfs-store>
+   * }
+   * 
+   */
+  private void startHDFSStore(Attributes atts) {
+    // this is the only place to create DSAC objects
+    HDFSStoreCreation attrs = new HDFSStoreCreation();
+    String name = atts.getValue(NAME);
+    if (name == null) {
+      throw new InternalGemFireException(
+          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
+    } else {
+      attrs.setName(name);
+    }
+
+    String namenode = atts.getValue(HDFS_NAMENODE_URL);
+    if (namenode == null) {
+      throw new InternalGemFireException(
+          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
+    } else {
+      attrs.setNameNodeURL(namenode);
+    }
+
+    String clientConfig = atts.getValue(HDFS_CLIENT_CONFIG_FILE);
+    if (clientConfig != null) {
+      attrs.setHDFSClientConfigFile(clientConfig);
+    }
+    
+    String folderPath = atts.getValue(HDFS_HOME_DIR);
+    if (folderPath != null) {
+      attrs.setHomeDir(folderPath);
+    }
+   
+    String readCacheSize = atts.getValue(HDFS_READ_CACHE_SIZE);
+    if (readCacheSize != null) {
+      try {
+        attrs.setBlockCacheSize(Float.valueOf(readCacheSize));
+      } catch (NumberFormatException e) {
+        throw new CacheXmlException(
+            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
+            .toLocalizedString(new Object[] { readCacheSize, HDFS_READ_CACHE_SIZE }),
+            e);
+      }
+    }
+    
+    boolean eventQueueAttributesExist = false;
+    HDFSEventQueueAttributesFactory eventFactory = new HDFSEventQueueAttributesFactory();
+    Integer maxMemory = getIntValue(atts, HDFS_MAX_MEMORY);
+    if (maxMemory != null) {
+      eventQueueAttributesExist = true;
+      eventFactory.setMaximumQueueMemory(maxMemory);
+    }
+    
+    Integer batchSize = getIntValue(atts, HDFS_BATCH_SIZE);
+    if (batchSize != null) {
+      eventQueueAttributesExist = true;
+      eventFactory.setBatchSizeMB(batchSize);
+    }
+    
+    Integer batchInterval = getIntValue(atts, HDFS_BATCH_INTERVAL);
+    if (batchInterval != null) {
+      eventQueueAttributesExist = true;
+      eventFactory.setBatchTimeInterval(batchInterval);
+    }
+    
+    Integer dispatcherThreads = getIntValue(atts, HDFS_DISPATCHER_THREADS);
+    if (dispatcherThreads != null) {
+      eventQueueAttributesExist = true;
+      eventFactory.setDispatcherThreads(dispatcherThreads);
+    }
+    
+    Boolean bufferPersistent = getBoolean(atts, HDFS_BUFFER_PERSISTENT);
+    if (bufferPersistent != null) {
+      eventQueueAttributesExist = true;
+      eventFactory.setPersistent(bufferPersistent);
+    }
+    
+    Boolean synchronousDiskWrite = getBoolean(atts, HDFS_SYNCHRONOUS_DISK_WRITE);
+    if (synchronousDiskWrite != null) {
+      eventQueueAttributesExist = true;
+      eventFactory.setDiskSynchronous(synchronousDiskWrite);
+    }
+    
+    String diskstoreName = atts.getValue(HDFS_DISK_STORE);
+    if (diskstoreName != null) {
+      eventQueueAttributesExist = true;
+      eventFactory.setDiskStoreName(diskstoreName);
+    }
+    
+    if (eventQueueAttributesExist) {
+      HDFSEventQueueAttributes eventQAttribs = eventFactory.create();
+      attrs.setHDFSEventQueueAttributes(eventQAttribs);
+    }
+   
+    HDFSCompactionConfigFactory config = attrs.createCompactionConfigFactory(null);
+    Integer purgeInterval = getInteger(atts, HDFS_PURGE_INTERVAL);
+    if (purgeInterval != null) {
+      config.setOldFilesCleanupIntervalMins(purgeInterval);
+    }
+    Boolean majorCompaction = getBoolean(atts, HDFS_MAJOR_COMPACTION);
+    if (majorCompaction != null) {
+      config.setAutoMajorCompaction(Boolean.valueOf(majorCompaction));
+    }
+    
+    // configure major compaction interval
+    Integer majorCompactionInterval = getIntValue(atts, HDFS_MAJOR_COMPACTION_INTERVAL);
+    if (majorCompactionInterval != null) {
+      config.setMajorCompactionIntervalMins(majorCompactionInterval);
+    }
+    
+    // configure compaction concurrency
+    Integer value = getIntValue(atts, HDFS_MAJOR_COMPACTION_THREADS);
+    if (value != null)
+      config.setMajorCompactionMaxThreads(value);
+    
+    Boolean minorCompaction = getBoolean(atts, HDFS_MINOR_COMPACTION);
+    if (minorCompaction != null) {
+      attrs.setMinorCompaction(Boolean.valueOf(minorCompaction));
+    }
+    
+    // configure compaction concurrency
+    value = getIntValue(atts, HDFS_MINOR_COMPACTION_THREADS);
+    if (value != null)
+      config.setMaxThreads(value);
+    
+    attrs.setHDFSCompactionConfig(config.getConfigView());
+
+    String maxFileSize = atts.getValue(HDFS_MAX_WRITE_ONLY_FILE_SIZE);
+    if (maxFileSize != null) {
+      attrs.setMaxFileSize(parseInt(maxFileSize));
+    }
+    
+    String fileRolloverInterval = atts.getValue(HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL);
+    if (fileRolloverInterval != null) {
+      attrs.setFileRolloverInterval(parseInt(fileRolloverInterval));
+    }
+    stack.push(name);
+    stack.push(attrs);
+  }
+  
+  /**
+   * After popping the current <code>HDFSStoreCreation</code> off the
+   * stack, we add it to the <code>HDFSStoreCreation</code> that should be on the
+   * top of the stack.
+   */
+  private void endHDFSStore() {
+    HDFSStoreCreation hsc = (HDFSStoreCreation) stack.pop();
+    String name = (String) stack.pop();
+    CacheCreation cache;
+    Object top = stack.peek();
+    if (top instanceof CacheCreation) {
+      cache = (CacheCreation) top;
+    }
+    else {
+      String s = "Did not expect a " + top.getClass().getName()
+          + " on top of the stack.";
+      Assert.assertTrue(false, s);
+      cache = null; // Dead code
+    }
+    if (name != null) {
+      cache.addHDFSStore(name, hsc);
+    }
+  }
+	
+  private Integer getIntValue(Attributes atts, String param) {
+    String maxInputFileSizeMB = atts.getValue(param);
+    if (maxInputFileSizeMB != null) {
+      try {
+        return Integer.valueOf(maxInputFileSizeMB);
+      } catch (NumberFormatException e) {
+        throw new CacheXmlException(
+            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
+                .toLocalizedString(new Object[] { maxInputFileSizeMB, param }),
+            e);
+      }
+    }
+    return null;
+  }
+  
+  private void startHDFSEventQueue(Attributes atts) {
+    HDFSEventQueueAttributesFactory eventFactory = new HDFSEventQueueAttributesFactory();
+    
+    //batch-size
+    String batchSize = atts.getValue(HDFS_QUEUE_BATCH_SIZE);
+    if(batchSize != null){
+      eventFactory.setBatchSizeMB(Integer.parseInt(batchSize));
+    }
+    
+    //batch-size
+    String batchInterval = atts.getValue(BATCH_TIME_INTERVAL);
+    if(batchInterval != null){
+      eventFactory.setBatchTimeInterval(Integer.parseInt(batchInterval));
+    }
+    
+    //maximum-queue-memory
+    String maxQueueMemory = atts.getValue(MAXIMUM_QUEUE_MEMORY);
+    if(maxQueueMemory != null){
+      eventFactory.setMaximumQueueMemory(Integer.parseInt(maxQueueMemory));
+    }
+    
+    //persistent
+    String persistent = atts.getValue(PERSISTENT);
+    if(persistent != null){
+      eventFactory.setPersistent(Boolean.parseBoolean(persistent));
+    }
+    
+    String diskStoreName = atts.getValue(DISK_STORE_NAME);
+    if(diskStoreName != null){
+      eventFactory.setDiskStoreName(diskStoreName);
+    }
+    
+    String diskSynchronous = atts.getValue(DISK_SYNCHRONOUS);
+    if(diskSynchronous != null){
+      eventFactory.setDiskSynchronous(Boolean.parseBoolean(diskSynchronous));
+    }
+    
+    HDFSEventQueueAttributes eventAttribs = eventFactory.create();
+    stack.push(eventAttribs);
+  }
+  
+  private void endHDFSEventQueue() {
+    HDFSEventQueueAttributes eventAttribs = (HDFSEventQueueAttributes) stack.pop();
+    
+    Object storeCreation = stack.peek();
+    if (!(storeCreation instanceof HDFSStoreCreation))
+      //TODO:HDFS throw a proper error string
+        throw new CacheXmlException("Store attributes should be a child of store");
+    HDFSStoreCreation store = (HDFSStoreCreation)storeCreation;
+    // put back the popped element
+    
+    store.setHDFSEventQueueAttributes(eventAttribs);
+  }
   
   /**
    * Create a <code>transaction-writer</code> using the declarable interface
@@ -1085,6 +1326,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (dp.equals(PERSISTENT_PARTITION_DP)) {
         attrs.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+      }
+      else if (dp.equals(HDFS_PARTITION_DP)) {
+        attrs.setDataPolicy(DataPolicy.HDFS_PARTITION);
+      }
+      else if (dp.equals(HDFS_PERSISTENT_PARTITION_DP)) {
+        attrs.setDataPolicy(DataPolicy.HDFS_PERSISTENT_PARTITION);
       }
       else {
         throw new InternalGemFireException(LocalizedStrings.CacheXmlParser_UNKNOWN_DATA_POLICY_0.toLocalizedString(dp));
@@ -1202,6 +1449,19 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         attrs.addAsyncEventQueueId(st.nextToken());
       }
     }
+    String offHeapStr = atts.getValue(OFF_HEAP);
+    if(offHeapStr != null) {
+      attrs.setOffHeap(Boolean.valueOf(offHeapStr).booleanValue());
+    }
+    String hdfsStoreName = atts.getValue(HDFS_STORE_NAME);
+    if (hdfsStoreName != null) {
+      attrs.setHDFSStoreName(hdfsStoreName);
+    }
+    String hdfsWriteOnly= atts.getValue(HDFS_WRITE_ONLY);
+    if (hdfsWriteOnly != null) {
+      attrs.setHDFSWriteOnly(Boolean.valueOf(hdfsWriteOnly).booleanValue());
+    }
+
     
     stack.push(attrs);
   }
@@ -2408,6 +2668,24 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         rmc.setEvictionHeapPercentageToDefault();
       }
     }
+    
+    {
+      String chp = atts.getValue(CRITICAL_OFF_HEAP_PERCENTAGE);
+      if (chp != null) {
+        rmc.setCriticalOffHeapPercentage(parseFloat(chp));
+      } else {
+        rmc.setCriticalOffHeapPercentageToDefault();
+      }
+    }
+
+    {
+      String ehp = atts.getValue(EVICTION_OFF_HEAP_PERCENTAGE);
+      if (ehp != null) {
+        rmc.setEvictionOffHeapPercentage(parseFloat(ehp));
+      } else {
+        rmc.setEvictionOffHeapPercentageToDefault();
+      }
+    }
     this.stack.push(rmc);
   }
   
@@ -2785,6 +3063,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startPdx(atts);
     } else if(qName.equals(PDX_SERIALIZER)) {
       //do nothing
+    }
+	else if (qName.equals(HDFS_STORE)) {
+        startHDFSStore(atts);
+    }
+    else if (qName.equals(HDFS_EVENT_QUEUE)) {
+      startHDFSEventQueue(atts);
     }
     else if (qName.equals(COMPRESSOR)) {
     }
@@ -3193,6 +3477,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (qName.equals(PDX_SERIALIZER)) {
         endPdxSerializer();
+      }
+      else if (qName.equals(HDFS_STORE)) {
+          endHDFSStore();
+      }
+      else if (qName.equals(HDFS_EVENT_QUEUE)) {
+        endHDFSEventQueue();
       }
       else if (qName.equals(COMPRESSOR)) {
         endCompressor();

@@ -262,10 +262,12 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     this.attrs.maximumQueueMemory = asyncQueueCreation.getMaximumQueueMemory();
     this.attrs.isParallel = asyncQueueCreation.isParallel();
     this.attrs.isBucketSorted = ((AsyncEventQueueCreation)asyncQueueCreation).isBucketSorted();
+	this.attrs.isHDFSQueue = ((AsyncEventQueueCreation)asyncQueueCreation).isHDFSQueue();
     this.attrs.dispatcherThreads = asyncQueueCreation.getDispatcherThreads();
     this.attrs.policy = asyncQueueCreation.getOrderPolicy();
     this.attrs.eventFilters = asyncQueueCreation.getGatewayEventFilters();
     this.attrs.eventSubstitutionFilter = asyncQueueCreation.getGatewayEventSubstitutionFilter();
+
   }
 
   public AsyncEventQueueFactory setParallel(boolean isParallel) {
@@ -274,6 +276,10 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
   public AsyncEventQueueFactory setBucketSorted(boolean isbucketSorted) {
     this.attrs.isBucketSorted = isbucketSorted;
+    return this;
+  }
+  public AsyncEventQueueFactory setIsHDFSQueue(boolean isHDFSQueue) {
+    this.attrs.isHDFSQueue = isHDFSQueue;
     return this;
   }
 }

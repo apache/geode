@@ -635,11 +635,20 @@ public class ClientGmsImpl extends GmsImpl  {
         if (lastAttempt == null
             || (this.gms.stack.gfPeerFunctions.isReconnectingDS()
                 || !coord.equals(lastAttempt))) {
+          Address me = mbr;
+          if (gms.stack.gfPeerFunctions.isReconnectingDS()) {
+            // if reconnecting blow out the processID so the address won't equal()
+            // our old address when it reaches the coordinator.  This avoids problems
+            // in UNICAST and other places where the address is used as a key and our
+            // old address might still be lingering in the system
+            me = (Address)(((IpAddress)mbr).clone());
+            ((IpAddress)me).setProcessId(0);
+          }
           log.getLogWriter().info(ExternalStrings.
               ClientGmsImpl_ATTEMPTING_TO_JOIN_DS_WHOSE_MEMBERSHIP_COORDINATOR_IS_0_USING_ID_1,
-          new Object[]{coord, mbr});
+          new Object[]{coord, me});
           msg=new Message(coord, null, null);
-          hdr=new GMS.GmsHeader(GMS.GmsHeader.JOIN_REQ, mbr);
+          hdr=new GMS.GmsHeader(GMS.GmsHeader.JOIN_REQ, me);
           msg.putHeader(gms.getName(), hdr);
           lastAttempt = null; // set to null in case there is an exception in passDown()
           gms.passDown(new Event(Event.MSG, msg));

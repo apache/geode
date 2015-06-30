@@ -17,6 +17,8 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PlaceHolderDiskRegion;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 
 /**
@@ -136,13 +138,16 @@ public class EntryLogger {
     return source;
   }
 
-  private static Object processValue(Object rawNewValue) {
+  private static Object processValue(@Unretained Object rawNewValue) {
     if(rawNewValue != null && Token.isInvalid(rawNewValue)) {
       return "invalid";
     }
     
     if(!TRACK_VALUES) {
       return "present";
+    }
+    if (rawNewValue instanceof StoredObject) {
+      return "off-heap";
     }
     if(rawNewValue instanceof CachedDeserializable) {
       rawNewValue = ((CachedDeserializable) rawNewValue).getDeserializedForReading();

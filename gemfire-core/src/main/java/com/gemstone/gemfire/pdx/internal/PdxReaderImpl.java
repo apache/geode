@@ -19,6 +19,7 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 import com.gemstone.gemfire.pdx.FieldType;
 import com.gemstone.gemfire.pdx.PdxFieldTypeMismatchException;
 import com.gemstone.gemfire.pdx.PdxInstance;
@@ -774,7 +775,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     return this.blobType;
   }
 
-  public ByteBuffer getRaw(int fieldIdx) {
+  public ByteSource getRaw(int fieldIdx) {
     PdxField ft = getPdxType().getPdxFieldByIndex(fieldIdx);
     if (ft == null) {
       throw new InternalGemFireException("unknown field " + fieldIdx);
@@ -782,7 +783,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     return getRaw(ft);
   }
 
-  protected ByteBuffer getRaw(PdxField ft) {
+  protected ByteSource getRaw(PdxField ft) {
     if (ft instanceof DefaultPdxField) {
       return ((DefaultPdxField)ft).getDefaultBytes();
     }
@@ -873,12 +874,15 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
    * @return returns {@link PdxString}
    */
   public PdxString readPdxString(PdxField ft){
-    ByteBuffer buffer = dis.getBuffer();
+    ByteSource buffer = dis.getBuffer();
     byte[] bytes = null;
     if(buffer.hasArray()){
       bytes = buffer.array();
     }
     else{
+      // TODO OFFHEAP: this is going to break once we have a ByteSource that is offheap.
+      // Should we just copy the offheap ByteSource to a heap byte[] here or change
+      // PdxString to work with a ByteSource?
       throw new IllegalStateException();
     }
     int offset = getPositionForField(ft) + buffer.arrayOffset();

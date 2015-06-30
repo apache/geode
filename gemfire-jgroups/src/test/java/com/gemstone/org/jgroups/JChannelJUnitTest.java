@@ -7,17 +7,17 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
+import java.util.Properties;
 import java.util.Random;
+import java.util.TreeSet;
+
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.org.jgroups.stack.IpAddress;
 
 import junit.framework.TestCase;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.junit.UnitTest;
-import com.gemstone.org.jgroups.stack.IpAddress;
-
-@Ignore
 @Category(UnitTest.class)
 public class JChannelJUnitTest extends TestCase {
 

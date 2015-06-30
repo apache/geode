@@ -19,11 +19,16 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSParallelGatewaySenderQueue;
 import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
+import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
@@ -32,6 +37,13 @@ import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventCallbackDispatc
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.size.SingleObjectSizer;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 
 
 /**
@@ -83,6 +95,9 @@ public class ParallelGatewaySenderEventProcessor extends
       logger.debug("The target Regions are(PGSEP) {}", targetRs);
     }
     
+    if (sender.getIsHDFSQueue())
+      this.queue = new HDFSParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher);
+    else
       this.queue = new ParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher);
     
     if(((ParallelGatewaySenderQueue)queue).localSize() > 0) {
@@ -93,7 +108,7 @@ public class ParallelGatewaySenderEventProcessor extends
   @Override
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event,
       Object substituteValue) throws IOException, CacheException {
-    GatewayQueueEvent gatewayQueueEvent = null;
+    GatewaySenderEventImpl gatewayQueueEvent = null;
     Region region = event.getRegion();
     
     if (!(region instanceof DistributedRegion) && ((EntryEventImpl)event).getTailKey() == -1) {
@@ -118,13 +133,18 @@ public class ParallelGatewaySenderEventProcessor extends
 
       // while merging 42004, kept substituteValue as it is(it is barry's
       // change 42466). bucketID is merged with eventID.getBucketID
+	 if (!sender.getIsHDFSQueue())
       gatewayQueueEvent = new GatewaySenderEventImpl(operation, event,
           substituteValue, true, eventID.getBucketID());
+    else
+      gatewayQueueEvent = new HDFSGatewayEventImpl(operation,
+          event, substituteValue, true, eventID.getBucketID());
 
       if (getSender().beforeEnque(gatewayQueueEvent)) {
         long start = getSender().getStatistics().startTime();
         try {
           this.queue.put(gatewayQueueEvent);
+          gatewayQueueEvent = null;
         }
         catch (InterruptedException e) {
           e.printStackTrace();
@@ -139,14 +159,63 @@ public class ParallelGatewaySenderEventProcessor extends
       }
     }
     finally {
-      //merge44012: this try finally has came from cheetah. this change is related to offheap.
-//      if (gatewayQueueEvent != null) {
-//        // it was not queued for some reason
-//         gatewayQueueEvent.release();
-//      }
+      if (gatewayQueueEvent != null) {
+        // it was not queued for some reason
+        gatewayQueueEvent.release();
+      }
     }
   }
 
+  public void clear(PartitionedRegion pr, int bucketId) {
+  	((ParallelGatewaySenderQueue)this.queue).clear(pr, bucketId);
+  }
+  
+  /*public int size(PartitionedRegion pr, int bucketId)
+      throws ForceReattemptException {
+  	return ((ParallelGatewaySenderQueue)this.queue).size(pr, bucketId);
+  }*/
+  
+  public void notifyEventProcessorIfRequired(int bucketId) {
+    ((ParallelGatewaySenderQueue)this.queue).notifyEventProcessorIfRequired();
+  }
+  
+  public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {
+    return ((ParallelGatewaySenderQueue)this.queue).getBucketToTempQueueMap().get(bucketId);
+  }
+  
+  public PartitionedRegion getRegion(String prRegionName) {
+    return ((ParallelGatewaySenderQueue)this.queue).getRegion(prRegionName);
+  }
+  
+  public void removeShadowPR(String prRegionName) {
+  	((ParallelGatewaySenderQueue)this.queue).removeShadowPR(prRegionName);
+  }
+  
+  public void conflateEvent(Conflatable conflatableObject, int bucketId,
+      Long tailKey) {
+  	((ParallelGatewaySenderQueue)this.queue).conflateEvent(conflatableObject, bucketId, tailKey);
+  }
+  
+  public HDFSGatewayEventImpl get(PartitionedRegion region, byte[] regionKey,
+    int bucketId) throws ForceReattemptException {
+    return ((HDFSParallelGatewaySenderQueue)this.queue).get(region, regionKey, bucketId);
+  }
+  
+  public HDFSBucketRegionQueue getBucketRegionQueue(PartitionedRegion region,
+    int bucketId) throws ForceReattemptException {
+  	return ((HDFSParallelGatewaySenderQueue)this.queue).getBucketRegionQueue(region, bucketId);
+  }
+  
+  public void addShadowPartitionedRegionForUserPR(PartitionedRegion pr) {
+	// TODO Auto-generated method stub
+	((ParallelGatewaySenderQueue)this.queue).addShadowPartitionedRegionForUserPR(pr);
+  }
+  
+  public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {
+	// TODO Auto-generated method stub
+	((ParallelGatewaySenderQueue)this.queue).addShadowPartitionedRegionForUserRR(userRegion);
+  }
+  
   @Override
   protected void rebalance() {
     // No operation for AsyncEventQueuerProcessor

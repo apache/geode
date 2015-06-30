@@ -180,6 +180,11 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     return sender.isParallel();
   }
 
+
+  public void destroy() {
+    ((AbstractGatewaySender)this.sender).destroy();
+  }
+
    public boolean isBucketSorted() {
     // TODO Auto-generated method stub
     return false;

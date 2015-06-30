@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @see com.gemstone.gemfire.management.internal.cli.commands.ShellCommands
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
+ * @see org.springframework.web.bind.annotation.RequestBody
  * @see org.springframework.web.bind.annotation.RequestMapping
  * @see org.springframework.web.bind.annotation.RequestMethod
  * @see org.springframework.web.bind.annotation.RequestParam
@@ -147,7 +148,7 @@ public class ShellCommandsController extends AbstractCommandsController {
     //  ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()));
     return new LinkIndex()
       // Cluster Commands
-      .add(new Link(CliStrings.STATUS_SYSTEM, toUri("/cluster")))
+      .add(new Link(CliStrings.STATUS_SHARED_CONFIG, toUri("/services/cluster-config")))
       // Member Commands
       .add(new Link(CliStrings.LIST_MEMBER, toUri("/members")))
       .add(new Link(CliStrings.DESCRIBE_MEMBER, toUri("/members/{name}")))
@@ -187,7 +188,6 @@ public class ShellCommandsController extends AbstractCommandsController {
       .add(new Link(CliStrings.EXPORT_CONFIG, toUri("/config")))
       .add(new Link(CliStrings.EXPORT_SHARED_CONFIG, toUri("/config/cluster")))
       .add(new Link(CliStrings.IMPORT_SHARED_CONFIG, toUri("/config/cluster"), HttpMethod.POST))
-      .add(new Link(CliStrings.STATUS_SHARED_CONFIG, toUri("/services/cluster-config")))
       // Deploy Commands
       .add(new Link(CliStrings.LIST_DEPLOYED, toUri("/deployed")))
       .add(new Link(CliStrings.DEPLOY, toUri("/deployed"), HttpMethod.POST))
@@ -248,7 +248,13 @@ public class ShellCommandsController extends AbstractCommandsController {
       .add(new Link(CliStrings.STATUS_GATEWAYRECEIVER, toUri("/gateways/receivers")))
       .add(new Link(CliStrings.STATUS_GATEWAYSENDER, toUri("/gateways/senders/{id}")))
       .add(new Link(CliStrings.STOP_GATEWAYRECEIVER, toUri("/gateways/receivers?op=stop"), HttpMethod.POST))
-      .add(new Link(CliStrings.STOP_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=stop"), HttpMethod.POST));
+      .add(new Link(CliStrings.STOP_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=stop"), HttpMethod.POST))
+       // HDFS Store Commands
+       .add(new Link(CliStrings.LIST_HDFS_STORE, toUri("/hdfsstores"), HttpMethod.GET))
+       .add(new Link(CliStrings.DESCRIBE_HDFS_STORE, toUri("/hdfsstores/{name}"), HttpMethod.GET))
+       .add(new Link(CliStrings.CREATE_HDFS_STORE, toUri("/hdfsstores"), HttpMethod.POST))
+       .add(new Link(CliStrings.DESTROY_HDFS_STORE, toUri("/hdfsstores/{name}"), HttpMethod.DELETE))
+       .add(new Link(CliStrings.ALTER_HDFS_STORE,   toUri("/hdfsstores/{name}"), HttpMethod.PUT));
   }
 
   @RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, value = "/ping")

@@ -108,7 +108,7 @@ public class ManagementAdapter {
   
   
  
-  private boolean serviceInitialised = false;  
+  private volatile boolean serviceInitialised = false;  
   
   private MBeanAggregator aggregator;
   
@@ -762,6 +762,7 @@ public class ManagementAdapter {
     if (!isServiceInitialised("handleCacheRemoval")) {
       return;
     }
+    this.serviceInitialised = false;
     try {
       cleanUpMonitors();
       cleanBridgeResources();
@@ -899,6 +900,9 @@ public class ManagementAdapter {
     DiskStoreMBean bean = null;
     try {
       bean = (DiskStoreMBean)service.getLocalDiskStoreMBean(disk.getName());
+      if(bean == null) {
+        return ;
+      }
     } catch (ManagementException e) {
       // If no bean found its a NO-OP
       if (logger.isDebugEnabled()) {
@@ -906,7 +910,7 @@ public class ManagementAdapter {
       }
       return;
     }
-    
+      
     bean.stopMonitor();
     
     service.unregisterMBean(diskStoreMBeanName);

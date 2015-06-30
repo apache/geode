@@ -242,7 +242,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       else {
         throw new QueryInvalidException(LocalizedStrings.BaseCommand_UNKNOWN_RESULT_TYPE_0.toLocalizedString(result.getClass()));
       }
-      msg.flush();
+      msg.clearParts();
     }
     catch (QueryInvalidException e) {
       // Handle this exception differently since it can contain

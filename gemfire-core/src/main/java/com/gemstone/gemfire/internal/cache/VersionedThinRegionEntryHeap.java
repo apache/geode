@@ -52,5 +52,9 @@ public abstract class VersionedThinRegionEntryHeap extends VersionedThinRegionEn
     public RegionEntryFactory makeVersioned() {
       return this;
     }
+    @Override
+    public RegionEntryFactory makeOnHeap() {
+      return this;
+    }
   }
 }

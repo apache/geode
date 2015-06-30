@@ -10,6 +10,7 @@ package com.gemstone.gemfire.cache.client.internal;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -122,7 +123,7 @@ public class QueueConnectionImpl implements Connection {
     return shouldDestroy;
   }
 
-  public ByteBuffer getCommBuffer() {
+  public ByteBuffer getCommBuffer() throws SocketException {
     return getConnection().getCommBuffer();
   }
 

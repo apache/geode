@@ -10,8 +10,6 @@ package com.gemstone.gemfire.management;
 
 import java.beans.ConstructorProperties;
 
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * Composite data type used to distribute the results of a disk backup
  * operation.
@@ -31,6 +29,10 @@ public class DiskBackupResult {
    */
   private boolean offilne;
 
+  /**
+   * This constructor is to be used by internal JMX framework only. User
+   * should not try to create an instance of this class.
+   */
   @ConstructorProperties( { "diskDirectory", "offilne"
     
   })

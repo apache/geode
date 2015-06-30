@@ -9,7 +9,7 @@ package com.gemstone.gemfire.internal;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import junit.framework.*;
 

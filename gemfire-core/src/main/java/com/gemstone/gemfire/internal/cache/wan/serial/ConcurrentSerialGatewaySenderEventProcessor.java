@@ -114,6 +114,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor extends
       // Create copy since the event id will be changed, otherwise the same
       // event will be changed for multiple gateways. Fix for bug 44471.
       EntryEventImpl clonedEvent = new EntryEventImpl((EntryEventImpl)event);
+      try {
       EventID originalEventId = clonedEvent.getEventId();
       if (logger.isDebugEnabled()) {
         logger.debug("The original EventId is {}", originalEventId);
@@ -133,6 +134,9 @@ public class ConcurrentSerialGatewaySenderEventProcessor extends
       }
       clonedEvent.setEventId(newEventId);
       serialProcessor.enqueueEvent(operation, clonedEvent, substituteValue);
+      } finally {
+        clonedEvent.release();
+      }
     } else {
       serialProcessor.enqueueEvent(operation, event, substituteValue);
     }
@@ -291,8 +295,18 @@ public class ConcurrentSerialGatewaySenderEventProcessor extends
     //shutdown the stopperService. This will release all the stopper threads
     stopperService.shutdown();
     setIsStopped(true);
+    
+    closeProcessor();
+    
     if (logger.isDebugEnabled()) {
       logger.debug("ConcurrentSerialGatewaySenderEventProcessor: Stopped dispatching: {}", this);
+    }
+  }
+  
+  @Override
+  public void closeProcessor() {
+    for (SerialGatewaySenderEventProcessor processor : processors) {
+      processor.closeProcessor();
     }
   }
   

@@ -34,13 +34,16 @@ import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.internal.CompiledSelect;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
 import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver;
+import com.gemstone.gemfire.cache.query.internal.NWayMergeResults;
 import com.gemstone.gemfire.cache.query.internal.QueryExecutionContext;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
 import com.gemstone.gemfire.cache.query.internal.QueryObserver;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
@@ -79,14 +82,15 @@ public class PRQueryProcessor
   private PartitionedRegion pr;
   private final DefaultQuery query;
   private final Object[] parameters;
-  private final List _bucketsToQuery;
+  private final List<Integer> _bucketsToQuery;
   private volatile int numBucketsProcessed = 0;
+  private volatile ObjectType resultType = null; 
  
   private boolean isIndexUsedForLocalQuery = false;
 //  private List _failedBuckets;
 
   public PRQueryProcessor(PartitionedRegionDataStore prDS,
-      DefaultQuery query, Object[] parameters, List buckets) {
+      DefaultQuery query, Object[] parameters, List<Integer> buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
     this._prds = prDS;
     this._bucketsToQuery = buckets;
@@ -117,10 +121,11 @@ public class PRQueryProcessor
   /**
    * Executes a pre-compiled query on a data store.
    * Adds result objects to resultQueue
+   * @return boolean true if the result is a struct type
    * @throws QueryException
    * @throws ForceReattemptException if query should be tried again
    */
-  public void executeQuery(Collection<Collection> resultCollector)
+  public boolean executeQuery(Collection<Collection> resultCollector)
     throws QueryException, InterruptedException, ForceReattemptException {   
     //Set indexInfoMap to this threads observer.
     //QueryObserver observer = QueryObserverHolder.getInstance();
@@ -132,7 +137,8 @@ public class PRQueryProcessor
       executeWithThreadPool(resultCollector);
     } else {
       executeSequentially(resultCollector, this._bucketsToQuery);
-    }    
+    }
+    return this.resultType.isStructType();
   }
   
   private void executeWithThreadPool(Collection<Collection> resultCollector)
@@ -189,6 +195,16 @@ public class PRQueryProcessor
             }
           }
         }
+        
+        CompiledSelect cs = this.query.getSimpleSelect();
+       
+        if(cs != null && (cs.isOrderBy() || cs.isGroupBy())) {      
+          ExecutionContext context = new QueryExecutionContext(this.parameters, pr.getCache());
+          int limit = this.query.getLimit(parameters);
+          Collection mergedResults =coalesceOrderedResults(resultCollector, context, cs, limit);
+          resultCollector.clear();
+          resultCollector.add(mergedResults);
+        }
       }
     }
     
@@ -244,6 +260,7 @@ public class PRQueryProcessor
         if (limit < 0 || (rq.size() - numBucketsProcessed) < limit) {
           results = (SelectResults) query.prExecuteOnBucket(params, pr,
               bukRegion);
+          this.resultType = results.getCollectionType().getElementType(); 
         } 
         
         if (!bukRegion.isBucketDestroyed()) {
@@ -318,11 +335,47 @@ public class PRQueryProcessor
     }*/
     
     ExecutionContext context = new QueryExecutionContext(this.parameters, this.pr.getCache(), this.query);
-    context.setBucketList(buckets);
-    context.setCqQueryContext(query.isCqQuery());
     
+    CompiledSelect cs = this.query.getSimpleSelect();
+    int limit = this.query.getLimit(parameters);
+    if(cs != null && cs.isOrderBy() ) {
+      for(Integer bucketID : this._bucketsToQuery) {
+        List<Integer> singleBucket = Collections.singletonList(bucketID);
+        context.setBucketList(singleBucket);
+        executeQueryOnBuckets(resultCollector, context);
+      }     
+      Collection mergedResults =coalesceOrderedResults(resultCollector, context, cs, limit);
+      resultCollector.clear();
+      resultCollector.add(mergedResults);
+      
+    }else {
+      context.setBucketList(buckets);        
+      executeQueryOnBuckets(resultCollector, context);
+    }
+  }
+  
+  private Collection coalesceOrderedResults(Collection<Collection> results, 
+      ExecutionContext context, CompiledSelect cs, int limit) {
+    List<Collection> sortedResults = new ArrayList<Collection>(results.size());
+    //TODO :Asif : Deal with UNDEFINED
+    for(Object o : results) {
+      if(o instanceof Collection) {
+        sortedResults.add((Collection)o);
+      }        
+    }
+   
+    NWayMergeResults mergedResults = new NWayMergeResults(sortedResults, cs.isDistinct(), limit, 
+        cs.getOrderByAttrs(), context,cs.getElementTypeForOrderByQueries());
+    return mergedResults;
+  
+  }
+
+  private void executeQueryOnBuckets(Collection<Collection> resultCollector,
+      ExecutionContext context) throws ForceReattemptException,
+      QueryInvocationTargetException, QueryException {
     // Check if QueryMonitor is enabled, if so add query to be monitored.
     QueryMonitor queryMonitor = null;
+    context.setCqQueryContext(query.isCqQuery());
     if (GemFireCacheImpl.getInstance() != null)
     {
       queryMonitor = GemFireCacheImpl.getInstance().getQueryMonitor();
@@ -335,12 +388,16 @@ public class PRQueryProcessor
       }
       
       Object results = query.executeUsingContext(context);
-      synchronized (resultCollector) {
-        if (results == QueryService.UNDEFINED) {
+      
+      synchronized (resultCollector) {        
+        //TODO:Asif: In what situation would the results object itself be undefined?
+        // The elements of the results can be undefined , but not the resultset itself
+        /*if (results == QueryService.UNDEFINED) {
           resultCollector.add(Collections.singleton(results));
-        } else {
+        } else {*/
+          this.resultType = ((SelectResults)results).getCollectionType().getElementType(); 
           resultCollector.add((SelectResults) results);
-        }
+        //}
       }
       isIndexUsedForLocalQuery =((QueryExecutionContext)context).isIndexUsed();
       
@@ -514,9 +571,11 @@ public class PRQueryProcessor
         }
         
         final Integer bId = Integer.valueOf(this._bucketId);
-        ArrayList bucketList = new ArrayList();
-        bucketList.add(this._bucketId);
-        executeSequentially(this.resultColl, bucketList);
+        List<Integer> bucketList = Collections.singletonList(bId);       
+        ExecutionContext context = new QueryExecutionContext(this.parameters, pr.getCache(), this.query);
+        context.setBucketList(bucketList);
+        executeQueryOnBuckets(this.resultColl, context);
+        //executeSequentially(this.resultColl, bucketList);
         // success
         //doBucketQuery(bId, this._prDs, this.query, this.parameters, this.resultColl);
       } catch (ForceReattemptException fre) {

@@ -6,18 +6,28 @@ dependencies {
   provided project(path: ':gemfire-junit', configuration: 'testOutput')
 }
 
-task jgMagic (type: JavaExec, dependsOn: classes) {
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'jgMagic')
+  }
+}
+
+task jgMagic (type: JavaExec, dependsOn: compileJava) {
   description 'Creates the JGroups configuration file jg-magic-map.txt'
   def magicXml = file 'src/main/resources/com/gemstone/org/jgroups/conf/jg-magic-map.xml'
-  def magicTxt = file "$buildDir/classes/main/com/gemstone/org/jgroups/conf/jg-magic-map.txt"
+  def magicTxt = file (generatedResources + "/com/gemstone/org/jgroups/conf/jg-magic-map.txt")
+  
   inputs.file magicXml
   outputs.file magicTxt
   
   main 'com.gemstone.org.jgroups.conf.MagicNumberReader'
-  classpath sourceSets.main.runtimeClasspath
+  classpath sourceSets.main.output.classesDir
   args magicXml
   
   doFirst {
+    magicTxt.getParentFile().mkdirs();
     standardOutput = magicTxt.newOutputStream()
   }
 }
@@ -27,5 +37,3 @@ jar {
 
   from sourceSets.main.output
 }
-
-

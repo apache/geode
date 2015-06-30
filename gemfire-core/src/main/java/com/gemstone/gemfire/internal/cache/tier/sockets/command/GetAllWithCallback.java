@@ -14,8 +14,11 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
+import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
@@ -26,9 +29,13 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ObjectPartList;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
+import com.gemstone.gemfire.internal.cache.tier.sockets.command.Get70.Entry;
+import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.NotAuthorizedException;
@@ -156,6 +163,7 @@ public class GetAllWithCallback extends BaseCommand {
     assert keys != null;
     int numKeys = keys.length;
     VersionedObjectList values = new VersionedObjectList(maximumChunkSize, false, region.getAttributes().getConcurrencyChecksEnabled(), false);
+    try {
     AuthorizeRequest authzRequest = servConn.getAuthzRequest();
     AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
     Get70 request = (Get70) Get70.getCommand();
@@ -193,47 +201,61 @@ public class GetAllWithCallback extends BaseCommand {
       // the value if it is a byte[].
       // Getting a value in serialized form is pretty nasty. I split this out
       // so the logic can be re-used by the CacheClientProxy.
-      Get70.Entry entry = request.getValueAndIsObject(region, key, callback, servConn);
-      keyNotPresent = entry.keyNotPresent;
+      Get70.Entry entry = request.getEntry(region, key, callback, servConn);
+      @Retained final Object originalData = entry.value;
+      Object data = originalData;
       if (logger.isDebugEnabled()) {
         logger.debug("retrieved key={} {}", key, entry);
       }
+      boolean addedToValues = false;
+      try {
+        boolean isObject = entry.isObject;
+        VersionTag versionTag = entry.versionTag;
+        keyNotPresent = entry.keyNotPresent;
 
-      if (postAuthzRequest != null) {
-        try {
-          getContext = postAuthzRequest.getAuthorize(regionName, key, entry.value,
-                  entry.isObject, getContext);
-          byte[] serializedValue = getContext.getSerializedValue();
-          if (serializedValue == null) {
-            entry.value = getContext.getObject();
-          } else {
-            entry.value = serializedValue;
+        if (postAuthzRequest != null) {
+          try {
+            getContext = postAuthzRequest.getAuthorize(regionName, key, data,
+                isObject, getContext);
+            GetOperationContextImpl gci = (GetOperationContextImpl) getContext;
+            Object newData = gci.getRawValue();
+            if (newData != data) {
+              // user changed the value
+              isObject = getContext.isObject();
+              data = newData;
+            }
+          } catch (NotAuthorizedException ex) {
+            logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
+                new Object[]{servConn.getName(), key}), ex);
+            values.addExceptionPart(key, ex);
+            continue;
+          } finally {
+            if (getContext != null) {
+              ((GetOperationContextImpl)getContext).release();
+            }
           }
-          entry.isObject = getContext.isObject();
-          if (logger.isDebugEnabled()) {
-            logger.debug("{}: Passed GET post-authorization for key={}: {}", servConn.getName(), key, entry.value);
-          }
-        } catch (NotAuthorizedException ex) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-                  new Object[]{servConn.getName(), key}), ex);
-          values.addExceptionPart(key, ex);
-          continue;
         }
-      }
-
-
-      // Add the entry to the list that will be returned to the client
-
-      if (keyNotPresent) {
-        values.addObjectPartForAbsentKey(key, entry.value, entry.versionTag);
-      } else {
-        values.addObjectPart(key, entry.value, entry.isObject, entry.versionTag);
+        // Add the entry to the list that will be returned to the client
+        if (keyNotPresent) {
+          values.addObjectPartForAbsentKey(key, data, versionTag);
+          addedToValues = true;
+        } else {
+          values.addObjectPart(key, data, isObject, versionTag);
+          addedToValues = true;
+        }
+      } finally {
+        if (!addedToValues || data != originalData) {
+          OffHeapHelper.release(originalData);
+        }
       }
     }
 
     // Send the last chunk even if the list is of zero size.
     sendGetAllResponseChunk(region, values, true, servConn);
     servConn.setAsTrue(RESPONDED);
+    } finally {
+      values.release();
+    }
   }
 
 
@@ -242,14 +264,10 @@ public class GetAllWithCallback extends BaseCommand {
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     chunkedResponseMsg.setNumberOfParts(1);
     chunkedResponseMsg.setLastChunk(lastChunk);
-    chunkedResponseMsg.addObjPart(list, zipValues);
+    chunkedResponseMsg.addObjPartNoCopying(list);
 
     if (logger.isDebugEnabled()) {
-      String str = servConn.getName() + ": Sending" +
-              (lastChunk ? " last " : " ") + "getAll response chunk for region=" +
-              region.getFullPath() + (logger.isTraceEnabled()? " values=" + list + " chunk=<" +
-              chunkedResponseMsg + ">" : "");
-      logger.debug(str);
+      logger.debug("{}: Sending {} getAll response chunk for region={}{}", servConn.getName(), (lastChunk ? " last " : " "), region.getFullPath(), (logger.isTraceEnabled()? " values=" + list + " chunk=<" + chunkedResponseMsg + ">" : ""));
     }
 
     chunkedResponseMsg.sendChunk(servConn);

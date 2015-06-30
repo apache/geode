@@ -343,7 +343,10 @@ public class AvailablePort {
     while (true) {
       int port = getRandomWildcardBindPortNumber();
       if (isPortAvailable(port, protocol, addr)) {
-        return port;
+        // don't return the products default multicast port
+        if ( !(protocol == JGROUPS && port == DistributionConfig.DEFAULT_MCAST_PORT) ){
+          return port;
+        }
       }
     }
   }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+This is the XML DTD for the GemFire sample XML based authorization callback
+in templates.security.XmlAuthorization.
+
+All XMLs must include a DOCTYPE of the following form:
+
+  <!DOCTYPE acl PUBLIC
+    "-//GemStone Systems, Inc.//GemFire XML Authorization 1.0//EN"
+    "http://www.gemstone.com/dtd/authz5_5.dtd">
+
+The contents of a declarative XML file correspond to APIs found in the
+
+                      com.gemstone.gemfire.security.AccessControl
+
+package. The sample implementation may be used to specify access control
+policies.
+
+-->
+
+<!--
+
+The following conventions apply to all GemFire sample authorization
+XML file elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+
+-->
+
+
+<!--
+The "acl" element is the root element of the authorization file.
+This element contains the role to user mappings and role to permissions
+mapping on a per region per operation basis.
+-->
+
+<!ELEMENT acl (role+,permission+)>
+
+<!--
+The "role" element contains the set of users that have the permissions of
+given role. A user can be present in more than one "role" elements in
+which case the union of the permissions to all those roles determines
+the full set of permissions to be given to the user.
+-->
+
+<!ELEMENT role (user*)>
+<!ATTLIST role
+  name CDATA #REQUIRED
+>
+
+<!--
+The "user" element is contained within the "role" element and contains
+the name of a user having the permissions of that role.
+-->
+
+<!ELEMENT user (#PCDATA)>
+
+<!--
+The "permission" element specifies the list of operations that are allowed
+for a particular role in the given regions as provided in the optional
+"regions" attribute. The value of "regions" attribute should be a comma
+separated list of region names for which permissions are to be provided.
+If no "regions" attribute is provided then those permissions are provided
+for all the other regions (i.e. other than those that have been explicitly
+specified). Permissions for cache level operations REGION_DESTROY,
+REGION_CREATE, QUERY and CQ operations should be specified with no "regions"
+attribute. If cache-level permission is not provided for QUERY or CQ operations
+then the permission for all the region names in the query string is checked.
+-->
+
+<!ELEMENT permission (operation*)>
+<!ATTLIST permission
+  role CDATA #REQUIRED
+  regions CDATA #IMPLIED
+>
+
+
+<!--
+The operation should be one of the following strings:
+ GET, PUT, PUTALL, DESTROY, REGISTER_INTEREST, UNREGISTER_INTEREST,
+ CONTAINS_KEY, KEY_SET, QUERY, EXECUTE_CQ, STOP_CQ, CLOSE_CQ, REGION_CLEAR,
+ REGION_CREATE, REGION_DESTROY
+-->
+<!ELEMENT operation (#PCDATA)>

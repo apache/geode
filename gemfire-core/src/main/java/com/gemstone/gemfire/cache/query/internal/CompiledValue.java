@@ -37,6 +37,8 @@ public interface CompiledValue {
   public final static int SINGLECONDNEVALUATOR= -13;
   public final static int DOUBLECONDNRANGEJUNCTIONEVALUATOR = -14;
   public final static int LIKE = -15;
+  public final static int FIELD = -16;
+  public final static int GROUP_BY_SELECT = -17;
   public static  final int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
   public static final String INDX_THRESHOLD_PROP_STR = "gemfire.Query.INDEX_THRESHOLD_SIZE";
   public static final String INDEX_INFO = "index_info";
@@ -49,7 +51,7 @@ public interface CompiledValue {
   public static final String CAN_APPLY_LIMIT_AT_INDEX = "can_apply_limit_at_index";
   public static final String CAN_APPLY_ORDER_BY_AT_INDEX = "can_apply_orderby_at_index";
   public static final String PREF_INDEX_COND = "preferred_index_condition"; 
-  public static final String QUERY_INDEX_HINTS = "query_index_hints";
+  public static final String QUERY_INDEX_HINTS = "query_index_hints";  
   public static final CompiledValue MAP_INDEX_ALL_KEYS = new AbstractCompiledValue() {
     
     @Override

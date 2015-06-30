@@ -9,6 +9,8 @@ package com.gemstone.gemfire.internal.cache;
 
 import java.io.PrintStream;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,6 +34,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import joptsimple.internal.Strings;
 
 /**
@@ -77,6 +80,8 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   private String compressorClassName;
   private Compressor compressor;
 
+  private boolean offHeap;
+  
   /**
    * Records the version vector of what has been persisted to disk.
    * This may lag behind the version vector of what is in memory, because
@@ -137,6 +142,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
       this.versionVector = drv.getRegionVersionVector();
       this.compressorClassName = drv.getCompressorClassName();
       this.compressor = drv.getCompressor();
+      this.offHeap = drv.getOffHeap();
       if (drv instanceof PlaceHolderDiskRegion) {
         this.setRVVTrusted(((PlaceHolderDiskRegion) drv).getRVVTrusted());
       }
@@ -218,6 +224,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     this.versionVector = drv.getRegionVersionVector();
     this.compressorClassName = drv.getCompressorClassName();
     this.compressor = drv.getCompressor();
+    this.offHeap = drv.getOffHeap();
   }
   
   //////////////////////  Instance Methods  //////////////////////
@@ -257,7 +264,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
                         float loadFactor, boolean statisticsEnabled,
                         boolean isBucket, EnumSet<DiskRegionFlag> flags,
                         String partitionName, int startingBucketId, 
-                        String compressorClassName) {
+                        String compressorClassName, boolean offHeap) {
     this.lruAlgorithm = lruAlgorithm;
     this.lruAction = lruAction;
     this.lruLimit = lruLimit;
@@ -273,6 +280,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     this.partitionName = partitionName;
     this.startingBucketId = startingBucketId;
     this.compressorClassName = compressorClassName;
+    this.offHeap = offHeap;
     if (!ds.isOffline()) {
       createCompressorFromClassName();
     }
@@ -519,6 +527,21 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     if(isReadyForRecovery()) {
       ds.updateDiskRegion(this);
       this.entriesMapIncompatible = false;
+      if (this.entries != null) {
+        CustomEntryConcurrentHashMap<Object, Object> other = ((AbstractRegionMap)this.entries)._getMap();
+        Iterator<Map.Entry<Object, Object>> it = other
+            .entrySetWithReusableEntries().iterator();
+        while (it.hasNext()) {
+          Map.Entry<Object, Object> me = it.next();
+          RegionEntry oldRe = (RegionEntry)me.getValue();
+          if (oldRe instanceof OffHeapRegionEntry) {
+            ((OffHeapRegionEntry) oldRe).release();
+          } else {
+            // no need to keep iterating; they are all either off heap or on heap.
+            break;
+          }
+        }
+      }
       this.entries = null;
       this.readyForRecovery = false;
     }
@@ -746,6 +769,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     msg += " -concurrencyLevel=" + getConcurrencyLevel()
       + " -initialCapacity=" + getInitialCapacity()
       + " -loadFactor=" + getLoadFactor()
+      + " -offHeap=" + getOffHeap()
       + " -compressor=" + (getCompressorClassName() == null ? "none" : getCompressorClassName())
       + " -statisticsEnabled=" + getStatisticsEnabled();
     if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
@@ -787,6 +811,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     sb.append("-concurrencyLevel=" + getConcurrencyLevel()); sb.append(lineSeparator);
     sb.append("-initialCapacity=" + getInitialCapacity()); sb.append(lineSeparator);
     sb.append("-loadFactor=" + getLoadFactor()); sb.append(lineSeparator);
+    sb.append("-offHeap=" + getOffHeap()); sb.append(lineSeparator);
     sb.append("-compressor=" + (getCompressorClassName() == null ? "none" : getCompressorClassName())); sb.append(lineSeparator);
     sb.append("-statisticsEnabled=" + getStatisticsEnabled()); sb.append(lineSeparator);
     
@@ -860,6 +885,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     msg.append("\n\tconcurrencyLevel=").append(getConcurrencyLevel());
     msg.append("\n\tinitialCapacity=").append(getInitialCapacity());
     msg.append("\n\tloadFactor=").append(getLoadFactor());
+    msg.append("\n\toffHeap=").append(getOffHeap());
     msg.append("\n\tstatisticsEnabled=").append(getStatisticsEnabled());
     
     msg.append("\n\tdrId=").append(getId());
@@ -936,6 +962,11 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     return this.compressor;
   }
   
+  @Override
+  public boolean getOffHeap() {
+    return this.offHeap;
+  }
+
   public CachePerfStats getCachePerfStats() {
     return this.ds.getCache().getCachePerfStats();
   }

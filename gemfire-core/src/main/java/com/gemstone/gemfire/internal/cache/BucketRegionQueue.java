@@ -18,10 +18,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
@@ -32,12 +34,16 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.persistence.query.mock.ByteComparator;
+import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
+import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import com.gemstone.gemfire.internal.concurrent.Atomics;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 
 /**
  * @author Suranjan Kumar
@@ -203,6 +209,37 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     markEventsAsDuplicate(batchSize, itr);
   }
 
+  @Override
+  public void closeEntries() {
+    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+      @Override
+      public void run() {
+        BucketRegionQueue.super.closeEntries();
+      }
+    });
+    this.indexes.clear();
+    this.eventSeqNumQueue.clear();
+  }
+  
+  @Override
+  public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
+    final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
+    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+      @Override
+      public void run() {
+        result.set(BucketRegionQueue.super.clearEntries(rvv));
+      }
+    });
+    this.eventSeqNumQueue.clear();
+    return result.get();
+  }
+  
+
+  @Override
+  public void forceSerialized(EntryEventImpl event) {
+    // NOOP since we want the value in the region queue to stay in object form.
+  }
+
   protected void clearQueues(){
     getInitializationLock().writeLock().lock();
     try {
@@ -223,6 +260,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         requireOldValue, lastModified, overwriteDestroyed);
 
     if (success) {
+      Object ov = event.getRawOldValue();
+      if (ov instanceof GatewaySenderEventImpl) {
+        ((GatewaySenderEventImpl) ov).release();
+      }
+
       if (getPartitionedRegion().getColocatedWith() == null) {
         return success;
       }
@@ -318,6 +360,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       removeIndex((Long)event.getKey());
     }
     super.basicDestroy(event, cacheWrite, expectedOldValue);
+
+    Object rov = event.getRawOldValue();
+    if (rov instanceof GatewaySenderEventImpl) {
+      ((GatewaySenderEventImpl) rov).release();
+    }
     // Primary buckets should already remove the key while peeking
     if (!this.getBucketAdvisor().isPrimary()) {
       if (logger.isDebugEnabled()) {
@@ -344,11 +391,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     if (object == Token.TOMBSTONE) {
       object = null;
     }
-
-    return object;
+    return object;  // OFFHEAP: ok since callers are careful to do destroys on region queue after finished with peeked object.
   }
-  
-  public Object peek() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+
+  public Object peek() {
     Object key = null;
     Object object = null;
     //doing peek in initializationLock because during region destroy, the clearQueues 
@@ -386,12 +432,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
+  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event, int sizeOfHDFSEvent) {
     if (didPut) {
       if (this.initialized) {
         this.eventSeqNumQueue.add(key);
       }
-      
       if (logger.isDebugEnabled()) {
         logger.debug("Put successfully in the queue : {} was initialized: {}", event.getRawNewValue(), this.initialized);
       }
@@ -424,20 +469,21 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    */
   public Object take() throws InterruptedException, ForceReattemptException {
     throw new UnsupportedOperationException();
-//    Object key = this.eventSeqNumQueue.remove();
-//    Object object = null;
-//    if (key != null) {
-//      //object = PartitionRegionHelper
-//      //    .getLocalPrimaryData(getPartitionedRegion()).get(key);
-//      object = optimalGet(key);
-//      /**
-//       * TODO: For the time being this is same as peek. To do a batch peek we
-//       * need to remove the head key. We will destroy the key once the event is
-//       * delivered to the GatewayReceiver.
-//       */
-//      destroyKey(key);
-//    }
-//    return object;
+    // Currently has no callers.
+    // To support this callers need to call freeOffHeapResources on the returned GatewaySenderEventImpl.
+//     Object key = this.eventSeqNumQueue.remove();
+//     Object object = null;
+//     if (key != null) {
+//       object = PartitionRegionHelper
+//           .getLocalPrimaryData(getPartitionedRegion()).get(key);
+//       /**
+//        * TODO: For the time being this is same as peek. To do a batch peek we
+//        * need to remove the head key. We will destroy the key once the event is
+//        * delivered to the GatewayReceiver.
+//        */
+//       destroyKey(key);
+//     }
+//     return object; // TODO OFFHEAP: see what callers do with the returned GatewaySenderEventImpl. We need to inc its refcount before we do the destroyKey.
   }
   
   /**
@@ -459,29 +505,30 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 	  checkReadiness();
     } catch (EntryNotFoundException enf) {
       if (getPartitionedRegion().isDestroyed()) {
-	  getPartitionedRegion().checkReadiness();
-	  if (isBucketDestroyed()) {
-	    throw new ForceReattemptException(
-	        "Bucket moved",
-	        new RegionDestroyedException(
-	            LocalizedStrings.PartitionedRegionDataStore_REGION_HAS_BEEN_DESTROYED
-	                .toLocalizedString(), getPartitionedRegion()
-	                .getFullPath()));
-	  }
-	}
-	throw enf;
-	} catch (RegionDestroyedException rde) {
-	  getPartitionedRegion().checkReadiness();
-	  if (isBucketDestroyed()) {
-	    throw new ForceReattemptException("Bucket moved while destroying key "
-	        + key, rde);
-	  }
-	} finally {
+        getPartitionedRegion().checkReadiness();
+        if (isBucketDestroyed()) {
+          throw new ForceReattemptException(
+              "Bucket moved",
+              new RegionDestroyedException(
+                  LocalizedStrings.PartitionedRegionDataStore_REGION_HAS_BEEN_DESTROYED
+                      .toLocalizedString(), getPartitionedRegion()
+                      .getFullPath()));
+        }
+      }
+      throw enf;
+    } catch (RegionDestroyedException rde) {
+      getPartitionedRegion().checkReadiness();
+      if (isBucketDestroyed()) {
+        throw new ForceReattemptException("Bucket moved while destroying key "
+            + key, rde);
+      }
+    } finally {
 	  //merge42180: are we considering offheap in cedar. Comment freeOffHeapReference intentionally
 	  //event.freeOffHeapReferences();
-	}
-	    
-	this.notifyEntriesRemoved();
+      event.release();
+    }
+    
+    this.notifyEntriesRemoved();
   }
 
   public boolean isReadyForPeek() {

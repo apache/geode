@@ -78,8 +78,12 @@ public class ClientStatsManager {
       
       EventID eventId = new EventID(ds);
       EntryEventImpl event = new EntryEventImpl((Object)null);
+      try {
       event.setEventId(eventId);
       regionProxy.putForMetaRegion(ds.getMemberId(), stats, null, event, null, true);
+      } finally {
+        event.release();
+      }
     }
     catch (DistributedSystemDisconnectedException e) {
       throw e;

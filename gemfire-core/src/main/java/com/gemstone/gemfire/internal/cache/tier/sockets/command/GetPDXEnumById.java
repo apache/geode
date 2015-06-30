@@ -58,7 +58,7 @@ public class GetPDXEnumById extends BaseCommand {
     responseMsg.setNumberOfParts(1);
     responseMsg.setTransactionId(msg.getTransactionId());
     responseMsg.addObjPart(result);
-    responseMsg.send(servConn, msg.getTransactionId());
+    responseMsg.send(servConn);
     servConn.setAsTrue(RESPONDED);
   }
 }

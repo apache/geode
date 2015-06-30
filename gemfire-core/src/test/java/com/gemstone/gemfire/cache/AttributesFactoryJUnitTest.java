@@ -18,7 +18,7 @@ import com.gemstone.gemfire.cache.util.BridgeLoader;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link AttributesFactory} class.

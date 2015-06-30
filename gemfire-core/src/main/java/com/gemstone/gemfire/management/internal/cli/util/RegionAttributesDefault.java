@@ -61,7 +61,6 @@ public final class RegionAttributesDefault {
 	
 	//PA
 //Partition attributes
-	public static final int LOCAL_MAX_MEMORY = PartitionAttributesFactory.LOCAL_MAX_MEMORY_DEFAULT;
 	public static final int REDUNDANT_COPIES = 0;
 	public static final long TOTAL_MAX_MEMORY = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
 	public static final int TOTAL_NUM_BUCKETS = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
@@ -76,5 +75,7 @@ public final class RegionAttributesDefault {
 	public static final String EVICTION_ACTION = EvictionAction.NONE.toString();
 	public static final String EVICTION_ALGORITHM = EvictionAction.NONE.toString();
 	public static final long EVICTION_MAX_VALUE = 0;
+	
+  public static final boolean OFF_HEAP = false;
 	
 }

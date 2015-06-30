@@ -67,7 +67,7 @@ public interface InternalExecution extends Execution {
    * @throws UnsupportedOperationException
    *           if not called after
    *           {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)}
-   * @since 8.2
+   * @since 9.0
    */
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs);
   

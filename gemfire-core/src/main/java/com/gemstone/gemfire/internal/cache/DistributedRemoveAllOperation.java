@@ -34,6 +34,7 @@ import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersionsList;
+import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
 import com.gemstone.gemfire.internal.cache.partitioned.PutAllPRMessage;
@@ -88,6 +89,22 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   
   public RemoveAllEntryData[] getRemoveAllEntryData() {
           return removeAllData;
+  }
+  
+  public void setRemoveAllEntryData(RemoveAllEntryData[] removeAllEntryData) {
+    for (int i = 0; i < removeAllEntryData.length; i++) {
+      removeAllData[i] = removeAllEntryData[i];
+    }
+    this.removeAllDataSize = removeAllEntryData.length;
+  }
+  
+  /**
+   * Add an entry that this removeAll operation should distribute.
+   */
+  public void addEntry(RemoveAllEntryData removeAllEntry)
+  {
+    this.removeAllData[this.removeAllDataSize] = removeAllEntry;
+    this.removeAllDataSize += 1;
   }
   
   /**
@@ -161,6 +178,16 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     };
   }
   
+  public void freeOffHeapResources() {
+    // I do not use eventIterator here because it forces the lazy creation of EntryEventImpl by calling getEventForPosition.
+    for (int i=0; i < this.removeAllDataSize; i++) {
+      RemoveAllEntryData entry = this.removeAllData[i];
+      if (entry != null && entry.event != null) {
+        entry.event.release();
+      }
+    }
+  }
+
   public EntryEventImpl getEventForPosition(int position) {
     RemoveAllEntryData entry = this.removeAllData[position];
     if (entry == null) {
@@ -170,7 +197,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       return entry.event;
     }
     LocalRegion region = (LocalRegion)this.event.getRegion();
-    EntryEventImpl ev = new EntryEventImpl(
+    EntryEventImpl ev = EntryEventImpl.create(
         region,
         entry.getOp(),
         entry.getKey(), null/* value */, this.event.getCallbackArgument(),
@@ -178,6 +205,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
         this.event.getDistributedMember(),
         this.event.isGenerateCallbacks(),
         entry.getEventID());
+    boolean returnedEv = false;
+    try {
     ev.setPossibleDuplicate(entry.isPossibleDuplicate());
     if (entry.versionTag != null && region.concurrencyChecksEnabled) {
       VersionSource id = entry.versionTag.getMemberID();
@@ -189,6 +218,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
       
     entry.event = ev;
+    returnedEv = true;
     ev.setOldValue(entry.getOldValue());
     CqService cqService = region.getCache().getCqService();
     if (cqService.isRunning() && !entry.getOp().isCreate() && !ev.hasOldValue()) {
@@ -201,6 +231,11 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     ev.callbacksInvoked(entry.isCallbacksInvoked());
     ev.setTailKey(entry.getTailKey());
     return ev;
+    } finally {
+      if (!returnedEv) {
+        ev.release();
+      }
+    }
   }
 
   public final EntryEventImpl getBaseEvent() {
@@ -604,6 +639,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       if (prMsg == null) {
         prMsg = new RemoveAllPRMessage(bucketId.intValue(), removeAllDataSize, false,
             event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
+        prMsg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
 
         // set dpao's context(original sender) into each PutAllMsg
         // dpao's event's context could be null if it's P2P putAll in PR
@@ -798,7 +834,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     throws EntryNotFoundException
     {
       // Gester: We have to specify eventId for the message of MAP
-      EntryEventImpl event = new EntryEventImpl(
+      EntryEventImpl event = EntryEventImpl.create(
           rgn,
           Operation.REMOVEALL_DESTROY, null /* key */, null/* value */,
           this.callbackArg, true /* originRemote */, getSender());
@@ -858,6 +894,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
             rgn.getVersionVector().recordVersion(getSender(), ev.getVersionTag());
           }
         }
+        ev.release();
       }
     }
     
@@ -883,10 +920,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
         ((KeyWithRegionContext)key).setRegionContext(rgn);
       }
       EventID evId = entry.getEventID();
-      EntryEventImpl ev = new EntryEventImpl(rgn, entry.getOp(),
+      EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
           key, null/* value */, callbackArg,
           originRemote, sender, !skipCallbacks,
           evId);
+      boolean returnedEv = false;
+      try {
       if (context != null) {
         ev.context = context;
       }
@@ -907,7 +946,13 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
        * Setting tailKey for the secondary bucket here. Tail key was update by the primary.
        */
       ev.setTailKey(entry.getTailKey());
+      returnedEv = true;
       return ev;
+      } finally {
+        if (!returnedEv) {
+          ev.release();
+        }
+      }
     }
 
     @Override

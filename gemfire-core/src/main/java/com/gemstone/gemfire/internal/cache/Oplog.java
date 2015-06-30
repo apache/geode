@@ -70,9 +70,11 @@ import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InsufficientDiskSpaceException;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer.Sendable;
 import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
+import com.gemstone.gemfire.internal.Sendable;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogCompactor;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
@@ -96,6 +98,12 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.MemoryChunkWithRefCount;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.internal.shared.NativeCalls;
 import com.gemstone.gemfire.internal.util.BlobHelper;
@@ -115,7 +123,7 @@ import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
  * @since 5.1
  */
 
-public final class Oplog implements CompactableOplog {
+public final class Oplog implements CompactableOplog, Flushable {
   private static final Logger logger = LogService.getLogger();
 
   /** Extension of the oplog file * */
@@ -543,6 +551,7 @@ public final class Oplog implements CompactableOplog {
    * cause a switch of oplogs
    */
   final Object lock = new Object();
+  final ByteBuffer[] bbArray = new ByteBuffer[2];
 
   private boolean lockedForKRFcreate = false;
 
@@ -3462,15 +3471,9 @@ public final class Oplog implements CompactableOplog {
    * @param userBits
    * @throws IOException
    */
-  private void initOpState(byte opCode, DiskRegionView dr, DiskEntry entry, byte[] value, byte userBits, boolean notToUseUserBits)
-      throws IOException {
-    int len = value != null ? value.length : 0;
-    initOpState(opCode, dr, entry, value, len, userBits, notToUseUserBits);
-  }
-
-  private void initOpState(byte opCode, DiskRegionView dr, DiskEntry entry, byte[] value, int valueLength, byte userBits,
+  private void initOpState(byte opCode, DiskRegionView dr, DiskEntry entry, ValueWrapper value, byte userBits,
       boolean notToUseUserBits) throws IOException {
-    this.opState.initialize(opCode, dr, entry, value, valueLength, userBits, notToUseUserBits);
+    this.opState.initialize(opCode, dr, entry, value, userBits, notToUseUserBits);
   }
 
   private void clearOpState() {
@@ -3488,29 +3491,8 @@ public final class Oplog implements CompactableOplog {
     return this.opState.getValueOffset();
   }
 
-  private byte calcUserBits(byte[] value, boolean isSerializedObject) {
-    byte userBits = 0x0;
-
-    if (isSerializedObject) {
-      if (value == DiskEntry.INVALID_BYTES) {
-        // its the invalid token
-        userBits = EntryBits.setInvalid(userBits, true);
-      } else if (value == DiskEntry.LOCAL_INVALID_BYTES) {
-        // its the local-invalid token
-        userBits = EntryBits.setLocalInvalid(userBits, true);
-      } else if (value == DiskEntry.TOMBSTONE_BYTES) {
-        // its the tombstone token
-        userBits = EntryBits.setTombstone(userBits, true);
-      } else {
-        if (value == null) {
-          throw new IllegalStateException("userBits==1 and value is null");
-        } else if (value.length == 0) {
-          throw new IllegalStateException("userBits==1 and value is zero length");
-        }
-        userBits = EntryBits.setSerialized(userBits, true);
-      }
-    }
-    return userBits;
+  private byte calcUserBits(ValueWrapper vw) {
+    return vw.getUserBits();
   }
 
   /**
@@ -3539,18 +3521,14 @@ public final class Oplog implements CompactableOplog {
    *          The DiskEntry object for this key/value pair.
    * @param value
    *          byte array representing the value
-   * @param isSerializedObject
-   *          boolean indicating whether the byte array is a serialized value or
-   *          not Do the bytes in <code>value</code> contain a serialized object
-   *          (or an actually <code>byte</code> array)?
    * @throws DiskAccessException
    * @throws IllegalStateException
    * 
    */
-  public final void create(LocalRegion region, DiskEntry entry, byte[] value, boolean isSerializedObject, boolean async) {
+  public final void create(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
 
     if (this != getOplogSet().getChild()) {
-      getOplogSet().getChild().create(region, entry, value, isSerializedObject, async);
+      getOplogSet().getChild().create(region, entry, value, async);
     } else {
       DiskId did = entry.getDiskId();
       boolean exceptionOccured = false;
@@ -3559,7 +3537,7 @@ public final class Oplog implements CompactableOplog {
       try {
         // It is ok to do this outside of "lock" because
         // create records do not need to change.
-        byte userBits = calcUserBits(value, isSerializedObject);
+        byte userBits = calcUserBits(value);
         // save versions for creates and updates even if value is bytearrary in
         // 7.0
         if (entry.getVersionStamp() != null) {
@@ -3612,7 +3590,7 @@ public final class Oplog implements CompactableOplog {
    * @throws IOException
    * @throws InterruptedException
    */
-  private void basicCreate(DiskRegion dr, DiskEntry entry, byte[] value, byte userBits, boolean async) throws IOException,
+  private void basicCreate(DiskRegion dr, DiskEntry entry, ValueWrapper value, byte userBits, boolean async) throws IOException,
       InterruptedException {
     DiskId id = entry.getDiskId();
     boolean useNextOplog = false;
@@ -3689,7 +3667,7 @@ public final class Oplog implements CompactableOplog {
         // }
         this.crf.currSize = temp;
         if (EntryBits.isNeedsValue(userBits)) {
-          id.setValueLength(value.length);
+          id.setValueLength(value.getLength());
         } else {
           id.setValueLength(0);
         }
@@ -3711,8 +3689,8 @@ public final class Oplog implements CompactableOplog {
           }
           logger.trace(LogMarker.PERSIST_WRITES,
               "basicCreate: id=<{}> key=<{}> valueOffset={} userBits={} valueLen={} valueBytes={} drId={} versionTag={} oplog#{}",
-              abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits, (value != null ? value.length : 0),
-              baToString(value), dr.getId(), tag, getOplogId());
+              abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits, (value != null ? value.getLength() : 0),
+              value.getBytesAsString(), dr.getId(), tag, getOplogId());
         }
         id.setOffsetInOplog(startPosForSynchOp);
         addLive(dr, entry);
@@ -4138,6 +4116,9 @@ public final class Oplog implements CompactableOplog {
         return;
       }
 
+      this.krf.dos.flush();
+      this.krf.fos.getChannel().force(true);
+
       this.krf.dos.close();
       this.krf.dos = null;
       this.krf.bos.close();
@@ -4159,7 +4140,11 @@ public final class Oplog implements CompactableOplog {
       allClosed = true;
     } catch (IOException e) {
       // TODO Auto-generated catch block
-      throw new DiskAccessException("Fail to close krf file " + this.krf.f, e, getParent());
+      if (getParent().getDiskAccessException() == null) {
+        throw new DiskAccessException("Fail to close krf file " + this.krf.f, e, getParent());
+      } else {
+        logger.info("Fail to close krf file " + this.krf.f+", but a DiskAccessException happened ealier", getParent().getDiskAccessException());
+      }
     } finally {
       if (!allClosed) {
         // IOException happened during close, delete this krf
@@ -4317,10 +4302,10 @@ public final class Oplog implements CompactableOplog {
     DiskId did = entry.getDiskId();
     byte userBits = 0;
     long oplogOffset = did.getOffsetInOplog();
-    Object value = entry._getValueUse(dr, true); // OFFHEAP for now copy into
-                                                 // heap CD; todo optimize by
-                                                 // keeping offheap for life of
-                                                 // wrapper
+    SimpleMemoryAllocatorImpl.skipRefCountTracking();
+    // TODO OFFHEAP: no need to retain. We just use it while we have the RegionEntry synced.
+    @Retained @Released Object value = entry._getValueRetain(dr, true);
+    SimpleMemoryAllocatorImpl.unskipRefCountTracking();
     // TODO:KIRK:OK Object value = entry.getValueWithContext(dr);
     boolean foundData = false;
     if (value == null) {
@@ -4403,8 +4388,17 @@ public final class Oplog implements CompactableOplog {
                                                                                                       */);
       } else if (value instanceof CachedDeserializable) {
         CachedDeserializable proxy = (CachedDeserializable) value;
-        userBits = EntryBits.setSerialized(userBits, true);
-        proxy.fillSerializedValue(wrapper, userBits);
+        if (proxy instanceof StoredObject) {
+          @Released StoredObject ohproxy = (StoredObject) proxy;
+          try {
+            ohproxy.fillSerializedValue(wrapper, userBits);
+          } finally {
+            OffHeapHelper.releaseWithNoTracking(ohproxy);
+          }
+        } else {
+          userBits = EntryBits.setSerialized(userBits, true);
+          proxy.fillSerializedValue(wrapper, userBits);
+        }
       } else if (value instanceof byte[]) {
         byte[] valueBytes = (byte[]) value;
         // Asif: If the value is already a byte array then the user bit
@@ -4460,9 +4454,6 @@ public final class Oplog implements CompactableOplog {
    * 
    * @param value
    *          byte array representing the value
-   * @param isSerializedObject
-   *          Do the bytes in <code>value</code> contain a serialized object (or
-   *          an actually <code>byte</code> array)?
    * @throws DiskAccessException
    * @throws IllegalStateException
    */
@@ -4471,17 +4462,17 @@ public final class Oplog implements CompactableOplog {
    * during transition. Minimizing the synchronization allowing multiple put
    * operations for different entries to proceed concurrently for asynch mode
    */
-  public final void modify(LocalRegion region, DiskEntry entry, byte[] value, boolean isSerializedObject, boolean async) {
+  public final void modify(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
 
     if (getOplogSet().getChild() != this) {
-      getOplogSet().getChild().modify(region, entry, value, isSerializedObject, async);
+      getOplogSet().getChild().modify(region, entry, value, async);
     } else {
       DiskId did = entry.getDiskId();
       boolean exceptionOccured = false;
       byte prevUsrBit = did.getUserBits();
       int len = did.getValueLength();
       try {
-        byte userBits = calcUserBits(value, isSerializedObject);
+        byte userBits = calcUserBits(value);
         // save versions for creates and updates even if value is bytearrary in
         // 7.0
         if (entry.getVersionStamp() != null) {
@@ -4491,8 +4482,7 @@ public final class Oplog implements CompactableOplog {
           // pdx and tx will not use version
           userBits = EntryBits.setWithVersions(userBits, true);
         }
-        int valueLen = value != null ? value.length : 0;
-        basicModify(region.getDiskRegion(), entry, value, valueLen, userBits, async, false);
+        basicModify(region.getDiskRegion(), entry, value, userBits, async, false);
       } catch (IOException ex) {
         exceptionOccured = true;
         region.getCancelCriterion().checkCancelInProgress(ex);
@@ -4517,7 +4507,8 @@ public final class Oplog implements CompactableOplog {
   public void offlineModify(DiskRegionView drv, DiskEntry entry, byte[] value,
       boolean isSerializedObject) {
     try {
-      byte userBits = calcUserBits(value, isSerializedObject);
+      ValueWrapper vw = new DiskEntry.Helper.ByteArrayValueWrapper(isSerializedObject, value);
+      byte userBits = calcUserBits(vw);
       // save versions for creates and updates even if value is bytearrary in 7.0
       VersionStamp vs = entry.getVersionStamp();
       if (vs != null) {
@@ -4534,8 +4525,7 @@ public final class Oplog implements CompactableOplog {
         vs.setVersions(vt);
         userBits = EntryBits.setWithVersions(userBits, true);
       }
-      int valueLen = value != null ? value.length : 0;
-      basicModify(drv, entry, value, valueLen, userBits, false, false);
+      basicModify(drv, entry, vw, userBits, false, false);
     } catch (IOException ex) {
       throw new DiskAccessException(LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0.toLocalizedString(this.diskFile.getPath()), ex, drv.getName());
     } catch (InterruptedException ie) {
@@ -4583,17 +4573,25 @@ public final class Oplog implements CompactableOplog {
     }
   }
 
-  private final void copyForwardModifyForCompact(DiskRegionView dr, DiskEntry entry, byte[] value, int valueLength, byte userBits) {
+  private final void copyForwardModifyForCompact(DiskRegionView dr, DiskEntry entry, BytesAndBitsForCompactor wrapper) {
     if (getOplogSet().getChild() != this) {
-      getOplogSet().getChild().copyForwardModifyForCompact(dr, entry, value, valueLength, userBits);
+      getOplogSet().getChild().copyForwardModifyForCompact(dr, entry, wrapper);
     } else {
       DiskId did = entry.getDiskId();
       boolean exceptionOccured = false;
       int len = did.getValueLength();
       try {
+        // TODO: compaction needs to get version?
+        byte userBits = wrapper.getBits();
+        ValueWrapper vw;
+        if (wrapper.getDataChunk() != null) {
+          vw = new DiskEntry.Helper.ChunkValueWrapper(wrapper.getDataChunk());
+        } else {
+          vw = new DiskEntry.Helper.CompactorValueWrapper(wrapper.getBytes(), wrapper.getValidLength());
+        }
         // Compactor always says to do an async basicModify so that its writes
         // will be grouped. This is not a true async write; just a grouped one.
-        basicModify(dr, entry, value, valueLength, userBits, true, true);
+        basicModify(dr, entry, vw, userBits, true, true);
       } catch (IOException ex) {
         exceptionOccured = true;
         getParent().getCancelCriterion().checkCancelInProgress(ex);
@@ -4607,6 +4605,9 @@ public final class Oplog implements CompactableOplog {
             LocalizedStrings.Oplog_FAILED_WRITING_KEY_TO_0_DUE_TO_FAILURE_IN_ACQUIRING_READ_LOCK_FOR_ASYNCH_WRITING
                 .toLocalizedString(this.diskFile.getPath()), ie, getParent());
       } finally {
+        if (wrapper.getDataChunk() != null) {
+          wrapper.setChunkData(null, (byte) 0);
+        }
         if (exceptionOccured) {
           did.setValueLength(len);
         }
@@ -4626,7 +4627,7 @@ public final class Oplog implements CompactableOplog {
    * @throws IOException
    * @throws InterruptedException
    */
-  private void basicModify(DiskRegionView dr, DiskEntry entry, byte[] value, int valueLength, byte userBits, boolean async,
+  private void basicModify(DiskRegionView dr, DiskEntry entry, ValueWrapper value, byte userBits, boolean async,
       boolean calledByCompactor) throws IOException, InterruptedException {
     DiskId id = entry.getDiskId();
     boolean useNextOplog = false;
@@ -4643,7 +4644,7 @@ public final class Oplog implements CompactableOplog {
       if (getOplogSet().getChild() != this) {
         useNextOplog = true;
       } else {
-        initOpState(OPLOG_MOD_ENTRY_1ID, dr, entry, value, valueLength, userBits, false);
+        initOpState(OPLOG_MOD_ENTRY_1ID, dr, entry, value, userBits, false);
         adjustment = getOpStateSize();
         assert adjustment > 0;
         long temp = (this.crf.currSize + adjustment);
@@ -4671,11 +4672,11 @@ public final class Oplog implements CompactableOplog {
             }
             logger.trace(LogMarker.PERSIST_WRITES,
               "basicModify: id=<{}> key=<{}> valueOffset={} userBits={} valueLen={} valueBytes=<{}> drId={} versionStamp={} oplog#{}",
-              abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits, valueLength, baToString(value, valueLength),
+              abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits, value.getLength(), value.getBytesAsString(),
               dr.getId(), tag, getOplogId());
           }
           if (EntryBits.isNeedsValue(userBits)) {
-            id.setValueLength(valueLength);
+            id.setValueLength(value.getLength());
           } else {
             id.setValueLength(0);
           }
@@ -4733,7 +4734,7 @@ public final class Oplog implements CompactableOplog {
         CacheObserverHolder.getInstance().afterSwitchingOplog();
       }
       Assert.assertTrue(getOplogSet().getChild() != this);
-      getOplogSet().getChild().basicModify(dr, entry, value, valueLength, userBits, async, calledByCompactor);
+      getOplogSet().getChild().basicModify(dr, entry, value, userBits, async, calledByCompactor);
     } else {
       if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
         CacheObserverHolder.getInstance().afterSettingOplogOffSet(startPosForSynchOp);
@@ -5173,6 +5174,22 @@ public final class Oplog implements CompactableOplog {
     flushAllNoSync(false); // @todo
     // flush(olf, false);
   }
+  
+  @Override
+  public void flush() throws IOException {
+    flushAllNoSync(false);
+  }
+
+  @Override
+  public void flush(ByteBuffer b1, ByteBuffer b2) throws IOException {
+    if (b1 == this.drf.writeBuf) {
+      flush(this.drf, b1, b2);
+      flush(this.crf, false);
+    } else {
+      flush(this.drf, false);
+      flush(this.crf, b1, b2);
+    }
+  }
 
   private final void flushAndSync(OplogFile olf) throws IOException {
     flushAll(false); // @todo
@@ -5213,6 +5230,31 @@ public final class Oplog implements CompactableOplog {
     }
   }
 
+  private final void flush(OplogFile olf, ByteBuffer b1, ByteBuffer b2) throws IOException {
+    try {
+      synchronized (this.lock/* olf */) {
+        if (olf.RAFClosed) {
+          return;
+        }
+        this.bbArray[0] = b1;
+        this.bbArray[1] = b2;
+        b1.flip();
+        long flushed = olf.channel.write(this.bbArray);
+        this.bbArray[0] = null;
+        this.bbArray[1] = null;
+        // update bytesFlushed after entire writeBuffer is flushed to fix bug 41201
+        olf.bytesFlushed += flushed;
+        b1.clear();
+      }
+    } catch (ClosedChannelException ignore) {
+      // It is possible for a channel to be closed when our code does not
+      // explicitly call channel.close (when we will set RAFclosed).
+      // This can happen when a thread is doing an io op and is interrupted.
+      // That thread will see ClosedByInterruptException but it will also
+      // close the channel and then we will see ClosedChannelException.
+    }
+  }
+  
   public final void flushAll() {
     flushAll(false);
   }
@@ -6072,23 +6114,19 @@ public final class Oplog implements CompactableOplog {
                 }
                 boolean toCompact = getBytesAndBitsForCompaction(dr, de, wrapper);
                 if (toCompact) {
-                  byte[] valueBytes = wrapper.getBytes();
-                  int length = wrapper.getValidLength();
-                  byte userBits = wrapper.getBits();
-                  // TODO: compaction needs to get version?
                   if (oplogId != did.getOplogId()) {
-                    // @todo: Is this even possible? Perhaps I should just
-                    // assert here
+                    // @todo: Is this even possible? Perhaps I should just assert here
                     // skip this guy his oplogId changed
                     if (!wrapper.isReusable()) {
                       wrapper = new BytesAndBitsForCompactor();
+                    } else if (wrapper.getDataChunk() != null) {
+                      wrapper.setChunkData(null, (byte) 0);
                     }
                     continue;
                   }
                   // write it to the current oplog
-                  getOplogSet().getChild().copyForwardModifyForCompact(dr, de, valueBytes, length, userBits);
-                  // the did's oplogId will now be set to the current active
-                  // oplog
+                  getOplogSet().getChild().copyForwardModifyForCompact(dr, de, wrapper);
+                  // the did's oplogId will now be set to the current active oplog
                   didCompact = true;
                 }
               } // did
@@ -6464,8 +6502,7 @@ public final class Oplog implements CompactableOplog {
      */
     private int size;
     private boolean needsValue;
-    private byte[] value;
-    private int valueLength;
+    private ValueWrapper value;
     private int drIdLength; // 1..9
     private final byte[] drIdBytes = new byte[DiskInitFile.DR_ID_MAX_BYTES];
     private byte[] keyBytes;
@@ -6488,9 +6525,12 @@ public final class Oplog implements CompactableOplog {
 
     public String debugStr() {
       StringBuilder sb = new StringBuilder();
-      sb.append(" opcode=").append(this.opCode).append(" len=").append(this.valueLength).append(" vb=").append(
-          baToString(this.value, this.valueLength));
+      sb.append(" opcode=").append(this.opCode).append(" len=").append(this.value.getLength()).append(" vb=").append(this.value.getBytesAsString());
       return sb.toString();
+    }
+    
+    private final void write(OplogFile olf, ValueWrapper vw) throws IOException {
+      vw.sendTo(olf.writeBuf, Oplog.this);
     }
 
     private final void write(OplogFile olf, byte[] bytes, int byteLength) throws IOException {
@@ -6573,9 +6613,8 @@ public final class Oplog implements CompactableOplog {
     public void initialize(Map<Long, AbstractDiskRegion> drMap, boolean gcRVV) throws IOException {
       this.opCode = OPLOG_RVV;
       byte[] rvvBytes = serializeRVVs(drMap, gcRVV);
-      this.value = rvvBytes;
+      this.value = new DiskEntry.Helper.ByteArrayValueWrapper(true, rvvBytes);
       // Size is opCode + length + end of record
-      this.valueLength = rvvBytes.length;
       this.size = 1 + rvvBytes.length + 1;
     }
 
@@ -6586,9 +6625,8 @@ public final class Oplog implements CompactableOplog {
       saveUserBits(notToUseUserBits, userBits);
 
       this.keyBytes = keyBytes;
-      this.value = valueBytes;
-      this.valueLength = this.value.length;
-      if (this.userBits == 1 && this.valueLength == 0) {
+      this.value = new DiskEntry.Helper.CompactorValueWrapper(valueBytes, valueBytes.length);
+      if (this.userBits == 1 && this.value.getLength() == 0) {
         throw new IllegalStateException("userBits==1 and valueLength is 0");
       }
 
@@ -6598,7 +6636,7 @@ public final class Oplog implements CompactableOplog {
       initVersionsBytes(tag);
 
       if (this.needsValue) {
-        this.size += 4 + this.valueLength;
+        this.size += 4 + this.value.getLength();
       }
       this.deltaIdBytesLength = 0;
       {
@@ -6639,15 +6677,14 @@ public final class Oplog implements CompactableOplog {
       }
     }
 
-    public void initialize(byte opCode, DiskRegionView dr, DiskEntry entry, byte[] value, int valueLength, byte userBits,
+    public void initialize(byte opCode, DiskRegionView dr, DiskEntry entry, ValueWrapper value, byte userBits,
         boolean notToUseUserBits) throws IOException {
       this.opCode = opCode;
       this.size = 1;// for the opcode
       saveUserBits(notToUseUserBits, userBits);
 
       this.value = value;
-      this.valueLength = valueLength;
-      if (this.userBits == 1 && this.valueLength == 0) {
+      if (this.userBits == 1 && this.value.getLength() == 0) {
         throw new IllegalStateException("userBits==1 and valueLength is 0");
       }
 
@@ -6682,7 +6719,7 @@ public final class Oplog implements CompactableOplog {
         saveDrId(drId);
       }
       if (this.needsValue) {
-        this.size += 4 + this.valueLength;
+        this.size += 4 + this.value.getLength();
       }
       this.deltaIdBytesLength = 0;
       if (this.opCode != OPLOG_NEW_ENTRY_0ID) {
@@ -6791,8 +6828,8 @@ public final class Oplog implements CompactableOplog {
         write(olf, this.magic.getBytes(), OPLOG_TYPE.getLen());
         bytesWritten += OPLOG_TYPE.getLen();
       } else if (this.opCode == OPLOG_RVV) {
-        write(olf, this.value, this.valueLength);
-        bytesWritten += this.valueLength;
+        write(olf, this.value);
+        bytesWritten += this.value.getLength();
       } else if (this.opCode == OPLOG_GEMFIRE_VERSION) {
         writeOrdinal(olf, this.gfversion);
         bytesWritten++;
@@ -6823,11 +6860,12 @@ public final class Oplog implements CompactableOplog {
           bytesWritten += this.versionsBytes.length;
         }
         if (this.needsValue) {
-          writeInt(olf, this.valueLength);
+          int len = this.value.getLength();
+          writeInt(olf, len);
           bytesWritten += 4;
-          if (this.valueLength > 0) {
-            write(olf, this.value, this.valueLength);
-            bytesWritten += this.valueLength;
+          if (len > 0) {
+            write(olf, this.value);
+            bytesWritten += len;
           }
         }
         if (this.keyBytes != null) {
@@ -7044,10 +7082,19 @@ public final class Oplog implements CompactableOplog {
     }
 
     @Override
-    public Object _getValueUse(RegionEntryContext context, boolean decompress) {
+    public void handleValueOverflow(RegionEntryContext context) {throw new IllegalStateException();}
+
+    @Override
+    public void afterValueOverflow(RegionEntryContext context) {throw new IllegalStateException();}
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) { throw new IllegalStateException("Should never be called");  }
+
+    @Override
+    public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
       throw new IllegalStateException();
     }
 
+    @Override
     public void setValueWithContext(RegionEntryContext context, Object value) {
       throw new IllegalStateException();
     }
@@ -7233,6 +7280,11 @@ public final class Oplog implements CompactableOplog {
     }
 
     @Override
+    public Object getValueRetain(RegionEntryContext context) {
+      return null;
+    }
+
+    @Override
     public void setValue(RegionEntryContext context, Object value) throws RegionClearedException {
       // TODO Auto-generated method stub
     }
@@ -7327,7 +7379,19 @@ public final class Oplog implements CompactableOplog {
     public void setUpdateInProgress(boolean underUpdate) {
       // TODO Auto-generated method stub
     }
-
+    @Override
+    public boolean isMarkedForEviction() {
+      // TODO Auto-generated method stub
+      return false;
+    }
+    @Override
+    public void setMarkedForEviction() {
+      // TODO Auto-generated method stub
+    }
+    @Override
+    public void clearMarkedForEviction() {
+      // TODO Auto-generated method stub
+    }
     @Override
     public boolean isInvalid() {
       // TODO Auto-generated method stub
@@ -7400,6 +7464,13 @@ public final class Oplog implements CompactableOplog {
     @Override
     public void resetRefCount(NewLRUClockHand lruList) {
     }
+
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val,
+        EntryEventImpl event, boolean isEntryUpdate) {
+      throw new IllegalStateException("Should never be called");
+    }
+    
   }
 
   /**

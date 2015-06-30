@@ -137,6 +137,12 @@ public class MemberCommands implements CommandMarker {
         	section.addData("Groups", memberInformation.getGroups());
         	section.addData("Used Heap", memberInformation.getHeapUsage() + "M");
         	section.addData("Max Heap", memberInformation.getMaxHeapSize() + "M");
+        	{
+        	  String offHeapMemorySize = memberInformation.getOffHeapMemorySize();
+        	  if (offHeapMemorySize != null && !offHeapMemorySize.isEmpty()) {
+        	    section.addData("Off Heap Size", offHeapMemorySize);
+        	  }
+        	}
         	section.addData("Working Dir", memberInformation.getWorkingDirPath());
         	section.addData("Log file", memberInformation.getLogFilePath());
 

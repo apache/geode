@@ -4,7 +4,7 @@ Create a distribution archive using
 
 Unpack the archive found in gemfire-assembly/build/distributions and run the gfsh shell
 
-cd apache-gemfire-*
+cd geode-*
 bin/gfsh
 
 OR

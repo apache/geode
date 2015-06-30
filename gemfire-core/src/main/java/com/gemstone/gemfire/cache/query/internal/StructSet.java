@@ -35,7 +35,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @author Eric Zoerner
  * @since 4.0
  */
-public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set, SelectResults, DataSerializableFixedID {
+public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set, SelectResults, 
+DataSerializableFixedID, StructFields {
   private static final long serialVersionUID = -1228835506930611510L;
 
   protected StructType structType;
@@ -283,7 +284,7 @@ public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set,
   }
 
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(java.util.Set.class, this.structType);
+    return new CollectionTypeImpl(StructSet.class, this.structType);
   }
 
   // note: this method is dangerous in that it could result in undefined
@@ -300,7 +301,7 @@ public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set,
   }
 
   public Set asSet() {
-    return this.contents;
+    return this;
   }
 
   /**
@@ -409,21 +410,35 @@ public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set,
 
   @Override
   public Object[] toArray() {
-    return this.contents.toArray();
+    Struct[] structs = new Struct[this.contents.size()];
+    int i = 0;
+    for (Iterator iter = this.iterator(); iter.hasNext();) {      
+      structs[i++]  = (Struct)iter.next();
+    }
+    return structs;    
   }
 
   @Override
-  public Object[] toArray(Object[] a) {
-    return this.contents.toArray(a);
+  public Object[] toArray(Object[] a) {    
+    Object[] array = this.contents.toArray(a);
+    int i = 0;
+    for(Object o : array) {
+      array[i++] = new StructImpl((StructTypeImpl)this.structType, (Object[])o);
+    }
+    return array;
   }
 
   @Override
   public boolean remove(Object o) {
+    if(o instanceof Struct) {
+      o = ((Struct)o).getFieldValues();
+    }
     return this.contents.remove(o);
   }
 
   @Override
   public boolean containsAll(Collection c) {
+    //TODO: Asif : This is wrong ,we need to fix this.
     return this.contents.containsAll(c);
   }
 

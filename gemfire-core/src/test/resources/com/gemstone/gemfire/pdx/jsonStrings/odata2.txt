@@ -1,0 +1,18 @@
+
+{ 
+  "d" : { 
+    "results": { 
+      "__metadata": { 
+        "uri": "http://services.odata.org/OData/OData.svc/Categories(0)",
+        "type": "DataServiceProviderDemo.Category" 
+      }, 
+      "ID": 0, 
+      "Name": "Food", 
+      "Products": { 
+        "__deferred": { 
+          "uri": "http://services.odata.org/OData/OData.svc/Categories(0)/Products"
+        } 
+      } 
+    } 
+  } 
+}

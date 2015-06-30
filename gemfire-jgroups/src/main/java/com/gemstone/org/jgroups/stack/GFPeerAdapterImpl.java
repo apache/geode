@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Timer;
 
 import com.gemstone.org.jgroups.Address;
+import com.gemstone.org.jgroups.spi.GFPeerAdapter;
 import com.gemstone.org.jgroups.util.GFLogWriter;
 import com.gemstone.org.jgroups.util.StringId;
 

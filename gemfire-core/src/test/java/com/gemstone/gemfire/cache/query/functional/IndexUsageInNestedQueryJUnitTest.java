@@ -1,0 +1,143 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/*
+ * IndexUsageInNestedQuery.java
+ *
+ * Created on June 6, 2005, 11:39 AM
+ */
+package com.gemstone.gemfire.cache.query.functional;
+
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.CacheUtils;
+import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexType;
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Utils;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
+import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+/**
+ *
+ * @author vikramj
+ */
+@Category(IntegrationTest.class)
+public class IndexUsageInNestedQueryJUnitTest {
+
+  @Before
+  public void setUp() throws java.lang.Exception {
+    CacheUtils.startCache();
+    Region r = CacheUtils.createRegion("portfolios", Portfolio.class);
+    for(int i=0;i<4;i++)
+      r.put(i+"", new Portfolio(i));
+  }
+
+  @After
+  public void tearDown() throws java.lang.Exception {
+    CacheUtils.closeCache();
+  }
+  @Test
+  public void testNestedQueriesResultsasStructSet() throws Exception {
+
+    QueryService qs;
+    qs = CacheUtils.getQueryService();
+    String queries[] = {
+        "select distinct * from /portfolios p, (select distinct pos  as poos from /portfolios x, x.positions.values pos"
+            + " where pos.secId = 'YHOO') as k",
+            "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios p, p.positions.values pos"
+                + " where pos.secId = 'YHOO') as k",
+                "select distinct * from /portfolios p, (select distinct x.ID as ID  from /portfolios x"
+                    + " where x.ID = p.ID) as k ", // Currently Index Not Getting Used
+                    "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios x, p.positions.values pos"
+                    + " where x.ID = p.ID) as k",   // Currently Index Not Getting Used        
+                    "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as k "
+                    + "  where k.poos.secId = 'YHOO'",            
+                    "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as K"
+                        + "  where K.poos.secId = 'YHOO'",
+                        "select distinct * from /portfolios p, (select distinct val from positions.values as val where val.secId = 'YHOO') as k ",
+                        "select distinct * from /portfolios x, x.positions.values where " 
+                            + "secId = element(select distinct vals.secId from /portfolios p, p.positions.values vals where vals.secId = 'YHOO')",
+
+    };
+    SelectResults r[][]= new SelectResults[queries.length][2];
+
+    for (int i = 0; i < queries.length; i++) {
+      Query q = null;
+      try {
+        QueryObserverImpl observer = new QueryObserverImpl();
+        QueryObserverHolder.setInstance(observer);
+        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        CacheUtils.getLogger().info("Executing query: " + queries[i]);
+        //                DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
+        r[i][0] = (SelectResults) q.execute();
+        if(!observer.isIndexesUsed){
+          CacheUtils.log("NO INDEX USED");
+        }
+        CacheUtils.log(Utils.printResult(r[i][0]));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    //  Create an Index on status and execute the same query again.
+
+    qs = CacheUtils.getQueryService();
+    qs.createIndex("idIndex", IndexType.FUNCTIONAL,"p.ID","/portfolios p");
+    qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,"b.secId","/portfolios pf, pf.positions.values b");
+    qs.createIndex("cIndex", IndexType.FUNCTIONAL, "pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]","/portfolios pf");
+    for (int i = 0; i < queries.length; i++) {
+      Query q = null;
+      try {
+        QueryObserverImpl observer2 = new QueryObserverImpl();
+        QueryObserverHolder.setInstance(observer2);
+        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        r[i][1] = (SelectResults)q.execute();
+        if(observer2.isIndexesUsed == true){
+          CacheUtils.log("YES INDEX IS USED!");
+        }
+        CacheUtils.log(Utils.printResult(r[i][1]));
+      } catch (Exception e) {
+        e.printStackTrace();
+        fail(q.getQueryString());
+      }
+    }
+    CacheUtils.compareResultsOfWithAndWithoutIndex(r, this);
+  }
+
+
+
+  class QueryObserverImpl extends QueryObserverAdapter{
+    boolean isIndexesUsed = false;
+    ArrayList indexesUsed = new ArrayList();
+
+    public void beforeIndexLookup(Index index, int oper, Object key) {
+      indexesUsed.add(index.getName());
+    }
+
+    public void afterIndexLookup(Collection results) {
+      if(results != null){
+        isIndexesUsed = true;
+        //CacheUtils.log(Utils.printResult(results));
+      }
+    }
+  }
+
+}

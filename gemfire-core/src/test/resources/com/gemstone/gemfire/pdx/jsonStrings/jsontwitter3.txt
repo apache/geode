@@ -1,0 +1,70 @@
+
+    {
+
+      "completed_in": 0.012,
+
+      "max_id": 136536013832069120,
+
+      "max_id_str": "136536013832069120",
+
+      "next_page": "?page=2&max_id=136536013832069120&q=twitterapi&rpp=1",
+
+      "page": 1,
+
+      "query": "twitterapi",
+
+      "refresh_url": "?since_id=136536013832069120&q=twitterapi",
+
+      "results": [
+
+        {
+
+          "created_at": "Tue, 15 Nov 2011 20:08:17 +0000",
+
+          "from_user": "fakekurrik",
+
+          "from_user_id": 370773112,
+
+          "from_user_id_str": "370773112",
+
+          "from_user_name": "fakekurrik",
+
+          "geo": null,
+
+          "id": 136536013832069120,
+
+          "id_str": "136536013832069120",
+
+          "iso_language_code": "en",
+
+          "metadata": {
+
+            "result_type": "recent"
+
+          },
+
+          "profile_image_url": "http://a1.twimg.com/profile_images/1540298033/phatkicks_normal.jpg",
+
+          "source": "&lt;a href=&quot;http://twitter.com/&quot;&gt;web&lt;/a&gt;",
+
+          "text": "@twitterapi, keep on keeping it real",
+
+          "to_user": "twitterapi",
+
+          "to_user_id": 6253282,
+
+          "to_user_id_str": "6253282",
+
+          "to_user_name": "Twitter API"
+
+        }
+
+      ],
+
+      "results_per_page": 1,
+
+      "since_id": 0,
+
+      "since_id_str": "0"
+
+    }

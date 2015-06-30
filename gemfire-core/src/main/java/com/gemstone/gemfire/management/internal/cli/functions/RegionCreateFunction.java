@@ -69,7 +69,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     String memberNameOrId = CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
     RegionFunctionArgs regionCreateArgs = (RegionFunctionArgs) context.getArguments();
-
+    
     if (regionCreateArgs.isSkipIfExists()) {
       Region<Object, Object> region = cache.getRegion(regionCreateArgs.getRegionPath());
       if (region != null) {
@@ -191,9 +191,9 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       // We have to do this because AttributesFactory.setPartitionAttributes()
       // checks RegionAttributes.hasDataPolicy() which is set only when the data
       // policy is set explicitly
-      factory.setDataPolicy(originalDataPolicy);
+      factory.setDataPolicy(originalDataPolicy);      
     }
-
+       
     // Set Constraints
     final String keyConstraint = regionCreateArgs.getKeyConstraint();
     final String valueConstraint = regionCreateArgs.getValueConstraint();
@@ -232,6 +232,10 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     }
     if (regionCreateArgs.isSetDiskSynchronous()) {
       factory.setDiskSynchronous(regionCreateArgs.isDiskSynchronous());
+    }
+
+    if (regionCreateArgs.isSetOffHeap()) {
+      factory.setOffHeap(regionCreateArgs.isOffHeap());
     }
 
     // Set stats enabled
@@ -302,8 +306,17 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       Class<CacheWriter<K, V>> cacheWriterKlass = forName(cacheWriter, CliStrings.CREATE_REGION__CACHEWRITER);
       factory.setCacheWriter(newInstance(cacheWriterKlass, CliStrings.CREATE_REGION__CACHEWRITER));
     }
-
+    
     String regionName = regionPathData.getName();
+    
+    final String hdfsStoreName = regionCreateArgs.getHDFSStoreName();
+	if (hdfsStoreName != null && !hdfsStoreName.isEmpty()) {
+		factory.setHDFSStoreName(hdfsStoreName);		
+	}
+	if (regionCreateArgs.isSetHDFSWriteOnly()) {
+		factory.setHDFSWriteOnly(regionCreateArgs.getHDFSWriteOnly());
+	}
+	  
     if (parentRegion != null) {
       createdRegion = factory.createSubregion(parentRegion, regionName);
     } else {

@@ -90,7 +90,7 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
       
-      EntryEventImpl ev = new EntryEventImpl(rgn, getOperation(), this.key,
+      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
          null /* newValue */, this.callbackArg /*callbackArg*/, true /* originRemote*/ , getSender(), false /*generateCallbacks*/);
       ev.setEventId(this.eventId);
       ev.setVersionTag(this.versionTag);

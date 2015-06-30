@@ -13,6 +13,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.internal.GetOp;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
+import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
@@ -31,6 +32,10 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.NotAuthorizedException;
@@ -159,7 +164,7 @@ public class Get70 extends BaseCommand {
         // the value if it is a byte[].
         Entry entry;
         try {
-          entry = getValueAndIsObject(region, key, callbackArg, servConn);
+          entry = getEntry(region, key, callbackArg, servConn);
         }
         catch (Exception e) {
           writeException(msg, e, false, servConn);
@@ -167,7 +172,9 @@ public class Get70 extends BaseCommand {
           return;
         }
 
-        Object data = entry.value;
+        @Retained final Object originalData = entry.value;
+        Object data = originalData;
+        try {
         boolean isObject = entry.isObject;
         VersionTag versionTag = entry.versionTag;
         boolean keyNotPresent = entry.keyNotPresent;
@@ -176,16 +183,21 @@ public class Get70 extends BaseCommand {
         try {
           AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
           if (postAuthzRequest != null) {
-            getContext = postAuthzRequest.getAuthorize(regionName, key, data,
-                isObject, getContext);
-            byte[] serializedValue = getContext.getSerializedValue();
-            if (serializedValue == null) {
-              data = getContext.getObject();
+            try {
+              getContext = postAuthzRequest.getAuthorize(regionName, key, data,
+                  isObject, getContext);
+              GetOperationContextImpl gci = (GetOperationContextImpl) getContext;
+              Object newData = gci.getRawValue();
+              if (newData != data) {
+                // user changed the value
+                isObject = getContext.isObject();
+                data = newData;
+              }
+            } finally {
+              if (getContext != null) {
+                ((GetOperationContextImpl)getContext).release();
+              }
             }
-            else {
-              data = serializedValue;
-            }
-            isObject = getContext.isObject();
           }
         }
         catch (NotAuthorizedException ex) {
@@ -214,6 +226,9 @@ public class Get70 extends BaseCommand {
         else {
           writeResponse(data, callbackArg, msg, isObject, versionTag, keyNotPresent, servConn);
         }
+        } finally {
+          OffHeapHelper.release(originalData);
+        }
         
         servConn.setAsTrue(RESPONDED);
         if (logger.isDebugEnabled()) {
@@ -225,6 +240,19 @@ public class Get70 extends BaseCommand {
 
   }
 
+  /**
+   * This method was added so that Get70 could, by default,
+   * call getEntryRetained, but the subclass GetEntry70
+   * could override it and call getValueAndIsObject.
+   * If we ever get to the point that no code needs to
+   * call getValueAndIsObject then this method can go away.
+   */
+  @Retained
+  protected Entry getEntry(Region region, Object key,
+      Object callbackArg, ServerConnection servConn) {
+    return getEntryRetained(region, key, callbackArg, servConn);
+  }
+  
   // take the result 3 element "result" as argument instead of
   // returning as the result to avoid creating the array repeatedly
   // for large number of entries like in getAll.  Third element added in
@@ -245,7 +273,6 @@ public class Get70 extends BaseCommand {
     boolean isObject = true;
     Object data = null;
 
-    EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
 
 //    if (entry != null && region.getAttributes().getConcurrencyChecksEnabled()) {
 //      RegionEntry re;
@@ -268,7 +295,13 @@ public class Get70 extends BaseCommand {
 //      }
 //    } else {
       ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-      data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true);
+      EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
+      try {
+        // TODO OFFHEAP: optimize
+      data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true, true /*allowReadFromHDFS*/);
+      }finally {
+        versionHolder.release();
+      }
 //    }
     versionTag = versionHolder.getVersionTag();
     
@@ -279,7 +312,11 @@ public class Get70 extends BaseCommand {
     // disk. If it is already a byte[], set isObject to false.
     boolean wasInvalid = false;
     if (data instanceof CachedDeserializable) {
-      {
+      if (data instanceof StoredObject && !((StoredObject) data).isSerialized()) {
+        // it is a byte[]
+        isObject = false;
+        data = ((StoredObject) data).getDeserializedForReading();
+      } else {
         data = ((CachedDeserializable)data).getValue();
       }
     }
@@ -292,6 +329,67 @@ public class Get70 extends BaseCommand {
     }
     else if (data instanceof byte[]) {
       isObject = false;
+    }
+    Entry result = new Entry();
+    result.value = data;
+    result.isObject = isObject;
+    result.keyNotPresent = !wasInvalid && (data == null || data == Token.TOMBSTONE);
+    result.versionTag = versionTag;
+    return result;
+  }
+
+  /**
+   * Same as getValueAndIsObject but the returned value can be a retained off-heap reference.
+   */
+  @Retained
+  public Entry getEntryRetained(Region region, Object key,
+      Object callbackArg, ServerConnection servConn) {
+
+//    Region.Entry entry;
+    String regionName = region.getFullPath();
+    if (servConn != null) {
+      servConn.setModificationInfo(true, regionName, key);
+    }
+    VersionTag versionTag = null;
+//    LocalRegion lregion = (LocalRegion)region;
+
+//    entry = lregion.getEntry(key, true);
+
+    boolean isObject = true;
+    @Retained Object data = null;
+
+    ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
+    EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
+    try {
+      data = ((LocalRegion) region).getRetained(key, callbackArg, true, true, id, versionHolder, true);
+    }finally {
+      versionHolder.release();
+    }
+    versionTag = versionHolder.getVersionTag();
+    
+    // If it is Token.REMOVED, Token.DESTROYED,
+    // Token.INVALID, or Token.LOCAL_INVALID
+    // set it to null. If it is NOT_AVAILABLE, get the value from
+    // disk. If it is already a byte[], set isObject to false.
+    boolean wasInvalid = false;
+    if (data == Token.REMOVED_PHASE1 || data == Token.REMOVED_PHASE2 || data == Token.DESTROYED) {
+      data = null;
+    }
+    else if (data == Token.INVALID || data == Token.LOCAL_INVALID) {
+      data = null; // fix for bug 35884
+      wasInvalid = true;
+    }
+    else if (data instanceof byte[]) {
+      isObject = false;
+    } else if (data instanceof CachedDeserializable) {
+      if (data instanceof StoredObject) {
+        // it is off-heap so do not unwrap it.
+        if (!((StoredObject) data).isSerialized()) {
+          isObject = false;
+        }
+      } else {
+        data = ((CachedDeserializable)data).getValue();
+      }
     }
     Entry result = new Entry();
     result.value = data;
@@ -326,7 +424,7 @@ public class Get70 extends BaseCommand {
     throw new UnsupportedOperationException();
   }
 
-  private void writeResponse(Object data, Object callbackArg,
+  private void writeResponse(@Unretained Object data, Object callbackArg,
       Message origMsg, boolean isObject, VersionTag versionTag, boolean keyNotPresent, ServerConnection servConn)
       throws IOException {
     Message responseMsg = servConn.getResponseMessage();
@@ -353,14 +451,7 @@ public class Get70 extends BaseCommand {
     
     responseMsg.setNumberOfParts(numParts);
     
-    if (data instanceof byte[]) {
-      responseMsg.addRawPart((byte[])data, isObject);
-    }
-    else {
-      Assert.assertTrue(isObject,
-          "isObject should be true when value is not a byte[]");
-      responseMsg.addObjPart(data, zipValues);
-    }
+    responseMsg.addPartInAnyForm(data, isObject);
 
     responseMsg.addIntPart(flags);
 
@@ -373,7 +464,7 @@ public class Get70 extends BaseCommand {
     }
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
   
   protected static void writeResponse(Object data, Object callbackArg,
@@ -382,7 +473,7 @@ public class Get70 extends BaseCommand {
     throw new UnsupportedOperationException();
   }
 
-  private void writeResponseWithRefreshMetadata(Object data,
+  private void writeResponseWithRefreshMetadata(@Unretained Object data,
       Object callbackArg, Message origMsg, boolean isObject,
       ServerConnection servConn, PartitionedRegion pr, byte nwHop,
       VersionTag versionTag, boolean keyNotPresent) throws IOException {
@@ -411,14 +502,7 @@ public class Get70 extends BaseCommand {
     
     responseMsg.setNumberOfParts(numParts);
 
-    if (data instanceof byte[]) {
-      responseMsg.addRawPart((byte[])data, isObject);
-    }
-    else {
-      Assert.assertTrue(isObject,
-          "isObject should be true when value is not a byte[]");
-      responseMsg.addObjPart(data, zipValues);
-    }
+    responseMsg.addPartInAnyForm(data, isObject);
     
     responseMsg.addIntPart(flags);
     
@@ -432,7 +516,7 @@ public class Get70 extends BaseCommand {
     responseMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(),nwHop});
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
 
 }

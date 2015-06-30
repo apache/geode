@@ -1,0 +1,15 @@
+{
+    "query": {
+        "pages": {
+            "736": {
+                "pageid": 736,
+                "ns": 0,
+                "title": "Albert Einstein",
+                "touched": "2007-07-06T04:37:30Z",
+                "lastrevid": 142335140,
+                "counter": 4698,
+                "length": 86906
+            }
+        }
+    }
+}

@@ -413,7 +413,7 @@ public class CacheClientProxy implements ClientSession {
         }
       } catch (SocketException ignore) {
       }
-      this._commBuffer = ServerConnection.allocateCommBuffer(bufSize);
+      this._commBuffer = ServerConnection.allocateCommBuffer(bufSize, socket);
     }
     this._remoteHostAddress = socket.getInetAddress().getHostAddress();
     this.isPrimary = ip;
@@ -1007,7 +1007,7 @@ public class CacheClientProxy implements ClientSession {
 
     // Null out comm buffer, host address, ports and proxy id. All will be
     // replaced when the client reconnects.
-    this._commBuffer = null;
+    releaseCommBuffer();
     this._remoteHostAddress = null;
     try {
       this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
@@ -1017,6 +1017,14 @@ public class CacheClientProxy implements ClientSession {
     // Commented to fix bug 40259
     //this.clientVersion = null;
     closeNonDurableCqs();    
+  }
+  
+  private void releaseCommBuffer() {
+    ByteBuffer bb = this._commBuffer;
+    if (bb != null) {
+      this._commBuffer = null;
+      ServerConnection.releaseCommBuffer(bb);
+    }
   }
 
   private void closeNonDurableCqs(){

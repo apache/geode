@@ -1,4 +1,5 @@
 apply plugin: 'distribution'
+apply plugin: 'maven-publish'
 
 jar.enabled = false
 
@@ -20,12 +21,6 @@ dependencies {
 sourceSets {
   // need to remove this since we use the dependencies jar out of the install dir
   test.runtimeClasspath -= configurations.provided
-}
-
-test {
-  // test from the actual classpath not the gradle classpath
-  dependsOn installDist
-  classpath += files "$buildDir/install/${distributions.main.baseName}/lib/gemfire-core-dependencies.jar"
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
@@ -82,14 +77,22 @@ def cp = {
       it.contains('log4j-api') ||
       it.contains('log4j-core') ||
       it.contains('log4j-jcl') ||
+      it.contains('log4j-jul') ||
       it.contains('log4j-slf4j-impl') ||
+      it.contains('lucene-analyzers-common') ||
+      it.contains('lucene-core') ||
+      it.contains('lucene-queries') ||
+      it.contains('lucene-queryparser') ||
       it.contains('slf4j-api') ||
       it.contains('spring-core') ||
       it.contains('spring-shell') ||
-      it.contains('snappy-java')
+      it.contains('snappy-java') ||
+      it.contains('hbase')
     }.join(' ') 
 }
 
+// Note: this dependency doesn't work if you change a library version from
+// a dependent project.  Please fix me.
 task depsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
   description 'Assembles the jar archive that defines the gemfire classpath.'
   archiveName 'gemfire-core-dependencies.jar'
@@ -100,6 +103,8 @@ task depsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
   }
 }
 
+// Note: this dependency doesn't work if you change a library version from
+// a dependent project.  Please fix me.
 task gfshDepsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
   description 'Assembles the jar archive that defines the gfsh classpath.'
   def springWeb = configurations.runtime.collect { it.getName() }.find { it.contains('spring-web') }
@@ -116,7 +121,7 @@ task gfshDepsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
 
 distributions {
   main {
-    baseName = 'geode' //TODO rootProject.name
+    baseName = 'apache-geode' //TODO rootProject.name
     contents {
       duplicatesStrategy 'exclude'
       
@@ -143,6 +148,12 @@ distributions {
         from project(":gemfire-joptsimple").configurations.archives.allArtifacts.files
 
         from project(":gemfire-core").configurations.runtime
+        // Copying from provided configuration is only for supporting Spring Data GemFire.
+        // If there are more dependencies added to provided configuration, this will need
+        // to change
+        from (project(":gemfire-core").configurations.provided) {
+          include 'spring-data-gemfire-*'
+        }
         from project(":gemfire-core").configurations.archives.allArtifacts.files
 
         // include this jar        
@@ -165,7 +176,66 @@ distributions {
   }
 }
 
+
+// Repos to be added to POMs
+def springReleaseRepo = [ id:'spring-release', name:'Spring Maven RELEASE Repository', url:'https://repo.spring.io/release' ]
+def springMilestoneRepo = [ id:'spring-milestone', name:'Spring Maven MILESTONE Repository', url:'https://repo.spring.io/milestone' ]
+def springSnapshotRepo = [ id:'spring-snapshot', name:'Spring Maven SNAPSHOT Repository', url:'https://repo.spring.io/snapshot' ]
+def springLibsReleaseRepo = [ id:'libs-release', name:'Spring Maven libs-release Repository', url:'http://repo.spring.io/libs-release' ]
+def springExtReleaseLocalRepo = [ id:'ext-release-local', name:'Spring Maven ext-release-local Repository', url:'http://repo.spring.io/ext-release-local' ]
+
+def MavenRepos = [ springReleaseRepo, springSnapshotRepo, springLibsReleaseRepo, springExtReleaseLocalRepo ]
+
+// Jars to be published via Maven
+def coreJar = [publicationName:'coreJar', project:project(":gemfire-core").name]
+def jgroupsJar = [publicationName:'jgroupsJar', project:project(":gemfire-jgroups").name]
+def jsonJar = [publicationName:'jsonJar', project:project(":gemfire-json").name]
+def joptsimpleJar = [publicationName:'joptsimpleJar', project:project(":gemfire-joptsimple").name]
+def MavenJars = [ coreJar, jgroupsJar, jsonJar, joptsimpleJar ]
+
+afterEvaluate {
+  publishing {
+    publications {
+      MavenJars.each {
+        def publicationName = it.publicationName
+        def projectName = it.project
+        "$publicationName"(MavenPublication) {
+          artifactId projectName
+          artifact project(':' + projectName).jar
+          pom.withXml {
+            def repositoriesNode = asNode().appendNode('repositories')
+            MavenRepos.each {
+              def repositoryNode = repositoriesNode.appendNode('repository')
+              repositoryNode.appendNode('id', it.id)
+              repositoryNode.appendNode('name', it.name)
+              repositoryNode.appendNode('url', it.url)
+            }
+            def dependenciesNode = asNode().appendNode('dependencies')
+            //Iterate over the runtime dependencies
+            project(':' + projectName).configurations.runtime.allDependencies.each {
+              def dependencyNode = dependenciesNode.appendNode('dependency')
+              dependencyNode.appendNode('groupId', it.group)
+              dependencyNode.appendNode('artifactId', it.name)
+              dependencyNode.appendNode('version', it.version)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  publishing {
+    repositories {
+      maven {
+        url "$buildDir/repo"
+      }
+    }
+  } 
+}
+
 artifacts {
   archives depsJar, gfshDepsJar
 }
- 
+
+// Make build final task to generate all test and product resources
+build.dependsOn installDist

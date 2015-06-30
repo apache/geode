@@ -28,6 +28,8 @@ import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver;
 import com.gemstone.gemfire.cache.query.internal.PRQueryTraceInfo;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
 import com.gemstone.gemfire.cache.query.internal.QueryObserver;
+import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
@@ -43,6 +45,7 @@ import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.cache.query.Struct;
 
 public final class QueryMessage extends StreamingPartitionOperation.StreamingPartitionMessage
   {
@@ -56,10 +59,12 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
   private volatile boolean traceOn;
 
 //  private transient PRQueryResultCollector resultCollector = new PRQueryResultCollector();
-  private transient Collection<Collection> resultCollector = new ArrayList<Collection>();
+  private transient List<Collection> resultCollector = new ArrayList<Collection>();
   private transient int tokenCount = 0; // counts how many end of stream tokens received
   private transient Iterator currentResultIterator;
   private transient Iterator<Collection> currentSelectResultIterator;
+  private transient boolean isTraceInfoIteration = false;
+  private transient boolean isStructType = false;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
@@ -90,8 +95,12 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
       throw new QueryExecutionLowMemoryException(reason);
     }
     if (Thread.interrupted()) throw new InterruptedException();
+    
     while ((this.currentResultIterator == null || !this.currentResultIterator.hasNext())) {
       if (this.currentSelectResultIterator.hasNext()) {
+        if(this.isTraceInfoIteration && this.currentResultIterator != null) {
+          this.isTraceInfoIteration = false;
+        }
         Collection results = this.currentSelectResultIterator.next();
         if (isDebugEnabled) {
           logger.debug("Query result size: {}", results.size());
@@ -102,7 +111,23 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
         return Token.END_OF_STREAM;
       }
     }
-    return this.currentResultIterator.next();
+    Object data = this.currentResultIterator.next();
+    boolean isPostGFE_8_1 = this.getSender().getVersionObject().compareTo(Version.GFE_81) > 0 ;
+    //Asif: There is a bug in older versions of GFE such that the query node expects the structs to have
+    // type as ObjectTypes only & not specific types. So the new version needs to send the inaccurate 
+    //struct type for backward compatibility.
+    if(this.isStructType && !this.isTraceInfoIteration && isPostGFE_8_1) {
+      return ((Struct)data).getFieldValues(); 
+    }else if(this.isStructType && !this.isTraceInfoIteration) {
+      Struct s = (Struct)data;
+      ObjectType[] fieldTypes = s.getStructType().getFieldTypes();
+      for(int i = 0; i < fieldTypes.length; ++i) {
+        fieldTypes[i] = new ObjectTypeImpl(Object.class);
+      }
+      return data;
+    }else {
+      return data;
+    }
   }
 
 
@@ -134,14 +159,14 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
       throw new QueryExecutionLowMemoryException(reason);
     }
     
-    DefaultQuery query = new DefaultQuery(this.queryString, r.getCache());
+    DefaultQuery query = new DefaultQuery(this.queryString, r.getCache(), false);
     // Remote query, use the PDX types in serialized form.
     DefaultQuery.setPdxReadSerialized(r.getCache(), true);
     // In case of "select *" queries we can keep the results in serialized
     // form and send
     query.setRemoteQuery(true);
     QueryObserver indexObserver = query.startTrace();
-
+    boolean isQueryTraced = false;
     try {
       query.setIsCqQuery(this.cqQuery);
       // ds.queryLocalNode(query, this.parameters, this.buckets,
@@ -150,18 +175,24 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
       if (logger.isDebugEnabled()) {
         logger.debug("Started executing query from remote node: {}", query.getQueryString());
       }
-
+      isQueryTraced = query.isTraced() && this.sender.getVersionObject().compareTo(Version.GFE_81) >= 0;
       // Adds a query trace info object to the results list for remote queries
-      if (query.isTraced() && this.sender.getVersionObject().compareTo(Version.GFE_81) >= 0) {
+      if (isQueryTraced) {
+        this.isTraceInfoIteration = true;
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook.doTestHook("Create PR Query Trace Info for Remote Query");
         }
         queryTraceInfo = new PRQueryTraceInfo();
         queryTraceList = Collections.singletonList(queryTraceInfo);
-        this.resultCollector.add(queryTraceList);
+        
       }
 
-      qp.executeQuery(this.resultCollector);
+      this.isStructType = qp.executeQuery(this.resultCollector);
+      //Add the trace info list object after the NWayMergeResults is created so as to 
+      //exclude it from the sorted collection of NWayMergeResults
+      if(isQueryTraced) {
+        this.resultCollector.add(0,queryTraceList);
+      }
       this.currentSelectResultIterator = this.resultCollector.iterator();
 
       // If trace is enabled, we will generate a trace object to send back
@@ -170,7 +201,7 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
       // due to generating the trace object information here rather than the
       // finally
       // block.
-      if (query.isTraced() && this.sender.getVersionObject().compareTo(Version.GFE_81) >= 0) {
+      if (isQueryTraced) {
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook.doTestHook("Populating Trace Info for Remote Query");
         }
@@ -210,7 +241,7 @@ public final class QueryMessage extends StreamingPartitionOperation.StreamingPar
     } finally {
       // remove trace info so that it is not included in the num results when
       // logged
-      if (query.isTraced() && this.sender.getVersionObject().compareTo(Version.GFE_81) >= 0) {
+      if (isQueryTraced) {
         resultCollector.remove(queryTraceList);
       }
       DefaultQuery.setPdxReadSerialized(r.getCache(), false);

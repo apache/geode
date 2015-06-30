@@ -24,4 +24,9 @@ final class NativeProcessUtils implements InternalProcessUtils {
   public boolean killProcess(int pid) {
     return nativeCalls.killProcess(pid);
   }
+  
+  @Override
+  public boolean isAvailable() {
+    return true;
+  }
 }

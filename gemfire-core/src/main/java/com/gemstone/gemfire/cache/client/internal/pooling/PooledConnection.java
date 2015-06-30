@@ -10,6 +10,7 @@ package com.gemstone.gemfire.cache.client.internal.pooling;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -278,7 +279,7 @@ class PooledConnection implements Connection {
     }
   }
 
-  public ByteBuffer getCommBuffer() {
+  public ByteBuffer getCommBuffer() throws SocketException {
     return getConnection().getCommBuffer();
   }
 

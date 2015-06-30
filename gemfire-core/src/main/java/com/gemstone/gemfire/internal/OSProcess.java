@@ -50,8 +50,11 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 public class OSProcess {
   private static final Logger logger = LogService.getLogger();
   
-  private static final boolean DISABLE_OUTPUT_REDIRECTION = Boolean.getBoolean("gemfire.OSProcess.DISABLE_OUTPUT_REDIRECTION");
-  private static final boolean ENABLE_OUTPUT_REDIRECTION = Boolean.getBoolean("gemfire.OSProcess.ENABLE_OUTPUT_REDIRECTION");
+  public static final String DISABLE_OUTPUT_REDIRECTION_PROPERTY = "gemfire.OSProcess.DISABLE_OUTPUT_REDIRECTION";
+  public static final String ENABLE_OUTPUT_REDIRECTION_PROPERTY = "gemfire.OSProcess.ENABLE_OUTPUT_REDIRECTION";
+  
+  private static final boolean DISABLE_OUTPUT_REDIRECTION = Boolean.getBoolean(DISABLE_OUTPUT_REDIRECTION_PROPERTY);
+  private static final boolean ENABLE_OUTPUT_REDIRECTION = Boolean.getBoolean(ENABLE_OUTPUT_REDIRECTION_PROPERTY);
   
   static final boolean pureMode = PureJavaMode.isPure();
 

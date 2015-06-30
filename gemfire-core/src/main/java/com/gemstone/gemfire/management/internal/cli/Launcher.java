@@ -156,9 +156,13 @@ public final class Launcher {
 
         if (!commandIsAllowed) {
           System.err.println(CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, CliUtil.arrayToString(args)));
+          exitRequest = ExitShellRequest.FATAL_EXIT;
         } else {
-          if (!gfsh.executeCommand(commandLineCommand) || gfsh.getLastExecutionStatus() != 0) {
-            exitRequest = ExitShellRequest.FATAL_EXIT;
+          if (!gfsh.executeCommand(commandLineCommand)) {
+              if (gfsh.getLastExecutionStatus() != 0) 
+                exitRequest = ExitShellRequest.FATAL_EXIT;
+          } else if (gfsh.getLastExecutionStatus() != 0) {
+              exitRequest = ExitShellRequest.FATAL_EXIT;
           }
         }
       }

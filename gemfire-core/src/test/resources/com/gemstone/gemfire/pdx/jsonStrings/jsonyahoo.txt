@@ -1,0 +1,11 @@
+
+{ "count" : 0,
+  "value" : { "callback" : "",
+      "description" : "Welcome! You have entered the wonderful world of Super Digg Feed version 2.0! New in this version: pulls images for stories from API; filter for big category; filter for small category; minimum number of diggs filter; keyword filter; clicking on the comments link will take you directly to the comments, not the digg page. All the features from version one have still been kept.   ########Original Super Digg feed description: Sorry About the link problem! All fixed now! Now includes DuggMirror and DuggBack Links. This pipes makes your boring old Digg rss feed into a SUPER Digg rss feed. It adds category information, submitter information (with a link to the users page), Digg count, number of comments (with link to the comment page), and a link to the direct page, bypassing Digg. It also comes with a relevant Flickr picture (click to go to the flickr page). This pipes includes some HTML, so try not to use it in a text rss reader. The HTML doesn't show up too well on this page, so to see what it is supposed to look like go to the raw rss page.",
+      "generator" : "http://pipes.yahoo.com/pipes/",
+      "items" : [  ],
+      "link" : "http://pipes.yahoo.com/pipes/pipe.info?_id=953cf8d83df81a7bafcde079568e0eeb",
+      "pubDate" : "Wed, 26 Sep 2012 22:18:10 +0000",
+      "title" : "Super Digg Feed v2.0"
+    }
+}

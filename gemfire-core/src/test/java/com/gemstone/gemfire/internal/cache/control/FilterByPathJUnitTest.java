@@ -15,7 +15,7 @@ import java.util.HashSet;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import junit.framework.TestCase;
 

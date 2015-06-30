@@ -65,6 +65,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 
 /**
@@ -839,21 +840,22 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   private boolean doLocalWrite(CacheWriter writer,CacheEvent pevent,int paction)
   throws CacheWriterException {
-    CacheEvent event = getEventForListener(pevent);
     // Return if the inhibit all notifications flag is set
-    if (event instanceof EntryEventImpl) {
-      if (((EntryEventImpl)event).inhibitAllNotifications()){
+    if (pevent instanceof EntryEventImpl) {
+      if (((EntryEventImpl)pevent).inhibitAllNotifications()){
         if (logger.isDebugEnabled()) {
-          logger.debug("Notification inhibited for key {}", event);
+          logger.debug("Notification inhibited for key {}", pevent);
         }
         return false;
       }
     }
+    CacheEvent event = getEventForListener(pevent);
     
     int action = paction;
     if (event.getOperation().isCreate() && action == BEFOREUPDATE) {
       action = BEFORECREATE;
     }
+    try {
     switch(action) {
       case BEFORECREATE:
         writer.beforeCreate((EntryEvent)event);
@@ -873,6 +875,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       default:
         break;
 
+    }
+    } finally {
+      if (event != pevent) {
+        if (event instanceof EntryEventImpl) {
+          ((EntryEventImpl) event).release();
+        }
+      }
     }
     this.localWrite = true;
     return true;
@@ -1920,7 +1929,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                       long lastModified = entry.getLastModified();
                       lastModifiedCacheTime = lastModified;
                       if (eov instanceof CachedDeserializable) {
-                        {
+                        if (eov instanceof StoredObject && !((StoredObject) eov).isSerialized()) {
+                          isSer = false;
+                          ebv = (byte[]) ((StoredObject)eov).getDeserializedForReading();
+                          ebvLen = ebv.length;
+                        } else {
                           // don't serialize here if it is not already serialized
                           Object tmp = ((CachedDeserializable)eov).getValue();
                           if (tmp instanceof byte[]) {

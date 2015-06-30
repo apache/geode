@@ -21,6 +21,7 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.operations.*;
+import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
@@ -95,7 +96,7 @@ public class AuthorizeRequest {
   public GetOperationContext getAuthorize(String regionName, Object key,
       Object callbackArg) throws NotAuthorizedException {
 
-    GetOperationContext getContext = new GetOperationContext(key, false);
+    GetOperationContext getContext = new GetOperationContextImpl(key, false);
     getContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, getContext)) {
       String errStr = LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_GET_OPERATION_ON_REGION_0.toLocalizedString(regionName);

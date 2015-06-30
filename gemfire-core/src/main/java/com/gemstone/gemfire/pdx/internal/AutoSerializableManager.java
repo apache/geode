@@ -2158,8 +2158,9 @@ public class AutoSerializableManager {
     }
 
     StringBuilder sb = new StringBuilder();
-    // This is so that we can exclude duplicate
-    Set<String> tmp = new HashSet<String>();
+    // This is so that we can exclude duplicates
+    // LinkedHashSet is used to preserve the order of classPatterns. See bug 52286.
+    Set<String> tmp = new LinkedHashSet<String>();
     for (Pattern p : classPatterns) {
       tmp.add(p.pattern());
     }

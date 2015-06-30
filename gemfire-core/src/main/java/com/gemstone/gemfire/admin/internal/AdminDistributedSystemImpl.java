@@ -761,7 +761,11 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
       // build the list of applications...
         ApplicationVM[] apps = this.gfManagerAgent.listApplications();
         for (int i = 0; i < apps.length; i++) {
-          nodeJoined(null, apps[i]);
+          try {
+            nodeJoined(null, apps[i]);
+          } catch (RuntimeAdminException e) {
+            this.logWriter.warning("encountered a problem processing member " + apps[i]);
+          }
         }
       }
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN" "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache lock-lease="120" lock-timeout="60" search-timeout="300" is-server="false" copy-on-read="false">
+  <cache-transaction-manager/>
+  <disk-store name="ds1" auto-compact="false" max-oplog-size="10000" time-interval="15" queue-size="0">
+      <disk-dirs>
+        <disk-dir dir-size="-1">testingDirectoryForXML</disk-dir>
+      </disk-dirs>
+  </disk-store>
+  <vm-root-region name="region1">
+    <region-attributes scope="persistent-partition" disk-store-name="ds1" disk-synchronous="false">
+      <partition-attributes redundant-copies="1"/>
+      <eviction-attributes>
+        <lru-entry-count maximum="1000" action="overflow-to-disk"/>
+      </eviction-attributes>
+    </region-attributes>
+  </vm-root-region>
+ </cache>

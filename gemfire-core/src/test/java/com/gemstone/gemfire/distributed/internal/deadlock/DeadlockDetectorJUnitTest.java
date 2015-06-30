@@ -7,6 +7,8 @@
  */
 package com.gemstone.gemfire.distributed.internal.deadlock;
 
+import static org.junit.Assert.*;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,21 +22,23 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.junit.UnitTest;
-
-import junit.framework.TestCase;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * @author dsmith
  *
  */
 @Category(UnitTest.class)
-public class DeadlockDetectorJUnitTest extends TestCase {
+public class DeadlockDetectorJUnitTest {
   
   private final Set<Thread> stuckThreads = Collections.synchronizedSet(new HashSet<Thread>());
   
+  @After
   public void tearDown() {
     for(Thread thread: stuckThreads) {
       thread.interrupt();
@@ -50,6 +54,7 @@ public class DeadlockDetectorJUnitTest extends TestCase {
     stuckThreads.clear();
   }
   
+  @Test
   public void testNoDeadlocks() {
     DeadlockDetector detector = new DeadlockDetector();
     detector.addDependencies(DeadlockDetector.collectAllDependencies("here"));
@@ -58,7 +63,9 @@ public class DeadlockDetectorJUnitTest extends TestCase {
   
   //this is commented out, because we can't
   //clean up the threads deadlocked on monitors.
-  public void z_testMonitorDeadlock() throws InterruptedException {
+  @Ignore
+  @Test
+  public void testMonitorDeadlock() throws InterruptedException {
     final Object lock1 = new Object();
     final Object lock2 = new Object();
     Thread thread1 =  new Thread() {
@@ -103,6 +110,7 @@ public class DeadlockDetectorJUnitTest extends TestCase {
    * that are trying to acquire a two different syncs in the different orders.
    * @throws InterruptedException
    */
+  @Test
   public void testSyncDeadlock() throws InterruptedException {
 
     final Lock lock1 = new ReentrantLock();
@@ -144,7 +152,9 @@ public class DeadlockDetectorJUnitTest extends TestCase {
   }
   
   //Semaphore are also not supported by the JDK
-  public void z_testSemaphoreDeadlock() throws InterruptedException {
+  @Ignore
+  @Test
+  public void testSemaphoreDeadlock() throws InterruptedException {
 
     final Semaphore lock1 = new Semaphore(1);
     final Semaphore lock2 = new Semaphore(1);
@@ -192,7 +202,9 @@ public class DeadlockDetectorJUnitTest extends TestCase {
    * This type of deadlock is currently not detected
    * @throws InterruptedException
    */
-  public void z_testReadLockDeadlock() throws InterruptedException {
+  @Ignore
+  @Test
+  public void testReadLockDeadlock() throws InterruptedException {
 
     final ReadWriteLock lock1 = new ReentrantReadWriteLock();
     final ReadWriteLock lock2 = new ReentrantReadWriteLock();
@@ -237,6 +249,7 @@ public class DeadlockDetectorJUnitTest extends TestCase {
    * Test that the deadlock detector will find deadlocks
    * that are reported by the {@link DependencyMonitorManager}
    */
+  @Test
   public void testProgramaticDependencies() {
     final CountDownLatch cdl = new CountDownLatch(1);
     MockDependencyMonitor mock = new MockDependencyMonitor();

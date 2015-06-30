@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.compression.Compressor;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIIStatus;
@@ -80,7 +81,7 @@ public class DiskRegion extends AbstractDiskRegion {
                        DiskExceptionHandler exceptionHandler,
                        RegionAttributes ra, EnumSet<DiskRegionFlag> flags,
                        String partitionName, int startingBucketId, 
-                       String compressorClassName) {
+                       String compressorClassName,  boolean offHeap) {
     super(ds, name);
     if(this.getPartitionName() != null){
       // I think this code is saying to prefer the recovered partitionName and startingBucketId.
@@ -174,7 +175,7 @@ public class DiskRegion extends AbstractDiskRegion {
                 ra.getLoadFactor(),
                 ra.getStatisticsEnabled(),
                 isBucket, flags, partitionName, startingBucketId,
-                compressorClassName);
+                compressorClassName, offHeap);
     }
     
     if(!isBucket) {
@@ -191,12 +192,12 @@ public class DiskRegion extends AbstractDiskRegion {
                            DiskExceptionHandler exceptionHandler,
                            RegionAttributes ra, EnumSet<DiskRegionFlag> flags,
                            String partitionName, int startingBucketId,
-                           Compressor compressor) {
+                           Compressor compressor, boolean offHeap) {
     return dsi.getDiskInitFile().createDiskRegion(dsi, name, isBucket, isPersistBackup,
                                                   overflowEnabled, isSynchronous,
                                                   stats, cancel, exceptionHandler, ra, flags,
                                                   partitionName, startingBucketId,
-                                                  compressor);
+                                                  compressor, offHeap);
   }
 
   public CancelCriterion getCancelCriterion() {
@@ -352,9 +353,6 @@ public class DiskRegion extends AbstractDiskRegion {
    *
    * @param entry
    *          The entry which is going to be written to disk
-   * @param isSerializedObject
-   *                Do the bytes in <code>value</code> contain a serialized
-   *                object (or an actually <code>byte</code> array)?
    * @throws RegionClearedException
    *                 If a clear operation completed before the put operation
    *                 completed successfully, resulting in the put operation to
@@ -362,10 +360,10 @@ public class DiskRegion extends AbstractDiskRegion {
    * @throws IllegalArgumentException
    *         If <code>id</code> is less than zero
    */
-  final void put(DiskEntry entry, LocalRegion region, byte[] value, boolean isSerializedObject, boolean async)
+  final void put(DiskEntry entry, LocalRegion region, ValueWrapper value, boolean async)
       throws  RegionClearedException
   {
-    getDiskStore().put(region, entry, value, isSerializedObject, async);
+    getDiskStore().put(region, entry, value, async);
   }
     
   /**
@@ -851,5 +849,10 @@ public class DiskRegion extends AbstractDiskRegion {
     } finally {
       releaseReadLock();
     }
+  }
+
+  @Override
+  public void close() {
+    // nothing needed
   }
 }

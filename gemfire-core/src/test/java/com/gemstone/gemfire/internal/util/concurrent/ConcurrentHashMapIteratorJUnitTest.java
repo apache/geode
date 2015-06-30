@@ -19,7 +19,7 @@ import org.junit.experimental.categories.Category;
 import junit.framework.TestCase;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.junit.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @Category(IntegrationTest.class)

@@ -105,7 +105,7 @@ public class InvalidateOperation extends DistributedCacheOperation
       if (rgn.keyRequiresRegionContext()) {
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
-      EntryEventImpl ev = new EntryEventImpl(
+      EntryEventImpl ev = EntryEventImpl.create(
          rgn, getOperation(), this.key,
          null, this.callbackArg, true, getSender());
       ev.setEventId(this.eventId);

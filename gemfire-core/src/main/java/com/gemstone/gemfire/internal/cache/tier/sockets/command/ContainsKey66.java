@@ -147,7 +147,7 @@ public class ContainsKey66 extends BaseCommand {
     responseMsg.setNumberOfParts(1);
     responseMsg.setTransactionId(origMsg.getTransactionId());
     responseMsg.addObjPart(containsKey ? Boolean.TRUE : Boolean.FALSE);
-    responseMsg.send(servConn, origMsg.getTransactionId());
+    responseMsg.send(servConn);
   }
 
 }

@@ -144,4 +144,6 @@ public interface RegionQueue
 
   //TODO:Asif: Remove this method. Added this justto make it compilable
   public void remove(int top) throws CacheException;
+
+  public void close();
 }

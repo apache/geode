@@ -8,7 +8,9 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.AmbiguousNameException;
@@ -18,6 +20,7 @@ import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.index.IndexData;
 import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
@@ -27,6 +30,7 @@ import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
 import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 
@@ -143,7 +147,7 @@ public class CompiledComparison extends AbstractCompiledValue implements
   @Override
   public SelectResults filterEvaluate(ExecutionContext context,
       SelectResults intermediateResults, boolean completeExpansionNeeded,
-      CompiledValue iterOperands, RuntimeIterator[] indpndntItrs, boolean isIntersection, boolean conditioningNeeded, boolean evaluateProjection)
+      @Retained CompiledValue iterOperands, RuntimeIterator[] indpndntItrs, boolean isIntersection, boolean conditioningNeeded, boolean evaluateProjection)
       throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     // see if we're dependent on the current iterator
@@ -324,7 +328,7 @@ public class CompiledComparison extends AbstractCompiledValue implements
   // Invariant: the receiver is dependent on the current iterator.
   private SelectResults singleBaseCollectionFilterEvaluate(
       ExecutionContext context,  SelectResults intermediateResults,
-      final boolean completeExpansionNeeded, CompiledValue iterOperands,
+      final boolean completeExpansionNeeded, @Retained CompiledValue iterOperands,
       IndexInfo indexInfo, RuntimeIterator[] indpndntItr, boolean isIntersection, boolean conditioningNeeded, boolean evaluateProj)
       throws TypeMismatchException, AmbiguousNameException,
       FunctionDomainException, NameResolutionException,
@@ -374,11 +378,13 @@ public class CompiledComparison extends AbstractCompiledValue implements
       // we get the right idea. Also right now we will assume that only single
       // iterator cases will be candidates for this oprtmization.
       // dependent iterators will come later.
-      boolean useLinkedSet = false;      
+      boolean useLinkedDataStructure = false;  
+      boolean nullValuesAtStart = true;
       Boolean orderByClause = (Boolean)context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
       if(orderByClause != null && orderByClause.booleanValue()) {
         List orderByAttrs = (List)context.cacheGet(CompiledValue.ORDERBY_ATTRIB);        
-        useLinkedSet =orderByAttrs.size()==1; 
+        useLinkedDataStructure =orderByAttrs.size()==1;
+        nullValuesAtStart = !((CompiledSortCriterion)orderByAttrs.get(0)).getCriterion();
       }
       // ////////////////////////////////////////////////////////////////
       if (!conditioningNeeded) {
@@ -395,11 +401,11 @@ public class CompiledComparison extends AbstractCompiledValue implements
             context.getCache().getLogger().fine(
                 "StructType resultType.class="
                     + resultType.getClass().getName());
-            if(useLinkedSet) {
-              set = new LinkedStructSet((StructTypeImpl)resultType);
+            if(useLinkedDataStructure) {
+              set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+              : new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
             }else {
-            set = new StructBag((StructTypeImpl)resultType,
-                context.getCachePerfStats());
+              set = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
             }
             indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
           }
@@ -407,10 +413,11 @@ public class CompiledComparison extends AbstractCompiledValue implements
             context.getCache().getLogger().fine(
                 "non-StructType resultType.class="
                     + resultType.getClass().getName());
-            if (useLinkedSet) {
-              set = new LinkedResultSet(resultType);
+            if (useLinkedDataStructure) {
+              set = context.isDistinct() ? new LinkedResultSet(resultType) :
+                new SortedResultsBag(resultType, nullValuesAtStart) ;
             } else {
-              set = new ResultsBag(resultType, context.getCachePerfStats());
+              set = QueryUtils.createResultCollection(context, resultType) ;
             }
             indexFieldsSize = 1;
           }
@@ -427,11 +434,11 @@ public class CompiledComparison extends AbstractCompiledValue implements
               context.getCache().getLogger().fine(
                   "StructType resultType.class="
                       + resultType.getClass().getName());
-              if(useLinkedSet) {
-                set = new LinkedStructSet((StructTypeImpl)resultType);
+              if(useLinkedDataStructure) {
+                set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+                : new  SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
               }else {
-                set = new StructBag((StructTypeImpl)resultType,
-                  context.getCachePerfStats());
+                set = QueryUtils.createStructCollection(context,(StructTypeImpl)resultType) ;
               }
               indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
             }
@@ -439,10 +446,11 @@ public class CompiledComparison extends AbstractCompiledValue implements
               context.getCache().getLogger().fine(
                   "non-StructType resultType.class="
                       + resultType.getClass().getName());
-              if (useLinkedSet) {
-                set = new LinkedResultSet(resultType); 
+              if (useLinkedDataStructure) {
+                set = context.isDistinct() ? new LinkedResultSet(resultType) : 
+                  new SortedResultsBag(resultType, nullValuesAtStart ); 
               } else {
-                set = new ResultsBag(resultType, context.getCachePerfStats());
+                set = QueryUtils.createResultCollection(context, resultType) ;
               }
               indexFieldsSize = 1;
             }
@@ -458,11 +466,11 @@ public class CompiledComparison extends AbstractCompiledValue implements
         if (resultType instanceof StructType) {
           context.getCache().getLogger().fine(
               "StructType resultType.class=" + resultType.getClass().getName());
-          if (useLinkedSet) {
-            set = new LinkedStructSet((StructTypeImpl)resultType);
+          if (useLinkedDataStructure) {
+            set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+            : new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
           } else {
-            set = (SelectResults)new StructBag((StructTypeImpl)resultType,
-                context.getCachePerfStats());
+            set = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
           }
           
           indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
@@ -471,10 +479,11 @@ public class CompiledComparison extends AbstractCompiledValue implements
           context.getCache().getLogger().fine(
               "non-StructType resultType.class="
                   + resultType.getClass().getName());
-          if (useLinkedSet) {
-            set = new LinkedResultSet(resultType);
+          if (useLinkedDataStructure) {
+            set = context.isDistinct() ? new LinkedResultSet(resultType) :
+              new SortedResultsBag(resultType, nullValuesAtStart);
           } else {
-            set = new ResultsBag(resultType, context.getCachePerfStats());
+            set = QueryUtils.createResultCollection(context, resultType) ;
           }     
           indexFieldsSize = 1;
         }

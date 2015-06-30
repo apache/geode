@@ -229,8 +229,10 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter,
       List iterators = context.getCurrentIterators();
       int len = iterators.size();
       if (len == 1) {
-        emptySet = new ResultsBag(((RuntimeIterator) iterators.get(0))
-            .getElementType(), 0,  context.getCachePerfStats());
+        ObjectType elementType = ((RuntimeIterator) iterators.get(0))
+            .getElementType();
+        emptySet = context.isDistinct() ? new ResultsSet(elementType) :
+          new ResultsBag(elementType, 0,  context.getCachePerfStats());
       }
       else {
         String fieldNames[] = new String[len];
@@ -240,9 +242,8 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter,
           fieldNames[i] = iter.getInternalId();
           fieldTypes[i] = iter.getElementType();
         }
-        emptySet = new StructBag(0,
-                                 new StructTypeImpl(fieldNames, fieldTypes), 
-                                 context.getCachePerfStats());
+        emptySet = context.isDistinct() ? new StructSet(new StructTypeImpl(fieldNames, fieldTypes))
+        :new StructBag(0, new StructTypeImpl(fieldNames, fieldTypes), context.getCachePerfStats());
       }
       return emptySet;
     }

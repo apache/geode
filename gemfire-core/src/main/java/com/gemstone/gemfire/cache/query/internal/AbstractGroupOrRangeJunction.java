@@ -11,7 +11,12 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import com.gemstone.gemfire.cache.query.AmbiguousNameException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
@@ -24,14 +29,6 @@ import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * @author asif
@@ -388,11 +385,12 @@ public abstract class AbstractGroupOrRangeJunction extends
     currentIters.toArray(rIters);
     ObjectType elementType = intermediateResults.getCollectionType()
         .getElementType();
-    resultSet = (elementType.isStructType()) ?
-                ((SelectResults)new StructBag((StructTypeImpl)elementType,
-                                              context.getCachePerfStats())) :
-                ((SelectResults)new ResultsBag(elementType,
-                                               context.getCachePerfStats()));
+    if(elementType.isStructType()) {
+      resultSet = QueryUtils.createStructCollection(context, (StructTypeImpl)elementType) ;
+    }else {
+      resultSet = QueryUtils.createResultCollection(context, elementType) ;
+    }
+   
     QueryObserver observer = QueryObserverHolder.getInstance();
     try {
       observer.startIteration(intermediateResults, operand);

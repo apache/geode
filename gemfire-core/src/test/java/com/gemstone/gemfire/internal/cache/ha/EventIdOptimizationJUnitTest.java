@@ -15,7 +15,7 @@ import org.junit.experimental.categories.Category;
 import junit.framework.TestCase;
 
 import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client

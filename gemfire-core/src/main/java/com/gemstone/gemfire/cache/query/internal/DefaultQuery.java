@@ -33,6 +33,8 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.QueryStatistics;
@@ -259,10 +261,19 @@ public class DefaultQuery implements Query {
   /** Should be constructed from DefaultQueryService
    * @see QueryService#newQuery
    */
-  public DefaultQuery(String queryString, Cache cache) {
+  public DefaultQuery(String queryString, Cache cache, boolean isForRemote) {
     this.queryString = queryString;
     QCompiler compiler = new QCompiler();
     this.compiledQuery = compiler.compileQuery(queryString);
+    CompiledSelect cs = this.getSimpleSelect();
+    if(cs != null && !isForRemote && (cs.isGroupBy() || cs.isOrderBy())) {
+      QueryExecutionContext ctx = new QueryExecutionContext(null, cache);
+      try {
+        cs.computeDependencies(ctx);       
+      }catch(QueryException qe) {
+        throw new QueryInvalidException("",qe);
+      }
+    }
     this.traceOn = (compiler.isTraceRequested() || QUERY_VERBOSE);
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
@@ -344,7 +355,8 @@ public class DefaultQuery implements Query {
         result = qe.executeQuery(this, parameters, null);
         // For local queries returning pdx objects wrap the resultset with ResultsCollectionPdxDeserializerWrapper
         // which deserializes these pdx objects.
-        if(!isRemoteQuery() && !this.cache.getPdxReadSerialized() && result instanceof SelectResults) {
+        if(needsPDXDeserializationWrapper(true /* is query on PR*/) 
+            && result instanceof SelectResults ) {
           //we use copy on read false here because the copying has already taken effect earlier in the PartitionedRegionQueryEvaluator
           result = new ResultsCollectionPdxDeserializerWrapper((SelectResults) result, false);
         } 
@@ -377,7 +389,7 @@ public class DefaultQuery implements Query {
       boolean needsCopyOnReadWrapper = this.cache.getCopyOnRead() && !DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL || (((QueryExecutionContext)context).isIndexUsed() && DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL);
       // For local queries returning pdx objects wrap the resultset with ResultsCollectionPdxDeserializerWrapper
       // which deserializes these pdx objects.
-      if(!isRemoteQuery() && !this.cache.getPdxReadSerialized() && result instanceof SelectResults) {
+      if(needsPDXDeserializationWrapper(false /* is query on PR*/) && result instanceof SelectResults) {
         result = new ResultsCollectionPdxDeserializerWrapper((SelectResults) result, needsCopyOnReadWrapper);
       } 
       else if (!isRemoteQuery() && this.cache.getCopyOnRead() && result instanceof SelectResults) {
@@ -408,6 +420,28 @@ public class DefaultQuery implements Query {
 
   }
 
+  //For Order by queries ,since they are already ordered by the comparator 
+  //&& it takes care of conversion, we do not have to wrap it in a wrapper
+  public boolean needsPDXDeserializationWrapper(boolean isQueryOnPR) {
+      if( !isRemoteQuery() && !this.cache.getPdxReadSerialized() ) {
+        return true;
+        /*if(isQueryOnPR) {
+          // if the query is on PR we need a top level pdx deserialization wrapper only in case of 
+          //order by query or non distinct query
+          CompiledSelect cs = this.getSimpleSelect();
+          if(cs != null) {
+            return cs.getOrderByAttrs() != null ;
+          }else {
+           return true; 
+          }
+        }else {
+          return true;
+        }*/
+      }else {
+        return false;
+      }
+  }
+ 
   private Object executeOnServer(Object[] parameters) {
     long startTime = CachePerfStats.getStatTime();
     Object result = null;
@@ -1072,7 +1106,9 @@ public class DefaultQuery implements Query {
       //for dependent iterators, deserialization is required
       if (cs.getIterators().size() == context.getAllIndependentIteratorsOfCurrentScope().size()
           && cs.getWhereClause() == null
-          && cs.getProjectionAttributes() == null && !cs.isDistinct()) {
+          && cs.getProjectionAttributes() == null && !cs.isDistinct()
+          && cs.getOrderByAttrs() == null
+          ) {
         setKeepSerialized(true);
       }
     }
@@ -1082,7 +1118,7 @@ public class DefaultQuery implements Query {
     return keepSerialized;
   }
 
-  public void setKeepSerialized(boolean keepSerialized) {
+  private void setKeepSerialized(boolean keepSerialized) {
     this.keepSerialized = keepSerialized;
   }
   

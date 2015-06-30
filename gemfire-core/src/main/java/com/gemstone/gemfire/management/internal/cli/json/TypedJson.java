@@ -294,7 +294,7 @@ public class TypedJson {
         || klass.isAssignableFrom(Boolean.class) || klass.isAssignableFrom(boolean.class)
         || klass.isAssignableFrom(String.class) || klass.isAssignableFrom(char.class)
         || klass.isAssignableFrom(Character.class) || klass.isAssignableFrom(java.sql.Date.class)
-        || klass.isAssignableFrom(java.util.Date.class);
+        || klass.isAssignableFrom(java.util.Date.class) || klass.isAssignableFrom(java.math.BigDecimal.class);
   }
 
   static boolean isSpecialObject(Object object) {

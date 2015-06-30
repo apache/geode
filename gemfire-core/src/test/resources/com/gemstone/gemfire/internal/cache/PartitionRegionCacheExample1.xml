@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN" "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+	<!-- Create a new root region as partition region -->
+	<vm-root-region name="firstPartitionRegion">
+		<region-attributes >
+		    <partition-attributes redundant-copies="1" local-max-memory="200"/>
+        	    <cache-loader>
+		          <class-name>com.gemstone.gemfire.internal.cache.PartitionedRegionCacheLoaderForRootRegion</class-name>
+		          <parameter name="URL">
+			      <string>jdbc:cloudscape:rmi:MyData</string>
+		          </parameter>
+		    </cache-loader>
+		</region-attributes>
+	</vm-root-region>
+	<!-- Create a new root region as partition region -->
+	<vm-root-region name="secondPartitionedRegion">
+            <region-attributes early-ack="false" multicast-enabled="false">
+                <partition-attributes redundant-copies="0" total-num-buckets="11"/>
+            </region-attributes>
+            <entry>
+		<key><string>MyPartitionedKey</string></key>
+		<value><string>MyPartitionedValue</string></value>
+	    </entry>
+        </vm-root-region>
+</cache>

@@ -122,7 +122,8 @@ public final class ProxyBucketRegion implements Bucket {
                                           partitionedRegion,
                                           partitionedRegion.getAttributes(),
                                           diskFlags, partitionName, startingBucketID,
-                                          partitionedRegion.getCompressor());
+                                          partitionedRegion.getCompressor(),
+                                          partitionedRegion.getOffHeap());
       
       if (fpaList != null) {
         for (FixedPartitionAttributesImpl fpa : fpaList) {

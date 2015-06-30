@@ -29,6 +29,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.NotAuthorizedException;
@@ -234,7 +235,7 @@ public class Request extends BaseCommand {
     boolean isObject = true;
     ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
     // TODO OFFHEAP: optimize
-    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false);
+    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false, true/*allowReadFromHDFS*/);
     
     // If the value in the VM is a CachedDeserializable,
     // get its value. If it is Token.REMOVED, Token.DESTROYED,
@@ -243,7 +244,11 @@ public class Request extends BaseCommand {
     // disk. If it is already a byte[], set isObject to false.
     // TODO OFFHEAP: optimize
     if (data instanceof CachedDeserializable) {
-      {
+      if (data instanceof StoredObject && !((StoredObject) data).isSerialized()) {
+        // it is a byte[]
+        isObject = false;
+        data = ((StoredObject) data).getDeserializedForReading();
+      } else {
         data = ((CachedDeserializable)data).getValue();
       }
     }

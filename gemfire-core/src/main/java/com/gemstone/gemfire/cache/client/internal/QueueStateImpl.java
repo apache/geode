@@ -110,7 +110,8 @@ public class QueueStateImpl implements QueueState {
     return this.invalidateCount.get();
   }
   
-  /** test hook
+  /** test hook - access to this map should be synchronized on the
+   * map to avoid concurrent modification exceptions
    */
   public Map getThreadIdToSequenceIdMap() {
     return this.threadIdToSequenceId;

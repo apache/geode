@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN"
+    "http://www.gemstone.com/dtd/cache4_1.dtd">
+
+<!-- This file contains a region created with an unknown named
+     attribute --> 
+
+<cache>
+  <vm-root-region name="root">
+    <region-attributes refid="unknown"/>
+  </vm-root-region>
+</cache>

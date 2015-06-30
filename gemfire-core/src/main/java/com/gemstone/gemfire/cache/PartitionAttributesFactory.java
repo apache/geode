@@ -81,7 +81,7 @@ public class PartitionAttributesFactory<K,V>
    * Default local max memory value in megabytes.  By default each partitioned
    * Region can contribute 90% of the maximum memory allocated to a VM.
    */
-  private static int computeMaxMem()
+  static int computeMaxMem()
   {
     final long maxMemInMegabytes = Runtime.getRuntime().maxMemory() / (1024 * 1024);
     final long maxMemoryToUse = (long) (maxMemInMegabytes * 0.90); 
@@ -100,7 +100,11 @@ public class PartitionAttributesFactory<K,V>
   /**
    * The default maximum amount of memory to be used by this region in this
    * process, in megabytes.
+   * 
+   * @deprecated Use {@link
+   *             PartitionAttributesImpl#getLocalMaxMemoryDefault()} instead.
    */
+  @Deprecated 
   public static final int LOCAL_MAX_MEMORY_DEFAULT = computeMaxMem();
 
   /**

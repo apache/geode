@@ -86,12 +86,11 @@ public class CompiledUndefined extends AbstractCompiledValue implements
     int indexFieldsSize = -1;
     SelectResults set = null;
     if (resultType instanceof StructType) {
-      set = (SelectResults) new StructBag((StructTypeImpl)resultType,
-                                          context.getCachePerfStats());
+      set = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
       indexFieldsSize = ((StructTypeImpl) resultType).getFieldNames().length;
     }
     else {
-      set = new ResultsBag(resultType, context.getCachePerfStats());
+      set = QueryUtils.createResultCollection(context, resultType);
       indexFieldsSize = 1;
     }
     int op = _is_defined ? TOK_NE : TOK_EQ;

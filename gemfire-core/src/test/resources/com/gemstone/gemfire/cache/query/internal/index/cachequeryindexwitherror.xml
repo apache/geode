@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN" "http://www.gemstone.com/dtd/cache6_6.dtd">
+<cache lock-lease="120" lock-timeout="60" search-timeout="300">
+  <vm-root-region name="root">
+    
+    <region-attributes scope="distributed-no-ack" mirror-type="none"  initial-capacity="16" load-factor="0.75" concurrency-level="16" >      
+         <value-constraint>java.lang.String</value-constraint>
+    </region-attributes>
+    
+    <index name="funct1">
+    	   <functional from-clause="/root" expression="hashCode" imports="IMPORT java.lang.Number;"/>                        
+    </index>
+    
+    <index name="pk1">
+          <primary-key field="toString"/>            
+    </index>
+    
+    <entry>
+          <key><string>key1</string></key>
+          <value><string>value1</string></value>
+    </entry>
+    <entry>
+          <key><string>key2</string></key>
+          <value><string>value2</string></value>
+    </entry>
+    
+    <region name="portfolios">
+         <region-attributes index-update-type="asynchronous" scope="distributed-no-ack">
+           <value-constraint>com.gemstone.gemfire.cache.query.data.Portfolio</value-constraint>
+          </region-attributes>
+          <index name="funct1">
+	     <functional from-clause="/root/portfolios" expression="status" />                        
+	  </index>
+	  <index name="pk1">
+	     <primary-key field="ID"/>            
+	  </index>  
+
+    </region>
+    
+    <region name="string">
+       <region-attributes index-update-type="synchronous" scope="distributed-no-ack">
+          <value-constraint>java.lang.String</value-constraint>
+       </region-attributes>
+    
+      <index name="funct1">
+	   <functional from-clause="/root/string" expression="hashCode" imports="IMPORT java.lang.Number;"/>                        
+      </index>
+      <index name="pk1">
+	      <primary-key field="toString"/>            
+      </index>
+
+       <entry>
+              <key><string>key1</string></key>
+              <value><string>value1</string></value>
+       </entry>
+       <entry>
+       	      <key><string>key2</string></key>
+              <value><string>value2</string></value>
+       </entry>  
+    </region>
+    
+    <region name="string1">
+           <region-attributes  scope="distributed-no-ack">
+              <value-constraint>java.lang.String</value-constraint>
+           </region-attributes>
+          <index name="funct1">
+    	   <functional from-clause="/root/string1" expression="hashCode" imports="IMPORT java.lang.Number;"/>                        
+          </index>
+          
+           <entry>
+                  <key><string>key1</string></key>
+                  <value><string>value1</string></value>
+           </entry>
+           <entry>
+           	      <key><string>key2</string></key>
+                  <value><string>value2</string></value>
+           </entry>  
+    </region>
+
+    <!-- Index creation tests for new DTD changes for Index tag for 6.6.1 with no function/primary-key tag --> 
+    <region name="portfolios2">
+         <region-attributes index-update-type="asynchronous" scope="distributed-no-ack">
+           <value-constraint>com.gemstone.gemfire.cache.query.data.Portfolio</value-constraint>
+          </region-attributes>
+          <index name="funct1" from-clause="/root/portfolios2" expression="status"/>
+          <index name="pk1"  from-clause="/root/portfolios2" expression="ID" key-index="true"/>
+
+    </region>
+
+    <region name="string2">
+       <region-attributes index-update-type="synchronous" scope="distributed-no-ack">
+          <value-constraint>java.lang.String</value-constraint>
+       </region-attributes>
+
+      <index name="funct1" from-clause="/root/string2" expression="hashCode" imports="IMPORT java.lang.Number;"/>
+      <index name="pk1" from-clause="/root/string2" expression="toString" key-index="true"/>
+
+       <entry>
+              <key><string>key1</string></key>
+              <value><string>value1</string></value>
+       </entry>
+       <entry>
+              <key><string>key2</string></key>
+              <value><string>value2</string></value>
+       </entry>
+    </region> 
+    <region name="portfolios3">
+         <region-attributes index-update-type="asynchronous" scope="distributed-no-ack">
+           <value-constraint>com.gemstone.gemfire.cache.query.data.Portfolio</value-constraint>
+          </region-attributes>
+          <index name="funct1" />
+          <index name="pk1" key-index="true"/>
+
+    </region>
+
+  </vm-root-region>
+</cache>

@@ -565,7 +565,7 @@ class ParentLocalizedStrings {
   public static final StringId GatewayEventRemoteDispatcher_0_USING_1 = new StringIdImpl(1552, "{0}: Using {1}");
   public static final StringId GatewayEventRemoteDispatcher_0_USING_1_AFTER_2_FAILED_CONNECT_ATTEMPTS = new StringIdImpl(1553, "{0}: Using {1} after {2} failed connect attempts");
   //ok to reuse 1554-1555
-  public static final StringId GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_EVENT__0 = new StringIdImpl(1556, "A BatchException occurred processing event {0}");
+  public static final StringId GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_EVENT__0 = new StringIdImpl(1556, "A BatchException occurred processing events. Index of Array of Exception : {0}");
   public static final StringId GatewayEventRemoteDispatcher_NO_AVAILABLE_CONNECTION_WAS_FOUND_BUT_THE_FOLLOWING_ACTIVE_SERVERS_EXIST_0 = new StringIdImpl(1557, "No available connection was found, but the following active servers exist: {0}");
   public static final StringId GatewayEventRemoteDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH = new StringIdImpl(1558, "Stopping the processor because the following exception occurred while processing a batch:");
   //ok to reuse 1559
@@ -1052,7 +1052,7 @@ class ParentLocalizedStrings {
   public static final StringId Version_GOSSIP_GROUP_NAME_NOT_SUPPORTED = new StringIdImpl(
       2035, "Gossip channel version ''{0}'' not supported. Current version is ''{1}''");
 
-  public static final StringId GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_PDX_EVENT__0 = new StringIdImpl(2036, "A BatchException occurred processing PDX event at index {0}"); 
+  public static final StringId GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_PDX_EVENT__0 = new StringIdImpl(2036, "A BatchException occurred processing PDX events. Index of array of Exception : {0}"); 
   // ok to reuse 2037
   public static final StringId ServerMonitor_0__ENCOUNTERED_A_CACHE_CLOSE = new StringIdImpl(2038, "{0}  encountered a cache close");
   public static final StringId ServerMonitor_0__HAS_BEEN_RECOVERED = new StringIdImpl(2039, "{0}  has been recovered");
@@ -1559,7 +1559,7 @@ class ParentLocalizedStrings {
   public static final StringId DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_SET = new StringIdImpl(2539, "For overflow only mode the keyID should not be set");
   public static final StringId DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS = new StringIdImpl(2540, "Hash Index is not supported with from clause having multiple iterators(collections).");
   public static final StringId DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE = new StringIdImpl(2541, "Hash index is currently not supported for regions with Asynchronous index maintenance.");
-  // ok to reuse 2542
+  public static final StringId DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE_THE_REGION_IS_0 = new StringIdImpl(2542, "Asynchronous index maintenance is currently not supported for off-heap regions. The off-heap region is {0}");
   public static final StringId DiskRegion_ACQUIRE_OF_READ_LOCK_INTERRUPTED = new StringIdImpl(2543, "Acquire of read lock interrupted");
   public static final StringId DiskRegion_ACQUIRE_OF_WRITE_LOCK_INTERRUPTED = new StringIdImpl(2544, "Acquire of write lock interrupted");
   public static final StringId DiskRegion_CANT_PUT_A_KEYVALUE_PAIR_WITH_ID_0 = new StringIdImpl(2545, "Cannot put a key/value pair with id  {0}");
@@ -1620,7 +1620,7 @@ class ParentLocalizedStrings {
   public static final StringId DistributionManager_POSSIBLE_DEADLOCK_DETECTED = new StringIdImpl(2602, "Possible deadlock detected.");
   public static final StringId DistributionManager_THERE_IS_ALREADY_AN_ADMIN_AGENT_ASSOCIATED_WITH_THIS_DISTRIBUTION_MANAGER = new StringIdImpl(2603, "There is already an Admin Agent associated with this distribution manager.");
   public static final StringId DistributionManager_THERE_WAS_NEVER_AN_ADMIN_AGENT_ASSOCIATED_WITH_THIS_DISTRIBUTION_MANAGER = new StringIdImpl(2604, "There was never an Admin Agent associated with this distribution manager.");
-  // ok to reuse 2605
+  public static final StringId DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS_THE_REGION_IS_0 = new StringIdImpl(2605, "From clauses having multiple iterators(collections) are not supported for off-heap regions. The off-heap region is {0}");
   public static final StringId DistributionManager_UNKNOWN_DISTRIBUTIONMANAGERTYPE_0 = new StringIdImpl(2606, "Unknown DistributionManagerType:  {0}");
   public static final StringId DistributionMessage_DISTRIBUTIONMESSAGES_ARE_NO_LONGER_EXTERNALIZABLE = new StringIdImpl(2607, "DistributionMessages are no longer Externalizable.");
   public static final StringId DistributionMessage_RECIPIENTS_CAN_ONLY_BE_SET_ONCE = new StringIdImpl(2608, "Recipients can only be set once");
@@ -1653,7 +1653,7 @@ class ParentLocalizedStrings {
   public static final StringId FetchEntryMessage_ENCOUNTERED_PRLOCALLYDESTROYED = new StringIdImpl(2636, "Encountered PRLocallyDestroyed");
   public static final StringId FetchEntryMessage_ENTRY_NOT_FOUND = new StringIdImpl(2637, "entry not found");
   public static final StringId FetchEntryMessage_FAILED_SENDING_0 = new StringIdImpl(2638, "Failed sending < {0} >");
-  public static final StringId FetchHostResponse_COULD_NOT_FIND_GEMFIREJAR = new StringIdImpl(2639, "Could not find gemfire jar.");
+  public static final StringId FetchHostResponse_COULD_NOT_FIND_GEMFIREJAR = new StringIdImpl(2639, "Could not find gemfire.jar.");
   public static final StringId FetchKeysMessage_ENCOUNTERED_PRLOCALLYDESTROYEDEXCEPTION = new StringIdImpl(2640, "Encountered PRLocallyDestroyedException");
   public static final StringId FetchKeysMessage_ERROR_DESERIALIZING_KEYS = new StringIdImpl(2641, "Error deserializing keys");
   public static final StringId FetchKeysMessage_FAILED_SENDING_0 = new StringIdImpl(2642, "Failed sending < {0} >");
@@ -1935,7 +1935,7 @@ class ParentLocalizedStrings {
   public static final StringId MX4JModelMBean_RETURNED_TYPE_AND_DECLARED_TYPE_ARE_NOT_ASSIGNABLE = new StringIdImpl(2917, "Returned type and declared type are not assignable.");
   public static final StringId ManageBucketMessage_FAILED_SENDING_0 = new StringIdImpl(2918, "Failed sending < {0} >");
   public static final StringId ManagedEntityConfigImpl_COULD_NOT_DETERMINE_LOCALHOST = new StringIdImpl(2919, "Could not determine localhost?!");
-  public static final StringId ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR = new StringIdImpl(2920, "Could not find gemfire jar.");
+  public static final StringId ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR = new StringIdImpl(2920, "Could not find gemfire.jar.");
   public static final StringId ManagedEntityConfigImpl_INVALID_HOST_0 = new StringIdImpl(2921, "Invalid host \"{0}\"");
   public static final StringId ManagedEntityConfigImpl_THIS_CONFIGURATION_CANNOT_BE_MODIFIED_WHILE_ITS_MANAGED_ENTITY_IS_RUNNING = new StringIdImpl(2922, "This configuration cannot be modified while its managed entity is running.");
   public static final StringId ManagedEntityConfigXmlGenerator_EXCEPTION_THROWN_WHILE_GENERATING_XML = new StringIdImpl(2923, "Exception thrown while generating XML.");
@@ -2286,7 +2286,7 @@ class ParentLocalizedStrings {
   public static final StringId StringComparator_ARGUMENT_OBJ2_IS_NULL = new StringIdImpl(3283, "Argument ''obj2'' is null");
   public static final StringId StructBag_ELEMENT_TYPE_MUST_BE_STRUCT = new StringIdImpl(3284, "element type must be struct");
   public static final StringId StructBag_EXPECTED_AN_OBJECT_BUT_ACTUAL_IS_0 = new StringIdImpl(3285, "Expected an Object[], but actual is  {0}");
-  public static final StringId StructBag_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE = new StringIdImpl(3286, "obj does not have the same StructType");
+  public static final StringId StructBag_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE = new StringIdImpl(3286, "obj does not have the same StructType.; collection structype ={0}; added obj type={1}");
   public static final StringId StructBag_STRUCTTYPE_MUST_NOT_BE_NULL = new StringIdImpl(3287, "structType must not be null");
   public static final StringId StructBag_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL = new StringIdImpl(3288, "This set only accepts StructImpl");
   public static final StringId StructBag_TYPES_DONT_MATCH = new StringIdImpl(3289, "types do not match");
@@ -2357,8 +2357,9 @@ class ParentLocalizedStrings {
   public static final StringId TXManagerImpl_REMOVELISTENER_PARAMETER_WAS_NULL = new StringIdImpl(3354, "removeListener parameter was null");
   public static final StringId TXManagerImpl_THREAD_DOES_NOT_HAVE_AN_ACTIVE_TRANSACTION = new StringIdImpl(3355, "Thread does not have an active transaction");
   public static final StringId TXManagerImpl_TRANSACTION_0_ALREADY_IN_PROGRESS = new StringIdImpl(3356, "Transaction  {0}  already in progress");
+  
   public static final StringId TXRegionState_OPERATIONS_ON_GLOBAL_REGIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION = new StringIdImpl(3357, "Operations on global regions are not allowed because this thread has an active transaction");
-  //okay to reuse 3358
+  public static final StringId TXManagerImpl_CANNOT_CHANGE_TRANSACTION_MODE_WHILE_TRANSACTIONS_ARE_IN_PROGRESS = new StringIdImpl(3358, "Transaction mode cannot be changed when the thread has an active transaction");
   public static final StringId TXRegionState_OPERATIONS_ON_PERSISTBACKUP_REGIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION = new StringIdImpl(3359, "Operations on persist-backup regions are not allowed because this thread has an active transaction");
   public static final StringId TXReservationMgr_THE_KEY_0_IN_REGION_1_WAS_BEING_MODIFIED_BY_ANOTHER_TRANSACTION_LOCALLY = new StringIdImpl(3360, "The key  {0}  in region  {1}  was being modified by another transaction locally.");
   public static final StringId TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0 = new StringIdImpl(3361, "Conflict detected in GemFire transaction  {0}");
@@ -2413,4 +2414,6 @@ class ParentLocalizedStrings {
   public static final StringId BridgeWriter_SERVER_DEATH = new StringIdImpl( 3410, "server death");
   public static final StringId BridgeWriter_SERVER_UNREACHABLE_COULD_NOT_CONNECT_AFTER_0_ATTEMPTS = new StringIdImpl( 3411, "Server unreachable: could not connect after {0} attempts");
   public static final StringId BridgeWriter_BRIDGEWRITER_CONNECTED_TO_0 = new StringIdImpl( 3412, "BridgeWriter connected to {0}");
+  
+  
 }

@@ -13,7 +13,9 @@
 package com.gemstone.gemfire.cache.query.data;
 
 import java.io.*;
+
 import com.gemstone.gemfire.*; // for DataSerializable
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -21,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.pdx.PdxReader;
@@ -35,6 +38,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   }
   
   public Day aDay;
+  public short shortID;
   static transient List dayList;
   private int ID;
   public String pkid;
@@ -251,6 +255,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   }
   public void fromData(PdxReader in) {
     this.ID = in.readInt("ID");
+    this.shortID = in.readShort("shortID");
     this.pkid = in.readString("pkid");
     this.position1 = (PositionPdx)in.readObject("position1");
     this.position2 = (PositionPdx)in.readObject("position2");   
@@ -267,7 +272,8 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   }
   
   public void toData(PdxWriter out) {
-    out.writeInt("ID", this.ID);
+    out.writeInt("ID", this.ID);    
+    out.writeShort("shortID", this.shortID);    
     out.writeString("pkid", this.pkid);
     out.writeObject("position1", this.position1);
     out.writeObject("position2", this.position2);

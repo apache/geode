@@ -82,6 +82,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.security.GemFireSecurityException;
@@ -262,8 +263,14 @@ public abstract class BaseCommand implements Command {
    * @param clientEvent
    */
   public boolean recoverVersionTagForRetriedOperation(EntryEventImpl clientEvent) {
-    LocalRegion r = clientEvent.getRegion();    
-    VersionTag tag = r.findVersionTagForClientEvent(clientEvent.getEventId());
+    LocalRegion r = clientEvent.getRegion();
+    VersionTag tag =  null;
+    if ((clientEvent.getVersionTag() != null) && (clientEvent.getVersionTag().isGatewayTag())) {
+      tag = r.findVersionTagForGatewayEvent(clientEvent.getEventId());
+    }
+    else {
+      tag = r.findVersionTagForClientEvent(clientEvent.getEventId());
+    }
     if (tag == null) {
       if (r instanceof DistributedRegion || r instanceof PartitionedRegion) {
         // TODO this could be optimized for partitioned regions by sending the key
@@ -718,7 +725,7 @@ public abstract class BaseCommand implements Command {
     }
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
   
   protected static void writeResponseWithRefreshMetadata(Object data,
@@ -749,7 +756,7 @@ public abstract class BaseCommand implements Command {
     responseMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(),nwHop});
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
 
   protected static void writeResponseWithFunctionAttribute(byte[] data,
@@ -761,7 +768,7 @@ public abstract class BaseCommand implements Command {
     responseMsg.addBytesPart(data);
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
-    origMsg.flush();
+    origMsg.clearParts();
   }
   
   static protected void checkForInterrupt(ServerConnection servConn, Exception e) 
@@ -1158,7 +1165,7 @@ public abstract class BaseCommand implements Command {
         EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
         // From Get70.getValueAndIsObject()
-        Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true);
+        Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true, false);
         VersionTag vt = versionHolder.getVersionTag();
 
         updateValues(values, entryKey, data, vt);
@@ -1265,7 +1272,7 @@ public abstract class BaseCommand implements Command {
         }
 
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-        data = region.get(key, null, true, true, true, id, versionHolder, true);
+        data = region.get(key, null, true, true, true, id, versionHolder, true, false);
         versionTag = versionHolder.getVersionTag();
         updateValues(values, key, data, versionTag);
 
@@ -1358,7 +1365,7 @@ public abstract class BaseCommand implements Command {
       key = it.next();
       versionHolder = EntryEventImpl.createVersionTagHolder();
 
-      Object value = region.get(key, null, true, true, true, requestingClient, versionHolder, true);
+      Object value = region.get(key, null, true, true, true, requestingClient, versionHolder, true, false);
       
       updateValues(values, key, value, versionHolder.getVersionTag());
 
@@ -1393,13 +1400,21 @@ public abstract class BaseCommand implements Command {
           vt = ((EntrySnapshot) entry).getVersionTag();
           key = ((EntrySnapshot) entry).getRegionEntry().getKey();
           value = ((EntrySnapshot) entry).getRegionEntry().getValue(null);
+          updateValues(values, key, value, vt);
         } else {
           VersionStamp vs = ((NonTXEntry)entry).getRegionEntry().getVersionStamp();
           vt = vs == null ? null : vs.asVersionTag();
           key = entry.getKey();
-          value = ((NonTXEntry)entry).getRegionEntry()._getValue();
+          value = ((NonTXEntry)entry).getRegionEntry()._getValueRetain(region, true);
+          try {
+            updateValues(values, key, value, vt);
+          } finally {
+            // TODO OFFHEAP: in the future we might want to delay this release
+            // until the "values" VersionedObjectList is released.
+            // But for now "updateValues" copies the off-heap value to the heap.
+            OffHeapHelper.release(value);
+          }
         }
-        updateValues(values, key, value, vt);
       } else { // Map.Entry (remote entries)
         ArrayList list = (ArrayList)entry.getValue();
         Object value = list.get(0);
@@ -1557,7 +1572,7 @@ public abstract class BaseCommand implements Command {
           ClientProxyMembershipID id = servConn == null ? null : servConn
               .getProxyID();
           data = region.get(key, null, true, true, true, id, versionHolder,
-              true);
+              true, false);
           versionTag = versionHolder.getVersionTag();
           updateValues(values, key, data, versionTag);
 

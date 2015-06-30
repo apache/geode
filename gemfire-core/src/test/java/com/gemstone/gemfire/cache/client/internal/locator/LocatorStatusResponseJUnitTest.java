@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * The LocatorStatusResponseJUnitTest class is a test suite of test cases testing the contract and functionality of the

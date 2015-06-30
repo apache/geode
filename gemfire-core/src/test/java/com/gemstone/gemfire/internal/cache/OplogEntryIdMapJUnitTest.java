@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.Oplog.OplogEntryIdMap;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests DiskStoreImpl.OplogEntryIdMap

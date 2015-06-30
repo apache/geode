@@ -1,0 +1,13 @@
+{
+  "_id": "myprofile",
+  "_rev": "1-2b0a2ad6d1ba8a4ec811aa67ccb30db1",
+  "_attachments": {
+    "myphoto.png": {
+        "content_type": "image/png",
+        "revpos": 1,
+        "digest": "md5-VY/bvWh3RCG0BNObBVlMGw==",
+        "length": 449,
+        "stub": true
+    }
+  }
+}

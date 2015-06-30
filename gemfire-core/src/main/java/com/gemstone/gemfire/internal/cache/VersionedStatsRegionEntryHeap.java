@@ -52,5 +52,9 @@ public abstract class VersionedStatsRegionEntryHeap extends VersionedStatsRegion
     public RegionEntryFactory makeVersioned() {
       return this;
     }
+	 @Override
+    public RegionEntryFactory makeOnHeap() {
+      return this;
+    }
   }
 }

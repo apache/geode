@@ -204,6 +204,7 @@ public class RegionMBeanCompositeDataFactory {
     }
 
     boolean diskSynchronus = regAttrs.isDiskSynchronous();
+    boolean offheap = regAttrs.getOffHeap();
 
 
     RegionAttributesData regionAttributesData = new RegionAttributesData(cacheLoaderClassName, cacheWriteClassName, keyConstraintClassName,
@@ -211,7 +212,7 @@ public class RegionMBeanCompositeDataFactory {
         customEntryIdleTimeout, ignoreJTA, dataPolicy, scope, initialCapacity, loadFactor, lockGrantor, multicastEnabled, concurrencyLevel,
         indexMaintenanceSynchronous, statisticsEnabled, subsciptionConflationEnabled,
         asyncConflationEnabled, poolName, isCloningEnabled, diskStoreName, interestPolicy, diskSynchronus, cacheListeners,
-        compressorClassName);
+        compressorClassName, offheap);
 
 
     return regionAttributesData;

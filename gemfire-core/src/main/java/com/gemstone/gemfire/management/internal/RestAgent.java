@@ -96,11 +96,11 @@ public class RestAgent {
   
   private String getGemFireAPIWarLocation(final String gemfireHome) {
     assert !StringUtils.isBlank(gemfireHome) : "The GEMFIRE environment variable must be set!";
-    if (new File(gemfireHome + "/tools/Extensions/gemfire-api" + GEMFIRE_VERSION + ".war").isFile()) {
-      return gemfireHome + "/tools/Extensions/gemfire-api" + GEMFIRE_VERSION + ".war";
+    if (new File(gemfireHome + "/tools/Extensions/gemfire-web-api-" + GEMFIRE_VERSION + ".war").isFile()) {
+      return gemfireHome + "/tools/Extensions/gemfire-web-api-" + GEMFIRE_VERSION + ".war";
     }
-    else if (new File(gemfireHome + "/lib/gemfire-api" + GEMFIRE_VERSION + ".war").isFile()) {
-      return gemfireHome + "/lib/gemfire-api" + GEMFIRE_VERSION + ".war";
+    else if (new File(gemfireHome + "/lib/gemfire-web-api-" + GEMFIRE_VERSION + ".war").isFile()) {
+      return gemfireHome + "/lib/gemfire-web-api-" + GEMFIRE_VERSION + ".war";
     }
     else {
       return null;
@@ -139,13 +139,13 @@ public class RestAgent {
     final String gemfireAPIWar =  getGemFireAPIWarLocation(gemfireHome);
       
     if(gemfireAPIWar == null){
-      logger.info("Unable to find GemFire Developer REST API WAR file; the Developer REST API for GemFire will not be exported and accessible.");
+      logger.info("Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");
     }
       
     try {
       // Check if we're already running inside Tomcat
       if (isRunningInTomcat()) {
-        logger.warn("Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire developer REST API, please deploy the gemfire-web.war file in your application server."); 
+        logger.warn("Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /gemfire-api WAR file in your application server."); 
       }
       else if (isWebApplicationAvailable(gemfireAPIWar)) {
           

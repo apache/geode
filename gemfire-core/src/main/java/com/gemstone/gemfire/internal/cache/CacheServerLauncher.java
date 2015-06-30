@@ -86,6 +86,10 @@ public class CacheServerLauncher  {
   protected PrintStream oldOut = System.out;
   protected PrintStream oldErr = System.err;
   protected LogWriterI18n logger = null;
+  protected String maxHeapSize;
+  protected String initialHeapSize;
+  protected String offHeapSize;
+
 
   public static final int SHUTDOWN = 0;
   public static final int STARTING = 1;
@@ -121,7 +125,7 @@ public class CacheServerLauncher  {
    */
   protected void usage() {
     PrintStream out = System.out;
-    out.println("cacheserver start [-J<vmarg>]* [<attName>=<attValue>]* [-dir=<workingdir>] [-classpath=<classpath>] [-disable-default-server] [-rebalance] [-server-port=<server-port>] [-server-bind-address=<server-bind-address>]\n" );
+    out.println("cacheserver start [-J<vmarg>]* [<attName>=<attValue>]* [-dir=<workingdir>] [-classpath=<classpath>] [-disable-default-server] [-rebalance] [-lock-memory] [-server-port=<server-port>] [-server-bind-address=<server-bind-address>] [-critical-heap-percentage=<critical-heap-percentage>] [-eviction-heap-percentage=<eviction-heap-percentage>] [-critical-off-heap-percentage=<critical-off-heap-percentage>] [-eviction-off-heap-percentage=<eviction-off-heap-percentage>]\n" );
     out.println("\t" + LocalizedStrings.CacheServerLauncher_STARTS_A_GEMFIRE_CACHESERVER_VM.toLocalizedString() );
     out.println("\t" + LocalizedStrings.CacheServerLauncher_VMARG.toLocalizedString());
     out.println("\t" + LocalizedStrings.CacheServerLauncher_DIR.toLocalizedString());
@@ -131,6 +135,12 @@ public class CacheServerLauncher  {
     out.println("\t" + LocalizedStrings.CacheServerLauncher_DISABLE_DEFAULT_SERVER.toLocalizedString());
     out.println("\t" + LocalizedStrings.CacheServerLauncher_SERVER_PORT.toLocalizedString());
     out.println("\t" + LocalizedStrings.CacheServerLauncher_SERVER_BIND_ADDRESS.toLocalizedString());
+    out.println("\t" + LocalizedStrings.CacheServerLauncher_CRITICAL_HEAP_PERCENTAGE.toLocalizedString());
+    out.println("\t" + LocalizedStrings.CacheServerLauncher_EVICTION_HEAP_PERCENTAGE.toLocalizedString());
+    out.println("\t" + LocalizedStrings.CacheServerLauncher_CRITICAL_OFF_HEAP_PERCENTAGE.toLocalizedString());
+    out.println("\t" + LocalizedStrings.CacheServerLauncher_EVICTION_OFF_HEAP_PERCENTAGE.toLocalizedString());
+    out.println("\t" + LocalizedStrings.CacheServerLauncher_LOCK_MEMORY.toLocalizedString());
+
     out.println();
     out.println( "cacheserver stop [-dir=<workingdir>]" );
     out.println("\t" + LocalizedStrings.CacheServerLauncher_STOPS_A_GEMFIRE_CACHESERVER_VM.toLocalizedString());
@@ -245,10 +255,19 @@ public class CacheServerLauncher  {
   protected static final String VMARGS  = "vmargs";
   protected static final String PROPERTIES = "properties";
   protected static final String CLASSPATH = "classpath";
-  static final String REBALANCE = "rebalance";
-  static final String SERVER_PORT = "server-port";
-  static final String SERVER_BIND_ADDRESS = "server-bind-address";
-  static final String DISABLE_DEFAULT_SERVER = "disable-default-server";
+  protected static final String REBALANCE = "rebalance";
+  protected static final String SERVER_PORT = "server-port";
+  protected static final String SERVER_BIND_ADDRESS = "server-bind-address";
+  protected static final String DISABLE_DEFAULT_SERVER = "disable-default-server";
+  public static final String CRITICAL_HEAP_PERCENTAGE =
+    "critical-heap-percentage";
+  public static final String EVICTION_HEAP_PERCENTAGE =
+      "eviction-heap-percentage";
+  public static final String CRITICAL_OFF_HEAP_PERCENTAGE =
+      "critical-off-heap-percentage";
+  public static final String EVICTION_OFF_HEAP_PERCENTAGE =
+      "eviction-off-heap-percentage";
+  protected static final String LOCK_MEMORY = "lock-memory";
 
   protected final File processDirOption(final Map<String, Object> options, final String dirValue) throws FileNotFoundException {
     final File inputWorkingDirectory = new File(dirValue);
@@ -290,17 +309,41 @@ public class CacheServerLauncher  {
       else if (arg.startsWith("-disable-default-server")) {
         options.put(DISABLE_DEFAULT_SERVER, arg);
       }
+      else if (arg.startsWith("-lock-memory")) {
+        if (System.getProperty("os.name").indexOf("Windows") >= 0) {
+          throw new IllegalArgumentException("Unable to lock memory on this operating system");
+        }
+        props.put(DistributionConfig.LOCK_MEMORY_NAME, "true");
+      }
       else if (arg.startsWith("-rebalance")) {
         options.put(REBALANCE, Boolean.TRUE);
       }
       else if (arg.startsWith("-server-port")) {
         options.put(SERVER_PORT, arg);
       }
+      else if (arg.startsWith("-" + CRITICAL_HEAP_PERCENTAGE) ) {
+        options.put(CRITICAL_HEAP_PERCENTAGE, arg);
+      }
+      else if (arg.startsWith("-" + EVICTION_HEAP_PERCENTAGE) ) {
+        options.put(EVICTION_HEAP_PERCENTAGE, arg);
+      }
+      else if (arg.startsWith("-" + CRITICAL_OFF_HEAP_PERCENTAGE) ) {
+        options.put(CRITICAL_OFF_HEAP_PERCENTAGE, arg);
+      }
+      else if (arg.startsWith("-" + EVICTION_OFF_HEAP_PERCENTAGE) ) {
+        options.put(EVICTION_OFF_HEAP_PERCENTAGE, arg);
+      }
       else if (arg.startsWith("-server-bind-address")) {
         options.put(SERVER_BIND_ADDRESS, arg);
       }
       else if (arg.startsWith("-J")) {
-        vmArgs.add(arg.substring(2));
+        String vmArg = arg.substring(2);
+        if (vmArg.startsWith("-Xmx")) {
+          this.maxHeapSize = vmArg.substring(4);
+        } else if (vmArg.startsWith("-Xms")) {
+          this.initialHeapSize = vmArg.substring(4);
+        }
+        vmArgs.add(vmArg);
       }
       // moved this default block down so that "-J" like options can have '=' in them.
       // an 'indexOf' the assignment operator with greater than 0 ensures a non-empty String key value
@@ -395,11 +438,26 @@ public class CacheServerLauncher  {
       else if (arg.startsWith("-disable-default-server")) {
         options.put(DISABLE_DEFAULT_SERVER, Boolean.TRUE);
       }
+      else if (arg.startsWith("-lock-memory")) {
+        props.put(DistributionConfig.LOCK_MEMORY_NAME, "true");
+      }
       else if (arg.startsWith("-server-port")) {
         options.put(SERVER_PORT, arg.substring(arg.indexOf("=") + 1));
       }
       else if (arg.startsWith("-server-bind-address")) {
         options.put(SERVER_BIND_ADDRESS, arg.substring(arg.indexOf("=") + 1));
+      }
+      else if (arg.startsWith("-" + CRITICAL_HEAP_PERCENTAGE)) {
+        options.put(CRITICAL_HEAP_PERCENTAGE, arg.substring(arg.indexOf("=") + 1));
+      }
+      else if (arg.startsWith("-" + EVICTION_HEAP_PERCENTAGE)) {
+        options.put(EVICTION_HEAP_PERCENTAGE, arg.substring(arg.indexOf("=") + 1));
+      }
+      else if (arg.startsWith("-" + CRITICAL_OFF_HEAP_PERCENTAGE)) {
+        options.put(CRITICAL_OFF_HEAP_PERCENTAGE, arg.substring(arg.indexOf("=") + 1));
+      }
+      else if (arg.startsWith("-" + EVICTION_OFF_HEAP_PERCENTAGE)) {
+        options.put(EVICTION_OFF_HEAP_PERCENTAGE, arg.substring(arg.indexOf("=") + 1));
       }
       else if (arg.indexOf("=") > 1) {
         final int assignmentIndex = arg.indexOf("=");
@@ -625,7 +683,7 @@ public class CacheServerLauncher  {
     // redirect output to the log file
     OSProcess.redirectOutput(system.getConfig().getLogFile());
 
-    Cache cache = this.createCache(system);
+    Cache cache = this.createCache(system, options);
     cache.setIsServer(true);
     startAdditionalServices(cache, options);
 
@@ -732,8 +790,76 @@ public class CacheServerLauncher  {
     return (InternalDistributedSystem)DistributedSystem.connect(props);
   }
 
-  protected Cache createCache(InternalDistributedSystem system) throws IOException {
+  protected static float getCriticalHeapPercent(Map<String, Object> options) {
+    if (options != null) {
+      String criticalHeapThreshold = (String)options
+          .get(CRITICAL_HEAP_PERCENTAGE);
+      if (criticalHeapThreshold != null) {
+        return Float.parseFloat(criticalHeapThreshold
+            .substring(criticalHeapThreshold.indexOf("=") + 1));
+      }
+    }
+    return -1.0f;
+  }
+  
+  protected static float getEvictionHeapPercent(Map<String, Object> options) {
+    if (options != null) {
+      String evictionHeapThreshold = (String)options
+          .get(EVICTION_HEAP_PERCENTAGE);
+      if (evictionHeapThreshold != null) {
+        return Float.parseFloat(evictionHeapThreshold
+            .substring(evictionHeapThreshold.indexOf("=") + 1));
+      }
+    }
+    return -1.0f;
+  }
+  
+  protected static float getCriticalOffHeapPercent(Map<String, Object> options) {
+    if (options != null) {
+      String criticalOffHeapThreshold = (String)options
+          .get(CRITICAL_OFF_HEAP_PERCENTAGE);
+      if (criticalOffHeapThreshold != null) {
+        return Float.parseFloat(criticalOffHeapThreshold
+            .substring(criticalOffHeapThreshold.indexOf("=") + 1));
+      }
+    }
+    return -1.0f;
+  }
+  
+  protected static float getEvictionOffHeapPercent(Map<String, Object> options) {
+    if (options != null) {
+      String evictionOffHeapThreshold = (String)options
+          .get(EVICTION_OFF_HEAP_PERCENTAGE);
+      if (evictionOffHeapThreshold != null) {
+        return Float.parseFloat(evictionOffHeapThreshold
+            .substring(evictionOffHeapThreshold.indexOf("=") + 1));
+      }
+    }
+    return -1.0f;
+  }
+  
+  protected Cache createCache(InternalDistributedSystem system, Map<String, Object> options) throws IOException {
     Cache cache = CacheFactory.create(system);
+
+    float threshold = getCriticalHeapPercent(options);
+    if (threshold > 0.0f) {
+      cache.getResourceManager().setCriticalHeapPercentage(threshold);
+    }
+    threshold = getEvictionHeapPercent(options);
+    if (threshold > 0.0f) {
+      cache.getResourceManager().setEvictionHeapPercentage(threshold);
+    }
+    
+    threshold = getCriticalOffHeapPercent(options);
+    getCriticalOffHeapPercent(options);
+    if (threshold > 0.0f) {
+      cache.getResourceManager().setCriticalOffHeapPercentage(threshold);
+    }
+    threshold = getEvictionOffHeapPercent(options);
+    if (threshold > 0.0f) {
+      cache.getResourceManager().setEvictionOffHeapPercentage(threshold);
+    }
+
 
     // Create and start a default cache server
     // If (disableDefaultServer is not set or it is set but false) AND (the number of cacheservers is 0)
@@ -1112,6 +1238,26 @@ public class CacheServerLauncher  {
     commandLineWrapper.add((String) options.get(DISABLE_DEFAULT_SERVER));
     commandLineWrapper.add((String) options.get(SERVER_PORT));
     commandLineWrapper.add((String) options.get(SERVER_BIND_ADDRESS));
+
+    String criticalHeapThreshold = (String)options.get(CRITICAL_HEAP_PERCENTAGE);
+    if (criticalHeapThreshold != null) {
+      commandLineWrapper.add(criticalHeapThreshold);
+    }
+    String evictionHeapThreshold = (String)options
+        .get(EVICTION_HEAP_PERCENTAGE);
+    if (evictionHeapThreshold != null) {
+      commandLineWrapper.add(evictionHeapThreshold);
+    }
+    
+    String criticalOffHeapThreshold = (String)options.get(CRITICAL_OFF_HEAP_PERCENTAGE);
+    if (criticalOffHeapThreshold != null) {
+      commandLineWrapper.add(criticalOffHeapThreshold);
+    }
+    String evictionOffHeapThreshold = (String)options
+        .get(EVICTION_OFF_HEAP_PERCENTAGE);
+    if (evictionOffHeapThreshold != null) {
+      commandLineWrapper.add(evictionOffHeapThreshold);
+    }
 
     final Properties props = (Properties) options.get(PROPERTIES);
 

@@ -152,7 +152,7 @@ public class Size extends BaseCommand {
     responseMsg.setNumberOfParts(1);
     responseMsg.setTransactionId(origMsg.getTransactionId());
     responseMsg.addObjPart(sizeCount);
-    responseMsg.send(servConn, origMsg.getTransactionId());
+    responseMsg.send(servConn);
   }
 
 }

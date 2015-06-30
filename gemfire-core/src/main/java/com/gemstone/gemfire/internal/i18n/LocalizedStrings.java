@@ -82,7 +82,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId PartitionedRegion_ATTEMPT_TO_ACQUIRE_PRIMARY_NODE_FOR_READ_ON_BUCKET_0_TIMED_OUT_IN_1_MS = new StringIdImpl(3458, "Attempt to acquire primary node for read on bucket  {0}  timed out in  {1}  ms");
 
   public static final StringId RegionAttributesCreation_CONCURRENCYCHECKSENABLED_IS_NOT_THE_SAME = new StringIdImpl(3459, "ConcurrencyChecksEnabled is not the same");
-  // 3460 unused
+  public static final StringId RegionAttributesCreation_ENABLE_OFF_HEAP_MEMORY_IS_NOT_THE_SAME = new StringIdImpl(3460, "EnableOffHeapMemory is not the same");
 
   public static final StringId ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0 = new StringIdImpl(3461, "No entry support on regions with DataPolicy  {0}");
   public static final StringId SearchLoadAndWriteProcessor_WHILE_INVOKING_A_REMOTE_NETLOAD_0 = new StringIdImpl(3462, "While invoking a remote netLoad:  {0}");
@@ -323,7 +323,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId LicenseInfo_TROUBLE_READING_LICENSE_FILE_0 = new StringIdImpl(3697, "Trouble reading license file: {0}");
   public static final StringId LicenseInfo_LICENSE_SIGNATURE_IS_VALID = new StringIdImpl(3698, "License signature is valid.");
   public static final StringId LicenseInfo_THIS_LICENSE_IS_INVALID_0 = new StringIdImpl(3699, "This license is invalid. {0}");
-  public static final StringId GemFireVersion_COULD_NOT_FIND_GEMFIRE_JAR = new StringIdImpl(3700, "<Could not find gemfire jar>");
+  public static final StringId GemFireVersion_COULD_NOT_FIND_GEMFIRE_JAR = new StringIdImpl(3700, "<Could not find gemfire.jar>");
   public static final StringId GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0 = new StringIdImpl(3701, "<Could not find resource com/gemstone/gemfire/internal/{0}>");
   public static final StringId GemFireVersion_COULD_NOT_READ_PROPERTIES_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0_BECAUSE_1 = new StringIdImpl(3702, "<Could not read properties from resource com/gemstone/gemfire/internal/{0} because: {1}>");
   public static final StringId GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1 = new StringIdImpl(3703, "<Missing property {0} from resource com/gemstone/gemfire/internal/{1}>");
@@ -636,7 +636,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId DistributionConfigSnapshot_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_MODIFIED_WHILE_THE_SYSTEM_IS_RUNNING = new StringIdImpl(4011, "The \"{0}\" configuration attribute can not be modified while the system is running.");
   public static final StringId BaseCommand_INVALID_DATA_RECEIVED_PLEASE_SEE_THE_CACHE_SERVER_LOG_FILE_FOR_ADDITIONAL_DETAILS = new StringIdImpl(4012, "Invalid data received. Please see the cache server log file for additional details.");
   public static final StringId LRUCapacityController_LRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_ENTRIES_AND_EVICTION_ACTION_1 = new StringIdImpl(4013, "LRUCapacityController with a capacity of {0} entries and eviction action {1}");
-  public static final StringId HeapLRUCapacityController_HEAPLRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_OF_HEAP_AND_AN_THREAD_INTERVAL_OF_1_AND_EVICTION_ACTION_2 = new StringIdImpl(4014, "HeapLRUCapacityController with a capacity of {0}% of heap and eviction action {1}.");
+  public static final StringId HeapLRUCapacityController_HEAPLRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_OF_HEAP_AND_AN_THREAD_INTERVAL_OF_1_AND_EVICTION_ACTION_2 = new StringIdImpl(4014, "HeapLRUCapacityController with a capacity of {0}% of memory and eviction action {1}.");
   public static final StringId MembersRequestMessage_REQUESTING_MEMBERS = new StringIdImpl(4015, "Requesting members");
   public static final StringId ShutdownMessage_SHUTDOWN_MESSAGE_RECEIVED = new StringIdImpl(4016, "shutdown message received");
   public static final StringId ShutdownMessage_SHUTDOWNMESSAGE_DM_0_HAS_SHUTDOWN = new StringIdImpl(4017, "ShutdownMessage DM {0} has shutdown");
@@ -1078,7 +1078,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId QueueManagerImpl_QUEUEMANAGERIMPL_FAILED_TO_RECOVER_INTEREST_TO_SERVER_0 = new StringIdImpl(4456, "QueueManagerImpl failed to recover interest to server {0}.");
   public static final StringId QueueManagerImpl_ERROR_IN_REDUNDANCY_SATISFIER = new StringIdImpl(4457, "Error in redundancy satisfier");
   public static final StringId JGroupMembershipManager_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0 = new StringIdImpl(4458, "Membership: expiring membership of surprise member <{0}>");
-  // ok to reuse 4459
+  public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_PORT_0 = new StringIdImpl(4459, "Starting GemFireRedisServer on port {0}");
   public static final StringId JGroupMembershipManager_EXCEPTION_DESERIALIZING_MESSAGE_PAYLOAD_0 = new StringIdImpl(4460, "Exception deserializing message payload: {0}");
   public static final StringId JGroupMembershipManager_MEMBERSHIP_SERVICE_FAILURE_0 = new StringIdImpl(4461, "Membership service failure: {0}");
   public static final StringId JGroupMembershipManager_EXCEPTION_CAUGHT_WHILE_SHUTTING_DOWN = new StringIdImpl(4462, "Exception caught while shutting down");
@@ -1145,7 +1145,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId Oplog_THE_MAIN_THREAD_COULD_NOT_JOIN_WITH_THE_ASYNCH_FLUSH_THREAD = new StringIdImpl(4523, "The main thread could not join with the asynch flush thread");
   public static final StringId Oplog_OPLOG_SHUTDOWN_INTERRUPTED_ACQUIRING_READ_LOCK = new StringIdImpl(4524, "Oplog#shutdown: interrupted acquiring read lock.");
   public static final StringId InternalDistributedSystem_UNABLE_TO_START_THE_MONITOR_SERVICE = new StringIdImpl(4525, "Unable to start the monitor service");
-  // ok to reuse 4526
+  public static final StringId AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1 = new StringIdImpl(4526, "The redis-bind-address \"{0}\" is not a valid address for this machine.  These are the valid addresses for this machine: {1}");
   public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR = new StringIdImpl(4527, "CacheServer - Error closing load monitor");
   public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR = new StringIdImpl(4528, "CacheServer - Error closing advisor");
   public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR = new StringIdImpl(4529, "CacheServer - Error closing acceptor monitor");
@@ -1284,12 +1284,13 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId PartitionedRegionFunctionMessage_UNABLE_TO_COMPLETE_A_PORTION_OF_THE_DATA = new StringIdImpl(4663, "PartitionedRegionFunctionReplyMessage unable to complete a portion of the data");
   public static final StringId AuthorizeRequestPP_0_NOT_AUTHORIZED_TO_PERFORM_EXECUTE_REGION_FUNCTION_1= new StringIdImpl(4664, "{0}: In post-process: Not authorized to perform EXECUTE_REGION_FUNCTION operation on region [{1}]");
   public static final StringId PartitionedRegionLoadModel_INCOMPLETE_COLOCATION= new StringIdImpl(4665, "PartitionedRegionLoadModel - member {0} has incomplete colocation, but it has buckets for some regions. Should have colocated regions {1}  but had {2}  and contains buckets {3}");
-  public static final StringId ResourceManager_OVERRIDDING_MEMORYPOOLMXBEAN_HEAP_0_NAME_1_WITH_2 = new StringIdImpl(4666, "Overriding MemoryPoolMXBean heap threshold bytes {0} on pool {1} with {2}");
-  public static final StringId ResourceManager_NO_MEMORY_POOL_FOUND_TO_ADD_NOTIFICATION_LISTENER = new StringIdImpl(4667, "No memory pool found to add NotificationListener, memory threshold and HeapLRU features are disabled");
-  public static final StringId ResourceManager_RESETTING_ORIGINAL_MEMORYPOOLMXBEAN_HEAP_THRESHOLD_BYTES = new StringIdImpl(4668,"Resetting original MemoryPoolMXBean heap threshold bytes {0} on pool {1}");
-  public static final StringId ResourceManager_MEMBER_ABOVE_CRITICAL_THRESHOLD = new StringIdImpl(4669, "Member: {0} above critical heap threshold");
-  public static final StringId ResourceManager_MEMBER_ABOVE_HIGH_THRESHOLD = new StringIdImpl(4670, "Member: {0} above eviction threshold");
-  public static final StringId ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS = new StringIdImpl(4671, "No heap events will be delivered because of RejectedExecutionException");
+  public static final StringId HeapMemoryMonitor_OVERRIDDING_MEMORYPOOLMXBEAN_HEAP_0_NAME_1 = new StringIdImpl(4666, "Overridding MemoryPoolMXBean heap threshold bytes {0} on pool {1}");
+  
+  // 4667-4668 is UNUSED.
+  
+  public static final StringId MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD = new StringIdImpl(4669, "Member: {0} above {1} critical threshold");
+  public static final StringId MemoryMonitor_MEMBER_ABOVE_HIGH_THRESHOLD = new StringIdImpl(4670, "Member: {0} above {1} eviction threshold");
+  public static final StringId ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS = new StringIdImpl(4671, "No memory events will be delivered because of RejectedExecutionException");
   public static final StringId ResourceManager_FAILED_TO_STOP_RESOURCE_MANAGER_THREADS = new StringIdImpl(4672, "Failed to stop resource manager threads in {0} seconds");
   public static final StringId GatewayImpl_EVENT_QUEUE_ALERT_OPERATION_0_REGION_1_KEY_2_VALUE_3_TIME_4 = new StringIdImpl(4673, "{0} event for region={1} key={2} value={3} was in the queue for {4} milliseconds");
   public static final StringId GatewayImpl_PAUSED__0 = new StringIdImpl(4674, "Paused {0}");
@@ -1298,22 +1299,22 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId BridgeServerImpl_MUST_BE_RUNNING = new StringIdImpl(4677, "The bridge server must be running to use this operation");
   public static final StringId InitialImageOperation_0_UNABLE_TO_FLUSH_STATE_TO_1 = new StringIdImpl(4678, "{0}: Unable to flush state to {1} for concurrent gii union");
   public static final StringId InstantiatorRecoveryListener_INSTANTIATORRECOVERYTASK_ERROR_CLASSNOTFOUNDEXCEPTION = new StringIdImpl(4679, "InstantiatorRecoveryTask - Error ClassNotFoundException: {0}");
-  public static final StringId ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE = new StringIdImpl(4682, "This member caught exception processing profile {0} {1}");
-  public static final StringId ResourceManager_EXCEPTION_OCCURED_IN_RESOURCELISTENER = new StringIdImpl(4683, "Exception occurred in ResourceListener ");
+  public static final StringId AbstractRegion_NO_CUSTOM_EVICTION_SET = new StringIdImpl(4680, "Custom eviction not enabled for region {0}");  public static final StringId ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE = new StringIdImpl(4682, "This member caught exception processing profile {0} {1}");
+  public static final StringId MemoryMonitor_EXCEPTION_OCCURED_WHEN_NOTIFYING_LISTENERS = new StringIdImpl(4683, "Exception occurred when notifying listeners ");
   public static final StringId CacheXmlParser_A_0_IS_NOT_DATA_SERIALIZABLE = new StringIdImpl(4684, "The class {0}, presented for instantiator registration is not an instance of DataSerializable and cannot be registered.");
   public static final StringId CacheXmlParser_NO_SERIALIZATION_ID = new StringIdImpl(4685, "The instantiator registration did not include an ID attribute.");
   public static final StringId CacheXmlParser_NO_CLASSNAME_FOUND = new StringIdImpl(4686, "A string class-name was expected, but not found while parsing.");
   public static final StringId CacheXmlParser_A_0_CLASS_NOT_FOUND = new StringIdImpl(4687, "Unable to load class {0}");
   public static final StringId CacheXmlParser_A_0_NOT_A_SERIALIZER = new StringIdImpl(4688, "The class {0} presented for serializer registration does not extend DataSerializer and cannot be registered.");
   public static final StringId SerializerCreation_A_0_INSTANTIATION_FAILED = new StringIdImpl(4689, "Failed to create a new instance of DataSerializable class {0}");
-  public static final StringId ResourceManager_NO_POOL_FOUND_POOLS_0 = new StringIdImpl(4690, "No tenured pools found.  Known pools are: {0}");
-  public static final StringId ResourceManager_CRITICAL_PERCENTAGE_GT_ZERO_AND_LTE_100 = new StringIdImpl(4691, "Critical heap percentage must be greater than 0.0 and less or equal to 100.0.");
-  public static final StringId ResourceManager_CRITICAL_PERCENTAGE_GTE_EVICTION_PERCENTAGE = new StringIdImpl(4692, "Critical heap percentage must be greater than or equal to eviction heap percentage.");
-  public static final StringId ResourceManager_EVICTION_PERCENTAGE_GT_ZERO_AND_LTE_100 = new StringIdImpl(4693, "Eviction heap percentage must be greater than 0.0 and less or equal to 100.0.");
-  public static final StringId ResourceManager_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE = new StringIdImpl(4694,"Eviction heap percentage must be less than or equal to critical heap percentage.");
-  public static final StringId PartitionedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE = new StringIdImpl(4695, "UnExpected exception during function execution on local node Partitioned Region");
-  public static final StringId DistributedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE = new StringIdImpl(4696, "UnExpected exception during function execution on local node Distributed Region");
-  public static final StringId MemberResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE = new StringIdImpl(4697, "UnExpected exception during function execution local member");
+  public static final StringId HeapMemoryMonitor_NO_POOL_FOUND_POOLS_0 = new StringIdImpl(4690, "No tenured pools found.  Known pools are: {0}");
+  public static final StringId MemoryThresholds_CRITICAL_PERCENTAGE_GT_ZERO_AND_LTE_100 = new StringIdImpl(4691, "Critical percentage must be greater than 0.0 and less than or equal to 100.0.");
+  public static final StringId MemoryThresholds_CRITICAL_PERCENTAGE_GTE_EVICTION_PERCENTAGE = new StringIdImpl(4692, "Critical percentage must be greater than the eviction percentage.");
+  public static final StringId MemoryThresholds_EVICTION_PERCENTAGE_GT_ZERO_AND_LTE_100 = new StringIdImpl(4693, "Eviction percentage must be greater than 0.0 and less than or equal to 100.0.");
+  public static final StringId MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE = new StringIdImpl(4694,"Eviction percentage must be less than the critical percentage.");
+  public static final StringId PartitionedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE = new StringIdImpl(4695, "Unexpected exception during function execution on local node Partitioned Region");
+  public static final StringId DistributedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE = new StringIdImpl(4696, "Unexpected exception during function execution on local node Distributed Region");
+  public static final StringId MemberResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE = new StringIdImpl(4697, "Unexpected exception during function execution local member");
   public static final StringId ServerResultSender_UNAVOIDABLE_IOEXCEPTION = new StringIdImpl(4698, "Unavoidable Network Error while sending result");
   public static final StringId ResourceManager_LOW_MEMORY_IN_0_FOR_PUT_1_MEMBER_2 = new StringIdImpl(4700, "Region: {0} cannot process operation on key: {1} because member {2} is running low on memory");
   public static final StringId ResourceManager_LOW_MEMORY_PR_0_KEY_1_MEMBERS_2 = new StringIdImpl(4701, "PartitionedRegion: {0} cannot process operation on key {1} because members {2} are running low on memory");
@@ -1398,8 +1399,8 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId DiskRegion_RECOVERING_OPLOG_0_1_2 = new StringIdImpl(4780,"Recovering {0} {1} for disk store {2}.");
   public static final StringId DiskRegion_COULD_NOT_OPEN_0 = new StringIdImpl(4781, "Could not open {0}.");
 
-  public static final StringId ResourceManager_MEMBER_BELOW_CRITICAL_THRESHOLD = new StringIdImpl(4782,"Member: {0} below critical heap threshold");
-  public static final StringId ResourceManager_MEMBER_BELOW_HIGH_THRESHOLD = new StringIdImpl(4783,"Member: {0} below eviction threshold");
+  public static final StringId MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD = new StringIdImpl(4782,"Member: {0} below {1} critical threshold");
+  public static final StringId MemoryMonitor_MEMBER_BELOW_HIGH_THRESHOLD = new StringIdImpl(4783,"Member: {0} below {1} eviction threshold");
   public static final StringId AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR = new StringIdImpl(4784,"ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region.");
   public static final StringId AttributesFactory_LOCAL_DESTROY_IS_NOT_SUPPORTED_FOR_PR = new StringIdImpl(4785,"ExpirationAction LOCAL_DESTROY is not supported for Partitioned Region.");
   public static final StringId AttributesFactory_LOCAL_INVALIDATE_IS_NOT_SUPPORTED_FOR_PR = new StringIdImpl(4786,"ExpirationAction LOCAL_INVALIDATE is not supported for Partitioned Region.");
@@ -1460,18 +1461,18 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId RemotePutMessage_UNABLE_TO_PERFORM_PUT_BUT_OPERATION_SHOULD_NOT_FAIL_0 = new StringIdImpl(4838, "unable to perform put, but operation should not fail {0}");
   public static final StringId TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION = new StringIdImpl(4839,"clear() is not supported while in a transaction");
   public static final StringId PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1 = new StringIdImpl(4840, "Function execution is not colocated with transaction. The transactional data is hosted on node {0}, but you are trying to target node {1}");
-  // ok to reuse 4841
+  public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_BIND_ADDRESS_0_PORT_1 = new StringIdImpl(4841, "Starting GemFireRedisServer on bind address {0} on port {1}"); 
   public static final StringId RemoteFetchEntryMessage_ENTRY_NOT_FOUND = new StringIdImpl(4842, "entry not found");
   public static final StringId RemoteFetchEntryMessage_FAILED_SENDING_0 = new StringIdImpl(4843, "Failed sending < {0} >");
   public static final StringId RemoteFetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT = new StringIdImpl(4844, "FetchEntryResponse got remote CacheException; forcing reattempt.");
-  // ok to reuse 4845
-  // ok to reuse 4846
+  public static final StringId Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION = new StringIdImpl(4845,"precommit() operation {0} meant for Dist Tx is not supported");
+  public static final StringId Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION = new StringIdImpl(4846,"rollback() operation {0} meant for Dist Tx is not supported");
   public static final StringId AdminDistributedSystemJmxImpl_PROCESSING_CLIENT_MEMBERSHIP_EVENT_0_FROM_1_FOR_2_RUNNING_ON_3 = new StringIdImpl(4847, "Processing client membership event \"{0}\" from {1} for client with id: {2} running on host: {3}");
   public static final StringId AdminDistributedSystemJmxImpl_FAILED_TO_PROCESS_CLIENT_MEMBERSHIP_FROM_0_FOR_1 = new StringIdImpl(4848, "Could not process client membership notification from {0} for client with id {1}.");
   public static final StringId SystemMemberJmx_FAILED_TO_SEND_0_NOTIFICATION_FOR_1 = new StringIdImpl(4849, "Failed to send {0} notification for {1}");
   public static final StringId AgentConfigImpl_FAILED_READING_0_USING_DEFAULT_PROPETIES = new StringIdImpl(4850, "Failed reading {0}, using default properties.");
   public static final StringId AgentConfigImpl_COULD_NOT_FIND_PROPERTIES_FILE_0_USING_DEFAULTS = new StringIdImpl(4851, "Could not find the properties file: \"{0}\". Using default properties ... ");
-  //4852 is free
+  public static final StringId DISTTX_TX_EXPECTED = new StringIdImpl(4852,"Expected {0} during a distributed transaction but got {1}");
   public static final StringId PartitionManager_BUCKETID_0_DOES_NOT_EXIST = new StringIdImpl(4853, "The bucket for bucketId {0} does not exist");
   public static final StringId PartitionManager_PROVIDED_MEMBER_0_NO_PR_OR_NO_DATASTORE = new StringIdImpl(4854, "The provided target member {0} either does not have the partitioned region defined, or is not configured to store data for the partitioned region");
   public static final StringId PartitionManager_REGION_0_IS_NOT_A_PARTITIONED_REGION = new StringIdImpl(4855, "Region {0} is not a Partitioned Region");
@@ -1494,17 +1495,11 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId PoolImpl_POOL_0_STARTED_WITH_MULTIUSER_SECURE_MODE_ENABLED_1 = new StringIdImpl(4871, "Pool {0} started with multiuser-authentication={1}");
   public static final StringId HARegionQueue_ENYTRY_EXPIRY_TASKS_DISABLED_BECAUSE_QUEUE_BECAME_PRIMARY_OLD_MSG_TTL_0 = new StringIdImpl(4872, "Entry expiry tasks disabled because the queue became primary. Old messageTimeToLive was: {0}");
   public static final StringId HARegionQueue_RESUMING_WITH_PROCESSING_PUTS = new StringIdImpl(4873, "Resuming with processing puts ...");
+  public static final StringId DISTTX_TXSTATE_RESPONSE_NOT_SUPPORTED_IN_PRECOMMIT_OR_ROLLBACK = new StringIdImpl(4874,"Response to precommit/rollback is supported only in a distributed transaction");
+  public static final StringId InternalDistributedSystem_MEMORY_OVERCOMMIT = new StringIdImpl(4875, "Insufficient free memory ({0}) when attempting to lock {1} bytes.  Either reduce the amount of heap or off-heap memory requested or free up additional system memory.  You may also specify -Dgemfire.Cache.ALLOW_MEMORY_OVERCOMMIT=true on the command-line to override the constraint check.");
+  public static final StringId InternalDistributedSystem_MEMORY_OVERCOMMIT_WARN = new StringIdImpl(4876, "System memory appears to be over committed by {0} bytes.  You may experience instability, performance issues, or terminated processes due to the Linux OOM killer.");
 
-  public static final StringId Sqlf_DB_SYNCHRONIZER__1 = new StringIdImpl(4874,"DBSynchronizer::processEvents Exception while fetching  prepared statement for event= {0}.");
-  public static final StringId Sqlf_DB_SYNCHRONIZER__2 = new StringIdImpl(4875,"DBSynchronizer::processEvents . Unexpected Exception occured while processing Events. The list of unprocessed events is {0}. Attempt will be made to rollback the changes");
-  public static final StringId Sqlf_DB_SYNCHRONIZER__3 = new StringIdImpl(4876,"DBSynchronizer::processEvents .DML operation failed for event {0} possibly due to constraint violation .");
-  public static final StringId Sqlf_DB_SYNCHRONIZER__4 = new StringIdImpl(4877,"DBSynchronizer::closeStatements.Exception in closing prepared statement with dml string = {0}.");
-  public static final StringId Sqlf_DB_SYNCHRONIZER__5 = new StringIdImpl(4878,"DBSynchronizer::close.Exception in closing Sql Connection {0}.");
-  public static final StringId Sqlf_DB_SYNCHRONIZER__6 = new StringIdImpl(4879,"DBSynchronizer::init: Exception while initializing connection for driver class {0} and db url = {1}.");
-  public static final StringId Sqlf_DB_SYNCHRONIZER__7 = new StringIdImpl(4880,"DBSynchronizer::processEvents: Exception occured while committing to external  DB.");
-  public static final StringId Sqlf_AUTHENTICATION__NO_CREDENTIAL_INITIALIZER = new StringIdImpl(4881,"AuthenticationServiceBase::getCredentials: {0} not implemented by the user plugin. {1} prefixed properties should be handled by {2} interface ");
-  public static final StringId Sqlf_LocalRWLock_Waiting = new StringIdImpl(4882,
-      "SqlfReadWriteLock: {0} secs elapsed while waiting for {1} lock on {2}, lock: {3}");
+  // 4877..4883 unused
 
   public static final StringId BaseCommand__THE_INPUT_KEY_FOR_THE_0_REQUEST_IS_NULL = new StringIdImpl(4884, " The input key for the {0} request is null");
   public static final StringId JGroupMembershipManager_PROBLEM_GENERATING_CACHE_XML = new StringIdImpl(4885, "Unable to generate XML description for reconnect of cache due to exception");
@@ -1547,8 +1542,36 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId RemoveAll_THE_INPUT_REGION_NAME_FOR_THE_REMOVEALL_REQUEST_IS_NULL = new StringIdImpl(4912, "The input region name for the removeAll request is null");
   public static final StringId RemoveAll_ONE_OF_THE_INPUT_KEYS_FOR_THE_REMOVEALL_REQUEST_IS_NULL = new StringIdImpl(4913, " One of the input keys for the removeAll request is null");
   public static final StringId AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_REMOVEALL_OPERATION_ON_REGION_0 = new StringIdImpl(4914, "Not authorized to perform removeAll operation on region [{0}]");
+  public static final StringId AbstractDistributionConfig_OFF_HEAP_MEMORY_SIZE_0 = new StringIdImpl(4915, "The amount of off-heap memory to be allocated for GemFire. Value is <n>[g|m], where <n> is the size and [g|m] specifies the units in gigabytes or megabytes. Defaults to \"{0}\".");
+  public static final StringId CacheServerLauncher_CRITICAL_OFF_HEAP_PERCENTAGE =
+      new StringIdImpl(4916, "<critical-Off-heap-percentage>  Sets the critical off-heap "
+          + "threshold limit of the Resource Manager. This overrides the "
+          + "critical-off-heap-percentage set in the <resource-manager> element "
+          + "of the \"cache-xml-file\"");
+  public static final StringId CacheServerLauncher_EVICTION_OFF_HEAP_PERCENTAGE =
+      new StringIdImpl(4917, "<eviction-off-heap-percentage>  Sets the eviction heap "
+          + "threshold limit of the Resource Manager above which the eviction "
+          + "should begin on Regions configured for eviction by off-heap LRU. "
+          + "This overrides the eviction-off-heap-percentage set in the "
+          + "<resource-manager> element of the \"cache-xml-file\"");
+  public static final StringId CacheServerLauncher_CRITICAL_HEAP_PERCENTAGE =
+      new StringIdImpl(4918, "<critical-heap-percentage>  Sets the critical heap "
+          + "threshold limit of the Resource Manager. This best works with "
+          + "parallel young generation collector (UseParNewGC) and concurrent "
+          + "low pause collector (UseConcMarkSweepGC) with appropriate "
+          + "CMSInitiatingOccupancyFraction like 50%. This overrides the "
+          + "critical-heap-percentage set in the <resource-manager> element "
+          + "of the \"cache-xml-file\"");
+  public static final StringId CacheServerLauncher_EVICTION_HEAP_PERCENTAGE =
+      new StringIdImpl(4919, "<eviction-heap-percentage>  Sets the eviction heap "
+          + "threshold limit of the Resource Manager above which the eviction "
+          + "should begin on Regions configured for eviction by heap LRU. "
+          + "This overrides the eviction-heap-percentage set in the "
+          + "<resource-manager> element of the \"cache-xml-file\"");
+  public static final StringId AbstractDistributionConfig_LOCK_MEMORY = new StringIdImpl(4920, "Locks heap and off-heap memory pages into RAM, thereby preventing the operating system from swapping them out to disk.");
+  public static final StringId CacheServerLauncher_LOCK_MEMORY = new StringIdImpl(4921, "-lock-memory Locks heap and off-heap memory pages into RAM, thereby preventing the operating system from swapping them out to disk.");
 
-  //4915-4999 are now unused 
+  //4922-4999 are now unused 
 
   public static final StringId CacheXmlParser_NULL_DiskStoreName = new StringIdImpl(5000, "Disk Store name is configured to use null name.");
   public static final StringId CacheXmlParser_A_0_MUST_BE_DEFINED_IN_THE_CONTEXT_OF_REGIONATTRIBUTES_OR_DISKSTORE = new StringIdImpl(5001, "A  {0}  must be defined in the context of region-attributes or disk-store.");
@@ -1679,6 +1702,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId GatewayImpl_GATEWAY_SOCKET_READ_TIMEOUT_DISABLED = new StringIdImpl(5124, "Setting the socket read timeout on a gateway is currently disabled. Please contact Pivotal support for assistance.");
   public static final StringId EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION = new StringIdImpl(5125, "Function execution without result encountered an Exception on server.");
   public static final StringId ConnectionFactoryImpl_POOL_0_IS_NOT_AVAILABLE = new StringIdImpl(5126, "Pool {0} is not available");
+  public static final StringId CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3 = new StringIdImpl(5128, "Cannot create region {0} with off-heap={1} because another cache ({2}) has the same region with off-heap={3}.");
 
   public static final StringId ConnectionTable_OUT_OF_FILE_DESCRIPTORS_USING_SHARED_CONNECTION = new StringIdImpl(5129, "This process is out of file descriptors.\nThis will hamper communications and slow down the system.\nAny conserve-sockets setting is now being ignored.\nPlease consider raising the descriptor limit.\nThis alert is only issued once per process.");
   public static final StringId DistributedRegion_INITIALIZING_REGION_0 = new StringIdImpl(5130, "Initializing region {0}");
@@ -1958,17 +1982,48 @@ public class LocalizedStrings extends ParentLocalizedStrings {
 
   public static final StringId DistributedPutAllOperation_MISSING_VERSION = new StringIdImpl(5459,"memberID cannot be null for persistent regions: {0}");
 
+  public static final StringId Server_Ping_Failure = new StringIdImpl(5460, "Could not ping one of the following servers: {0}");
+  
   public static final StringId DistributionManager_PR_META_DATA_CLEANUP_MESSAGE_PROCESSOR = new StringIdImpl(5500, "PrMetaData cleanup Message Processor ");
   public static final StringId RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION = new StringIdImpl(5501, "Region was globally destroyed during cache initialization: {0}");
   public static final StringId SnappyCompressor_UNABLE_TO_LOAD_NATIVE_SNAPPY_LIBRARY = new StringIdImpl(5502, "Unable to load native Snappy library.");
   public static final StringId SnappyCompressor_UNABLE_TO_LOAD_NATIVE_SNAPPY_LIBRARY_MISSING_LIBRARY = new StringIdImpl(5503, "Unable to load native Snappy library from: {0}");
+  
+  /** HOPLOG STRINGS, 5505 - 5600 **/
+  public static final StringId HOPLOG_REGION_CLOSE_FAILED = new StringIdImpl(5505, "IO error while trying to close region and release hdfs connection: {0}");
+  public static final StringId HOPLOG_HDFS_CLIENT_CONFIG_FILE_ABSENT = new StringIdImpl(5506, "HDFS client config file does not exist: {0}");
+  public static final StringId HOPLOG_IO_ERROR = new StringIdImpl(5507, "IO Exception while executing HDFS operation: {0}");
+  public static final StringId HOPLOG_UNABLE_TO_DELETE_FILE = new StringIdImpl(5508, "Unable to delete file: {0}");
+  public static final StringId HOPLOG_UNABLE_TO_DELETE_HDFS_DATA = new StringIdImpl(5509, "Unable to delete HDFS data while destroying region");
+  public static final StringId HOPLOG_CLOSE_FAILED = new StringIdImpl(5510, "IO error while trying to close hoplog.");
+  public static final StringId HOPLOG_FLUSH_FOR_BATCH_FAILED = new StringIdImpl(5511, "A batch of data could not be persisted on HDFS. It will be retried.");
+  public static final StringId HOPLOG_HDFS_STORE_NOT_FOUND = new StringIdImpl(5512, "HDFS store ''{0}'' does not exist.");
+  public static final StringId HOPLOG_TRYING_TO_CREATE_STANDALONE_SYSTEM = new StringIdImpl(5513, "The namenode url {0} is not valid. Please use the format hdfs://HOST:PORT");
+  public static final StringId HOPLOG_DOES_NOT_USE_HDFSSTORE = new StringIdImpl(5514, "{0} does not use HDFSSTORE");
+  public static final StringId HOPLOG_CONFIGURED_AS_WRITEONLY = new StringIdImpl(5515, "{0} is defined as WRITEONLY");
+  public static final StringId HOPLOG_MISSING_IN_BUCKET_FORCED_CLOSED = new StringIdImpl(5516, "A hoplog file, {0}, was not found in bucket lists. Closing it now, it may impact active reads.");
+  public static final StringId HOPLOG_MIN_IS_MORE_THAN_MAX = new StringIdImpl(5517, "Value of {0} is {1}. It should not be more than {2} value {3}");
+  public static final StringId HOPLOG_NOT_STARTED_YET = new StringIdImpl(5518, "HDFS store is not started yet. Gemfire is running without HDFS.");
+  public static final StringId HOPLOG_0_COLOCATE_WITH_REGION_1_NOT_INITIALIZED_YET = new StringIdImpl(5519, "Current region: {0} colocated with region {1} is yet initialized.");
+  public static final StringId HOPLOG_SUSPEND_OF_0_FAILED_IN_1 = new StringIdImpl(5520, "Failed to suspend active {0} in {1}");
+  public static final StringId HOPLOG_CLEANED_UP_BY_JANITOR = new StringIdImpl(5521, "Hoplog is cleaned up by janitor task.");
+  public static final StringId HOPLOG_HDFS_UNREACHABLE = new StringIdImpl(5522, "HDFS at {0} is unreachable.");
+  public static final StringId HOPLOG_MAJOR_COMPACTION_SCHEDULED_FOR_BETTER_ESTIMATE = new StringIdImpl(5523, "A major compaction has been automatically scheduled for better accuracy of count_estimate() function");
+  public static final StringId HOPLOG_FAILED_TO_READ_HDFS_FILE = new StringIdImpl(5524, "Exception while reading file on HDFS: {0}");
+  public static final StringId HOPLOG_HDFS_COMPACTION_ERROR = new StringIdImpl(5525, "Error while compacting files of bucket {0}");
+  public static final StringId HOPLOG_HDFS_COMPACTION_OVERLOADED = new StringIdImpl(5526, "Too many pending tasks for {0}. Skipping compaction request for {1}");
+  public static final StringId HOPLOG_FLUSH_OPERATION_FAILED = new StringIdImpl(5527, "IO error while trying to flush buffer and create hoplog.");
+  public static final StringId HOPLOG_HOPLOG_REMOVE_FAILED = new StringIdImpl(5528, "IO error while trying to remove hoplog.");
+  /** HOPLOG STRINGS, 5505 - 5600 **/
+
+  public static final StringId PartitionAttributesImpl_CANNOT_DETERMINE_LOCAL_MAX_MEMORY_FOR_PARTITION_ATTRIBUTE_SINCE_NO_CACHE_IS_AVAILABLE_FROM_WHICH_TO_FETCH_THE_OFF_HEAP_MEMORY_ALLOCATOR = new StringIdImpl(5600, "Cannot determine local max memory for partition attribute since no cache is available from which to fetch the off-heap memory allocator");
 
   public static final StringId PartitionAttributesImpl_CANNOT_DETERMINE_LOCAL_MAX_MEMORY_FOR_PARTITION_ATTRIBUTE_SINCE_NO_OFF_HEAP_MEMORY_HAS_BEEN_ALLOCATED = new StringIdImpl(5601, "Cannot determine local max memory for partition attribute since no off-heap memory has been allocated");
   public static final StringId PartitionAttributesImpl_REDUCED_LOCAL_MAX_MEMORY_FOR_PARTITION_ATTRIBUTES_WHEN_SETTING_FROM_AVAILABLE_OFF_HEAP_MEMORY_SIZE = new StringIdImpl(5602, "Reduced local max memory for partition attribute when setting from available off-heap memory size");
   public static final StringId ParallelQueueRemovalMessage_QUEUEREMOVALMESSAGEPROCESSEXCEPTION_IN_PROCESSING_THE_LAST_DISPTACHED_KEY_FOR_A_SHADOWPR_THE_PROBLEM_IS_WITH_KEY__0_FOR_SHADOWPR_WITH_NAME_1 = new StringIdImpl(5603, "ParallelQueueRemovalMessage::process:Exception in processing the last disptached key for a ParallelGatewaySenderQueue''s shadowPR. The problem is with key ={0} for shadowPR with name={1}");
 
   public static final StringId DistributionManager_DISTRIBUTIONMANAGER_MEMBER_0_IS_1_EQUIVALENT = new StringIdImpl(5604,"Member {0} is {1}equivalent or in the same redundancy zone.");
-  
+
   public static final StringId GemFireCache_INIT_CLEANUP_FAILED_FOR_REGION_0 = new StringIdImpl(5605, "Initialization failed for Region {0}");
   public static final StringId GemFireCache_ENFORCE_UNIQUE_HOST_NOT_APPLICABLE_FOR_LONER = new StringIdImpl(5606, "enforce-unique-host and redundancy-zone properties have no effect for a LonerDistributedSystem.");
   public static final StringId AttributesFactory_UNABLE_TO_CREATE_DISK_STORE_DIRECTORY_0 = new StringIdImpl(5607, "Unable to create directory : {0}");
@@ -1992,6 +2047,8 @@ public class LocalizedStrings extends ParentLocalizedStrings {
 
   public static final StringId GatewayImpl_GATEWAY_0_HAS_BEEN_REBALANCED = new StringIdImpl(5621, "GatewaySender {0} has been rebalanced");
 
+  public static final StringId OffHeapMemoryMonitor_NO_OFF_HEAP_MEMORY_HAS_BEEN_CONFIGURED = new StringIdImpl(5622, "No off-heap memory has been configured.");
+
   public static final StringId Oplog_Close_Failed = new StringIdImpl(5640, "Failed to close file {0}");
   public static final StringId Oplog_PreAllocate_Failure = new StringIdImpl(5641, "Could not pre-allocate file {0} with size={1}");
   public static final StringId Oplog_PreAllocate_Failure_Init = new StringIdImpl(5642, "Could not create and pre grow file in dir {0} with size={1}");
@@ -2003,6 +2060,10 @@ public class LocalizedStrings extends ParentLocalizedStrings {
 
   public static final StringId DiskStoreAttributesCreation_DISK_USAGE_WARN_ARE_NOT_THE_SAME = new StringIdImpl(5660, "Disk usage warning percentages of disk store {0} are not the same");
   public static final StringId DiskStoreAttributesCreation_DISK_USAGE_CRITICAL_ARE_NOT_THE_SAME = new StringIdImpl(5661, "Disk usage critical percentages of disk store {0} are not the same");
+
+  public static final StringId MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP = new StringIdImpl(5662,"Your Java virtual machine is incompatible with off-heap memory.  Please refer to {0} documentation for suggested JVMs.");
+  public static final StringId MEMSCALE_EVICTION_INIT_FAIL = new StringIdImpl(5663,"Cannot initialize the off-heap evictor.  There is no off-heap memory available for eviction.");
+
 
   // If the text is changed for this StringId, do the same in ConnectionPoolImplJUnitTest.java
   public static final StringId QueueManagerImpl_COULD_NOT_FIND_SERVER_TO_CREATE_PRIMARY_CLIENT_QUEUE = new StringIdImpl(5700, "Could not find any server to create primary client queue on. Number of excluded servers is {0} and exception is {1}.");
@@ -2027,6 +2088,15 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId ParallelAsyncEventQueue_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1 = new StringIdImpl(5716,"Parallel Async Event Queue {0} can not be used with replicated region {1}");
   public static final StringId ParallelGatewaySender_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1 = new StringIdImpl(5717,"Parallel gateway sender {0} can not be used with replicated region {1}");
 
+  public static final StringId HDFSSTORE_IS_USED_IN_NONHDFS_REGION = new StringIdImpl(5808, "Only regions with HDFS_PARTITION or HDFS_PERSISTENT_PARTITION data policies can specify a HDFS Store");
+  public static final StringId EVICTORSERVICE_CAUGHT_EXCEPTION_0 = new StringIdImpl(5809, "Evictor Service caught following exception : {0}");
+  public static final StringId HDFSSTORE_IS_USED_IN_REPLICATED_TABLE = new StringIdImpl(5810, "HDFS Store cannot be used for REPLICATED TABLE");
+  public static final StringId HDFS_USER_IS_SAME_AS_GF_USER = new StringIdImpl(5811, "Gemfire user is the same as HDFS user, may cause security risks: {0}");
+  public static final StringId GF_KERBEROS_KEYTAB_FILE_ABSENT = new StringIdImpl(5812, "Gemfire kerberos keytab file is missing: {0}");
+  public static final StringId GF_KERBEROS_NAMENODE_PRINCIPAL_UNDEF = new StringIdImpl(5813, "Namenode principal must be configured when using kerberos authentication");
+  public static final StringId GF_KERBEROS_KEYTAB_UNDEF = new StringIdImpl(5814, "Gemfire kerberos keytab file is not configured");
+  public static final StringId GF_KERBEROS_PRINCIPAL_UNDEF = new StringIdImpl(5815, "Gemfire kerberos principal is not configured, kerberos authentication will not be invoked");
+
   
   public static final StringId GemFireCacheImpl_REST_SERVER_ON_PORT_0_IS_SHUTTING_DOWN = new StringIdImpl(6500, "Rest Server on port {0} is shutting down");
   public static final StringId PartitionedRegion_QUERY_TRACE_LOCAL_NODE_LOG = new StringIdImpl(6501, "  Local {0} took {1}ms and returned {2} results; {3}");
@@ -2037,7 +2107,11 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId Region_RemoveAll_Applied_PartialKeys_0_1 = new StringIdImpl(6505, "Region {0} removeAll: {1}");
 
   public static final StringId InternalDistributedSystem_QUORUM_OF_MEMBERS_CONTACTED = new StringIdImpl(6506, "quorum check passed - now attempting multicast discovery");
-  // 6506 - 6597 free
+  public static final StringId DefaultQuery_ORDER_BY_ATTRIBS_NOT_PRESENT_IN_PROJ = new StringIdImpl(6507, "Query contains atleast one order by field which is not present in projected fields.");
+  public static final StringId DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY = new StringIdImpl(6508, "Query contains projected column not present in group by clause");
+  public static final StringId DefaultQuery_GROUP_BY_COL_ABSENT_IN_PROJ = new StringIdImpl(6509, "Query contains group by columns not present in projected fields");
+
+  // 6508 - 6597 free
   public static final StringId CqQueryImpl_CQ_NOT_SUPPORTED_FOR_REPLICATE_WITH_LOCAL_DESTROY = new StringIdImpl(6598, "CQ is not supported for replicated region: {0} with eviction action: {1}");
 
   public static final StringId AbstractDistributionConfig_LOCATOR_WAIT_TIME_NAME_0 = new StringIdImpl(6599, "The amount of time, in seconds, to wait for a locator to be available before throwing an exception during startup.  The default is {0}.");

@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.CacheEvent;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.SerializedCacheValue;
 import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceProvider;
@@ -1656,10 +1657,16 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     }
     if (foi != null && foi.size() > 0) {
-      Object value = event.getSerializedNewValue();
-      boolean serialized = (value != null);
+      Object value;
+      boolean serialized;
+      {
+      SerializedCacheValue<?> serValue = event.getSerializedNewValue();
+      serialized = (serValue != null);
       if (!serialized) {
         value = event.getNewValue();
+      } else {
+        value = serValue.getSerializedValue();
+      }
       }
       InterestEvent iev = new InterestEvent(event.getKey(), value, !serialized);
       Operation op = event.getOperation();

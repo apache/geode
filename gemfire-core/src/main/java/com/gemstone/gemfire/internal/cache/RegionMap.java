@@ -97,6 +97,11 @@ public interface RegionMap extends LRUMapCallbacks {
    */
   public Collection<RegionEntry> regionEntries();
 
+  /**
+   * Returns a collection of RegionEntry instances from memory only.
+   */
+  public Collection<RegionEntry> regionEntriesInVM();
+
   public boolean containsKey(Object key);
 
   /**
@@ -105,6 +110,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * @return the RegionEntry from memory or disk
    */
   public RegionEntry getEntry(Object key);
+  public RegionEntry putEntryIfAbsent(Object key, RegionEntry re);
 
   /**
    * fetches the entry from the backing ConcurrentHashMap. 
@@ -113,7 +119,16 @@ public interface RegionMap extends LRUMapCallbacks {
    */
   public RegionEntry getEntryInVM(Object key);
 
-//   /**
+  /**
+   * fetches the entry from the backing ConcurrentHashMap only if the entry
+   * is considered to be in operational data i.e. does not have
+   * isMarkedForEviction() bit set.
+   * @param key
+   * @return the RegionEntry in operational data
+   */
+  public RegionEntry getOperationalEntryInVM(Object key);
+
+  //   /**
 //    * Removes any entry associated with <code>key</code>.
 //    * Do nothing if the map has no entry for key.
 //    */
@@ -375,4 +390,6 @@ public interface RegionMap extends LRUMapCallbacks {
    * not modify an entry while it is referenced by a transaction.
    */
   public void decTxRefCount(RegionEntry e);
+
+  public void close();
 }
