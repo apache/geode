@@ -109,7 +109,7 @@ task createVersionPropertiesFile {
   inputs.dir compileJava.destinationDir
 
   doLast {
-    def gitFolder = new File ("${rootProject.projectDir}/../.git")
+    def gitFolder = new File ("${rootProject.projectDir}/.git")
     if ( gitFolder.exists() ) {
       new ByteArrayOutputStream().withStream { gitBranchStream ->
         def result = exec {

@@ -113,10 +113,11 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
 
     builder.parseArguments("start", "serverOne", "--assign-buckets", "--disable-default-server", "--debug", "--force",
       "--rebalance", "--redirect-output", "--dir=" + ServerLauncher.DEFAULT_WORKING_DIRECTORY, "--pid=1234",
-        "--server-bind-address=" + InetAddress.getLocalHost().getHostAddress(), "--server-port=11235");
+        "--server-bind-address=" + InetAddress.getLocalHost().getHostAddress(), "--server-port=11235", "--hostname-for-clients=192.168.99.100");
 
     assertEquals(Command.START, builder.getCommand());
     assertEquals("serverOne", builder.getMemberName());
+    assertEquals("192.168.99.100", builder.getHostNameForClients());
     assertTrue(builder.getAssignBuckets());
     assertTrue(builder.getDisableDefaultServer());
     assertTrue(builder.getDebug());
@@ -288,6 +289,17 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
       assertTrue(expected.getCause() instanceof UnknownHostException);
       throw expected;
     }
+  }
+
+  @Test
+  public void testSetAndGetHostnameForClients() {
+    final Builder builder = new Builder();
+
+    assertNull(builder.getHostNameForClients());
+    assertSame(builder, builder.setHostNameForClients("Pegasus"));
+    assertEquals("Pegasus", builder.getHostNameForClients());
+    assertSame(builder, builder.setHostNameForClients(null));
+    assertNull(builder.getHostNameForClients());
   }
 
   @Test

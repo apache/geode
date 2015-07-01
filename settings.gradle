@@ -8,3 +8,8 @@ include 'gemfire-core'
 include 'gemfire-web'
 include 'gemfire-web-api'
 include 'gemfire-assembly'
+
+def minimumGradleVersion = '2.3'
+if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
+  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+}

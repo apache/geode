@@ -32,7 +32,7 @@ allprojects {
       tar.compression = Compression.GZIP
       tar.extension = 'tar.gz'
     }
-  } )
+  })
 }
 
 task clean (type: Delete) {

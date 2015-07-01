@@ -8,12 +8,9 @@
 
 package com.gemstone.gemfire.management.internal;
 
-import java.io.File;
-
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -24,15 +21,15 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.ManagementService;
 
 /**
- * Agent implementation that controls the HTTP server end points used for REST 
+ * Agent implementation that controls the HTTP server end points used for REST
  * clients to connect gemfire data node.
  * 
- * The RestAgent is used to start http service in embedded mode on any non manager data node with developer REST APIs service enabled. 
+ * The RestAgent is used to start http service in embedded mode on any non
+ * manager data node with developer REST APIs service enabled.
  *
  * @author Nilkanth Patel.
  * @since 8.0
@@ -42,42 +39,43 @@ public class RestAgent {
 
   private boolean running = false;
   private final DistributionConfig config;
-  
+
   public RestAgent(DistributionConfig config) {
     this.config = config;
   }
-  
+
   public synchronized boolean isRunning() {
     return this.running;
   }
-  
-  private boolean isManagementRestServiceRunning(GemFireCacheImpl cache){
-    final SystemManagementService managementService = (SystemManagementService) ManagementService.getManagementService(
-        cache);
-    return ( managementService.getManagementAgent() != null && managementService.getManagementAgent().isHttpServiceRunning());
-    
+
+  private boolean isManagementRestServiceRunning(GemFireCacheImpl cache) {
+    final SystemManagementService managementService = (SystemManagementService) ManagementService
+        .getManagementService(cache);
+    return (managementService.getManagementAgent() != null && managementService
+        .getManagementAgent().isHttpServiceRunning());
+
   }
-  
-  public synchronized void start(GemFireCacheImpl cache){
-    if (!this.running 
-        && this.config.getHttpServicePort() != 0 
+
+  public synchronized void start(GemFireCacheImpl cache) {
+    if (!this.running && this.config.getHttpServicePort() != 0
         && !isManagementRestServiceRunning(cache)) {
       try {
         startHttpService();
         this.running = true;
         cache.setRESTServiceRunning(true);
-        
-        //create region to hold query information (queryId, queryString). Added for the developer REST APIs
+
+        // create region to hold query information (queryId, queryString). Added
+        // for the developer REST APIs
         RestAgent.createParameterizedQueryRegion();
-        
-      } catch (RuntimeException e){
+
+      } catch (RuntimeException e) {
         logger.debug(e.getMessage(), e);
       }
     }
-      
+
   }
-  
-  public synchronized void stop(){
+
+  public synchronized void stop() {
     if (this.running) {
       stopHttpService();
       if (logger.isDebugEnabled()) {
@@ -90,92 +88,61 @@ public class RestAgent {
       }
     }
   }
-  
+
   private Server httpServer;
   private final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
-  
-  private String getGemFireAPIWarLocation(final String gemfireHome) {
-    assert !StringUtils.isBlank(gemfireHome) : "The GEMFIRE environment variable must be set!";
-    if (new File(gemfireHome + "/tools/Extensions/gemfire-web-api-" + GEMFIRE_VERSION + ".war").isFile()) {
-      return gemfireHome + "/tools/Extensions/gemfire-web-api-" + GEMFIRE_VERSION + ".war";
-    }
-    else if (new File(gemfireHome + "/lib/gemfire-web-api-" + GEMFIRE_VERSION + ".war").isFile()) {
-      return gemfireHome + "/lib/gemfire-web-api-" + GEMFIRE_VERSION + ".war";
-    }
-    else {
-      return null;
-    }
-  }
-  
+  private AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
+
   private boolean isRunningInTomcat() {
     return (System.getProperty("catalina.base") != null || System.getProperty("catalina.home") != null);
   }
-  
-  private boolean isWebApplicationAvailable(final String warFileLocation) {
-    return !StringUtils.isBlank(warFileLocation);
-  }
-  
-  //Start HTTP service in embedded mode
+
+  // Start HTTP service in embedded mode
   public void startHttpService() {
-    //TODO: add a check that will make sure that we start HTTP service on non-manager data node
+    // TODO: add a check that will make sure that we start HTTP service on
+    // non-manager data node
     logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
         this.config.getHttpServicePort(), this.config.getHttpServiceBindAddress());
-      
-    String gemfireHome = System.getenv("GEMFIRE");
-    
-    // Check for empty variable. if empty, then log message and exit HTTP server startup
-    if (StringUtils.isBlank(gemfireHome)) {
-      String gemfire = System.getProperty("gemfire.home");
-      logger.info("Reading gemfire.home System Property -> {}", gemfire);
-      if (StringUtils.isBlank(gemfire)) {
-        logger.info("GEMFIRE environment variable not set; HTTP service will not start.");
-        return;
-      } else {
-        gemfireHome = gemfire;
-      }
-    }
-      
+
     // Find the developer REST WAR file
-    final String gemfireAPIWar =  getGemFireAPIWarLocation(gemfireHome);
-      
-    if(gemfireAPIWar == null){
+    final String gemfireAPIWar = agentUtil.getGemFireWebApiWarLocation();
+    if (gemfireAPIWar == null) {
       logger.info("Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");
     }
-      
+
     try {
       // Check if we're already running inside Tomcat
       if (isRunningInTomcat()) {
         logger.warn("Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /gemfire-api WAR file in your application server."); 
-      }
-      else if (isWebApplicationAvailable(gemfireAPIWar)) {
-          
+      } else if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
+
         final String bindAddress = this.config.getHttpServiceBindAddress();
         final int port = this.config.getHttpServicePort();
 
         this.httpServer = JettyHelper.initJetty(bindAddress, port,
             this.config.getHttpServiceSSLEnabled(),
-            this.config.getHttpServiceSSLRequireAuthentication(), 
-            this.config.getHttpServiceSSLProtocols(),
-            this.config.getHttpServiceSSLCiphers(), 
-            this.config.getHttpServiceSSLProperties()
-            );
-          
+            this.config.getHttpServiceSSLRequireAuthentication(),
+            this.config.getHttpServiceSSLProtocols(), this.config.getHttpServiceSSLCiphers(),
+            this.config.getHttpServiceSSLProperties());
+
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
-        
+
         if (logger.isDebugEnabled()) {
           logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
-              ((ServerConnector)this.httpServer.getConnectors()[0]).getPort(), bindAddress);
+              ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(), bindAddress);
         }
 
         this.httpServer = JettyHelper.startJetty(this.httpServer);
         logger.info("HTTP service started successfully...!!");
       }
-    }catch (Exception e) {
-      stopHttpService();//Jetty needs to be stopped even if it has failed to start. Some of the threads are left behind even if server.start() fails due to an exception
-      throw new RuntimeException("HTTP service failed to start due to "+e.getMessage());
+    } catch (Exception e) {
+      stopHttpService();// Jetty needs to be stopped even if it has failed to
+                        // start. Some of the threads are left behind even if
+                        // server.start() fails due to an exception
+      throw new RuntimeException("HTTP service failed to start due to " + e.getMessage());
     }
   }
-  
+
   private void stopHttpService() {
     if (this.httpServer != null) {
       logger.info("Stopping the HTTP service...");
@@ -187,7 +154,8 @@ public class RestAgent {
         try {
           this.httpServer.destroy();
         } catch (Exception ignore) {
-          logger.error("Failed to properly release resources held by the HTTP service: {}", ignore.getMessage(), ignore);
+          logger.error("Failed to properly release resources held by the HTTP service: {}",
+              ignore.getMessage(), ignore);
         } finally {
           this.httpServer = null;
           System.clearProperty("catalina.base");
@@ -199,16 +167,17 @@ public class RestAgent {
 
   /**
    * This method will create a REPLICATED region named _ParameterizedQueries__.
-   * In developer REST APIs, this region will be used to store the queryId and queryString as a key and value respectively.
+   * In developer REST APIs, this region will be used to store the queryId and
+   * queryString as a key and value respectively.
    */
-  public static void createParameterizedQueryRegion(){
+  public static void createParameterizedQueryRegion() {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting creation of  __ParameterizedQueries__ region");
       }
-      GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.getAnyInstance();
+      GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
       if (cache != null) {
-        //cache.getCacheConfig().setPdxReadSerialized(true);
+        // cache.getCacheConfig().setPdxReadSerialized(true);
         final InternalRegionArguments regionArguments = new InternalRegionArguments();
         regionArguments.setIsUsedForMetaRegion(true);
         final AttributesFactory<String, String> attributesFactory = new AttributesFactory<String, String>();
@@ -221,18 +190,18 @@ public class RestAgent {
         attributesFactory.setValueConstraint(String.class);
 
         final RegionAttributes<String, String> regionAttributes = attributesFactory.create();
-        
+
         cache.createVMRegion("__ParameterizedQueries__", regionAttributes, regionArguments);
         if (logger.isDebugEnabled()) {
           logger.debug("Successfully created __ParameterizedQueries__ region");
         }
-      }else {
+      } else {
         logger.error("Cannot create ParameterizedQueries Region as no cache found!");
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Error creating __ParameterizedQueries__ Region with cause {}",e.getMessage(), e);
+        logger.debug("Error creating __ParameterizedQueries__ Region with cause {}",
+            e.getMessage(), e);
       }
     }
   }

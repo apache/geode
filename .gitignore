@@ -4,10 +4,12 @@
 #
 # see git help gitignore for more details
 build/
+.idea/
 .gradle/
 .classpath
 .project
 .settings/
+.idea/
 build-eclipse/
 /tags
 
