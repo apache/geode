@@ -1,0 +1,31 @@
+The following jars were removed from this source code. These should be
+downloaded from maven central as part of the build.
+
+ext-libs/com.springsource.org.apache.commons.beanutils-1.8.0.jar
+ext-libs/com.springsource.org.apache.commons.collections-3.2.0.jar
+ext-libs/com.springsource.org.apache.commons.digester-1.8.1.jar
+ext-libs/com.springsource.org.apache.commons.logging-1.1.1.jar
+ext-libs/commons-codec-1.6.jar
+ext-libs/commons-lang-2.6.jar
+ext-libs/commons-logging-1.1.3.jar
+ext-libs/fluent-hc-4.3.3.jar
+ext-libs/httpclient-4.3.3.jar
+ext-libs/httpclient-cache-4.3.3.jar
+ext-libs/httpcore-4.3.2.jar
+ext-libs/httpmime-4.3.3.jar
+ext-libs/junit-4.10.jar
+ext-libs/selenium-server-standalone-2.41.0.jar
+ext-libs/servlet-api-2.5-20081211.jar
+ext-libs/spring-aop-3.2.9.RELEASE.jar
+ext-libs/spring-beans-3.2.9.RELEASE.jar
+ext-libs/spring-context-3.2.9.RELEASE.jar
+ext-libs/spring-core-3.2.9.RELEASE.jar
+ext-libs/spring-expression-3.2.9.RELEASE.jar
+ext-libs/spring-ldap-core-1.3.1.RELEASE.jar
+ext-libs/spring-security-config-3.1.4.RELEASE.jar
+ext-libs/spring-security-core-3.1.4.RELEASE.jar
+ext-libs/spring-security-ldap-3.1.4.RELEASE.jar
+ext-libs/spring-security-web-3.1.4.RELEASE.jar
+ext-libs/spring-tx-3.0.5.RELEASE.jar
+ext-libs/spring-web-3.2.9.RELEASE.jar
+ext-libs/spring-webmvc-3.2.9.RELEASE.jar

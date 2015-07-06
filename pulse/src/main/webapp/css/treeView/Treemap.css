@@ -1,0 +1,115 @@
+
+#center-containerTree {
+  width:730px;
+  position:absolute;
+  left:0px;
+  top:34px;
+  height:350px;
+  background:#132634;
+}
+
+#TreeMap {
+    position:relative;
+    height:350px;
+    margin:auto;
+    overflow:hidden;
+	width:730px;
+}
+
+.node {
+  color:#fff;
+  font-size:9px;
+  overflow:hidden;
+  cursor:pointer;
+/*  
+  text-shadow:2px 2px 5px #000;
+  -o-text-shadow:2px 2px 5px #000;
+  -webkit-text-shadow:2px 2px 5px #000;
+  -moz-text-shadow:2px 2px 5px #000;
+*/
+}
+
+/*TOOLTIPS*/
+.tip {
+    color: #fff;
+    width: 190px;
+    background-color:#283649 !important;
+    border:1px solid #889eb9;
+    -moz-box-shadow:#555 2px 2px 8px;
+    -webkit-box-shadow:#555 2px 2px 8px;
+    -o-box-shadow:#555 2px 2px 8px;
+    box-shadow:#555 2px 2px 8px;
+    font-size:13px;
+	}
+
+.album {
+    width:100px;
+    margin:3px;
+}
+
+#id-list {
+	background-color:#EEEEEE;
+	border:1px solid #CCCCCC;
+	margin:10px 20px 0 20px;
+	padding:5px;
+	text-align:left;
+	text-indent:2px;
+}
+
+#id-list table {
+  margin-top:2px;
+}
+
+#back {
+  margin:10px 40px;
+}
+
+.button {
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  padding: 0.5em 1em 0.55em;
+  text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.3);
+  -webkit-border-radius: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: 0.5em;
+  -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.button:hover {
+  text-decoration: none;
+}
+
+.button:active {
+  position: relative;
+  top: 1px;
+}
+
+/* white */
+.white {
+  color: #606060;
+  border: solid 1px #b7b7b7;
+  background: #fff;
+  background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#ededed));
+  background: -moz-linear-gradient(top,  #fff,  #ededed);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ededed');
+}
+
+.white:hover {
+  background: #ededed;
+  background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#dcdcdc));
+  background: -moz-linear-gradient(top,  #fff,  #dcdcdc);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#dcdcdc');
+}
+
+.white:active {
+  color: #999;
+  background: -webkit-gradient(linear, left top, left bottom, from(#ededed), to(#fff));
+  background: -moz-linear-gradient(top,  #ededed,  #fff);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#ffffff');
+}
+

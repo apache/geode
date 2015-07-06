@@ -1,0 +1,66 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/security
+	http://www.springframework.org/schema/security/spring-security-3.1.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<http auto-config="true">
+
+		<!-- Can be invoked w/o auth -->
+		<intercept-url pattern="/Login.html" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/pulse/pulseVersion" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/pulse/authenticateUser" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/pulse/pulseProductSupport" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<!-- Can be invoked w/o auth -->
+
+		<!-- Restricted urls -->
+		<!-- Hide Data Browser tab for Pulse-Cheetah Release -->
+		<!-- <intercept-url pattern="/DataBrowser.html" access="ROLE_RESTRICTED" /> -->
+		<!-- Restricted urls -->
+
+		<!-- Can be invoked only with auth -->
+		<intercept-url pattern="/*.html" access="ROLE_USER,ROLE_GEMFIRETESTING,ROLE_PULSEUSER" />
+		<intercept-url pattern="/pulse/*" access="ROLE_USER,ROLE_GEMFIRETESTING,ROLE_PULSEUSER" />
+		<!-- Can be invoked only with auth -->
+
+		<form-login login-page="/Login.html"
+			authentication-failure-handler-ref="authenticationFailureHandler"
+			default-target-url="/clusterDetail.html" />
+
+		<logout logout-url="/pulse/clusterLogout" logout-success-url="/Login.html" />
+	</http>
+
+	<beans:bean id="authenticationFailureHandler"
+		class="org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler">
+		<beans:property name="exceptionMappings">
+			<beans:props>
+				<beans:prop key="org.springframework.security.authentication.BadCredentialsException">/Login.html?error=BAD_CREDS</beans:prop>
+				<beans:prop key="org.springframework.security.authentication.CredentialsExpiredException">/Login.html?error=CRED_EXP</beans:prop>
+				<beans:prop key="org.springframework.security.authentication.LockedException">/Login.html?error=ACC_LOCKED</beans:prop>
+				<beans:prop key="org.springframework.security.authentication.DisabledException">/Login.html?error=ACC_DISABLED</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+
+	<!-- Default user authentication based on in-memory user service -->
+	<beans:beans profile="pulse.authentication.default">
+		<authentication-manager>
+			<authentication-provider>
+				<user-service>
+					<user name="admin" password="admin" authorities="ROLE_USER" />
+				</user-service>
+			</authentication-provider>
+		</authentication-manager>
+	</beans:beans>
+
+	<!-- Custom user authentication specified externally -->
+	<beans:beans profile="pulse.authentication.custom">
+		<beans:import resource="classpath:pulse-authentication-custom.xml" />
+	</beans:beans>
+
+</beans:beans>

@@ -1,0 +1,55 @@
+
+input, select {
+    font-size:0.9em;
+}
+
+#container {
+  
+    margin:0 auto;
+    position:relative;
+}
+
+#center-container {
+    /*height:600px;*/
+    position:absolute;
+    top:0;
+}
+
+
+#center-container {
+    color: #CCCCCC;
+    /*left: 379px;*/
+    /*margin: 75px 0 0;*/
+   /* padding: 10px 0px 0;*/
+    /*width: 722px;
+    height: 461px;*/
+    position: relative;
+}
+
+#inner-details {
+    font-size:0.8em;
+    list-style:none;
+    margin:7px;
+}
+
+
+
+#infovis {
+    height: 410px;
+    overflow: hidden;
+    position: relative;
+    /*width: 660px;*/
+}
+
+/*TOOLTIPS*/
+.tip {
+    color: #fff;
+    width: 200px;
+    background-color:#283649 !important;
+    border:1px solid #889eb9;
+    -moz-box-shadow:#555 2px 2px 8px;
+    -webkit-box-shadow:#555 2px 2px 8px;
+    -o-box-shadow:#555 2px 2px 8px;
+    box-shadow:#555 2px 2px 8px;
+    font-size:13px;
+  }
