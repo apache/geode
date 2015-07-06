@@ -1,0 +1,48 @@
+/*!
+ * StyleSheet for JQuery Spliter Plugin
+ * Copyright (C) 2010 Jakub Jankiewicz <http://jcubic.pl>
+ *
+ * Same license as plugin
+ */
+.spliter_panel {
+  position: relative;
+}
+.spliter_panel .vspliter {
+    background:#0f1c25 url(../images/ver-spiltter-dot.png) no-repeat center center;
+    cursor: col-resize;
+    z-index:7;
+    width: 8px;
+	
+	
+}
+
+.spliter_panel .hspliter {
+    background:#0f1c25 url(../images/hor-spiltter-dot.png) no-repeat center center;
+    cursor: row-resize;
+    z-index: 7;
+    height: 8px;
+	*height: auto;
+}
+.spliter_panel .vspliter, .spliter_panel .left_panel, .spliter_panel .right_panel,
+.spliter_panel .hspliter, .spliter_panel .top_panel, .spliter_panel .bottom_panel {
+    position: absolute;
+   /* overflow: auto;*/
+}
+.spliter_panel .vspliter, .spliter_panel .left_panel, .spliter_panel .right_panel {
+  height: 100%;
+}
+.spliter_panel .hspliter, .spliter_panel .top_panel, .spliter_panel .bottom_panel {
+  width: 100%;
+}
+.spliter_panel .top_panel, .spliter_panel .left_panel, .spliter_panel .vspliter {
+   top: 0%;
+}
+.spliter_panel .top_panel, .spliter_panel .bottom_panel, .spliter_panel .left_panel, .spliter_panel .hspliter {
+   left: 0%;
+}
+.spliter_panel .bottom_panel {
+   bottom: 0%;
+}
+.spliter_panel .right_panel {
+   right: 0%;
+}

@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="pulse" default="usage" basedir=".">
+
+  <target depends="usage" name="help"/>
+
+  <target name="usage">
+    <description>Prints information about what can be built</description>
+
+    <echo>
+Commonly used targets:
+  build-product        Builds product into product dist 
+  pack-RNotes          Creates ReleaseNotes from RNDeltaNotes.txt 
+  compile-tests        Builds tests
+  run-tests            Run tests
+  precheckin           Does an update-svn, clean, build-all, run-tests
+  usage (or help)      Prints this help information
+
+Available targets:
+  build-all            Cleans, Compiles source and tests, and creates pulse warfile
+  clean                Cleans all byproducts of building
+
+Command Line Defines:
+  -DSOMESWITCH=dir     NOT IMPLEMENTED
+    </echo>
+  </target>
+
+  <!-- Property reference to environment variables -->
+  <property environment="myenv"/>
+
+  <taskdef resource="com/gemstone/tools/ant/taskdefs/buildtasks.properties"
+           classpath="${basedir}/buildfiles/taskdefsV10.jar"/>
+  <!-- determine machine and os, and if this is a 32 bit only or 64 bit only pla
+tform -->
+  <import file="buildfiles/osplatform.xml"/>
+
+  <property name="gcm.dir" value="${myenv.GCMDIR}"/>
+
+  <!-- import any properties defined in a properties file -->
+  <available file="${basedir}/build${gf.os}.properties" property="build.os.exists"/>
+  <conditional if="build.os.exists">
+    <echo message="Loading properties from ${basedir}/build${gf.os}.properties:" level="info"/>
+    <property file="${basedir}/build${gf.os}.properties"/>
+    <concat>
+      <filelist dir="${basedir}" files="build${gf.os}.properties"/>
+    </concat>
+  </conditional>
+
+  <available file="${basedir}/build.properties" property="build.props.exists"/>
+  <conditional if="build.props.exists">
+    <echo message="Loading properties from ${basedir}/build.properties:" level="info"/>
+    <property file="${basedir}/build.properties"/>
+    <concat>
+      <filelist dir="${basedir}" files="build.properties"/>
+    </concat>
+  </conditional>
+  
+  <!-- include external xml files here -->
+  <import file="buildfiles/dependencies.xml"/>
+  <import file="buildfiles/utilities.xml"/>
+
+  <property name="build.dir" value="${basedir}/build-artifacts"/>
+  <property name="osbuild.dir" value="${build.dir}/${gf.os}"/>
+  <property name="app.name"      value="pulse"/>
+  <property name="app.path"      value="/${app.name}"/>
+  <property name="pulse.version"   value="8.1.0"/>
+  <property name="target.dir"    value="${osbuild.dir}/target"/>
+  <property name="dist.dir"     value="${osbuild.dir}/dist"/>
+  <property name="src.dir"      value="${basedir}/src/main/java"/>
+  <property name="classes.dir"    value="${target.dir}/WEB-INF/classes"/>
+  <property name="tests.dir"    value="${basedir}/src/test/java"/>
+  <property name="tests.resources.dir"    value="${basedir}/src/test/resources"/>
+  <property name="tests.classes.dir"    value="${target.dir}/tests/classes"/>
+  <property name="tests.results.dir"    value="${target.dir}/tests/results"/>
+  <property name="web.dir"      value="${basedir}/src/main/webapp"/>
+  <property name="application.lib.home"      value="${web.dir}/WEB-INF/lib"/>
+  <property name="application.extlib.home"      value="${basedir}/ext-libs"/>
+  <property name="properties.dir"    value="${target.dir}/properties"/>
+  
+  <property name="compile.debug"       value="true"/>
+  <property name="compile.deprecation" value="false"/>
+  <property name="compile.optimize"    value="true"/> 
+  <property name="compile-gemfire.deprecation" value="off"/>
+ 
+  <path id="src.compile.classpath">
+    <!-- Application Libraries -->
+    <fileset dir="${application.extlib.home}">
+      <include name="*.jar"/>
+      <exclude name="selenium*.jar"/>
+      <exclude name="junit*.jar"/>
+    </fileset>
+  </path>
+
+  <path id="test.compile.classpath">
+    <pathelement location="${gcm.dir}/where/java/apache-tomcat/7.0.30/tomcat-embed-core.jar"/>
+    <pathelement location="${gcm.dir}/where/java/apache-tomcat/7.0.30/tomcat-embed-jasper.jar"/>
+    <pathelement location="${gcm.dir}/where/java/apache-tomcat/7.0.30/tomcat-embed-logging-juli.jar"/>        
+  	<pathelement location="${application.extlib.home}/commons-codec-1.6.jar"/>
+  	<pathelement location="${application.extlib.home}/commons-logging-1.1.3.jar"/>
+  	<pathelement location="${application.extlib.home}/fluent-hc-4.3.3.jar"/>
+  	<pathelement location="${application.extlib.home}/httpclient-4.3.3.jar"/>
+  	<pathelement location="${application.extlib.home}/httpclient-cache-4.3.3.jar"/>
+  	<pathelement location="${application.extlib.home}/httpcore-4.3.2.jar"/>
+  	<pathelement location="${application.extlib.home}/httpmime-4.3.3.jar"/>
+    <pathelement location="${application.extlib.home}/junit-4.10.jar"/>
+  	<pathelement location="${application.extlib.home}/selenium-server-standalone-2.41.0.jar"/>
+  </path>
+
+  <!-- TARGETS -->
+
+  <target name="build-run-tests" depends="build-all, run-tests"/>
+
+  <target name="precheckin" depends="update-svn, clean, build-all, run-tests"/>
+
+  <target name="build-all" depends="clean, build-product, compile-tests" description="Clean build and dist directories, then compile"/>
+
+  <target name="build-product-RNotes" depends="build-product, pack-RNotes" description="Compile and create dist with Release Notes"/>
+
+  <target name="build-product" depends="dist" description="Compile and create dist"/>
+
+  <target name="all" depends="build-all" description="Compile and create dist"/>
+
+  <target name="props">
+
+  <!-- these two lines get hostname without requiring cygwin on windows -->
+    <exec executable="hostname"
+          failifexecutionfails="false"
+          outputproperty="myenv.COMPUTERNAME"/>
+    <property name="host.name" value="${myenv.COMPUTERNAME}"/>
+
+    <echo message="osbuild.dir is ${osbuild.dir}" level="info"/>
+    <echo message="Running on ${host.name}" level="info"/>
+
+    <property name="compile-gemfire.deprecation" value="off"/>
+
+    <!-- Do not allow build artifacts to be place on the filer -->
+    <fail message="Build artifacts cannot reside on the filer (${osbuild.dir}).  Please use a build properties file">
+      <condition>
+        <contains string="${osbuild.dir}" substring="shared_build"
+                  casesensitive="false"/>
+      </condition>
+    </fail>
+
+    <mkdir dir="${osbuild.dir}"/>
+    <property name="src.dir" value="${basedir}/src"/>
+
+    <property name="last.update.file" value="lastUpdate.txt"/>
+    <property name="date.pattern" value="MM/dd/yyyy HH:mm:ss z"/>
+    
+    <tstamp>
+       <format pattern="yyyy-MM-dd-hh-mm-ss-SSS" property="sys.build.time"/>
+       <format pattern="${date.pattern}" property="build.time"/>
+    </tstamp>
+
+    <antcall target="make-last-update"/>
+    <!-- If svn was manually run then update lastUpdate.txt and build.number -->
+  	<uptodate property="makelastupdate.Required"
+      srcfile="${build.dir}/${last.update.file}"
+      targetfile="${basedir}/.svn/entries"/>
+
+    <conditional if="makelastupdate.Required">
+      <antcall target="make-last-update"/>
+      <property name="skipLastUpdate"  value="true"/>
+    </conditional>
+ 
+  </target>
+
+  <target name="clean" depends="props" description="Delete old build and dist directories">
+    <delete dir="${osbuild.dir}"/>
+  </target>
+  
+  <target name="prepare" depends="props">
+    <!-- Create staging directories as needed -->
+    <mkdir  dir="${target.dir}"/>
+    <mkdir  dir="${target.dir}/WEB-INF"/>
+    <mkdir  dir="${classes.dir}"/>
+ 
+    <!-- Copy static content, jsps and web.xml  of this web application -->
+    <copy todir="${target.dir}">
+      <fileset dir="${web.dir}"/>
+    </copy>
+ 
+    <!-- Copy external dependencies as required -->
+    <mkdir  dir="${target.dir}/WEB-INF/lib"/>
+ 
+  </target>
+
+  <target name="compile" depends="prepare" description="Compile Java sources"> 
+    <!-- Compile Java classes as necessary -->
+    <echo level="info" message="Compiling Pulse source..."/>
+    <javac srcdir="${src.dir}"
+          destdir="${classes.dir}"
+            debug="${compile.debug}"
+      deprecation="${compile.deprecation}"
+         optimize="${compile.optimize}" includeantruntime="false">
+        <classpath refid="src.compile.classpath"/>
+    </javac>
+    
+    <!-- Copy application resources -->
+    <copy  todir="${classes.dir}">
+      <fileset dir="${src.dir}" excludes="**/*.java"/>
+    </copy>
+  </target>
+  
+  <target name="dist" depends="compile" description="Create binary distribution">  
+    <!-- Copy Open Source File -->
+    <copy file="release/3rdparty_licenses/open_source_licenses-Pivotal_GemFire_Pulse_8.1.0.txt" tofile="${target.dir}/oslicenses.txt"/>
+
+    <!-- Copy dependent libs -->
+    <copy file="ext-libs/spring-security-core-3.1.4.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-security-web-3.1.4.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-security-config-3.1.4.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+
+    <copy file="ext-libs/spring-core-3.2.9.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-web-3.2.9.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-beans-3.2.9.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-context-3.2.9.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-expression-3.2.9.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-aop-3.2.9.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-webmvc-3.2.9.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+
+    <copy file="ext-libs/com.springsource.org.apache.commons.beanutils-1.8.0.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/com.springsource.org.apache.commons.collections-3.2.0.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/com.springsource.org.apache.commons.digester-1.8.1.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/com.springsource.org.apache.commons.logging-1.1.1.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/commons-lang-2.6.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-ldap-core-1.3.1.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-security-ldap-3.1.4.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/>
+    <copy file="ext-libs/spring-tx-3.0.5.RELEASE.jar" todir="${target.dir}/WEB-INF/lib"/> 
+
+
+    <copy file="src/main/resources/pulse-users.properties" todir="${target.dir}/WEB-INF/classes"/>
+
+   <!-- Copy All Locale files -->
+   <copy todir="${classes.dir}">
+    <fileset dir="src/main/resources">
+      <include name="**/LogMessages*.properties"/>
+      <!--<include name="**/pulse.properties"/>-->
+    </fileset>
+   </copy>
+
+    <!-- Product and internationalization files -->
+    <copy todir="${properties.dir}">
+      <fileset dir="src/main/resources">
+        <include name="**/default.properties"/>
+        <include name="**/gemfire.properties"/>
+        <include name="**/sqlfire.properties"/>
+      </fileset>
+    </copy>
+    
+    <!-- Create pulse.properties file for including in WAR -->
+    <property file="${build.dir}/${last.update.file}"/>
+    <property file="${build.dir}/build.number"/>
+    <propertyfile comment="Pulse Properties File" file="${classes.dir}/pulseversion.properties">
+      <entry key="pulse.version" value="${pulse.version}"/>
+      <entry key="Build-Id" value="${user.name} ${build.number}"/>
+      <entry key="Build-Date" value="${build.time}"/>
+      <entry key="Source-Date" value="${source.date}"/>
+      <entry key="Source-Revision" value="${source.revision}"/>
+      <entry key="Source-Repository" value="${source.branch}"/>
+    </propertyfile>
+
+    <!-- Create application JAR/WAR file -->
+    <jar jarfile="${dist.dir}/${app.name}-${pulse.version}.war"
+         basedir="${target.dir}"/>
+    
+  </target>
+
+  <target name="update-git" depends="props">
+    <description>Updates the sources to latest revision.</description>
+
+    <property name="git.logfile" value="update-git.log"/>
+    <property name="git.hist.logfile" value=".git-history.log"/>
+    <property name="git.branch" value=".git/.git-branch.log"/>
+    <delete file="${git.logfile}" quiet="true"/>
+
+    <!-- Need finally block for git pull because it may actually
+         perform a lot of updates before failing, and we want to capture
+         those in .git-history.log -->
+    <trycatch>
+      <try>
+        <exec executable="git" resultproperty="gitpullExitStatus" output="${git.logfile}">
+          <arg value="pull"/>
+        </exec>
+      </try>
+      <finally>
+        <exec executable="git" append="true" output="${git.logfile}">
+          <arg value="status"/>
+        </exec>
+      </finally>
+    </trycatch>
+
+    <condition property="gitpullFailed">
+      <equals arg1="${gitpullExitStatus}" arg2="1"/>
+    </condition>
+    <if>
+      <isset property="gitpullFailed"/>
+      <then>
+        <exec executable="cat" >
+          <arg value="${git.logfile}"/>
+        </exec>
+        <fail if="gitpullFailed" message="git pull failed. See ${git.logfile} for details."/>
+      </then>
+    </if>
+
+    <antcall inheritAll="true" target="make-last-update"/>
+
+    <concat append="true" fixlastline="true" destfile="${git.hist.logfile}" >
+==============================
+</concat>  <!-- Leave the two lines above as is so they concat properly -->
+
+    <concat append="true" fixlastline="true" destfile="${git.hist.logfile}">
+      <filelist dir="${basedir}" files="build-artifacts/build.number"/>
+      <filelist dir="${basedir}" files="${git.logfile}"/>
+    </concat>
+  </target>
+
+  <target name="rcs-init">
+    <available file=".git" type="dir" property="git.present"/>
+    <available file=".svn" type="dir" property="svn.present"/>
+  </target>
+
+  <target name="make-last-update" depends="rcs-init" unless="skipLastUpdate">
+    <description>Creates a file that contains the time at which the
+         GemFire checkout was last updated</description>
+
+    <mkdir dir="${build.dir}"/>
+
+    <!-- Make Last Update File with SVN workspace -->
+    <if>
+      <isset property="svn.present"/>
+      <then>
+        <delete file="${build.dir}/${last.update.file}" quiet="true"/>
+        <echo level="info" message="Querying SVN Workspace Information" />
+        <svnSetting client="cli" dateformatter="MM/dd/yyyy HH:mm:ss z" id="svn.settings"/>
+          <!-- Get svn info of the SVN workspace -->
+          <svn refid="svn.settings">
+            <info target="."/>
+          </svn>
+          <propertyregex property="source.branch"
+            input="${svn.info.url}"
+            regexp="^https\:\/\/svn\.gemstone\.com\/repos\/"
+            replace=""
+            casesensitive="false" />
+        </then>
+        <elseif>
+          <isset property="git.present"/>
+          <then>
+            <property name="git.status" value="${basedir}/.git/.git-status.log"/>
+            <echo level="info" message="Querying GIT Workspace Information..." />
+
+            <exec executable="git" failonerror="false" output="${git.status}">
+              <arg value="log"/>
+              <arg value="--grep=git-svn-id"/>
+              <arg value="-1"/>
+            </exec>
+
+            <exec executable="git" failonerror="false" outputproperty="GIT.source.branch">
+              <arg value="rev-parse"/>
+              <arg value="--abbrev-ref"/>
+              <arg value="HEAD"/>
+            </exec>
+            <exec executable="git" failonerror="false" outputproperty="GIT.source.revision">
+              <arg value="rev-parse"/>
+              <arg value="HEAD"/>
+            </exec>
+            <exec executable="git" failonerror="false" outputproperty="GIT.source.date">
+              <arg value="show"/>
+              <arg value="-s"/>
+              <arg value="--format=%cD"/>
+              <arg value="${GIT.source.revision}"/>
+            </exec>
+          </then>
+        </elseif>
+        <else>
+          <echo level="info" message="No revision control information found"/>
+        </else>
+    </if>
+
+    <!-- Load lastUpdate.txt properties with prefix to avoid setting -->
+    <property file="${build.dir}/${last.update.file}" prefix="PROP" prefixValues="true"/> 
+
+    <if>
+      <equals arg1="${GIT.source.revision}" arg2="${PROP.source.revision}" />
+      <then>
+        <echo message="Source revision hasn't changed. Skipping property file update..." />
+      </then>
+    <else>
+      <!-- Create LastUpdate Property File -->
+      <echo message="Updating build-artifacts property files..." level="info"/>
+
+      <property name="git.status" value="${basedir}/.git/.git-status.log"/>
+      <delete file="${git.status}" quiet="true"/>
+      <delete file="${build.dir}/${last.update.file}" quiet="true"/>
+
+      <propertyfile comment="Information about a checkout" file="${build.dir}/${last.update.file}">
+        <entry key="source.branch" value="${GIT.source.branch}"/>
+        <entry key="source.date" value="${GIT.source.date}"/>
+        <entry key="source.revision" value="${GIT.source.revision}"/>
+      </propertyfile>
+
+      <!-- This use to be the revision but is now a date string -->
+      <tstamp>
+        <format property="build.number" pattern="MMddyy"/>
+      </tstamp>
+
+      <delete file="${build.dir}/build.number" quiet="true"/>
+      <propertyfile comment="Build Number File" file="${build.dir}/build.number">
+        <entry key="build.number" value="${build.number}"/>
+      </propertyfile>
+    </else>
+   </if>
+
+   <!-- Load lastUpdate.txt to set properties and print banner -->
+   <property file="${build.dir}/${last.update.file}"/> 
+   <property file="${build.dir}/build.number"/>
+   <echo message="" level="info"/>
+   <echo message="=========================================" level="info"/>
+   <echo message="Version: ${pulse.version} ${user.name} ${build.number}" level="info"/>
+   <echo message="Source-branch: ${source.branch}" level="info"/>
+   <echo message="Source-Date: ${source.date}" level="info"/>
+   <echo message="Source-Revision: ${source.revision}" level="info"/>
+   <echo message="=========================================" level="info"/>
+
+  </target>
+
+  <target name="update-svn" depends="props">
+    <description>Updates the current checkout revision.</description>
+
+    <property name="svn.logfile" value="update-svn.log"/>
+    <property name="svn.hist.logfile" value=".svn-history.log"/>
+    <delete file="${svn.logfile}" quiet="true"/>
+
+    <!-- Need finally block for svn update because it may actually
+         perform a lot of updates before failing, and we want to capture
+         those in .svn-history.log -->
+    <trycatch>
+      <try>
+        <exec executable="svn" failonerror="true" output="${svn.logfile}">
+          <arg value="update"/>
+          <arg value="--accept"/>
+          <arg value="postpone"/>
+        </exec>
+      </try>
+      <finally>
+        <exec executable="svn" append="true" output="${svn.logfile}">
+          <arg value="status"/>
+        </exec>
+      </finally>
+    </trycatch>
+    <antcall target="make-last-update"/>
+
+    <concat append="true" fixlastline="true" destfile="${svn.hist.logfile}" >
+==============================
+</concat>  <!-- Leave the two lines above as is so they concat properly -->
+
+    <concat append="true" fixlastline="true" destfile="${svn.hist.logfile}">
+      <filelist dir="${basedir}" files="build-artifacts/build.number"/>
+      <filelist dir="${basedir}" files="${svn.logfile}"/>
+    </concat>
+
+    <echo message="Checking for update conflicts in ${svn.logfile}" level="info"/>
+
+    <exec executable="grep" resultproperty="grepExitStatus">
+      <arg value="^C "/>
+      <arg value="${svn.logfile}"/>
+    </exec>
+    <condition property="grepFailed">
+      <equals arg1="${grepExitStatus}" arg2="0"/>
+    </condition>
+
+    <fail if="grepFailed" message="SVN update conflicts detected."/>
+  </target>
+
+  <target name="pack-RNotes" depends="props">
+    <delete file="${dist.dir}/Pulse_${pulse.version}_ReleaseNotes.txt" quiet="true"/>
+    <property file="${build.dir}/build.number"/>
+    <property file="${build.dir}/lastUpdate.txt"/>
+
+    <copy file="${basedir}/release/docfiles/ReleaseNotes.txt"
+            tofile="${dist.dir}/Pulse_${pulse.version}_ReleaseNotes.txt"/>
+
+    <concat append="true" fixlastline="true" destfile="${dist.dir}/Pulse_${pulse.version}_ReleaseNotes.txt" >
+--------------------------------
+ Changes in ${pulse.version} ${user.name} ${build.number}
+ Source-Revision=${source.revision}
+ Build-Date=${build.time}
+--------------------------------
+</concat>
+
+    <concat append="true" fixlastline="true" destfile="${dist.dir}/Pulse_${pulse.version}_ReleaseNotes.txt">
+      <filelist dir="${basedir}" files="RNDeltaChanges.txt"/>
+    </concat>
+
+    <!-- Place updates of files with intention they can be checked in -->
+    <replace file="${dist.dir}/Pulse_${pulse.version}_ReleaseNotes.txt">
+      <replacetoken><![CDATA[#]]></replacetoken>
+      <replacevalue><![CDATA[]]></replacevalue>
+    </replace>
+
+    <replace file="${dist.dir}/Pulse_${pulse.version}_ReleaseNotes.txt">
+      <replacetoken><![CDATA[
+ Please keep text to 78 char width - no wider than this 
+]]></replacetoken>
+      <replacevalue><![CDATA[]]></replacevalue>
+    </replace>
+
+    <copy file="${dist.dir}/Pulse_${pulse.version}_ReleaseNotes.txt"
+       tofile="${basedir}/release/docfiles/ReleaseNotes.txt.UPDATE"/>
+
+    <copy file="${basedir}/RNDeltaChanges.txt"
+       tofile="${basedir}/RNDeltaChanges.txt.UPDATE"/>
+  </target>
+
+  <target name="compile-tests" depends="compile">
+    
+    <mkdir dir="${tests.classes.dir}"/>
+    <echo level="info" message="Compiling Pulse tests..."/>
+    <javac srcdir="${tests.dir}"
+           destdir="${tests.classes.dir}"
+           debug="${compile.debug}"
+           deprecation="${compile.deprecation}"
+           optimize="${compile.optimize}" 
+           includeantruntime="false"
+           fork="yes"
+           verbose="no">
+        <classpath>
+          <path refid="test.compile.classpath"/>
+          <pathelement location="${target.dir}/WEB-INF/classes"/>
+        </classpath>  
+    </javac>
+  
+  </target>
+  
+  <!-- Automate deployment of Pulse to standalone tomcat server -->
+  <target name="run-tests" depends="compile-tests">
+    <!-- Set default properties for pulse.url-->
+    <property name="pulsewarfile" value="${dist.dir}/${app.name}-${pulse.version}.war"/>
+
+    <mkdir dir="${tests.results.dir}"/>
+    <echo level="info" message="Running Tests..."/>
+
+    <!-- Currently there are only GUI (web browser) tests which require access to Pulse running -->
+    <junit printsummary="yes" 
+           failureProperty="tests.failed"
+           haltOnFailure="false">
+      <assertions>
+        <enable/>
+      </assertions>
+      <sysproperty key="pulse.propfile" value="${tests.resources.dir}/test.properties"/>
+      <sysproperty key="pulse.war" value="${pulsewarfile}"/>
+      <sysproperty key="pulse-host" value="${pulse-host}"/>
+      <sysproperty key="pulse-port" value="${pulse-port}"/>
+      <sysproperty key="pulse-context" value="${pulse-context}"/>
+      <sysproperty key="pulse-product" value="${pulse-product}"/>
+      
+      <!-- TODO : Add here a sysproperty to send in a parameter whether we are running run-tests for 'GemFire' OR 'GemFireXD'  -->
+      <classpath>
+        <pathelement location="${tests.classes.dir}"/>
+        <pathelement location="${tests.resources.dir}"/>
+      	<pathelement location="${classes.dir}"/>
+      	<pathelement location="${gcm.dir}/where/java/apache-tomcat/7.0.30/tomcat-embed-core.jar" />
+	  	<pathelement location="${gcm.dir}/where/java/apache-tomcat/7.0.30/tomcat-embed-jasper.jar" />
+	  	<pathelement location="${gcm.dir}/where/java/apache-tomcat/7.0.30/tomcat-embed-logging-juli.jar" />
+      	<fileset dir="${application.extlib.home}">
+      	     <include name="com.springsource.org.apache.commons.beanutils-1.8.0.jar"/>
+      		<include name="com.springsource.org.apache.commons.collections-3.2.0.jar"/>
+      		<include name="com.springsource.org.apache.commons.digester-1.8.1.jar"/>
+      		<include name="com.springsource.org.apache.commons.logging-1.1.1.jar"/>
+      		<include name="junit-4.10.jar"/>
+      		<include name="servlet-api-2.5-20081211.jar"/>
+      		<include name="spring-aop-3.2.9.RELEASE.jar"/>      		
+       		<include name="spring-beans-3.2.9.RELEASE.jar"/>
+      		<include name="spring-core-3.2.9.RELEASE.jar"/>
+      		<include name="spring-security-config-3.1.4.RELEASE.jar"/>
+      		<include name="spring-expression-3.2.9.RELEASE.jar"/>
+      		<include name="spring-context-3.2.9.RELEASE.jar"/>
+      		<include name="spring-security-core-3.1.4.RELEASE.jar"/>
+      		<include name="spring-security-web-3.1.4.RELEASE.jar"/>
+      		<include name="spring-web-3.2.9.RELEASE.jar"/>
+      		<include name="spring-webmvc-3.2.9.RELEASE.jar"/>
+      		<include name="selenium-server-standalone-2.41.0.jar"/>
+      	</fileset>
+      </classpath>
+
+      <formatter type="plain"/>
+
+      <batchtest fork="yes" todir="${tests.results.dir}">
+        <fileset dir="${tests.dir}">
+          <include name="**/*Tests.java"/>
+        	<include name="**/*Test.java"/>
+          <exclude name="**/AllTests.java"/>
+        	<exclude name="**/Base*.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+
+    <conditional if="tests.failed">
+      <echo message="FAILED: Test failures in ${tests.results.dir}" level="error"/>
+      <echo append="true" file="${tests.results.dir}/TestFailures" message="FAILED: Test failures in ${tests.results.dir}" level="error"/>
+      <fail message="FAILED: One or more tests failed"/>
+    </conditional>
+  
+  </target>
+</project>

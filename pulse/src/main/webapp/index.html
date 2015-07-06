@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Pulse</title>
+
+    <!--  CSS Files -->
+    <!-- <link rel="stylesheet" type="text/css" href="css/jquery.min.css" /> -->
+    <!--  END CSS FILES -->  
+    
+    <!-- JS FILES -->
+    <script type="text/javascript" src="scripts/lib/jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="scripts/lib/jquery.i18n.properties.js"></script>
+    <script  type="text/javascript" src="scripts/pulsescript/common.js"></script>
+    <script  type="text/javascript" src="scripts/pulsescript/pages/index.js"></script>
+    <!-- END JS FILES -->
+    <script type="text/javascript">
+    function redirectPage(){
+      var paramHost = GetParam("host");
+      var paramPort = GetParam("port");
+      
+      //set host value in cookie 
+      if(paramHost != ''){
+        setCookie('host', paramHost, 5)
+      }else{
+        setCookie('host', '', -5)
+      }
+      
+      //set port value in cookie 
+      if(paramPort != ''){
+        setCookie('port', paramPort, 5)
+      }else{
+        setCookie('port', '', -5)
+      }
+      
+      // redirect user on Login Page 
+      window.location.href = "Login.html";
+    }
+    </script>
+</head>
+<body onload="redirectPage();">
+    <!-- <div class="example-content">
+	    <input type="button" value="English" onclick="javascript: changeLocale('', 'index');"></input>
+	    <input type="button" value="French" onclick="javascript: changeLocale('fr', 'index');"></input>
+    </div>
+      
+    <div><p><span id="I18NTEXT"> </span></p></div> -->
+</body>
+</html>

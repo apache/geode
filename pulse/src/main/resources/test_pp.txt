@@ -1,0 +1,7 @@
+{"result":[
+  ["boolean[]",[true,true,true]],
+  ["boolean[]",[false,false,false]],
+  ["boolean[]",[false,false,false]],
+  ["boolean[]",[true,true,true]],
+  ["boolean[]",[false,false,false]]
+]}
