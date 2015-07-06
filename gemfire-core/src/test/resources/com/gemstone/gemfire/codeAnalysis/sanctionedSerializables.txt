@@ -231,6 +231,7 @@ com/gemstone/gemfire/cache/util/ServerRefusedConnectionException,true,-499632702
 com/gemstone/gemfire/cache/util/UnknownVersionException,true,7379530185697556990
 com/gemstone/gemfire/cache/util/VersionException,false
 com/gemstone/gemfire/cache/wan/GatewaySender$OrderPolicy,false
+com/gemstone/gemfire/cache/util/Gateway$OrderPolicy,false
 com/gemstone/gemfire/compression/CompressionException,true,4118639654597191235
 com/gemstone/gemfire/compression/SnappyCompressor,true,496609875302446099
 com/gemstone/gemfire/distributed/AbstractLauncher$Status,false,description:java/lang/String
