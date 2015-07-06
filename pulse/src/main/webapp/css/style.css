@@ -1,0 +1,3048 @@
+/*fonts*/
+@font-face {
+	font-family: 'DroidSansRegular';
+	src: url('fonts/DroidSans-webfont.eot?') format('eot'),
+		url('fonts/DroidSans-webfont.woff') format('woff'),
+		url('fonts/DroidSans-webfont.ttf') format('truetype'),
+		url('fonts/DroidSans-webfont.svg#webfont6rGBoMAO') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'DroidSansBold';
+	src: url('fonts/DroidSans-Bold-webfont.eot?') format('eot'),
+		url('fonts/DroidSans-Bold-webfont.woff') format('woff'),
+		url('fonts/DroidSans-Bold-webfont.ttf') format('truetype'),
+		url('fonts/DroidSans-Bold-webfont.svg#webfontSruMVOI5') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/*----------------------------Main Structure starts---------------------------------------*/
+body {
+	background: #0f1c25 url(../images/bg-image.png) repeat-x left top;
+	font-family: 'DroidSansRegular', Arial, sans-serif;
+	font-size: 13px;
+	color: #cfd2d3;
+}
+
+.bodyLoginBg {
+	background: #0f1c25 url(../images/bg-imageLogin.png) repeat-x left top
+		!important;
+	font-family: 'DroidSansRegular', Arial, sans-serif;
+	font-size: 13px;
+	color: #cfd2d3;
+}
+
+.header {
+	height: 49px;
+	float: left;
+	width: 100%
+}
+
+.headerTopLinksMaster {
+	height: 25px;
+}
+
+.headerTopLinks {
+	color: #808080;
+	padding: 6px 7px 5px 7px;
+}
+
+.welcomeLabelPRZero {
+	padding-right: 0px !important
+}
+
+.font-size12 {
+	font-size: 12px;
+}
+
+.headerTopSeperator {
+	color: #4d4d4d;
+	height: 25px;
+	width: 1px;
+	background: url(../images/seperator.png) no-repeat center center
+}
+
+/*about */
+.aboutClicked-Off {
+	cursor: pointer;
+	display: block;
+}
+
+.aboutClicked-On {
+	background: #506d94;
+	color: #dce2ea !important
+}
+
+.aboutBlock {
+	background: #202e3d;
+	position: absolute;
+	right: 0px;
+	top: 25px;
+	border: 1px solid #546579;
+	z-index: 999;
+	width: 610px;
+	padding: 20px;
+	box-shadow: #1a222e 0px 3px 2px;
+}
+
+.aboutDetailsBlock {
+	width: 610px;
+	float: left
+}
+
+.marginBottom30 {
+	margin-bottom: 30px;
+}
+
+.aboutVersionBlock {
+	color: #899095;
+	padding-left: 23px;
+	font-size: 11px;
+}
+
+.aboutVersionBlock a {
+	color: #899095;
+	text-decoration: underline
+}
+
+.aboutText {
+	width: 405px;
+	color: #899095;
+	line-height: 20px;
+}
+
+.copyright {
+	color: #636c78;
+	font-size: 12px;
+	padding-bottom: 8px;
+}
+
+.termsBlock {
+	color: #818891;
+	font-size: 12px;
+}
+
+.termsBlock a {
+	color: #818891;
+	text-decoration: underline
+}
+
+.termsBlockLink {
+	color: #818891;
+	text-decoration: underline;
+	font-size: 12px;
+}
+
+.termsBlockLink:hover {
+	color: #818891;
+}
+
+#canvasWidth {
+	margin: 0px auto;
+	width: 1258px
+}
+
+#loginWidth {
+	margin: 0px auto;
+	width: 1000px
+}
+
+#dataView {
+	margin: 0px auto;
+	width: 1000px
+}
+
+.textbold {
+	font-family: /*'DroidSansBold',*/ Arial, sans-serif;
+	font-weight: bold
+}
+
+/* version details*/
+.versionDetailsOuterBlock {
+	background: #202e3d;
+	position: absolute;
+	right: 90px;
+	top: 150px;
+	border: 1px solid #546579;
+	z-index: 9999;
+	width: 400px;
+	padding: 20px;
+	box-shadow: #1a222e 0px 3px 2px;
+}
+
+.versionDetailsBlock {
+	width: 400px;
+	float: left;
+	color: #899095;
+	line-height: 20px;
+}
+
+/*---------------------------- Main Structure ends---------------------------------------*/
+
+/*----------------------------Header ends---------------------------------------*/
+.logoBlock {
+	background: url(../images/pivotal-logo.png) no-repeat center center;
+	width: 198px;
+	height: 36px;
+	cursor: pointer;
+	margin: 6px 0px
+}
+
+.logoBlock a {
+	visibility: hidden;
+	display: block;
+	height: inherit
+}
+
+.HeaderLink {
+	background: #d8d9da;
+	color: #545454;
+	padding: 16px 19px 16px 19px;
+	margin: 0px 0px 0px 0px;
+	font-size: 14px;
+	border-left: 1px solid #fff
+}
+
+.HeaderLink:first-child {
+	border-left: none
+}
+
+.HeaderLink:hover {
+	color: #0363a0
+}
+
+.HeaderLinkActive {
+	background: #0f1c25;
+	color: #cfd2d3;
+}
+
+.HeaderLinkActive:hover {
+	color: #cfd2d3;
+	cursor: default
+}
+
+/*----------------------------Top Navigation starts---------------------------------------*/
+.linkButton {
+	background: #202b39;
+	border-top: 1px solid #37414d;
+	color: #81878f;
+	padding: 8px 21px;
+	font-size: 13px
+}
+
+.linkButton:hover {
+	background: #132634;
+	color: #81878f;
+}
+
+/*Tabs*/
+.TabTopPanel {
+	background: #202b39;
+	border-top: 1px solid #37414d;
+	color: #81878f;
+	font-size: 13px;
+	width: 245px;
+}
+
+.TabTopPanelInnerBlock {
+	line-height: 31px;
+	background: url(../images/tab-bottom-bg.png) repeat-x left bottom;
+}
+
+.TopTabLink {
+	padding: 9px 22px;
+	color: #d0d4d6;
+	border-top: 1px solid transparent
+}
+
+.TopTabLink:hover {
+	color: #d0d4d6;
+}
+
+.TopTabLinkActive {
+	background: #132634;
+	border: 1px solid #2b3c49;
+	padding: 9px 22px;
+	border-bottom: 0px;
+}
+
+.notification {
+	background: #b63800;
+	font-size: 11px;
+	color: #fff;
+	line-height: 11px;
+	right: 0px;
+	top: -1px;
+	border-radius: 8px;
+	padding: 2px 4px;
+	box-shadow: 0px 1px 0px 0px #091319;
+	min-width: 15px;
+	text-align: center
+}
+
+.tabAll {
+	padding: 0px 5px
+}
+
+.tabError {
+	background: url(../images/error-msg-icon.png) no-repeat center center;
+	padding: 1px 5px
+}
+
+.tabWarning {
+	background: url(../images/warning-msg-icon.png) no-repeat center center;
+	padding: 1px 5px
+}
+
+.tabSevere {
+	background: url(../images/severe-msg-icon.png) no-repeat center center;
+	padding: 1px 6px
+}
+
+.tabInfo {
+	background: url(../images/info-msg-icon.png) no-repeat center center;
+	padding: 1px 6px
+}
+
+.topTabBlock {
+	background: #132634;
+	border: 1px solid #2b3c49;
+	left: 0px;
+	top: 31px;
+	border-top: 0px;
+	width: 243px;
+	z-index: 99
+}
+
+.scroll-pane {
+	width: 230px;
+	height: 728px;
+	overflow: auto;
+	margin: 5px 3px 5px 10px;
+}
+
+.scroll-pane_1 {
+	width: 228px;
+	height: 150px;
+	overflow: auto;
+	margin: 5px 3px 5px 10px;
+}
+
+.tabMessageMasterBlock {
+	margin: 15px 0px;
+	padding: 0px 10px 0px 20px;
+	font-size: 12px;
+}
+
+.tabMessageHeadingBlock {
+	color: #d0d4d6;
+	margin-bottom: 5px;
+}
+
+.tabMessageHeadingAckBlock {
+	color: #89939a;
+	margin-bottom: 5px;
+}
+
+.tabMessageDetailsBlock {
+	color: #89939a;
+	line-height: 16px;
+}
+
+.tabMessageDateBlock {
+	color: #515f69;
+	margin-top: 10px;
+}
+
+.errorMessageBlock {
+	background: url(../images/error-msg-icon.png) no-repeat left top;
+}
+
+.warningMessageBlock {
+	background: url(../images/warning-msg-icon.png) no-repeat left top;
+}
+
+.severeMessageBlock {
+	background: url(../images/severe-msg-icon.png) no-repeat left top;
+}
+
+.infoMessageBlock {
+	background:url(../images/info-msg-icon.png) no-repeat left top;
+}
+
+.clearButton {
+	margin: 10px 5px 5px;
+	float: right;
+}
+
+.clearButton .linkButton {
+	background: transparent;
+	border-top: 0px;
+	padding: 0px 10px;
+	text-decoration: underline
+}
+
+.clearButton .linkButton:hover {
+	color: #fff
+}
+
+.loadMoreButton {
+	margin: 10px 5px 5px;
+	float: right;
+	display: none;
+}
+
+.loadMoreButton .linkButton {
+	background: transparent;
+	border-top: 0px;
+	padding: 0px 10px;
+	text-decoration: underline;
+}
+
+.loadMoreButton .linkButton:hover {
+	color: #fff;
+}
+
+/*----------------------------Top Navigation ends---------------------------------------*/
+
+/*----------------------------Middle starts---------------------------------------*/
+.middleTopologyBlock {
+	width: 760px;
+	float: left;
+}
+
+.leftBlockCanvas {
+	width: 1002px;
+}
+
+.statusmasterBlock {
+	background: #202b39;
+	border-top: 1px solid #37414d;
+	margin-bottom: 10px;
+	float: left;
+	width: 1002px;
+}
+
+.statusFirstBlock {
+	border-right: 1px solid #3c4a5b;
+	padding: 20px;
+}
+
+.rightBlockCanvas {
+	width: 242px;
+	float: right
+}
+
+.canvasBlockLarge {
+	background: #132634;
+	width: 748px;
+}
+
+.canvasBlockLargeContent {
+	padding: 10px 0px;
+	width: 748px;
+	min-height: 420px;
+}
+
+.canvasBlockLargeGridContent {
+	padding: 10px 0px;
+	width: 748px;
+	min-height: 250px;
+}
+
+.canvasBlock {
+	background: #132634;
+	width: 242px;
+}
+
+.canvasBlockInnerBlock {
+	background: #202b39;
+	border-top: 1px solid #37414d;
+	border-bottom: 1px solid #0f1c25;
+}
+
+.canvasHeading {
+	text-transform: uppercase;
+	text-shadow: -1px -1px #161e28;
+	font-size: 14px;
+	color: #ababab;
+	padding: 11px 0px
+}
+
+.canvasInnerBlock {
+	border-top: 1px solid #2b3c49
+}
+
+.canvasContentBlock {
+	padding: 10px 0px;
+	width: 242px;
+	min-height: 150px;
+}
+
+/* start - Change suggested by VMWARE for key stats widget, dt: 17Oct2012 */
+.canvasBlockKeyStats {
+	background: #132634;
+	width: 495px;
+}
+
+.width495 {
+	width: 495px
+}
+
+.canvasContentBlockKeyStats {
+	padding: 10px 0px;
+	width: 495px;
+	min-height: 150px;
+}
+
+.lineGraphKeyStats {
+	width: 300px;
+	margin-right: 10px
+}
+/* end - Change suggested by VMWARE for key stats widget, dt: 17Oct2012 */
+.statusUpDowmBlock {
+	padding: 8px 0px 8px 25px;
+	color: #89939a;
+	margin: 0px 10px;
+}
+
+.statusUp {
+	background: url(../images/status-up.png) no-repeat left 6px;
+}
+
+.statusDown {
+	background: url(../images/status-down.png) no-repeat left 6px;
+}
+
+.width242 {
+	width: 242px
+}
+
+.width225 {
+	width: 225px
+}
+
+.graphBlocksContent {
+	padding: 5px 10px 5px 10px;
+	color: #89939a;
+}
+
+.graphChart {
+	width: 232px;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.graphChart img {
+	width: 100%
+}
+
+.lineGraph {
+	width: 100px;
+	margin-right: 10px
+}
+
+.lineGraph img {
+	width: 100%
+}
+
+.minusIcon {
+	background: url(../images/minus.png) no-repeat center center;
+	width: 16px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px
+}
+
+.plusIcon {
+	background: url(../images/plus.png) no-repeat center center;
+	width: 16px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px
+}
+
+.borderLeftToggleBlock {
+	border-left: 1px solid #172735
+}
+
+.graphIcon {
+	background: url(../images/graph.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+}
+
+.graphIconActive {
+	background: url(../images/graph-active.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+}
+
+.chartIcon {
+	background: url(../images/chart.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+}
+
+.chartIconActive {
+	background: url(../images/chart-active.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+}
+
+.gridIcon {
+	background: url(../images/grid.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+	border-right: 1px solid #3c4a5b
+}
+
+.gridIconActive {
+	background: url(../images/grid-active.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+	border-right: 1px solid #3c4a5b
+}
+
+.chartBlocksPanel,.graphBlocksPanel {
+	padding: 0px 10px 0px 10px;
+	color: #89939a;
+	width: 728px;
+}
+
+.gridBlocksPanel {
+	padding: 0px 0px 0px 0px;
+	color: #89939a;
+	width: 747px;
+	margin-top: 0px
+}
+/*graph color Code*/
+.colorCodeBlock {
+	width: 12px;
+	height: 12px;
+	display: block
+}
+
+.colorCodeBlockOnPopup {
+	width: 9px;
+	height: 9px;
+	display: block
+}
+
+.managerCode {
+	background: #0077F0;
+}
+
+.locatorsCode {
+	background: #8071B4;
+}
+
+.severeCode {
+	background: #B07C2A;
+}
+
+.colorCode-ffae00 {
+	background: #ffae00;
+}
+
+.diskReadsCode {
+	background: #FAB948; /*background:#87b025;*/
+}
+
+.diskWritesCode {
+	background: #2e84bb;
+}
+
+.topologyGraph {
+	width: 410px;
+	margin: -2px auto;
+	text-align: center
+}
+
+.topologyGraph img {
+	width: 100%
+}
+
+.treeViewGraphClusterView {
+	width: 730px;
+	margin: 0px auto;
+	text-align: center;
+	cursor: pointer;
+}
+
+.treeViewGraph {
+	width: 730px;
+	margin: 0px auto;
+	text-align: center
+}
+
+.treeViewGraph img {
+	width: 100%
+}
+/*Normal*/
+.statusMasterBlock {
+	padding-left: 40px;
+	font-size: 23px;
+}
+
+.normalStatus {
+	background: url(../images/normal-status-icon.png) no-repeat left top;
+	color: #87b025;
+}
+
+.errorStatus {
+	background: url(../images/error-status-icon.png) no-repeat left top;
+	color: #c86a17;
+}
+
+.warningStatus {
+	background: url(../images/warning-status-icon.png) no-repeat left top;
+	color: #e9c63c;
+}
+
+.severeStatus {
+	background: url(../images/severe-status-icon.png) no-repeat left top;
+	color: #b82811;
+}
+
+.labeltext {
+	color: #949ba4;
+	font-size: 13px
+}
+
+.borderRightDarkBlue {
+	border-left: 1px solid #172735;
+}
+
+.detailsBlock {
+	padding: 20px 10px;
+	float: left;
+	text-align: center
+}
+
+/*search Block*/
+.searchBlockMaster {
+	background: #0f1c25;
+	width: 171px;
+	float: right;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 0 #27333b;
+	height: 25px;
+}
+
+.searchButton {
+	width: 18px;
+	height: 18px;
+	background: url(../images/searchIcon.png) center center no-repeat;
+	border: 0px;
+	cursor: pointer;
+	float: left;
+	margin: 4px;
+}
+
+.searchBox {
+	float: left;
+	width: 135px;
+	padding: 3px !important;
+	height: 19px;
+	border: 0px !important;
+	background: #0f1c25;
+	color: #b7b9bb !important
+}
+
+/*login Block*/
+.loginMasterBlock {
+	width: 275px;
+	margin: 130px auto 0px
+}
+
+.pulseBottomSpace {
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.loginInnerBlock {
+	background: #202b39;
+	border-radius: 3px;
+	box-shadow: 0 -1px 0 0 #37414d;
+	padding: 28px;
+}
+
+.inputUserName {
+	background: #0f1c25;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 0 #27333b;
+	padding: 10px !important;
+	border: 0px !important;
+	width: 200px;
+	margin-bottom: 5px;
+	color: #b7b9bb !important
+}
+
+.inputPassword {
+	background: #0f1c25;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 0 #27333b;
+	padding: 10px !important;
+	border: 0px !important;
+	width: 200px;
+	margin-bottom: 5px;
+	color: #b7b9bb !important;
+	outline: none
+}
+
+.signInButton {
+	background: #153c71;
+	border-radius: 3px;
+	border: 0px !important;
+	box-shadow: 0 -1px 0 0 #2d507f;
+	color: #8a9eb8;
+	font-size: 15px;
+	text-align: center;
+	padding: 8px 0px;
+	width: 100%;
+	margin-top: 5px;
+	text-transform: uppercase;
+	cursor: pointer
+}
+
+.signInButton:hover {
+	background: #164381
+}
+
+/*Placeholder*/
+::-webkit-input-placeholder {
+	color: #515F69 !important
+}
+
+:-moz-placeholder {
+	color: #515F69 !important
+}
+
+:-ms-input-placeholder {
+	color: #515F69 !important
+}
+
+.placeholder {
+	color: #515F69 !important
+}
+
+/*error Message master block*/
+.errorMasterBlock {
+	border-bottom: 1px solid #37414d;
+	background: #293b4e;
+	border-radius: 3px 3px 0px 0px;
+	box-shadow: 0 -1px 0 0 #37414D;
+	padding: 10px 12px;
+}
+
+.errorInnerIcon {
+	background: url(../images/error-message-icon.png) no-repeat left top;
+	padding: 0px 0px 0px 29px;
+	line-height: 18px;
+	color: #949da7;
+}
+
+.errorInnerIcon span {
+	display: block
+}
+/*Connection Lost*/
+.connectionLostMasterBlock {
+	position: relative;
+	margin: 0px auto;
+	width: 234px;
+}
+
+.connectionLostInnerBlock {
+	background: #d9d082;
+	padding: 8px;
+	position: absolute;
+	top: 75px;
+	color: #424028;
+	width: 250px;
+}
+
+.connectionLostInnerBlock a {
+	text-decoration: underline;
+	color: #424028;
+}
+
+.connectionLostInnerBlock a:hover {
+	color: #424028;
+}
+
+.linkSeperator {
+	padding: 0px 5px;
+}
+
+/*popup*/
+.detailsBlock-popup {
+	padding: 10px 10px;
+	float: left;
+	text-align: center;
+	min-width: 70px
+}
+
+.firstPaddingLeftZero {
+	padding-left: 0px !important
+}
+
+.lastPaddingLeftZero {
+	padding-right: 0px !important
+}
+
+.popupHeading {
+	background: #142e41;
+	padding: 8px 10px;
+	color: #8a97a0;
+	border-bottom: 1px solid #586a81;
+	width: 89%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.popupFirstRow {
+	padding: 10px;
+	width: 180px;
+	float: left
+}
+
+.popupFirstRowBorder {
+	float: left;
+	border-bottom: 1px solid #4e6277;
+	width: 100%;
+	padding: 5px 0px 10px 0px
+}
+
+.perDivWidth {
+	width: 150px;
+}
+
+.perInnerBlock {
+	width: 85px;
+	float: left;
+	height: 14px;
+	margin: 5px 5px 5px 0;
+}
+
+.perInnerPanel {
+	width: 100%;
+	background: #fff;
+	float: left
+}
+
+.perShowBlock {
+	background: #7a9e25;
+	diaplay: inline-block;
+	float: left
+}
+
+.perValueDisplay {
+	color: #7a9e25;
+	font-size: 25px;
+	display: inline-block;
+	float: left
+}
+
+.fontSize15 {
+	font-size: 15px
+}
+
+.popupSecondRow {
+	float: left;
+	width: 100%;
+	padding: 5px 0px;
+}
+
+.swappingEnabledBlock {
+	background: #1c2633;
+	border-radius: 3px;
+	text-align: center;
+	color: #8e9399;
+	float: left;
+	width: 100%;
+	padding: 5px 0;
+}
+
+.popupStatusmasterBlock {
+	background: #202b39;
+	border-top: 1px solid #37414d;
+	margin-bottom: 2px;
+	float: left;
+	width: 277px;
+}
+
+.popupdetailsBlock {
+	padding: 2px 2px;
+	float: left;
+	text-align: center;
+	width: 87px;
+}
+
+.tooltip .popupcontent {
+	background: #132634;
+	border: 1px solid #889eb9;
+	width: 277px;
+	min-height: 60px;
+}
+
+.popupCanvasContentBlock {
+	padding: 10px 0px;
+	width: 277px;
+	min-height: 150px;
+}
+
+
+/*member Details*/
+.detailsBlock-member {
+	padding: 5px 3px;
+	float: left;
+	width: 70px;
+	text-align: left !important;
+	word-wrap: break-word;
+}
+
+.endPointMasterBlock {
+	margin-top: 15px;
+	width: 242px
+}
+
+.pointHeading {
+	border-bottom: 1px solid #11202b;
+	float: left;
+	width: 100%
+}
+
+.pointTextHeading {
+	color: #d0d4d6;
+	text-transform: uppercase;
+	padding: 8px 10px;
+	float: left
+}
+
+.pointGridHeading {
+	border-top: 1px solid #213341;
+	border-bottom: 1px solid #11202b;
+	width: 100%;
+	float: left;
+	color: #d0d4d6
+}
+
+.pointHeadingPadding {
+	padding: 6px 10px;
+	text-align: left;
+	float: left
+}
+
+.pointC1 {
+	width: 50px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: pre;
+}
+
+.pointC2 {
+	width: 80px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: pre;
+}
+
+.pointC3 {
+	width: 30px;
+	text-align: center;
+	overflow: hidden;
+	white-space: pre;
+}
+
+#asynchList .pointC2{
+ width: 75px;
+}
+
+#asynchList .pointC3{
+  margin-left: -5px;
+  padding-left: 0;
+  padding-right: 0;
+  width: 60px;
+}
+.pointC1-2 {
+	width: 150px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: pre;
+}
+
+.membersTreeViewHeight {
+	height: 504px !important;
+}
+
+.pointGridData {
+	border-top: 1px solid #213341;
+	width: 100% !important;
+	float: left;
+	height: 160px;
+	overflow-y: auto;
+}
+
+.pointDetailsPaddingMember {
+	padding: 6px 10px;
+	float: left;
+	color: #89939a
+}
+
+.pointDetailsPadding {
+	padding: 1% 1%;
+	width: 98%;
+	float: left;
+	color: #89939a
+}
+
+.pointGridData .jspVerticalBar {
+	right: 4px !important
+}
+
+.textUpper {
+	text-transform: uppercase
+}
+
+/*members Name Top DropDown*/
+.rightDropDownBlock {
+	margin-left: 13px;
+}
+
+.rightDropDownBlock a {
+	float: left;
+	padding: 4px 5px;
+	position: relative;
+}
+
+.rightDropDownBlock a:hover {
+	color: #0363a0
+}
+
+.rightDropDownBlock a span {
+	background: url(../images/top-user-dropdown-arrow.png) no-repeat right
+		5px;
+	vertical-align: top;
+	padding: 0px 16px 0px 7px;
+	margin-top: 5px;
+	position: relative;
+	float: left
+}
+
+.rightDropDownBlock a:hover span {
+	background-position: right -20px;
+}
+
+.hotspot_txt {
+  font-size: 13px;
+  color: #cdd0d1;
+  overflow: hidden;
+  white-space: pre;
+  float: right;
+}
+
+.hotspotNameTopMargin {
+  width: 193px;
+}
+
+.hotspotClicked-Off {
+  cursor: pointer;
+  display: block
+}
+
+.hotspotClicked-On {
+  z-index: 999 !important;
+  cursor: pointer
+}
+
+.hotspotClicked-Off span {
+  background: url(../images/membersName_arror-off.png) no-repeat right
+    center;
+  padding-right: 26px;
+  display: inline-block
+}
+
+.hotspotClicked-On span {
+  background: url(../images/membersName_arror-on.png) no-repeat right
+    center;
+  padding-right: 26px;
+  display: inline-block
+}
+
+.memberClicked-Off {
+	cursor: pointer;
+	display: block
+}
+
+.memberClicked-On {
+	z-index: 999 !important;
+	cursor: pointer
+}
+
+.settingBlock {
+	background: #283649;
+	position: absolute;
+	left: 0px;
+	top: 25px;
+	border: 1px solid #546579;
+	z-index: 9999;
+	width: 193px;
+}
+
+.settingBlock ul {
+	display: block;
+	float: left;
+	width: 100%
+}
+
+.settingBlock ul li {
+	width: 100%;
+}
+
+.settingBlock ul li a {
+	display: block;
+	font-size: 13px;
+	padding: 5px;
+}
+
+.rightDropDownBlock img {
+	float: left
+}
+
+.memberClicked-Off span {
+	background: url(../images/membersName_arror-off.png) no-repeat right
+		center;
+	padding-right: 26px;
+	display: inline-block
+}
+
+.memberClicked-On span {
+	background: url(../images/membersName_arror-on.png) no-repeat right
+		center;
+	padding-right: 26px;
+	display: inline-block
+}
+
+.member_txt {
+	font-size: 20px;
+	color: #cdd0d1; /*width:168px;*/
+	overflow: hidden; /*text-overflow: ellipsis;*/
+	white-space: pre;
+}
+
+.membersNameTopMargin {
+	margin-top: 5px;
+	width: 193px;
+}
+
+.memeberNameSearch {
+	padding: 10px 11px;
+	float: left
+}
+
+/**autocomplete**/
+.jsonSuggestScroll {
+	width: 193px;
+	float: left;
+	height: 125px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.jsonSuggestScroll .jspPane {
+	width: 193px !important
+}
+
+.jsonSuggestScroll .jspDrag {
+	left: -3px;
+	background: #7a8eaa
+}
+
+.hideHorizontalScroll {
+	overflow-x: hidden !important;
+}
+
+/*dataView */
+.dataViewTreeViewBlock {
+	width: 427px;
+	float: left;
+	overflow: hidden
+}
+
+.rightBlockDataView {
+	width: 563px;
+	float: right
+}
+
+.canvasBlockDataView {
+	width: 563px;
+}
+
+.canvasBlockLargeDataView {
+	background: #132634;
+	width: 428px;
+}
+
+.width563 {
+	width: 563px;
+}
+
+.canvasContentBlockDataView {
+	min-height: 685px;
+	padding: 10px 0;
+	width: 563px;
+	background: #132634;
+}
+
+.selectedRegionLabel {
+	color: #87b025;
+	font-size: 20px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: pre;
+	width: 543px;
+	padding: 8px 10px;
+	background: #202b39;
+	border-bottom: 1px solid #04121b;
+	border-top: 1px solid #37414d;
+}
+
+.canvasBlockLargeContentDataView {
+	min-height: 690px;
+	padding: 10px 0;
+	width: 428px;
+}
+
+.chartBlocksPanelDataView,.graphBlocksPanelDataView {
+	color: #89939A;
+	padding: 0 10px;
+	width: 407px;
+}
+
+.treeViewGraphDataView {
+	width: 405px;
+	margin: 0px auto;
+	text-align: center;
+	cursor: pointer;
+}
+
+.marginL5 {
+	margin-left: 5px;
+}
+
+.marginL10 {
+	margin-left: 10px;
+}
+
+.marginR10 {
+  margin-right: 10px;
+}
+
+.regionsCount {
+	color: #d2d5d7
+}
+
+.wanEnabledIcon {
+	display: block;
+	height: 8px;
+	width: 27px;
+	background: url(../images/dataViewWanEnabled.png) no-repeat left top;
+	margin-top: 3px;
+}
+
+.detailsBlock-memberDataView {
+	padding: 5px 4px;
+	float: left;
+	text-align: center; /*word-wrap:break-word;*/
+}
+
+.regionType {
+	width: 105px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: pre;
+}
+
+.graphBlocksContentDataView {
+	padding: 5px 10px 15px 10px;
+	color: #89939a;
+}
+
+.border-topZero {
+	border-top: 0px !important
+}
+
+.pointGridDataView {
+	border-top: 1px solid #213341;
+	width: 100%;
+	float: left;
+}
+
+.dataViewLeftBlock {
+	width: 273px;
+}
+
+.dataViewRightBlock {
+	width: 273px;
+}
+
+.usageDataView {
+	padding: 5px 6px;
+	text-align: left;
+	word-wrap: break-word;
+}
+
+.dataViewUsedMasterBlock {
+	margin: 10px;
+	width: 95%;
+}
+
+.dataUsedProgressbar {
+	border: 1px solid #364652;
+	background: #012e4c;
+	float: left;
+	width: 250px;
+	margin: 40px 0 14px 0;
+	padding: 2px;
+	position: relative;
+}
+
+.memoryUsageChart {
+	background: #afddf8;
+	padding: 2px 0px;
+	text-align: right;
+	color: #24516e;
+	font-size: 20px;
+	max-width: 100%;
+	position:relative;
+	height: 20px;
+}
+
+.memoryUsageValue{
+ position: absolute;
+ top:0;
+ left:5px;
+ line-height: 30px; 
+ text-align: right;
+ color: #24516e;
+}
+
+#memoryUsageDiv, #regionMembersWidgetContainer{
+ height:200px;
+}
+
+.PerRightMargin {
+	font-size: 13px;
+	margin-right: 5px;
+}
+
+.dataUsageChart {
+	background: #c7f8af;
+	padding: 2px 0px;
+	text-align: right;
+	color: #24516e;
+	font-size: 20px;
+	max-width: 100%
+}
+
+.readsTextHeading {
+	color: #d0d4d6;
+	text-transform: uppercase;
+}
+
+.dataViewGraphMaster {
+	border: 1px solid #364652;
+	float: left;
+	width: 214px;
+	margin: 5px 0 0px 0;
+	padding: 2px;
+}
+
+.dataViewGraph {
+	padding: 2px 0px;
+	text-align: center;
+}
+
+.dataViewGraph img {
+	width: 100%;
+}
+
+.regionMembersMasterBlock {
+	margin: 10px 10px 10px 0px;
+	width: 100%;
+}
+
+.regionMembersSearchBlock {
+	min-height: 120px;
+	overflow-y: auto;
+	overflow-x: hidden !important;
+	width: 100%
+}
+
+.regionMembersSearchBlock .pointDetailsPadding {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: pre;
+	padding: 5px 0px 5px 0px;
+	cursor: pointer
+}
+
+.regionMembersSearchBlock .pointDetailsPadding:hover {
+	background: #283649;
+	color: #ffffff;
+}
+
+.dataViewRightBlock .searchBlockMaster {
+	float: left;
+	width: 167px
+}
+
+.regionHeading {
+	background: #132634 !important
+}
+
+.regionHeading .canvasHeading {
+	color: #d0d4d6 !important
+}
+
+.regionHeading .canvasHeading label {
+	width: 450px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: pre;
+	float: left;
+	text-transform: none;
+}
+
+.horizontalSeparator {
+	border-bottom: 1px solid #37414D;
+	border-top: 1px solid #0F1C25;
+	margin-bottom: 10px;
+	width: 100%;
+}
+
+/*memberDetails filter*/
+.resultItemFilter {
+	background: #283649 !important;
+	border-top: 1px solid #4E6277;
+	color: #868D98;
+	cursor: pointer;
+	margin: 0;
+	padding: 5px;
+	position: relative;
+}
+
+.resultItemFilter a {
+	color: #868d98;
+	word-wrap: break-word;
+}
+
+.resultItemFilter a:hover {
+	color: #fff;
+}
+
+.jsonSuggestScrollFilter {
+	width: 193px;
+	float: left;
+	height: 300px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.jsonSuggestScrollFilter .jspPane {
+	width: 193px !important
+}
+
+.jsonSuggestScrollFilter .jspDrag {
+	left: -3px;
+	background: #7a8eaa
+}
+
+/* Added for sparkline tooltip*/
+.jqstooltip {
+	z-index: 100;
+}
+
+.popupRowBorder {
+	float: left; /*border-bottom:1px solid #4e6277;*/
+	width: 100%;
+	padding: 1px 0px 1px 0px
+}
+
+.marginTop3 {
+	margin-top: 3px;
+}
+
+.marginTop4 {
+	margin-top: 4px;
+}
+
+.marginTop6 {
+	margin-top: 6px;
+}
+
+.marginBottom4 {
+	margin-bottom: 4px;
+}
+
+.marginBottom6 {
+	margin-bottom: 6px;
+}
+
+.marginBottom10 {
+  margin-bottom: 10px;
+}
+
+.marginTop10 {
+	margin-top: 10px;
+}
+
+.marginzero {
+	margin: 0;
+}
+
+.borderBottomZero {
+	border-bottom: 0px !important
+}
+
+.width85Per {
+	width: 85%
+}
+
+.width91Per {
+	width: 91%
+}
+
+.width96Per {
+	width: 96%
+}
+
+.width100Per {
+	width: 100%
+}
+
+.displayNone{
+	display: none;
+}
+
+.popInnerBlockEllipsis {
+	width: 100%;
+	text-overflow: ellipsis;
+	white-space: pre;
+	overflow: hidden;
+}
+
+.regionType {
+	width: 105px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: pre;
+}
+/*----------------------------Middle ends---------------------------------------*/
+
+/* switch css */
+.switchMaster {
+	background: #10222f;
+	border: 1px solid #09131a;
+	display: inline-block;
+	border-radius: 3px;
+	margin: 4px 3px
+}
+
+.membersButton,.dataButton {
+	height: 26px;
+	display: inline-block;
+	cursor: pointer;
+	line-height: 26px;
+	padding: 0px 10px;
+	text-transform: uppercase;
+	color: #58656e;
+}
+
+.switchActive {
+	background: #283c58;
+	border-top: 1px solid #536379;
+	border-radius: 3px;
+	color: #ababab
+}
+
+.switchRightBlockLinks {
+	background: url(../images/rightBorder.png) repeat-y right top;
+	padding: 11px 10px 12px 10px
+}
+
+.switchRightBlockLinks a {
+	color: #506d94;
+	font-size: 12px;
+	padding: 0 7px
+}
+
+.switchRightBlockLinks a:hover {
+	color: #cfdced;
+}
+
+.switchRightBlockLinks .switchActiveLink,.switchRightBlockLinks .switchActiveLink:hover
+	{
+	color: #cfdced;
+	cursor: default;
+	visibility:
+}
+
+/*breadCrumb*/
+.breadCrumbs {
+	color: #cdd0d1;
+	margin-top: 5px;
+	font-size: 18px;
+}
+
+.breadCrumbs a {
+	color: #9ba0a4;
+	font-size: 12px;
+	vertical-align: middle
+}
+
+.breadCrumbs a:hover {
+	color: #0363A0
+}
+
+.breadCrumbs .breadCrumbArrow {
+	background: url(../images/bread-crumb.png) no-repeat center center;
+	width: 33px;
+	display: inline-block
+}
+
+.breadCrumbs label {
+	vertical-align: middle
+}
+
+/*data Browser*/
+.dataBrowserLeftBlock {
+	width: 263px;
+	float: left;
+	background: red
+}
+
+.dataBrowserRightBlock {
+	width: 727px;
+	float: right;
+	background: green
+}
+/*Popup Css style*/
+#mask {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 9000;
+	background: url(../images/mask-bg.png) repeat;
+	display: none;
+}
+
+#boxes .window {
+	position: fixed;
+	left: 0;
+	top: 0;
+	display: none;
+	z-index: 9999;
+	border: 1px solid #49596a;
+}
+
+.popup_heading {
+	background: #142e41;
+	display: block;
+	width: 100%;
+	float: left;
+	border-bottom: 1px solid #49596a;
+}
+
+.popup_heading span {
+	color: #8a97a0;
+	font-size: 14px;
+	float: left;
+	width: 82%;
+	padding: 10px 5px 10px 10px;
+}
+
+.closePopup {
+	color: #fff;
+	float: right;
+	background: url(../images/popup-close-button.png) no-repeat;
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	margin: 12px 10px 12px 5px;
+}
+/*popup Content Block*/
+.popup_contentBlock {
+	float: left;
+	width: 100%
+}
+
+.popup-innerblock {
+	background: #283649;
+	padding: 10px;
+	color: #949ba4;
+	font-size: 13px;
+}
+
+.popup-innerblock ul li {
+	margin-bottom: 5px;
+}
+
+.dataSeperator {
+	margin: 0px 5px;
+}
+
+.width-58 {
+	width: 58%
+}
+/*Popup Width*/
+.width345 {
+	width: 345px;
+}
+
+.dataRegionsandMembers {
+	background: none repeat scroll 0 0 #666666;
+	height: 530px;
+	padding: 15px;
+	width: 243px;
+	float: left
+}
+
+.dataRegionsandMembers h3 {
+	color: snow
+}
+
+.regionNamesWrapper {
+	height: 170px;
+	overflow-y: auto
+}
+
+.memberNamesWrapper {
+	height: 270px;
+	overflow-y: auto
+}
+
+.memberNamescls {
+	padding: 0 5px;
+}
+/* connection lost */
+.connectionLostMasterBlock {
+	position: relative;
+	margin: 0px auto;
+	width: 234px;
+}
+
+.connectionLostInnerBlock {
+	background: #d9d082;
+	padding: 8px;
+	position: absolute;
+	top: 75px;
+	color: #424028;
+	width: 250px;
+}
+
+.connectionLostInnerBlock a {
+	text-decoration: underline;
+	color: #424028;
+}
+
+.connectionLostInnerBlock a:hover {
+	color: #424028;
+}
+
+.linkSeperator {
+	padding: 0px 5px;
+}
+
+/* Data Browser*/
+#accordion {
+	list-style: none;
+	padding: 0 0 0 0;
+	width: 243px;
+}
+
+#accordion li {
+	display: block;
+	background-color: #aaaaaa;
+	font-weight: bold;
+	margin: 1px;
+	cursor: pointer;
+	padding: 5 5 5 7px;
+	list-style: circle;
+	height: 15px;
+	padding: 10px;
+}
+
+#accordion ul {
+	list-style: none;
+	padding: 0 0 0 0;
+	display: none;
+}
+
+#accordion ul li {
+	font-weight: normal;
+	cursor: auto;
+	background-color: #888888;
+	padding: 0 0 0 7px;
+	height: 125px
+}
+
+.queriesWrapper {
+	height: 300px;
+	overflow-y: auto
+}
+
+.queriesEditor {
+	height: 120px;
+	overflow-y: auto
+}
+
+.dataRegionsandMembersDataBrowser {
+	background: none repeat scroll 0 0 #666666;
+	height: 530px;
+	padding: 15px;
+	width: 700px;
+	float: left
+}
+
+.regionNamesDataBrowser {
+	height: 170px;
+	overflow-y: auto;
+	width: 252px;
+}
+
+.memberNamesDataBrowser {
+	height: 270px;
+	overflow-y: auto;
+	width: 252px;
+}
+
+.searchBlockDataBrowser {
+	background: #0f1c25;
+	width: 243px;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 0 #27333b;
+	height: 25px;
+}
+
+.searchBoxDataBrowser {
+	float: left;
+	width: 207px;
+	padding: 3px !important;
+	height: 19px;
+	border: 0px !important;
+	background: #0f1c25;
+	color: #b7b9bb !important
+}
+/*----------------------------Middle ends---------------------------------------*/
+
+/*block splitter */
+.splitterMaster {
+	width: 100%;
+	margin: 0 auto 20px;
+	position: relative;
+	float: left;
+}
+
+.splitterInnerBlock {
+	float: left;
+	height: 750px;
+	width: 100%;
+}
+
+#widget { /*height:1000px;*/
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+#leftBlock {
+	background: #132634
+}
+
+.leftTopSplitterSpacing {
+	margin-bottom: 10px;
+	width: 100%
+}
+
+#rightBlock {
+	background: #132634
+}
+
+.leftSliderScrollRegion {
+	height: 75%;
+	border-top: 1px solid #213341;
+}
+
+.leftSliderScrollMembers {
+	height: 100%;
+}
+
+.ScrollPaneBlock {
+	width: 100% !important;
+	color: #DDF
+}
+
+.ScrollPaneBlock .jspContainer {
+	width: 100% !important;
+	height: 100% !important
+}
+
+.ScrollPaneBlock .jspPane {
+	width: 100% !important;
+}
+
+.ScrollPaneBlock .jspDrag {
+	left: 0px;
+}
+
+.splitterScrollRegionInnerBlock {
+	text-align: justify;
+	width: 100%
+}
+
+.splitterScrollMembersInnerBlock {
+	text-align: justify;
+	width: 100%;
+	border-top: 1px solid #2b3c49;
+}
+
+.splitterScrollMembersInnerBlock ul li {
+	padding: 5px 0;
+	float: left;
+	width: 100%;
+	margin-bottom: 1px
+}
+
+.splitterScrollMembersInnerBlock ul li:hover { /*background:#1f313f*/
+	
+}
+
+.splitterScrollMembersInnerBlock ul li label {
+	float: left;
+	width: 79%;
+	vertical-align: middle;
+	padding-left: 15px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: pre;
+	line-height: 18px;
+}
+
+.splitterScrollMembersInnerBlock ul li input[type="checkbox"] {
+	float: right;
+	margin: 0 15px 0 0;
+}
+
+.splitterScrollMembersInnerBlock ul li .checkbox {
+	float: right;
+	padding: 0 15px 0 0;
+	clear: none
+}
+
+.check {
+	background: #1f313f
+}
+
+.regionNameSearch {
+	padding: 10px 11px;
+}
+
+.searchBlockRegion {
+	width: 100%;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 0 #27333b;
+	height: 25px;
+	background: #0f1c25
+}
+
+input[type="button"].searchButtonRegion {
+	width: 18px;
+	height: 18px;
+	background: #0f1c25 url(../images/searchIcon.png) center center
+		no-repeat;
+	border: 0px;
+	cursor: pointer;
+	float: left;
+	margin: 4px;
+	display: inline-block
+}
+
+input[type="text"].searchBoxRegion {
+	float: left;
+	width: 84%;
+	padding: 3px !important;
+	height: 19px;
+	border: 0px !important;
+	background: #0f1c25;
+	color: #b7b9bb !important
+}
+
+.colocatedRegionsLink {
+	padding: 6px 11px;
+	float: right;
+	color: #d0d4d6
+}
+
+.disabledLink,.disabledLink:hover {
+	color: #42515d;
+	cursor: default
+}
+
+/*right Block splitter inner blocks*/
+.rightInnerBlocks {
+	background: #18242f;
+	border-top: 1px solid #232f39;
+	border-bottom: 1px solid #0f1c25;
+	line-height: 34px
+}
+
+.rightInnerBlocks a {
+	padding: 10px;
+	text-transform: uppercase;
+	color: #506d94;
+	text-shadow: -1px -1px #111921;
+}
+
+.rightInnerBlocks a.active {
+	background: #202b39;
+	border-right: 1px solid #0f1c25;
+	border-top: 1px solid #37414d;
+	color: #fff;
+	text-shadow: -1px -1px #161e28;
+	cursor: default
+}
+
+/*query Block*/
+.queryMasterBlock {
+	border-top: 1px solid #2b3c49;
+	border-bottom: 1px solid #0f1c25;
+	width: 100%;
+	float: left;
+	position:relative;
+	padding-bottom:10px;
+}
+
+.queryInnerBlock {
+	float: left;
+	width: 97%;
+}
+
+.marginTB15-10 {
+	margin: 15px 10px;
+}
+
+.marginResult {
+	margin: 15px 10px 10px 10px;
+}
+
+.marginBottomResult {
+	border-bottom: 1px solid #1f313f;
+	width: 100%
+}
+
+.queryHistoryBlock {
+	position: relative
+}
+
+.queryBlocklabel {
+	text-transform: uppercase;
+	padding-left: 5px
+}
+
+#detailsHistory {
+	display: none
+}
+
+
+.textareadiv{
+	background: #0f1c25;
+	border-bottom: 1px solid #27333b;
+	border-radius: 2px 2px 2px 2px;
+	padding:5px;
+	margin-bottom: 10px;
+
+}
+
+.textareadiv textarea{
+	border: 0px;
+	color: #878e92;
+	font-family: Arial;
+	font-size: 12px;
+	outline: none;
+	background: #0f1c25;
+	padding:0;
+	width:100%;
+	margin-bottom:0;
+}
+
+.queriesblock{
+	float: none;
+	width: auto;
+}
+
+.historyClicked-Off {
+	background: url(../images/history-icon.png) no-repeat 10px 9px;
+	color: #5a6871;
+	padding: 0px 10px 0px 31px;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	line-height: 40px;
+	z-index: 9
+}
+
+.historyClicked-On,.historyClicked-On:hover {
+	background: #132634 url(../images/history-icon.png) no-repeat 10px -29px;
+	color: #d0d4d6;
+	padding: 0px 10px 0px 31px;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	line-height: 40px;
+	border: 1px solid #2b3c49;
+	border-bottom: 0px;
+	z-index: 9
+}
+
+.queryHistoryScroll-pane {
+	background: #132634;
+	width: 235px;
+	border: 1px solid #2b3c49;
+	position: absolute;
+	right: 0px;
+	top: 40px;
+	height: 670px;
+	z-index: 8;
+	overflow: auto;
+}
+
+.queryHistoryScroll-pane .jspVerticalBar {
+	right: 2px
+}
+
+.queryTextarea {
+	width: 98%;
+	margin-bottom: 10px;
+	height: 55px;
+	overflow-y: auto
+}
+
+.quertTextaremargin {
+	margin-top: 10px;
+}
+
+/*expand collapse*/
+.expCollMaster {
+	text-align: justify;
+	width: 100%;
+}
+/*-------------Accordion------------------------------------------------------------------------------------*/
+.accordion {
+	overflow: hidden;
+}
+
+.accordion .listing {
+	margin-bottom: 1px;
+}
+
+.accordion .heading {
+	padding: 5px 10px 5px 40px;
+	cursor: pointer;
+	position: relative;
+	min-height: 20px;
+	background: #14232f url(../images/header-bg-bottom-border.png) repeat-x
+		left bottom;
+}
+
+.accordion .heading.active {
+	background: none;
+	background: #1f313f;
+}
+
+.accordion .heading .title {
+	color: #d2d6d9;
+	display: block;
+	padding: 3px 0;
+}
+
+.accordion .accordion-content {
+	display: none;
+	padding: 5px 40px;
+}
+
+.accordion .accordion-content2 {
+	display: block;
+	padding: 5px 40px;
+}
+
+.accordion .spriteArrow {
+	display: block;
+	position: absolute;
+	top: 7px;
+	left: 20px;
+	width: 14px;
+	height: 15px;
+}
+
+.accordion .active .spriteArrow {
+	background: url(../images/acc-minus.png) no-repeat
+}
+
+.accordion .inactive .spriteArrow {
+	background: url(../images/acc-plus.png) no-repeat
+}
+
+/*nesting*/
+.accordionNested {
+	overflow: hidden;
+}
+
+.accordionNested .n-listing {
+	margin-bottom: 1px;
+}
+
+.accordionNested .n-heading {
+	padding: 5px 10px 5px 40px;
+	cursor: pointer;
+	position: relative;
+	min-height: 20px;
+	background: #14232f url(../images/header-bg-bottom-border.png) repeat-x
+		left bottom;
+}
+
+.accordionNested .n-heading.n-active {
+	background: none;
+	background: #1f313f;
+}
+
+.accordionNested .n-heading .n-title {
+	color: #d2d6d9;
+	display: block;
+	padding: 3px 0;
+}
+
+.accordionNested .n-accordion-content {
+	padding: 0px;
+	display: none;
+}
+
+.accordionNested .n-spriteArrow {
+	display: block;
+	position: absolute;
+	top: 7px;
+	left: 20px;
+	width: 14px;
+	height: 15px;
+}
+
+.accordionNested .n-active .n-spriteArrow {
+	background: url(../images/acc-n-minus.png) no-repeat
+}
+
+.accordionNested .n-inactive .n-spriteArrow {
+	background: url(../images/acc-n-plus.png) no-repeat
+}
+/* button 
+	---------------------------------------------- */
+.buttonCss {
+	display: inline-block;
+	vertical-align: baseline;
+	margin: 0px 5px 0px 5px;
+	outline: none;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	font-size: 13px;
+	border: 0px;
+	padding: 5px 20px;
+}
+
+.buttonCss:hover {
+	text-decoration: none;
+}
+
+.buttonCss:active {
+	position: relative;
+	top: 1px;
+}
+/* blue */
+.blue {
+	background: #153c71;
+	color: #8a9eb8;
+	border-top: 1px solid #2d507f;
+}
+/* grey */
+.grey {
+	background: #202b39;
+	color: #636b75;
+	border-top: 1px solid #37414d;
+}
+
+/*Custom Checkbox & RadioButton*/
+.checkbox,.radio {
+	width: 19px;
+	height: 19px;
+	padding: 0 5px 0 0;
+	background: url(../images/checkbox.png) no-repeat;
+	display: block;
+	clear: left;
+	float: left;
+}
+
+.radioButton label {
+	line-height: 22px;
+	vertical-align: middle;
+	margin-right: 10px
+}
+
+.radio {
+	background: url(../images/radio.png) no-repeat;
+}
+/*history panel*/
+.container {
+	margin: 5px auto;
+	font-size: 12px;
+	background: #132634;
+	color: #89939a;
+}
+
+.container:hover,.selectedHistory {
+	background: #1f313f
+}
+
+.wrap {
+	position: relative;
+	overflow: hidden;
+}
+
+.wrapHistoryContent {
+	padding: 10px 30px 30px 30px;
+	line-height: 16px
+}
+
+.read-more {
+	position: absolute;
+	left: 10px;
+	top: 10px
+}
+
+.read-more a {
+	width: 14px;
+	height: 15px;
+	text-decoration: none;
+	display: block
+}
+
+.read-more a.remore_plus {
+	background: url(../images/acc-n-plus.png) no-repeat;
+}
+
+.read-more a.remore_minus {
+	background: url(../images/acc-n-minus.png) no-repeat;
+}
+
+.remove {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+}
+
+.remove a {
+	width: 15px;
+	height: 15px;
+	background: url(../images/history-remove.png) no-repeat;
+	text-decoration: none;
+	display: none
+}
+
+.container:hover .remove a,.selectedHistory .remove a {
+	display: block
+}
+
+.dateTimeHistory {
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	padding: 3px 5px 3px 30px;
+	color: #5a6871;
+	background: #132634;
+	height: 17px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: pre;
+	width: 188px
+}
+
+.container:hover .dateTimeHistory,.selectedHistory .dateTimeHistory {
+	display: block;
+	background: #1f313f
+}
+
+/*JQGrid scroll y position for extended column*/
+.customeCloumnExtended .ui-jqgrid-view .jspVerticalBar {
+	right: 20px !important;
+}
+
+/* Notification Widhow pop up */
+
+/*--Tooltip Styles--*/
+.tip_trigger {
+	position: relative;
+}
+
+.tip_trigger:hover {
+	background: #1f313f;
+}
+
+.tip_trigger.active {
+	background: #1f313f;
+}
+
+.tabMessageMasterBlock {
+	padding: 0;
+}
+
+.severeMessageBlock {
+	display: inline;
+}
+
+.tooltip:hover {
+	display: block;
+}
+
+.tooltip {
+	color: #fff;
+	display: none; /*--Hides by default--*/
+	position: absolute;
+	z-index: 1000;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	right: 271px;
+	color: #FFF;
+	width: 280px;
+}
+
+.tooltip .content {
+	background: #283649;
+	border: 1px solid #889eb9;
+	width: 277px;
+	min-height: 60px;
+}
+
+.bubble-arrow {
+	position: absolute;
+	bottom: 20px;
+	right: -11px;
+	background: url(../images/bubble_arrow.png) no-repeat;
+	width: 10px;
+	height: 15px;
+	display: block;
+}
+
+.tooltip .content h3 {
+	color: #d0d5d9;
+	background: #142e41;
+	padding: 10px;
+	border-bottom: 1px solid #4e6277;
+}
+
+.tooltip .content p {
+	color: #949ba4;
+	background: #283649;
+	padding: 0;
+	margin: 0 10px;
+	font-size: 12px;
+}
+
+.tooltip .tooltipcontent {
+	margin: 10px 0;
+	height: 100px;
+}
+
+.notifications {
+	border-top: 1px solid #4E6277;
+	margin: 10px 10px;
+	padding: 5px 0 0 0;
+}
+
+.notifications ul {
+	list-style: none;
+	margin-bottom: 10px;
+}
+
+.notifications ul li {
+	display: inline-block;
+	margin-right: 5px;
+}
+
+.copyNotification {
+	background: url(../images/copy_icon.png) center center no-repeat;
+	width: 20px;
+	height: 20px;
+	display: block;
+}
+
+.copyNotification:hover {
+	background: url(../images/copy_icon.png) center center #8A9096 no-repeat;
+}
+
+.copyNotification:active {
+	background: url(../images/copy_icon.png) center center #A7BCD1 no-repeat;
+}
+
+.acknowledgedTick {
+	background: url(../images/correct_icon.png) center center no-repeat;
+	width: 20px;
+	height: 20px;
+	display: block;
+}
+
+.acknowledgedTick:hover {
+	background: url(../images/correct_icon.png) center center #8A9096
+		no-repeat;
+}
+
+.acknowledgedTick:active {
+	background: url(../images/correct_icon.png) center center #A7BCD1
+		no-repeat;
+}
+
+#allAlertScrollPane { /*overflow:visible !important;*/
+	
+}
+
+#allAlertScrollPane .jspContainer { /*overflow:visible;*/
+	
+}
+
+/* .tip_trigger .severeMessageBlock{
+  background:url(../images/correct_small_icon.png) left center no-repeat;
+  display:block;
+  padding:0 0 0 20px;
+}
+.tip_trigger .errorMessageBlock{
+  display:block;
+  padding:0 0 0 20px;
+} */
+.tip_trigger .tabMessageDateBlock {
+	padding-left: 20px;
+}
+
+.tip_trigger .tabInfo {
+	background: url(../images/info-msg-icon.png) no-repeat left center;
+	padding-left: 20px !important;
+}
+
+.tip_trigger .tabWarning {
+	background: url(../images/warning-msg-icon.png) no-repeat left center;
+	padding-left: 20px !important;
+}
+
+.tip_trigger .tabError {
+	background: url(../images/error-msg-icon.png) no-repeat left center;
+	padding-left: 20px !important;
+}
+
+.tip_trigger .tabSevere {
+	background: url(../images/severe-msg-icon.png) no-repeat left center;
+	padding-left: 20px !important;
+}
+
+.tip_trigger .graytickmark {
+	background: url(../images/correct_icon.png) left center no-repeat;
+	padding-left: 20px;
+}
+
+.tip_trigger .whitetickmark {
+	background: url(../images/correct_small_icon.png) left center no-repeat;
+	padding-left: 20px;
+}
+
+.tip_trigger .notickmark {
+	padding-left: 20px;
+}
+
+.tabMessageDetailsBlock {
+	display: block;
+	white-space: nowrap;
+	width: 130p;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.tooltip .content h3.tabError {
+	background: url(../images/error-msg-icon.png) #142e41 no-repeat 3px
+		center;
+	padding: 10px 10px 10px 20px !important;
+}
+
+.tooltip .content h3.tabSevere {
+	background: url(../images/severe-msg-icon.png) #142e41 no-repeat 3px
+		center;
+	padding: 10px 10px 10px 20px !important;
+}
+
+.tooltip .content h3.tabWarning {
+	background: url(../images/warning-msg-icon.png) #142e41 no-repeat 3px
+		center;
+	padding: 10px 10px 10px 20px !important;
+}
+
+.tooltip .content h3.tabInfo {
+  background: url(../images/info-msg-icon.png) #142e41 no-repeat 3px
+    center;
+  padding: 10px 10px 10px 20px !important;
+}
+
+.tooltip .closePopup {
+	position: absolute;
+	top: 0;
+	right: 0px;
+}
+
+.tip_trigger .tooltip .tabMessageDateBlock {
+	padding-left: 0;
+	font-size: 0.9em;
+	margin-top: 5px;
+}
+
+/*----------------------------Footer starts---------------------------------------*/
+
+/*----------------------------Footer ends---------------------------------------*/
+
+/*----------------------------Query Statistics starts---------------------------------------*/
+.subHeader {
+	margin: 0;
+	padding: 0;
+	background: #202b39;
+	border-top: 1px solid #37414d;
+	border-bottom: 1px solid #0f1c25;
+}
+
+.subHeader ul {
+	margin: 0 0 0 0;
+	padding: 0;
+}
+
+.subHeader ul li {
+	float: left;
+}
+
+.subHeader ul li a {
+	color: #89939a;
+	padding: 8px 15px;
+	display: block;
+	border-left: 1px solid transparent;
+	border-right: 1px solid transparent;
+}
+
+.subHeader ul li a:hover {
+	color: #fff;
+}
+
+.subHeader ul li a.active {
+	background: #0f1c25;
+	color: #fff;
+	border-left: 1px solid #37414d;
+	border-right: 1px solid #37414d;
+}
+
+.searchBlockMasterQS {
+	background: #0f1c25;
+	width: 206px;
+	float: left;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 0 #27333b;
+	height: 25px;
+}
+
+.searchButtonQS {
+	width: 18px;
+	height: 18px;
+	background: url(../images/searchIcon.png) center center no-repeat;
+	border: 0px;
+	cursor: pointer;
+	float: left;
+	margin: 4px;
+}
+
+.searchBoxQueryStatistics {
+	float: left;
+	width: 170px;
+	padding: 3px !important;
+	height: 19px;
+	border: 0px !important;
+	background: #0f1c25;
+	color: #b7b9bb !important
+}
+
+.backgroundQueryStats {
+	background: none repeat scroll 0 0 #132634;
+}
+
+/*----------------------------Query Statistics ends---------------------------------------*/
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+
+.leftTopSplitterSpacing.top_panel .active{
+	display: block;
+	padding: 2px 10px;
+}
+
+.leftTopSplitterSpacing.top_panel .rightInnerBlocks {
+	line-height: 30px;
+}
+
+.leftTopSplitterSpacing.top_panel .canvasBlockInnerBlock{
+	background: none;
+}
+
+.bottom_panel .btm_pnl{
+	line-height: 30px;
+}
+
+.bottom_panel .btm_pnl.rightInnerBlocks a.active{
+	display: block;
+	padding:2px 10px;
+}
+
+.jspCorner{
+	display:none;
+}
+
+/* Cluster Page Widget for Cluster Members and Data */
+.members_data {
+	position: relative;
+	width: 100px;
+	display: block;
+	height: 40px;
+}
+
+.members_data ul {
+	list-style: none;
+	overflow-y: hidden;
+	position: absolute;
+	display: block;
+	z-index: 2;
+	width:200px;
+	height:40px !important;
+}
+
+.members_data ul li {
+	display: block;
+	width: 90px;
+	text-align: center;
+	background: #202B39;
+	height: 38px;
+	float: left;
+}
+
+.members_data ul li.selected {
+	background: #132634;
+	border: 1px solid #202b39;
+	border-top: 3px solid #D2D5D7;
+}
+
+.members_data ul.active li.selected {
+	background: #202b39;
+	border: 1px solid #202b39;
+}
+
+.members_data ul li a {
+	padding: 5px;
+	line-height: 30px;
+	height: 28px;
+	vertical-align: middle;
+	display: block;
+	color: #89939A;
+	font-weight: bold;
+}
+
+.members_view {
+	position: relative;
+	margin-left: 15px;
+	margin-bottom: 10px;
+}
+
+.members_view ul {
+	list-style: none;
+}
+
+.members_view ul li {
+	float: left;
+}
+
+.label_radio {
+	padding-left: 25px;
+	width: auto;
+	height: 17px;
+	display: block;
+	background: url(../images/radio-off.png) no-repeat;
+	margin-right: 10px;
+	color: #D2D5D7;
+	font-weight: normal;
+}
+
+.label_radio input[type="radio"] {
+	position: absolute;
+	left: -9999px;
+}
+
+.label_radio.r_on {
+	background: url(../images/radio-on.png) no-repeat;
+}
+
+.chartIcon.active {
+	background: url(../images/chart-active.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+}
+
+.gridIcon.active {
+	background: url(../images/grid-active.png) no-repeat center center;
+	width: 17px;
+	height: 17px;
+	float: right;
+	cursor: pointer;
+	padding: 10px 10px 10px 5px;
+	border-right: 1px solid #3C4A5B;
+}
+
+.graphIcon.active {
+  background: url(../images/graph-active.png) no-repeat center center;
+  width: 17px;
+  height: 17px;
+  float: right;
+  cursor: pointer;
+  padding: 10px 10px 10px 5px;
+}
+
+.treemapNodeLabeltext {
+  color: #FFFFFF;
+  font-size: 11px
+}
+.treemapRootNodeLabeltext {
+    background-color: #132634;
+    height: 15px;
+}
+
+/* End of Cluster Page Widget for Cluster Members and Data */
+
+.memoryUsageBlock .pointGridDataView .dataViewUsedMasterBlock {
+  width:222px;
+}
+
+.memoryUsageBlock .pointGridDataView .dataViewUsedMasterBlock .dataUsedProgressbar {
+  margin-top: 10px;
+  width: 218px;
+}
+
+.graphborder{
+  border:1px solid #364652;
+  width:100%;
+}
+
+.graphborder .lineGraph{
+  margin:5px 3px;
+}
+
+.popup {
+  background: #202B39;
+}
+
+.popup .header{
+  width:350px;
+  background: #132634;
+  height: 40px;
+  line-height: 40px;
+}
+
+.popup .statusmasterBlock {
+  background: #202B39;
+  border-top: 1px solid #37414D;
+  margin-bottom: 0px;
+  float: none;
+  width: 100%;
+}
+
+.popup .content .canvasContentBlock{
+  padding:10px 0px 0px 0px;
+  width: 330px;
+  min-height: 150px;
+  margin:0 10px 10px 10px;
+}
+
+.graphbox{
+  width:100%;
+}
+
+.graphbox img{
+  width:100%;
+  margin:5px;
+}
+
+.breadCrumbs .breadCrumbArrow{
+  min-height:12px;
+}
+
+.regionIconDisplay {
+    background: url("../images/regionIcons.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0);
+    height: 15px;
+    margin-right: 10px;
+    padding-left: 25px;
+}
+
+/* loading symbol */
+.loaderParent{
+  position: relative;
+}
+
+.loader {
+  left: 400px;
+  position: absolute;
+  top: 75px;
+  z-index: 999999;
+  height: 25px;
+  width: 25px;
+  background: url(../images/ui-anim_basic_16x16.gif) no-repeat center center;
+  display: none;
+}
+/* For Data Browser */
+#loaderSymbolWrapper .loader{
+  top: 6px;
+}
+/* loading symbol */

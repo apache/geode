@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="CACHE-CONTROL" content="NO-CACHE,NO-STORE" />
+<meta http-equiv="PRAGMA" content="NO-CACHE" />
+<meta http-equiv="EXPIRES" content="-1">
+<title>Pulse</title>
+
+<!--  CSS Files -->
+<link href="css/common.css" rel="stylesheet" type="text/css" />
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<!-- fix IE Ui issues-->
+<!--[if IE]>
+    <link href="css/ie/ie.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--[if IE 7]>
+  <link href="css/ie/ie7.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--[if IE 8]>
+  <link href="css/ie/ie8.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--[if IE 9]>
+  <link href="css/ie/ie9.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--  END CSS FILES -->
+
+<!-- JS FILES -->
+<!-- IE Fix for HTML5 Tags -->
+<!--[if lt IE 9]>
+<script src='js/html5.js'></script>
+  <![endif]-->
+<script type="text/javascript" src="scripts/lib/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="scripts/pulsescript/PulseCallbacks.js"></script>
+<script type="text/javascript" src="scripts/pulsescript/PulseFunctions.js"></script>
+<script type="text/javascript" src="scripts/pulsescript/common.js"></script>
+<script type="text/javascript" src="scripts/pulsescript/pages/Login.js"></script>
+
+<!--Place Holder tag-->
+<script type="text/javascript" src="scripts/lib/jquery.placeholder.js"></script>
+<!-- END JS FILES -->
+
+<script type="text/javascript">
+$(function(){
+  $("#loginForm").submit(function(){
+    if(!validate()) 
+      return false;
+  });
+});
+</script>
+</head>
+
+<body onload="pageOnLoad();" class="bodyLoginBg">
+<div id="loginWidth"> 
+  <!-- Header block-->
+  <header>
+    <div class="textbold right logoBlock"><a href="#.">[LOGO]</a></div>
+  </header>
+  <div class="clear"></div>
+  <!-- Middle block-->
+  <div class="loginMasterBlock">
+    <div class="pulseBottomSpace"><img data-prod-custom="pulse-monitoring-custom" src="images/pulse-monitoring.png">
+      <div class="text-center" id="pulseVersion"></div>
+    </div>
+    <!-- error Block-->
+    <div id="errorMasterBlock" class="errorMasterBlock" style="display:none;">
+      <div id="errorText" class="errorInnerIcon"> </div>
+    </div>
+    <div class="loginInnerBlock">
+    <form method="POST" action="j_spring_security_check" name="loginForm" id="loginForm" autocomplete="off">
+      <input class="inputUserName" type="text" name="j_username" id="user_name"  placeholder="Username" autofocus="autofocus" autocomplete="off">
+      <input style="display:none;" type="password" id="fool_password" autocomplete="off">
+      <input class="inputPassword" type="password" name="j_password" id="user_password" placeholder="Password" autocomplete="off">
+      <!-- Locator host and port are removed for a time -->
+      <!-- <input class="inputUserName" type="text" name="locator_host" id="locator_host" placeholder="Host">
+      <input class="inputUserName" type="text" name="locator_port" id="locator_port" placeholder="Port">-->
+      <input type="submit" value="Sign In" class="signInButton">
+    </form>
+    </div>
+    <br>
+    <div class="text-center copyright">Copyright &#0169; 2012-2014 Piovtal Software, Inc. All rights reserved.</div>
+  </div>
+</div>
+<!-- Placeholder--> 
+<script>
+$('input[placeholder], textarea[placeholder]').placeholder();
+</script>
+
+	<!-- <div style="width:100%; padding-top: 20%; padding-bottom: 20%;"> 
+    <div style="margin-left: 30%;">
+      <div style="float:left; border-right: medium solid #CCCCCC;">
+        <form method="POST" action="ClusterLogin" name="loginForm" id="loginForm">
+          <div style="width: 300px; padding-top: 10px;">
+            <span style="width:50px;">User Name:</span>
+            <input type="text" name="user_name" id="user_name" style="float: right; margin-right: 10px;" />
+          </div>
+          <div style="width: 300px; padding-top: 10px;">
+            <span style="width:50px;">Password:</span>
+            <input type="password" name="user_password" id="user_password" style="float: right; margin-right: 10px;" />
+          </div>
+          <div id="locatorHostDiv" style="width: 300px; padding-top: 10px;">
+            <span style="width:50px;">Locator Host:</span>
+            <input type="text" name="locator_host" id="locator_host" style="float: right; margin-right: 10px;" />
+          </div>
+          <div id="locatorPortDiv" style="width: 300px; padding-top: 10px;">
+            <span style="width:50px;">Locator Port:</span>
+            <input type="text" name="locator_port" id="locator_port" style="float: right; margin-right: 10px;" />
+          </div>
+	        <div style="width: 300px; padding-top: 10px;">
+            <input type="reset" value="Cancel" style="float: right; margin-right: 10px;" />
+            <input type="submit" value="Submit" style="float: right; margin-right: 10px;" />
+          </div>
+	      </form>
+	      <label id="errorText" style="color: #FF0000;"></label>
+      </div>
+      <div style="float:left; margin: 40px; ">
+        <div style="font-size: xx-large; text-align: center;"><label>Pulse</label></div>
+        <div><label>GemFire Monitoring</label></div>
+      </div>
+    </div>
+  </div> -->
+</body>
+</html>

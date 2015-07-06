@@ -1,0 +1,7 @@
+{"result":[
+ ["java.util.ArrayList",{
+   "0":["java.lang.String[]",["one","two","three"]],
+   "1":["java.lang.String[]",["ek","do","teen"]],
+   "2":["java.lang.String[]",["one","two","three"]]
+ }]
+]}

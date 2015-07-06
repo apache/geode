@@ -1,0 +1,72 @@
+
+div.jsonSuggestResults {
+	position:absolute;
+	border:1px solid #546579;
+	border-bottom:0px;
+	padding:0px;
+	margin:0px 0px;
+	z-index:1;
+	width:193px !important;
+	left:-1px !important;
+	top:45px !important;
+	/*max-height:125px !important;*/
+	overflow-y:auto;
+	overflow-x:hidden;
+	display:block !important;
+}
+
+div.jsonSuggestResults div.resultItem {
+	margin:0px;
+	padding:5px;
+	position:relative;
+	height:auto;
+	cursor:pointer;
+	background:#283649 !important;
+	border-bottom:1px solid #4e6277;
+	color:#868d98;
+
+}
+
+div.jsonSuggestResults div.resultItem.odd {
+	/*background-color:#d4e8f3; */
+	background:#283649 !important;
+}
+div.jsonSuggestResults div.resultItem.odd:hover{
+	color:#fff;
+	}
+
+div.jsonSuggestResults div.resultItem.even {
+	background:#283649 !important;
+}
+div.jsonSuggestResults div.resultItem.even:hover {
+	color:#fff;
+}
+div.jsonSuggestResults div.resultItem.hover {
+	background:#283649 !important;
+	color:#fff !important;
+}
+
+div.jsonSuggestResults div.resultItem img {
+	float:left;
+	margin-right:10px;
+}
+
+div.jsonSuggestResults div.resultItem p {
+	margin:0px;
+	padding:0px;
+}
+
+div.jsonSuggestResults div.resultItem p strong {
+	font-weight:bold;
+	text-decoration:underline;
+}
+
+div.jsonSuggestResults div.resultItem p.extra {
+	font-size: x-small !important;
+	position:absolute;
+	top:0px;
+	left: 0px;
+	width:190px;
+	height:24px;
+}
+div.jsonSuggestResults div.resultItem p.extra a{display:block;height:24px;}
