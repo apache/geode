@@ -227,13 +227,11 @@ public class CompositeGroupJunction extends AbstractCompiledValue implements
             .filterEvaluate(context, intermediateResults, false,
                 null/* iterOpn = null */, null/* send independent itrs null */, false,true, false);
         if (intermediateResults.isEmpty()) {
-          return new StructBag(
-            QueryUtils
-                .createStructTypeForRuntimeIterators(this.completeExpansion ? context
-                    .getCurrentIterators()
-                    : QueryUtils.getDependentItrChainForIndpndntItrs(
-                        this.indpndnts, context)),
-                               context.getCachePerfStats()); }
+          StructType structType = QueryUtils .createStructTypeForRuntimeIterators(
+              this.completeExpansion ? context.getCurrentIterators() : QueryUtils.
+                  getDependentItrChainForIndpndntItrs( this.indpndnts, context));
+          return QueryUtils.createStructCollection(context, structType) ;
+        }
       }
     }
     CompiledValue cc = (CompiledValue) itr.next();
@@ -299,17 +297,15 @@ public class CompositeGroupJunction extends AbstractCompiledValue implements
               ObjectType type = ((RuntimeIterator) finalList.iterator().next())
                   .getElementType();
               if (type instanceof StructType) {
-                empty = new StructBag((StructTypeImpl) type,
-                                      context.getCachePerfStats());
+                empty = QueryUtils.createStructCollection(context, (StructTypeImpl) type) ;
               }
               else {
-                empty = new ResultsBag(type, context.getCachePerfStats());
+                empty = QueryUtils.createResultCollection(context, type);
               }
             }
             else {
-              empty = new StructBag(QueryUtils
-                  .createStructTypeForRuntimeIterators(finalList),
-                                    context.getCachePerfStats());
+              StructType strucType =QueryUtils.createStructTypeForRuntimeIterators(finalList);
+              empty = QueryUtils.createStructCollection(context, strucType) ;
             }
             return empty;
           }

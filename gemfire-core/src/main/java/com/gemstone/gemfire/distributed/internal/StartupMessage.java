@@ -17,11 +17,13 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.gemstone.gemfire.internal.*;
+
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
 import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -309,33 +311,25 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     return STARTUP_MESSAGE;
   }
 
-  private static final Version[] dsfidVersions = new Version[] {
-          Version.GFE_82
-  };
-
   @Override
   public Version[] getSerializationVersions() {
-    return dsfidVersions;
-  }
-
-  public void toDataPre_GFE_8_2_0_0(DataOutput out) throws IOException {
-    toDataContent(out, true);
+    return null;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    toDataContent(out, false);
-  }
-
-  private void toDataContent(DataOutput out, boolean pre8_2_0_0) throws IOException {
     super.toData(out);
     out.writeBoolean(this.directChannel != null);
     if (this.directChannel != null) {
       InternalDataSerializer.invokeToData(this.directChannel, out);
     }
-    if (pre8_2_0_0) {
+
+    boolean pre9_0_0_0 = InternalDataSerializer.
+        getVersionForDataStream(out).compareTo(Version.GFE_90) < 0;
+    if (pre9_0_0_0) {
       DataSerializer.writeObject(new Properties(), out);
     }
+
     DataSerializer.writeString(this.version, out);
     out.writeInt(this.replyProcessorId);
     out.writeBoolean(this.isMcastEnabled);
@@ -379,7 +373,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     data.writeIsSharedConfigurationEnabled(this.isSharedConfigurationEnabled);
     data.writeMcastPort(this.mcastPort);
     data.writeMcastHostAddress(this.mcastHostAddress);
-    data.toData(out);
+    data.writeTo(out);
   }
 
   /**
@@ -394,18 +388,9 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     this.fromDataProblems.append("\n\n");
   }
 
-  public void fromDataPre_GFE_8_2_0_0(DataInput in)
-          throws IOException, ClassNotFoundException {
-    fromDataContent(in, true);
-  }
-
   @Override
   public void fromData(DataInput in)
     throws IOException, ClassNotFoundException {
-    fromDataContent(in, false);
-  }
-
-  private void fromDataContent(DataInput in, boolean pre8_2_0_0) throws IOException, ClassNotFoundException {
     super.fromData(in);
     boolean hasDirectChannel = in.readBoolean();
     if (hasDirectChannel) {
@@ -413,9 +398,13 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     } else {
       this.directChannel = null;
     }
-    if (pre8_2_0_0) {
+
+    boolean pre9_0_0_0 = InternalDataSerializer.
+        getVersionForDataStream(in).compareTo(Version.GFE_90) < 0;
+    if (pre9_0_0_0) {
       DataSerializer.readObject(in);
     }
+    
     this.version = DataSerializer.readString(in);
     this.replyProcessorId = in.readInt();
     this.isMcastEnabled = in.readBoolean();
@@ -461,7 +450,8 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     this.redundancyZone = DataSerializer.readString(in);
     this.enforceUniqueZone = in.readBoolean();
 
-    StartupMessageData data = new StartupMessageData(in, this.version);
+    StartupMessageData data = new StartupMessageData();
+    data.readFrom(in);
     this.hostedLocatorsAll = data.readHostedLocators();
     this.isSharedConfigurationEnabled = data.readIsSharedConfigurationEnabled();
     this.mcastPort = data.readMcastPort();

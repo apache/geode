@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- MultiuserSecurityClient.xml
+     Configures a region as a client region in a Security cache. The 
+     region's pool connects to a server listening on port 40404.
+-->
+<!DOCTYPE client-cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<client-cache>
+  <pool name="my_pool_name" multiuser-authentication="true">
+    <server host="localhost" port="40404"/>
+  </pool>
+</client-cache>

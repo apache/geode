@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +37,8 @@ import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryExecutionLowMemoryException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
+import com.gemstone.gemfire.cache.query.internal.CompiledGroupBySelect;
 import com.gemstone.gemfire.cache.query.internal.CompiledID;
 import com.gemstone.gemfire.cache.query.internal.CompiledIndexOperation;
 import com.gemstone.gemfire.cache.query.internal.CompiledIteratorDef;
@@ -45,17 +48,28 @@ import com.gemstone.gemfire.cache.query.internal.CompiledPath;
 import com.gemstone.gemfire.cache.query.internal.CompiledSelect;
 import com.gemstone.gemfire.cache.query.internal.CompiledSortCriterion;
 import com.gemstone.gemfire.cache.query.internal.CompiledValue;
+import com.gemstone.gemfire.cache.query.internal.CumulativeNonDistinctResults;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
 import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
+import com.gemstone.gemfire.cache.query.internal.CumulativeNonDistinctResults.Metadata;
 import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
+import com.gemstone.gemfire.cache.query.internal.NWayMergeResults;
+import com.gemstone.gemfire.cache.query.internal.OrderByComparator;
 import com.gemstone.gemfire.cache.query.internal.PRQueryTraceInfo;
 import com.gemstone.gemfire.cache.query.internal.QueryExecutionContext;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
+import com.gemstone.gemfire.cache.query.internal.ResultsSet;
 import com.gemstone.gemfire.cache.query.internal.RuntimeIterator;
+import com.gemstone.gemfire.cache.query.internal.SortedResultsBag;
+import com.gemstone.gemfire.cache.query.internal.SortedStructBag;
 import com.gemstone.gemfire.cache.query.internal.StructBag;
 import com.gemstone.gemfire.cache.query.internal.StructImpl;
+import com.gemstone.gemfire.cache.query.internal.StructSet;
+import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
+import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
+import com.gemstone.gemfire.cache.query.internal.utils.PDXUtils;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -66,6 +80,7 @@ import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.NanoTimer;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.partitioned.QueryMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.StreamingPartitionOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -147,7 +162,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private static final int MAX_PR_QUERY_RETRIES = Integer.getInteger("gemfire.MAX_PR_QUERY_RETRIES", 10).intValue();
 
   private final PartitionedRegion pr;
-  private volatile Map node2bucketIds;
+  private volatile Map<InternalDistributedMember,List<Integer>> node2bucketIds;
   private final DefaultQuery query;
   private final Object[] parameters;
   private SelectResults cumulativeResults;
@@ -184,7 +199,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     this.bucketsToQuery = bucketsToQuery;
     this.successfulBuckets = new IntOpenHashSet(this.bucketsToQuery.size());
     this.resultsPerMember = new ConcurrentHashMap<InternalDistributedMember, Collection<Collection>>();
-    this.node2bucketIds = Collections.EMPTY_MAP;
+    this.node2bucketIds = Collections.emptyMap();
     if (query != null && query.isTraced()) {
       prQueryTraceInfoList = new ConcurrentLinkedQueue();
     }
@@ -222,6 +237,19 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   @Override  
   protected boolean processData(List objects, InternalDistributedMember sender,
                                 int sequenceNum, boolean lastInSequence) {
+    //check if sender is pre gfe_90. In that case the results coming from them are not sorted
+    // we will have to sort it
+    boolean sortNeeded = false;
+    List<CompiledSortCriterion> orderByAttribs = null;
+    if(sender.getVersionObject().compareTo(Version.GFE_90) < 0 ) {
+      CompiledSelect cs = this.query.getSimpleSelect();
+      if(cs != null && cs.isOrderBy()) {
+        sortNeeded = true;
+        orderByAttribs = cs.getOrderByAttrs();
+      }
+      
+      
+    }
     Collection results = this.resultsPerMember.get(sender);
     if (results == null) {
       synchronized (this.resultsPerMember) {
@@ -254,10 +282,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     if (logger.isDebugEnabled()) {
       logger.debug("Results per member, for {} size: {}", sender, objects.size());
     }
+    if(sortNeeded) {
+      objects = sortIncomingData(objects, orderByAttribs);
+    }
 
     synchronized (results) {
-      if (!QueryMonitor.isLowMemory()) {
-        results.add(objects);
+      if (!QueryMonitor.isLowMemory()) {        
+          results.add(objects);        
       } else {
         if (logger.isDebugEnabled()) {
           logger.debug("query canceled while gathering results, aborting");
@@ -291,6 +322,39 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     */
     return true;
   }
+
+  //TODO Asif: optimize it by creating a Sorted SelectResults Object at the time of fromData , so 
+  // that processData already recieves ordered data.
+  private List sortIncomingData(List objects,
+      List<CompiledSortCriterion> orderByAttribs) {
+    ObjectType resultType = cumulativeResults.getCollectionType().getElementType();
+    ExecutionContext local = new ExecutionContext(null, this.pr.cache);
+    Comparator comparator = new OrderByComparator(orderByAttribs, resultType, local);
+    boolean nullAtStart = !orderByAttribs.get(0).getCriterion();
+    final SelectResults newResults; 
+    //Asif: There is a bug in the versions < 9.0, such that the struct results coming from the 
+    // bucket nodes , do not contain approrpiate ObjectTypes. All the projection fields have 
+    // have the types as ObjectType. The resultset being created here has the right more selective type.
+    // so the addition of objects throw exception due to type mismatch. To handle this problem, instead
+    // of adding the struct objects as is, add fieldValues.
+    if(resultType != null && resultType.isStructType() )  {
+      SortedStructBag sortedStructBag = new SortedStructBag(comparator, (StructType) resultType, 
+          nullAtStart);
+      for(Object o : objects) {
+        Struct s = (Struct)o;
+        sortedStructBag.addFieldValues(s.getFieldValues());
+      }
+      newResults = sortedStructBag;
+    }else {
+      newResults = new SortedResultsBag(comparator,resultType, nullAtStart);
+      newResults.addAll(objects) ;
+    }
+        
+   
+    objects = newResults.asList();
+    return objects;
+  }
+  
   
   /**
     * Returns normally if succeeded to get data, otherwise throws an exception
@@ -305,7 +369,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       throw new InterruptedException();
     }
 
-    HashMap n2b = new HashMap(this.node2bucketIds);
+    HashMap<InternalDistributedMember,List<Integer>> n2b = new HashMap<InternalDistributedMember,List<Integer>>(this.node2bucketIds);
     n2b.remove(this.pr.getMyId());
     // Shobhit: IF query is originated from a Function and we found some buckets on
     // remote node we should throw exception mentioning data movement during function execution.
@@ -333,10 +397,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         // send separate message to each recipient since each one has a
         // different list of bucket ids
         processor = new StreamingQueryPartitionResponse(this.sys, n2b.keySet());
-        for (Iterator itr = n2b.entrySet().iterator(); itr.hasNext();) {
-          Map.Entry me = (Map.Entry) itr.next();
-          final InternalDistributedMember rcp = (InternalDistributedMember) me.getKey();
-          final List bucketIds = (List) me.getValue();
+        for (Iterator<Map.Entry<InternalDistributedMember,List<Integer>>> itr = n2b.entrySet().iterator(); itr.hasNext();) {
+          Map.Entry<InternalDistributedMember , List<Integer>> me =  itr.next();
+          final InternalDistributedMember rcp =  me.getKey();
+          final List<Integer> bucketIds =  me.getValue();
           DistributionMessage m = createRequestMessage(rcp, processor, bucketIds);
           Set notReceivedMembers = this.sys.getDistributionManager().putOutgoing(m);
           if (th != null) {
@@ -450,7 +514,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * that cause bucket data to be omitted from the results.
    * @throws InterruptedException
    */
-  public void queryBuckets(final TestHook th) throws QueryException, InterruptedException {
+  public SelectResults queryBuckets(final TestHook th) throws QueryException, InterruptedException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     if (Thread.interrupted()) {
@@ -539,7 +603,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       */
     }
 
-    addResultsToResultSet();
+    return addResultsToResultSet();
   }
   
   /**
@@ -595,10 +659,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   
   
   private Set<Integer> caclulateRetryBuckets() {
-    Iterator memberToBucketList = node2bucketIds.entrySet().iterator();
+    Iterator<Map.Entry<InternalDistributedMember,List<Integer>>> memberToBucketList = node2bucketIds.entrySet().iterator();
     final HashSet<Integer> retryBuckets = new HashSet<Integer>();
     while (memberToBucketList.hasNext()) {
-      Map.Entry<InternalDistributedMember, ArrayList<Integer>> e = (Map.Entry)memberToBucketList.next();
+      Map.Entry<InternalDistributedMember, List<Integer>> e = memberToBucketList.next();
       InternalDistributedMember m = e.getKey();
       if (!this.resultsPerMember.containsKey(m)
           || (!((MemberResultsList) this.resultsPerMember.get(m))
@@ -622,58 +686,93 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return retryBuckets;
   }
 
-  private void addResultsToResultSet() throws QueryException {
+  private SelectResults addResultsToResultSet() throws QueryException {
     int numElementsInResult = 0;
-    boolean isStructBag = false;
-    boolean isResultBag = false;
-
+    
     boolean isDistinct = false;
     boolean isCount = false;
+
+    int limit = -1; // -1 indicates no limit wsa specified in the query
+    // passed as null. Not sure if it can happen in real life situation.
+    // So instead of modifying test , using a null check in constructor
+    CompiledSelect cs = null;
+
    
-    int limit = -1; //-1 indicates no limit wsa specified in the query
-    //passed as null. Not sure if it can happen in real life situation.
-    //So instead of modifying test , using a null check in constructor
-    CompiledSelect cs =null;
-    
-    // Indicates whether to check for PdxInstance and convert them to 
-    // domain object. 
-    // In case of local queries the domain objects are stored in the result set
-    // for client/server queries PdxInstance are stored in result set. 
-    boolean getDomainObjectForPdx;
-    //indicated results from remote nodes need to be deserialized
-    //for local queries
-    boolean getDeserializedObject = false;
-    
-    if(this.query != null) {
-      cs =  this.query.getSimpleSelect();
+
+    if (this.query != null) {
+      cs = this.query.getSimpleSelect();
       limit = this.query.getLimit(parameters);
-      isDistinct = (cs != null)? cs.isDistinct():true;
-      isCount = (cs != null)? cs.isCount():false;
-    }
-    
-    if (isCount && !isDistinct) {
-      addTotalCountForMemberToResults(limit);
-      return;
-    } 
-    
-    if (this.cumulativeResults instanceof StructBag) {
-    	isStructBag = true;
-    } else if (this.cumulativeResults instanceof ResultsBag) {
-    	isResultBag = true;
-    	//TODO:Asif: Idealy the isOrdered should  be the sufficient condtion. Remove the orderbyAttribs null check
-    } else if (this.cumulativeResults.getCollectionType().isOrdered() && cs.getOrderByAttrs() != null) {
-      // If its a sorted result set, sort local and remote results using query.
-      buildSortedResult(cs, limit);
-      return;
+      isDistinct = (cs != null) ? cs.isDistinct() : true;
+      isCount = (cs != null) ? cs.isCount() : false;
     }
 
+    if (isCount && !isDistinct) {
+      addTotalCountForMemberToResults(limit);
+      return this.cumulativeResults;
+    }
+
+    boolean isGroupByResults = cs.getType() == CompiledValue.GROUP_BY_SELECT;
+    if(isGroupByResults) {
+      SelectResults baseResults = null;
+      CompiledGroupBySelect cgs = (CompiledGroupBySelect) cs;
+      if(cgs.getOrderByAttrs() != null && !cgs.getOrderByAttrs().isEmpty()) {
+        baseResults = this.buildSortedResult(cs, limit);        
+      }else {
+        baseResults = this.buildCumulativeResults(isDistinct, limit);
+      }
+      ExecutionContext context = new ExecutionContext(null, pr.cache);
+      context.setIsPRQueryNode(true);
+      return cgs.applyAggregateAndGroupBy(baseResults, context);
+    }else {
+
+      if (this.cumulativeResults.getCollectionType().isOrdered()
+        && cs.getOrderByAttrs() != null) {
+      // If its a sorted result set, sort local and remote results using query.
+        return buildSortedResult(cs, limit);        
+      }else {  
+        return buildCumulativeResults(isDistinct, limit);
+      }
+    }
+  }
+
+  private SelectResults buildCumulativeResults(boolean isDistinct, int limit) {
+    // Indicates whether to check for PdxInstance and convert them to
+    // domain object.
+    // In case of local queries the domain objects are stored in the result set
+    // for client/server queries PdxInstance are stored in result set.
+    boolean getDomainObjectForPdx;
+    // indicated results from remote nodes need to be deserialized
+    // for local queries
+    boolean getDeserializedObject = false;
+    int numElementsInResult = 0;
+    
+    ObjectType elementType = this.cumulativeResults.getCollectionType().getElementType();
+    boolean isStruct = elementType != null && elementType.isStructType();
     final DistributedMember me = this.pr.getMyId();
 
     if (DefaultQuery.testHook != null) {
       DefaultQuery.testHook.doTestHook(4);
     }
+  
     boolean localResults = false;
-    for (Map.Entry<InternalDistributedMember, Collection<Collection>> e : this.resultsPerMember.entrySet()) {
+    
+    List<CumulativeNonDistinctResults.Metadata> collectionsMetadata =null;
+    List<Collection> results = null;
+    
+    if(isDistinct) {
+      if(isStruct) {
+        StructType stype = (StructType)elementType;
+        this.cumulativeResults = new StructSet(stype);
+      }else {
+        this.cumulativeResults = new ResultsSet(elementType);
+      }
+    }else {
+      collectionsMetadata = new ArrayList<CumulativeNonDistinctResults.Metadata>();
+      results =  new ArrayList<Collection>();
+    }
+    
+    for (Map.Entry<InternalDistributedMember, Collection<Collection>> e : this.resultsPerMember
+        .entrySet()) {
       checkLowMemory();
       // If its a local query, the results should contain domain objects.
       // in case of client/server query the objects from PdxInstances were
@@ -687,107 +786,53 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       } else {
         // In case of remote nodes, the result objects are in PdxInstance form
         // get domain objects for local queries.
-        getDomainObjectForPdx = !(this.pr.getCache().getPdxReadSerializedByAnyGemFireServices());
+        getDomainObjectForPdx = !(this.pr.getCache()
+            .getPdxReadSerializedByAnyGemFireServices());
         // In case of select * without where clause the results from remote
         // nodes are sent in serialized form. For non client queries we need to
         // deserialize the value
-        if(!getDeserializedObject && !((DefaultQuery)this.query).isKeepSerialized()){
+        if (!getDeserializedObject
+            && !((DefaultQuery) this.query).isKeepSerialized()) {
           getDeserializedObject = true;
         }
       }
 
       final boolean isDebugEnabled = logger.isDebugEnabled();
-      
-      for (Collection res : e.getValue()) {
-        checkLowMemory();
-        //final TaintableArrayList res = (TaintableArrayList) e.getValue();      
-        if (res != null) {
-          if (isDebugEnabled) {
-            logger.debug("Query Result from member :{}: {}", e.getKey(), res.size());
-          }
-          if (limit == -1 && !getDomainObjectForPdx && !getDeserializedObject && 
-              (!isDistinct && localResults /* This check is to convert PdxString in projection lists to String */)) {
-            this.cumulativeResults.addAll(res);
-          } else {
+      if (!isDistinct) {
+        CumulativeNonDistinctResults.Metadata wrapper = CumulativeNonDistinctResults
+            .getCollectionMetadata(getDomainObjectForPdx,
+                getDeserializedObject, localResults);
+       
+          for (Collection res : e.getValue()) {
+            results.add(res);
+            collectionsMetadata.add(wrapper);    
+          }        
+      } else {
+        for (Collection res : e.getValue()) {
+          checkLowMemory();
+          // final TaintableArrayList res = (TaintableArrayList) e.getValue();
+          if (res != null) {
+            if (isDebugEnabled) {
+              logger.debug("Query Result from member :{}: {}", e.getKey(),
+                  res.size());
+            }
+
             if (numElementsInResult == limit) {
               break;
             }
+            boolean[] objectChangedMarker = new boolean[1];
+            
             for (Object obj : res) {
               checkLowMemory();
               int occurence = 0;
-              if (isStructBag) {
-                StructImpl simpl = (StructImpl) obj;
-                if (getDomainObjectForPdx) {
-                  try {
-                    if (simpl.isHasPdx()) {
-                      occurence = ((ResultsBag) this.cumulativeResults).addAndGetOccurence(simpl.getPdxFieldValues());
-                    } else {
-                      occurence = ((ResultsBag) this.cumulativeResults).addAndGetOccurence(simpl.getFieldValues());
-                    }
-                  } catch (Exception ex) {
-                    throw new QueryException(
-                        "Unable to retrieve domain object from PdxInstance while building the ResultSet. "
-                        + ex.getMessage());
-                  }
-                } else {
-                  Object[] values = simpl.getFieldValues();
-                  if(getDeserializedObject){
-                    for (int i = 0; i < values.length; i++) {
-                      if(values[i] instanceof VMCachedDeserializable){
-                        values[i] = ((VMCachedDeserializable)values[i]).getDeserializedForReading();
-                      }
-                    }
-                  }
-                  /* This is to convert PdxString to String */                
-                  if (simpl.isHasPdx() && isDistinct && localResults) {
-                    for (int i = 0; i < values.length; i++) {
-                      if(values[i] instanceof PdxString){
-                        values[i] = ((PdxString)values[i]).toString();
-                      }
-                    }
-                  }
-                  occurence = ((ResultsBag) this.cumulativeResults).addAndGetOccurence(values);
-                }
-              } else {
-                if (getDomainObjectForPdx) {
-                  if(obj instanceof PdxInstance){
-                    try {
-                      obj = ((PdxInstance) obj).getObject();
-                    } catch (Exception ex) {
-                      throw new QueryException(
-                          "Unable to retrieve domain object from PdxInstance while building the ResultSet. "
-                          + ex.getMessage());
-                    }
-                  }
-                  else if (obj instanceof PdxString){
-                    obj = ((PdxString)obj).toString();
-                  }
-                } else if (isDistinct && localResults && obj instanceof PdxString) {
-                  /* This is to convert PdxString to String */
-                  obj = ((PdxString)obj).toString();
-                }
-                
-                if (isResultBag) {
-                  if(getDeserializedObject && obj instanceof VMCachedDeserializable) {
-                    obj = ((VMCachedDeserializable)obj).getDeserializedForReading();
-                  }
-                    occurence = ((ResultsBag) this.cumulativeResults)
-                  .addAndGetOccurence(obj);
-                } else {
-                  if(getDeserializedObject && obj instanceof VMCachedDeserializable) {
-                      obj = ((VMCachedDeserializable)obj).getDeserializedForReading();
-                  } 
-                  
-                  // Resultset or StructSet, SortedResultSet, SortedStructSet.
-                  // Once we start passing Object[] in the List , the below should
-                  // change for StructSet and possibly SortedStructSet
-                  occurence = this.cumulativeResults.add(obj) ? 1 : 0;
-                }
-              }
-
+              obj = PDXUtils.convertPDX(obj, isStruct,
+                  getDomainObjectForPdx, getDeserializedObject, localResults, objectChangedMarker, true);
+              boolean elementGotAdded = isStruct? ((StructSet)this.cumulativeResults).addFieldValues((Object[])obj):
+                this.cumulativeResults.add(obj);
+              occurence = elementGotAdded ? 1 : 0;
               // Asif: (Unique i.e first time occurence) or subsequent occurence
               // for non distinct query
-              if (occurence == 1 || (occurence > 1 && !isDistinct)) {
+              if (occurence == 1) {
                 ++numElementsInResult;
                 // Asif:Check again to see if this addition caused limit to be
                 // reached so that current loop will not iterate one more
@@ -801,18 +846,29 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
       }
     }
-    
-    if (prQueryTraceInfoList != null && this.query.isTraced() && logger.isInfoEnabled()) {
+
+    if (prQueryTraceInfoList != null && this.query.isTraced()
+        && logger.isInfoEnabled()) {
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook("Create PR Query Trace String");
       }
       StringBuilder sb = new StringBuilder();
-      sb.append(LocalizedStrings.PartitionedRegion_QUERY_TRACE_LOG.toLocalizedString(this.query.getQueryString())).append("\n");
-      for (PRQueryTraceInfo queryTraceInfo: prQueryTraceInfoList) {
+      sb.append(
+          LocalizedStrings.PartitionedRegion_QUERY_TRACE_LOG
+              .toLocalizedString(this.query.getQueryString())).append("\n");
+      for (PRQueryTraceInfo queryTraceInfo : prQueryTraceInfoList) {
         sb.append(queryTraceInfo.createLogLine(me)).append("\n");
       }
-      logger.info(sb.toString());;
+      logger.info(sb.toString());
+      ;
     }
+    if (!isDistinct) {
+      this.cumulativeResults =  new CumulativeNonDistinctResults(results, limit,
+          this.cumulativeResults.getCollectionType().getElementType(),
+          collectionsMetadata);
+
+    } 
+    return this.cumulativeResults;
   }
   
   private void checkLowMemory() {
@@ -827,6 +883,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
   }
 
+  
 
   /**
    * Adds all counts from all member buckets to cumulative results.
@@ -865,211 +922,29 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * This is added as quick turn-around, this is added based on most commonly used
    * queries, needs to be investigated further.
    */   
-  private void buildSortedResult(CompiledSelect cs, int limit) throws QueryException {
-    List projAttrs = cs.getProjectionAttributes();
-    List orderByAttrs = cs.getOrderByAttrs();
-    //boolean isCount = cs.isCount();
-    //List pIterators = cs.getIterators();
-    
-    String eMsg = "Unable to apply order-by on the partition region cumulative results.";
-    Assert.assertTrue(!(orderByAttrs == null), eMsg + " Null order-by attributes.");
-    List iterators = cs.getIterators();
-   
-    String projFields = null;
-    //Map<String, Boolean> orderByFields = new LinkedHashMap<String,Boolean>();
-    List<String> projectionFields = new LinkedList<String>();
+  private SelectResults buildSortedResult(CompiledSelect cs, int limit) throws QueryException {
     
     try {
-      // Evaluate projection attributes.
-      //Create local execution context
-    //If order by clause is present , then compute dependency locally
-      
-      ExecutionContext localContext = new QueryExecutionContext(this.parameters,
+     ExecutionContext localContext = new QueryExecutionContext(this.parameters,
           this.pr.cache);
 
-      localContext.newScope(0);
-
-      Iterator iter = iterators.iterator();
-      while (iter.hasNext()) {
-
-        CompiledIteratorDef iterDef = (CompiledIteratorDef)iter.next();
-        // compute dependencies on this iter first before adding its
-        // RuntimeIterator to the current scope.
-        // this makes sure it doesn't bind attributes to itself
-        localContext.addDependencies(cs, iterDef
-            .computeDependencies(localContext));
-        RuntimeIterator rIter = iterDef.getRuntimeIterator(localContext);
-        localContext.addToIndependentRuntimeItrMap(iterDef);
-        localContext.bindIterator(rIter);
-
-      }
-
-      ObjectType type = cs.prepareResultType(localContext);
-      StringBuffer tempQueryBuffer = new StringBuffer(" order by ");
-      if (type.isStructType()) {
-        StructType structType = (StructType)type;
-        String[] fieldNames = structType.getFieldNames();
-        if (projAttrs == null) {
-          // Evaluate path iterators, in case of multiple paths appropriate
-          // alias needs to be added.
-          // E.g.: select distinct * from /r p, p.positions.values pos order by
-          // p.ID =>
-          // select distinct * from $1 m order by r.p.ID
-          List<RuntimeIterator> runTimeItrs = localContext
-              .getCurrentIterators();
-          Iterator<RuntimeIterator> itr = runTimeItrs.iterator();
-          while (itr.hasNext()) {
-            StringBuffer temp = new StringBuffer();
-            RuntimeIterator rIter = itr.next();
-            rIter.setIndexInternalID(null);
-            rIter.generateCanonicalizedExpression(temp, localContext);
-            projectionFields.add(temp.toString());
-          }
-
-        }
-        else {
-          Iterator<Object[]> itr = projAttrs.iterator();
-          while (itr.hasNext()) {
-            StringBuffer temp = new StringBuffer();
-            Object[] values = itr.next();
-            ((CompiledValue)values[1]).generateCanonicalizedExpression(temp,
-                localContext);
-            projectionFields.add(temp.toString());
-          }
-        }
-        // Evaluate order by attributes.
-        for (int i = 0; i < orderByAttrs.size(); i++) {
-          Object o = orderByAttrs.get(i);
-          if (o instanceof CompiledSortCriterion) {
-            CompiledSortCriterion csc = (CompiledSortCriterion)o;
-            CompiledValue cv = csc.getExpr();
-            StringBuffer temp = new StringBuffer();
-            cv.generateCanonicalizedExpression(temp, localContext);
-            Iterator<String> projFieldItr = projectionFields.iterator();
-            int index = 0;
-            boolean foundMatch = false;
-            String orderBy = temp.toString();
-            while (projFieldItr.hasNext() && !foundMatch) {
-              String projStr = projFieldItr.next();
-              // int indexOfDot = orderBy.indexOf('.');
-              if (orderBy.equals(projStr)) {
-                // exact match , just append the field name
-                tempQueryBuffer.append(' ');
-                tempQueryBuffer.append(fieldNames[index]);
-                tempQueryBuffer.append(' ');
-                tempQueryBuffer.append(csc.getCriterion() ? " desc " : " asc ");
-                tempQueryBuffer.append(',');
-                foundMatch = true;
-              }
-              else if (orderBy.startsWith(projStr)) {
-                tempQueryBuffer.append(fieldNames[index]);
-                tempQueryBuffer.append(temp.substring(projStr.length()));
-
-                tempQueryBuffer.append(' ');
-                tempQueryBuffer.append(csc.getCriterion() ? " desc " : " asc ");
-                tempQueryBuffer.append(',');
-                foundMatch = true;
-              }
-              ++index;
-            }
-            if (!foundMatch) {
-              throw new QueryException("Order by clause " + orderBy
-                  + " not derivable from any projection attribute");
-            }
-
-            // orderByFields.put(temp.toString(), !csc.getCriterion());
-          }
-        }
-        tempQueryBuffer.deleteCharAt(tempQueryBuffer.length() - 1);
-
-      }
-      else {
-        String projStr = null;
-        if (projAttrs == null) {
-          List<RuntimeIterator> runTimeItrs = localContext
-              .getCurrentIterators();
-          Iterator<RuntimeIterator> itr = runTimeItrs.iterator();
-
-          StringBuffer temp = new StringBuffer();
-          RuntimeIterator rIter = itr.next();
-          rIter.setIndexInternalID(null);
-          rIter.generateCanonicalizedExpression(temp, localContext);
-          projStr = temp.toString();
-        }
-
-        else {
-          Iterator<Object[]> itr = projAttrs.iterator();
-          StringBuffer temp = new StringBuffer();
-          Object[] values = itr.next();
-          ((CompiledValue)values[1]).generateCanonicalizedExpression(temp,
-              localContext);
-          projStr = temp.toString();
-
-        }
-        // Evaluate order by attributes.
-        for (int i = 0; i < orderByAttrs.size(); i++) {
-          Object o = orderByAttrs.get(i);
-
-          if (o instanceof CompiledSortCriterion) {
-            CompiledSortCriterion csc = (CompiledSortCriterion)o;
-            CompiledValue cv = csc.getExpr();
-            StringBuffer temp = new StringBuffer();
-            cv.generateCanonicalizedExpression(temp, localContext);
-
-            String orderBy = temp.toString();
-            // int indexOfDot = temp.indexOf(".");
-
-            if (orderBy.equals(projStr)) {
-              // exact match , just append the field name
-              tempQueryBuffer.append(' ');
-              tempQueryBuffer.append("iter");
-              tempQueryBuffer.append(' ');
-
-            }
-            else if (orderBy.startsWith(projStr)) {
-              tempQueryBuffer.append(' ');
-              String attr = temp.substring(projStr.length() + 1);
-              // escape reserved keywords
-              attr = checkReservedKeyword(attr);
-              tempQueryBuffer.append(attr);
-            }
-            else {
-              throw new QueryException("Order by clause " + orderBy
-                  + " not derivable from projection attribute " + projStr);
-            }
-
-            tempQueryBuffer.append(' ');
-            tempQueryBuffer.append(csc.getCriterion() ? " desc " : " asc ");
-            tempQueryBuffer.append(',');
-          }
-        }
-        tempQueryBuffer.deleteCharAt(tempQueryBuffer.length() - 1);
-      }
-
-      tempQueryBuffer.insert(0, " SELECT DISTINCT * FROM $1 iter ");
       
-      if (logger.isDebugEnabled()) {
-        logger.debug("The temp query generated to evaluate order-by on PR commulative results: {}", tempQueryBuffer.toString());
-      }
-
-      DefaultQuery q = (DefaultQuery)this.pr.getCache().getQueryService()
-          .newQuery(tempQueryBuffer.toString());
-      ExecutionContext context;
-      
-      final DistributedMember me = this.pr.getMyId();
-
+      List<Collection> allResults = new ArrayList<Collection>();
       for (Collection<Collection> memberResults : this.resultsPerMember.values()) {
         for (Collection res : memberResults) {
           if (res != null) {
-            context = new QueryExecutionContext((new Object[] { res }), this.pr
-                .getCache(), this.cumulativeResults, q);
-            q.executeUsingContext(context);
+            allResults.add(res);
           }
         }
       }
+      
+      this.cumulativeResults = new NWayMergeResults(allResults, cs.isDistinct(), limit, cs.getOrderByAttrs(), 
+          localContext, cs.getElementTypeForOrderByQueries());
+      return this.cumulativeResults;
     } catch (Exception ex) {
       throw new QueryException("Unable to apply order-by on the partition region cumulative results.", ex);
     }
+    
   }
 
   //returns attribute with escape quotes #51085 and #51886
@@ -1101,13 +976,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private String getQueryAttributes(CompiledValue cv, StringBuffer fromPath) throws QueryException {
     // field with multiple level like p.pos.secId
     String clause = "";
-    if (cv instanceof CompiledID)  {
+    if (cv.getType() == OQLLexerTokenTypes.Identifier)  {
       // It will be p.pos.secId
       clause = ((CompiledID)cv).getId() + clause;
     } else {
       do {
-        if (cv instanceof CompiledPath || cv instanceof CompiledIndexOperation) {
-          if (cv instanceof CompiledIndexOperation) {
+        if (cv.getType() == CompiledPath.PATH || cv.getType() == OQLLexerTokenTypes.TOK_LBRACK) {
+          if (cv.getType() == OQLLexerTokenTypes.TOK_LBRACK) {
             CompiledIndexOperation cio = (CompiledIndexOperation)cv;
             CompiledLiteral cl = (CompiledLiteral)cio.getExpression();
             StringBuffer sb = new StringBuffer();
@@ -1118,7 +993,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
             }
           }
           clause = ("." + ((CompiledPath)cv).getTailID() + clause);
-        } else if (cv instanceof CompiledOperation) {
+        } else if (cv.getType() == OQLLexerTokenTypes.METHOD_INV) {
           // Function call.
           clause = "." + ((CompiledOperation)cv).getMethodName() + "()" + clause;
         } else {
@@ -1127,9 +1002,9 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
 
         cv = cv.getReceiver();
-      } while (!(cv instanceof CompiledID));
+      } while (!(cv.getType() == OQLLexerTokenTypes.Identifier));
 
-      if (cv instanceof CompiledID) {
+      if (cv.getType() == OQLLexerTokenTypes.Identifier) {
         clause = ((CompiledID)cv).getId() + clause;
         // Append region iterator alias. p
         if (fromPath != null) {
@@ -1140,161 +1015,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return clause;
   }
 
-  private void buildSortedResultBackup(CompiledSelect cs, int limit) throws QueryException {
-    List projAttrs = cs.getProjectionAttributes();
-    List orderByAttrs = cs.getOrderByAttrs();
-    List pIterators = cs.getIterators();
-    //boolean isDistinct = (cs != null)? cs.isDistinct():true;
-    
-    String eMsg = "Unable to apply order-by on the partition region cumulative results.";
-    Assert.assertTrue(!(orderByAttrs == null), eMsg + " Null order-by attributes.");
-    
-    StringBuffer fromPath =  new StringBuffer();
-    String projFields = null;
-    HashMap<String, String> orderByFields = new HashMap<String, String>();
-    
-    try {
-      // Evaluate projection attributes.
-      String fromIter = "";
-      if (projAttrs == null) {
-        // Evaluate path iterators, in case of multiple paths appropriate alias needs to be added.
-        // E.g.: select distinct * from /r p, p.positions.values pos order by p.ID =>
-        //         select distinct * from $1 m order by r.p.ID
-        for (int i = 1; i < pIterators.size(); i++) {
-          CompiledIteratorDef iterDef = (CompiledIteratorDef) pIterators.get(i-1);   
-          fromIter += (iterDef.getName() + ("."));
-        }
-      } else if (projAttrs.size() == 1) {
-        // In case single projections, it should be treated as the ordered field.
-        // E.g: select distinct status from /r order by status => select distinct * from $1 p order by p 
-        Object projDef[] = (Object[])projAttrs.get(0);
-        if (projDef[1] instanceof CompiledID) {
-          projFields = ((CompiledID)projDef[1]).getId();
-        } else if (projDef[1] instanceof CompiledPath) {
-          CompiledPath cp = (CompiledPath)projDef[1];
-          projFields = ((CompiledID)cp.getReceiver()).getId() + "." + cp.getTailID();
-        } else if (projDef[1] instanceof CompiledOperation) {
-          // Function call.
-          CompiledOperation cp = (CompiledOperation)projDef[1];
-          projFields = ((CompiledID)cp.getReceiver(null)).getId() + "." + cp.getMethodName() + "()";
-        } else {
-          throw new QueryException("Failed to evaluate projection attributes. " + eMsg);
-        }
-      }
-     
-      // Evaluate order by attributes.
-      for (int i = 0; i < orderByAttrs.size(); i++) {
-        Object o = orderByAttrs.get(i);
-        String orderByClause = "";
-        if (o instanceof CompiledSortCriterion) {
-          CompiledSortCriterion csc = (CompiledSortCriterion)o;
-          CompiledValue cv = csc.getExpr();  
-          
-          // field with multiple level like p.pos.secId
-          if (cv instanceof CompiledID)  {
-            // It will be p.pos.secId
-            orderByClause = ((CompiledID)cv).getId() + orderByClause;
-          } else {
-            do {
-            if (cv instanceof CompiledPath || cv instanceof CompiledIndexOperation) {
-              if (cv instanceof CompiledIndexOperation) {
-                CompiledIndexOperation cio = (CompiledIndexOperation)cv;
-                CompiledLiteral cl = (CompiledLiteral)cio.getExpression();
-                StringBuffer sb = new StringBuffer();
-                cl.generateCanonicalizedExpression(sb, null);
-                cv = ((CompiledIndexOperation)cv).getReceiver();
-                if (sb.length() > 0) {
-                  orderByClause = "[" + sb.toString() + "]" + orderByClause;
-                }
-              }
-              orderByClause = ("." + ((CompiledPath)cv).getTailID() + orderByClause);
-            } else if (cv instanceof CompiledOperation) {
-              // Function call.
-              orderByClause = "." + ((CompiledOperation)cv).getMethodName() + "()" + orderByClause;
-            } else if (cv instanceof CompiledIndexOperation) {
-              StringBuffer sb = new StringBuffer();
-              
-              //((CompiledIndexOperation)cv).generateCanonicalizedExpression(sb, null);
-              //if (cv2 instanceof CompiledPath) {
-              
-              //orderByClause = "." + ((CompiledIndexOperation)cv).+ "()";
-              //}
-            } else {
-              throw new QueryException("Failed to evaluate order by attributes, found unsupported type  " + cv.getType() + " " + eMsg);
-            }
-            // Ignore subsequent paths.
-            //do {
-                cv = cv.getReceiver();
-            } while (!(cv instanceof CompiledID));
-            
-            if (cv instanceof CompiledID) {
-              orderByClause = ((CompiledID)cv).getId() + orderByClause;
-              // Append region iterator alias. p
-              if (i == 0) {
-                fromPath.append(((CompiledID)cv).getId());
-                //if ((i+1) < orderByAttrs.size()) {
-                //  fromPath.append(", ");
-                //}
-              }
-            }
-            
-          } 
-          /*
-          else if (cv instanceof CompiledOperation) {
-            orderByClause = ((CompiledID)cv).getId() + orderByClause;
-          } else {
-            throw new QueryException("Failed to evaluate order-by attributes. " + eMsg);              
-          }
-          */
-          orderByFields.put(fromIter + orderByClause, (csc.getCriterion()? " desc " : " asc "));
-        }
-      }
-
-      StringBuffer tmpSortQuery =  new StringBuffer("SELECT DISTINCT * FROM $1 ");    
-      if (projFields != null && orderByFields.containsKey(projFields)) {
-        // Select distinct p.status from /region p order by p.status asc
-        // => Select distinct * from $1 p order by p asc
-        if (fromPath.length() > 0) {
-          tmpSortQuery.append(fromPath).append(" ORDER BY ").append(fromPath).append(" ").append(orderByFields.get(projFields));
-        } else {
-          tmpSortQuery.append(fromPath).append("p ORDER BY p").append(orderByFields.get(projFields));
-        }
-      } else {
-        /*
-        if (fromPath.length() > 0) {
-          tmpSortQuery.append(fromPath).append(" ORDER BY ").append(fromPath).append(".");
-        } else {
-        */
-        tmpSortQuery.append(fromPath).append(" ORDER BY ");
-        //}
-        Iterator iter = orderByFields.entrySet().iterator();
-        while (iter.hasNext()) {
-          Map.Entry<String, String> e = (Map.Entry<String, String>)iter.next();
-          tmpSortQuery.append(e.getKey()).append(" ").append(e.getValue());
-          if (iter.hasNext()) {
-            tmpSortQuery.append(", ");
-          }
-        }
-      }
-
-      if (logger.isDebugEnabled()) {
-        logger.debug("The temp query generated to evaluate order-by on PR commulative results: {}", tmpSortQuery);
-      }
-      
-      DefaultQuery q = (DefaultQuery)this.pr.getCache().getQueryService().newQuery(tmpSortQuery.toString());
-      ExecutionContext context;
-      for (Iterator i=this.resultsPerMember.values().iterator(); i.hasNext(); ) {
-        final TaintableArrayList res = (TaintableArrayList)i.next();
-        if (res!=null && res.isConsumable()) {
-          context = new QueryExecutionContext((new Object[] {res}), this.pr.getCache(), this.cumulativeResults, q);
-          q.executeUsingContext(context);
-          res.clear();
-        }
-      }   
-    } catch (Exception ex) {
-      throw new QueryException("Unable to apply order-by on the partition region cumulative results.", ex);
-    }
-  }
   /**
    * Generates a map with key as PR node and value as the list as a subset of
    * the bucketIds hosted by the node.
@@ -1303,7 +1023,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    */
   
   // (package access, and returns map for unit test purposes)
-  Map buildNodeToBucketMap() throws QueryException
+  Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMap() throws QueryException
   {
     return buildNodeToBucketMapForBuckets(this.bucketsToQuery);
   }
@@ -1312,17 +1032,17 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * @param bucketIdsToConsider
    * @return Map of {@link InternalDistributedMember} to {@link ArrayList} of Integers
    */
-  private Map buildNodeToBucketMapForBuckets(final Set<Integer> bucketIdsToConsider) 
+  private Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMapForBuckets(final Set<Integer> bucketIdsToConsider) 
   throws QueryException {
     
-    final HashMap<InternalDistributedMember, ArrayList<Integer>> ret = new 
-    HashMap<InternalDistributedMember, ArrayList<Integer>>();
+    final HashMap<InternalDistributedMember, List<Integer>> ret = new 
+    HashMap<InternalDistributedMember,List<Integer>>();
     
     if (bucketIdsToConsider.isEmpty()) {
       return ret;
     }
 
-    final ArrayList<Integer> bucketIds = new ArrayList<Integer>();
+    final List<Integer> bucketIds = new ArrayList<Integer>();
     PartitionedRegionDataStore dataStore = this.pr.getDataStore();
     final int totalBucketsToQuery = bucketIdsToConsider.size();
     if (dataStore != null) {
@@ -1367,7 +1087,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }
       */
       
-      final ArrayList<Integer> buckets = new ArrayList<Integer>();
+      final List<Integer> buckets = new ArrayList<Integer>();
       for (Integer bid : bucketIdsToConsider) {
         if (!bucketIds.contains(bid)) {
           final Set owners = pr.getRegionAdvisor().getBucketOwners(bid.intValue());
@@ -1416,7 +1136,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       //Create PRQueryResultCollector here.
       //RQueryResultCollector resultCollector = new PRQueryResultCollector();
 
-      List bucketList = (List)this.node2bucketIds.get(me);
+      List<Integer> bucketList = this.node2bucketIds.get(me);
       //try {
         
         //this.pr.getDataStore().queryLocalNode(this.query, this.parameters,
@@ -1628,11 +1348,11 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
   
   private InternalDistributedMember findNodeForBucket(Integer bucketId) {
-    for (Iterator itr = this.node2bucketIds.entrySet().iterator(); itr.hasNext(); ) {
-      Map.Entry entry = (Map.Entry)itr.next();
-      List blist = (List)entry.getValue();
-      for (Iterator itr2 = blist.iterator(); itr2.hasNext(); ) {
-        Integer bid = (Integer)itr2.next();
+    for (Iterator<Map.Entry<InternalDistributedMember,List<Integer>>> itr = this.node2bucketIds.entrySet().iterator(); itr.hasNext(); ) {
+      Map.Entry<InternalDistributedMember,List<Integer>> entry = itr.next();
+      List<Integer> blist = entry.getValue();
+      for (Iterator<Integer> itr2 = blist.iterator(); itr2.hasNext(); ) {
+        Integer bid = itr2.next();
         if (bid.equals(bucketId)) {
           return (InternalDistributedMember)entry.getKey();
         }
@@ -1751,5 +1471,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }          
     }  
     
+    public ObjectType getResultType() {
+      return PartitionedRegionQueryEvaluator.this.cumulativeResults.getCollectionType().getElementType();
+    }
   }
 }

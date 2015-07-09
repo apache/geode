@@ -882,7 +882,24 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
    */
   private final InternalDistributedMember getExistingPrimary() {
     return basicGetPrimaryMember();
-  } 
+  }
+  
+  /**
+   * If the current member is primary for this bucket return true, otherwise, 
+   * give some time for the current member to become primary and
+   * then return whether it is a primary (true/false).
+   */
+  public final boolean isPrimaryWithWait() {
+    if (this.isPrimary()) {
+      return true;
+    }
+    // wait for the current member to become primary holder
+    InternalDistributedMember primary = waitForNewPrimary(); 
+    if(primary != null) {
+        return true;
+    }
+    return false;
+  }
 
   /** 
    * This method was split out from getPrimary() due to bug #40639
@@ -976,6 +993,11 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
       }
     } finally {
       if (lostPrimary) {
+        Bucket br = this.regionAdvisor.getBucket(getBucket().getId());
+        if( br != null && br instanceof BucketRegion) {
+          ((BucketRegion)br).beforeReleasingPrimaryLockDuringDemotion();
+        }
+
         releasePrimaryLock();
         // this was a deposePrimary call so we need to depose children as well
         deposePrimaryForColocatedChildren();
@@ -1582,7 +1604,39 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
       return false;
     }
   }
+
+  private final static long BUCKET_STORAGE_WAIT = Long.getLong("gemfire.BUCKET_STORAGE_WAIT", 15000).longValue(); // 15 seconds
   
+  public boolean waitForStorage() {
+    synchronized (this) {
+      // let's park this thread and wait for storage!
+      StopWatch timer = new StopWatch(true);
+      try {
+        for (;;) {
+          if (this.regionAdvisor.isBucketLocal(getBucket().getId())) {
+            return true;
+          }
+          getProxyBucketRegion().getPartitionedRegion().checkReadiness();
+          if (isClosed()) {
+            return false;
+          }
+          long timeLeft = BUCKET_STORAGE_WAIT - timer.elapsedTimeMillis();
+          if (timeLeft <= 0) {
+            return false;
+          }
+          if (logger.isDebugEnabled()) {
+            logger.debug("Waiting for bucket storage" + this);
+          }
+          this.wait(timeLeft); // spurious wakeup ok
+        }
+      }
+      catch (InterruptedException e) {
+        // abort and return null
+        Thread.currentThread().interrupt();
+      }
+      return false;
+    }
+  }
   public void clearPrimaryElector() {
     synchronized(this) {
       primaryElector = null;

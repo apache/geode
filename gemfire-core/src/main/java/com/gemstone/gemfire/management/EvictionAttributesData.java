@@ -39,7 +39,12 @@ public class EvictionAttributesData {
    */
   private String action;
   
-  @ConstructorProperties( { "algorithm", "maximum", "action"
+  /**
+   * 
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
+  @ConstructorProperties({ "algorithm", "maximum", "action"
 
   })
   public EvictionAttributesData(String algorithm, Integer maximum, String action){
@@ -75,6 +80,9 @@ public class EvictionAttributesData {
     return action;
   }
 
+  /**
+   * String representation of EvictionAttributesData
+   */
   @Override
   public String toString() {
 

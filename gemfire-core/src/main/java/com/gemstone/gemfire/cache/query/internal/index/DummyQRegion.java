@@ -13,24 +13,28 @@
 
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.QRegion;
-import com.gemstone.gemfire.cache.query.internal.ResultsSet;
-import com.gemstone.gemfire.cache.query.internal.ResultsBag;
-import com.gemstone.gemfire.cache.query.types.*;
-import com.gemstone.gemfire.cache.query.internal.types.*;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.internal.QRegion;
+import com.gemstone.gemfire.cache.query.internal.ResultsBag;
+import com.gemstone.gemfire.cache.query.internal.ResultsSet;
+import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.internal.cache.RegionEntryContext;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  *
@@ -120,8 +124,16 @@ public class DummyQRegion extends QRegion {
       valueInList = new  ArrayList(1);      
     }
     valueInList.clear();
-    Object val = this.entry.getValueInVMOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof CachedDeserializable) {
+    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    if (val instanceof Chunk) {
+      @Retained @Released Chunk ohval = (Chunk) val;
+      try {
+        // TODO OFFHEAP: val may be off-heap PdxInstance
+        val = ohval.getDeserializedValue(getRegion(), this.entry);
+      } finally {
+        ohval.release();
+      }
+    } else if (val instanceof CachedDeserializable) {
       val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), this.entry);
     } 
     valueInList.add(val);
@@ -133,8 +145,16 @@ public class DummyQRegion extends QRegion {
     if(valueInArray == null){
       valueInArray = new  Object[1];      
     }   
-    Object val = this.entry.getValueInVMOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof CachedDeserializable) {
+    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    if (val instanceof Chunk) {      
+      @Retained @Released Chunk ohval = (Chunk) val;
+      try {
+        // TODO OFFHEAP: val may be off-heap PdxInstance
+        val = ohval.getDeserializedValue(getRegion(), this.entry);
+      } finally {
+        ohval.release();
+      }
+    } else if (val instanceof CachedDeserializable) {
       val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), this.entry);
     } 
     valueInArray[0] = val;
@@ -148,8 +168,16 @@ public class DummyQRegion extends QRegion {
       values.setElementType(valueType);
     }
     values.clear();
-    Object val = this.entry.getValueInVMOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof CachedDeserializable) {
+    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    if (val instanceof Chunk) {
+      @Retained @Released Chunk ohval = (Chunk) val;
+      try {
+        // TODO OFFHEAP: val may be off-heap PdxInstance
+        val = ohval.getDeserializedValue(getRegion(), this.entry);
+      } finally {
+        ohval.release();
+      }
+    } else if (val instanceof CachedDeserializable) {
       val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), this.entry);
     } 
     values.add(val);

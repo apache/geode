@@ -17,6 +17,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
 // lru: LRU
 // stats: STATS
 // versioned: VERSIONED
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
@@ -31,7 +32,8 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * that contains your build.xml.
  */
 public class VMStatsRegionEntryHeapUUIDKey extends VMStatsRegionEntryHeap {
-  public VMStatsRegionEntryHeapUUIDKey (RegionEntryContext context, UUID key, Object value
+  public VMStatsRegionEntryHeapUUIDKey (RegionEntryContext context, UUID key,
+      Object value
       ) {
     super(context,
           value
@@ -49,10 +51,12 @@ public class VMStatsRegionEntryHeapUUIDKey extends VMStatsRegionEntryHeap {
   private static final AtomicLongFieldUpdater<VMStatsRegionEntryHeapUUIDKey> lastModifiedUpdater
     = AtomicLongFieldUpdater.newUpdater(VMStatsRegionEntryHeapUUIDKey.class, "lastModified");
   private volatile Object value;
-  protected final Object areGetValue() {
+  @Override
+  protected final Object getValueField() {
     return this.value;
   }
-  protected void areSetValue(Object v) {
+  @Override
+  protected void setValueField(Object v) {
     this.value = v;
   }
   protected long getlastModifiedField() {

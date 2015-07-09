@@ -91,7 +91,7 @@ public class GetClientPRMetadataCommand extends BaseCommand {
             }
           }
           responseMsg.send();
-          msg.flush();
+          msg.clearParts();
         }
         catch (Exception e) {
           writeException(msg, e, false, servConn);

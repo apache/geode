@@ -1216,7 +1216,7 @@ public class PoolImpl implements InternalPool {
   /**
    * A debug flag used for testing used in BridgeObserver
    */
-  public static volatile boolean BEFORE_RECOVER_INTERST_CALLBACK_FLAG = false;
+  public static volatile boolean BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = false;
 
   /**
    * A debug flag used for testing used in BridgeObserver

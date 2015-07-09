@@ -117,6 +117,7 @@ public class GetClientPRMetaDataOp {
           if (isDebugEnabled) {
             logger.debug("GetClientPRMetaDataOpImpl#processResponse: received ClientPRMetadata from server successfully.");
           }
+          cms.setMetadataStable(true);
           return null;
         case MessageType.EXCEPTION:
           if (logger.isDebugEnabled()) {

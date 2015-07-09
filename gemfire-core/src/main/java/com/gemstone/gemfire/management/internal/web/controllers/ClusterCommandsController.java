@@ -8,7 +8,6 @@
 package com.gemstone.gemfire.management.internal.web.controllers;
 
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * The ClusterCommandsController class implements GemFire REST API web service calls for the Gfsh Cluster
  * (System)-based commands.
- * <p/>
+ *
  * @author John Blum
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestMapping
@@ -32,11 +31,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @SuppressWarnings("unused")
 public class ClusterCommandsController extends AbstractCommandsController {
 
-  @RequestMapping(method = RequestMethod.GET, value = "/cluster")
+  @RequestMapping(method = RequestMethod.GET, value = "/services/cluster-config")
   @ResponseBody
-  public String statusSystem() {
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.STATUS_SYSTEM);
-    return processCommand(command.toString());
+  public String statusClusterConfig() {
+    return processCommand(CliStrings.STATUS_SHARED_CONFIG);
   }
 
 }

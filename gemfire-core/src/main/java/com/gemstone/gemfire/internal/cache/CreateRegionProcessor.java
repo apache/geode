@@ -571,7 +571,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       
       Set<String> otherAsynEventQueueIds = ((LocalRegion)rgn).getAsyncEventQueueIds();
       Set<String> myAsyncEventQueueIds = profile.asyncEventQueueIds;
-      if (!otherAsynEventQueueIds
+      if (!isLocalOrRemoteAccessor(rgn, profile) && !otherAsynEventQueueIds
           .equals(myAsyncEventQueueIds)) {
         result = LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_ASYNC_EVENT_IDS_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_IDS
             .toLocalizedString(new Object[] { this.regionPath,
@@ -590,6 +590,18 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         if (profile.scope != otherScope) {
           result = LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_SCOPE_BECAUSE_ANOTHER_CACHE_HAS_SAME_REGION_WITH_2_SCOPE.toLocalizedString( new Object[] {this.regionPath, profile.scope, myId, otherScope});
         }
+      }
+        
+      final boolean otherIsOffHeap = rgn.getAttributes().getOffHeap();
+      
+      boolean thisIsRemoteAccessor = false;
+      if (!rgn.getAttributes().getDataPolicy().withStorage() || (pa != null && pa.getLocalMaxMemory() == 0)) {
+        thisIsRemoteAccessor = true;
+      }
+          
+      if (!isRemoteAccessor(profile) && !thisIsRemoteAccessor && profile.isOffHeap != otherIsOffHeap) {
+        result = LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3
+            .toLocalizedString(new Object[] { this.regionPath, profile.isOffHeap, myId, otherIsOffHeap });
       }
       
       if (logger.isDebugEnabled()) {

@@ -47,6 +47,42 @@ public class BridgeServerCreation extends AbstractBridgeServer {
   BridgeServerCreation(InternalCache cache, boolean attachListener) {
     super(cache, attachListener);
   }
+  
+  /**
+   * Constructor for retaining bridge server information during auto-reconnect
+   * @param cache
+   * @param other
+   */
+  public BridgeServerCreation(InternalCache cache, CacheServer other) {
+    super(cache);
+    setPort(other.getPort());
+    setBindAddress(other.getBindAddress());
+    setHostnameForClients(other.getHostnameForClients());
+    setMaxConnections(other.getMaxConnections());
+    setMaxThreads(other.getMaxThreads());
+    setNotifyBySubscription(other.getNotifyBySubscription());
+    setSocketBufferSize(other.getSocketBufferSize());
+    setTcpNoDelay(other.getTcpNoDelay());
+    setMaximumTimeBetweenPings(other.getMaximumTimeBetweenPings());
+    setMaximumMessageCount(other.getMaximumMessageCount());
+    setMessageTimeToLive(other.getMessageTimeToLive());
+    //      setTransactionTimeToLive(other.getTransactionTimeToLive());  not implemented in CacheServer for v6.6
+    setGroups(other.getGroups());
+    setLoadProbe(other.getLoadProbe());
+    setLoadPollInterval(other.getLoadPollInterval());
+    ClientSubscriptionConfig cscOther = other.getClientSubscriptionConfig();
+    ClientSubscriptionConfig cscThis = this.getClientSubscriptionConfig();
+    // added for configuration of ha overflow
+    cscThis.setEvictionPolicy(cscOther.getEvictionPolicy());
+    cscThis.setCapacity(cscOther.getCapacity());
+    String diskStoreName = cscOther.getDiskStoreName();
+    if (diskStoreName != null) {
+      cscThis.setDiskStoreName(diskStoreName);
+    } else {
+      cscThis.setOverflowDirectory(cscOther.getOverflowDirectory());
+    }
+    // this.cache = null; we should null out the cache since we no longer need it
+  }
 
   /////////////////////  Instance Methods  /////////////////////
 

@@ -9,11 +9,11 @@ public interface SockCreator {
   boolean useSSL();
 
   Socket connect(InetAddress ipAddress, int port, int connectTimeout,
-      ConnectionWatcher watcher, boolean clientToServer, int i, boolean useSSL) throws IOException;
+      ConnectionWatcher watcher, boolean clientToServer, int timeout, boolean useSSL) throws IOException;
 
   boolean isHostReachable(InetAddress ipAddress);
 
-  Socket connect(InetAddress ipAddress, int port, int i,
+  Socket connect(InetAddress ipAddress, int port, int timeout,
       ConnectionWatcher watcher, boolean clientToServer
       ) throws IOException;
 

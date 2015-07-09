@@ -99,7 +99,7 @@ public class PartitionedRegionLoadModel {
    * they are the primary for a bucket, we will set the primary to invalid, so it won't
    * be a candidate for rebalancing.
    */
-  final MemberRollup INVALID_MEMBER = new MemberRollup(null, false);
+  final MemberRollup INVALID_MEMBER = new MemberRollup(null, false, false);
   
   private final BucketRollup[] buckets;
   
@@ -143,8 +143,6 @@ public class PartitionedRegionLoadModel {
 
   private final AddressComparor addressComparor;
 
-  private final boolean enforceLocalMaxMemory;
-
   private final Set<InternalDistributedMember> criticalMembers;
 
   private final PartitionedRegion partitionedRegion;
@@ -159,13 +157,11 @@ public class PartitionedRegionLoadModel {
    */
   public PartitionedRegionLoadModel(BucketOperator operator,
       int redundancyLevel, int numBuckets, AddressComparor addressComparor,
-      boolean enforceLocalMaxMemory,
       Set<InternalDistributedMember> criticalMembers, PartitionedRegion region) {
     this.operator = operator;
     this.requiredRedundancy = redundancyLevel;
     this.buckets = new BucketRollup[numBuckets];
     this.addressComparor = addressComparor;
-    this.enforceLocalMaxMemory = enforceLocalMaxMemory;
     this.criticalMembers = criticalMembers;
     this.partitionedRegion = region;
   }
@@ -180,7 +176,9 @@ public class PartitionedRegionLoadModel {
    * @param offlineDetails 
    */
   public void addRegion(String region,
-      Collection<? extends InternalPartitionDetails> memberDetailSet, OfflineMemberDetails offlineDetails) {
+      Collection<? extends InternalPartitionDetails> memberDetailSet, 
+      OfflineMemberDetails offlineDetails,
+      boolean enforceLocalMaxMemory) {
     this.allColocatedRegions.add(region);
     //build up a list of members and an array of buckets for this
     //region. Each bucket has a reference to all of the members
@@ -193,7 +191,7 @@ public class PartitionedRegionLoadModel {
 
       boolean isCritical = criticalMembers.contains(memberId);
       Member member = new Member(memberId,
-          memberDetails.getPRLoad().getWeight(), memberDetails.getConfiguredMaxMemory(), isCritical);
+          memberDetails.getPRLoad().getWeight(), memberDetails.getConfiguredMaxMemory(), isCritical, enforceLocalMaxMemory);
       regionMember.put(memberId, member);
 
       PRLoad load = memberDetails.getPRLoad();
@@ -224,7 +222,7 @@ public class PartitionedRegionLoadModel {
       MemberRollup memberSum = this.members.get(memberId);
       boolean isCritical = criticalMembers.contains(memberId);
       if(memberSum == null) {
-        memberSum = new MemberRollup(memberId, isCritical);
+        memberSum = new MemberRollup(memberId, isCritical, enforceLocalMaxMemory);
         this.members.put(memberId, memberSum);
       } 
       
@@ -611,7 +609,7 @@ public class PartitionedRegionLoadModel {
   private float getPrimaryAverage() {
     if(this.primaryAverage == -1) {
       float totalWeight = 0;
-      int totalPrimaryCount = 0;
+      float totalPrimaryCount = 0;
       for(Member member : this.members.values()) {
         totalPrimaryCount += member.getPrimaryLoad();
         totalWeight += member.getWeight();
@@ -629,7 +627,7 @@ public class PartitionedRegionLoadModel {
   private float getAverageLoad() {
     if(this.averageLoad == -1) {
       float totalWeight = 0;
-      int totalLoad = 0;
+      float totalLoad = 0;
       for(Member member : this.members.values()) {
         totalLoad += member.getTotalLoad();
         totalWeight += member.getWeight();
@@ -904,8 +902,8 @@ public class PartitionedRegionLoadModel {
     private final Map<String, Member> colocatedMembers = new HashMap<String, Member>();
     private final boolean invalid = false;
 
-    public MemberRollup(InternalDistributedMember memberId, boolean isCritical) {
-      super(memberId, isCritical);
+    public MemberRollup(InternalDistributedMember memberId, boolean isCritical, boolean enforceLocalMaxMemory) {
+      super(memberId, isCritical, enforceLocalMaxMemory);
     }
     
     /**
@@ -1149,14 +1147,16 @@ public class PartitionedRegionLoadModel {
     private final Set<Bucket> buckets = new TreeSet<Bucket>();
     private final Set<Bucket> primaryBuckets = new TreeSet<Bucket>();
     private final boolean isCritical;
+    private final boolean enforceLocalMaxMemory;
     
-    public Member(InternalDistributedMember memberId, boolean isCritical) {
+    public Member(InternalDistributedMember memberId, boolean isCritical, boolean enforceLocalMaxMemory) {
       this.memberId = memberId;
       this.isCritical = isCritical;
+      this.enforceLocalMaxMemory = enforceLocalMaxMemory;
     }
 
-    public Member(InternalDistributedMember memberId, float weight, long localMaxMemory, boolean isCritical) {
-      this(memberId, isCritical);
+    public Member(InternalDistributedMember memberId, float weight, long localMaxMemory, boolean isCritical, boolean enforceLocalMaxMemory) {
+      this(memberId, isCritical, enforceLocalMaxMemory);
       this.weight = weight;
       this.localMaxMemory = localMaxMemory;
     }
@@ -1204,7 +1204,7 @@ public class PartitionedRegionLoadModel {
       }
 
       //check the localMaxMemory
-      if(enforceLocalMaxMemory && this.totalBytes + bucket.getBytes() > this.localMaxMemory) {
+      if(this.enforceLocalMaxMemory && this.totalBytes + bucket.getBytes() > this.localMaxMemory) {
         if(logger.isDebugEnabled()) {
           logger.debug("Member {} won't host bucket {} because it doesn't have enough space", this, bucket);
         }

@@ -424,6 +424,11 @@ public class GemFireTracer  {
       }
 
       @Override
+      public void warning(StringId str, Object[] args, Throwable thr) {
+        this.logger.warn(str.toLocalizedString(args), thr);
+      }
+
+      @Override
       public void warning(StringId str, Object arg) {
         this.logger.warn(str.toLocalizedString(arg));
       }

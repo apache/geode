@@ -9,10 +9,17 @@
 
 package com.gemstone.gemfire.internal.cache.control;
 
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
+
 /**
  * @author sbawaska
  *
  */
-public interface ResourceEvent<T> {
-  public T getType();
+public interface ResourceEvent {
+  public ResourceType getType();
+  
+  public boolean isLocal();
+  
+  public DistributedMember getMember();
 }

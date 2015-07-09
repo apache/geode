@@ -10,6 +10,8 @@ package com.gemstone.gemfire.internal.cache;
 import java.util.Collection;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
+import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSStoreDirector;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.distributed.DistributedMember;
 
@@ -33,4 +35,5 @@ public interface InternalCache extends Cache {
 
   public CqService getCqService();
   
+  public Collection<HDFSStoreImpl> getHDFSStores() ;
 }

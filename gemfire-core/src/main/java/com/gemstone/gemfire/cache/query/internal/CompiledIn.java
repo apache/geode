@@ -29,6 +29,7 @@ import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.index.IndexData;
 import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
@@ -545,11 +546,13 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     else {
       indexFieldsSize = 1;      
     }    
-    boolean useLinkedSet = false;      
+    boolean useLinkedDataStructure = false; 
+    boolean nullValuesAtStart = true;
     Boolean orderByClause = (Boolean)context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
     if(orderByClause != null && orderByClause.booleanValue()) {
       List orderByAttrs = (List)context.cacheGet(CompiledValue.ORDERBY_ATTRIB);        
-      useLinkedSet =orderByAttrs.size()==1; 
+      useLinkedDataStructure =orderByAttrs.size()==1; 
+      nullValuesAtStart = !((CompiledSortCriterion)orderByAttrs.get(0)).getCriterion();
     }
     
     List projAttrib = null;
@@ -567,11 +570,11 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         if (resultType instanceof StructType) {
           context.getCache().getLogger().fine(
               "StructType resultType.class=" + resultType.getClass().getName());
-          if(useLinkedSet) {
-            results = new LinkedStructSet((StructTypeImpl)resultType);
+          if(useLinkedDataStructure) {
+            results  = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+            : new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
           }else {
-            results = new StructBag((StructTypeImpl)resultType,
-              context.getCachePerfStats());
+            results = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType);
           }
           indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
         }
@@ -579,10 +582,11 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
           context.getCache().getLogger().fine(
               "non-StructType resultType.class="
                   + resultType.getClass().getName());
-          if (useLinkedSet) {
-            results = new LinkedResultSet(resultType);
+          if (useLinkedDataStructure) {
+            results = context.isDistinct() ? new LinkedResultSet(resultType) :
+              new SortedResultsBag(resultType, nullValuesAtStart);
           } else {
-            results = new ResultsBag(resultType, context.getCachePerfStats());
+            results = QueryUtils.createResultCollection(context, resultType) ;
           }
           indexFieldsSize = 1;
         }
@@ -596,11 +600,11 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
             context.getCache().getLogger().fine(
                 "StructType resultType.class="
                     + resultType.getClass().getName());
-            if (useLinkedSet) {
-              results = new LinkedStructSet((StructTypeImpl)resultType);
+            if (useLinkedDataStructure) {
+              results = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) 
+              :new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
             } else {
-              results = (SelectResults)new StructBag((StructTypeImpl)resultType,
-              context.getCachePerfStats());
+              results = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
             }
             indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
           }
@@ -608,10 +612,11 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
             context.getCache().getLogger().fine(
                 "non-StructType resultType.class="
                     + resultType.getClass().getName());
-            if (useLinkedSet) {
-              results = new LinkedResultSet(resultType);
+            if (useLinkedDataStructure) {
+              results = context.isDistinct() ? new LinkedResultSet(resultType) :
+                new SortedResultsBag(resultType, nullValuesAtStart);
             } else {
-              results = new ResultsBag(resultType, context.getCachePerfStats());
+              results = QueryUtils.createResultCollection(context, resultType) ;
             }
             indexFieldsSize = 1;
           }
@@ -622,11 +627,11 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       if (resultType instanceof StructType) {
         context.getCache().getLogger().fine(
             "StructType resultType.class=" + resultType.getClass().getName());
-        if (useLinkedSet) {
-          results = new LinkedStructSet((StructTypeImpl)resultType);
+        if (useLinkedDataStructure) {
+          results = context.isDistinct() ? new LinkedStructSet((StructTypeImpl)resultType) :
+            new SortedResultsBag<Struct>((StructTypeImpl)resultType, nullValuesAtStart);
         } else {
-          results = new StructBag((StructTypeImpl)resultType,
-            context.getCachePerfStats());
+           results = QueryUtils.createStructCollection(context, (StructTypeImpl)resultType) ;
         }
         indexFieldsSize = ((StructTypeImpl)resultType).getFieldNames().length;
       }
@@ -634,10 +639,11 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         context.getCache().getLogger().fine(
             "non-StructType resultType.class="
                 + resultType.getClass().getName());
-        if (useLinkedSet) {
-          results = new LinkedResultSet(resultType);
+        if (useLinkedDataStructure) {
+          results = context.isDistinct() ? new LinkedResultSet(resultType) : 
+            new SortedResultsBag(resultType,  nullValuesAtStart);
         } else {
-          results = new ResultsBag(resultType, context.getCachePerfStats());
+          results = QueryUtils.createResultCollection(context,resultType);
         }
         indexFieldsSize = 1;
       }

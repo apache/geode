@@ -43,6 +43,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
+import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
 
 public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
@@ -149,6 +151,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
     InvalidateResponse p = new InvalidateResponse(r.getSystem(), recipients, event.getKey());
     RemoteInvalidateMessage m = new RemoteInvalidateMessage(recipients,
         r.getFullPath(), p, event, useOriginRemote, possibleDuplicate);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures =r.getDistributionManager().putOutgoing(m); 
     if (failures != null && failures.size() > 0 ) {
       throw new RemoteOperationException(LocalizedStrings.InvalidateMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -179,7 +182,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)key).setRegionContext(r);
     }
-    final EntryEventImpl event = new EntryEventImpl(
+    final EntryEventImpl event = EntryEventImpl.create(
         r,
         getOperation(),
         key,
@@ -189,6 +192,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
         eventSender,
         true/*generateCallbacks*/,
         false/*initializeId*/);
+    try {
     if (this.bridgeContext != null) {
       event.setContext(this.bridgeContext);
     }
@@ -240,6 +244,9 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
       }
 
     return sendReply;
+    } finally {
+      event.release();
+    }
   }
 
 

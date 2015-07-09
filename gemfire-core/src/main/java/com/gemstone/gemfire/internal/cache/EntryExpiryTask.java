@@ -111,15 +111,19 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = new EntryEventImpl(
+    EntryEventImpl event = EntryEventImpl.create(
         lr, Operation.EXPIRE_DESTROY, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
+    try {
     event.setPendingSecondaryExpireDestroy(isPending);
     if (lr.generateEventID()) {
       event.setNewEventId(lr.getCache().getDistributedSystem());
     }
     lr.expireDestroy(event, true); // expectedOldValue
     return true;
+    } finally {
+      event.release();
+    }
   }
   
   @Override
@@ -129,13 +133,17 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = new EntryEventImpl(lr,
+    EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_INVALIDATE, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
+    try {
     if (lr.generateEventID()) {
       event.setNewEventId(lr.getCache().getDistributedSystem());
     }
     lr.expireInvalidate(event);
+    } finally {
+      event.release();
+    }
     return true;
   }
 
@@ -145,13 +153,17 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = new EntryEventImpl(lr,
+    EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_LOCAL_DESTROY, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
+    try {
     if (lr.generateEventID()) {
       event.setNewEventId(lr.getCache().getDistributedSystem());
     }
     lr.expireDestroy(event, false); // expectedOldValue
+    } finally {
+      event.release();
+    }
     return true;
   }
 
@@ -161,13 +173,17 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = new EntryEventImpl(lr,
+    EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_LOCAL_INVALIDATE, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
+    try {
     if (lr.generateEventID()) {
       event.setNewEventId(lr.getCache().getDistributedSystem());
     }
     lr.expireInvalidate(event);
+    } finally {
+      event.release();
+    }
     return true;
   }
 

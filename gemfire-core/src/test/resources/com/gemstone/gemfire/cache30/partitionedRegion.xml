@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.0//EN"
+    "http://www.gemstone.com/dtd/cache5_0.dtd">
+<cache>
+  <vm-root-region name="pRoot">
+    <region-attributes >
+      <partition-attributes redundant-copies="1">
+        <local-properties>
+          <parameter name="LOCAL_MAX_MEMORY">
+            <string>32</string>
+          </parameter>
+        </local-properties>
+        <global-properties>
+	  	  <parameter name="GLOBAL_MAX_MEMORY">
+            <string>96</string>
+          </parameter>
+        </global-properties>
+      </partition-attributes>
+    </region-attributes>
+  </vm-root-region>
+</cache>

@@ -57,4 +57,10 @@ public interface TransactionMessage {
    * e.g. <code>ManageBucketMessage</code>
    */
   public boolean canParticipateInTransaction();
+  
+  /**
+   * Messages that participate in distributed transaction return true,
+   * others return false
+   */
+  public boolean isTransactionDistributed();
 }

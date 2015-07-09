@@ -434,6 +434,36 @@ public class EventTracker
     } // synchronized
   }
   
+  public VersionTag findVersionTagForGateway(EventID eventID) {
+    ThreadIdentifier threadID = new ThreadIdentifier(
+        eventID.getMembershipID(), eventID.getThreadID());
+        
+    EventSeqnoHolder evh = recordedEvents.get(threadID);
+    if (evh == null) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("search for version tag failed as no event is recorded for {}", threadID.expensiveToString());
+      }
+      return null;
+    }
+    
+    synchronized (evh) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("search for version tag located last event for {}: {} {}",threadID.expensiveToString(), evh, eventID.getSequenceID() );
+      }
+      
+      if (evh.lastSeqno < eventID.getSequenceID()) {
+        return null;
+      }
+      // log at fine because partitioned regions can send event multiple times
+      // during normal operation during bucket region initialization
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER) && evh.versionTag == null) {
+        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER, "Could not recover version tag.  Found event holder with no version tag for {}", eventID);
+      }
+      return evh.versionTag;
+    } // synchronized
+  }
+  
+  
   public VersionTag findVersionTagForBulkOp(EventID eventID) {
     ThreadIdentifier threadID = new ThreadIdentifier(
         eventID.getMembershipID(), eventID.getThreadID());

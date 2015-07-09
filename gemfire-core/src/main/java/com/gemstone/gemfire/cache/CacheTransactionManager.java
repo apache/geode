@@ -319,4 +319,23 @@ public interface CacheTransactionManager {
      * @since 6.5
      */
     public TransactionWriter getWriter();
+    
+    /**
+     * Sets whether transactions should be executed in distributed or
+     * non-distributed mode.  Once set this mode should not be changed during
+     * the course of transactions.
+     * 
+     * @throws IllegalStateException if a transaction is already in progress
+     * and this method sets the distributed mode to a different value.
+     * @since 9.0
+     */
+    public void setDistributed(boolean distributed);
+    
+    /**
+     * Returns the execution mode of transactions
+     * @return true if distributed,
+     * false otherwise.
+     * @since 9.0
+     */
+    public boolean isDistributed();
 }

@@ -1,0 +1,16 @@
+
+{
+  "values": [
+	{
+	  "_key": "~",
+	  "connections": {"_total": 129},
+	  "firstName": "Adam"
+	},
+	{
+	  "_key": "hks0NPUMZF",
+	  "connections": {"_total": 500},
+	  "firstName": "Brandon"
+	}
+  ],
+  "_total": 2
+}

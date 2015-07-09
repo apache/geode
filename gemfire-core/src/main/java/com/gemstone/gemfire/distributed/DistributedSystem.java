@@ -36,6 +36,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+import com.gemstone.gemfire.redis.GemFireRedisServer;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
@@ -821,6 +822,21 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   <dd><U>Default</U>: ""</dd>
  * </dl>
  * 
+ * <dl>
+ *   <a name="redis-port"><dt>redis-port</dt></a>
+ *   <dd><U>Description</U>: Specifies the port used by {@link GemFireRedisServer}
+ *   which enables redis clients to connect and store data in GemFire distributed system.
+ *   see {@link GemFireRedisServer} for other configuration options.</dd>
+ *   <dd><U>Default</U>: "0" disables GemFireMemcachedServer</dd>
+ *   <dd><U>Allowed values</U>: 0..65535</dd>
+ * </dl>
+ * 
+ * <dl>
+ *   <a name="redis-bind-address"><dt>redis-bind-address</dt></a>
+ *   <dd><U>Description</U>: Specifies the bind address used by {@link GemFireRedisServer}</dd>
+ *   <dd><U>Default</U>: ""</dd>
+ * </dl>
+ * 
  * <B>Asynchronous Message Properties</B>
  *
  * <dl>
@@ -1060,7 +1076,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * 
  * <dl>
  *   <a name="http-service-port"><dt>http-service-port</dt></a>
- *   <dd><U>Description</U>: Specifies the port used by gemfire HTTP service. If
+ *   <dd><U>Description</U>: Specifies the port used by the GemFire HTTP service. If
  *   configured with non-zero value, then an HTTP service will listen on this port.
  *   A value of "0" disables Gemfire HTTP service.
  *   </dd>
@@ -1071,7 +1087,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *  
  * <dl>
  *   <a name="http-service-bind-address"><dt>http-service-bind-address</dt></a>
- *   <dd><U>Description</U>: The address where gemfire HTTP service will listen
+ *   <dd><U>Description</U>: The address where the GemFire HTTP service will listen
  *   for remote connections. One can use this property to configure what ip
  *   address or host name the HTTP service will listen on. When not set, by
  *   default the HTTP service will listen on the local host's address.
@@ -1173,6 +1189,21 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   properties.</dd>
  *   <dd><U>Default</U>: "false"</dd>
  *   <dd><U>Since</U>: 8.0</dd>
+ * </dl>
+ * 
+ * <b>Off-Heap Memory</b>
+ * 
+ * <dl>
+ *   <a name="off-heap-memory-size"><dt>off-heap-memory-size</dt></a>
+ *   <dd><U>Description</U>: The total size of off-heap memory specified as
+ *   off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates
+ *   whether the size should be interpreted as gigabytes or megabytes.
+ *   By default no off-heap memory is allocated.
+ *   A non-zero value will cause that much memory to be allocated from the operating
+ *   system and reserved for off-heap use.
+ *   </dd>
+ *   <dd><U>Default</U>: <code>""</code></dd>
+ *   <dd><U>Since</U>: 9.0</dd>
  * </dl>
  * 
  * <b>Cluster Configuration Service</b>
@@ -1388,6 +1419,17 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * 
  * <b>Miscellaneous</b> 
  *
+ * <dl>
+ *   <a name="lock-memory"><dt>lock-memory</dt></a>
+ *   <dd><U>Description</U>: Include this option to lock GemFire heap and off-heap memory pages into RAM.
+ *   This prevents the operating system from swapping the pages out to disk, which can cause sever
+ *   performance degradation. When you use this command, also configure the operating system limits for
+ *   locked memory.
+ *   </dd>
+ *   <dd><U>Default</U>: <code>"false"</code></dd>
+ *   <dd><U>Since</U>: 9.0</dd>
+ * </dl>
+ * 
  * <dl>
  *   <a name="deploy-working-dir"><dt>deploy-working-dir</dt></a>
  *   <dd><U>Description</U>: Specifies the working directory which this

@@ -33,15 +33,16 @@ public class SockCreatorImpl implements SockCreator {
 
   @Override
   public boolean isHostReachable(InetAddress ipAddress) {
-    // TODO Auto-generated method stub
-    return false;
+    return true;
   }
 
   @Override
   public Socket connect(InetAddress ipAddress, int port, int i,
       ConnectionWatcher watcher, boolean clientToServer) throws IOException {
-    // TODO Auto-generated method stub
-    return null;
+    Socket socket = new Socket();
+    SocketAddress addr = new InetSocketAddress(ipAddress, port);
+    socket.connect(addr);
+    return socket;
   }
 
 }

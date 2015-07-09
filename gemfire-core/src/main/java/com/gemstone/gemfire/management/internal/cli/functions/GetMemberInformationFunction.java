@@ -90,6 +90,7 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
       memberInfo.setCacheXmlFilePath(config.getCacheXmlFile().getCanonicalPath());
       memberInfo.setLocators(config.getLocators());
       memberInfo.setServerBindAddress(serverBindAddress);
+      memberInfo.setOffHeapMemorySize(config.getOffHeapMemorySize());
 
       MemoryUsage memUsage = memoryMXBean.getHeapMemoryUsage();
       memberInfo.setHeapUsage(Long.toString(bytesToMeg(memUsage.getUsed())));

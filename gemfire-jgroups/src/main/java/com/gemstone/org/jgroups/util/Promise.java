@@ -47,7 +47,8 @@ public class Promise  {
      */
     private Object _getResultWithTimeout(long timeout) throws TimeoutException {
         Object  ret=null;
-        long    time_to_wait=timeout, start;
+        long    time_to_wait=timeout;
+        long    start;
         boolean timeout_occurred=false;
 
         start=System.currentTimeMillis();

@@ -54,6 +54,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
@@ -83,9 +84,11 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   
   private boolean returnTombstones;
 
+  private boolean allowReadFromHDFS;
   // reuse some flags
   protected static final int HAS_LOADER = NOTIFICATION_ONLY;
   protected static final int CAN_START_TX = IF_NEW;
+  protected static final int READ_FROM_HDFS = IF_OLD;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
@@ -96,12 +99,13 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   private GetMessage(InternalDistributedMember recipient, int regionId,
       DirectReplyProcessor processor,
       final Object key, final Object aCallbackArgument, ClientProxyMembershipID context,
-      boolean returnTombstones) {
+      boolean returnTombstones, boolean allowReadFromHDFS) {
     super(recipient, regionId, processor);
     this.key = key;
     this.cbArg = aCallbackArgument;
     this.context = context;
     this.returnTombstones = returnTombstones;
+	this.allowReadFromHDFS = allowReadFromHDFS;
   }
 
   private static final boolean ORDER_PR_GETS = Boolean.getBoolean("gemfire.order-pr-gets");
@@ -109,6 +113,24 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   @Override
   final public int getProcessorType()
   {
+    if (!forceUseOfPRExecutor && !ORDER_PR_GETS && !isDirectAck()) {
+      try {
+        PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
+        // If the region is persistent the get may need to fault a value
+        // in which has to sync the region entry. Note it may need to
+        // do this even if it is not overflow (after recovery values are faulted in async).
+        // If the region has an LRU then in lruUpdateCallback it will
+        // call getLRUEntry which has to sync a region entry.
+        // Syncing a region entry can lead to dead-lock (see bug 52078).
+        // So if either of these conditions hold this message can not be
+        // processed in the p2p msg reader.
+        if (pr.getAttributes().getDataPolicy().withPersistence()
+            || !pr.getAttributes().getEvictionAttributes().getAlgorithm().isNone()) {
+          return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+        }
+      } catch (PRLocallyDestroyedException ignore) {
+      }
+    }
     if (forceUseOfPRExecutor) {
       return DistributionManager.PARTITIONED_REGION_EXECUTOR;
     }
@@ -143,6 +165,8 @@ public final class GetMessage extends PartitionMessageWithDirectReply
     }
 
     RawValue valueBytes;
+    Object val = null;
+    try {
     if (ds != null) {
       EntryEventImpl event = EntryEventImpl.createVersionTagHolder();
       try {
@@ -151,7 +175,8 @@ public final class GetMessage extends PartitionMessageWithDirectReply
         }
         KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
         boolean lockEntry = forceUseOfPRExecutor || isDirectAck();
-        Object val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, this.context, event, returnTombstones);
+        
+        val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, this.context, event, returnTombstones, allowReadFromHDFS);
         
         if(val == BucketRegion.REQUIRES_ENTRY_LOCK) {
           Assert.assertTrue(!lockEntry);
@@ -175,6 +200,8 @@ public final class GetMessage extends PartitionMessageWithDirectReply
       catch (DataLocationException e) {
         sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
         return false;
+      } finally {
+        event.release();
       }
 
       if (logger.isTraceEnabled(LogMarker.DM)) {
@@ -183,14 +210,18 @@ public final class GetMessage extends PartitionMessageWithDirectReply
       
       r.getPrStats().endPartitionMessagesProcessing(startTime); 
       GetReplyMessage.send(getSender(), getProcessorId(), valueBytes, getReplySender(dm), event.getVersionTag());
+   // Unless there was an exception thrown, this message handles sending the
+      // response
+      return false;
     }
     else {
       throw new InternalGemFireError(LocalizedStrings.GetMessage_GET_MESSAGE_SENT_TO_WRONG_MEMBER.toLocalizedString());
     }
+    }finally {
+      OffHeapHelper.release(val);
+    }
 
-    // Unless there was an exception thrown, this message handles sending the
-    // response
-    return false;
+    
   }
 
   @Override
@@ -225,6 +256,19 @@ public final class GetMessage extends PartitionMessageWithDirectReply
     out.writeBoolean(this.returnTombstones);
   }
 
+  @Override
+  protected short computeCompressedShort(short s) {
+    s = super.computeCompressedShort(s);
+    if (this.allowReadFromHDFS) s |= READ_FROM_HDFS;
+    return s;
+  }
+
+  @Override
+  protected void setBooleans(short s, DataInput in) throws ClassNotFoundException, IOException {
+    super.setBooleans(s, in);
+    if ((s & READ_FROM_HDFS) != 0) this.allowReadFromHDFS = true;
+  }
+
   public void setKey(Object key)
   {
     this.key = key;
@@ -247,14 +291,14 @@ public final class GetMessage extends PartitionMessageWithDirectReply
    */
   public static GetResponse send(InternalDistributedMember recipient,
       PartitionedRegion r, final Object key, final Object aCallbackArgument,
-      ClientProxyMembershipID requestingClient, boolean returnTombstones)
+      ClientProxyMembershipID requestingClient, boolean returnTombstones, boolean allowReadFromHDFS)
       throws ForceReattemptException
   {
     Assert.assertTrue(recipient != null,
         "PRDistribuedGetReplyMessage NULL reply message");
     GetResponse p = new GetResponse(r.getSystem(), Collections.singleton(recipient), key);
     GetMessage m = new GetMessage(recipient, r.getPRId(), p,
-        key, aCallbackArgument, requestingClient, returnTombstones);
+        key, aCallbackArgument, requestingClient, returnTombstones, allowReadFromHDFS);
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(m));

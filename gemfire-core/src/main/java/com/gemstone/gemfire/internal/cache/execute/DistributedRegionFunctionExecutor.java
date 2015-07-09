@@ -23,9 +23,8 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 /**
  * Executes Function on Distributed Regions.
  * 
@@ -422,11 +421,11 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
         }
       }
     }
-    if (!InternalResourceManager.isLowMemoryExceptionDisabled() && function.optimizeForWrite()) {
+    if (!MemoryThresholds.isLowMemoryExceptionDisabled() && function.optimizeForWrite()) {
       try {
         region.checkIfAboveThreshold(null);
       } catch (LowMemoryException e) {
-        Set<DistributedMember> htrm = region.getHeapThresholdReachedMembers();
+        Set<DistributedMember> htrm = region.getMemoryThresholdReachedMembers();
         throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1.toLocalizedString(
             new Object[] {function.getId(), htrm}), htrm);
 

@@ -1,0 +1,98 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.main;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+/**
+ * This is a member representing site 2 who wants to receive data from site 1
+ * 
+ * On this member a locator with distributed-system-id = 2 is created. 
+ * On this member a cache is created.
+ * 
+ * A Region and a GatewayReceiver is created on this member through
+ * MyDistributedSustemListener#addedDistributedSystemConnection
+ *  
+ * (When this locator gets the locator information from the site 1,
+ * MyDistributedSustemListener's addedDistributedSystemConnection will be
+ * invoked who will create a region and a GatewayReceiver.)
+ * 
+ * This member expects region size to be 100. (this site received this data from site1)
+ * 
+ * This member also check for the receiver's running status.
+ * 
+ * A GatewayReceiver will be stopped through
+ * MyDistributedSustemListener#removedDistributedSystem 
+ * (When a remote locator with distributed-system-id = -1 connects to this site,
+ * MyDistributedSustemListener's removedDistributedSystem will be invoked who
+ * will stop a GatewayReceiver.)
+ * 
+ * @author kbachhav
+ * 
+ */
+
+public class WANBootStrapping_Site2_Add {
+
+  public static void main(String[] args) {
+
+    System.setProperty("gemfire.DistributedSystemListener",
+        "com.main.MyDistributedSystemListener");
+    
+    //create a locator and a cache
+    System.out.println("Creating cache ...It will take some time..");
+    Cache cache = new CacheFactory()
+    .set(DistributionConfig.MCAST_PORT_NAME,"0")
+    .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+2)
+    .set(DistributionConfig.LOCATORS_NAME, "localhost[" + 20202 + "]")
+    .set(DistributionConfig.START_LOCATOR_NAME, "localhost[" + 20202 + "],server=true,peer=true,hostname-for-clients=localhost")
+    .set(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 10101 + "]")
+    .set(DistributionConfig.LOG_LEVEL_NAME, "warning")
+    .create();
+    System.out.println("Cache Created");
+    
+    //get the region whose size should be 100 
+    Region region = cache.getRegion("MyRegion");
+    while(region == null){
+      region = cache.getRegion("MyRegion");
+      try {
+        Thread.sleep(5000);
+      }
+      catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    
+    //region size should be 100. This is the data which will recieve from remote site
+    while(region.size()!= 100){
+      continue;
+    }
+    System.out.println("Checked region size : " + region.size());
+
+    GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
+    
+     // to stop gateway receiver ask to run WANBootStrapping_Site1_Remove program
+    while (receiver.isRunning()) {
+      System.out
+          .println("Waitng for receiver to stop through DistributedSystemListener");
+      System.out.println("Start WANBootStrapping_Site1_Remove ");  
+      try {
+        Thread.sleep(2000);
+      }
+      catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    System.out.println("GatewayReciver " + receiver + " is stopped") ;
+    System.exit(0);
+  }
+}

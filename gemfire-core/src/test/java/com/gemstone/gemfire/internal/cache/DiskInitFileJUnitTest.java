@@ -21,7 +21,7 @@ import java.util.Collections;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DiskInitFileJUnitTest extends TestCase {

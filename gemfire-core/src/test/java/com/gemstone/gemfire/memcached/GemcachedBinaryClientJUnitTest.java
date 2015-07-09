@@ -1,0 +1,139 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.memcached;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
+import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.memcached.KeyWrapper;
+import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.ConnectionFactoryBuilder;
+import net.spy.memcached.FailureMode;
+import net.spy.memcached.MemcachedClient;
+
+/**
+ * Test for binary protocol
+ * @author sbawaska
+ */
+@Category(IntegrationTest.class)
+public class GemcachedBinaryClientJUnitTest extends
+    GemcachedDevelopmentJUnitTest {
+
+  @Override
+  protected Protocol getProtocol() {
+    return Protocol.BINARY;
+  }
+
+  @Override
+  protected MemcachedClient createMemcachedClient() throws IOException,
+      UnknownHostException {
+    List<InetSocketAddress> addrs = new ArrayList<InetSocketAddress>();
+    addrs.add(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
+    MemcachedClient client = new MemcachedClient(new BinaryConnectionFactory(), addrs);
+    return client;
+  }
+
+  @SuppressWarnings("unchecked")
+  public void testCacheWriterException() throws Exception {
+    MemcachedClient client = createMemcachedClient();
+    assertTrue(client.set("key", 0, "value".getBytes()).get());
+    client.set("exceptionkey", 0, "exceptionvalue").get();
+    
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    Region region = cache.getRegion(GemFireMemcachedServer.REGION_NAME);
+    region.getAttributesMutator().setCacheWriter(new CacheWriterAdapter() {
+      @Override
+      public void beforeCreate(EntryEvent event) throws CacheWriterException {
+        if (event.getKey().equals(KeyWrapper.getWrappedKey("exceptionkey".getBytes()))) {
+          throw new RuntimeException("ExpectedStrings: Cache writer exception");
+        }
+      }
+      @Override
+      public void beforeUpdate(EntryEvent event) throws CacheWriterException {
+        if (event.getKey().equals(KeyWrapper.getWrappedKey("exceptionkey".getBytes()))) {
+          throw new RuntimeException("ExpectedStrings: Cache writer exception");
+        }
+      }
+    });
+    long start = System.nanoTime();
+    try {
+      client.set("exceptionkey", 0, "exceptionvalue").get();
+      throw new RuntimeException("expected exception not thrown");
+    } catch (ExecutionException e) {
+      // expected
+    }
+    assertTrue(client.set("key2", 0, "value2".getBytes()).get());
+  }
+
+  @SuppressWarnings("unchecked")
+  public void testCacheLoaderException() throws Exception {
+    MemcachedClient client = createMemcachedClient();
+    assertTrue(client.set("key", 0, "value").get());
+    
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    Region region = cache.getRegion(GemFireMemcachedServer.REGION_NAME);
+    region.getAttributesMutator().setCacheLoader(new CacheLoader() {
+      @Override
+      public void close() {
+      }
+      @Override
+      public Object load(LoaderHelper helper) throws CacheLoaderException {
+        if (helper.getKey().equals(KeyWrapper.getWrappedKey("exceptionkey".getBytes()))) {
+          throw new RuntimeException("ExpectedStrings: Cache loader exception");
+        }
+        return null;
+      }
+    });
+    long start = System.nanoTime();
+    try {
+      client.get("exceptionkey");
+      throw new RuntimeException("expected exception not thrown");
+    } catch (Exception e) {
+      // expected
+    }
+    assertEquals("value", client.get("key"));
+  }
+  
+  @Override
+  public void testDecr() throws Exception {
+    super.testDecr();
+    MemcachedClient client = createMemcachedClient();
+    assertEquals(0, client.decr("decrkey", 999));
+  }
+  
+  @Override
+  public void testFlushDelay() throws Exception {
+    // for some reason the server never gets expiration bits from the
+    // client, so disabling for now
+  }
+}

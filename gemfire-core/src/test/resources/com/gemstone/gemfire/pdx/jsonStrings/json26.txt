@@ -1,0 +1,13 @@
+
+{
+  "product": {
+    "name": "Widget",
+    "company": "ACME, Inc",
+    "partNumber": "7402-129",
+    "prices": [
+      { "minQty": 1, "price": 12.49 },
+      { "minQty": 10, "price": 9.99 },
+      { "minQty": 50, "price": 7.99 }
+    ]
+  }
+}

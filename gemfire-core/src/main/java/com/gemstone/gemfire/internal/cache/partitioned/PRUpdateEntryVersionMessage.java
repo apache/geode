@@ -123,11 +123,12 @@ public class PRUpdateEntryVersionMessage extends
       ((KeyWithRegionContext) key).setRegionContext(pr);
     }
 
-    final EntryEventImpl event = new EntryEventImpl(pr, getOperation(),
+    final EntryEventImpl event = EntryEventImpl.create(pr, getOperation(),
         getKey(), null, /* newValue */
         null, /* callbackargs */
         false /* originRemote - false to force distribution in buckets */,
         getSender() /* eventSender */, false /* generateCallbacks */, false /* initializeId */);
+    event.disallowOffHeapValues();
 
     Assert.assertTrue(eventId != null);
     if (this.versionTag != null) {

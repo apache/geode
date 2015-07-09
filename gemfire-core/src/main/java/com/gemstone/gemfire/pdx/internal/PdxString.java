@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.InternalDataSerializer.Sendable;
+import com.gemstone.gemfire.internal.Sendable;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
 
 /**

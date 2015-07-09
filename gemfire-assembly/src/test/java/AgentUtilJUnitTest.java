@@ -16,7 +16,7 @@
  */
 
 import com.gemstone.gemfire.management.internal.AgentUtil;
-import com.gemstone.junit.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import org.junit.Before;
 import org.junit.Test;

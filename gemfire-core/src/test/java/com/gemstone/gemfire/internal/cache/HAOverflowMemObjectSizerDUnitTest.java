@@ -1,0 +1,296 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+/**
+ *
+ */
+package com.gemstone.gemfire.internal.cache;
+
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
+
+import dunit.DistributedTestCase;
+import dunit.Host;
+import dunit.VM;
+
+/**
+ * Tests the size of clientUpdateMessageImpl with the size calculated by
+ * {@linkplain MemLRUCapacityController} for HA overFlow
+ * @author aingle
+ * @since 5.7
+ */
+public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
+
+  /* entry over head used by memCapacityController */
+  private static final int OVERHEAD_PER_ENTRY = 250;
+
+  protected static InternalLocator locator;
+
+  /** The cache instance */
+  static Cache cache;
+  /** The distributedSystem instance */
+  static DistributedSystem ds = null;
+
+  static String regionName = "HAOverflowMemObjectSizerDUnitTest-region";
+
+  /* handler for LRU capacity controller */
+  private static EnableLRU cc = null;
+
+  static VM client = null;
+
+  static VM serverVM = null;
+
+  static Integer serverPort1 = null;
+
+  static Integer serverPort2 = null;
+
+  static String ePolicy = "mem";
+
+  static int capacity = 1;
+
+  /* store the reference of Client Messages Region */
+  static Region region = null;
+
+  /* Create new instance of HAOverflowMemObjectSizerTest */
+  public HAOverflowMemObjectSizerDUnitTest(String name) {
+    super(name);
+  }
+
+  public void setUp() throws Exception {
+    disconnectAllFromDS();
+    super.setUp();
+    Host host = Host.getHost(0);
+    client = host.getVM(1);
+    serverVM = host.getVM(3);
+  }
+
+  public void tearDown2() throws Exception {
+    super.tearDown2();
+    serverVM.invoke(ConflationDUnitTest.class, "unsetIsSlowStart");
+    client.invoke(HAOverflowMemObjectSizerDUnitTest.class, "closeCache");
+    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class, "closeCache");
+  }
+
+  public static void cleanUp(Long limit) {
+    ConflationDUnitTest.unsetIsSlowStart();
+    if (region != null) {
+      Set entries = region.entrySet();
+      entries = region.entrySet();
+      long timeElapsed = 0, startTime = System.currentTimeMillis();      
+      while (entries.size() > 0 && timeElapsed <= limit.longValue()) {
+        // doing it to clean up the queue
+        // making sure that dispacher will dispached all events
+        try {
+          // sleep in small chunks
+          Thread.sleep(50);
+          timeElapsed = System.currentTimeMillis() - startTime;
+        }
+        catch (InterruptedException e) {
+          fail("interrupted");
+        }
+        entries = region.entrySet();
+      }
+    }
+  }
+
+  /**
+   * Creates cache and starts the bridge-server
+   *
+   *  @param notification property of BridgeServer
+   */
+  public static Integer createCacheServer(Boolean notification) throws Exception {
+    new HAOverflowMemObjectSizerDUnitTest("temp").createCache(new Properties());
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setDataPolicy(DataPolicy.NORMAL);
+    RegionAttributes attrs = factory.create();
+    Region region = cache.createRegion(regionName, attrs);
+    assertNotNull(region);
+    BridgeServer server1 = cache.addBridgeServer();
+    assertNotNull(server1);
+    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    server1.setPort(port);
+    server1.setNotifyBySubscription(notification.booleanValue());
+    server1.getClientSubscriptionConfig().setCapacity(capacity);
+    server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
+    server1.start();
+    assertTrue(server1.isRunning());
+    /*
+     * storing capacity controller reference
+     */
+    cc = ((VMLRURegionMap)((LocalRegion)cache.getRegion(Region.SEPARATOR
+        + BridgeServerImpl.generateNameForClientMsgsRegion(port))).entries)
+        ._getCCHelper();
+    return new Integer(server1.getPort());
+  }
+
+  /**
+   * create client cache
+   *
+   * @param port1
+   * @param port2 - end points ports
+   */
+  public static void createCacheClient(Integer port1, String host)
+      throws Exception {
+    Properties props = new Properties();
+    props.setProperty("mcast-port", "0");
+    props.setProperty("locators", "");
+    new HAOverflowMemObjectSizerDUnitTest("temp").createCache(props);
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setDataPolicy(DataPolicy.NORMAL);
+    BridgeTestCase.configureConnectionPool(factory, host, port1.intValue(), -1, true, -1, 2, null, -1, -1, false);
+    RegionAttributes attrs = factory.create();
+    Region region = cache.createRegion(regionName, attrs);
+    assertNotNull(region);
+    region.registerInterest("ALL_KEYS");
+  }
+
+  /**
+   * This test does the following :<br>
+   * Configuration: notification by subscription is <b>true </b><br>
+   * 1)Verify size calculated by getSizeInByte() of ClientUpdateMessagesImpl is
+   * equal to the size calculated by memCapacity controller <br>
+   */
+  public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsTrue() {
+
+    Integer port1 = (Integer)serverVM.invoke(
+        HAOverflowMemObjectSizerDUnitTest.class, "createCacheServer",
+        new Object[] { new Boolean(true) });
+    serverPort1 = port1;
+    serverVM.invoke(ConflationDUnitTest.class, "setIsSlowStart",
+        new Object[] { "15000" });
+
+    client.invoke(HAOverflowMemObjectSizerDUnitTest.class,
+                  "createCacheClient",
+                  new Object[] { port1, 
+                  getServerHostName(client.getHost()) });
+
+    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class, "performPut",
+        new Object[] { new Long(0L), new Long(100L) });
+    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class,
+        "sizerTestForMemCapacityController", new Object[] { serverPort1 });
+  }
+
+  /**
+   * This test does the following :<br>
+   * Configuration: notification by subscription is<b> false </b><br>
+   * 1)Verify size calculated by getSizeInByte() of ClientUpdateMessagesImpl is
+   * equal to the size calculated by memCapacity controller <br>
+   */
+  public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsFalse() {
+    Integer port2 = (Integer)serverVM.invoke(
+        HAOverflowMemObjectSizerDUnitTest.class, "createCacheServer",
+        new Object[] { new Boolean(false) });
+    serverPort2 = port2;
+
+    serverVM.invoke(ConflationDUnitTest.class, "setIsSlowStart",
+        new Object[] { "15000" });
+
+    client.invoke(HAOverflowMemObjectSizerDUnitTest.class,
+                  "createCacheClient", 
+                  new Object[] { port2,
+                  getServerHostName(client.getHost()) });
+
+    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class, "performPut",
+        new Object[] { new Long(101L), new Long(200L) });
+    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest.class,
+        "sizerTestForMemCapacityController", new Object[] { serverPort2 });
+  }
+
+  /**
+   * Check for size return by ClientUpdateMessagesImpl getSizeInByte()
+   * with size return by memCapacity controller
+   *
+   * @param port - BridgeServer port required to get ClientMessagesRegion
+   */
+  public static void sizerTestForMemCapacityController(Integer port) {
+    region = cache.getRegion(Region.SEPARATOR
+        + BridgeServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+    assertNotNull(region);
+    Set entries = region.entrySet();
+    assertTrue(entries.size() > 0);
+    Iterator iter = entries.iterator();
+    for (; iter.hasNext();) {
+      Region.Entry entry = (Region.Entry)iter.next();
+      ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl)entry.getValue();
+      // passed null to get the size of value ie CUM only ,
+      // but this function also add overhead per entry
+      // so to get exact size calculated by memCapacityController
+      // we need substract this over head
+      // as this default value is private static in MemLRUCapacityController
+      // cannot access directly
+      assertTrue("cum size is not equal",
+          (cc.entrySize(null, entry.getValue()) - OVERHEAD_PER_ENTRY) == cum
+              .getSizeInBytes());
+    }
+    cache.getLogger().fine("Test passed. Now, doing a cleanup job.");
+    // added here as sleep should be on server where CMR is present and
+    // dispacher supposed to run
+    cleanUp(new Long(20000));
+  }
+
+  /**
+   * Creates the cache
+   *
+   * @param props -
+   *          distributed system props
+   * @throws Exception -
+   *           thrown in any problem occurs in creating cache
+   */
+  private void createCache(Properties props) throws Exception
+  {
+    DistributedSystem ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+    assertNotNull(cache);
+  }
+
+  /* close cache */
+  public static void closeCache() {
+    try {
+      if (cache != null && !cache.isClosed()) {
+        cache.close();
+        cache.getDistributedSystem().disconnect();
+      }
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+/**
+ * perform put on server region that will put entries on CMR region
+ * @param lowerLimit
+ * @param higerlimit - lower and upper limit on put
+ */
+  public static void performPut(Long lowerLimit, Long higerlimit) {
+    assertNotNull(lowerLimit);
+    assertNotNull(higerlimit);
+    LocalRegion region = (LocalRegion)cache.getRegion(Region.SEPARATOR
+        + regionName);
+    assertNotNull(region);
+    for (long i = lowerLimit.longValue(); i < higerlimit.longValue(); i++) {
+      region.put(new Long(i), new Long(i));
+    }
+  }
+}

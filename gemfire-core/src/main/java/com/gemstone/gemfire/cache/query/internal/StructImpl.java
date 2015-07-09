@@ -26,9 +26,11 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * @since 4.0
  */
 public class StructImpl
-  implements Struct, DataSerializableFixedID {
+  implements Struct, DataSerializableFixedID, Serializable {
+  private static final long serialVersionUID = -8474955084549542156L;
   private StructTypeImpl type;
   private Object[] values;
+  //hasPdx will not be initialized by Java deserialization
   private transient boolean hasPdx = false;
   /** no-arg constructor required for DataSerializable */
   public StructImpl() {};

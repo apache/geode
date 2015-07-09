@@ -15,7 +15,7 @@ import org.junit.experimental.categories.Category;
 import junit.framework.TestCase;
 
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /** Tests the subclasses of RoleException to make sure they are Serializable */
 @Category(UnitTest.class)

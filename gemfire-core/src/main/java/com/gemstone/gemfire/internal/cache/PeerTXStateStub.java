@@ -30,16 +30,15 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 public class PeerTXStateStub extends TXStateStub {
 
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
   
   private InternalDistributedMember originatingMember = null;
-  private TXCommitMessage commitMessage = null;
+  protected TXCommitMessage commitMessage = null;
 
   public PeerTXStateStub(TXStateProxy stateProxy, DistributedMember target,InternalDistributedMember onBehalfOfClient) {
     super(stateProxy, target);
     this.originatingMember = onBehalfOfClient;
   }
-  
   
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TXStateInterface#rollback()
@@ -154,13 +153,11 @@ public class PeerTXStateStub extends TXStateStub {
     }
   }
 
-
-  private void cleanup() {
+  protected void cleanup() {
     for (TXRegionStub regionStub : regionStubs.values()) {
       regionStub.cleanup();
     }
   }
-
 
   @Override
   protected TXRegionStub generateRegionStub(LocalRegion region) {
@@ -173,9 +170,6 @@ public class PeerTXStateStub extends TXStateStub {
       }
       return stub;
   }
-
-
-
 
   @Override
   protected void validateRegionCanJoinTransaction(LocalRegion region)
@@ -212,7 +206,6 @@ public class PeerTXStateStub extends TXStateStub {
     }
   }
 
-
   public InternalDistributedMember getOriginatingMember() {
     /*
      * This needs to be set to the clients member id if the client originated the tx
@@ -227,25 +220,28 @@ public class PeerTXStateStub extends TXStateStub {
     this.originatingMember = clientMemberId;
   }
 
+  @Override
   public boolean isMemberIdForwardingRequired() {
     return getOriginatingMember()!=null;
   }
 
-
+  @Override
   public TXCommitMessage getCommitMessage() {
     return commitMessage;
   }
 
-
+  @Override
   public void suspend() {
     // no special tasks to perform
   }
 
 
+  @Override
   public void resume() {
     // no special tasks to perform
   }
 
+  @Override
   public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key, Object arguments[]) {
     // no-op here
   }

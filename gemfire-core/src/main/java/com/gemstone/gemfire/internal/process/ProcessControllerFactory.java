@@ -6,8 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.internal.util.StopWatch;
 
 /**
  * Manages which implementation of {@link ProcessController} will be used and
@@ -27,6 +30,9 @@ public final class ProcessControllerFactory {
   }
   
   public ProcessController createProcessController(final ProcessControllerParameters arguments, final int pid) {
+    if (arguments == null) {
+      throw new NullPointerException("ProcessControllerParameters must not be null");
+    }
     if (pid < 1) {
       throw new IllegalArgumentException("Invalid pid '" + pid + "' specified");
     }
@@ -42,12 +48,27 @@ public final class ProcessControllerFactory {
     return null;
   }
   
-  public ProcessController createProcessController(final ProcessControllerParameters arguments, final File pidFile) throws IOException {
-    return createProcessController(arguments, readPid(pidFile));
+  public ProcessController createProcessController(final ProcessControllerParameters arguments, final File pidFile, final long timeout, final TimeUnit unit) throws IOException, InterruptedException, TimeoutException {
+    if (arguments == null) {
+      throw new NullPointerException("ProcessControllerParameters must not be null");
+    }
+    if (pidFile == null) {
+      throw new NullPointerException("Pid file must not be null");
+    }
+    return createProcessController(arguments, new PidFile(pidFile).readPid(timeout, unit));
   }
   
-  public ProcessController createProcessController(final ProcessControllerParameters arguments, final File directory, final String pidFilename) throws IOException {
-    return createProcessController(arguments, readPid(directory, pidFilename));
+  public ProcessController createProcessController(final ProcessControllerParameters arguments, final File directory, final String pidFilename, final long timeout, final TimeUnit unit) throws IOException, InterruptedException, TimeoutException {
+    if (arguments == null) {
+      throw new NullPointerException("ProcessControllerParameters must not be null");
+    }
+    if (directory == null) {
+      throw new NullPointerException("Directory must not be null");
+    }
+    if (pidFilename == null) {
+      throw new NullPointerException("Pid file name must not be null");
+    }
+    return createProcessController(arguments, new PidFile(directory, pidFilename).readPid(timeout, unit));
   }
 
   public boolean isAttachAPIFound() {
@@ -61,74 +82,5 @@ public final class ProcessControllerFactory {
     } catch (ClassNotFoundException e) {
     }
     return found;
-  }
-  
-  /**
-   * Reads in the pid from the specified file.
-   * 
-   * @param pidFile the file containing the pid of the process to stop
-   * 
-   * @return the process id (pid) contained within the pidFile
-   * 
-   * @throws IllegalArgumentException if the pid in the pidFile is not a positive integer
-   * @throws IOException if unable to read from the specified file
-   * @throws NumberFormatException if the pid file does not contain a parsable integer
-   */
-  private static int readPid(File pidFile) throws IOException {
-    BufferedReader fileReader = null;
-    String pidValue = null;
-
-    try {
-      fileReader = new BufferedReader(new FileReader(pidFile));
-      pidValue = fileReader.readLine();
-
-      final int pid = Integer.parseInt(pidValue);
-
-      if (pid < 1) {
-        throw new IllegalArgumentException("Invalid pid '" + pid + "' found in " + pidFile.getCanonicalPath());
-      }
-
-      return pid;
-    }
-    catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Invalid pid '" + pidValue + "' found in " + pidFile.getCanonicalPath());
-    }
-    finally {
-      IOUtils.close(fileReader);
-    }
-  }
-
-  /**
-   * Reads in the pid from the named file contained within the specified
-   * directory.
-   * 
-   * @param directory directory containing a file of name pidFileName
-   * @param pidFilename name of the file containing the pid of the process to stop
-   * 
-   * @return the process id (pid) contained within the pidFile
-   * 
-   * @throws FileNotFoundException if the specified file name is not found within the directory
-   * @throws IllegalArgumentException if the pid in the pidFile is not a positive integer
-   * @throws IllegalStateException if dir is not an existing directory
-   * @throws IOException if an I/O error occurs
-   * @throws NumberFormatException if the pid file does not contain a parsable integer
-   */
-  private static int readPid(final File directory, final String pidFilename) throws IOException {
-    if (!directory.isDirectory() && directory.exists()) {
-      throw new IllegalArgumentException("Argument '" + directory + "' must be an existing directory!");
-    }
-
-    final File[] files = directory.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File file, String filename) {
-        return filename.equals(pidFilename);
-      }
-    });
-
-    if (files.length == 0) {
-      throw new FileNotFoundException("Unable to find PID file '" + pidFilename + "' in directory " + directory);
-    }
-
-    return readPid(files[0]);
   }
 }

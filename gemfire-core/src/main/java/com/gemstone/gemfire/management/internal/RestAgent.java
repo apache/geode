@@ -107,15 +107,13 @@ public class RestAgent {
     // Find the developer REST WAR file
     final String gemfireAPIWar = agentUtil.getGemFireWebApiWarLocation();
     if (gemfireAPIWar == null) {
-      logger
-          .info("Unable to find GemFire Developer REST API WAR file; the Developer REST API for GemFire will not be exported and accessible.");
+      logger.info("Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");
     }
 
     try {
       // Check if we're already running inside Tomcat
       if (isRunningInTomcat()) {
-        logger
-            .warn("Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire developer REST API, please deploy the gemfire-web.war file in your application server.");
+        logger.warn("Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /gemfire-api WAR file in your application server."); 
       } else if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
 
         final String bindAddress = this.config.getHttpServiceBindAddress();

@@ -13,7 +13,7 @@ import java.io.IOException;
 
 import com.gemstone.gemfire.cache.DiskAccessException;
 import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.internal.InternalDataSerializer.Sendable;
+import com.gemstone.gemfire.internal.Sendable;
 
 /**
  * @author kneeraj

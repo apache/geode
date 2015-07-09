@@ -12,7 +12,7 @@ import org.junit.experimental.categories.Category;
 import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OperationJUnitTest extends TestCase {

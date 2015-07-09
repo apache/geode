@@ -11,21 +11,135 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import com.gemstone.org.jgroups.Header;
 import com.gemstone.org.jgroups.JGroupsVersion;
 import com.gemstone.org.jgroups.Message;
+import com.gemstone.org.jgroups.spi.GFBasicAdapter;
+import com.gemstone.org.jgroups.util.ExternalStrings;
 import com.gemstone.org.jgroups.util.GemFireTracer;
 import com.gemstone.org.jgroups.util.SockCreator;
 import com.gemstone.org.jgroups.util.Util;
 import com.gemstone.org.jgroups.util.VersionedStreamable;
 
 public class GFBasicAdapterImpl implements GFBasicAdapter {
+
+  private static boolean useIPv6Addresses = !Boolean.getBoolean("java.net.preferIPv4Stack") &&
+      Boolean.getBoolean("java.net.preferIPv6Addresses");
+  
+  static InetAddress localHost;
+  
+  // This static block avoids problems with poorly configured
+  // /etc/hosts files, such as
+  //   127.0.0.1 localhost
+  //   127.0.1.1 ubuntu
+  static {
+    InetAddress lh = null;
+    try {
+      lh = InetAddress.getLocalHost();
+      if (lh.isLoopbackAddress()) {
+        InetAddress ipv4Fallback = null;
+        InetAddress ipv6Fallback = null;
+        // try to find a non-loopback address
+        Set myInterfaces = getMyAddresses();
+        boolean preferIPv6 = useIPv6Addresses;
+        String lhName = null;
+        for (Iterator<InetAddress> it = myInterfaces.iterator(); lhName == null && it.hasNext(); ) {
+          InetAddress addr = it.next();
+          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress()) {
+            break;
+          }
+          boolean ipv6 = addr instanceof Inet6Address;
+          boolean ipv4 = addr instanceof Inet4Address;
+          if ( (preferIPv6 && ipv6)
+              || (!preferIPv6 && ipv4) ) {
+            String addrName = addr.getCanonicalHostName();
+            if (lh.isLoopbackAddress()) {
+              lh = addr;
+              lhName = addrName;
+            } else if (addrName != null) {
+              lh = addr;
+              lhName = addrName;
+            }
+          } else {
+            if (preferIPv6 && ipv4 && ipv4Fallback == null) {
+              ipv4Fallback = addr;
+            } else if (!preferIPv6 && ipv6 && ipv6Fallback == null) {
+              ipv6Fallback = addr;
+            }
+          }
+        }
+        // vanilla Ubuntu installations will have a usable IPv6 address when
+        // running as a guest OS on an IPv6-enabled machine.  We also look for
+        // the alternative IPv4 configuration.
+        if (lh.isLoopbackAddress()) {
+          if (ipv4Fallback != null) {
+            lh = ipv4Fallback;
+            useIPv6Addresses = false;
+          } else if (ipv6Fallback != null) {
+            lh = ipv6Fallback;
+            useIPv6Addresses = true;
+          }
+        }
+      }
+    } catch (UnknownHostException e) {
+    }
+    localHost = lh;
+  }
+  
+  private static Set<InetAddress> getMyAddresses() {
+    Set<InetAddress> result = new HashSet<InetAddress>();
+    Set<InetAddress> locals = new HashSet<InetAddress>();
+    Enumeration<NetworkInterface> interfaces;
+    try {
+      interfaces = NetworkInterface.getNetworkInterfaces();
+    } catch (SocketException e) {
+      throw new IllegalArgumentException("Unable to examine network interfaces", e);
+    }
+    while (interfaces.hasMoreElements()) {
+      NetworkInterface face = interfaces.nextElement();
+      boolean faceIsUp = false;
+      try {
+        faceIsUp = face.isUp();
+      } catch (SocketException e) {
+        GemFireTracer.getLog(GFBasicAdapterImpl.class).info(ExternalStrings.ONE_ARG,
+            new Object[]{"Failed to check if network interface is up. Skipping " + face}, e);
+      }
+      if (faceIsUp) {
+        Enumeration<InetAddress> addrs = face.getInetAddresses();
+        while (addrs.hasMoreElements()) {
+          InetAddress addr = addrs.nextElement();
+          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress() 
+              /*|| (!useLinkLocalAddresses && addr.isLinkLocalAddress())*/) {
+            locals.add(addr);
+          } else {
+            result.add(addr);
+          }
+        } // while
+      }
+    } // while
+    // fix for bug #42427 - allow product to run on a standalone box by using
+    // local addresses if there are no non-local addresses available
+    if (result.size() == 0) {
+      return locals;
+    } else {
+      return result;
+    }
+  }
+
+
   @Override
   public short getMulticastVersionOrdinal() {
     return JGroupsVersion.GFE_71_ORDINAL;

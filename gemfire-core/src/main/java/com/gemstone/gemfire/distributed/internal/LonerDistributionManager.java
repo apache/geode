@@ -74,13 +74,13 @@ public class LonerDistributionManager implements DM {
    */
   public LonerDistributionManager(InternalDistributedSystem system,
                                   InternalLogWriter logger) {
+    JChannel.setDefaultGFFunctions(new GFJGBasicAdapter());
     this.system = system;
     this.logger = logger;
     this.id = generateMemberId();
     this.allIds = Collections.singleton(id);
     this.viewMembers = new Vector(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
-    JChannel.setDefaultGFFunctions(new GFJGBasicAdapter());
   }
 
   //////////////////////  Instance Methods  //////////////////////

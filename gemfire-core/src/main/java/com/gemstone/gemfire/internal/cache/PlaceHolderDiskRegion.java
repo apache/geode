@@ -150,6 +150,14 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
     public RegionMap getRegionMap() {
       return getRecoveredEntryMap();
     }
+    
+    @Override
+    public void close() {
+      RegionMap rm = getRecoveredEntryMap();
+      if (rm != null) {
+        rm.close();
+      }
+    }
 
     public void handleDiskAccessException(DiskAccessException dae) {
       getDiskStore()

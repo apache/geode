@@ -104,6 +104,11 @@ public abstract class DistributionMessage
    */
   private transient ReplySender acker = null;
   
+  /**
+   * True if the P2P reader that received this message is a SHARED reader.
+   */
+  private transient boolean sharedReceiver;
+  
   //////////////////////  Constructors  //////////////////////
 
   protected DistributionMessage() {
@@ -410,9 +415,18 @@ public abstract class DistributionMessage
       && getProcessorType() == DistributionManager.SERIAL_EXECUTOR
       && !isPreciousThread();
     
-    inlineProcess |= this.getInlineProcess();
-    inlineProcess |= Connection.isDominoThread();
-    inlineProcess |= this.acker != null;
+    boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();
+    
+    if (inlineProcess && !forceInline && isSharedReceiver()) {
+      // If processing this message may need to add
+      // to more than one serial gateway then don't
+      // do it inline.
+      if (mayAddToMultipleSerialGateways(dm)) {
+        inlineProcess = false;
+      }
+    }
+    
+    inlineProcess |= forceInline;
     
     if (inlineProcess) {
       dm.getStats().incNumSerialThreads(1);
@@ -457,6 +471,12 @@ public abstract class DistributionMessage
         throw new InternalGemFireException(LocalizedStrings.DistributionMessage_UNEXPECTED_ERROR_SCHEDULING_MESSAGE.toLocalizedString(), t);
       }
     } // not inline
+  }
+
+  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+    // subclasses should override this method if processing
+    // them may add to multiple serial gateways.
+    return false;
   }
 
   /**
@@ -601,6 +621,13 @@ public abstract class DistributionMessage
   public int getBytesRead()
   {
     return bytesRead;
+  }
+  
+  public void setSharedReceiver(boolean v) {
+    this.sharedReceiver = v;
+  }
+  public boolean isSharedReceiver() {
+    return this.sharedReceiver;
   }
 
   /**

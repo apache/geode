@@ -71,6 +71,7 @@ class QScope  {
     iterator.setCurrent(obj);
   }
   
+  
   /**
    * 
    * @return unique int identifying the scope. It also indicates the relative visibility
@@ -79,4 +80,5 @@ class QScope  {
   int getScopeID() {
     return this.scopeID;
   }
+  
 }

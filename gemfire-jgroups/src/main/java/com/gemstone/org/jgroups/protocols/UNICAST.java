@@ -670,11 +670,7 @@ public class UNICAST extends Protocol implements AckSenderWindow.RetransmitComma
                 stack.gfPeerFunctions.incJgUNICASTdataReceived(nanoTime()-msg.timeStamp);
               }
               if (TP.VERBOSE) {
-                try {
-                  log.getLogWriter().info(ExternalStrings.DEBUG, "dispatching message with payload " + msg.getObject());
-                } catch (Exception e) {
-                  log.getLogWriter().info(ExternalStrings.DEBUG, "dispatching message (payload not deserializable)", e);
-                }
+                log.getLogWriter().info(ExternalStrings.DEBUG, "dispatching message " + msg);
               }
               passUp(new Event(Event.MSG, msg));
             }

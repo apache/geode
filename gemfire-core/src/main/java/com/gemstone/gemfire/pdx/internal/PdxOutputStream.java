@@ -17,16 +17,18 @@ import java.util.Date;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
+import com.gemstone.gemfire.internal.ByteBufferWriter;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 
 /**
  * Used by PdxWriterImpl to manage the raw data of a PDX.
  * @author darrel
  *
  */
-public class PdxOutputStream {
+public class PdxOutputStream implements ByteBufferWriter {
 
   private final HeapDataOutputStream hdos;
   
@@ -208,7 +210,12 @@ public class PdxOutputStream {
     this.hdos.sendTo(out);
   }
 
+  @Override
   public void write(ByteBuffer data) {
+    this.hdos.write(data);
+  }
+
+  public void write(ByteSource data) {
     this.hdos.write(data);
   }
 

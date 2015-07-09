@@ -1464,6 +1464,18 @@ public class MiscellaneousCommands implements CommandMarker {
       }
 
       /***
+       * OffHeap
+       */
+      if (categoriesMap.get("offheap").booleanValue()) {
+        writeToTableAndCsv(metricsTable, "offheap", "maxMemory", memberMxBean.getOffHeapMaxMemory(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "freeMemory", memberMxBean.getOffHeapFreeMemory(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "usedMemory", memberMxBean.getOffHeapUsedMemory(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "objects", memberMxBean.getOffHeapObjects(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "fragmentation", memberMxBean.getOffHeapFragmentation(), csvBuilder);
+        writeToTableAndCsv(metricsTable, "", "compactionTime", memberMxBean.getOffHeapCompactionTime(), csvBuilder);
+      }
+
+      /***
        * CacheServer stats
        */
       if (csMxBean != null) {
@@ -1892,6 +1904,7 @@ public class MiscellaneousCommands implements CommandMarker {
     categories.put("lock", true);
     categories.put("eviction", true);
     categories.put("distribution", true);
+    categories.put("offheap", true);
     return categories;
   }
 

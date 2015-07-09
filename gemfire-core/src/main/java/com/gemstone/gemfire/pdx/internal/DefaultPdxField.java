@@ -9,6 +9,9 @@ package com.gemstone.gemfire.pdx.internal;
 
 import java.nio.ByteBuffer;
 
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+
 /**
  * Used by {@link PdxInstanceImpl#equals(Object)} to act as if it has
  * a field whose value is always the default.
@@ -21,8 +24,8 @@ public class DefaultPdxField extends PdxField {
     super(f);
   }
 
-  public ByteBuffer getDefaultBytes() {
-    return getFieldType().getDefaultBytes();
+  public ByteSource getDefaultBytes() {
+    return ByteSourceFactory.create(getFieldType().getDefaultBytes());
   }
 
 }

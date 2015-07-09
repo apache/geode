@@ -27,6 +27,10 @@ import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSParallelGatewaySenderQueue;
+import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -150,6 +154,9 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
       }
       catch (InterruptedException e) {
         e.printStackTrace();
+      } finally {
+      if (gatewayQueueEvent != null) {
+        gatewayQueueEvent.release();
       }
       getSender().getStatistics().endPut(start);
     }
@@ -265,8 +272,16 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
     
     setIsStopped(true);
     stopperService.shutdown();
+    closeProcessor();
     if (logger.isDebugEnabled()) {
       logger.debug("ConcurrentParallelGatewaySenderEventProcessor: Stopped dispatching: {}", this);
+    }
+  }
+  
+  @Override
+  public void closeProcessor() {
+    for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
+      parallelProcessor.closeProcessor();
     }
   }
   

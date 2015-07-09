@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -29,6 +30,7 @@ import com.gemstone.gemfire.cache.RegionExistsException;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.TransactionException;
+import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
@@ -443,9 +445,20 @@ public class PeerTypeRegistration implements TypeRegistration {
     if(!typeRegistryInUse) {
       return;
     }
-    checkAllowed(!cache.getGatewaySenders().isEmpty(), true);
+    checkAllowed(hasGatewaySender(), true);
   }
   
+  public boolean hasGatewaySender(){
+    Set<GatewaySender> sendersAndAsyncQueues = cache.getGatewaySenders();
+    Iterator<GatewaySender> itr = sendersAndAsyncQueues.iterator();
+    while(itr.hasNext()){
+      GatewaySender sender = itr.next();
+      if(AsyncEventQueueImpl.isAsyncEventQueue(sender.getId())){
+        itr.remove();
+      }
+    }
+    return !sendersAndAsyncQueues.isEmpty();
+  }
   public void creatingPool() {
     if(typeRegistryInUse) {
       throw new PdxInitializationException("The PDX metadata has already been created as a peer metadata region. Please create your pools first");
@@ -457,7 +470,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       return;
     } else {
       boolean hasPersistentRegions = hasPersistentRegions();
-      checkAllowed(!cache.getGatewaySenders().isEmpty(), hasPersistentRegions);
+      checkAllowed(hasGatewaySender(), hasPersistentRegions);
       
       for(Pool pool : PoolManager.getAll().values()) {
         if(!((PoolImpl) pool).isUsedByGateway()) {

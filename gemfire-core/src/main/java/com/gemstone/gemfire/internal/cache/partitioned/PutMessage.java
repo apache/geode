@@ -37,9 +37,12 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.DataLocationException;
 import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.NewValueImporter;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
@@ -53,7 +56,12 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
+
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 /**
  * A Partitioned Region update message.  Meant to be sent only to
@@ -64,10 +72,9 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * @author bruce
  * @since 5.0
  */
-public final class PutMessage extends PartitionMessageWithDirectReply
-  {
+public final class PutMessage extends PartitionMessageWithDirectReply implements NewValueImporter {
   private static final Logger logger = LogService.getLogger();
-  
+
   /** The key associated with the value that must be sent */
   private Object key;
 
@@ -76,6 +83,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
 
   /** Used on sender side only to defer serialization until toData is called.
    */
+  @Unretained(ENTRY_EVENT_NEW_VALUE) 
   private transient Object valObj;
 
   /** The callback arg of the operation */
@@ -164,11 +172,18 @@ public final class PutMessage extends PartitionMessageWithDirectReply
 
   private VersionTag versionTag;
 
+  /** whether this operation should fetch oldValue from HDFS*/
+  private transient boolean fetchFromHDFS;
+
+  private transient boolean isPutDML;
+  
   // additional bitmask flags used for serialization/deserialization
 
   protected static final short CACHE_WRITE = UNRESERVED_FLAGS_START;
   protected static final short HAS_EXPECTED_OLD_VAL = (CACHE_WRITE << 1);
   protected static final short HAS_VERSION_TAG = (HAS_EXPECTED_OLD_VAL << 1);
+  //using the left most bit for IS_PUT_DML, the last available bit
+  protected static final short IS_PUT_DML = (short) (HAS_VERSION_TAG << 1);
 
   // extraFlags
   protected static final int HAS_BRIDGE_CONTEXT =
@@ -179,6 +194,11 @@ public final class PutMessage extends PartitionMessageWithDirectReply
       getNextByteMask(HAS_ORIGINAL_SENDER);
   protected static final int HAS_CALLBACKARG =
       getNextByteMask(HAS_DELTA_WITH_FULL_VALUE);
+  // TODO this should really have been at the PartitionMessage level but all
+  // masks there are taken
+  // also switching the masks will impact backwards compatibility. Need to
+  // verify if it is ok to break backwards compatibility
+  protected static final int FETCH_FROM_HDFS = getNextByteMask(HAS_CALLBACKARG);  
 
   /*
   private byte[] oldValBytes;
@@ -200,7 +220,9 @@ public final class PutMessage extends PartitionMessageWithDirectReply
     }
     else{
       if(original.valObj instanceof CachedDeserializable) {
-        {
+        if (original.valObj instanceof StoredObject && !((StoredObject)original.valObj).isSerialized()) {
+          this.valObj = ((StoredObject)original.valObj).getDeserializedForReading();
+        } else {
           Object val = ((CachedDeserializable) original.valObj).getValue();
           if(val instanceof byte[]) {
             this.valBytes = (byte[]) val; 
@@ -320,47 +342,12 @@ public final class PutMessage extends PartitionMessageWithDirectReply
     this.expectedOldValue = expectedOldValue;
     this.key = event.getKey();
     if (event.hasNewValue()) {
-      CachedDeserializable cd = (CachedDeserializable) event.getSerializedNewValue();
-      if (cd != null) {
-        {
-          this.deserializationPolicy =
-            DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
-          Object v = cd.getValue();
-          if (v instanceof byte[]) {
-            setValBytes((byte[])v);
-          }
-          else {
-            // Defer serialization until toData is called.
-            setValObj(v);
-          }
-        }
+      if (CachedDeserializableFactory.preferObject() || event.hasDelta()) {
+        this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER;
+      } else {
+        this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
       }
-      else {
-        Object v = event.getRawNewValue();
-        if (v instanceof byte[]) {
-          this.deserializationPolicy =
-            DistributedCacheOperation.DESERIALIZATION_POLICY_NONE;
-          setValBytes((byte[]) v);
-        }
-        else if (event.hasDelta()) {
-          this.deserializationPolicy =
-            DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER;
-          if (event.getCachedSerializedNewValue() != null) {
-            setValBytes(event.getCachedSerializedNewValue());
-          } else {
-            setValObj(v);
-          }
-        }
-        else {
-          this.deserializationPolicy =
-            DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
-          if (event.getCachedSerializedNewValue() != null) {
-            setValBytes(event.getCachedSerializedNewValue());
-          } else {
-            setValObj(v);
-          }
-        }
-      }
+      event.exportNewValue(this);
     }
     else {
       // assert that if !event.hasNewValue, then deserialization policy is NONE
@@ -433,6 +420,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
                                   requireOldValue);
     m.setInternalDs(r.getSystem());
     m.setSendDelta(true);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     processor.setPutMessage(m);
 
@@ -506,7 +494,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
     this.valBytes = valBytes;
   }
 
-  private void setValObj(Object o) {
+  private void setValObj(@Unretained(ENTRY_EVENT_NEW_VALUE) Object o) {
     this.valObj = o;
   }
 
@@ -606,7 +594,9 @@ public final class PutMessage extends PartitionMessageWithDirectReply
       this.originalSender = (InternalDistributedMember)DataSerializer
         .readObject(in);
     }
-
+    if ((extraFlags & FETCH_FROM_HDFS) != 0) {
+      this.fetchFromHDFS = true;
+    }
     this.eventId = new EventID();
     InternalDataSerializer.invokeFromData(this.eventId, in);
     
@@ -645,6 +635,10 @@ public final class PutMessage extends PartitionMessageWithDirectReply
     if ((flags & HAS_VERSION_TAG) != 0) {
       this.versionTag =  DataSerializer.readObject(in);
     }
+    if ((flags & IS_PUT_DML) != 0) {
+      this.isPutDML = true;
+    }
+    
   }
   
   @Override
@@ -689,6 +683,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
       extraFlags |= HAS_DELTA_WITH_FULL_VALUE;
     }
     if (this.originalSender != null) extraFlags |= HAS_ORIGINAL_SENDER;
+    if (this.event.isFetchFromHDFS()) extraFlags |= FETCH_FROM_HDFS;
     out.writeByte(extraFlags);
 
     DataSerializer.writeObject(getKey(), out);
@@ -720,27 +715,8 @@ public final class PutMessage extends PartitionMessageWithDirectReply
       region.getCachePerfStats().incDeltasSent();
     }
     else {
-      // for eager deserialization avoid extra byte array serialization
-      if (this.deserializationPolicy
-          == DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-        byte[] newValBytes = getValBytes();
-        if (getValBytes() == null) {
-          newValBytes = BlobHelper.serializeToBlob(this.valObj);
-          this.event.setCachedSerializedNewValue(newValBytes);
-        }
-        out.write(getValBytes());
-      }
-      else if (this.deserializationPolicy == DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY) {
-        byte[] newValBytes = getValBytes();
-        if (getValBytes() == null) {
-          newValBytes = BlobHelper.serializeToBlob(this.valObj);
-          this.event.setCachedSerializedNewValue(newValBytes);
-        }
-        DataSerializer.writeByteArray(newValBytes, out);
-      }
-      else { // POLICY_NONE
-        DataSerializer.writeByteArray(getValBytes(), out);
-      }
+      // TODO OFFHEAP MERGE: cache serialized blob in event
+      DistributedCacheOperation.writeValue(this.deserializationPolicy, this.valObj, getValBytes(), out);
       if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
         DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
       }
@@ -771,6 +747,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
       }
     }
     if (this.versionTag != null) s |= HAS_VERSION_TAG;
+    if (this.event.isPutDML()) s |= IS_PUT_DML;
     return s;
   }
 
@@ -809,7 +786,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
     if (r.keyRequiresRegionContext()) {
       ((KeyWithRegionContext)this.key).setRegionContext(r);
     }
-    final EntryEventImpl ev = new EntryEventImpl(
+    final EntryEventImpl ev = EntryEventImpl.create(
         r,
         getOperation(),
         getKey(),
@@ -819,6 +796,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
         eventSender,
         true/*generateCallbacks*/,
         false/*initializeId*/);
+    try {
     if (this.versionTag != null) {
       this.versionTag.replaceNullIDs(getSender());
       ev.setVersionTag(this.versionTag);
@@ -831,6 +809,8 @@ public final class PutMessage extends PartitionMessageWithDirectReply
     ev.setCausedByMessage(this);
     ev.setInvokePRCallbacks(!notificationOnly);
     ev.setPossibleDuplicate(this.posDup);
+	ev.setFetchFromHDFS(this.fetchFromHDFS);
+    ev.setPutDML(this.isPutDML);
     /*if (this.hasOldValue) {
       if (this.oldValueIsSerialized) {
         ev.setSerializedOldValue(getOldValueBytes());
@@ -919,6 +899,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
     else { // notificationOnly
       EntryEventImpl e2 = createListenerEvent(ev, r, dm.getDistributionManagerId());
       final EnumListenerEvent le;
+      try {
       if (e2.getOperation().isCreate()) {
         le = EnumListenerEvent.AFTER_CREATE;
       }
@@ -926,28 +907,30 @@ public final class PutMessage extends PartitionMessageWithDirectReply
         le = EnumListenerEvent.AFTER_UPDATE;
       }
       r.invokePutCallbacks(le, e2, r.isInitialized(), true);
+      } finally {
+        // if e2 == ev then no need to free it here. The outer finally block will get it.
+        if (e2 != ev) {
+          e2.release();
+        }
+      }
       result = true;
     }
 
     setOperation(ev.getOperation()); // set operation for reply message
 
     if (sendReply) {
-      Object oldValue = null;
-      if (!this.notificationOnly && this.requireOldValue) {
-        oldValue = ev.getSerializedOldValue();
-        if (oldValue == null) {
-          oldValue = ev.getRawOldValue();
-        }
-      }
       sendReply(getSender(),
                 getProcessorId(),
                 dm,
                 null,
                 r,
                 startTime,
-                oldValue, ev.getVersionTag());
+                ev);
     }
     return false;
+    } finally {
+      ev.release();
+    }
   }
 
 
@@ -963,13 +946,12 @@ public final class PutMessage extends PartitionMessageWithDirectReply
                            ReplyException ex,
                            PartitionedRegion pr,
                            long startTime,
-                           Object oldValue,
-                           VersionTag version) {
+                           EntryEventImpl ev) {
     if (pr != null && startTime > 0) {
       pr.getPrStats().endPartitionMessagesProcessing(startTime);
       pr.getCancelCriterion().checkCancelInProgress(null); // bug 39014 - don't send a positive response if we may have failed
     }
-    PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, oldValue, version);
+    PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this, ev);
   }
 
 
@@ -1032,8 +1014,13 @@ public final class PutMessage extends PartitionMessageWithDirectReply
   {
     this.internalDs = internalDs;
   }
+  
+  @Override
+  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+    return _mayAddToMultipleSerialGateways(dm);
+  }
 
-  public static final class PutReplyMessage extends ReplyMessage {
+  public static final class PutReplyMessage extends ReplyMessage implements OldValueImporter {
     /** Result of the Put operation */
     boolean result;
 
@@ -1044,6 +1031,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply
      * Old value in serialized form: either a byte[] or CachedDeserializable,
      * or null if not set.
      */
+    @Unretained(ENTRY_EVENT_OLD_VALUE)
     Object oldValue;
 
     VersionTag versionTag;
@@ -1082,11 +1070,15 @@ public final class PutMessage extends PartitionMessageWithDirectReply
                             boolean result,
                             Operation op,
                             ReplyException ex,
-                            Object oldValue,
-                            VersionTag version)
+                            PutMessage sourceMessage,
+                            EntryEventImpl ev)
     {
       Assert.assertTrue(recipient != null, "PutReplyMessage NULL reply message");
-      PutReplyMessage m = new PutReplyMessage(processorId, result, op, ex, oldValue, version);
+      PutReplyMessage m = new PutReplyMessage(processorId, result, op, ex, null, ev.getVersionTag());
+      if (!sourceMessage.notificationOnly && sourceMessage.requireOldValue) {
+        ev.exportOldValue(m);
+      }
+
       m.setRecipient(recipient);
       dm.putOutgoing(m);
     }
@@ -1167,6 +1159,32 @@ public final class PutMessage extends PartitionMessageWithDirectReply
       .append(" oldValue=").append(this.oldValue==null? "null" : "not null")
       .append(" version=").append(this.versionTag);
       return sb.toString();
+    }
+
+    @Override
+    public boolean prefersOldSerialized() {
+      return true;
+    }
+
+    @Override
+    public boolean isUnretainedOldReferenceOk() {
+      return true;
+    }
+    
+    @Override
+    public boolean isCachedDeserializableValueOk() {
+      return true;
+    }
+
+
+    @Override
+    public void importOldObject(@Unretained(ENTRY_EVENT_OLD_VALUE) Object ov, boolean isSerialized) {
+      this.oldValue = ov;
+    }
+
+    @Override
+    public void importOldBytes(byte[] ov, boolean isSerialized) {
+      this.oldValue = ov;
     }
   }
 
@@ -1306,5 +1324,35 @@ public final class PutMessage extends PartitionMessageWithDirectReply
 
   public void setSendDelta(boolean sendDelta) {
     this.sendDelta = sendDelta;
+  }
+
+  // NewValueImporter methods
+  
+  @Override
+  public boolean prefersNewSerialized() {
+    return true;
+  }
+
+  @Override
+  public boolean isUnretainedNewReferenceOk() {
+    return true;
+  }
+  
+  private void setDeserializationPolicy(boolean isSerialized) {
+    if (!isSerialized) {
+      this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_NONE;
+    }
+  }
+
+  @Override
+  public void importNewObject(@Unretained(ENTRY_EVENT_NEW_VALUE) Object nv, boolean isSerialized) {
+    setDeserializationPolicy(isSerialized);
+    setValObj(nv);
+  }
+
+  @Override
+  public void importNewBytes(byte[] nv, boolean isSerialized) {
+    setDeserializationPolicy(isSerialized);
+    setValBytes(nv);
   }
 }

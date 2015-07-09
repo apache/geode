@@ -102,8 +102,10 @@ public class ConfigurationRequest implements DataSerializableFixedID{
   }
 
   // TODO Sourabh, please review for correctness
+  //Asif: Returning null, as otherwise backward compatibility tests fail
+  // due to missing pre to & from data functions.
   public Version[] getSerializationVersions() {
-    return new Version[] { Version.CURRENT };
+    return null;//new Version[] { Version.CURRENT };
   }
 
   public int getNumAttempts() {

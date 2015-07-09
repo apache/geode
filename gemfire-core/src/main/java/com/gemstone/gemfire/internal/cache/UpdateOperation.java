@@ -12,6 +12,7 @@ package com.gemstone.gemfire.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,11 +30,17 @@ import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.NewValueImporter;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 /**
  * Handles distribution messaging for updating an entry in a region.
@@ -85,53 +92,12 @@ public class UpdateOperation extends AbstractUpdateOperation
     m.event = ev;
     m.eventId = ev.getEventId();
     m.key = ev.getKey();
-    CachedDeserializable cd = (CachedDeserializable)ev
-        .getSerializedNewValue();
-    if (cd != null) {
-      {
-        // don't serialize here if it is not already serialized
-        Object tmp = cd.getValue();
-        if (tmp instanceof byte[]) {
-          byte[] bb = (byte[])tmp;
-          m.newValue = bb;
-          m.newValueLimit = bb.length;
-        }
-        else {
-          m.newValueObj = tmp;
-        }
-        m.deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
-      }
+    if (CachedDeserializableFactory.preferObject() || ev.hasDelta()) {
+      m.deserializationPolicy = DESERIALIZATION_POLICY_EAGER;
+    } else {
+      m.deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
     }
-    else {
-      Object v = ev.getRawNewValue();
-      if (v == null) {
-        m.newValue = null;
-        m.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
-      }
-      else if (v instanceof byte[]) {
-        m.newValue = (byte[])v;
-        m.newValueLimit = m.newValue.length;
-        m.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
-      }
-      else if (ev.hasDelta()) {
-        if (ev.getCachedSerializedNewValue() != null) {
-          m.newValue = ev.getCachedSerializedNewValue();
-          m.newValueLimit = m.newValue.length;
-        } else {
-          m.newValueObj = v;
-        }
-        m.deserializationPolicy = DESERIALIZATION_POLICY_EAGER;
-      }
-      else {
-        if (ev.getCachedSerializedNewValue() != null) {
-          m.newValue = ev.getCachedSerializedNewValue();
-          m.newValueLimit = m.newValue.length;
-        } else {
-          m.newValueObj = v;
-        }
-        m.deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
-      }
-    }
+    ev.exportNewValue(m);
   }
 
   @Override
@@ -146,8 +112,7 @@ public class UpdateOperation extends AbstractUpdateOperation
     }
   }
 
-  public static class UpdateMessage extends AbstractUpdateMessage
-  {
+  public static class UpdateMessage extends AbstractUpdateMessage implements NewValueImporter {
 
     /**
      * Indicates if and when the new value should be deserialized on the the
@@ -163,8 +128,7 @@ public class UpdateOperation extends AbstractUpdateOperation
 
     protected byte[] newValue;
 
-    protected transient int newValueLimit; // used by toData only
-
+    @Unretained(ENTRY_EVENT_NEW_VALUE) 
     protected transient Object newValueObj;
 
     private byte[] deltaBytes;
@@ -193,7 +157,6 @@ public class UpdateOperation extends AbstractUpdateOperation
       this.key = upMsg.key;
       this.lastModified = upMsg.lastModified;
       this.newValue = upMsg.newValue;
-      this.newValueLimit = upMsg.newValueLimit;
       this.newValueObj = upMsg.newValueObj;
       this.op = upMsg.op;
       this.owner = upMsg.owner;
@@ -231,6 +194,8 @@ public class UpdateOperation extends AbstractUpdateOperation
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
+      boolean evReturned = false;
+      try {
       ev.setEventId(this.eventId);
       
       ev.setDeltaBytes(this.deltaBytes);
@@ -255,7 +220,13 @@ public class UpdateOperation extends AbstractUpdateOperation
       
       ev.setInhibitAllNotifications(this.inhibitAllNotifications);
       
+      evReturned = true;
       return ev;
+      } finally {
+        if (!evReturned) {
+          ev.release();
+        }
+      }
     }
     
     @Override
@@ -355,7 +326,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       if (rgn.keyRequiresRegionContext()) {
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
-      EntryEventImpl result = new EntryEventImpl(rgn, getOperation(), this.key,
+      EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, // oldValue,
           this.callbackArg, originRemote, getSender(), generateCallbacks);
       setOldValueInEvent(result);
@@ -439,9 +410,6 @@ public class UpdateOperation extends AbstractUpdateOperation
         else {
           this.newValue = DataSerializer.readByteArray(in);
         }
-        if (this.newValue != null) {
-          this.newValueLimit = this.newValue.length;
-        }
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           this.deltaBytes = DataSerializer.readByteArray(in);
         }
@@ -486,28 +454,11 @@ public class UpdateOperation extends AbstractUpdateOperation
       if (hasDelta()) {
         DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
         this.event.getRegion().getCachePerfStats().incDeltasSent();
-      }
-      else {
-        if (this.newValueObj != null) {
-          byte[] newValueBytes = BlobHelper.serializeToBlob(this.newValueObj);
-          this.event.setCachedSerializedNewValue(newValueBytes);
-          // for eager deserialization avoid extra byte array serialization
-          if (this.deserializationPolicy ==
-              DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-            out.write(newValueBytes);
-          }
-          else {
-            DataSerializer.writeByteArray(newValueBytes, out);
-          }
-        }
-        else {
-          if (this.deserializationPolicy ==
-              DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-            out.write(this.newValue, 0, this.newValueLimit);
-          } else {
-            DataSerializer.writeByteArray(this.newValue, this.newValueLimit, out);
-          }
-        }
+      } else {
+          // TODO OFFHEAP MERGE: add a writeValue that will cache in the event like so:
+          //byte[] newValueBytes = BlobHelper.serializeToBlob(this.newValueObj);
+          //this.event.setCachedSerializedNewValue(newValueBytes);
+        DistributedCacheOperation.writeValue(this.deserializationPolicy, this.newValueObj, this.newValue, out);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
         }
@@ -550,12 +501,8 @@ public class UpdateOperation extends AbstractUpdateOperation
           valueBytes = EntryEventImpl.serialize(this.newValueObj);
         }
       }
-      else if (this.newValue.length == this.newValueLimit) {
-        valueBytes = this.newValue;
-      }
       else {
-        valueBytes = new byte[this.newValueLimit];
-        System.arraycopy(this.newValue, 0, valueBytes, 0, valueBytes.length);
+        valueBytes = this.newValue;
       }
       return Collections.singletonList(new QueuedOperation(getOperation(),
           this.key, valueBytes, valueObj, this.deserializationPolicy,
@@ -579,6 +526,33 @@ public class UpdateOperation extends AbstractUpdateOperation
     public void setSendDeltaWithFullValue(boolean bool) {
       this.sendDeltaWithFullValue = bool;
     }
+    @Override
+    public boolean prefersNewSerialized() {
+      return true;
+    }
+    @Override
+    public boolean isUnretainedNewReferenceOk() {
+      return true;
+    }
+    @Override
+    public void importNewObject(@Unretained(ENTRY_EVENT_NEW_VALUE) Object nv, boolean isSerialized) {
+      if (nv == null) {
+        this.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
+        this.newValue = null;
+      } else {
+        if (!isSerialized) {
+          this.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
+        }
+        this.newValueObj = nv;
+      }
+    }
+    @Override
+    public void importNewBytes(byte[] nv, boolean isSerialized) {
+      if (!isSerialized) {
+        this.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
+      }
+      this.newValue = nv;
+    }
   }
 
   public static final class UpdateWithContextMessage extends UpdateMessage
@@ -598,7 +572,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       if (rgn.keyRequiresRegionContext()) {
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
-      EntryEventImpl ev = new EntryEventImpl(rgn, getOperation(), this.key,
+      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, this.callbackArg, originRemote, getSender(),
           generateCallbacks);
       ev.setContext(this.clientID);

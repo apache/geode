@@ -744,7 +744,7 @@ public class IpAddress implements StreamableFixedID,
     }
 
     @Override // GemStoneAddition
-    public Object clone() throws CloneNotSupportedException {
+    public Object clone() {
         IpAddress ret=new IpAddress(ip_addr, port);
         ret.processId = this.processId; // GemStoneAddition
         ret.shouldNotBeCoordinator = this.shouldNotBeCoordinator; // GemStoneAddition

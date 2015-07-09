@@ -72,9 +72,10 @@ public class QueuedOperation
     else {
       // it is an entry operation
       //TODO :EventID should be passed from the sender & should be reused here
-      EntryEventImpl ee = new EntryEventImpl(
+      EntryEventImpl ee = EntryEventImpl.create(
           lr, this.op, this.key, null,
           this.cbArg, true, src);
+      try {
       //ee.setQueued(true);
       if (this.op.isCreate() || this.op.isUpdate()) {
         UpdateOperation.UpdateMessage.setNewValueInEvent(this.value,
@@ -131,6 +132,9 @@ public class QueuedOperation
       }
       else {
         throw new IllegalStateException(LocalizedStrings.QueuedOperation_THE_0_SHOULD_NOT_HAVE_BEEN_QUEUED.toLocalizedString(this.op));
+      }
+      } finally {
+        ee.release();
       }
     }
   }

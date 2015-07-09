@@ -50,7 +50,13 @@ public class RegionAttributesData {
   private String interestPolicy;
   private boolean diskSynchronous;
   private String compressorClassName;
+  private boolean offHeap;
 
+  /**
+   * 
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
   @ConstructorProperties( { 
     "cacheLoaderClassName",
     "cacheWriterClassName",
@@ -80,7 +86,8 @@ public class RegionAttributesData {
     "interestPolicy",
     "diskSynchronous",
     "cacheListeners",
-    "compressorClassName"
+    "compressorClassName",
+    "offHeap"
       })
       
       
@@ -112,7 +119,8 @@ public class RegionAttributesData {
       String interestPolicy,
       boolean diskSynchronous,
       String[] cacheListeners,
-      String compressorClassName) {
+      String compressorClassName,
+      boolean offHeap) {
     
     
     
@@ -145,6 +153,7 @@ public class RegionAttributesData {
       this.diskSynchronous = diskSynchronous;
       this.cacheListeners = cacheListeners;
       this.compressorClassName = compressorClassName;
+      this.offHeap = offHeap;
   }
 
   /**
@@ -387,16 +396,29 @@ public class RegionAttributesData {
     return compressorClassName;
   }
 
+  /**
+   * Returns true if the region uses off-heap memory.
+   * @return false if the region does not use off-heap memory.
+   */
+  public boolean getOffHeap() {
+    return this.offHeap;
+  }
+  
+  /**
+   * String representation of RegionAttributesData
+   */
   @Override
   public String toString() {
     return "RegionAttributesData [asyncConflationEnabled=" + asyncConflationEnabled + ", cacheListeners=" + Arrays.toString(cacheListeners)
         + ", cacheLoaderClassName=" + cacheLoaderClassName + ", cacheWriterClassName=" + cacheWriterClassName + ", cloningEnabled=" + cloningEnabled
         + ", compressorClassName=" + compressorClassName + ", concurrencyLevel=" + concurrencyLevel + ", customEntryIdleTimeout=" + customEntryIdleTimeout
         + ", customEntryTimeToLive=" + customEntryTimeToLive + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName
-        + ", diskSynchronous=" + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive=" + entryTimeToLive
+        + ", diskSynchronous=" + diskSynchronous
+        + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive=" + entryTimeToLive
         + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
         + indexMaintenanceSynchronous + ", initialCapacity=" + initialCapacity + ", interestPolicy=" + interestPolicy + ", keyConstraintClassName="
         + keyConstraintClassName + ", loadFactor=" + loadFactor + ", lockGrantor=" + lockGrantor + ", multicastEnabled=" + multicastEnabled
+        + ", offHeap=" + offHeap
         + ", poolName=" + poolName + ", regionIdleTimeout=" + regionIdleTimeout + ", regionTimeToLive=" + regionTimeToLive + ", scope=" + scope
         + ", statisticsEnabled=" + statisticsEnabled + ", subscriptionConflationEnabled=" + subscriptionConflationEnabled
         + ", valueConstraintClassName=" + valueConstraintClassName + "]";

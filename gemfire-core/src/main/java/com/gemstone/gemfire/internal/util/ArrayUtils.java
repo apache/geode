@@ -8,7 +8,10 @@
 
 package com.gemstone.gemfire.internal.util;
 
+import java.util.Arrays;
+
 import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
  * @author John Blum
@@ -163,6 +166,126 @@ public abstract class ArrayUtils {
     return newArray;
   }
 
+  public static String objectRefString(Object obj) {
+    return obj != null ? obj.getClass().getSimpleName() + '@'
+        + Integer.toHexString(System.identityHashCode(obj)) : "(null)";
+  }
+
+  public static void objectRefString(Object obj, StringBuilder sb) {
+    if (obj != null) {
+      sb.append(obj.getClass().getSimpleName()).append('@')
+          .append(Integer.toHexString(System.identityHashCode(obj)));
+    }
+    else {
+      sb.append("(null)");
+    }
+  }
+
+  /** Get proper string for an object including arrays. */
+  public static String objectString(Object obj) {
+    StringBuilder sb = new StringBuilder();
+    objectString(obj, sb);
+    return sb.toString();
+  }
+
+  /** Get proper string for an object including arrays. */
+  public static void objectString(Object obj, StringBuilder sb) {
+    if (obj instanceof Object[]) {
+      sb.append('(');
+      boolean first = true;
+      for (Object o : (Object[])obj) {
+        if (!first) {
+          sb.append(',');
+        }
+        else {
+          first = false;
+        }
+        objectString(o, sb);
+      }
+      sb.append(')');
+    }
+    else {
+      objectStringWithBytes(obj, sb);
+    }
+  }
+
+  /**
+   * Get proper string for an an object including arrays with upto one dimension
+   * of arrays.
+   */
+  public static String objectStringNonRecursive(@Unretained Object obj) {
+    StringBuilder sb = new StringBuilder();
+    objectStringNonRecursive(obj, sb);
+    return sb.toString();
+  }  
+  
+  public static boolean areByteArrayArrayEquals(byte[][] v1, byte[][] v2) {
+    boolean areEqual = false;
+    if (v1.length == v2.length) {
+      areEqual = true;
+      for (int index = 0; index < v1.length; ++index) {
+        if (!Arrays.equals(v1[index], v2[index])) {
+          areEqual = false;
+          break;
+        }
+      }
+    }
+    return areEqual;
+  }
+
+  /**
+   * Get proper string for an an object including arrays with upto one dimension
+   * of arrays.
+   */
+  public static void objectStringNonRecursive(@Unretained Object obj, StringBuilder sb) {
+    if (obj instanceof Object[]) {
+      sb.append('(');
+      boolean first = true;
+      for (Object o : (Object[])obj) {
+        if (!first) {
+          sb.append(',');
+          sb.append(o);
+        }
+        else {
+          first = false;
+          // for SQLFire show the first byte[] for byte[][] storage
+          objectStringWithBytes(o, sb);
+        }
+      }
+      sb.append(')');
+    }
+    else {
+      objectStringWithBytes(obj, sb);
+    }
+  }
+
+  private static void objectStringWithBytes(@Unretained Object obj, StringBuilder sb) {
+    if (obj instanceof byte[]) {
+      sb.append('(');
+      boolean first = true;
+      final byte[] bytes = (byte[])obj;
+      int numBytes = 0;
+      for (byte b : bytes) {
+        if (!first) {
+          sb.append(',');
+        }
+        else {
+          first = false;
+        }
+        sb.append(b);
+        // terminate with ... for large number of bytes
+        if (numBytes++ >= 5000 && numBytes < bytes.length) {
+          sb.append(" ...");
+          break;
+        }
+      }
+      sb.append(')');
+    }
+    else {
+      sb.append(obj);
+    }
+  }
+
   /**
    * Check if two objects, possibly null, are equal. Doesn't really belong to
    * this class...
@@ -234,5 +357,4 @@ public abstract class ArrayUtils {
     }
     return array;
   }
-
 }

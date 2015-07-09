@@ -1122,8 +1122,16 @@ private void addValuesToResult(Object entriesMap, Collection result,
     throws FunctionDomainException, TypeMismatchException,
     NameResolutionException, QueryInvocationTargetException
 {
-  if (entriesMap == null || result == null || verifyLimit(result, limit, context))
+  boolean limitApplied = false;
+  if (entriesMap == null || result == null || (limitApplied = verifyLimit(result, limit, context))) {
+    if(limitApplied) {
+      QueryObserver observer = QueryObserverHolder.getInstance();
+      if(observer != null) {
+        observer.limitAppliedAtIndexLevel(this, limit, result);
+      }
+    }
     return;
+  }
   QueryObserver observer = QueryObserverHolder.getInstance();
   if (entriesMap instanceof SortedMap) {
     Iterator entriesIter = ((SortedMap)entriesMap).entrySet().iterator();

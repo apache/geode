@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
+    "http://www.gemstone.com/dtd/cache4_0.dtd">
+
+<!-- Has a callback (cache loader) that does not implement Declarable
+-->
+
+<cache>
+  <vm-root-region name="root">
+    <region-attributes>
+      <cache-listener>
+        <class-name>com.gemstone.gemfire.cache30.CacheXml30DUnitTest$NotDeclarableCacheListener</class-name>
+      </cache-listener>
+    </region-attributes>
+  </vm-root-region>
+</cache>

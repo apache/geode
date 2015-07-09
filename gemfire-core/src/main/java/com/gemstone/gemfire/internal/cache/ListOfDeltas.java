@@ -7,15 +7,13 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.internal.cache.delta.*;
 import com.gemstone.gemfire.InternalGemFireException;
-
 import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.internal.cache.delta.Delta;
 
 
 /**
@@ -27,6 +25,9 @@ public final class ListOfDeltas implements Delta {
 
   private  List<Delta> listOfDeltas;
   transient private int deltaAppliedIndex = 0;
+  public ListOfDeltas(final int size) {
+    this.listOfDeltas = new ArrayList<Delta>(size);
+  }
 
   public ListOfDeltas(Delta deltaObj) {
     this.listOfDeltas = new ArrayList<Delta>();
@@ -87,6 +88,5 @@ public final class ListOfDeltas implements Delta {
   public List<Delta> getListOfDeltas() {
     return Collections.unmodifiableList(this.listOfDeltas);
   }
-
 }
 //SqlFabric changes END

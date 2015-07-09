@@ -74,6 +74,12 @@ public abstract class Token {
    */
   public static final NotAvailable NOT_AVAILABLE = new NotAvailable();
 
+  // !!! NOTICE !!!
+  // If you add a new Token to this class then add
+  // support in OffHeapRegionEntryHelper to encode that
+  // token as an address.
+  // See OffHeapRegionEntryHelper.objectToAddress.
+  
   /**
    * A token used to represent a value that is not a token.
    */

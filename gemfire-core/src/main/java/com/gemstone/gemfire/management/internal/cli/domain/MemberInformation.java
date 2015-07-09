@@ -47,6 +47,7 @@ public class MemberInformation implements Serializable{
 	private int clientCount;
 	private double cpuUsage;
 	private Set<String> hostedRegions;
+	private String offHeapMemorySize;
 	
 	public String getName() {
 		return name;
@@ -183,5 +184,11 @@ public class MemberInformation implements Serializable{
   }
   public void setHostedRegions(Set<String> hostedRegions) {
     this.hostedRegions = hostedRegions;
+  }
+  public String getOffHeapMemorySize() {
+    return this.offHeapMemorySize;
+  }
+  public void setOffHeapMemorySize(String v) {
+    this.offHeapMemorySize = v;
   }
 }

@@ -279,7 +279,7 @@ public class DiskInitFileParser {
             concurrencyLevel, initialCapacity, loadFactor,
             statisticsEnabled, isBucket, flags,
             ProxyBucketRegion.NO_FIXED_PARTITION_NAME, // fixes bug 43910
-            -1, null);
+            -1, null, false);
       }
         break;
       case DiskInitFile.IFREC_REGION_CONFIG_ID_66: {
@@ -301,7 +301,7 @@ public class DiskInitFileParser {
         }
         interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit,
                                     concurrencyLevel, initialCapacity, loadFactor,
-                                    statisticsEnabled, isBucket, flags, partitionName, startingBucketId, null);
+                                    statisticsEnabled, isBucket, flags, partitionName, startingBucketId, null, false);
       }
         break;
       case DiskInitFile.IFREC_REGION_CONFIG_ID_80: {
@@ -332,7 +332,40 @@ public class DiskInitFileParser {
         interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit,
                                     concurrencyLevel, initialCapacity, loadFactor,
                                     statisticsEnabled, isBucket, flags, partitionName, 
-                                    startingBucketId, compressorClassName);
+                                    startingBucketId, compressorClassName, false);
+      }
+        break;
+      case DiskInitFile.IFREC_REGION_CONFIG_ID_90: {
+        long drId = readDiskRegionID(dis);
+        byte lruAlgorithm = dis.readByte();
+        byte lruAction = dis.readByte();
+        int lruLimit = dis.readInt();
+        int concurrencyLevel = dis.readInt();
+        int initialCapacity = dis.readInt();
+        float loadFactor = dis.readFloat();
+        boolean statisticsEnabled = dis.readBoolean();
+        boolean isBucket = dis.readBoolean();
+        EnumSet<DiskRegionFlag> flags = EnumSet.noneOf(DiskRegionFlag.class);
+        String partitionName = dis.readUTF(); 
+        int startingBucketId = dis.readInt();
+        
+        String compressorClassName = dis.readUTF();
+        if ("".equals(compressorClassName)) {
+          compressorClassName = null;
+        }
+        if(dis.readBoolean()) {
+          flags.add(DiskRegionFlag.IS_WITH_VERSIONING);
+        }
+        boolean offHeap = dis.readBoolean();
+        
+        readEndOfRecord(dis);
+        if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
+          logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_REGION_CONFIG_ID drId={}", drId);
+        }
+        interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit,
+                                    concurrencyLevel, initialCapacity, loadFactor,
+                                    statisticsEnabled, isBucket, flags, partitionName, 
+                                    startingBucketId, compressorClassName, offHeap);
       }
         break;
       case DiskInitFile.IFREC_OFFLINE_AND_EQUAL_MEMBER_ID: {

@@ -44,12 +44,12 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
           new DummyCancelCriterion(),
           new DummyDiskExceptionHandler(),
           null, drv.getFlags(), drv.getPartitionName(), drv.getStartingBucketId(),
-          drv.getCompressorClassName());
+          drv.getCompressorClassName(), drv.getOffHeap());
     setConfig(drv.getLruAlgorithm(), drv.getLruAction(), drv.getLruLimit(),
               drv.getConcurrencyLevel(), drv.getInitialCapacity(),
               drv.getLoadFactor(), drv.getStatisticsEnabled(),
               drv.isBucket(), drv.getFlags(), drv.getPartitionName(), drv.getStartingBucketId(),
-              drv.getCompressorClassName());
+              drv.getCompressorClassName(), drv.getOffHeap());
   }
   
   static ValidatingDiskRegion create(DiskStoreImpl dsi, DiskRegionView drv) {
@@ -144,7 +144,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     public Token getValueAsToken() {
       return null;
     }
-    public Object _getValueUse(RegionEntryContext context, boolean decompress) {
+    public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
       return null;
     }
     
@@ -156,9 +156,20 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
       throw new IllegalStateException("should never be called");
     }
     
+    @Override
     public void setValueWithContext(RegionEntryContext context,Object value) {
       throw new IllegalStateException("should never be called");
     }    
+    @Override
+    public void handleValueOverflow(RegionEntryContext context) {throw new IllegalStateException("should never be called");}
+    
+    @Override
+    public void afterValueOverflow(RegionEntryContext context) {throw new IllegalStateException();}
+    
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) {
+      throw new IllegalStateException("Should never be called");
+    }
 
     public void _removePhase1() {
       throw new IllegalStateException("should never be called");
@@ -297,6 +308,10 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
       return null;
     }
     @Override
+    public Object getValueRetain(RegionEntryContext context) {
+      return null;
+    }
+    @Override
     public void setValue(RegionEntryContext context, Object value)
         throws RegionClearedException {
       // TODO Auto-generated method stub
@@ -384,6 +399,19 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
       // TODO Auto-generated method stub
     }
     @Override
+    public boolean isMarkedForEviction() {
+      // TODO Auto-generated method stub
+      return false;
+    }
+    @Override
+    public void setMarkedForEviction() {
+      // TODO Auto-generated method stub
+    }
+    @Override
+    public void clearMarkedForEviction() {
+      // TODO Auto-generated method stub
+    }
+    @Override
     public boolean isInvalid() {
       // TODO Auto-generated method stub
       return false;
@@ -446,6 +474,11 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     }
     @Override
     public void resetRefCount(NewLRUClockHand lruList) {
+    }
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val,
+        EntryEventImpl event, boolean isEntryUpdate) {
+      throw new IllegalStateException("Should never be called");
     }
   }
 

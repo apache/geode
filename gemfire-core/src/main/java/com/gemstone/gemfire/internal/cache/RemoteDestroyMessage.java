@@ -39,6 +39,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.NanoTimer;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.DiskVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
@@ -46,6 +47,12 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
+import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
+import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
+import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_OBJECT;
 
 /**
  * A class that specifies a destroy operation.
@@ -59,7 +66,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * @since 6.5
  *  
  */
-public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply {
+public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply implements OldValueImporter {
   
   private static final Logger logger = LogService.getLogger();
   
@@ -100,6 +107,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
   
   private byte[] oldValBytes;
   
+  @Unretained(ENTRY_EVENT_OLD_VALUE)
   private transient Object oldValObj;
 
   boolean useOriginRemote;
@@ -146,28 +154,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
     // added for old value if available sent over the wire for bridge servers.
     if (event.hasOldValue()) {
       this.hasOldValue = true;
-      CachedDeserializable cd = (CachedDeserializable) event.getSerializedOldValue();
-      if (cd != null) {
-        {
-          this.oldValueIsSerialized = true;
-          Object o = cd.getValue();
-          if (o instanceof byte[]) {
-            setOldValBytes((byte[])o);
-          } else {
-            // Defer serialization until toData is called.
-            setOldValObj(o);
-          }
-        }
-      } else {
-        Object old = event.getRawOldValue();
-        if (old instanceof byte[]) {
-          this.oldValueIsSerialized = false;
-          setOldValBytes((byte[]) old);
-        } else {
-          this.oldValueIsSerialized = true;
-          setOldValObj(old);
-        }
-      }
+      event.exportOldValue(this);
     }
     
   }
@@ -181,8 +168,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
   private void setOldValBytes(byte[] valBytes){
     this.oldValBytes = valBytes;
   }
-  
-  private void setOldValObj(Object o){
+
+  private final void setOldValObj(@Unretained(ENTRY_EVENT_OLD_VALUE) Object o) {
     this.oldValObj = o;
   }
   
@@ -214,7 +201,11 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
       this.hasOldValue = true;
       CachedDeserializable cd = (CachedDeserializable) event.getSerializedOldValue();
       if (cd != null) {
-        {
+        if (cd instanceof StoredObject && !((StoredObject) cd).isSerialized()) {
+          // it is a byte[]
+          this.oldValueIsSerialized = false;
+          setOldValBytes((byte[]) ((StoredObject) cd).getDeserializedForReading());
+        } else {
           this.oldValueIsSerialized = true;
           Object o = cd.getValue();
           if (o instanceof byte[]) {
@@ -327,6 +318,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
                                           event,
                                           expectedOldValue, processorType,
                                           useOriginRemote, possibleDuplicate);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures =r.getDistributionManager().putOutgoing(m); 
     if (failures != null && failures.size() > 0 ) {
       throw new RemoteOperationException(LocalizedStrings.RemoteDestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -359,8 +351,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
       ((KeyWithRegionContext)this.key).setRegionContext(r);
     }
     EntryEventImpl event = null;
+    try {
     if (this.bridgeContext != null) {
-      event = new EntryEventImpl(r, getOperation(), getKey(), null/*newValue*/,
+      event = EntryEventImpl.create(r, getOperation(), getKey(), null/*newValue*/,
           getCallbackArg(), false/*originRemote*/, eventSender, 
           true/*generateCallbacks*/);
       event.setContext(this.bridgeContext);
@@ -376,7 +369,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
       }
     } // bridgeContext != null
     else {
-      event = new EntryEventImpl(
+      event = EntryEventImpl.create(
         r,
         getOperation(),
         getKey(),
@@ -431,6 +424,11 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
             new ReplyException(e), getReplySender(dm), r.isInternalRegion());
       }
     return false;
+    } finally {
+      if (event != null) {
+        event.release();
+      }
+    }
   }
 
   public int getDSFID() {
@@ -488,16 +486,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
 
     // this will be on wire for cqs old value generations.
     if (this.hasOldValue){
-      //out.writeBoolean(this.hasOldValue);
-      // below boolean is not strictly required, but this is for compatibility
-      // with SQLFire code which writes as byte here to indicate whether
-      // oldValue is an object, serialized object or byte[]
       out.writeByte(this.oldValueIsSerialized ? 1 : 0);
-      if (getOldValueBytes() != null) {
-        DataSerializer.writeByteArray(getOldValueBytes(), out);
-      } else {
-        DataSerializer.writeObjectAsByteArray(getOldValObj(), out);
-      }
+      byte policy = DistributedCacheOperation.valueIsToDeserializationPolicy(oldValueIsSerialized);
+      DistributedCacheOperation.writeValue(policy, getOldValObj(), getOldValueBytes(), out);
     }
     DataSerializer.writeObject(this.expectedOldValue, out);
     DataSerializer.writeObject(this.versionTag, out);
@@ -577,6 +568,47 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
     return this.cbArg;
   }
   
+  @Override
+  public boolean prefersOldSerialized() {
+    return true;
+  }
+
+  @Override
+  public boolean isUnretainedOldReferenceOk() {
+    return true;
+  }
+
+  @Override
+  public boolean isCachedDeserializableValueOk() {
+    return false;
+  }
+  
+  private void setOldValueIsSerialized(boolean isSerialized) {
+    if (isSerialized) {
+      if (CachedDeserializableFactory.preferObject()) {
+        this.oldValueIsSerialized = true; //VALUE_IS_OBJECT;
+      } else {
+        // Defer serialization until toData is called.
+        this.oldValueIsSerialized = true; //VALUE_IS_SERIALIZED_OBJECT;
+      }
+    } else {
+      this.oldValueIsSerialized = false; //VALUE_IS_BYTES;
+    }
+  }
+  
+  @Override
+  public void importOldObject(@Unretained(ENTRY_EVENT_OLD_VALUE) Object ov, boolean isSerialized) {
+    setOldValueIsSerialized(isSerialized);
+    // Defer serialization until toData is called.
+    setOldValObj(ov);
+  }
+
+  @Override
+  public void importOldBytes(byte[] ov, boolean isSerialized) {
+    setOldValueIsSerialized(isSerialized);
+    setOldValBytes(ov);
+  }
+
   public static class DestroyReplyMessage extends ReplyMessage {
     
     private static final byte HAS_VERSION = 0x01;

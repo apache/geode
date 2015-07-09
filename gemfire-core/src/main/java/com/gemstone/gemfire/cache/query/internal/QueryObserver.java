@@ -319,5 +319,12 @@ public interface QueryObserver {
   void invokedQueryUtilsIntersection(SelectResults sr1, SelectResults sr2);
   
   void limitAppliedAtIndexLevel(Index index, int limit , Collection indexResult);
+  
+  /**
+   * Callback issued if the order by columns of two objects match. 
+   * Note that it is still possible to receive compare value other than 0 , 
+   * if the overall objects are unequal.
+   */
+  void orderByColumnsEqual();
 
 }

@@ -163,6 +163,8 @@ public class Gfsh extends JLineShell {
   private final ANSIHandler       ansiHandler;
   private       Terminal          terminal;
   private final boolean           isHeadlessMode;
+  private       boolean           supressScriptCmdOutput;
+  private       boolean           isScriptRunning;
 
   private AbstractSignalNotificationHandler signalHandler;
   //This flag is used to restrict column trimming to table only types
@@ -521,10 +523,18 @@ public class Gfsh extends JLineShell {
           // results
           CliUtil.runLessCommandAsExternalViewer(commandResult, isError);
         } else {
-          while (commandResult.hasNextLine()) {
-            write(commandResult.nextLine(), isError);
+          if (!isScriptRunning) {
+            // Normal Command
+            while (commandResult.hasNextLine()) {
+              write(commandResult.nextLine(), isError);
+            }
+          } else if (!supressScriptCmdOutput) {
+            // Command is part of script. Show output only when quite=false
+            while (commandResult.hasNextLine()) {
+              write(commandResult.nextLine(), isError);
+            }
           }
-        } 
+        }
         
         resultTypeTL.set(null);
 
@@ -740,8 +750,11 @@ public class Gfsh extends JLineShell {
     Result result = null;
     String initialIsQuiet = getEnvProperty(ENV_APP_QUIET_EXECUTION);
     try {
+      this.isScriptRunning = true;  
       if (scriptFile == null) {
         throw new IllegalArgumentException("Given script file is null.");
+      } else if (!scriptFile.exists()) {
+        throw new IllegalArgumentException("Given script file does not exist.");
       } else if (scriptFile.exists() && scriptFile.isDirectory()) {
         throw new IllegalArgumentException(scriptFile.getPath() + " is a directory.");
       }
@@ -749,6 +762,7 @@ public class Gfsh extends JLineShell {
       ScriptExecutionDetails scriptInfo = new ScriptExecutionDetails(scriptFile.getPath());
       if (scriptFile.exists()) {
         setEnvProperty(ENV_APP_QUIET_EXECUTION, String.valueOf(quiet));
+        this.supressScriptCmdOutput = quiet;
         BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
         String lineRead = "";
         StringBuilder linesBuffer = new StringBuilder();
@@ -816,6 +830,7 @@ public class Gfsh extends JLineShell {
     } finally {
       // reset to original Quiet Execution value
       setEnvProperty(ENV_APP_QUIET_EXECUTION, initialIsQuiet);
+      this.isScriptRunning = false;
     }
 
     return result;
@@ -1205,6 +1220,9 @@ class ScriptExecutionDetails {
       CommandAndStatus commandAndStatus = commandAndStatusList.get(i);
       section.addData("Command-"+String.valueOf(commandSrNo), commandAndStatus.command);
       section.addData("Status", commandAndStatus.status);
+      if (commandAndStatus.status.equals("FAILED")) {
+        compositeResultData.setStatus(com.gemstone.gemfire.management.cli.Result.Status.ERROR);
+      }
       if (i != this.commandAndStatusList.size()) {
         section.setFooter(Gfsh.LINE_SEPARATOR);
       }

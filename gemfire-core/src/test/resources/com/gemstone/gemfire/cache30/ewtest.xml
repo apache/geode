@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN" "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache lock-lease="120" lock-timeout="60" search-timeout="300">
+	<!-- Disk store declarations -->
+	<disk-store name="persistentDiskStore1" 
+				queue-size="500" time-interval="30">
+		<disk-dirs>
+			<disk-dir>west</disk-dir>
+		</disk-dirs>
+	</disk-store>
+	<disk-store name="persistentDiskStore2" 
+				queue-size="500" time-interval="30">
+		<disk-dirs>
+			<disk-dir>east</disk-dir>
+		</disk-dirs>
+	</disk-store>
+        <region-attributes id="attTemplate" scope="local" data-policy="normal" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
+	</region-attributes>
+	<!-- First template declaration - not persistent -->
+	<region-attributes id="nack" scope="distributed-no-ack">
+	</region-attributes>
+	<!-- Second template declaration, based on the first + persistent-->
+	<region-attributes id="persistent" refid="nack" 
+			data-policy="persistent-replicate" 
+			disk-store-name="persistentDiskStore1" 
+			disk-synchronous="false">
+	</region-attributes>
+        <region-attributes id="partitioned-p" data-policy="persistent-partition">
+          <partition-attributes redundant-copies="1" total-num-buckets="3"/>
+        </region-attributes>
+
+	<region name="orders">
+		<region-attributes/>
+		<!-- Each persistent region has its own disk dirs -->
+		<region name="west">
+			<!-- Template is retrieved and applied -->
+			<region-attributes refid="persistent">
+			</region-attributes>
+		</region>
+		<region name="east">
+		<!-- Same template, different modification -->
+			<region-attributes refid="persistent" disk-store-name="persistentDiskStore2">
+			</region-attributes>
+		</region>
+	</region>
+
+        <region name="data-p">
+          <region-attributes refid="partitioned-p"> </region-attributes>
+        </region>
+
+</cache>

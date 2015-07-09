@@ -73,6 +73,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
     case FOO:
       return new FOO(in);
   */
+  public static final short HDFS_GATEWAY_EVENT_IMPL = -141;
   public static final short SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE = -140;
   
   public static final short GATEWAY_EVENT_IMPL = -136;
@@ -284,7 +285,10 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PR_REMOVE_ALL_REPLY_MESSAGE = -7;
   public static final byte REMOTE_REMOVE_ALL_MESSAGE = -6;
   public static final byte REMOTE_REMOVE_ALL_REPLY_MESSAGE = -5;
-  // -4..-1 unused
+  public static final byte DISTTX_COMMIT_MESSAGE = -4;
+  public static final byte DISTTX_PRE_COMMIT_MESSAGE = -3;
+  public static final byte DISTTX_COMMIT_REPLY_MESSAGE = -2;
+  public static final byte DISTTX_PRE_COMMIT_REPLY_MESSAGE = -1;
   
   public static final byte ILLEGAL = 0;
 
@@ -579,7 +583,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short TOKEN_REMOVED2 = 145;
 
   public static final short STARTUP_RESPONSE_WITHVERSION_MESSAGE = 146;
-  //147-148 unused
+  public static final short SHUTDOWN_ALL_GATEWAYHUBS_REQUEST = 147;
+  
   public static final short TOKEN_TOMBSTONE = 149;
   public static final short PR_DESTROY_REPLY_MESSAGE = 150;
   public static final short R_DESTROY_REPLY_MESSAGE = 151;
@@ -606,7 +611,11 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short TX_COMMIT_MESSAGE_701 = 164;
   public static final short PR_FETCH_BULK_ENTRIES_MESSAGE = 165;
   public static final short PR_FETCH_BULK_ENTRIES_REPLY_MESSAGE = 166;
-  // 167..999 unused
+  public static final short NWAY_MERGE_RESULTS = 167;
+  public static final short CUMULATIVE_RESULTS = 168;
+  public static final short DISTTX_ROLLBACK_MESSAGE = 169;
+  public static final short DISTTX_ROLLBACK_REPLY_MESSAGE = 170;
+  // 171..999 unused
 
   public static final short ADD_HEALTH_LISTENER_REQUEST = 1000;
   public static final short ADD_HEALTH_LISTENER_RESPONSE = 1001;
@@ -792,7 +801,13 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short PR_QUERY_TRACE_INFO = 2162;
 
   public static final short INDEX_CREATION_DATA = 2163;
+    
+  public static final short SERVER_PING_MESSAGE = 2164;
+  public static final short PR_DESTROY_ON_DATA_STORE_MESSAGE = 2165;
   
+  public static final short DIST_TX_OP = 2166;
+  public static final short DIST_TX_PRE_COMMIT_RESPONSE = 2167;
+  public static final short DIST_TX_THIN_ENTRY_STATE = 2168;
   
   // NOTE, codes > 65535 will take 4 bytes to serialize
   

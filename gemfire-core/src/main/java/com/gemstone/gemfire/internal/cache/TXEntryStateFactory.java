@@ -24,6 +24,6 @@ public interface TXEntryStateFactory
    */
   public TXEntryState createEntry();
 
-  public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue, Object entryKey,TXRegionState txrs);
+  public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue, Object entryKey,TXRegionState txrs,boolean isDistributed);
 
 }

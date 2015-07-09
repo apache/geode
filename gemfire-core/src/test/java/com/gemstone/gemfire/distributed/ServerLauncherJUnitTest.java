@@ -29,18 +29,20 @@ import com.gemstone.gemfire.distributed.support.DistributedSystemAdapter;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,39 +64,40 @@ import org.junit.experimental.categories.Category;
 @Category(UnitTest.class)
 public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
 
-  private static final String GEMFIRE_PROPERTIES_FILE_NAME = "gemfire.properties";
-  private static final String TEMPORARY_FILE_NAME = "beforeServerLauncherJUnitTest_" + GEMFIRE_PROPERTIES_FILE_NAME;
+//  private static final String GEMFIRE_PROPERTIES_FILE_NAME = "gemfire.properties";
+//  private static final String TEMPORARY_FILE_NAME = "beforeServerLauncherJUnitTest_" + GEMFIRE_PROPERTIES_FILE_NAME;
 
   private Mockery mockContext;
 
-  @BeforeClass
-  public static void testSuiteSetup() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(TEMPORARY_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
-
-  @AfterClass
-  public static void testSuiteTearDown() {
-    if (SystemUtils.isWindows()) {
-      return;
-    }
-    File file = new File(TEMPORARY_FILE_NAME);
-    if (file.exists()) {
-      File dest = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-      assertTrue(file.renameTo(dest));
-    }
-  }
+//  @BeforeClass
+//  public static void testSuiteSetup() {
+//    if (SystemUtils.isWindows()) {
+//      return;
+//    }
+//    File file = new File(GEMFIRE_PROPERTIES_FILE_NAME);
+//    if (file.exists()) {
+//      File dest = new File(TEMPORARY_FILE_NAME);
+//      assertTrue(file.renameTo(dest));
+//    }
+//  }
+//
+//  @AfterClass
+//  public static void testSuiteTearDown() {
+//    if (SystemUtils.isWindows()) {
+//      return;
+//    }
+//    File file = new File(TEMPORARY_FILE_NAME);
+//    if (file.exists()) {
+//      File dest = new File(GEMFIRE_PROPERTIES_FILE_NAME);
+//      assertTrue(file.renameTo(dest));
+//    }
+//  }
 
   @Before
   public void setup() {
     mockContext = new Mockery() {{
       setImposteriser(ClassImposteriser.INSTANCE);
+      setThreadingPolicy(new Synchroniser());
     }};
   }
 
@@ -626,35 +629,32 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
     assertEquals("serverABC", launcher.getProperties().getProperty(DistributionConfig.NAME_NAME));
   }
 
+  @Ignore("GEODE-69: We need to change DistributedSystem to not use static final for gemfirePropertyFile")
   @Test
   public void testBuildWithMemberNameSetInGemFirePropertiesOnStart() {
-    assumeFalse(SystemUtils.isWindows());
-
     Properties gemfireProperties = new Properties();
 
     gemfireProperties.setProperty(DistributionConfig.NAME_NAME, "server123");
 
-    File gemfirePropertiesFile = writeGemFirePropertiesToFile(gemfireProperties, "gemfire.properties",
-      String.format("Test gemfire.properties file for %1$s.%2$s.", getClass().getSimpleName(),
-        "testBuildWithMemberNameSetInGemFirePropertiesOnStart"));
+    File gemfirePropertiesFile = writeGemFirePropertiesToFile(
+        gemfireProperties, 
+        "gemfire.properties",
+        String.format("Test gemfire.properties file for %1$s.%2$s.", getClass().getSimpleName(), this.testName.getMethodName()));
 
     assertNotNull(gemfirePropertiesFile);
     assertTrue(gemfirePropertiesFile.isFile());
 
-    try {
-      ServerLauncher launcher = new Builder()
-        .setCommand(ServerLauncher.Command.START)
-        .setMemberName(null)
-        .build();
+    System.setProperty("gemfirePropertyFile", gemfirePropertiesFile.getAbsolutePath());
+    System.out.println("gemfirePropertiesFile.getAbsolutePath()=" + gemfirePropertiesFile.getAbsolutePath());
+    
+    ServerLauncher launcher = new Builder()
+      .setCommand(ServerLauncher.Command.START)
+      .setMemberName(null)
+      .build();
 
-      assertNotNull(launcher);
-      assertEquals(ServerLauncher.Command.START, launcher.getCommand());
-      assertNull(launcher.getMemberName());
-    }
-    finally {
-      assertTrue(gemfirePropertiesFile.delete());
-      assertFalse(gemfirePropertiesFile.isFile());
-    }
+    assertNotNull(launcher);
+    assertEquals(ServerLauncher.Command.START, launcher.getCommand());
+    assertNull(launcher.getMemberName());
   }
 
   @Test
@@ -988,5 +988,4 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
       assertFalse(this.serverLauncher.isRunning());
     }
   }
-
 }

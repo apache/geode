@@ -105,11 +105,20 @@ final class ProxyRegionMap implements RegionMap {
     return Collections.emptySet();
   }
 
+  @Override
+  public Collection<RegionEntry> regionEntriesInVM() {
+    return Collections.emptySet();
+  }
+
   public boolean containsKey(Object key) {
     return false;
   }
 
   public RegionEntry getEntry(Object key) {
+    return null;
+  }
+
+  public RegionEntry putEntryIfAbsent(Object key, RegionEntry re) {
     return null;
   }
 
@@ -261,12 +270,18 @@ final class ProxyRegionMap implements RegionMap {
         // fix for bug 39526
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op,
             key, null, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
+        boolean cbEventInPending = false;
+        try {
         AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         if (pendingCallbacks == null) {
           this.owner
               .invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, e, true/* callDispatchListenerEvent */);
         } else {
           pendingCallbacks.add(e);
+          cbEventInPending = true;
+        }
+        } finally {
+          if (!cbEventInPending) e.release();
         }
       }
     }
@@ -283,15 +298,21 @@ final class ProxyRegionMap implements RegionMap {
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner,
                                                 true, this.owner.isInitialized())) {
         // fix for bug 39526
+        boolean cbEventInPending = false;
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, 
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE,
             key, newValue, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
+        try {
         AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         if (pendingCallbacks == null) {
           this.owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, e,
               true/* callDispatchListenerEvent */);
         } else {
           pendingCallbacks.add(e);
+          cbEventInPending = true;
+        }
+        } finally {
+          if (!cbEventInPending) e.release();
         }
       }
     }
@@ -311,14 +332,20 @@ final class ProxyRegionMap implements RegionMap {
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner,
                                                 false, this.owner.isInitialized())) {
         // fix for bug 39526
+        boolean cbEventInPending = false;
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOp, key, 
             newValue, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
+        try {
         AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         if (pendingCallbacks == null) {
           this.owner
               .invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, e, true/* callDispatchListenerEvent */);
         } else {
           pendingCallbacks.add(e);
+          cbEventInPending = true;
+        }
+        } finally {
+          if (!cbEventInPending) e.release();
         }
       }
     }
@@ -461,8 +488,18 @@ final class ProxyRegionMap implements RegionMap {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
     }
     
+    @Override
+    public Object getValueRetain(RegionEntryContext context) {
+      throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
+    }
+    
     public void setValue(RegionEntryContext context, Object value) {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
+    }
+    
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) {
+      throw new IllegalStateException("Should never be called");
     }
 
 //    @Override
@@ -480,7 +517,7 @@ final class ProxyRegionMap implements RegionMap {
     }
 
     @Override
-    public Object _getValueUse(RegionEntryContext context, boolean decompress) {
+    public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
     }
 
@@ -575,7 +612,28 @@ final class ProxyRegionMap implements RegionMap {
     public void setUpdateInProgress(boolean underUpdate) {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
     }
-    
+
+    @Override
+    public boolean isMarkedForEviction() {
+      throw new UnsupportedOperationException(LocalizedStrings
+          .ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
+              .toLocalizedString(DataPolicy.EMPTY));
+    }
+
+    @Override
+    public void setMarkedForEviction() {
+      throw new UnsupportedOperationException(LocalizedStrings
+          .ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
+              .toLocalizedString(DataPolicy.EMPTY));
+    }
+
+    @Override
+    public void clearMarkedForEviction() {
+      throw new UnsupportedOperationException(LocalizedStrings
+          .ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
+              .toLocalizedString(DataPolicy.EMPTY));
+    }
+
     @Override
     public boolean isValueNull() {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
@@ -661,6 +719,12 @@ final class ProxyRegionMap implements RegionMap {
     @Override
     public void resetRefCount(NewLRUClockHand lruList) {
     }
+
+    @Override
+    public Object prepareValueForCache(RegionEntryContext r, Object val,
+        EntryEventImpl event, boolean isEntryUpdate) {
+      throw new IllegalStateException("Should never be called");
+    }
   }
 
   public void lruUpdateCallback(int n) {
@@ -706,7 +770,16 @@ final class ProxyRegionMap implements RegionMap {
   }
 
   @Override
+  public RegionEntry getOperationalEntryInVM(Object key) {
+    return null;
+  }
+
+  @Override
   public int sizeInVM() {
     return 0;
+  }
+
+  @Override
+  public void close() {
   }
 }

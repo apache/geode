@@ -123,6 +123,8 @@ public class DestroyOperation extends DistributedCacheOperation
         ((KeyWithRegionContext)this.key).setRegionContext(rgn);
       }
       EntryEventImpl ev = createEntryEvent(rgn);
+      boolean evReturned = false;
+      try {
       ev.setEventId(this.eventId);
       ev.setOldValueFromRegion();
       ev.setVersionTag(this.versionTag);
@@ -132,12 +134,18 @@ public class DestroyOperation extends DistributedCacheOperation
       }
       ev.setTailKey(tailKey);
       ev.setInhibitAllNotifications(this.inhibitAllNotifications);
+      evReturned = true;
       return ev;
+      } finally {
+        if (!evReturned) {
+          ev.release();
+        }
+      }
     }
 
     EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
-      EntryEventImpl event = new EntryEventImpl(rgn,
+      EntryEventImpl event = EntryEventImpl.create(rgn,
           getOperation(), this.key, null, this.callbackArg, true, getSender());
 //      event.setNewEventId(); Don't set the event here...
       setOldValueInEvent(event);
@@ -224,6 +232,10 @@ public class DestroyOperation extends DistributedCacheOperation
         return new ConflationKey(this.key, super.regionPath, false);
       }
     }
+    @Override
+    protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+      return _mayAddToMultipleSerialGateways(dm);
+    }
   }
 
   public static final class DestroyWithContextMessage extends DestroyMessage
@@ -240,7 +252,7 @@ public class DestroyOperation extends DistributedCacheOperation
     @Override
     EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
-      EntryEventImpl event = new EntryEventImpl(rgn, getOperation(), 
+      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), 
           this.key, null, /* newvalue */
           this.callbackArg, true /* originRemote */, getSender(),
           true/* generateCallbacks */

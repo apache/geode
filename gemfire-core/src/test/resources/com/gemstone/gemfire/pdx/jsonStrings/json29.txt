@@ -1,0 +1,11 @@
+{
+ "_id":"discussion_tables",
+ "_rev":"D1C946B7",
+ "Sunrise":true,
+ "Sunset":false,
+ "FullHours":[1,2,3,4,5,6,7,8,9,10],
+ "Activities": [
+   {"Name":"Football", "Duration":2, "DurationUnit":"Hours"},
+   {"Name":"Breakfast", "Duration":40, "DurationUnit":"Minutes", "Attendees":["Jan", "Damien", "Laura", "Gwendolyn", "Roseanna"]}
+ ]
+}

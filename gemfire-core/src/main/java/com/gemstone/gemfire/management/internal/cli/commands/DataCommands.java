@@ -1285,6 +1285,9 @@ public class DataCommands implements CommandMarker {
         while (iterator.hasNext()) {
           region = iterator.next();
           newMembers = getRegionAssociatedMembers(region, cache, true);
+          if (newMembers == null) {
+            newMembers = new HashSet<DistributedMember>();
+          }
           if (logger.fineEnabled())
             logger.fine("Members for region " + region + " Members "
                 + newMembers);

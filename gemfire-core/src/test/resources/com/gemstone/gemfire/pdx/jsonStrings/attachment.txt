@@ -1,0 +1,11 @@
+{
+  "_id":"myprofile",
+  "_attachments":
+  {
+    "myphoto.png":
+    {
+      "content_type":"image\\/png",
+      "data": "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAABiElEQVQYlQXBzUvbYAAH4N/7sYQkbRpTjGuJzDK/0INYd9hB8Dhhh8EY7DDYceexm7D9CWMH6al3T571IMomePDshlWY7TZs2mLatGls35rk3fOQyNn68mgwKX79sD3a0TX6bbGAo/MzHGSe4I3npdW906yVmTrkakd8HL3btHcK03idtbBWKmLW3sZqL8LYUGBhChAT0NDV/aprAlQRbxdmY0PlsZ0x4lfzbmzOuaI1ZwIPg5BWXqzTT4TgpeWwnELZVe2S3TT+sLDfZ0EsWVRyAHQo/ew4BIaNZ7IH0W2i43fBOUPt1wXuhCBJ0QbQBi+PfPi6ju/9IfzCPDZXTNgsgaYqcINUyl4EAOB3po6kdYMfMwtkVTKiC4HBMJBM19AgkuxuLOF57j04OE3SeAAwK5mEkaxPRkjugX/tFo77URLkDVZZL6cchGa9pyU4rWtlX2M4N1SUrQx+Dw0E1ye8lF8Gv480TsbjGoiKiHVDK/DYzwdHXvz1MEMS5B4X0nqvk0dw2/wPAziepZ5qttMAAAAASUVORK5CYII="
+    }
+  }
+}

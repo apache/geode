@@ -21,18 +21,13 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CommitConflictException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RemoteTransactionException;
 import com.gemstone.gemfire.cache.SynchronizationCommitConflictException;
 import com.gemstone.gemfire.cache.TransactionDataNodeHasDepartedException;
-import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.TransactionException;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.ReliableReplyException;
 import com.gemstone.gemfire.distributed.internal.ReliableReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
@@ -66,6 +61,14 @@ public abstract class TXStateStub implements TXStateInterface {
     this.proxy = stateProxy;
     this.internalAfterSendRollback = null;
     this.internalAfterSendCommit = null;
+  }
+  
+  @Override
+  public void precommit() throws CommitConflictException,
+      UnsupportedOperationInTransactionException {
+    throw new UnsupportedOperationInTransactionException(
+        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
+            .toLocalizedString("precommit"));
   }
   
   /**
@@ -173,6 +176,12 @@ public abstract class TXStateStub implements TXStateInterface {
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion, boolean)
    */
+  public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
+      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS,  boolean retainResult) {
+    // We never have a local value if we are a stub...
+    return null;
+  }
+
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
       boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones) {
     // We never have a local value if we are a stub...
@@ -358,8 +367,8 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   public Object findObject(KeyInfo keyInfo, LocalRegion r, boolean isCreate,
       boolean generateCallbacks, Object value, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones) {
-    return getTXRegionStub(r).findObject(keyInfo,isCreate,generateCallbacks,value, preferCD, requestingClient, clientEvent);
+      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) {
+    return getTXRegionStub(r).findObject(keyInfo,isCreate,generateCallbacks,value, preferCD, requestingClient, clientEvent, allowReadFromHDFS);
   }
 
   /* (non-Javadoc)
@@ -415,7 +424,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.InternalDataView#getSerializedValue(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object)
    */
-  public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones) {
+  public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) {
     throw new UnsupportedOperationException();
   }
 
@@ -525,5 +534,35 @@ public abstract class TXStateStub implements TXStateInterface {
   public void updateEntryVersion(EntryEventImpl event)
       throws EntryNotFoundException {
     throw new UnsupportedOperationException();
+  }
+  
+  @Override
+  public void close() {
+    // nothing needed
+  }
+  
+  @Override
+  public boolean isTxState() {
+    return false;
+  }
+  
+  @Override
+  public boolean isTxStateStub() {
+    return true;
+  }
+  
+  @Override
+  public boolean isTxStateProxy() {
+    return false;
+  }
+  
+  @Override
+  public boolean isDistTx() {
+    return false;
+  }
+  
+  @Override
+  public boolean isCreatedOnDistTxCoordinator() {
+    return false;
   }
 }

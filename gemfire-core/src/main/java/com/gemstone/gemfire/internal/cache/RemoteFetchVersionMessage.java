@@ -123,7 +123,7 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
         if (logger.isTraceEnabled(LogMarker.DM)) {
           logger.trace(LogMarker.DM,"RemoteFetchVersionMessage did not find entry for key:{}", key);
         }
-        throw new EntryNotFoundException(key.toString());
+        r.checkEntryNotFound(key);
       }
       tag = re.getVersionStamp().asVersionTag();
       if (logger.isTraceEnabled(LogMarker.DM)) {

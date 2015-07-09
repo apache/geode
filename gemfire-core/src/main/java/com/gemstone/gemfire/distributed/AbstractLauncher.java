@@ -61,6 +61,8 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 public abstract class AbstractLauncher<T extends Comparable<T>> implements Runnable {
 
   protected static final Boolean DEFAULT_FORCE = Boolean.FALSE;
+  
+  protected static final long READ_PID_FILE_TIMEOUT_MILLIS = 2*1000;
 
   // @see http://publib.boulder.ibm.com/infocenter/javasdk/v6r0/index.jsp?topic=%2Fcom.ibm.java.doc.user.lnx.60%2Fuser%2Fattachapi.html
   // @see http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/geninfo/diagnos/aboutjrockit.html#wp1083571

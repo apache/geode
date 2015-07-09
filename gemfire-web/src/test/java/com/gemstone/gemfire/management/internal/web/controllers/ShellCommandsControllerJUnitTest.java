@@ -23,7 +23,7 @@ import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper
 import com.gemstone.gemfire.management.internal.web.domain.Link;
 import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

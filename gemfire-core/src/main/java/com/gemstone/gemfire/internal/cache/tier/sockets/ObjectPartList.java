@@ -13,6 +13,8 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.Releasable;
 import com.gemstone.gemfire.DataSerializer;
 
 import java.io.DataInput;
@@ -32,7 +34,7 @@ import org.apache.logging.log4j.Logger;
  * @since 5.7
  * @author swale
  */
-public class ObjectPartList implements DataSerializableFixedID {
+public class ObjectPartList implements DataSerializableFixedID, Releasable {
   private static final Logger logger = LogService.getLogger();
 
   protected static final byte BYTES = 0;
@@ -176,6 +178,7 @@ public class ObjectPartList implements DataSerializableFixedID {
   }
 
   public void clear() {
+    release();
     this.objects.clear();
     if (this.keys != null) {
       this.keys.clear();
@@ -249,6 +252,13 @@ public class ObjectPartList implements DataSerializableFixedID {
   @Override
   public Version[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public void release() {
+    for (Object v: this.objects) {
+      OffHeapHelper.release(v);
+    }
   }
 
 }

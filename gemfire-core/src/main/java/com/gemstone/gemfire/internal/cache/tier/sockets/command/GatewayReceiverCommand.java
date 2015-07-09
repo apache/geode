@@ -103,6 +103,7 @@ public class GatewayReceiverCommand extends BaseCommand {
       else {
         logger.warn(LocalizedMessage.create(LocalizedStrings.ProcessBatch_RECEIVED_PROCESS_BATCH_REQUEST_0_THAT_HAS_ALREADY_BEEN_OR_IS_BEING_PROCESSED__THIS_PROCESS_BATCH_REQUEST_IS_BEING_IGNORED, batchId));
         writeReply(msg, servConn, batchId, numberOfEvents);
+        return;
       }
       stats.incDuplicateBatchesReceived();
     }
@@ -226,7 +227,6 @@ public class GatewayReceiverCommand extends BaseCommand {
           logger.warn(LocalizedMessage.create(LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_REQUEST_1_CONTAINING_2_EVENTS, new Object[] { servConn.getName(), Integer.valueOf(batchId), Integer.valueOf(numberOfEvents) }), e);
           throw e;
         }
-        
         switch (actionType) {
         case 0: // Create
 
@@ -266,7 +266,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             logger.debug("{}: Processing batch create request {} on {} for region {} key {} value {} callbackArg {}, eventId={}", servConn.getName(), batchId, servConn.getSocketString(), regionName, key, valuePart, callbackArg, eventId);
           }
           versionTimeStamp = msg.getPart(index++).getLong();
-          
           // Process the create request
           if (key == null || regionName == null) {
             StringId message = null;
@@ -296,7 +295,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               clientEvent.setVersionTag(tag);
             }
             clientEvent.setPossibleDuplicate(possibleDuplicate);
-            handleMessageRetry(msg, region, clientEvent);
+            handleMessageRetry(region, clientEvent);
             try {
               byte[] value = valuePart.getSerializedForm();
               boolean isObject = valuePart.isObject();
@@ -316,7 +315,6 @@ public class GatewayReceiverCommand extends BaseCommand {
               boolean result = false;
               result = region.basicBridgeCreate(key, value, isObject, callbackArg,
                       servConn.getProxyID(), false, clientEvent, false); 
-
               // If the create fails (presumably because it already exists),
               // attempt to update the entry
               if (!result) {
@@ -327,7 +325,6 @@ public class GatewayReceiverCommand extends BaseCommand {
 
               if (result || clientEvent.isConcurrencyConflict()) {
                 servConn.setModificationInfo(true, regionName, key);
-                //logger.debug("KBKBKB : Increase Create Request");
                 stats.incCreateRequest();
               } else {
                 // This exception will be logged in the catch block below
@@ -379,7 +376,6 @@ public class GatewayReceiverCommand extends BaseCommand {
           if (logger.isDebugEnabled()) {
             logger.debug("{}: Processing batch update request {} on {} for region {} key {} value {} callbackArg {}", servConn.getName(), batchId, servConn.getSocketString(), regionName, key, valuePart, callbackArg);
           }
-
           // Process the update request
           if (key == null || regionName == null) {
             StringId message = null;
@@ -409,7 +405,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               clientEvent.setVersionTag(tag);
             }
             clientEvent.setPossibleDuplicate(possibleDuplicate);
-            handleMessageRetry(msg, region, clientEvent);
+            handleMessageRetry(region, clientEvent);
             try {
               byte[] value = valuePart.getSerializedForm();
               boolean isObject = valuePart.isObject();
@@ -427,7 +423,6 @@ public class GatewayReceiverCommand extends BaseCommand {
               boolean result = region.basicBridgePut(key, value, null, isObject,
                   callbackArg, servConn.getProxyID(), false, clientEvent,
                   servConn.isSqlFabricSystem());
-
               if (result|| clientEvent.isConcurrencyConflict()) {
                 servConn.setModificationInfo(true, regionName, key);
                 stats.incUpdateRequest();
@@ -509,7 +504,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               tag.setDistributedSystemId(dsid);
               clientEvent.setVersionTag(tag);
             }
-            handleMessageRetry(msg, region, clientEvent);
+            handleMessageRetry(region, clientEvent);
             // Destroy the entry
             if (region.keyRequiresRegionContext()) {
               ((KeyWithRegionContext)key).setRegionContext(region);
@@ -719,10 +714,8 @@ public class GatewayReceiverCommand extends BaseCommand {
     }
   }
 
-  private void handleMessageRetry(Message msg, LocalRegion region,
-      EntryEventImpl clientEvent) {
-    if (msg.isRetry()) {
-      clientEvent.setPossibleDuplicate(true);
+  private void handleMessageRetry(LocalRegion region, EntryEventImpl clientEvent) {
+    if (clientEvent.isPossibleDuplicate()) {
       if (region.getAttributes().getConcurrencyChecksEnabled()) {
         // recover the version tag from other servers
         clientEvent.setRegion(region);

@@ -20,7 +20,8 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 public class GatewaySenderAttributes {
 
-  public static final boolean DEFAULT_IS_BUCKETSORTED = false;
+  public static final boolean DEFAULT_IS_BUCKETSORTED = true;
+  public static final boolean DEFAULT_IS_HDFSQUEUE = false;
 
 
   public int socketBufferSize = GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
@@ -70,6 +71,8 @@ public class GatewaySenderAttributes {
   public boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
   
   public boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
+  
+  public boolean isHDFSQueue = GatewaySenderAttributes.DEFAULT_IS_HDFSQUEUE;
   
   public int getSocketBufferSize() {
     return this.socketBufferSize;
@@ -176,5 +179,8 @@ public class GatewaySenderAttributes {
   }
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
     return this.eventSubstitutionFilter;
+  }
+  public boolean isHDFSQueue() {
+    return this.isHDFSQueue;
   }
 }

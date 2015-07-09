@@ -12,14 +12,19 @@ package com.gemstone.gemfire.cache.query.internal;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import org.apache.logging.log4j.Logger;
 
+import antlr.collections.AST;
+import antlr.debug.misc.ASTFrame;
+
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
@@ -73,7 +78,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       // operators in the grammer proper
       parser.setASTNodeClass ("com.gemstone.gemfire.cache.query.internal.parse.ASTUnsupported");
       parser.queryProgram ();
-      GemFireAST n = (GemFireAST)parser.getAST ();    
+      GemFireAST n = (GemFireAST)parser.getAST ();
       n.compile(this);
     } catch (Exception ex){ // This is to make sure that we are wrapping any antlr exception with GemFire Exception. 
       throw new QueryInvalidException(LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()), ex);
@@ -137,6 +142,15 @@ public class QCompiler implements OQLLexerTokenTypes {
   	}
   	push(list) ;
   }
+  
+  public void compileGroupByClause(int numOfChildren) {
+    List list = new ArrayList();
+    for (int i = 0; i < numOfChildren; i++) {
+      Object csc = this.stack.pop();
+      list.add(0, csc);
+    }
+    push(list);
+  }
   /**
    * Yogesh: compiles sort criteria present in order by clause and push into the stack
    * @param sortCriterion
@@ -177,45 +191,123 @@ public class QCompiler implements OQLLexerTokenTypes {
         ";stack=" + this.stack);
   }
   
-  public void select() {    
-    // List of orderBy sortCriteria
-    Object limitObject = pop();
-    CompiledValue limit;
+  public void select(Map<Integer, Object> queryComponents) {
+    
+    CompiledValue limit = null;
+    Object limitObject = queryComponents.remove(OQLLexerTokenTypes.LIMIT);
     if (limitObject instanceof Integer) {
       limit = new CompiledLiteral(limitObject);
-    }
-    else {
+    } else {
       limit = (CompiledBindArgument) limitObject;
     }
-    List orderByAttrs = (List)pop();
-    // whereClause
-    CompiledValue where = (CompiledValue)pop();
-    // fromClause: list of CompiledIteratorDefs
-    List iterators = (List)pop();
-    // pop the projection attributes
-    List projAttrs = (List)pop();
-    // "COUNT" or null
-    String aggrExpr = (String)pop();
-    // "DISTINCT" or null
-    String distinct = (String)pop();
-    
-    ArrayList<String> hints = null;
-    Object hintObject = pop();
-    if (hintObject != null) {
-      hints = (ArrayList<String>) hintObject;
+    List<CompiledSortCriterion> orderByAttrs = (List<CompiledSortCriterion>) queryComponents
+        .remove(OQLLexerTokenTypes.LITERAL_order);
+
+    List iterators = (List) queryComponents
+        .remove(OQLLexerTokenTypes.LITERAL_from);
+    List projAttrs = (List) queryComponents
+        .remove(OQLLexerTokenTypes.PROJECTION_ATTRS);
+    if (projAttrs == null) {
+      // remove any * or all attribute
+      queryComponents.remove(OQLLexerTokenTypes.TOK_STAR);
+      queryComponents.remove(OQLLexerTokenTypes.LITERAL_all);
     }
+    // "COUNT" or null
+    /*String aggrExpr = (String) queryComponents
+        .remove(OQLLexerTokenTypes.LITERAL_count);*/
     
-    CompiledSelect select = new CompiledSelect(distinct != null, aggrExpr != null, where,
-        iterators, projAttrs, orderByAttrs, limit, hints);
+    // "DISTINCT" or null
+    String distinct = (String) queryComponents
+        .remove(OQLLexerTokenTypes.LITERAL_distinct);
+   List<String> hints = null;
+    Object hintObject = queryComponents.remove(OQLLexerTokenTypes.LITERAL_hint);
+    if (hintObject != null) {
+      hints = (List<String>) hintObject;
+    }
+
+    List<CompiledValue> groupByClause = (List<CompiledValue>) queryComponents
+        .remove(OQLLexerTokenTypes.LITERAL_group);
+
+    // whatever remains , treat it as where
+    // whereClause
+    CompiledValue where = null;
+
+    if (queryComponents.size() == 1) {
+      where = (CompiledValue) queryComponents.values().iterator().next();
+    } else if (queryComponents.size() > 1) {
+      throw new QueryInvalidException(
+          "Unexpected/unsupported query clauses found");
+    }
+    LinkedHashMap<Integer, CompiledAggregateFunction> aggMap = identifyAggregateExpressions(projAttrs);
+    boolean isCountOnly = checkForCountOnly(aggMap, projAttrs, groupByClause);
+    if(isCountOnly) {
+      projAttrs = null;
+    }
+    CompiledSelect select = createSelect(distinct != null,
+        isCountOnly, where, iterators, projAttrs, orderByAttrs, limit,
+        hints, groupByClause, aggMap);
     push(select);
   }
   
+  private boolean checkForCountOnly(
+      Map<Integer, CompiledAggregateFunction> aggregateMap, List projAttribs, List<CompiledValue> groupBy) {
+    if (aggregateMap != null && aggregateMap.size() == 1
+        && projAttribs.size() == 1 && groupBy == null) {
+      for (Map.Entry<Integer, CompiledAggregateFunction> entry : aggregateMap
+          .entrySet()) {
+        CompiledAggregateFunction caf = entry.getValue();
+        if (caf.getFunctionType() == OQLLexerTokenTypes.COUNT
+            && caf.getParameter() == null) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
+  private CompiledSelect createSelect(boolean isDistinct, boolean isCountOnly, CompiledValue where,
+      List iterators, List projAttrs, List<CompiledSortCriterion> orderByAttrs, CompiledValue limit,
+      List<String> hints,List<CompiledValue> groupByClause, LinkedHashMap<Integer, 
+      CompiledAggregateFunction> aggMap    ) {
+    if(isCountOnly || (groupByClause == null  && aggMap == null) 
+        || (aggMap == null  && orderByAttrs == null)) {
+      return  new CompiledSelect(isDistinct,
+          isCountOnly, where, iterators, projAttrs, orderByAttrs, limit,
+          hints, groupByClause);
+    }else {
+      return new CompiledGroupBySelect(isDistinct,
+          isCountOnly, where, iterators, projAttrs, orderByAttrs, limit,
+          hints, groupByClause, aggMap);
+    }
+  }
+  
+  private LinkedHashMap<Integer, CompiledAggregateFunction> identifyAggregateExpressions(List projAttribs) {
+    if(projAttribs != null) {
+      LinkedHashMap<Integer, CompiledAggregateFunction> mapping = new LinkedHashMap<Integer,CompiledAggregateFunction>();
+      int index = 0;
+      for(Object o : projAttribs) {
+        CompiledValue proj =(CompiledValue) ((Object[])o)[1];
+        if( proj.getType() == OQLLexerTokenTypes.AGG_FUNC) {
+          mapping.put(index, (CompiledAggregateFunction)proj);
+        }
+        ++index;
+      }
+      return mapping.size() == 0 ? null : mapping;
+    }else {
+      return null;
+    }
+    
+  }
   public void projection () {
     // find an id or null on the stack, then an expr CompiledValue
     // push an Object[2] on the stack. First element is id, second is CompiledValue
     CompiledID id = (CompiledID)pop ();
     CompiledValue expr = (CompiledValue)pop ();
     push (new Object[] {id == null ? null : id.getId (), expr});
+  }
+  
+  public void aggregateFunction (CompiledValue expr, int aggFuncType, boolean distinctOnly) {
+    push (new CompiledAggregateFunction(expr, aggFuncType, distinctOnly));
   }
   
   public void iteratorDef () {

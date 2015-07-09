@@ -42,17 +42,13 @@ import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorJoinMessage;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorResponse;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.CqEntry;
+import com.gemstone.gemfire.cache.query.internal.CumulativeNonDistinctResults;
 import com.gemstone.gemfire.cache.query.internal.LinkedResultSet;
 import com.gemstone.gemfire.cache.query.internal.LinkedStructSet;
+import com.gemstone.gemfire.cache.query.internal.NWayMergeResults;
 import com.gemstone.gemfire.cache.query.internal.NullToken;
 import com.gemstone.gemfire.cache.query.internal.PRQueryTraceInfo;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
@@ -166,6 +162,7 @@ import com.gemstone.gemfire.internal.admin.remote.RevokePersistentIDRequest;
 import com.gemstone.gemfire.internal.admin.remote.RevokePersistentIDResponse;
 import com.gemstone.gemfire.internal.admin.remote.RootRegionRequest;
 import com.gemstone.gemfire.internal.admin.remote.RootRegionResponse;
+import com.gemstone.gemfire.internal.admin.remote.ShutdownAllGatewayHubsRequest;
 import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
 import com.gemstone.gemfire.internal.admin.remote.ShutdownAllResponse;
 import com.gemstone.gemfire.internal.admin.remote.SnapshotResultMessage;
@@ -193,6 +190,9 @@ import com.gemstone.gemfire.internal.cache.CreateRegionProcessor;
 import com.gemstone.gemfire.internal.cache.DestroyOperation;
 import com.gemstone.gemfire.internal.cache.DestroyPartitionedRegionMessage;
 import com.gemstone.gemfire.internal.cache.DestroyRegionOperation;
+import com.gemstone.gemfire.internal.cache.DistTXPrecommitMessage;
+import com.gemstone.gemfire.internal.cache.DistTXCommitMessage;
+import com.gemstone.gemfire.internal.cache.DistTXRollbackMessage;
 import com.gemstone.gemfire.internal.cache.DistributedClearOperation.ClearRegionMessage;
 import com.gemstone.gemfire.internal.cache.DistributedClearOperation.ClearRegionWithContextMessage;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersionsList;
@@ -241,6 +241,7 @@ import com.gemstone.gemfire.internal.cache.RemoteRemoveAllMessage;
 import com.gemstone.gemfire.internal.cache.RoleEventImpl;
 import com.gemstone.gemfire.internal.cache.SearchLoadAndWriteProcessor;
 import com.gemstone.gemfire.internal.cache.SendQueueOperation.SendQueueMessage;
+import com.gemstone.gemfire.internal.cache.ServerPingMessage;
 import com.gemstone.gemfire.internal.cache.StateFlushOperation.StateMarkerMessage;
 import com.gemstone.gemfire.internal.cache.StateFlushOperation.StateStabilizationMessage;
 import com.gemstone.gemfire.internal.cache.StateFlushOperation.StateStabilizedMessage;
@@ -250,6 +251,7 @@ import com.gemstone.gemfire.internal.cache.TXCommitMessage.CommitProcessForLockI
 import com.gemstone.gemfire.internal.cache.TXCommitMessage.CommitProcessForTXIdMessage;
 import com.gemstone.gemfire.internal.cache.TXCommitMessage.CommitProcessQueryMessage;
 import com.gemstone.gemfire.internal.cache.TXCommitMessage.CommitProcessQueryReplyMessage;
+import com.gemstone.gemfire.internal.cache.TXEntryState;
 import com.gemstone.gemfire.internal.cache.TXId;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXRemoteCommitMessage;
@@ -285,6 +287,7 @@ import com.gemstone.gemfire.internal.cache.partitioned.CreateBucketMessage.Creat
 import com.gemstone.gemfire.internal.cache.partitioned.DeposePrimaryBucketMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.DeposePrimaryBucketMessage.DeposePrimaryBucketReplyMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.DestroyMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.DestroyRegionOnDataStoreMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.DumpAllPRConfigMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.DumpB2NRegion;
 import com.gemstone.gemfire.internal.cache.partitioned.DumpB2NRegion.DumpB2NReplyMessage;
@@ -368,6 +371,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ObjectPartList651;
 import com.gemstone.gemfire.internal.cache.tier.sockets.RemoveClientFromBlacklistMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.SerializedObjectPartList;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
+import com.gemstone.gemfire.internal.cache.tx.DistTxEntryEvent;
 import com.gemstone.gemfire.internal.cache.versions.DiskRegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.DiskVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VMRegionVersionVector;
@@ -529,6 +533,12 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(PR_REMOVE_ALL_REPLY_MESSAGE, RemoveAllPRMessage.RemoveAllReplyMessage.class);
     registerDSFID(REMOTE_REMOVE_ALL_MESSAGE, RemoteRemoveAllMessage.class);
     registerDSFID(REMOTE_REMOVE_ALL_REPLY_MESSAGE, RemoteRemoveAllMessage.RemoveAllReplyMessage.class);
+    registerDSFID(DISTTX_ROLLBACK_MESSAGE, DistTXRollbackMessage.class);
+    registerDSFID(DISTTX_COMMIT_MESSAGE, DistTXCommitMessage.class);
+    registerDSFID(DISTTX_PRE_COMMIT_MESSAGE, DistTXPrecommitMessage.class);
+    registerDSFID(DISTTX_ROLLBACK_REPLY_MESSAGE, DistTXRollbackMessage.DistTXRollbackReplyMessage.class);
+    registerDSFID(DISTTX_COMMIT_REPLY_MESSAGE, DistTXCommitMessage.DistTXCommitReplyMessage.class);
+    registerDSFID(DISTTX_PRE_COMMIT_REPLY_MESSAGE, DistTXPrecommitMessage.DistTXPrecommitReplyMessage.class);
     registerDSFID(PR_PUT_MESSAGE, PutMessage.class);
     registerDSFID(INVALIDATE_MESSAGE,
         InvalidateOperation.InvalidateMessage.class);
@@ -613,6 +623,8 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(RESULTS_SET, ResultsSet.class);
     registerDSFID(SORTED_RESULT_SET, SortedResultSet.class);
     registerDSFID(SORTED_STRUCT_SET, SortedStructSet.class);
+    registerDSFID(NWAY_MERGE_RESULTS, NWayMergeResults.class);
+    registerDSFID(CUMULATIVE_RESULTS, CumulativeNonDistinctResults.class);
     registerDSFID(UNDEFINED, Undefined.class);
     registerDSFID(STRUCT_IMPL, StructImpl.class);
     registerDSFID(STRUCT_SET, StructSet.class);
@@ -985,6 +997,8 @@ public final class DSFIDFactory implements DataSerializableFixedID {
         RemoteFetchVersionMessage.FetchVersionReplyMessage.class);
     registerDSFID(RELEASE_CLEAR_LOCK_MESSAGE, ReleaseClearLockMessage.class);
     registerDSFID(PR_TOMBSTONE_MESSAGE, PRTombstoneMessage.class);
+    registerDSFID(HDFS_GATEWAY_EVENT_IMPL, HDFSGatewayEventImpl.class);
+    
     registerDSFID(REQUEST_RVV_MESSAGE, InitialImageOperation.RequestRVVMessage.class);
     registerDSFID(RVV_REPLY_MESSAGE, InitialImageOperation.RVVReplyMessage.class);
     registerDSFID(SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE, SnappyCompressedCachedDeserializable.class);
@@ -995,6 +1009,14 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(PR_FETCH_BULK_ENTRIES_REPLY_MESSAGE, FetchBulkEntriesReplyMessage.class);
     registerDSFID(PR_QUERY_TRACE_INFO, PRQueryTraceInfo.class);
     registerDSFID(INDEX_CREATION_DATA, IndexCreationData.class);
+    registerDSFID(DIST_TX_OP, DistTxEntryEvent.class);
+    registerDSFID(DIST_TX_PRE_COMMIT_RESPONSE, DistTXPrecommitMessage.DistTxPrecommitResponse.class);
+    registerDSFID(DIST_TX_THIN_ENTRY_STATE, TXEntryState.DistTxThinEntryState.class);
+    registerDSFID(SERVER_PING_MESSAGE, ServerPingMessage.class);
+    registerDSFID(PR_DESTROY_ON_DATA_STORE_MESSAGE,
+        DestroyRegionOnDataStoreMessage.class);
+    registerDSFID(SHUTDOWN_ALL_GATEWAYHUBS_REQUEST,
+        ShutdownAllGatewayHubsRequest.class);
   }
 
   /**
@@ -1046,6 +1068,8 @@ public final class DSFIDFactory implements DataSerializableFixedID {
         return readConfigurationRequest(in);
       case CONFIGURATION_RESPONSE:
         return readConfigurationResponse(in);
+	  case PR_DESTROY_ON_DATA_STORE_MESSAGE:
+        return readDestroyOnDataStore(in);
       default:
         final Constructor<?> cons;
         if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
@@ -1121,6 +1145,12 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     return (InterestResultPolicyImpl)InterestResultPolicy.fromOrdinal(ordinal);
   }
 
+  private static DataSerializableFixedID readDestroyOnDataStore(DataInput in) 
+      throws IOException, ClassNotFoundException {
+    DataSerializableFixedID serializable = new DestroyRegionOnDataStoreMessage();
+    serializable.fromData(in);
+    return serializable;
+  }
   /**
    * Map for SQLFabric specific classIds to the {@link Class} of an
    * implementation. We maintain this separate map for SQLFabric to allow

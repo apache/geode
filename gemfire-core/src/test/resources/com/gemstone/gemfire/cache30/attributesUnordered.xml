@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
+    "http://www.gemstone.com/dtd/cache4_0.dtd">
+
+<!-- Tests whether or not XML attributes can appear in any order (see
+     bug 30050) -->
+
+<cache>
+  <vm-root-region name="one">
+    <region-attributes concurrency-level="5" initial-capacity="10"
+      scope="local">
+    </region-attributes>
+  </vm-root-region>
+  <vm-root-region name="two">
+    <region-attributes scope="local" concurrency-level="5" 
+      initial-capacity="10">
+    </region-attributes>
+  </vm-root-region>
+</cache>
+
+

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+    "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+  <vm-root-region name="pRoot">
+    <region-attributes data-policy="partition">
+      <partition-attributes redundant-copies="1" local-max-memory="32" total-max-memory="96" total-num-buckets="119"/>
+    </region-attributes>
+  </vm-root-region>
+  <vm-root-region name="bug37905">  
+    <region-attributes data-policy="partition"/>
+  </vm-root-region>
+</cache>

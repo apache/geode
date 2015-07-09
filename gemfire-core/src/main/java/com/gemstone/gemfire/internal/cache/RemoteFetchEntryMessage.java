@@ -127,7 +127,7 @@ public final class RemoteFetchEntryMessage extends RemoteOperationMessage
         final KeyInfo keyInfo = r.getKeyInfo(key);
         Region.Entry re = r.getDataView().getEntry(keyInfo, r, true);
         if(re==null) {
-          throw new EntryNotFoundException(key.toString());
+          r.checkEntryNotFound(key);
         }
         NonLocalRegionEntry nlre = new NonLocalRegionEntry(re, r);
         LocalRegion dataReg = r.getDataRegionForRead(keyInfo);

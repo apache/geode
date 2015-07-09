@@ -26,10 +26,15 @@ import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -297,7 +302,7 @@ public final class NativeCallsJNAImpl {
       if (logger != null && logger.fineEnabled()) {
         logger.fine("DEBUG preBlow called for path = " + path);
       }
-      if (!preAllocate || !hasFallocate()) {
+      if (!preAllocate || !hasFallocate(path)) {
         super.preBlow(path, maxSize, preAllocate);
         if (logger != null && logger.fineEnabled()) {
           logger.fine("DEBUG preBlow super.preBlow 1 called for path = " + path);
@@ -355,7 +360,7 @@ public final class NativeCallsJNAImpl {
       }
     }
 
-    protected boolean hasFallocate() {
+    protected boolean hasFallocate(String path) {
       return false;
     }
 
@@ -654,6 +659,29 @@ public final class NativeCallsJNAImpl {
     }
 
     /**
+     * Get the file store type of a path.
+     * for example, /dev/sdd1(store name) /w2-gst-dev40d(mount point) ext4(type)
+     * @param path
+     * @return file store type
+     */
+    public String getFileStoreType(final String path) {
+      File diskFile = new File(path);
+      if (!diskFile.exists()) {
+        diskFile = diskFile.getParentFile();
+      }
+      Path currentPath = diskFile.toPath();
+      if (currentPath.isAbsolute() && Files.exists(currentPath)) {
+        try {
+          FileStore store = Files.getFileStore(currentPath);
+          return store.type();
+        } catch (IOException e) {
+          return null;
+        }
+      }
+      return null;
+    }
+
+    /**
      * This will return whether the path passed in as arg is
      * part of a local file system or a remote file system.
      * This method is mainly used by the DiskCapacityMonitor thread
@@ -706,9 +734,17 @@ public final class NativeCallsJNAImpl {
       return false;
     }
 
+    public final static String[] FallocateFileSystems = {"ext4", "xfs", "btrfs", "ocfs2"};
+
     @Override
-    protected boolean hasFallocate() {
-      return true;
+    protected boolean hasFallocate(String path) {
+      String fstype = getFileStoreType(path);
+      for (String type:FallocateFileSystems) {
+        if (type.equalsIgnoreCase(fstype)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override

@@ -92,6 +92,8 @@ import com.gemstone.org.jgroups.util.Util;
  * @author Bela Ban May 29 2001
  */
 public class FD_SOCK extends Protocol implements Runnable {
+    static final boolean DEBUG_FDSOCK = Boolean.getBoolean("jgroups.DEBUG_FDSOCK");
+    
     long                get_cache_timeout=3000;            // msecs to wait for the socket cache from the coordinator
     static/*GemStoneAddition*/ final long          get_cache_retry_timeout=500;       // msecs to wait until we retry getting the cache from coord
     long                suspect_msg_interval=5000;         // (BroadcastTask): mcast SUSPECT every 5000 msecs
@@ -110,11 +112,11 @@ public class FD_SOCK extends Protocol implements Runnable {
     volatile/*GemStoneAddition*/ ServerSocketHandler srv_sock_handler=null;             // accepts new connections on srv_sock
     volatile/*GemStoneAddition*/ IpAddress           srv_sock_addr=null;                // pair of server_socket:port
     volatile /*GemStoneAddition*/ Address             ping_dest=null;                    // address of the member we monitor
-    volatile Socket              ping_sock=null;                    // socket to the member we monitor // GemStoneAddition - volatile
-    InputStream         ping_input=null;                   // input stream of the socket to the member we monitor
+//    volatile Socket              ping_sock=null;                    // socket to the member we monitor // GemStoneAddition - volatile
+//    InputStream         ping_input=null;                   // input stream of the socket to the member we monitor
     
     // GemStoneAddition: updates to pinger_thread synchronized on this
-    volatile Thread     pinger_thread=null;                // listens on ping_sock, suspects member if socket is closed
+    volatile PingThread     pinger_thread=null;                // listens on ping_sock, suspects member if socket is closed
     final Hashtable     cache=new Hashtable(11);           // keys=Addresses, vals=IpAddresses (socket:port)
     
     int connectTimeout = 5000; // GemStoneAddition - timeout attempts to connect
@@ -126,8 +128,6 @@ public class FD_SOCK extends Protocol implements Runnable {
     Random ran = new Random(); // GemStoneAddition
     final Map<Address, Promise> ping_addr_promises = new HashMap();
 //    final Promise       ping_addr_promise=new Promise();   // to fetch the ping_addr for ping_dest
-    final Object        sock_mutex=new Object();           // for access to ping_sock, ping_input
-    boolean             socket_closed_in_mutex; // GemStoneAddition - fix race between unsuspect & connecting to stale ping_dest
     TimeScheduler       timer=null;
     final BroadcastTask bcast_task=new BroadcastTask();    // to transmit SUSPECT message (until view change)
     volatile boolean    regular_sock_close=false;         // used by interruptPingerThread() when new ping_dest is computed.  GemStoneAddition - volatile
@@ -305,32 +305,32 @@ public class FD_SOCK extends Protocol implements Runnable {
       }
       
       // stopPingerThread();
-      Thread thr = pinger_thread;
+      PingThread thr = pinger_thread;
       if (thr != null) {
+        thr.requestStop();
         thr.interrupt();
       }
-      Socket sock = ping_sock;
-      if (sock != null) {
-        try {
-          sock.close();
-        }
-        catch (IOException e) {
-          // ignore
-        }
-      }
+      // do not attempt to shut down the ping socket in this
+      // method as the operation can block for a very long
+      // time if there is a network failure, preventing shutdown
+//      Socket sock = ping_sock;
+//      if (sock != null) {
+//        try {
+//          sock.close();
+//        }
+//        catch (IOException e) {
+//          // ignore
+//        }
+//      }
     }
 
     @Override // GemStoneAddition  
     public void stop() {
         bcast_task.removeAll();
-        Thread t = pinger_thread; // GemStoneAddition, use this for a termination
-        pinger_thread = null;
-        if(t != null && t.isAlive()) {
-            regular_sock_close=true; // (set this before interrupting the pinger)
-            t.interrupt(); // GemStoneAddition
-            sendPingTermination(true); // GemStoneAddition
-            teardownPingSocket();
-        }
+        // bug #52129 - this next step used to be in-lined but is now moved to another
+        // thread in interruptPingerThread because socket operations can block
+        // if there is a network partition
+        interruptPingerThread(true);
         // GemStoneAddition - do not perform normal termination if we're being kicked out of the system
         Exception e = ((JChannel)stack.getChannel()).getCloseException();
         boolean normalShutdown = (e == null);
@@ -590,17 +590,17 @@ public class FD_SOCK extends Protocol implements Runnable {
 
             case Event.UNSUSPECT:
               mbr = (Address)evt.getArg();
-              log.getLogWriter().info(ExternalStrings.
-                  FD_SOCK_FAILURE_DETECTION_RECEIVED_NOTIFICATION_THAT_0_IS_NO_LONGER_SUSPECT,
-                  mbr); 
               synchronized(this) { // GemStoneAddition - same lock order as VIEW_CHANGE 
                 // GemStoneAddition - fix for bug 39114, hang waiting for view removing dead member
                 synchronized(pingable_mbrs) {
                   if (bcast_task.isSuspectedMember(mbr)) {
+                    log.getLogWriter().info(ExternalStrings.
+                        FD_SOCK_FAILURE_DETECTION_RECEIVED_NOTIFICATION_THAT_0_IS_NO_LONGER_SUSPECT,
+                        mbr); 
                     bcast_task.removeSuspectedMember((Address)evt.getArg());
-                    Thread thr = pinger_thread; // GemStoneAddition: volatile fetch
+                    PingThread thr = pinger_thread; // GemStoneAddition: volatile fetch
                     if (thr != null && thr.isAlive()) {
-                      interruptPingerThread(); // allows the thread to use the new socket
+                      interruptPingerThread(false); // allows the thread to use the new socket
                       startPingerThread();
                     }
                     else {
@@ -687,7 +687,7 @@ public class FD_SOCK extends Protocol implements Runnable {
                           tmp_ping_dest=determinePingDest();
                           if(ping_dest != null && tmp_ping_dest != null 
                               && !ping_dest.equals(tmp_ping_dest)) {
-                              interruptPingerThread(); // allows the thread to use the new socket
+                              interruptPingerThread(false); // allows the thread to use the new socket
                               startPingerThread();
                           }
                       }
@@ -697,7 +697,7 @@ public class FD_SOCK extends Protocol implements Runnable {
                     }
                     else {
                         ping_dest=null;
-                        interruptPingerThread();
+                        interruptPingerThread(false);
                     }
                 }
 //                log.getLogWriter().info("failure detection is finished processing a view");
@@ -738,6 +738,7 @@ public class FD_SOCK extends Protocol implements Runnable {
         Address cached_ping_dest;
         IpAddress ping_addr;
         Address log_addr = null;
+        PingThread myThread = (PingThread)Thread.currentThread();
 
         // GemStoneAddition - we need to pay attention to the member-timeout here and
         // not wait for too long.  Initiate suspect processing if we can't get the socket
@@ -767,16 +768,16 @@ public class FD_SOCK extends Protocol implements Runnable {
         }
 
         for(;;) { // GemStoneAddition remove coding anti-pattern
-          if (Thread.currentThread().isInterrupted()) {  // GemStoneAddition -- for safety
+          if (myThread.isInterrupted() || myThread.isStopRequested()) {  // GemStoneAddition -- for safety
             if (log.isDebugEnabled()) {
-              log.info("FD_SOCK interrupted - pinger thread exiting");
+              log.info("FD_SOCK interrupted or stop requested - pinger thread exiting");
             }
             break;
           }
           synchronized (this) {  // GemStoneAddition -- look for termination
-            if (pinger_thread == null) {
+            if (myThread.isStopRequested()) {
               if (log.isDebugEnabled()) {
-                log.info("FD_SOCK pinger_thread is null - pinger thread exiting");
+                log.info("FD_SOCK pinger thread requested to stop - pinger thread exiting");
               }
               break;
             }
@@ -837,7 +838,7 @@ public class FD_SOCK extends Protocol implements Runnable {
               break;
             }
 
-            switch (setupPingSocket(ping_addr, cached_ping_dest)) { // GemStoneAddition added reselect logic
+            switch (myThread.setupPingSocket(ping_addr, cached_ping_dest, connectTimeout)) { // GemStoneAddition added reselect logic
               case SETUP_FAILED:
 //                boolean shutdown = this.stack.jgmm.isShuttingDown((IpAddress)tmp_ping_dest);
                 if (log.isDebugEnabled()) {
@@ -868,12 +869,12 @@ public class FD_SOCK extends Protocol implements Runnable {
             }
 
             if(log.isDebugEnabled()) log.debug("ping_dest=" + cached_ping_dest 
-                + ", ping_sock=" + ping_sock + ", cache=" + cache);
+                + ", ping_sock=" + myThread.ping_sock + ", cache=" + cache);
 
             // at this point ping_input must be non-null, otherwise setupPingSocket() would have thrown an exception
             try {
-                if(ping_input != null) {
-                    int c=ping_input.read();
+                if(myThread.ping_input != null) {
+                    int c=myThread.ping_input.read();
                     switch(c) {
                         case NORMAL_TERMINATION:
                           normalDisconnectCount++; // GemStoneAddition - test hook
@@ -887,19 +888,19 @@ public class FD_SOCK extends Protocol implements Runnable {
                             bcast_task.addDepartedMember(cached_ping_dest);
                             log.getLogWriter().info(ExternalStrings.DEBUG, "Member " + cached_ping_dest + " shut down with normal termination.");
                             passUp(new Event(Event.FD_SOCK_MEMBER_LEFT_NORMALLY, cached_ping_dest));
-                            teardownPingSocket();
+                            myThread.teardownPingSocket(false);
                             break;
                         case PROBE_TERMINATION: // GemStoneAddition
                           if (log.isDebugEnabled()) {
                             log.debug("peer closed socket with probe notification");
                           }
-                          teardownPingSocket();
+                          myThread.teardownPingSocket(false);
                           normalDisconnectCount++;
-                          ping_sock.getOutputStream().flush();
-                          ping_sock.shutdownOutput();
+                          myThread.ping_sock.getOutputStream().flush();
+                          myThread.ping_sock.shutdownOutput();
                           break;
                         case ABNORMAL_TERMINATION:
-                            handleSocketClose(null);
+                            handleSocketClose(myThread, null);
                             break;
                         default:
                             break;
@@ -907,7 +908,7 @@ public class FD_SOCK extends Protocol implements Runnable {
                 }
             }
             catch(IOException ex) {  // we got here when the peer closed the socket --> suspect peer and then continue
-                handleSocketClose(ex);
+                handleSocketClose(myThread, ex);
             }
             catch (VirtualMachineError err) { // GemStoneAddition
               // If this ever returns, rethrow the error.  We're poisoned
@@ -923,7 +924,9 @@ public class FD_SOCK extends Protocol implements Runnable {
         } // for
         if(log.isDebugEnabled()) log.debug("pinger thread terminated");
         synchronized(this) { // GemStoneAddition - synch
-          pinger_thread=null;
+          if (pinger_thread == myThread) {
+            pinger_thread=null;
+          }
         }
     }
 
@@ -992,8 +995,8 @@ public class FD_SOCK extends Protocol implements Runnable {
       if (bcast_task.isSuspectedMember(mbr)) {
         return false;
       }
-      if (log.isDebugEnabled()) {
-        log.debug("Attempting to connect to member " + mbr + " at address " + dest + " reason: " + reason);
+      if (DEBUG_FDSOCK) {
+        log.getLogWriter().info(ExternalStrings.DEBUG, "Attempting to connect to member " + mbr + " at address " + dest + " reason: " + reason);
       }
       Socket sock = null;
       boolean connectSucceeded = false;
@@ -1006,19 +1009,19 @@ public class FD_SOCK extends Protocol implements Runnable {
         sock = sc.connect(dest.getIpAddress(), dest.getPort(),
             connectTimeout, new ConnectTimerTask(), false, -1, useSSL);
         if (sock == null) {
-          if (log.isDebugEnabled()) {
-            log.debug("Attempt to connect to " + mbr + " at address " + dest + " failed.  connect() returned null");
+          if (DEBUG_FDSOCK) {
+            log.getLogWriter().info(ExternalStrings.DEBUG, "Attempt to connect to " + mbr + " at address " + dest + " was unsuccessful.  connect() returned null");
           }
           connectSucceeded = false;
         } else {
-          if (log.isDebugEnabled()) {
-            log.debug("Attempt to connect to " + mbr + " at address " + dest + " succeeded.");
+          if (DEBUG_FDSOCK) {
+            log.getLogWriter().info(ExternalStrings.DEBUG, "Attempt to connect to " + mbr + " at address " + dest + " succeeded.");
           }
           connectSucceeded = true;
           noProbeResponse = false;
           if (isFdSockServer) {
-            if (log.isDebugEnabled()) {
-              log.debug("Attempt to read probe response from " + mbr);
+            if (DEBUG_FDSOCK) {
+              log.getLogWriter().info(ExternalStrings.DEBUG, "Attempting to read probe response from " + mbr);
             }
             sock.setSoLinger(true, connectTimeout);
             //okay, we connected to it, so now we know the other member's
@@ -1030,8 +1033,8 @@ public class FD_SOCK extends Protocol implements Runnable {
             sock.setSoTimeout(connectTimeout); // read the PROBE_TERMINATION
             try {
               int response = sock.getInputStream().read();
-              if (log.isDebugEnabled()) {
-                log.debug("Attempt to read probe response from " + mbr + " returned " + response );
+              if (DEBUG_FDSOCK) {
+                log.getLogWriter().info(ExternalStrings.DEBUG, "Attempt to read probe response from " + mbr + " returned " + response );
               }
               noProbeResponse = (response != PROBE_TERMINATION);
             } catch (SocketTimeoutException e) {
@@ -1070,13 +1073,13 @@ public class FD_SOCK extends Protocol implements Runnable {
           suspect(mbr, false, reason==null?ExternalStrings.FD_SOCK_UNABLE_TO_CONNECT_TO_THIS_MEMBER.toLocalizedString():reason);
         }
       }
-      if (log.isDebugEnabled()) {
+      if (DEBUG_FDSOCK) {
         if (isFdSockServer && noProbeResponse) {
-          log.debug("FD_SOCK found that " + mbr
+          log.getLogWriter().info(ExternalStrings.DEBUG, "FD_SOCK found that " + mbr
               + " is accepting connections on " + dest.getIpAddress() + ":" + dest.getPort()
               + " but did not return a probe response");
         } else {
-          log.debug("FD_SOCK found that " + mbr + (connectSucceeded? " is " : " is not ")
+          log.getLogWriter().info(ExternalStrings.DEBUG, "FD_SOCK found that " + mbr + (connectSucceeded? " is " : " is not ")
               + "accepting connections on " + dest.getIpAddress() + ":" + dest.getPort());
         }
       }
@@ -1088,8 +1091,8 @@ public class FD_SOCK extends Protocol implements Runnable {
     }
 
 
-    void handleSocketClose(Exception ex) {
-        teardownPingSocket();     // make sure we have no leftovers
+    void handleSocketClose(PingThread pt, Exception ex) {
+        pt.teardownPingSocket(false);     // make sure we have no leftovers
         if(!regular_sock_close) { // only suspect if socket was not closed regularly (by interruptPingerThread())
             if(log.isDebugEnabled())
                 log.debug("peer " + ping_dest + " closed socket (" + (ex != null ? ex.getClass().getName() : "eof") + ')');
@@ -1104,9 +1107,9 @@ public class FD_SOCK extends Protocol implements Runnable {
 
 
     synchronized void startPingerThread() { // GemStoneAddition - synchronization
-        Thread t = pinger_thread; // GemStoneAddition, get the reference once
+        PingThread t = pinger_thread; // GemStoneAddition, get the reference once
         if(t == null || !t.isAlive()) {
-            t=new Thread(GemFireTracer.GROUP, this, "FD_SOCK Ping thread");
+            t=new PingThread(GemFireTracer.GROUP, this, "FD_SOCK Ping thread");
             t.setDaemon(true);
             t.start();
             pinger_thread = t;
@@ -1126,8 +1129,11 @@ public class FD_SOCK extends Protocol implements Runnable {
     
     // GemStoneAddition - send something so the connection handler
     // can exit
-    synchronized void sendPingTermination(boolean stopping) {
-      Socket ps = ping_sock;
+    synchronized void sendPingTermination(PingThread pt, boolean stopping) {
+      if (pt == null) {
+        return;
+      }
+      Socket ps = pt.ping_sock;
       if (ps != null && !ps.isClosed()) {
         try {
           if (log.isDebugEnabled()) {
@@ -1149,6 +1155,8 @@ public class FD_SOCK extends Protocol implements Runnable {
           if (trace)
             log.trace("FD_SOCK io exception sending ping termination", ie);
         }
+        catch(Exception ex) {
+        }
       }
     }
 
@@ -1162,16 +1170,32 @@ public class FD_SOCK extends Protocol implements Runnable {
      * <p>
      * see com.gemstone.org.jgroups.tests.InterruptTest to determine whether Thread.interrupt() works for InputStream.read().
      */
-    synchronized void interruptPingerThread() { // GemStoneAddition - synchronization
-        Thread pt = pinger_thread; // GemStoneAddition volatile read
-        if(pt != null && pt.isAlive()) {
-            regular_sock_close=true;
-            sendPingTermination(false); // GemStoneAddition
-            teardownPingSocket(); // will wake up the pinger thread. less elegant than Thread.interrupt(), but does the job
-            if (log.isDebugEnabled()) {
-              log.debug("'Interrupted' pinger thread");
+    void interruptPingerThread(final boolean stopping) { // GemStoneAddition - synchronization & parameter
+        Thread thr = (new Thread(GemFireTracer.GROUP, "GemFire FD_SOCK Connection Termination Thread") {
+          @Override // GemStoneAddition  
+          public void run() {
+            final PingThread pt;
+            synchronized (FD_SOCK.this) {
+              pt = pinger_thread; // GemStoneAddition volatile read
+              pinger_thread = null;
             }
-      }
+            if (pt != null) {
+              synchronized(pt) {
+                if(pt.isAlive()) {
+                  pt.requestStop();
+                  regular_sock_close=true;
+                  sendPingTermination(pt, stopping); // GemStoneAddition
+                  pt.teardownPingSocket(true); // will wake up the pinger thread. less elegant than Thread.interrupt(), but does the job
+                  if (log.isDebugEnabled()) {
+                    log.debug("'Interrupted' pinger thread");
+                  }
+                }
+              }
+            }
+          }
+        });
+        thr.setDaemon(true);
+        thr.start();
     }
 
     void startServerSocket() {
@@ -1185,84 +1209,8 @@ public class FD_SOCK extends Protocol implements Runnable {
     }
 
 
-    /**
-     * Creates a socket to <code>dest</code>, and assigns it to ping_sock. Also assigns ping_input
-     */
-    int setupPingSocket(IpAddress dest, Address mbr) {
-        synchronized(sock_mutex) {
-          if (socket_closed_in_mutex) {
-            // GemStoneAddition - another thread closed the ping socket
-            socket_closed_in_mutex = false;
-            return SETUP_RESELECT;
-          }
-            if(dest == null) {
-                if(log.isErrorEnabled()) log.error(ExternalStrings.FD_SOCK_DESTINATION_ADDRESS_IS_NULL);
-                return SETUP_RESELECT;
-            }
-            try {
-                // GemStoneAddition - set a shorter wait than the default
-                //ping_sock=new Socket(dest.getIpAddress(), dest.getPort());
-//                log.getLogWriter().info("DEBUG: failure detection is attempting to connect to " + mbr);
-                ping_sock = new Socket();
-                java.net.InetSocketAddress address =
-                  new java.net.InetSocketAddress(dest.getIpAddress(), dest.getPort());
-                ping_sock.connect(address, connectTimeout);
-//                log.getLogWriter().info("DEBUG: failure detection has connected to " + mbr);
-                // end GemStoneAddition
-
-                ping_sock.setSoLinger(true, connectTimeout);
-                ping_input=ping_sock.getInputStream();
-                return SETUP_OK;
-            }
-            catch (VirtualMachineError err) { // GemStoneAddition
-              // If this ever returns, rethrow the error.  We're poisoned
-              // now, so don't let this thread continue.
-              throw err;
-            }
-            catch(Throwable ex) {
-                return SETUP_FAILED;
-            }
-        }
-    }
 
 
-    synchronized void teardownPingSocket() { // GemStoneAddition - synch
-      synchronized(sock_mutex) {
-        if (ping_sock != null) {
-          // GemStoneAddition - if the other member's machine crashed, we
-          // may hang trying to close the socket. That causes bad things to
-          // happen if this is a UDP receiver thread.  So, close the socket in
-          // another thread.
-          final Socket old_ping_sock = ping_sock;
-          final InputStream old_ping_input = ping_input;
-          (new Thread(GemFireTracer.GROUP, "GemFire FD_SOCK Ping Socket Teardown Thread") {
-            @Override // GemStoneAddition  
-            public void run() {
-//            if(old_ping_sock != null) {
-                try {
-                  socket_closed_in_mutex = true;
-                    old_ping_sock.shutdownInput();
-                    old_ping_sock.close();
-                }
-                catch(Exception ex) {
-                }
-//                ping_sock=null;
-//            }
-            if(old_ping_input != null) {
-                try {
-                    old_ping_input.close();
-                }
-                catch(Exception ex) {
-                }
-//                ping_input=null;
-            }
-            }
-          }).start();
-//          ping_sock = null;
-//          ping_input = null;
-        }
-      }
-    }
 
 
     /**
@@ -2152,10 +2100,10 @@ public class FD_SOCK extends Protocol implements Runnable {
 
         void stopThread(boolean normalTermination) {
             synchronized(mutex) {
-                if(normalTermination && client_sock != null) {
+                if(client_sock != null) {
                     try {
                         OutputStream out=client_sock.getOutputStream();
-                        out.write(NORMAL_TERMINATION);
+                        out.write(normalTermination? NORMAL_TERMINATION : PROBE_TERMINATION);
                         out.flush(); // GemStoneAddition
                     }
                     catch (VirtualMachineError err) { // GemStoneAddition
@@ -2204,6 +2152,8 @@ public class FD_SOCK extends Protocol implements Runnable {
             synchronized(mutex) {
                 if(client_sock != null) {
                     try {
+                        client_sock.shutdownOutput();
+                        client_sock.shutdownInput();
                         client_sock.close();
                     }
                     catch(Exception ex) {
@@ -2602,6 +2552,103 @@ public class FD_SOCK extends Protocol implements Runnable {
         }
       }
     
+    }
+    
+    private static class PingThread extends Thread {
+      volatile boolean stopRequested;
+      volatile Socket ping_sock;
+      volatile InputStream ping_input;
+      final Object sock_mutex = new Object();
+      boolean socket_closed_in_mutex;
+      
+      public PingThread(ThreadGroup group, Runnable fd_SOCK, String name) {
+        super(group,fd_SOCK,name);
+      }
+
+      public void requestStop() {
+        stopRequested = true;
+      }
+      
+      public boolean isStopRequested() {
+        return stopRequested;
+      }
+      
+      synchronized void teardownPingSocket(boolean inline) { // GemStoneAddition - synch
+        synchronized(sock_mutex) {
+          final Socket old_ping_sock = ping_sock;
+          final InputStream old_ping_input = ping_input;
+          if (old_ping_sock != null) {
+            // GemStoneAddition - if the other member's machine crashed, we
+            // may hang trying to close the socket. That causes bad things to
+            // happen if this is a UDP receiver thread.  So, close the socket in
+            // another thread.
+            Thread thr = (new Thread(GemFireTracer.GROUP, "GemFire FD_SOCK Ping Socket Teardown Thread") {
+              @Override // GemStoneAddition  
+              public void run() {
+                try {
+                  socket_closed_in_mutex = true;
+                  old_ping_sock.shutdownInput();
+                  old_ping_sock.close();
+                }
+                catch(Exception ex) {
+                }
+                if(old_ping_input != null) {
+                  try {
+                    old_ping_input.close();
+                  }
+                  catch(Exception ex) {
+                  }
+                }
+              }
+            });
+            if (inline) {
+              thr.run();
+            } else {
+              thr.setDaemon(true);
+              thr.start();
+            }
+          }
+        }
+      }
+      /**
+       * Creates a socket to <code>dest</code>, and assigns it to ping_sock. Also assigns ping_input
+       */
+      int setupPingSocket(IpAddress dest, Address mbr, int connectTimeout) {
+          synchronized(sock_mutex) {
+            PingThread myThread = (PingThread)Thread.currentThread();
+            if (socket_closed_in_mutex) {
+              // GemStoneAddition - another thread closed the ping socket
+              socket_closed_in_mutex = false;
+              return SETUP_RESELECT;
+            }
+              if(dest == null) {
+                  return SETUP_RESELECT;
+              }
+              try {
+                  // GemStoneAddition - set a shorter wait than the default
+                  //ping_sock=new Socket(dest.getIpAddress(), dest.getPort());
+//                  log.getLogWriter().info("DEBUG: failure detection is attempting to connect to " + mbr);
+                  myThread.ping_sock = new Socket();
+                  java.net.InetSocketAddress address =
+                    new java.net.InetSocketAddress(dest.getIpAddress(), dest.getPort());
+                  myThread.ping_sock.connect(address, connectTimeout);
+//                  log.getLogWriter().info("DEBUG: failure detection has connected to " + mbr);
+                  // end GemStoneAddition
+
+                  myThread.ping_sock.setSoLinger(true, connectTimeout);
+                  myThread.ping_input=myThread.ping_sock.getInputStream();
+                  return SETUP_OK;
+              }
+              catch (VirtualMachineError err) { // GemStoneAddition
+                // If this ever returns, rethrow the error.  We're poisoned
+                // now, so don't let this thread continue.
+                throw err;
+              }
+              catch(Throwable ex) {
+                  return SETUP_FAILED;
+              }
+          }
+      }
     }
 
 }

@@ -24,15 +24,15 @@ import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
  * Tests marshaling of ServiceStatus to and from JSON.
+ * 
  * @author Kirk Lund
  * @since 7.0
  */
@@ -40,21 +40,9 @@ import org.junit.experimental.categories.Category;
 public class AbstractLauncherServiceStatusJUnitTest {
 
   private static final String SERVICE_NAME = "Test";
-
-  private static InetAddress HOST;
-
-  static {
-    try {
-      HOST = InetAddress.getLocalHost();
-    }
-    catch (UnknownHostException e) {
-      HOST = null;
-    }
-  }
-
+  private static final InetAddress HOST = getLocalHost();
   private static final int PORT = 12345;
   private static final String NAME = AbstractLauncherServiceStatusJUnitTest.class.getSimpleName();
-
   private static final int PID = identifyPid();
   private static final long UPTIME = 123456789;
   private static final String WORKING_DIRECTORY = identifyWorkingDirectory();
@@ -68,11 +56,6 @@ public class AbstractLauncherServiceStatusJUnitTest {
   @Before
   public void setUp() {
     this.launcher = new TestLauncher(HOST, PORT, NAME);
-  }
-
-  @After
-  public void tearDown() {
-    this.launcher = null;
   }
 
   @Test
@@ -121,6 +104,15 @@ public class AbstractLauncherServiceStatusJUnitTest {
     }
   }
 
+  private static InetAddress getLocalHost() {
+    try {
+      return InetAddress.getLocalHost();
+    }
+    catch (UnknownHostException e) {
+      return null;
+    }
+  }
+  
   static class TestLauncher extends AbstractLauncher<String> {
 
     private final InetAddress bindAddress;

@@ -473,7 +473,16 @@ public class GemFireProperties {
   private String httpServiceSSLTrustStore;
   private String httpServiceSSLTrustStorePassword;
   
-
+  /**
+   * Specifies whether the default transaction mode should be distributed.
+   */
+  private boolean distributedTransactions;
+  
+  
+  /**
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
   public GemFireProperties() {
 
   }
@@ -1560,5 +1569,13 @@ public class GemFireProperties {
 
   public void setHttpServiceSSLTrustStorePassword(String httpServiceSSLTrustStorePassword) {
     this.httpServiceSSLTrustStorePassword = httpServiceSSLTrustStorePassword;
+  }
+  
+  public void setDistributedTransactions(boolean value) {
+    this.distributedTransactions = value;
+  }
+  
+  public boolean getDistributedTransactions() {
+    return this.distributedTransactions;
   }
 }

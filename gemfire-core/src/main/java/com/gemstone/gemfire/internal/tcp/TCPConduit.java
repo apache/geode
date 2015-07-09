@@ -831,6 +831,7 @@ public class TCPConduit implements Runnable {
       DistributionMessage msg = message;
       msg.setBytesRead(bytesRead);
       msg.setSender(receiver.getRemoteAddress());
+      msg.setSharedReceiver(receiver.isSharedResource());
       directChannel.receive(msg, bytesRead, receiver.getRemoteId());
     }
   }

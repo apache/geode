@@ -24,6 +24,7 @@ import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.util.ObjectProcedure;
 import com.gemstone.gemfire.internal.util.PrimeFinder;
 
@@ -1077,7 +1078,16 @@ public class HashIndexSet implements Set {
           for (Object o : ((Collection) object)) {
             if (o != null) {
               RegionEntry re = (RegionEntry) o;
-              Object val = re._getValue();
+              Object val = re._getValue(); // OFFHEAP _getValue ok
+              if (val instanceof StoredObject) {
+                // We don't have enough info here to deserialize an off-heap value
+                // so we can't call getDeserializedForReading.
+                // Also we can't call _getValueRetain because we do not
+                // know what region to pass in to it.
+                // So for now we just convert it to a String which all StoredObject
+                // impls can do without needing a refcount or to decompress.
+                val = val.toString();
+              }
               if (val instanceof CachedDeserializable) {
                 val = ((CachedDeserializable) val).getDeserializedForReading();
               }
@@ -1086,7 +1096,16 @@ public class HashIndexSet implements Set {
           }
         } else {
           RegionEntry re = (RegionEntry) object;
-          Object val = re._getValue();
+          Object val = re._getValue(); // OFFHEAP _getValue ok
+          if (val instanceof StoredObject) {
+            // We don't have enough info here to deserialize an off-heap value
+            // so we can't call getDeserializedForReading.
+            // Also we can't call _getValueRetain because we do not
+            // know what region to pass in to it.
+            // So for now we just convert it to a String which all StoredObject
+            // impls can do without needing a refcount or to decompress.
+            val = val.toString();
+          }
           if (val instanceof CachedDeserializable) {
             val = ((CachedDeserializable) val).getDeserializedForReading();
           }

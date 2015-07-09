@@ -14,6 +14,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.Rule;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
+
 /**
  * The CommonLauncherTestSuite is a base class for encapsulating reusable functionality across the various, specific
  * launcher test suites.
@@ -24,16 +29,23 @@ import java.util.Properties;
  * @see com.gemstone.gemfire.distributed.ServerLauncherJUnitTest
  * @since 7.0
  */
-@SuppressWarnings("unused")
 public abstract class CommonLauncherTestSuite {
 
-  protected static File writeGemFirePropertiesToFile(final Properties gemfireProperties,
-                                                     final String filename,
-                                                     final String comment)
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  
+  @Rule
+  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  
+  @Rule
+  public final TestName testName = new TestName();
+  
+  protected File writeGemFirePropertiesToFile(final Properties gemfireProperties,
+                                              final String filename,
+                                              final String comment)
   {
-    final File gemfirePropertiesFile = new File(System.getProperty("user.dir"), filename);
-
     try {
+      final File gemfirePropertiesFile = this.temporaryFolder.newFile(filename);
       gemfireProperties.store(new FileWriter(gemfirePropertiesFile, false), comment);
       return gemfirePropertiesFile;
     }

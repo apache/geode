@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 import java.util.Map;
 
 import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

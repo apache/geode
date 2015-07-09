@@ -282,7 +282,7 @@ public class GMS extends Protocol  {
                 return;
             impl=new_impl;
 //            if (impl instanceof CoordGmsImpl) {
-//              log.getLogWriter().config(
+//              log.getLogWriter().info(
 //                JGroupsStrings.GMS_THIS_MEMBER_IS_BECOMING_GROUP_COORDINATOR);
 //            }
             if(log.isDebugEnabled()) {
@@ -880,15 +880,12 @@ public class GMS extends Protocol  {
               }
               return failedAddress;//now we remove below using feature
             }
-              return null;
+            return null;
           }
          }
         );
       }
       try {
-        if (log.getLogWriter().infoEnabled()) {
-          log.getLogWriter().info(ExternalStrings.CHECKING_FAILED_TO_ACK_MEMBERS, new Object[]{failedToAck.toString()});
-        }
          List<java.util.concurrent.Future<IpAddress>> futures =  es.invokeAll(al);
          for(java.util.concurrent.Future<IpAddress> future : futures){
            try {
@@ -1259,6 +1256,8 @@ public class GMS extends Protocol  {
             }
             return;
         }
+        
+        Event view_event;
         synchronized(installViewLock) {
           synchronized(members) {   // serialize access to views
               
@@ -1311,12 +1310,10 @@ public class GMS extends Protocol  {
                   }
               }
   
-              // Send VIEW_CHANGE event up and down the stack:
-              Event view_event=new Event(Event.VIEW_CHANGE, new_view.clone());
-              passDown(view_event); // needed e.g. by failure detector or UDP
-              passUp(view_event);
+              view_event=new Event(Event.VIEW_CHANGE, new_view.clone());
           }
-            coord=determineCoordinator();
+
+          coord=determineCoordinator();
             // if(coord != null && coord.equals(local_addr) && !(coord.equals(vid.getCoordAddress()))) {
             // changed on suggestion by yaronr and Nicolas Piedeloupe
             if(coord != null && coord.equals(local_addr) && !haveCoordinatorRole()) {
@@ -1338,6 +1335,12 @@ public class GMS extends Protocol  {
             if (coord != null) {
               notifyOfCoordinator(coord);
             }
+        }
+        // Send VIEW_CHANGE event up and down the stack:
+        // (moved from inside synchronization for bug #52099)
+        if (view_event != null) {
+          passDown(view_event); // needed e.g. by failure detector or UDP
+          passUp(view_event);
         }
     }
     

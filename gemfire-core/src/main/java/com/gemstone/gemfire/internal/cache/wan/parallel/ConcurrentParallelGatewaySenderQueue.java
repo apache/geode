@@ -13,8 +13,11 @@ package com.gemstone.gemfire.internal.cache.wan.parallel;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
+import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
+import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
@@ -56,11 +59,14 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     throw new UnsupportedOperationException("CPGAQ method(put) is not supported");
   }
   
-  /*@Override
+  @Override
   public void close() {
+    /*
+    this.commonQueue.close();
     // no need to free peekedEvents since they all had makeOffHeap called on them.
 	  throw new UnsupportedOperationException("CPGAQ method(close) is not supported");
-  }*/
+    */
+  }
 
   @Override
   public Region getRegion() {
@@ -174,10 +180,10 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
    getPGSProcessor( bucketId).notifyEventProcessorIfRequired(bucketId);
   }
   
-/*  public HDFSBucketRegionQueue getBucketRegionQueue(PartitionedRegion region,
+  public HDFSBucketRegionQueue getBucketRegionQueue(PartitionedRegion region,
     int bucketId) throws ForceReattemptException {
 	return getPGSProcessor(bucketId).getBucketRegionQueue(region, bucketId);
-  }*/
+  }
   
   public void clear(PartitionedRegion pr, int bucketId) {
   	getPGSProcessor(bucketId).clear(pr, bucketId);
@@ -193,10 +199,10 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   	getPGSProcessor(bucketId).conflateEvent(conflatableObject, bucketId, tailKey);
   }
   
-/*  public HDFSGatewayEventImpl get(PartitionedRegion region, byte[] regionKey,
+  public HDFSGatewayEventImpl get(PartitionedRegion region, byte[] regionKey,
       int bucketId) throws ForceReattemptException {
     return getPGSProcessor(bucketId).get(region, regionKey, bucketId);
-  }*/
+  }
   
   public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {
 	for(int i =0; i< processors.length; i++){

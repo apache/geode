@@ -25,4 +25,8 @@ public interface RegionEntryContext extends HasCachePerfStats {
    * @return null if no compressor is assigned or available for the entry.
    */
   public Compressor getCompressor();
+  /**
+   * Returns true if region entries are stored off heap.
+   */
+  public boolean getOffHeap();
 }

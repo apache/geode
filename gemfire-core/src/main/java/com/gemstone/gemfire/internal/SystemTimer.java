@@ -333,7 +333,7 @@ public final class SystemTimer {
     checkCancelled();
     if (logger.isTraceEnabled()) {
       Date tilt = new Date(System.currentTimeMillis() + delay);
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-DD HH:mm:ss.SSS");
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
       logger.trace("SystemTimer#schedule (long): {}: expect task {} to fire around {}", this, task, sdf.format(tilt));
     }
     timer.schedule(task, delay);
@@ -345,7 +345,7 @@ public final class SystemTimer {
   public void schedule(SystemTimerTask task, Date time) {
     checkCancelled();
     if (logger.isTraceEnabled()) {
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-DD HH:mm:ss.SSS");
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
       logger.trace("SystemTimer#schedule (Date): {}: expect task {} to fire around {}", this, task, sdf.format(time));
     }
     timer.schedule(task, time);

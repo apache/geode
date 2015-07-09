@@ -35,7 +35,12 @@ public class FixedPartitionAttributesData {
    */
   private int numBucket;
 
-  @ConstructorProperties( { "name", "primary", "numBucket"
+  /**
+   * 
+   * This constructor is to be used by internal JMX framework only. User should
+   * not try to create an instance of this class.
+   */
+  @ConstructorProperties({ "name", "primary", "numBucket"
 
   })
   public FixedPartitionAttributesData(String name, boolean primary,
@@ -68,6 +73,9 @@ public class FixedPartitionAttributesData {
     return numBucket;
   }
 
+  /**
+   * String representation of FixedPartitionAttributesData
+   */
   @Override
   public String toString() {
     return "FixedPartitionAttributesData [name=" + name + ", numBucket="

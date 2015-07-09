@@ -137,7 +137,7 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
             }
           }
           responseMsg.send();
-          msg.flush();
+          msg.clearParts();
         } catch (Exception e) {
           writeException(msg, e, false, servConn);
         } finally {

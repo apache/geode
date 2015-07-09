@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 import com.gemstone.gemfire.internal.cache.versions.DiskRegionVersionVector;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OplogRVVJUnitTest extends TestCase {

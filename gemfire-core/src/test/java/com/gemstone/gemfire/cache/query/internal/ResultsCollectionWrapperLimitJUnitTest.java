@@ -11,7 +11,7 @@
 package com.gemstone.gemfire.cache.query.internal;
 
 import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -81,7 +81,8 @@ public class ExecutionContext {
   private BucketRegion bukRgn = null;
   private PartitionedRegion pr = null;
   private boolean distinct = false;
-  
+  private Object currentProjectionField = null;
+  private boolean isPRQueryNode = false;
   /**
    * Param specialIteratorVar name of special variable to use to denote the
    * current iteration element. Used to implement the "this" var in the query
@@ -254,11 +255,7 @@ public class ExecutionContext {
   public QScope currentScope() {
     return (QScope) scopes.peek();
   }
-
-  //  public RuntimeIterator getCurrentIterator() {
-  //    //return currentScope().getIterator();
-  //    throw new RuntimeException("Shud not be called");
-  //  }
+ 
   public List getCurrentIterators() {
     return currentScope().getIterators();
   }
@@ -316,11 +313,7 @@ public class ExecutionContext {
     scope._oneIndexLookup = b;
   }
 
-  // set the current iteration element
-  //  void setCurrent(Object obj) {
-  //    //currentScope().setCurrent(obj);
-  //    throw new RuntimeException("Shud not be called");
-  //  }
+  
   void setCurrent(RuntimeIterator iter, Object obj) {
     currentScope().setCurrent(iter, obj);
   }
@@ -680,10 +673,6 @@ public class ExecutionContext {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 
-  public SelectResults getResults() {
-    throw new UnsupportedOperationException("Method should not have been called");
-  }
-
   public Query getQuery() {
     throw new UnsupportedOperationException("Method should not have been called");
   }
@@ -711,4 +700,25 @@ public class ExecutionContext {
   public void setDistinct(boolean distinct) {
     this.distinct = distinct;
   }
+  
+  public boolean isBindArgsSet() {
+    return this.bindArguments != null;
+  }
+  
+  public void setCurrentProjectionField(Object field) {
+    this.currentProjectionField = field;
+  }
+  
+  public Object getCurrentProjectionField() {
+    return this.currentProjectionField ;
+  }
+  
+  public void setIsPRQueryNode(boolean isPRQueryNode) {
+    this.isPRQueryNode = isPRQueryNode;
+  }
+  
+  public boolean getIsPRQueryNode() {
+    return this.isPRQueryNode;
+  }
+  
 }

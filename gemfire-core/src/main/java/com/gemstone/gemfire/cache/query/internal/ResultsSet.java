@@ -31,7 +31,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @author Eric Zoerner
  * @since 4.0
  */
-public final class ResultsSet  extends HashSet implements SelectResults, DataSerializableFixedID {
+public final class ResultsSet  extends HashSet implements SelectResults,
+ DataSerializableFixedID {
   private static final long serialVersionUID = -5423281031630216824L;
   private ObjectType elementType;
   
@@ -51,7 +52,7 @@ public final class ResultsSet  extends HashSet implements SelectResults, DataSer
     setElementType(sr.getCollectionType().getElementType());
   }
   
-  ResultsSet(ObjectType elementType) {
+  public ResultsSet(ObjectType elementType) {
     super();
     setElementType(elementType);
   }

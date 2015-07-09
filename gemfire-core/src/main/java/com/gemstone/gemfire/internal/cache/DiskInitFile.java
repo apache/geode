@@ -380,11 +380,21 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   public static final byte IFREC_CLEAR_REGION_WITH_RVV_ID = 83;
   
   /**
-   * Written to IF. Used to record regions config Byte Format: RegionId 1:
-   * lruAlgorithm 1: lruAction 4: lruLimit (int) // no need to ObjectSize during
-   * recovery since all data is in blob form 4: concurrencyLevel (int) 4:
-   * initialCapacity (int) 4: loadFactor (float) 1: statisticsEnabled (boolean)
-   * 1: isBucket (boolean) variable: compressorClassName 1: EndOfRecordMarker
+   * Written to IF. Used to record regions config Byte Format: 
+   * RegionId 
+   * 1: lruAlgorithm 
+   * 1: lruAction 
+   * 4: lruLimit (int) // no need to ObjectSize during recovery since all data is in blob form 
+   * 4: concurrencyLevel (int) 
+   * 4: initialCapacity (int) 
+   * 4: loadFactor (float)
+   * 1: statisticsEnabled (boolean)
+   * 1: isBucket (boolean) 
+   * variable: partitionName (utf)
+   * 4: startingBucketId (int)
+   * variable: compressorClassName (utf)
+   * 1: versioned (boolean)
+   * 1: EndOfRecordMarker
    * 
    */
   public static final byte IFREC_REGION_CONFIG_ID_80 = 88;
@@ -400,6 +410,27 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    */
   public static final byte OPLOG_MAGIC_SEQ_ID = 89;
   
+  /**
+   * Written to IF. Used to record regions config Byte Format: 
+   * RegionId 
+   * 1: lruAlgorithm 
+   * 1: lruAction 
+   * 4: lruLimit (int) // no need to ObjectSize during recovery since all data is in blob form 
+   * 4: concurrencyLevel (int) 
+   * 4: initialCapacity (int) 
+   * 4: loadFactor (float)
+   * 1: statisticsEnabled (boolean)
+   * 1: isBucket (boolean) 
+   * variable: partitionName (utf)
+   * 4: startingBucketId (int)
+   * variable: compressorClassName (utf)
+   * 1: versioned (boolean)
+   * 1: offHeap (boolean) added in 9.0
+   * 1: EndOfRecordMarker
+   * @since 9.0
+   */
+  public static final byte IFREC_REGION_CONFIG_ID_90 = 90;
+
   private final DiskStoreImpl parent;
   
   private final File ifFile;
@@ -632,7 +663,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
                               float loadFactor, boolean statisticsEnabled,
                               boolean isBucket, EnumSet<DiskRegionFlag> flags,
                               String partitionName, int startingBucketId,
-                              String compressorClassName) {
+                              String compressorClassName, boolean offHeap) {
     DiskRegionView dr = getDiskRegionById(drId);
     if (dr != null) {
       //We need to add the IS_WITH_VERSIONING to persistent regions
@@ -650,7 +681,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     dr.setConfig(lruAlgorithm, lruAction, lruLimit,
                  concurrencyLevel, initialCapacity, loadFactor,
                  statisticsEnabled, isBucket, flags, 
-                 partitionName, startingBucketId, compressorClassName);
+                 partitionName, startingBucketId, compressorClassName, offHeap);
 
     // Just count this as a live record even though it is possible
     // that we have an extra one due to the config changing while
@@ -922,14 +953,14 @@ public class DiskInitFile implements DiskInitFileInterpreter {
                                      DiskExceptionHandler exceptionHandler,
                                      RegionAttributes ra, EnumSet<DiskRegionFlag> flags,
                                      String partitionName, int startingBucketId, 
-                                     Compressor compressor) {
+                                     Compressor compressor, boolean offHeap) {
     lock.lock(false);
     try {
       // need to call the constructor and addDiskRegion while synced
       DiskRegion result = new DiskRegion(dsi, name, isBucket, isPersistBackup,
           overflowEnabled, isSynchronous,
           stats, cancel, exceptionHandler, ra, flags, partitionName, startingBucketId,
-          compressor == null ? null : compressor.getClass().getName());
+          compressor == null ? null : compressor.getClass().getName(), offHeap);
       dsi.addDiskRegion(result);
       return result;
     } finally {
@@ -1750,8 +1781,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   private void writeRegionConfig(DiskRegionView drv) {
     try {
       int len = estimateByteSize(drv.getPartitionName());
-      HeapDataOutputStream bb = new HeapDataOutputStream(1+DR_ID_MAX_BYTES+1+1+4+4+4+1+1+4+len+4, Version.CURRENT);
-      bb.write(IFREC_REGION_CONFIG_ID_80);
+      int comprLen = estimateByteSize(drv.getCompressorClassName());
+      HeapDataOutputStream bb = new HeapDataOutputStream(1+DR_ID_MAX_BYTES+1+1+4+4+4+1+1+4+len+4+1+1+1, Version.CURRENT);
+      bb.write(IFREC_REGION_CONFIG_ID_90);
       writeDiskRegionID(bb, drv.getId());
       bb.write(drv.getLruAlgorithm());
       bb.write(drv.getLruAction());
@@ -1766,6 +1798,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       bb.writeInt(drv.getStartingBucketId());
       bb.writeUTF(drv.getCompressorClassName() == null ? "" : drv.getCompressorClassName());
       bb.writeBoolean(flags.contains(DiskRegionFlag.IS_WITH_VERSIONING));
+      // TODO the offheap flag needs to be in a new version
+      bb.writeBoolean(drv.getOffHeap());
       bb.write(END_OF_RECORD_ID);
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {
@@ -2217,6 +2251,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         this.ifRAF.close();
       } catch (IOException ignore) {
       }
+      for (DiskRegionView k: this.getKnown()) {
+        k.close();
+      }
       if (this.liveRegions == 0 && !parent.isValidating()) {
         basicDestroy();
       }
@@ -2628,6 +2665,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
                              String loadFactorOption,
                              String compressorClassNameOption,
                              String statisticsEnabledOption,
+                             String offHeapOption,
                              boolean printToConsole) {
     StringBuffer sb = new StringBuffer();
     ArrayList<PlaceHolderDiskRegion> buckets = new ArrayList<PlaceHolderDiskRegion>();
@@ -2646,7 +2684,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       for (PlaceHolderDiskRegion dr: buckets) {
         String message = basicModifyRegion(printInfo, dr, lruOption, lruActionOption, lruLimitOption,
             concurrencyLevelOption, initialCapacityOption, loadFactorOption,
-            compressorClassNameOption, statisticsEnabledOption, printToConsole);
+            compressorClassNameOption, statisticsEnabledOption, offHeapOption, printToConsole);
         if (printInfo)
           sb.append(message);
         printInfo = false;
@@ -2665,13 +2703,14 @@ public class DiskInitFile implements DiskInitFileInterpreter {
                            String loadFactorOption,
                            String compressorClassNameOption,
                            String statisticsEnabledOption,
+                           String offHeapOption,
                            boolean printToConsole) {
     lock.lock();
     try {
       return basicModifyRegion(false, drv, lruOption, lruActionOption, lruLimitOption,
           concurrencyLevelOption, initialCapacityOption,
           loadFactorOption, compressorClassNameOption,
-          statisticsEnabledOption, printToConsole);
+          statisticsEnabledOption, offHeapOption, printToConsole);
     } finally {
       lock.unlock();
     }
@@ -2685,6 +2724,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
                                  String loadFactorOption,
                                  String compressorClassNameOption,
                                  String statisticsEnabledOption,
+                                 String offHeapOption,
                                  boolean printToConsole) {
     byte lruAlgorithm = drv.getLruAlgorithm();
     byte lruAction = drv.getLruAction();
@@ -2694,6 +2734,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     float loadFactor = drv.getLoadFactor();
     String compressorClassName = drv.getCompressorClassName();
     boolean statisticsEnabled = drv.getStatisticsEnabled();
+    boolean offHeap = drv.getOffHeap();
     StringBuffer sb = new StringBuffer();
     final String lineSeparator = System.getProperty("line.separator");
     
@@ -2755,6 +2796,15 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     }
+    if (offHeapOption != null) {
+      offHeap = Boolean.parseBoolean(offHeapOption);
+      if (!offHeap) {
+        // make sure it is "false"
+        if (!offHeapOption.equalsIgnoreCase("false")) {
+        throw new IllegalArgumentException("Expected offHeap to be \"true\" or \"false\"");
+        }
+      }
+    }
     
     sb.append("Before modification: ");
     sb.append(lineSeparator);
@@ -2764,7 +2814,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     drv.setConfig(lruAlgorithm, lruAction, lruLimit,
                   concurrencyLevel, initialCapacity, loadFactor, statisticsEnabled,
                   drv.isBucket(), drv.getFlags(), drv.getPartitionName(), drv.getStartingBucketId(),
-                  compressorClassName);
+                  compressorClassName, offHeap);
 
     // Make sure the combined lru args can still produce a legal eviction attributes
     // before writing them to disk.

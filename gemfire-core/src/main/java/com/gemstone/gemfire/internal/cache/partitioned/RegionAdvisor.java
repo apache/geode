@@ -51,13 +51,15 @@ import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.Node;
 import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider.DataStoreBuckets;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionStats;
 import com.gemstone.gemfire.internal.cache.ProxyBucketRegion;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
+import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor;
 import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentStateListener;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -486,9 +488,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor
       
       //getClientBucketProfiles(bucketId).remove();
     } else {
-      InternalResourceManager irm = getPartitionedRegion().
-                                getCache().getResourceManager();
-      boolean sick = irm.getHeapCriticalMembers().contains(member);
+      ResourceAdvisor advisor = getPartitionedRegion().
+                                getCache().getResourceAdvisor();
+      boolean sick = advisor.adviseCritialMembers().contains(member);
       if (logger.isDebugEnabled()) {
         logger.debug("updateBucketStatus:({}):member:{}:sick:{}",
             getPartitionedRegion().bucketStringForLogs(bucketId), member, sick);
@@ -505,7 +507,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
    * @throws LowMemoryException
    */
   public void checkIfBucketSick(final int bucketId, final Object key) throws LowMemoryException{
-    if (InternalResourceManager.isLowMemoryExceptionDisabled()) {
+    if (MemoryThresholds.isLowMemoryExceptionDisabled()) {
       return;
     }
     assert this.buckets != null;
@@ -1266,6 +1268,13 @@ public class RegionAdvisor extends CacheDistributionAdvisor
       return this.buckets[bucketId].getBucketAdvisor()
         .waitForRedundancy(minRedundancy);
     }
+  }
+  
+  public boolean waitForLocalBucketStorage(int bucketId)
+  {
+    Assert.assertTrue(this.buckets != null);
+    return this.buckets[bucketId].getBucketAdvisor()
+         .waitForStorage();
   }
   
   /**

@@ -20,7 +20,7 @@ import org.junit.experimental.categories.Category;
 import junit.framework.TestCase;
 
 import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Test for the new variable length format

@@ -17,7 +17,7 @@ import com.gemstone.gemfire.management.internal.web.domain.Link;
 import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
 import com.gemstone.gemfire.management.internal.web.http.HttpHeader;
 import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.After;
 import org.junit.Before;

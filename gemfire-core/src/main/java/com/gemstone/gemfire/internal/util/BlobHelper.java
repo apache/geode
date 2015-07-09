@@ -18,6 +18,8 @@ import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PdxInputStream;
 
 /**
@@ -120,6 +122,24 @@ public class BlobHelper {
 //            
 //      }
 //    }
+    return result;
+  }
+
+  /**
+   * A blob is a serialized Object.  This method 
+   * returns the deserialized object.
+   * If a PdxInstance is returned then it will refer to Chunk's off-heap memory
+   * with an unretained reference.
+   */
+  public static @Unretained Object deserializeOffHeapBlob(Chunk blob) throws IOException, ClassNotFoundException {
+    Object result;
+    final long start = startDeserialization();
+    // For both top level and nested pdxs we just want a reference to this off-heap blob.
+    // No copies.
+    // For non-pdx we want a stream that will read directly from the chunk.
+    PdxInputStream is = new PdxInputStream(blob);
+    result = DataSerializer.readObject(is);
+    endDeserialization(start, blob.getDataSize());
     return result;
   }
 

@@ -981,7 +981,7 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
   @Override
   public void onEvent(MemoryEvent event) {
     if (event.isLocal()) {
-      if (event.getType().isEvictMore()) {
+      if (event.getState().isEviction() && !event.getPreviousState().isEviction()) {
         this.replicatedTombstoneSweeper.forceBatchExpiration();
       }
     }

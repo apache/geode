@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 public class LinkedStructSet extends LinkedHashSet<Struct> implements
-    SelectResults<Struct>, DataSerializableFixedID {
+    SelectResults<Struct>, Ordered, DataSerializableFixedID {
 
   private static final long serialVersionUID = -1687142950781718156L;
 
@@ -226,7 +226,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct> implements
   }
 
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(SortedSet.class, this.structType);
+    return new CollectionTypeImpl(Ordered.class, this.structType);
   }
 
   // note: this method is dangerous in that it could result in undefined
@@ -343,6 +343,16 @@ public class LinkedStructSet extends LinkedHashSet<Struct> implements
   @Override
   public Version[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public Comparator comparator() {
+    return null;
+  }
+
+  @Override
+  public boolean dataPreordered() {    
+    return true;
   }
 
 }

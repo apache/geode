@@ -322,5 +322,10 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
         throw ex;
       }
     }
+    
+    @Override
+    protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+      return _mayAddToMultipleSerialGateways(dm);
+    }
   }
 }

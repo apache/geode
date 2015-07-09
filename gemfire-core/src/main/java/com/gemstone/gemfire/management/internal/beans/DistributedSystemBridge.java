@@ -815,6 +815,25 @@ public class DistributedSystemBridge {
     }
     return Collections.emptyMap();
   }
+  
+  
+  /**
+   *  @return A map of all {@link DistributedMember}s and their HDFSStore's.
+   */  
+  
+  public Map<String, String[]> getMemberHDFSStoreMap() {
+    Iterator<MemberMXBean> memberIterator = mapOfMembers.values().iterator();    
+    if (memberIterator != null) {
+      Map<String, String[]> mapOfHdfs = new HashMap<String, String[]>();
+      while (memberIterator.hasNext()) {
+        MemberMXBean bean = memberIterator.next();
+        mapOfHdfs.put(bean.getMember(), bean.getHDFSStores());
+      }
+
+      return mapOfHdfs;
+    }
+    return Collections.emptyMap();
+  }
 
   /**
    *
@@ -1520,6 +1539,16 @@ public class DistributedSystemBridge {
    */
   public long getTotalHeapSize() {
     return memberMBeanMonitor.getTotalHeapSize();
+  }
+  
+
+  public long getOffHeapFreeSize() {
+    return memberMBeanMonitor.getOffHeapFreeMemory();
+  }
+
+
+  public long getOffHeapUsedSize() {
+    return memberMBeanMonitor.getOffHeapUsedMemory();
   }
 
   public int getTransactionCommitted() {

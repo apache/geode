@@ -17,7 +17,7 @@ import javax.management.Query;
 import javax.management.QueryExp;
 
 import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

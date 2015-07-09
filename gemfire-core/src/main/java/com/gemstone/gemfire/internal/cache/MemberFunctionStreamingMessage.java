@@ -398,4 +398,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage implemen
   public boolean canParticipateInTransaction() {
     return true;
   }
+  
+  @Override
+  public boolean isTransactionDistributed() {
+    return false;
+  }
 }

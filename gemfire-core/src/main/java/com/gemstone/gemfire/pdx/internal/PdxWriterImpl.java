@@ -17,6 +17,7 @@ import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 import com.gemstone.gemfire.pdx.FieldType;
 import com.gemstone.gemfire.pdx.PdxFieldAlreadyExistsException;
 import com.gemstone.gemfire.pdx.PdxFieldDoesNotExistException;
@@ -713,7 +714,7 @@ public class PdxWriterImpl implements PdxWriter {
     }
   }
 
-  public void writeRawField(PdxField ft, ByteBuffer data) {
+  public void writeRawField(PdxField ft, ByteSource data) {
     if (ft.isVariableLengthType()) {
       markVariableField();
     }

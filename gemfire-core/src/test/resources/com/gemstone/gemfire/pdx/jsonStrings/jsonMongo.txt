@@ -1,0 +1,10 @@
+
+{ "author": "joe",
+  "created" : "new Date(\"03/28/2009\")",
+  "title" : "Yet another blog post",
+  "text" : "Here is the text...",
+  "tags" : [ "example", "joe" ],
+  "comments" : [ { "author": "jim", "comment": "I disagree" },
+              { "author": "nancy", "comment": "Good post" }
+  ]
+}

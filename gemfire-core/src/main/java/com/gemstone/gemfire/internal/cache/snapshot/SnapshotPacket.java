@@ -23,6 +23,10 @@ import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
@@ -59,7 +63,12 @@ public class SnapshotPacket implements DataSerializableFixedID {
     public <K, V> SnapshotRecord(LocalRegion region, Entry<K, V> entry) throws IOException {
       key = BlobHelper.serializeToBlob(entry.getKey());
       if (entry instanceof NonTXEntry && region != null) {
-        value = convertToBytes(((NonTXEntry) entry).getRegionEntry().getValueInVMOrDiskWithoutFaultIn(region));
+        @Released Object v = ((NonTXEntry) entry).getRegionEntry().getValueOffHeapOrDiskWithoutFaultIn(region);
+        try {
+          value = convertToBytes(v);
+        } finally {
+          OffHeapHelper.release(v);
+        }
       } else {
         value = convertToBytes(entry.getValue());
       }

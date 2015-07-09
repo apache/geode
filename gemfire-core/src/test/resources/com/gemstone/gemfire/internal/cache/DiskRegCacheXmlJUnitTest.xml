@@ -1,0 +1,217 @@
+<?xml version="1.0"?>
+
+<!-- DiskRegion.xml
+     Configures the Disk Regions to Overflow / Persist /PersistWithOverflow its data to disk.  
+     The data files are written to the directories specified
+     in the disk-dirs elements. 
+-->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache>
+  <disk-store name="ds1" auto-compact="true" max-oplog-size="2">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds2" auto-compact="false" max-oplog-size="0">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds3" auto-compact="true" max-oplog-size="2" queue-size="10000" time-interval="15">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds4" auto-compact="false" max-oplog-size="2" queue-size="0" time-interval="15">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds5" auto-compact="true" max-oplog-size="2">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds6" auto-compact="false" max-oplog-size="0">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds7" auto-compact="true" max-oplog-size="2" queue-size="10000" time-interval="15">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds8" auto-compact="false" max-oplog-size="0" queue-size="0" time-interval="15">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds9" auto-compact="true" max-oplog-size="2">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds10" auto-compact="false" max-oplog-size="0">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds11" auto-compact="true" max-oplog-size="2" queue-size="10000" time-interval="15">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+  <disk-store name="ds12" auto-compact="false" queue-size="0" time-interval="15">
+        <disk-dirs>
+          <disk-dir>d1</disk-dir>
+          <disk-dir>d2</disk-dir>
+          <disk-dir>d3</disk-dir>
+        </disk-dirs> 
+  </disk-store>
+
+  <vm-root-region name="root1">
+    <region-attributes/>  
+    <region name="PersistSynchRollingOplog1">
+      <region-attributes scope="local" persist-backup="true" disk-store-name="ds1" disk-synchronous="true">    
+      </region-attributes>
+    </region> 
+  </vm-root-region>  
+
+  <vm-root-region name="root2">
+    <region-attributes/>  
+    <region name="PersistSynchFixedOplog2">
+      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds2" disk-synchronous="true">
+      </region-attributes>
+    </region>
+  </vm-root-region>
+ 
+  <vm-root-region name="root3">
+    <region-attributes/> 
+    <region name="PersistASynchBufferRollingOplog3">
+      <region-attributes  mirror-type="keys-values" persist-backup="true" disk-store-name="ds3" disk-synchronous="false">
+      </region-attributes>
+    </region>
+  </vm-root-region>
+  
+  <vm-root-region name="root4">
+    <region-attributes/>
+  <region name="PersistASynchNoBufferFixedOplog4">
+      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds4" disk-synchronous="false">
+      </region-attributes>
+    </region>
+  </vm-root-region>
+ 
+<vm-root-region name="root5">
+    <region-attributes/> 
+    <region name="OverflowSynchRollingOplog5">
+      <region-attributes persist-backup="false" disk-store-name="ds5" disk-synchronous="true">    
+        <eviction-attributes>
+                 <lru-memory-size maximum="1" action="overflow-to-disk"/>
+               </eviction-attributes>
+      </region-attributes>
+    </region> 
+  </vm-root-region>
+  
+    <vm-root-region name="root6">
+    <region-attributes/>  
+    <region name="OverflowSynchFixedOplog6">
+      <region-attributes persist-backup="false" disk-store-name="ds6" disk-synchronous="true">
+                <eviction-attributes>
+	                 <lru-memory-size maximum="1" action="overflow-to-disk"/>
+	               </eviction-attributes>
+      </region-attributes>
+    </region>
+  </vm-root-region>
+
+  <vm-root-region name="root7">
+    <region-attributes/> 
+    <region name="OverflowASynchBufferRollingOplog7">
+      <region-attributes persist-backup="false" disk-store-name="ds7" disk-synchronous="false">
+               <eviction-attributes>
+	                <lru-memory-size maximum="1" action="overflow-to-disk"/>
+	              </eviction-attributes>
+      </region-attributes>
+    </region>
+  </vm-root-region>
+  
+  <vm-root-region name="root8">
+    <region-attributes/> 
+  <region name="OverflowASynchNoBufferFixedOplog8">
+      <region-attributes persist-backup="false" disk-store-name="ds8" disk-synchronous="false">
+         <eviction-attributes>
+	          <lru-memory-size maximum="1" action="overflow-to-disk"/>
+	        </eviction-attributes>
+      </region-attributes>
+    </region>
+  </vm-root-region>
+  
+<vm-root-region name="root9">
+    <region-attributes/> 
+    <region name="PersistOverflowSynchRollingOplog9">
+      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds9" disk-synchronous="true">    
+         <eviction-attributes>
+	          <lru-memory-size maximum="1" action="overflow-to-disk"/>
+	        </eviction-attributes>
+      </region-attributes>
+    </region> 
+  </vm-root-region>
+  
+    <vm-root-region name="root10">
+    <region-attributes/>  
+    <region name="PersistOverflowSynchFixedOplog10">
+      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds10" disk-synchronous="true">
+                 <eviction-attributes>
+		          <lru-memory-size maximum="1" action="overflow-to-disk"/>
+		        </eviction-attributes>
+      </region-attributes>
+    </region>
+  </vm-root-region>
+
+  <vm-root-region name="root11">
+    <region-attributes/> 
+    <region name="PersistOverflowASynchBufferRollingOplog11">
+      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds11" disk-synchronous="false">
+          <eviction-attributes>
+	           <lru-memory-size maximum="1" action="overflow-to-disk"/>
+	         </eviction-attributes>
+      </region-attributes>
+    </region>
+  </vm-root-region>
+  
+  <vm-root-region name="root12">
+    <region-attributes/> 
+  <region name="PersistOverflowASynchNoBufferFixedOplog12">
+      <region-attributes mirror-type="keys-values" persist-backup="true" disk-store-name="ds12" disk-synchronous="false">
+         <eviction-attributes>
+	          <lru-memory-size maximum="1" action="overflow-to-disk"/>
+	        </eviction-attributes>
+      </region-attributes>
+    </region>
+  </vm-root-region>
+</cache>

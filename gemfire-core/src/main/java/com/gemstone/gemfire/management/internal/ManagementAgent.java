@@ -182,8 +182,7 @@ public class ManagementAgent {
       final String gemfireWar = agentUtil.getGemFireWebWarLocation();
       if (gemfireWar == null) {
         if (logger.isDebugEnabled()) {
-          logger
-              .debug("Unable to find GemFire REST API WAR file; the REST API to GemFire will not be exported and accessible.");
+          logger.debug("Unable to find GemFire Management REST API WAR file; the Management REST Interface for GemFire will not be accessible.");
         }
       }
 
@@ -191,7 +190,7 @@ public class ManagementAgent {
       final String pulseWar = agentUtil.getPulseWarLocation();
 
       if (pulseWar == null) {
-        final String message = "Unable to find Pulse web application WAR file; Pulse will not start in embeded mode";
+        final String message = "Unable to find Pulse web application WAR file; Pulse for GemFire will not be accessible";
         setStatusMessage(managerBean, message);
         if (logger.isDebugEnabled()) {
           logger.debug(message);
@@ -201,7 +200,7 @@ public class ManagementAgent {
       // Find developer REST WAR file
       final String gemfireAPIWar = agentUtil.getGemFireWebApiWarLocation();
       if (gemfireAPIWar == null) {
-        final String message = "Unable to find developer REST web application WAR file; developer REST will not start in embeded mode";
+        final String message = "Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.";
         setStatusMessage(managerBean, message);
         if (logger.isDebugEnabled()) {
           logger.debug(message);
@@ -238,7 +237,7 @@ public class ManagementAgent {
               isRestWebAppAdded = true;
             }
           } else {
-            final String message = "developer REST web application will not start when start-dev-rest-api is not set and node is not server";
+            final String message = "Developer REST API web application will not start when start-dev-rest-api is not set and node is not server";
             setStatusMessage(managerBean, message);
             if (logger.isDebugEnabled()) {
               logger.debug(message);

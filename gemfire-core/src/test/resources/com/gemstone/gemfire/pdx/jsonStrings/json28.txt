@@ -1,0 +1,84 @@
+
+
+    {
+
+      "coordinates": null,
+
+      "created_at": "Fri Jun 24 17:43:26 +0000 2011",
+
+      "truncated": false,
+
+      "favorited": false,
+
+      "id_str": "84315710834212866",
+
+      "entities": {
+
+        "urls": [
+
+     
+
+        ],
+
+        "hashtags": [
+
+          {
+
+            "text": "peterfalk",
+
+            "indices": [
+
+              35,
+
+              45
+
+            ]
+
+          }
+
+        ],
+
+        "user_mentions": [
+
+     
+
+        ]
+
+      },
+
+      "in_reply_to_user_id_str": null,
+
+      "contributors": null,
+
+      "text": "Maybe he'll finally find his keys. #peterfalk",
+
+      "retweet_count": 0,
+
+      "id": 84315710834212866,
+
+      "in_reply_to_status_id_str": null,
+
+      "geo": null,
+
+      "retweeted": false,
+
+      "in_reply_to_user_id": null,
+
+      "source": "<a href=\"http://sites.google.com/site/yorufukurou/\" rel=\"nofollow\">YoruFukurou</a>",
+
+      "in_reply_to_screen_name": null,
+
+      "user": {
+
+        "id_str": "819797",
+
+        "id": 819797
+
+      },
+
+      "place": null,
+
+      "in_reply_to_status_id": null
+
+    }
+

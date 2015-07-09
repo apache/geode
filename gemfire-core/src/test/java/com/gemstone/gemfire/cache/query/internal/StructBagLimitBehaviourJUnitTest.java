@@ -14,7 +14,7 @@ import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.cache.query.internal.types.*;
-import com.gemstone.junit.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import java.util.Iterator;
 
@@ -63,7 +63,7 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
     bag1.add(wrap(new Integer(4), bag1.getCollectionType().getElementType()));
     bag1.applyLimit(4);
     StructBag bag2 = (StructBag)getBagObject(Integer.class);
-    bag2.addAll(bag1);
+    bag2.addAll((StructFields)bag1);
     // Now remove the first element & it occurnece completelt from bag2
     Iterator itr2 = bag2.iterator();
     Struct first = (Struct)itr2.next();
@@ -74,7 +74,7 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
         ++occrnce;
       }
     }
-    assertTrue(bag1.removeAll(bag2));
+    assertTrue(bag1.removeAll((StructFields)bag2));
     assertEquals(occrnce, bag1.size());
     Iterator itr = bag1.iterator();
     for (int i = 0; i < occrnce; ++i) {
@@ -97,7 +97,7 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
     bag1.add(wrap(null, bag1.getCollectionType().getElementType()));
     bag1.applyLimit(4);
     StructBag bag2 = (StructBag)getBagObject(Integer.class);
-    bag2.addAll(bag1);
+    bag2.addAll((StructFields)bag1);
     // Now remove the first element & it occurnece completelt from bag2
     Iterator itr2 = bag2.iterator();
     Struct first = (Struct)itr2.next();
@@ -108,7 +108,7 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
         ++occrnce;
       }
     }
-    bag1.retainAll(bag2);
+    bag1.retainAll((StructFields)bag2);
     assertEquals(4, bag1.size());
     Iterator itr = bag1.iterator();
     for (int i = 0; i < 4; ++i) {

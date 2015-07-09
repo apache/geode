@@ -10,12 +10,19 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+
+import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+
 /**
  * @author sbawaska
  * @author rdubey
  *
  */
-public final class KeyInfo {
+public class KeyInfo {
 
   // Rahul: This class should actually be renamed as RoutingInfo or BucketIdInfo
   // since that is exactly what an instance of this class is.
@@ -29,6 +36,7 @@ public final class KeyInfo {
   // Rahul: The value field is add since Sqlf Partition resolver also relies on the value
   // part to calculate the routing object if the table is not partitioned on 
   // primary key.
+  @Retained(ENTRY_EVENT_NEW_VALUE)
   private final Object value;
 
   public KeyInfo(Object key, Object value, Object callbackArg) {
@@ -59,8 +67,9 @@ public final class KeyInfo {
   public final Object getCallbackArg() {
     return this.callbackArg;
   }
-  
-  public final Object getValue() {
+
+  @Unretained(ENTRY_EVENT_NEW_VALUE)
+  public Object getValue() {
     return this.value;
   }
   
@@ -82,5 +91,30 @@ public final class KeyInfo {
 
   public String toString() {
     return "(key="+key+",bucketId="+bucketId+")";
+  }
+  
+  /*
+   * For Distributed Join Purpose
+   */
+  public boolean isCheckPrimary()
+      throws UnsupportedOperationInTransactionException {
+    return true;
+//    throw new UnsupportedOperationInTransactionException(
+//        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
+//            .toLocalizedString("isCheckPrimary"));
+  }
+
+  /*
+   * For Distributed Join Purpose
+   */
+  public void setCheckPrimary(boolean checkPrimary)
+      throws UnsupportedOperationInTransactionException {
+    throw new UnsupportedOperationInTransactionException(
+        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
+            .toLocalizedString("setCheckPrimary"));
+  }
+  
+  public boolean isDistKeyInfo() {
+    return false;
   }
 }

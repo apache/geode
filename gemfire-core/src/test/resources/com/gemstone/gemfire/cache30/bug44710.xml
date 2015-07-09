@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Cache 7.0//EN" "http://www.gemstone.com/dtd/cache7_0.dtd">
+<cache>
+  <region name="r1">
+    <region-attributes persist-backup="true" data-policy="persistent-partition">
+      <partition-attributes redundant-copies="1"></partition-attributes>
+    </region-attributes>
+  </region>
+  <region name="r2">
+    <region-attributes persist-backup="true" data-policy="partition">
+      <partition-attributes redundant-copies="1"></partition-attributes>
+    </region-attributes>
+  </region>
+</cache>

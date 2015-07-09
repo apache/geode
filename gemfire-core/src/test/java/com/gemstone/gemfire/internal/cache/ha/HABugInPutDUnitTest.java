@@ -1,0 +1,178 @@
+/*=========================================================================
+ * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * one or more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+package com.gemstone.gemfire.internal.cache.ha;
+
+
+
+import java.util.Properties;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+
+import dunit.DistributedTestCase;
+import dunit.Host;
+import dunit.VM;
+
+/**
+ * This Dunit test is to verify the bug in put() operation. When the put is invoked on the server
+ * and NotifyBySubscription is false then it follows normal path and then again calls put of region
+ * on which regionqueue is based. so recurssion is happening.
+ *
+ * @author Girish Thombare
+ */
+
+public class HABugInPutDUnitTest extends DistributedTestCase
+{
+
+  VM server1 = null;
+
+  VM server2 = null;
+
+  VM client1 = null;
+
+  VM client2 = null;
+
+  public static int PORT1;
+
+  public static int PORT2;
+
+  private static final String REGION_NAME = "HABugInPutDUnitTest_region";
+
+  final static String KEY1 = "KEY1";
+
+  final static String VALUE1 = "VALUE1";
+
+  protected static Cache cache = null;
+
+  public HABugInPutDUnitTest(String name) {
+    super(name);
+  }
+
+  public void setUp() throws Exception
+  {
+    super.setUp();
+	final Host host = Host.getHost(0);
+    // Server1 VM
+    server1 = host.getVM(0);
+
+    // Server2 VM
+    server2 = host.getVM(1);
+
+    // Client 1 VM
+    client1 = host.getVM(2);
+
+    // client 2 VM
+    client2 = host.getVM(3);
+
+    //System.setProperty())
+    PORT1 = ((Integer)server1.invoke(HABugInPutDUnitTest.class, "createServerCache"))
+        .intValue();
+    PORT2 = ((Integer)server2.invoke(HABugInPutDUnitTest.class, "createServerCache"))
+        .intValue();
+
+    client1.invoke(HABugInPutDUnitTest.class, "createClientCache", new Object[] {
+        getServerHostName(host), new Integer(PORT1), new Integer(PORT2) });
+    client2.invoke(HABugInPutDUnitTest.class, "createClientCache", new Object[] {
+        getServerHostName(host), new Integer(PORT1), new Integer(PORT2) });
+    //Boolean.getBoolean("")
+
+  }
+
+  public void tearDown2() throws Exception
+  {
+	super.tearDown2();
+    client1.invoke(HABugInPutDUnitTest.class, "closeCache");
+    client2.invoke(HABugInPutDUnitTest.class, "closeCache");
+    // close server
+    server1.invoke(HABugInPutDUnitTest.class, "closeCache");
+    server2.invoke(HABugInPutDUnitTest.class, "closeCache");
+
+  }
+
+  public static void closeCache()
+  {
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
+      cache.getDistributedSystem().disconnect();
+    }
+  }
+
+  private void createCache(Properties props) throws Exception
+  {
+    DistributedSystem ds = getSystem(props);
+    assertNotNull(ds);
+    ds.disconnect();
+    ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+    assertNotNull(cache);
+  }
+
+  public static Integer createServerCache() throws Exception
+  {
+    new HABugInPutDUnitTest("temp").createCache(new Properties());
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
+    RegionAttributes attrs = factory.create();
+    cache.createRegion(REGION_NAME, attrs);
+    BridgeServerImpl server = (BridgeServerImpl)cache.addBridgeServer();
+    assertNotNull(server);
+    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    server.setPort(port);
+    server.setNotifyBySubscription(false);
+    server.start();
+    return new Integer(server.getPort());
+  }
+
+  public static void createClientCache(String hostName, Integer port1, Integer port2)
+      throws Exception
+  {
+    PORT1 = port1.intValue();
+    PORT2 = port2.intValue();
+    Properties props = new Properties();
+    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    new HABugInPutDUnitTest("temp").createCache(props);
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    BridgeTestCase.configureConnectionPool(factory, hostName, new int[] {PORT1,PORT2}, true, -1, 2, null);
+    RegionAttributes attrs = factory.create();
+    cache.createRegion(REGION_NAME, attrs);
+    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    assertNotNull(region);
+    region.registerInterest(KEY1);
+
+  }
+
+  public void testBugInPut() throws Exception
+  {
+    client1.invoke(new CacheSerializableRunnable("putFromClient1") {
+
+      public void run2() throws CacheException
+      {
+        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        assertNotNull(region);
+        region.put(KEY1, VALUE1);
+        cache.getLogger().info("Put done successfully");
+
+      }
+    });
+  }
+}

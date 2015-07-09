@@ -26,7 +26,9 @@ import com.gemstone.gemfire.internal.Version;
  * 
  */
 
-public final class Undefined implements DataSerializableFixedID, Comparable {
+public final class Undefined implements DataSerializableFixedID, Comparable, Serializable {
+
+  private static final long serialVersionUID = 6643107525908324141L;
 
   public Undefined() {
     Support.assertState(QueryService.UNDEFINED == null,

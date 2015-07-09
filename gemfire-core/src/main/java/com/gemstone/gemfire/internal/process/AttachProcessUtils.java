@@ -28,4 +28,9 @@ final class AttachProcessUtils implements InternalProcessUtils {
   public boolean killProcess(final int pid) {
     throw new UnsupportedOperationException("killProcess(int) not supported by AttachProcessUtils");
   }
+
+  @Override
+  public boolean isAvailable() {
+    return true;
+  }
 }

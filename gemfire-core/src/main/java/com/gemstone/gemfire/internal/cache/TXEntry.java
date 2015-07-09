@@ -16,6 +16,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.StatisticsDisabledException;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /** ******************* Class Entry ***************************************** */
 
@@ -98,11 +99,12 @@ public class TXEntry implements Region.Entry
     return this.keyInfo.getKey();
   }
 
+  @Unretained
   public Object getValue()
   {
     checkTX();
 //    Object value = this.localRegion.getDeserialized(this.key, false, this.myTX, this.rememberReads);
-    Object value = this.myTX.getDeserializedValue(keyInfo, this.localRegion, false, false, false, null, false);
+    @Unretained Object value = this.myTX.getDeserializedValue(keyInfo, this.localRegion, false, false, false, null, false, false, false);
     if (value == null) {
       throw new EntryDestroyedException(this.keyInfo.getKey().toString());
     }
