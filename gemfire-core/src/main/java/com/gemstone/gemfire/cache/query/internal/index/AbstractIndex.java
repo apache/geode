@@ -2012,7 +2012,7 @@ public abstract class AbstractIndex implements IndexProtocol
                     ok = QueryUtils.applyCondition(iterOp, context);
                   }
                   if (ok) {
-                    applyProjection(projAttrib, context, result, value,
+                    applyProjection(projAttrib, context, result, val,
                         intermediateResults, isIntersection);
                     if (limit != -1 && result.size() == limit) {
                       return;
@@ -2035,7 +2035,7 @@ public abstract class AbstractIndex implements IndexProtocol
                   ok = QueryUtils.applyCondition(iterOp, context);
                 }
                 if (ok) {
-                  applyProjection(projAttrib, context, result, value,
+                  applyProjection(projAttrib, context, result, val,
                       intermediateResults, isIntersection);
                   if (this.verifylimit(result, limit, context)) {
                     return;
