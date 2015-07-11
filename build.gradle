@@ -283,7 +283,7 @@ subprojects {
     testCompile 'org.jmock:jmock-junit4:2.8.1'
     testCompile 'org.jmock:jmock-legacy:2.8.1'
     
-    testRuntime 'cglib:cglib-nodep:3.1'
+    testRuntime 'cglib:cglib:3.1'
     testRuntime 'org.objenesis:objenesis:2.1'
     testRuntime 'org.ow2.asm:asm:5.0.3'
   }
