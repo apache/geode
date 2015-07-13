@@ -13,7 +13,6 @@ object Settings extends Build {
   ) 
 
   lazy val gfcResolvers = Seq(
-  "GemStone Snapshots" at "http://nexus.gemstone.com:8081/nexus/content/repositories/snapshots/",
    //"GemStone Official Release" at "http://dist.gemstone.com/maven/release",
   "Repo for JLine" at "http://repo.springsource.org/libs-release",
   "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository"

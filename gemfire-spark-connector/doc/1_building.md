@@ -4,6 +4,12 @@ You will need Scala 2.10 and sbt 0.13.5 to 0.13.7.
 
 ### Building Artifacts
 
+To build against Apache Geode, you need to build Geode first and publish the jars
+to local repository. In the root of Geode directory, run:
+
+./gradlew clean build -Dskip.tests=true
+./gradlew publishToMavenLocal
+
 In the root directory of connector project, run:
 ```
 sbt clean package
