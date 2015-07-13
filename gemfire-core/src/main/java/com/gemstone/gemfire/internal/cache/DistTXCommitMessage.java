@@ -41,10 +41,10 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * @author vivekb
  * 
  */
-public final class DistTXCommitMessage extends TXMessage {
+public class DistTXCommitMessage extends TXMessage {
 
   private static final Logger logger = LogService.getLogger();
-  private ArrayList<ArrayList<DistTxThinEntryState>> entryStateList = null;
+  protected ArrayList<ArrayList<DistTxThinEntryState>> entryStateList = null;
   
   /** for deserialization */
   public DistTXCommitMessage() {
@@ -71,7 +71,6 @@ public final class DistTXCommitMessage extends TXMessage {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     TXManagerImpl txMgr = cache.getTXMgr();
     final TXStateProxy txStateProxy = txMgr.getTXState();
-    boolean commitSuccessful = false;
     TXCommitMessage cmsg = null;
     try {
       // do the actual commit, only if it was not done before
@@ -86,7 +85,6 @@ public final class DistTXCommitMessage extends TXMessage {
         if (txMgr.isExceptionToken(cmsg)) {
           throw txMgr.getExceptionForToken(cmsg, txId);
         }
-        commitSuccessful = true;
       } else {
         // [DISTTX] TODO - Handle scenarios of no txState
         // if no TXState was created (e.g. due to only getEntry/size operations
@@ -124,15 +122,14 @@ public final class DistTXCommitMessage extends TXMessage {
           ((DistTXStateProxyImplOnDatanode) txStateProxy)
               .populateDistTxEntryStates(this.entryStateList);
           txStateProxy.setCommitOnBehalfOfRemoteStub(true);
+          
           txMgr.commit();
-          commitSuccessful = true;
+
           cmsg = txStateProxy.getCommitMessage();
         }
       }
     } finally {
-      if (commitSuccessful) {
         txMgr.removeHostedTXState(txId);
-      }
     }
     DistTXCommitReplyMessage.send(getSender(), getProcessorId(), cmsg,
         getReplySender(dm));
@@ -143,6 +140,7 @@ public final class DistTXCommitMessage extends TXMessage {
     return false;
   }
 
+  
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);

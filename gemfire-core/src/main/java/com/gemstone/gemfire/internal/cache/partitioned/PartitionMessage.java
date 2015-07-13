@@ -599,6 +599,8 @@ public abstract class PartitionMessage extends DistributionMessage implements
     }
 
     appendFields(buff);
+    buff.append(" ,distTx=");
+    buff.append(this.isTransactionDistributed);
     buff.append(")");
     return buff.toString();
   }

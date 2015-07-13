@@ -11,7 +11,10 @@ import org.junit.runners.Suite;
   DistTXOrderDUnitTest.class,
   DistTXPersistentDebugDUnitTest.class,
   DistTXRestrictionsDUnitTest.class,
-  PersistentPartitionedRegionWithDistTXDUnitTest.class
+  DistTXWithDeltaDUnitTest.class,
+  PersistentPartitionedRegionWithDistTXDUnitTest.class,
+  PRDistTXDUnitTest.class,
+  PRDistTXWithVersionsDUnitTest.class
 })
 
 /**
