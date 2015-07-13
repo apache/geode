@@ -1,7 +1,5 @@
 package com.gemstone.gemfire.disttx;
 
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
@@ -13,11 +11,9 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
-import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
 
 import dunit.SerializableCallable;
 
-@Category(DistributedTransactionsTest.class)
 public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
 
   public DistTXPersistentDebugDUnitTest(String name) {

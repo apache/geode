@@ -6238,6 +6238,10 @@ public class LocalRegion extends AbstractRegion
       return null;
     }
     else {
+      if (GemFireCacheImpl.internalBeforeNonTXBasicPut != null) {
+        GemFireCacheImpl.internalBeforeNonTXBasicPut.run();
+      }
+      
       RegionEntry oldEntry = this.entries.basicPut(event,
                                    lastModified,
                                    ifNew,

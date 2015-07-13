@@ -563,6 +563,10 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   protected static boolean xmlParameterizationEnabled = !Boolean.getBoolean("gemfire.xml.parameterization.disabled");
 
+  public static Runnable internalBeforeApplyChanges;
+
+  public static Runnable internalBeforeNonTXBasicPut;
+
   /**
    * the memcachedServer instance that is started when {@link DistributionConfig#getMemcachedPort()}
    * is specified

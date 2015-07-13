@@ -2302,7 +2302,7 @@ public class EntryEventImpl
     }
   }
 
-  String getShortClassName() {
+  protected String getShortClassName() {
     String cname = getClass().getName();
     return cname.substring(getClass().getPackage().getName().length()+1);
   }
