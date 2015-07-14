@@ -12,13 +12,7 @@ import org.apache.commons.io.filefilter.IOFileFilter
 * start and stop the locator and servers.
 */
 class GemFireRunner(settings: Properties) {
-
-  private def gemfireHome: String = scala.util.Properties.envOrNone("GEMFIRE") match {
-    case Some(home) => home
-    case None => throw new RuntimeException("No GEMFIRE environment variable set in environment.")
-  }
-
-  val gfshCmd = new File(gemfireHome, "bin/gfsh").toString
+  val gfshCmd = new File(getCurrentDirectory, "../../gemfire-assembly/build/install/apache-geode/bin/gfsh").toString
   val cacheXMLFile = settings.get("cache-xml-file")
   val numServers: Int = settings.get("num-of-servers").asInstanceOf[String].toInt
   val cwd = new File(".").getAbsolutePath
@@ -29,6 +23,8 @@ class GemFireRunner(settings: Properties) {
 
   def getLocatorPort: Int = locatorPort
 
+  private def getCurrentDirectory = new File( "." ).getCanonicalPath
+  
   private def startGemFireCluster(numServers: Int): Int = {
     //ports(0) for GemFire locator, the other ports are for GemFire servers
     val ports: Seq[Int] = IOUtils.getRandomAvailableTCPPorts(2 + numServers)
