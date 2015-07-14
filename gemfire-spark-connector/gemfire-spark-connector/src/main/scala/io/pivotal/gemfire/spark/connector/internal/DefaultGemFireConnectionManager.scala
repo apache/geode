@@ -23,17 +23,27 @@ object DefaultGemFireConnectionManager  {
   private[connector] val connections = mutable.Map[(String, Int), GemFireConnection]()
 
   /**
-   * use locator host:port pair to lookup connection. create new connection and add it
-   * to `connections` if it does not exists.
+   * use locator host:port pair to lookup cached connection. create new connection 
+   * and add it to the cache `connections` if it does not exist.
    */
   def getConnection(connConf: GemFireConnectionConf)
     (implicit factory: DefaultGemFireConnectionFactory = new DefaultGemFireConnectionFactory): GemFireConnection = {
-    val conns = connConf.locators.map(connections withDefaultValue null).filter(_ != null)
-    if (conns.nonEmpty) conns(0)
+
+    def getCachedConnection(locators: Seq[(String, Int)]): GemFireConnection = {
+      val conns = connConf.locators.map(connections withDefaultValue null).filter(_ != null)
+      if (conns.nonEmpty) conns(0) else null
+    }
+
+    val conn1 = getCachedConnection(connConf.locators)
+    if (conn1 != null) conn1
     else connections.synchronized {
-      val conn = factory.newConnection(connConf.locators, connConf.gemfireProps)
-      connConf.locators.foreach(pair => connections += (pair -> conn))
-      conn
+      val conn2 = getCachedConnection(connConf.locators)
+      if (conn2 != null) conn2
+      else {
+        val conn3 = factory.newConnection(connConf.locators, connConf.gemfireProps)
+        connConf.locators.foreach(pair => connections += (pair -> conn3))
+        conn3
+      }
     }
   }
 
