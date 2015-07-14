@@ -30,6 +30,7 @@ import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
+import com.gemstone.gemfire.internal.redis.Coder;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
 /**
@@ -309,12 +310,14 @@ public class DistributionConfigImpl
   /**
    * port on which {@link GemFireRedisServer} is started
    */
-  private int redisPort;
+  private int redisPort = DEFAULT_REDIS_PORT;
   
   /**
    * Bind address for GemFireRedisServer
    */
   private String redisBindAddress = DEFAULT_REDIS_BIND_ADDRESS;
+  
+  private String redisPassword = DEFAULT_REDIS_PASSWORD;
 
   private boolean jmxManager = Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) ? true : DEFAULT_JMX_MANAGER;
   private boolean jmxManagerStart = DEFAULT_JMX_MANAGER_START;
@@ -509,6 +512,7 @@ public class DistributionConfigImpl
     this.memcachedBindAddress = other.getMemcachedBindAddress();
     this.redisPort = other.getRedisPort();
     this.redisBindAddress = other.getRedisBindAddress();
+    this.redisPassword = other.getRedisPassword();
     this.userCommandPackages = other.getUserCommandPackages();
     
     // following added for 8.0
@@ -3227,6 +3231,16 @@ public class DistributionConfigImpl
   public void setRedisBindAddress(String bindAddress) {
     checkRedisBindAddress(bindAddress);
     this.redisBindAddress = bindAddress;
+  }
+  
+  @Override
+  public String getRedisPassword() {
+    return this.redisPassword;
+  }
+  
+  @Override
+  public void setRedisPassword(String password) {
+    this.redisPassword = password;
   }
   
   @Override

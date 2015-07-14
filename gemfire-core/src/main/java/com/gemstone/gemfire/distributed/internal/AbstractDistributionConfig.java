@@ -1395,11 +1395,20 @@ public abstract class AbstractDistributionConfig
           }));
     }
   }
+  
+  protected void checkRedisPassword(String value) {
+    
+  }
+  
   public boolean isRedisBindAddressModifiable() {
     return _modifiableDefault();
   }
 
   public boolean isRedisPortModifiable() {
+    return _modifiableDefault();
+  }
+  
+  public boolean isRedisPasswordModifiable() {
     return _modifiableDefault();
   }
 
@@ -1553,6 +1562,7 @@ public abstract class AbstractDistributionConfig
       MEMCACHED_BIND_ADDRESS_NAME,
       REDIS_PORT_NAME,
       REDIS_BIND_ADDRESS_NAME,
+      REDIS_PASSWORD_NAME,
       USER_COMMAND_PACKAGES,
       ENABLE_CLUSTER_CONFIGURATION_NAME,
       USE_CLUSTER_CONFIGURATION_NAME,
@@ -1806,6 +1816,8 @@ public abstract class AbstractDistributionConfig
       this.setRedisPort(((Integer)attValue).intValue());
     } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
       this.setRedisBindAddress((String)attValue);
+    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
+      this.setRedisPassword((String)attValue);
     } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
       this.setUserCommandPackages((String)attValue);
     } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
@@ -2094,6 +2106,8 @@ public abstract class AbstractDistributionConfig
       return this.getRedisPort();
     } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
       return this.getRedisBindAddress();
+    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
+      return this.getRedisPassword();
     } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
       return this.getUserCommandPackages();
     } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
@@ -2383,6 +2397,8 @@ public abstract class AbstractDistributionConfig
       return this.isRedisPortModifiable();
     } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
       return this.isRedisBindAddressModifiable();
+    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
+      return this.isRedisPasswordModifiable();
     } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
       return this.isUserCommandPackagesModifiable();
     } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
@@ -2674,7 +2690,9 @@ public abstract class AbstractDistributionConfig
       return Integer.class;
     } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
       return String.class;
-    }else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
+    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
+      return String.class;
+    } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
       return String.class;
     } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
       return Boolean.class;
@@ -3130,6 +3148,7 @@ public abstract class AbstractDistributionConfig
     m.put(MEMCACHED_BIND_ADDRESS_NAME, "The address the GemFireMemcachedServer will listen on for remote connections. Default is \"\" which causes the GemFireMemcachedServer to listen on the host's default address. This property is ignored if memcached-port is \"0\".");
     m.put(REDIS_PORT_NAME, "The port GemFireRedisServer will listen on. Default is 0. Set to zero to disable GemFireRedisServer.");
     m.put(REDIS_BIND_ADDRESS_NAME, "The address the GemFireRedisServer will listen on for remote connections. Default is \"\" which causes the GemFireRedisServer to listen on the host's default address. This property is ignored if redis-port is \"0\".");
+    m.put(REDIS_PASSWORD_NAME, "The password which client of GemFireRedisServer must use to authenticate themselves. The default is none and no authentication will be required.");
     m.put(ENABLE_CLUSTER_CONFIGURATION_NAME, LocalizedStrings.AbstractDistributionConfig_ENABLE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(USE_CLUSTER_CONFIGURATION_NAME, LocalizedStrings.AbstractDistributionConfig_USE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME, LocalizedStrings.AbstractDistributionConfig_LOAD_SHARED_CONFIGURATION_FROM_DIR.toLocalizedString(SharedConfiguration.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));

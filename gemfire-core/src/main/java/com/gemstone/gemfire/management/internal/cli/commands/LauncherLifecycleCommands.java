@@ -1512,6 +1512,10 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                       help = CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP)
                             final String redisBindAddress,
+                            @CliOption(key = CliStrings.START_SERVER__REDIS_PASSWORD,
+                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                                       help = CliStrings.START_SERVER__REDIS_PASSWORD__HELP)
+                            final String redisPassword,
                             @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
                                        unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                                        help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP)
@@ -1621,6 +1625,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfireProperties.setProperty(DistributionConfig.MEMCACHED_BIND_ADDRESS_NAME, StringUtils.valueOf(memcachedBindAddress, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.REDIS_PORT_NAME, StringUtils.valueOf(redisPort, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.REDIS_BIND_ADDRESS_NAME, StringUtils.valueOf(redisBindAddress, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(DistributionConfig.REDIS_PASSWORD_NAME, StringUtils.valueOf(redisPassword, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, StringUtils.valueOf(statisticsArchivePathname, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, StringUtils.valueOf(requestSharedConfiguration, Boolean.TRUE.toString()));
       gemfireProperties.setProperty(DistributionConfig.LOCK_MEMORY_NAME, StringUtils.valueOf(lockMemory, StringUtils.EMPTY_STRING));

@@ -1,6 +1,7 @@
 
 package com.gemstone.gemfire.internal.redis;
 
+import com.gemstone.gemfire.internal.redis.executor.AuthExecutor;
 import com.gemstone.gemfire.internal.redis.executor.DBSizeExecutor;
 import com.gemstone.gemfire.internal.redis.executor.DelExecutor;
 import com.gemstone.gemfire.internal.redis.executor.EchoExecutor;
@@ -127,6 +128,26 @@ public enum RedisCommandType {
    *************** Keys ******************
    ***************************************/
 
+  /**
+   * AUTH password <p>
+   * Authenticate to the server
+   */
+  AUTH {
+    private Executor executor;
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new AuthExecutor();
+      }
+      return executor;
+    }
+    private final RedisDataType dataType = RedisDataType.NONE;
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  }, 
+  
   /**
    * DEL key [key ...] <p>
    * Delete a key
