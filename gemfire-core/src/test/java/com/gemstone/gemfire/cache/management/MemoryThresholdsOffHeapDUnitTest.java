@@ -1401,18 +1401,44 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isNormal());
         getCache().getLoggerI18n().fine(addExpectedExString);
-        getRootRegion().getSubregion(regionName).put(1, new byte[943720]);
-        WaitCriterion wc = new WaitCriterion() {
-          @Override
-          public String description() {
-            return "Expected to go critical";
-          }
+        final LocalRegion r = (LocalRegion) getRootRegion().getSubregion(regionName);
+        final Object key = 1;
+        r.put(key, new byte[943720]);
+        WaitCriterion wc;
+        if (r instanceof PartitionedRegion) {
+          final PartitionedRegion pr = (PartitionedRegion) r;
+          final int bucketId = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
+          wc = new WaitCriterion() {
+            @Override
+            public String description() {
+              return "Expected to go critical: isCritical=" + ohm.getState().isCritical();
+            }
 
-          @Override
-          public boolean done() {
-            return ohm.getState().isCritical();
-          }
-        };
+            @Override
+            public boolean done() {
+              if (!ohm.getState().isCritical()) return false;
+              // Only done once the bucket has been marked sick
+              try {
+                pr.getRegionAdvisor().checkIfBucketSick(bucketId, key);
+                return false;
+              } catch (LowMemoryException ignore) {
+                return true;
+              }
+            }
+          };
+        } else {
+          wc = new WaitCriterion() {
+            @Override
+            public String description() {
+              return "Expected to go critical: isCritical=" + ohm.getState().isCritical() + " memoryThresholdReached=" + r.memoryThresholdReached.get();
+            }
+
+            @Override
+            public boolean done() {
+              return ohm.getState().isCritical() && r.memoryThresholdReached.get();
+            }
+          };
+        }
         waitForCriterion(wc, 5000, 100, true);
         getCache().getLoggerI18n().fine(removeExpectedExString);
         return;
