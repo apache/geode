@@ -81,7 +81,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertEquals(false, r1.getAttributes().getHDFSWriteOnly());
         assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getWriteOnlyFileRolloverInterval() == 3600);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileSizeLimit() == 256);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileRolloverSize() == 256);
         this.c.close();
         
         
@@ -121,7 +121,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         hsf.setSynchronousDiskWrite(false);
         hsf.setHomeDir("/home/hemant");
         hsf.setNameNodeURL("mymachine");
-        hsf.setWriteOnlyFileSizeLimit(1);
+        hsf.setWriteOnlyFileRolloverSize(1);
         hsf.setWriteOnlyFileRolloverInterval(10);
         hsf.create("myHDFSStore");
         
@@ -142,7 +142,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getBatchInterval() + " and expected batchsize: 50 ", store.getBatchSize()== 50);
         assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getSynchronousDiskWrite() + " and expected isPersistent: false", store.getSynchronousDiskWrite()== false);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getWriteOnlyFileRolloverInterval() == 10);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileSizeLimit() == 1);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileRolloverSize() == 1);
         this.c.close();
       } finally {
         this.c.close();
@@ -187,7 +187,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertEquals(false, r1.getAttributes().getHDFSWriteOnly());
         assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getWriteOnlyFileRolloverInterval() == 3600);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileSizeLimit() == 256);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileRolloverSize() == 256);
         
         this.c.close();
         
@@ -265,7 +265,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getBatchInterval() + " and expected batchsize: 50", store.getBatchInterval()== 50);
         assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getSynchronousDiskWrite() + " and expected isDiskSynchronous: false", store.getSynchronousDiskWrite()== false);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getWriteOnlyFileRolloverInterval() == 10);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileSizeLimit() == 1);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileRolloverSize() == 1);
         
         this.c.close();
       } finally {

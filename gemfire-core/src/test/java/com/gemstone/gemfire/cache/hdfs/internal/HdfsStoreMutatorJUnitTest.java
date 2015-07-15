@@ -19,7 +19,7 @@ public class HdfsStoreMutatorJUnitTest extends BaseHoplogTestCase {
   public void testMutatorInitialState() {
     HDFSStoreMutator mutator = hdfsStore.createHdfsStoreMutator();
     assertEquals(-1, mutator.getWriteOnlyFileRolloverInterval());
-    assertEquals(-1, mutator.getWriteOnlyFileSizeLimit());
+    assertEquals(-1, mutator.getWriteOnlyFileRolloverSize());
     
     assertEquals(-1, mutator.getInputFileCountMax());
     assertEquals(-1, mutator.getInputFileSizeMax());
@@ -47,7 +47,7 @@ public class HdfsStoreMutatorJUnitTest extends BaseHoplogTestCase {
       // expected
     }
     try {
-      mutator.setWriteOnlyFileSizeLimit(-5);
+      mutator.setWriteOnlyFileRolloverSize(-5);
       fail();
     } catch (IllegalArgumentException e) {
       // expected
@@ -122,7 +122,7 @@ public class HdfsStoreMutatorJUnitTest extends BaseHoplogTestCase {
     HDFSStoreMutator mutator = hdfsStore.createHdfsStoreMutator();
     
     mutator.setWriteOnlyFileRolloverInterval(121);
-    mutator.setWriteOnlyFileSizeLimit(234);
+    mutator.setWriteOnlyFileRolloverSize(234);
     
     mutator.setInputFileCountMax(87);
     mutator.setInputFileSizeMax(45);
@@ -140,7 +140,7 @@ public class HdfsStoreMutatorJUnitTest extends BaseHoplogTestCase {
     mutator.setBatchInterval(695);
     
     assertEquals(121, mutator.getWriteOnlyFileRolloverInterval());
-    assertEquals(234, mutator.getWriteOnlyFileSizeLimit());
+    assertEquals(234, mutator.getWriteOnlyFileRolloverSize());
     
     assertEquals(87, mutator.getInputFileCountMax());
     assertEquals(45, mutator.getInputFileSizeMax());
@@ -159,7 +159,7 @@ public class HdfsStoreMutatorJUnitTest extends BaseHoplogTestCase {
     
     // repeat the cycle once more
     mutator.setWriteOnlyFileRolloverInterval(14);
-    mutator.setWriteOnlyFileSizeLimit(56);
+    mutator.setWriteOnlyFileRolloverSize(56);
     
     mutator.setInputFileCountMax(93);
     mutator.setInputFileSizeMax(85);
@@ -174,7 +174,7 @@ public class HdfsStoreMutatorJUnitTest extends BaseHoplogTestCase {
     mutator.setPurgeInterval(328);
     
     assertEquals(14, mutator.getWriteOnlyFileRolloverInterval());
-    assertEquals(56, mutator.getWriteOnlyFileSizeLimit());
+    assertEquals(56, mutator.getWriteOnlyFileRolloverSize());
     
     assertEquals(93, mutator.getInputFileCountMax());
     assertEquals(85, mutator.getInputFileSizeMax());

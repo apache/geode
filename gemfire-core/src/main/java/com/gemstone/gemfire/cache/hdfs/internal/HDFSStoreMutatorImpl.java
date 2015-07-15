@@ -26,13 +26,13 @@ public class HDFSStoreMutatorImpl implements HDFSStoreMutator {
     configHolder = new HDFSStoreConfigHolder(store);
   }
   
-  public HDFSStoreMutator setWriteOnlyFileSizeLimit(int maxFileSize) {
-    configHolder.setWriteOnlyFileSizeLimit(maxFileSize);
+  public HDFSStoreMutator setWriteOnlyFileRolloverSize(int maxFileSize) {
+    configHolder.setWriteOnlyFileRolloverSize(maxFileSize);
     return this;
   }
   @Override
-  public int getWriteOnlyFileSizeLimit() {
-    return configHolder.getWriteOnlyFileSizeLimit();
+  public int getWriteOnlyFileRolloverSize() {
+    return configHolder.getWriteOnlyFileRolloverSize();
   }
 
   @Override

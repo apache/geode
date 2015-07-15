@@ -742,7 +742,7 @@ public class HDFSStoreCommandsJUnitTest {
         will(returnValue(namenode));
         allowing(mockStore).getHomeDir();
         will(returnValue(homeDir));
-        allowing(mockStore).getWriteOnlyFileSizeLimit();
+        allowing(mockStore).getWriteOnlyFileRolloverSize();
         will(returnValue(maxFileSize));
         allowing(mockStore).getWriteOnlyFileRolloverInterval();
         will(returnValue(fileRolloverInterval));

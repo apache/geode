@@ -195,7 +195,7 @@ public interface HDFSStore {
    * 
    * @return max file size in MB.
    */
-  public int getWriteOnlyFileSizeLimit();
+  public int getWriteOnlyFileRolloverSize();
 
   /**
    * For HDFS write-only regions, this defines the number of seconds that can

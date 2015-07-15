@@ -109,7 +109,7 @@ public class AlterHDFSStoreFunction extends FunctionAdapter implements InternalE
 					.getFileRolloverInterval());
 
 		if (alterAttributes.getMaxWriteonlyFileSize() != null)
-			storeMutator.setWriteOnlyFileSizeLimit(alterAttributes.getMaxWriteonlyFileSize());
+			storeMutator.setWriteOnlyFileRolloverSize(alterAttributes.getMaxWriteonlyFileSize());
 
 		if (alterAttributes.getMinorCompact() != null)
 			storeMutator.setMinorCompaction(alterAttributes.getMinorCompact());

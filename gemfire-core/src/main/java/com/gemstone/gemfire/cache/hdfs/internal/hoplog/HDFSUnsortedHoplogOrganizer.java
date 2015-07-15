@@ -159,7 +159,7 @@ public class HDFSUnsortedHoplogOrganizer extends AbstractHoplogOrganizer<Unsorte
         // append completed. If the file is to be rolled over, 
         // close writer and rename the file to a legitimate name.
         // Else, sync the already written data with HDFS nodes. 
-        int maxFileSize = this.store.getWriteOnlyFileSizeLimit() * 1024 * 1024;  
+        int maxFileSize = this.store.getWriteOnlyFileRolloverSize() * 1024 * 1024;  
         int fileRolloverInterval = this.store.getWriteOnlyFileRolloverInterval(); 
         if (writer.getCurrentSize() >= maxFileSize || 
             timeSinceLastFlush >= fileRolloverInterval) {
@@ -196,7 +196,7 @@ public class HDFSUnsortedHoplogOrganizer extends AbstractHoplogOrganizer<Unsorte
       if (writerSize < (minsizeforrollover * 1024L))
         return;
       
-      int maxFileSize = this.store.getWriteOnlyFileSizeLimit() * 1024 * 1024;  
+      int maxFileSize = this.store.getWriteOnlyFileRolloverSize() * 1024 * 1024;  
       int fileRolloverInterval = this.store.getWriteOnlyFileRolloverInterval(); 
       if (writerSize >= maxFileSize || 
           timeSinceLastFlush >= fileRolloverInterval || forceClose) {

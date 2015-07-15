@@ -63,8 +63,8 @@ public class HDFSStoreCreation implements HDFSStoreFactory {
   }
   
   @Override
-  public HDFSStoreFactory setWriteOnlyFileSizeLimit(int maxFileSize) {
-    configHolder.setWriteOnlyFileSizeLimit(maxFileSize);
+  public HDFSStoreFactory setWriteOnlyFileRolloverSize(int maxFileSize) {
+    configHolder.setWriteOnlyFileRolloverSize(maxFileSize);
     return this;
   }
 

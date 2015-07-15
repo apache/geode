@@ -211,7 +211,7 @@ public class HDFSStoreCommands   extends AbstractCommandsSupport {
     if (homeDir != null)
       configHolder.setHomeDir(homeDir);
     if (maxWriteonlyFileSize != null)
-      configHolder.setWriteOnlyFileSizeLimit(maxWriteonlyFileSize);
+      configHolder.setWriteOnlyFileRolloverSize(maxWriteonlyFileSize);
     if (namenode != null)
       configHolder.setNameNodeURL(namenode);
 
@@ -356,7 +356,7 @@ public class HDFSStoreCommands   extends AbstractCommandsSupport {
     hdfsStoreSection.addData("Home Dir", storePrms.getHomeDir());
     hdfsStoreSection.addData("Block Cache", storePrms.getBlockCacheSize());
     hdfsStoreSection.addData("File RollOver Interval", storePrms.getWriteOnlyFileRolloverInterval());
-    hdfsStoreSection.addData("Max WriteOnly File Size", storePrms.getWriteOnlyFileSizeLimit());
+    hdfsStoreSection.addData("Max WriteOnly File Size", storePrms.getWriteOnlyFileRolloverSize());
 
     hdfsStoreSection.addData("Client Configuration File", storePrms.getHDFSClientConfigFile());
 

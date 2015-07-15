@@ -494,8 +494,8 @@ public class HDFSStoreImpl implements HDFSStore {
   }
 
   @Override
-  public int getWriteOnlyFileSizeLimit() {
-    return configHolder.getWriteOnlyFileSizeLimit();
+  public int getWriteOnlyFileRolloverSize() {
+    return configHolder.getWriteOnlyFileRolloverSize();
   }
 
   @Override

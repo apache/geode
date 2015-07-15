@@ -78,7 +78,7 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     this.homeDir = config.getHomeDir();
     this.clientConfigFile = config.getHDFSClientConfigFile();
     this.blockCacheSize = config.getBlockCacheSize();
-    this.maxFileSize = config.getWriteOnlyFileSizeLimit();
+    this.maxFileSize = config.getWriteOnlyFileRolloverSize();
     this.fileRolloverInterval = config.getWriteOnlyFileRolloverInterval();
     isAutoCompact = config.getMinorCompaction();
     maxConcurrency = config.getMinorCompactionThreads();
@@ -133,9 +133,9 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
       logAttrMutation("fileRolloverInterval", mutator.getWriteOnlyFileRolloverInterval());
       setWriteOnlyFileRolloverInterval(mutator.getWriteOnlyFileRolloverInterval());
     }
-    if (mutator.getWriteOnlyFileSizeLimit() >= 0) {
+    if (mutator.getWriteOnlyFileRolloverSize() >= 0) {
       logAttrMutation("MaxFileSize", mutator.getWriteOnlyFileRolloverInterval());
-      setWriteOnlyFileSizeLimit(mutator.getWriteOnlyFileSizeLimit());
+      setWriteOnlyFileRolloverSize(mutator.getWriteOnlyFileRolloverSize());
     }
     
     if (mutator.getMinorCompaction() != null) {
@@ -248,13 +248,13 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
   }
   
   @Override
-  public HDFSStoreFactory setWriteOnlyFileSizeLimit(int maxFileSize) {
+  public HDFSStoreFactory setWriteOnlyFileRolloverSize(int maxFileSize) {
     assertIsPositive(CacheXml.HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL, maxFileSize);
     this.maxFileSize = maxFileSize;
     return this;
   }
   @Override
-  public int getWriteOnlyFileSizeLimit() {
+  public int getWriteOnlyFileRolloverSize() {
     return maxFileSize;
   }
 

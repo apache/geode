@@ -121,7 +121,7 @@ public class DescribeHDFSStoreFunctionJUnitTest {
     assertEquals(hdfsStoreName, hdfsStoreDetails.getName());
     assertEquals("hdfs://localhost:9000", hdfsStoreDetails.getNameNodeURL());
     assertEquals("testDir", hdfsStoreDetails.getHomeDir());
-    assertEquals(1024, hdfsStoreDetails.getWriteOnlyFileSizeLimit());
+    assertEquals(1024, hdfsStoreDetails.getWriteOnlyFileRolloverSize());
     assertEquals(20, hdfsStoreDetails.getWriteOnlyFileRolloverInterval());
     assertFalse(hdfsStoreDetails.getMinorCompaction());
     assertEquals("0.25", Float.toString(hdfsStoreDetails.getBlockCacheSize()));
@@ -293,7 +293,7 @@ public class DescribeHDFSStoreFunctionJUnitTest {
         will(returnValue(namenode));
         oneOf(mockHdfsStore).getHomeDir();
         will(returnValue(homeDir));
-        oneOf(mockHdfsStore).getWriteOnlyFileSizeLimit();
+        oneOf(mockHdfsStore).getWriteOnlyFileRolloverSize();
         will(returnValue(maxFileSize));
         oneOf(mockHdfsStore).getWriteOnlyFileRolloverInterval();
         will(returnValue(fileRolloverInterval));

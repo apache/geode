@@ -18,17 +18,17 @@ package com.gemstone.gemfire.cache.hdfs;
  */
 public interface HDFSStoreMutator {
   /**
-   * {@link HDFSStoreFactory#setWriteOnlyFileSizeLimit(int)}
+   * {@link HDFSStoreFactory#setWriteOnlyFileRolloverSize(int)}
    */
-  public HDFSStoreMutator setWriteOnlyFileSizeLimit(int maxFileSize);
+  public HDFSStoreMutator setWriteOnlyFileRolloverSize(int maxFileSize);
 
   /**
-   * {@link HDFSStore#getWriteOnlyFileSizeLimit()}
+   * {@link HDFSStore#getWriteOnlyFileRolloverSize()}
    * 
    * @return value to be used when mutator is executed on hdfsStore. -1 if not
    *         set
    */
-  public int getWriteOnlyFileSizeLimit();
+  public int getWriteOnlyFileRolloverSize();
 
   /**
    * {@link HDFSStoreFactory#setWriteOnlyFileRolloverInterval(int)}

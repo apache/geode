@@ -55,11 +55,11 @@ public interface HDFSStoreFactory {
 
   /**
    * Default value {@link HDFSStore#DEFAULT_WRITE_ONLY_FILE_SIZE_LIMIT}
-   * @see HDFSStore#getWriteOnlyFileSizeLimit()
+   * @see HDFSStore#getWriteOnlyFileRolloverSize()
    * @exception IllegalArgumentException
    *              if the {@code value} is less than 0 
    */
-  public HDFSStoreFactory setWriteOnlyFileSizeLimit(int maxFileSize);
+  public HDFSStoreFactory setWriteOnlyFileRolloverSize(int maxFileSize);
 
   /**
    * Default value {@link HDFSStore#DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL}
