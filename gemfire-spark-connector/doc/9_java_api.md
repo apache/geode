@@ -1,13 +1,13 @@
 ## Using Connector in Java
-This section describes how to access the functionality of Spark GemFire 
+This section describes how to access the functionality of Spark Geode 
 Connector when you write your Spark applications in Java. It is assumed
 that you already familiarized yourself with the previous sections and 
-understand how the Spark GemFire Connector works.
+understand how the Spark Geode Connector works.
 
 ### Prerequisites
-The best way to use the Spark GemFire Connector Java API is to statically
+The best way to use the Spark Geode Connector Java API is to statically
 import all of the methods in `GemFireJavaUtil`. This utility class is
-the main entry point for Spark GemFire Connector Java API.
+the main entry point for Spark Geode Connector Java API.
 ```
 import static io.pivotal.gemfire.spark.connector.javaapi.GemFireJavaUtil.*;
 ```
@@ -19,8 +19,8 @@ conf.set(GemFireLocatorPropKey, "192.168.1.47[10334]")
 JavaSparkContext jsc = new JavaSparkContext(conf);
 ```
 
-### Accessing GemFire region in Java
-GemFire region is exposed as `GemFireJavaRegionRDD<K,V>`(subclass of
+### Accessing Geode region in Java
+Geode region is exposed as `GemFireJavaRegionRDD<K,V>`(subclass of
 `JavaPairRDD<K, V>`):
 ```
 GemFireJavaRegionRDD<Int, Emp> rdd1 = javaFunctions(jsc).gemfireRegion("emps")
@@ -46,7 +46,7 @@ JavaPairRDD<Tuple2<String, Integer>, Option<Emp>> rdd3o =
 
 ```
 
-### Saving JavaPairRDD to GemFire
+### Saving JavaPairRDD to Geode
 Saving JavaPairRDD is straightforward:
 ```
 List<Tuple2<String, String>> data = new ArrayList<>();
@@ -56,7 +56,7 @@ data.add(new Tuple2<>("9", "nine"));
 
 // create JavaPairRDD
 JavaPairRDD<String, String> rdd1 = jsc.parallelizePairs(data);
-// save to GemFire
+// save to Geode
 javaFunctions(rdd1).saveToGemfire("str_str_region");
 ```
 
@@ -70,11 +70,11 @@ data2.add(new Tuple2<>("13", "thirteen"));
 
 // create JavaRDD<Tuple2<K,V>>
 JavaRDD<Tuple2<String, String>> rdd2 =  jsc.parallelize(data2);
-// save to GemFire
+// save to Geode
 javaFunctions(toJavaPairRDD(rdd2)).saveToGemfire("str_str_region");
 ``` 
 
-### Saving JavaRDD to GemFire
+### Saving JavaRDD to Geode
 Similar to Scala version, a function is required to generate key/value pair
 from RDD element. The following `PairFunction` generate a `<String, Integer>`
 pair from `<String>`:
@@ -114,7 +114,7 @@ JavaDStream<String> ds2 = ...
 javaFunctions(ds2).saveToGemFire("str_int_region", pairFunc);
 ```
 
-### Using GemFire OQL
+### Using Geode OQL
 
 There are two gemfireOQL Java APIs, with and without GemFireConnectionConf.
 Here is an example without GemFireConnectionConf, it will use default 

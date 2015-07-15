@@ -1,12 +1,12 @@
-## RDD Join and Outer Join GemFire Region
+## RDD Join and Outer Join Geode Region
 
-The Spark GemFire Connector suports using any RDD as a source
-of a join and outer join with a GemFire region through APIs
+The Spark Geode Connector suports using any RDD as a source
+of a join and outer join with a Geode region through APIs
 `joinGemfireRegion[K, V]` and `outerJoinGemfireRegion[K, V]`. 
 Those two APIs execute a single `region.getAll` call for every 
 partition of the source RDD, so no unnecessary data will be requested
 or transferred. This means a join or outer join between any RDD and
-a GemFire region can be performed without full region scan, and the
+a Geode region can be performed without full region scan, and the
 source RDD's partitioning and placement for data locality are used.
 
 Please note that the two type parameters `[K, V]` are the type
@@ -14,7 +14,7 @@ of key/value pair of region entries, they need to be specified
 to make result RDD has correct type.
 
 The region `emps` that is created and populated in 
-[GemFire Server-Side Filtering](4_loading.md) will be used in the
+[Geode Server-Side Filtering](4_loading.md) will be used in the
 following examples.
 
 ### RDD[(K, V1)] join and outer join Region[K, V2]
@@ -98,7 +98,7 @@ In this case, the source RDD is still a pair RDD,  but it has different
 key type. Use API `rdd.joinGemfireRegion[K2, V2](regionPath, func)` and 
 `rdd.outerJoinGemfireRegion[K2, V2](regionPath, func)` do the join and 
 outer join, where `func` is the function to generate key from (k, v)
-pair, the element of source RDD, to join with GemFire region.
+pair, the element of source RDD, to join with Geode region.
 
 Prepare a source RDD `d3`:
 ```
@@ -169,7 +169,7 @@ rdd3o.foreach(println)
 Use API `rdd.joinGemfireRegion[K, V](regionPath, func)` and 
 `rdd.outerJoinGemfireRegion[K, V](regionPath, func)` do the join
 and outer join, where `func` is the function to generate key from
-`t`, the element of source RDD, to join with GemFire region.
+`t`, the element of source RDD, to join with Geode region.
 
 Prepare a source RDD `d4`:
 ```
@@ -234,4 +234,4 @@ rdd4o.foreach(println)
 ```
 
 
-Next: [Saving RDD to GemFire](6_save_join.md)
+Next: [Saving RDD to Geode](6_save_join.md)

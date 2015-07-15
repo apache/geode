@@ -1,6 +1,6 @@
-## Loading Data from GemFire
+## Loading Data from Geode
 
-To expose full data set of a GemFire region as a Spark
+To expose full data set of a Geode region as a Spark
 RDD, call `gemfireRegion` method on the SparkContext object.
 
 ```
@@ -8,14 +8,14 @@ val rdd = sc.gemfireRegion("region path")
 ```
 
 Or with specific `GemfireConectionConf` object instance (see 
-[Connecting to  Gemfire](3_connecting.md) for how to create GemfireConectionConf):
+[Connecting to  Geode](3_connecting.md) for how to create GemfireConectionConf):
 ```
 val rdd = sc.gemfireRegion("region path", connConf)
 ```
 
-## GemFire RDD Partitions
+## Geode RDD Partitions
 
-GemFire has two region types: **replicated**, and
+Geode has two region types: **replicated**, and
 **partitioned** region. Replicated region has full dataset on
 each server, while partitioned region has its dataset spanning
 upon multiple servers, and may have duplicates for high 
@@ -28,9 +28,9 @@ represents a replicated region.
 For a `GemFireRegionRDD` that represents a partitioned region, there are 
 many potential  ways to create RDD partitions. So far, we have 
 implemented ServerSplitsPartitioner, which will split the bucket set
-on each GemFire server into two RDD partitions by default.
+on each Geode server into two RDD partitions by default.
 The number of splits is configurable, the following shows how to set 
-three partitions per GemFire server:
+three partitions per Geode server:
 ```
 import io.pivotal.gemfire.spark.connector._
 
@@ -43,17 +43,21 @@ val rdd2 = sc.gemfireRegion[String, Int]("str_int_region", connConf, opConf)
 ```
 
 
-## GemFire Server-Side Filtering
-Server-side filtering allow exposing partial dataset of a GemFire region
-as a RDD, this reduces the amount of data transferred from GemFire to 
+## Geode Server-Side Filtering
+Server-side filtering allow exposing partial dataset of a Geode region
+as a RDD, this reduces the amount of data transferred from Geode to 
 Spark to speed up processing.
 ```
 val rdd = sc.gemfireRegion("<region path>").where("<where clause>")
 ```
 
-The above call is translated to OQL query `select key, value from /<region path>.entries where <where clause>`, then the query is executed for each RDD partition. Note: the RDD partitions are created the same way as described in the section above.
+The above call is translated to OQL query `select key, value from /<region path>.entries where <where clause>`, then 
+the query is executed for each RDD partition. Note: the RDD partitions are created the same way as described in the 
+section above.
 
-In the following demo, javabean class `Emp` is used, it has 5 attributes: `id`, `lname`, `fname`, `age`, and `loc`. In order to make `Emp` class available on GemFire servers, we need to deploy a jar file that contains `Emp` class, now build the `emp.jar`,  deploy it and create region `emps` in `gfsh`:
+In the following demo, javabean class `Emp` is used, it has 5 attributes: `id`, `lname`, `fname`, `age`, and `loc`. 
+In order to make `Emp` class available on Geode servers, we need to deploy a jar file that contains `Emp` class, 
+now build the `emp.jar`,  deploy it and create region `emps` in `gfsh`:
 ```
 zip $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar \
   -i "demo/Emp.class" --out $CONNECTOR/emp.jar
@@ -62,9 +66,12 @@ gfsh
 gfsh> deploy --jar=<path to connector project>/emp.jar
 gfsh> create region --name=emps --type=PARTITION 
 ```
-Note: The `Emp.class` is availble in `basic-demos_2.10-0.5.0.jar`. But that jar file depends on many scala and spark classes that are not available on GemFire servers' classpath. So use the above `zip` command to create a jar file that only contains `Emp.class`.  
+Note: The `Emp.class` is availble in `basic-demos_2.10-0.5.0.jar`. But that jar file depends on many scala and spark 
+classes that are not available on Geode servers' classpath. So use the above `zip` command to create a jar file that 
+only contains `Emp.class`.  
 
-Now in Spark shell, generate some random `Emp` records, and save them to region `emps` (remember to add `emp.jar` to Spark shell classpath before starting Spark shell):
+Now in Spark shell, generate some random `Emp` records, and save them to region `emps` (remember to add `emp.jar` to 
+Spark shell classpath before starting Spark shell):
 ```
 import io.pivotal.gemfire.spark.connector._
 import scala.util.Random
@@ -98,4 +105,4 @@ rdd1s.foreach(println)
 (6,Emp(6, Miller, Jerry, 30, NY))
 ```
 
-Next: [RDD Join and Outer Join GemFire Region](5_rdd_join.md)
+Next: [RDD Join and Outer Join Geode Region](5_rdd_join.md)

@@ -1,11 +1,11 @@
-## Connecting to GemFire
+## Connecting to Geode
 
-There are two ways to connect Spark to Gemfire:
- - Specify GemFire connection properties via `SparkConf`.
- - Specify GemFire connection properties via `GemFireConnectionConf`.
+There are two ways to connect Spark to Geode:
+ - Specify Geode connection properties via `SparkConf`.
+ - Specify Geode connection properties via `GemFireConnectionConf`.
 
-### Specify GemFire connection properties via `SparkConf`
-The only required GemFire connection property is `spark.gemfire.locators`. 
+### Specify Geode connection properties via `SparkConf`
+The only required Geode connection property is `spark.gemfire.locators`. 
 This can be specified in `<spark dir>/conf/spark-defaults.conf` or in Spark 
 application code. In the following examples, we assume you want to provide
 3 extra properties: `security-client-auth-init`, `security-username`, and 
@@ -31,7 +31,7 @@ val sparkConf = new SparkConf()
 
 After this, you can use all connector APIs without providing `GemfireConnectionConf`.
  
-### Specify GemFire connection properties via `GemFireConnectionConf`
+### Specify Geode connection properties via `GemFireConnectionConf`
 Here's the code that creates `GemFireConnectionConf` with the same set of 
 properties as the examples above:
 ```
@@ -48,8 +48,8 @@ After this, you can use all connector APIs that require `GemFireConnectionConf`.
 ### Notes about locators
  - You can specify locator in two formats: `host[port]` or `host:port`. For
    example `192.168.1.47[10334]` or `192.168.1.47:10334`
- - If your GemFire cluster has multiple locators, list them all and separated
+ - If your Geode cluster has multiple locators, list them all and separated
    by `,`. For example: `host1:10334,host2:10334`.
 
 
-Next: [Loading Data from GemFire](4_loading.md)
+Next: [Loading Data from Geode](4_loading.md)

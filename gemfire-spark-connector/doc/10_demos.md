@@ -1,29 +1,29 @@
 ## About The Demos
-The Spark GemFire Connector contains basic demos, as samples, in both Scala
+The Spark Geode Connector contains basic demos, as samples, in both Scala
 and Java.
 
- - Read GemFire region to Spark as a RDD (`RegionToRDDJavaDemo.java`)
- - Write Spark pair RDD to GemFire (`PairRDDSaveJavaDemo.java`)
- - Write Spark non-pair RDD to GemFire (`RDDSaveJavaDemo.java`)
+ - Read Geode region to Spark as a RDD (`RegionToRDDJavaDemo.java`)
+ - Write Spark pair RDD to Geode (`PairRDDSaveJavaDemo.java`)
+ - Write Spark non-pair RDD to Geode (`RDDSaveJavaDemo.java`)
  - Read OQL query result as Spark DataFrame (OQLJavaDemo.java)
  - Network stateful word count (NetworkWordCount.scala)
 
 ### Requirements
-Running the demo requires a GemFire Cluster. This can be a one 
+Running the demo requires a Geode Cluster. This can be a one 
 node or multi-node cluster.
 
-Here are the commands that start a two-node GemFire cluster on localhost:
+Here are the commands that start a two-node Geode cluster on localhost:
 First set up environment variables:
 ```
 export JAVA_HOME=<path to JAVA installation>
-export GEMFIRE=<path to GemFire installation>
+export GEODE=<path to Geode installation>
 export CONNECTOR=<path to Connector project>
-export CLASSPATH=$CLASSPATH:$GEMFIRE/lib/locator-dependencies.jar:$GEMFIRE/lib/server-dependencies.jar:$GEMFIRE/lib/gfsh-dependencies.jar
-export PATH=$PATH:$GEMFIRE/bin
+export CLASSPATH=$CLASSPATH:$GEODE/lib/locator-dependencies.jar:$GEODE/lib/server-dependencies.jar:$GEODE/lib/gfsh-dependencies.jar
+export PATH=$PATH:$GEODE/bin
 export GF_JAVA=$JAVA_HOME/bin/java
 
 Now run gfsh and execute the commands:
-$ cd <path to test GemFire cluster instance location>
+$ cd <path to test Geode cluster instance location>
 $ mkdir locator server1 server2
 $ gfsh
 gfsh> start locator --name=locator
@@ -38,7 +38,7 @@ gfsh> create region --name=str_str_region --type=REPLICATE --key-constraint=java
 gfsh> create region --name=str_int_region --type=PARTITION --key-constraint=java.lang.String --value-constraint=java.lang.Integer
 ```
 
-And deploy GemFire functions required by the Spark GemFire Connector:
+And deploy Geode functions required by the Spark Geode Connector:
 ```
 gfsh> deploy --jar=<path to connector project>/gemfire-functions/target/scala-2.10/gemfire-functions_2.10-0.5.0.jar
 ```
@@ -47,7 +47,7 @@ gfsh> deploy --jar=<path to connector project>/gemfire-functions/target/scala-2.
 This section describes how to run `RDDSaveJavaDemo.java`, 
 `PairRDDSaveJavaDemo.java` and `RegionToRDDJavaDemo.java`:
 ```
-export SPARK_CLASSPATH=$CONNECTOR/gemfire-spark-connector/target/scala-2.10/gemfire-spark-connector_2.10-0.5.0.jar:$GEMFIRE/lib/server-dependencies.jar
+export SPARK_CLASSPATH=$CONNECTOR/gemfire-spark-connector/target/scala-2.10/gemfire-spark-connector_2.10-0.5.0.jar:$GEODE/lib/server-dependencies.jar
 
 cd <spark 1.3 dir>
 bin/spark-submit --master=local[2] --class demo.RDDSaveJavaDemo $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar locatorHost[port]
@@ -58,7 +58,7 @@ bin/spark-submit --master=local[2] --class demo.RegionToRDDJavaDemo $CONNECTOR/g
 ```
 
 ### Run stateful network word count
-This demo shows how to save DStream to GemFire. To run the demo, open 3 Terminals:
+This demo shows how to save DStream to Geode. To run the demo, open 3 Terminals:
 
 **Terminal-1**, start net cat server:
 ```
@@ -70,13 +70,13 @@ $ nc -lk 9999
 bin/spark-submit --master=local[2] demo.NetworkWordCount $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar localhost 9999 locatorHost:port`
 ```
 
-Switch to Terminal-1, type some words, and hit `enter` or `return` key, then check word count at **Terminal-3**, which has `gfsh` connected to the GemFire cluster:
+Switch to Terminal-1, type some words, and hit `enter` or `return` key, then check word count at **Terminal-3**, which has `gfsh` connected to the Geode cluster:
 ```
 gfsh> query --query="select key, value from /str_int_region.entrySet" 
 ```
 
-### Shutdown GemFire cluster at the end
-Use following command to shutdown the GemFire cluster after playing with
+### Shutdown Geode cluster at the end
+Use following command to shutdown the Geode cluster after playing with
 the demos:
 ```
 gfsh> shutdown --include-locators=true

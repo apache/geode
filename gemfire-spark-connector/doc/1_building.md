@@ -27,9 +27,8 @@ sbt test        // unit tests
 sbt it:test     // integration tests  
 ```
 
-Integration tests start up a GemFire cluster and starts up Spark in local mode.
+Integration tests start a Geode cluster and Spark in local mode.
 Please make sure you've done following before you run `sbt it:test`:
  - run`sbt package`
- - set environment variable `GEMFIRE` to point to a GemFire installation.
 
 Next: [Quick Start](2_quick.md)

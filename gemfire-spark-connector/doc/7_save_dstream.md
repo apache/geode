@@ -1,8 +1,8 @@
-## Saving DStream to GemFire
+## Saving DStream to Geode
 Spark Streaming extends the core API to allow high-throughput, fault-tolerant
 stream processing of live data streams.  Data can be ingested from many 
 sources such as Akka, Kafka, Flume, Twitter, ZeroMQ, TCP sockets, etc. 
-Results can be stored in GemFire.
+Results can be stored in Geode.
 
 ### A Simple Spark Streaming App: Stateful Network Word Count
 
@@ -46,8 +46,8 @@ ssc.start()
 ssc.awaitTermination() // Wait for the computation to terminate
 ```
 
-#### Spark Streaming With GemFire
-Now let's save the running word count to GemFire region `str_int_region`, which 
+#### Spark Streaming With Geode
+Now let's save the running word count to Geode region `str_int_region`, which 
 simply replace print() with saveToGemfire():
 
 ```
@@ -65,4 +65,4 @@ See [Spark Streaming Programming Guide]
 more details about Sarpk streaming programming.
 
 
-Next: [GemFire OQL](8_oql.md)
+Next: [Geode OQL](8_oql.md)
