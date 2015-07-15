@@ -27,7 +27,8 @@ public final class GemFireJavaUtil {
   public static String NumberPartitionsPerServerPropKey = package$.MODULE$.NumberPartitionsPerServerPropKey();
   public static String OnePartitionPartitionerName = package$.MODULE$.OnePartitionPartitionerName();
   public static String ServerSplitsPartitionerName = package$.MODULE$.ServerSplitsPartitionerName();
-
+  public static String RDDSaveBatchSizePropKey = package$.MODULE$.RDDSaveBatchSizePropKey();
+  public static int RDDSaveBatchSizeDefault = package$.MODULE$.RDDSaveBatchSizeDefault();
   
   /** The private constructor is used prevents user from creating instance of this class. */
   private GemFireJavaUtil() { }

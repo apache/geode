@@ -18,18 +18,26 @@ class GemFireDStreamFunctions[T](val dstream: DStream[T]) extends Serializable w
    * @param regionPath the full path of region that the DStream is stored
    * @param func the function that converts elements of the DStream to key/value pairs
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
+   * @param opConf the optional parameters for this operation
    */
   def saveToGemfire[K, V](
-    regionPath: String, func: T => (K, V), connConf: GemFireConnectionConf = defaultConnectionConf): Unit = {
+      regionPath: String, 
+      func: T => (K, V), 
+      connConf: GemFireConnectionConf = defaultConnectionConf, 
+      opConf: Map[String, String] = Map.empty): Unit = {
     connConf.getConnection.validateRegion[K, V](regionPath)
-    val writer = new GemFireRDDWriter[T, K, V](regionPath, connConf)
+    val writer = new GemFireRDDWriter[T, K, V](regionPath, connConf, opConf)
     logInfo(s"""Save DStream region=$regionPath conn=${connConf.locators.mkString(",")}""")
     dstream.foreachRDD(rdd => rdd.sparkContext.runJob(rdd, writer.write(func) _))
   }
 
   /** this version of saveToGemfire is just for Java API */
-  def saveToGemfire[K, V](regionPath: String, func: PairFunction[T, K, V], connConf: GemFireConnectionConf): Unit = {
-    saveToGemfire[K, V](regionPath, func.call _, connConf)
+  def saveToGemfire[K, V](
+      regionPath: String,
+      func: PairFunction[T, K, V],
+      connConf: GemFireConnectionConf,
+      opConf: Map[String, String] ): Unit = {
+    saveToGemfire[K, V](regionPath, func.call _, connConf, opConf)
   }
 
   private[connector] def defaultConnectionConf: GemFireConnectionConf =
@@ -48,10 +56,14 @@ class GemFirePairDStreamFunctions[K, V](val dstream: DStream[(K,V)]) extends Ser
    * Save the DStream of pairs to GemFire key-value store without any conversion
    * @param regionPath the full path of region that the DStream is stored
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
+   * @param opConf the optional parameters for this operation
    */
-  def saveToGemfire(regionPath: String, connConf: GemFireConnectionConf = defaultConnectionConf): Unit = {
+  def saveToGemfire(
+      regionPath: String, 
+      connConf: GemFireConnectionConf = defaultConnectionConf, 
+      opConf: Map[String, String] = Map.empty): Unit = {
     connConf.getConnection.validateRegion[K, V](regionPath)
-    val writer = new GemFirePairRDDWriter[K, V](regionPath, connConf)
+    val writer = new GemFirePairRDDWriter[K, V](regionPath, connConf, opConf)
     logInfo(s"""Save DStream region=$regionPath conn=${connConf.locators.mkString(",")}""")
     dstream.foreachRDD(rdd => rdd.sparkContext.runJob(rdd, writer.write _))
   }

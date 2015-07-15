@@ -61,30 +61,54 @@ class GemFireRDDFunctionsTest extends FunSuite with Matchers with MockitoSugar {
   }
   
   test("test PairRDDFunctions.saveToGemfire") {
+    verifyPairRDDFunction(useOpConf = false)
+  }
+
+  test("test PairRDDFunctions.saveToGemfire w/ opConf") {
+    verifyPairRDDFunction(useOpConf = true)
+  }
+  
+  def verifyPairRDDFunction(useOpConf: Boolean): Unit = {
     import io.pivotal.gemfire.spark.connector._
     val (regionPath, mockConnConf, mockConnection, mockRegion) = createMocks[String, String]("test")
     val mockRDD = mock[RDD[(String, String)]]
     val mockSparkContext = mock[SparkContext]
     when(mockRDD.sparkContext).thenReturn(mockSparkContext)
-    val result = mockRDD.saveToGemfire(regionPath, mockConnConf)
+    val result = 
+      if (useOpConf) 
+        mockRDD.saveToGemfire(regionPath, mockConnConf, Map(RDDSaveBatchSizePropKey -> "5000"))
+      else
+        mockRDD.saveToGemfire(regionPath, mockConnConf)
     verify(mockConnection, times(1)).validateRegion[String, String](regionPath)
     result === Unit
     verify(mockSparkContext, times(1)).runJob[(String, String), Unit](
       mockEq(mockRDD), mockAny[(TaskContext, Iterator[(String, String)]) => Unit])(mockAny(classOf[ClassTag[Unit]]))
 
     // Note: current implementation make following code not compilable
-    //       so not negative test for this case   
+    //       so not negative test for this case
     //  val rdd: RDD[(K, V)] = ...
     //  rdd.saveToGemfire(regionPath, s => (s.length, s))
   }
 
   test("test RDDFunctions.saveToGemfire") {
+    verifyRDDFunction(useOpConf = false)
+  }
+
+  test("test RDDFunctions.saveToGemfire w/ opConf") {
+    verifyRDDFunction(useOpConf = true)
+  }
+  
+  def verifyRDDFunction(useOpConf: Boolean): Unit = {
     import io.pivotal.gemfire.spark.connector._
     val (regionPath, mockConnConf, mockConnection, mockRegion) = createMocks[Int, String]("test")
     val mockRDD = mock[RDD[(String)]]
     val mockSparkContext = mock[SparkContext]
     when(mockRDD.sparkContext).thenReturn(mockSparkContext)
-    val result = mockRDD.saveToGemfire(regionPath, s => (s.length, s), mockConnConf)
+    val result = 
+      if (useOpConf)
+        mockRDD.saveToGemfire(regionPath, s => (s.length, s), mockConnConf, Map(RDDSaveBatchSizePropKey -> "5000"))
+      else
+        mockRDD.saveToGemfire(regionPath, s => (s.length, s), mockConnConf)
     verify(mockConnection, times(1)).validateRegion[Int, String](regionPath)
     result === Unit
     verify(mockSparkContext, times(1)).runJob[String, Unit](

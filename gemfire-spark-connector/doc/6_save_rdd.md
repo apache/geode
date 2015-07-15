@@ -57,5 +57,25 @@ rdd2.saveToGemfire("str_int_region", e => (e, e.length))
 // rdd2.saveToGemfire("rgnb", e => (e, e.length), connConf)
 ```
 
- 
+### `rdd.save.batch.size` 
+
+The connector invokes GemFire API `putAll()` to save the data. To make
+`putAll()` more efficient, the connector invokes putAll() for every 
+10,000 entries by default. This batch size can be changed with optional
+parameter `opConf`. The following shows how to do it:
+
+```
+  // in Scala
+  rdd.saveToGemfire(regionPath, opConf = Map(RDDSaveBatchSizePropKey -> "5000"))
+
+  // in Java
+  Properties opConf = new Properties();
+  opConf.put(RDDSaveBatchSizePropKey, "5000");
+  ...
+  javaFunctions(rdd).saveToGemfire(regionPath, opConf); 
+   
+  // note: RDDSaveBatchSizePropKey = "rdd.save.batch.size" 
+```
+
+
 Next: [Saving DStream to Geode](7_save_dstream.md)

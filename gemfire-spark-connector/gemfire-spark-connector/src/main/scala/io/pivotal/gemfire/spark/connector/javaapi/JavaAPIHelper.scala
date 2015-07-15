@@ -32,4 +32,6 @@ private[connector] object JavaAPIHelper {
   def toJavaPairDStream[K, V](ds: JavaDStream[(K, V)]): JavaPairDStream[K, V] =
     JavaPairDStream.fromJavaDStream(ds)
 
+  /** an empty Map[String, String] for default opConf **/
+  val emptyStrStrMap: Map[String, String] = Map.empty
 }

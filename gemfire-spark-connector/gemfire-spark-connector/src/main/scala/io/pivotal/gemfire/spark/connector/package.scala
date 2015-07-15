@@ -22,6 +22,9 @@ package object connector {
   final val OnePartitionPartitionerName = OnePartitionPartitioner.name
   final val ServerSplitsPartitionerName = ServerSplitsPartitioner.name
 
+  final val RDDSaveBatchSizePropKey = "rdd.save.batch.size"
+  final val RDDSaveBatchSizeDefault = 10000
+  
   implicit def toSparkContextFunctions(sc: SparkContext): GemFireSparkContextFunctions =
     new GemFireSparkContextFunctions(sc)
 

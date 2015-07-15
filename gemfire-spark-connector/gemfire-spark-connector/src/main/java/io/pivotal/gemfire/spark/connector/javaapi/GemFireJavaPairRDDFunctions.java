@@ -10,6 +10,8 @@ import scala.Option;
 import scala.Tuple2;
 import scala.reflect.ClassTag;
 
+import java.util.Properties;
+
 import static io.pivotal.gemfire.spark.connector.javaapi.JavaAPIHelper.*;
 
 /**
@@ -31,9 +33,28 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    * Save the pair RDD to GemFire key-value store.
    * @param regionPath the full path of region that the RDD is stored
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
+   * @param opConf the parameters for this operation
+   */
+  public void saveToGemfire(String regionPath, GemFireConnectionConf connConf, Properties opConf) {
+    rddf.saveToGemfire(regionPath, connConf, propertiesToScalaMap(opConf));
+  }
+
+  /**
+   * Save the pair RDD to GemFire key-value store.
+   * @param regionPath the full path of region that the RDD is stored
+   * @param opConf the parameters for this operation
+   */
+  public void saveToGemfire(String regionPath, Properties opConf) {
+    rddf.saveToGemfire(regionPath, rddf.defaultConnectionConf(), propertiesToScalaMap(opConf));
+  }
+
+  /**
+   * Save the pair RDD to GemFire key-value store.
+   * @param regionPath the full path of region that the RDD is stored
+   * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
    */
   public void saveToGemfire(String regionPath, GemFireConnectionConf connConf) {
-    rddf.saveToGemfire(regionPath, connConf);
+    rddf.saveToGemfire(regionPath, connConf, emptyStrStrMap());
   }
 
   /**
@@ -41,7 +62,7 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    * @param regionPath the full path of region that the RDD is stored
    */
   public void saveToGemfire(String regionPath) {
-    rddf.saveToGemfire(regionPath, rddf.defaultConnectionConf());
+    rddf.saveToGemfire(regionPath, rddf.defaultConnectionConf(), emptyStrStrMap());
   }
 
   /**
@@ -51,7 +72,7 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    * (k, v2) is in the GemFire region.
    *
    * @param regionPath the region path of the GemFire region
-   * @tparam V2 the value type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;&lt;K, V>, V2>
    */  
   public <V2> JavaPairRDD<Tuple2<K, V>, V2> joinGemfireRegion(String regionPath) {
@@ -66,7 +87,7 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    *
    * @param regionPath the region path of the GemFire region
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
-   * @tparam V2 the value type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;&lt;K, V>, V2>
    */
   public <V2> JavaPairRDD<Tuple2<K, V>, V2> joinGemfireRegion(
@@ -88,8 +109,8 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    *
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element (K, V)
-   * @tparam K2 the key type of the GemFire region
-   * @tparam V2 the value type of the GemFire region
+   * @param <K2> the key type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;Tuple2&lt;K, V>, V2>
    */
   public <K2, V2> JavaPairRDD<Tuple2<K, V>, V2> joinGemfireRegion(
@@ -109,8 +130,8 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element (K, V)
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
-   * @tparam K2 the key type of the GemFire region
-   * @tparam V2 the value type of the GemFire region
+   * @param <K2> the key type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;Tuple2&lt;K, V>, V2>
    */  
   public <K2, V2> JavaPairRDD<Tuple2<K, V>, V2> joinGemfireRegion(
@@ -128,8 +149,7 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    * ((k, v), None)) if no element in the GemFire region have key k.
    *
    * @param regionPath the region path of the GemFire region
-   * @tparam K2 the key type of the GemFire region
-   * @tparam V2 the value type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;Tuple2&lt;K, V>, Option&lt;V>>
    */
   public <V2> JavaPairRDD<Tuple2<K, V>, Option<V2>> outerJoinGemfireRegion(String regionPath) {
@@ -144,8 +164,7 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    *
    * @param regionPath the region path of the GemFire region
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
-   * @tparam K2 the key type of the GemFire region
-   * @tparam V2 the value type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;Tuple2&lt;K, V>, Option&lt;V>>
    */  
   public <V2> JavaPairRDD<Tuple2<K, V>, Option<V2>> outerJoinGemfireRegion(
@@ -167,8 +186,8 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    *
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element (K, V)
-   * @tparam K2 the key type of the GemFire region
-   * @tparam V2 the value type of the GemFire region
+   * @param <K2> the key type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;Tuple2&lt;K, V>, Option&lt;V>>
    */
   public <K2, V2> JavaPairRDD<Tuple2<K, V>, Option<V2>> outerJoinGemfireRegion(
@@ -188,8 +207,8 @@ public class GemFireJavaPairRDDFunctions<K, V> {
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element (K, V)
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
-   * @tparam K2 the key type of the GemFire region
-   * @tparam V2 the value type of the GemFire region
+   * @param <K2> the key type of the GemFire region
+   * @param <V2> the value type of the GemFire region
    * @return JavaPairRDD&lt;Tuple2&lt;K, V>, Option&lt;V>>
    */
   public <K2, V2> JavaPairRDD<Tuple2<K, V>, Option<V2>> outerJoinGemfireRegion(

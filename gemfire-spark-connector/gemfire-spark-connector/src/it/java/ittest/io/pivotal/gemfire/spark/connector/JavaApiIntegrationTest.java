@@ -25,6 +25,7 @@ import scala.Some;
 
 import java.util.*;
 
+import static io.pivotal.gemfire.spark.connector.javaapi.GemFireJavaUtil.RDDSaveBatchSizePropKey;
 import static io.pivotal.gemfire.spark.connector.javaapi.GemFireJavaUtil.javaFunctions;
 import static org.junit.Assert.*;
 
@@ -127,25 +128,45 @@ public class JavaApiIntegrationTest extends JUnitSuite {
   }
 
   @Test
+  public void testRDDSaveToGemfireWithDefaultConnConfAndOpConf() throws Exception {
+    verifyRDDSaveToGemfire(true, true);
+  }
+
+  @Test
   public void testRDDSaveToGemfireWithDefaultConnConf() throws Exception {
-    verifyRDDSaveToGemfire(true);
+    verifyRDDSaveToGemfire(true, false);
+  }
+  
+  @Test
+  public void testRDDSaveToGemfireWithConnConfAndOpConf() throws Exception {
+    verifyRDDSaveToGemfire(false, true);
   }
 
   @Test
   public void testRDDSaveToGemfireWithConnConf() throws Exception {
-    verifyRDDSaveToGemfire(false);
+    verifyRDDSaveToGemfire(false, false);
   }
-
-  public void verifyRDDSaveToGemfire(boolean useDefaultConnConf) throws Exception {
+  
+  public void verifyRDDSaveToGemfire(boolean useDefaultConnConf, boolean useOpConf) throws Exception {
     Region<String, Integer> region = prepareStrIntRegion(regionPath, 0, 0);  // remove all entries
     JavaRDD<Integer> rdd1 = prepareIntJavaRDD(0, numObjects);
 
     PairFunction<Integer, String, Integer> func = new IntToStrIntPairFunction();
-    if (useDefaultConnConf)
-      javaFunctions(rdd1).saveToGemfire(regionPath, func);
-    else
-      javaFunctions(rdd1).saveToGemfire(regionPath, func, connConf);
+    Properties opConf = new Properties();
+    opConf.put(RDDSaveBatchSizePropKey, "200");
 
+    if (useDefaultConnConf) {
+      if (useOpConf)
+        javaFunctions(rdd1).saveToGemfire(regionPath, func, opConf);
+      else
+        javaFunctions(rdd1).saveToGemfire(regionPath, func);
+    } else {
+      if (useOpConf)
+        javaFunctions(rdd1).saveToGemfire(regionPath, func, connConf, opConf);
+      else
+        javaFunctions(rdd1).saveToGemfire(regionPath, func, connConf);
+    }
+    
     Set<String> keys = region.keySetOnServer();
     Map<String, Integer> map = region.getAll(keys);
 
@@ -162,23 +183,42 @@ public class JavaApiIntegrationTest extends JUnitSuite {
   // --------------------------------------------------------------------------------------------
 
   @Test
+  public void testPairRDDSaveToGemfireWithDefaultConnConfAndOpConf() throws Exception {
+    verifyPairRDDSaveToGemfire(true, true);
+  }
+
+  @Test
   public void testPairRDDSaveToGemfireWithDefaultConnConf() throws Exception {
-    verifyPairRDDSaveToGemfire(true);
+    verifyPairRDDSaveToGemfire(true, false);
+  }
+  
+  @Test
+  public void testPairRDDSaveToGemfireWithConnConfAndOpConf() throws Exception {
+    verifyPairRDDSaveToGemfire(false, true);
   }
 
   @Test
   public void testPairRDDSaveToGemfireWithConnConf() throws Exception {
-    verifyPairRDDSaveToGemfire(false);
+    verifyPairRDDSaveToGemfire(false, false);
   }
-
-  public void verifyPairRDDSaveToGemfire(boolean useDefaultConnConf) throws Exception {
+  
+  public void verifyPairRDDSaveToGemfire(boolean useDefaultConnConf, boolean useOpConf) throws Exception {
     Region<String, Integer> region = prepareStrIntRegion(regionPath, 0, 0);  // remove all entries
     JavaPairRDD<String, Integer> rdd1 = prepareStrIntJavaPairRDD(0, numObjects);
+    Properties opConf = new Properties();
+    opConf.put(RDDSaveBatchSizePropKey, "200");
 
-    if (useDefaultConnConf)
-      javaFunctions(rdd1).saveToGemfire(regionPath);
-    else
-      javaFunctions(rdd1).saveToGemfire(regionPath, connConf);
+    if (useDefaultConnConf) {
+      if (useOpConf)
+        javaFunctions(rdd1).saveToGemfire(regionPath, opConf);
+      else
+        javaFunctions(rdd1).saveToGemfire(regionPath);
+    } else {
+      if (useOpConf)
+        javaFunctions(rdd1).saveToGemfire(regionPath, connConf, opConf);
+      else
+        javaFunctions(rdd1).saveToGemfire(regionPath, connConf);
+    }
 
     Set<String> keys = region.keySetOnServer();
     Map<String, Integer> map = region.getAll(keys);

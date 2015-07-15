@@ -11,6 +11,8 @@ import org.apache.spark.api.java.function.PairFunction;
 import scala.Option;
 import scala.reflect.ClassTag;
 
+import java.util.Properties;
+
 import static io.pivotal.gemfire.spark.connector.javaapi.JavaAPIHelper.*;
 
 /**
@@ -33,9 +35,33 @@ public class GemFireJavaRDDFunctions<T> {
    * @param regionPath the full path of region that the RDD is stored  
    * @param func the PairFunction that converts elements of JavaRDD to key/value pairs
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
+   * @param opConf the parameters for this operation
    */  
-  public <K, V> void saveToGemfire(String regionPath, PairFunction<T, K, V> func, GemFireConnectionConf connConf) {
-    rddf.saveToGemfire(regionPath, func, connConf);
+  public <K, V> void saveToGemfire(
+    String regionPath, PairFunction<T, K, V> func, GemFireConnectionConf connConf, Properties opConf) {
+    rddf.saveToGemfire(regionPath, func, connConf, propertiesToScalaMap(opConf));
+  }
+
+  /**
+   * Save the non-pair RDD to GemFire key-value store.
+   * @param regionPath the full path of region that the RDD is stored  
+   * @param func the PairFunction that converts elements of JavaRDD to key/value pairs
+   * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
+   */
+  public <K, V> void saveToGemfire(
+    String regionPath, PairFunction<T, K, V> func, GemFireConnectionConf connConf) {
+    rddf.saveToGemfire(regionPath, func, connConf, emptyStrStrMap());
+  }
+
+  /**
+   * Save the non-pair RDD to GemFire key-value store.
+   * @param regionPath the full path of region that the RDD is stored
+   * @param func the PairFunction that converts elements of JavaRDD to key/value pairs
+   * @param opConf the parameters for this operation
+   */
+  public <K, V> void saveToGemfire(
+    String regionPath, PairFunction<T, K, V> func, Properties opConf) {
+    rddf.saveToGemfire(regionPath, func, rddf.defaultConnectionConf(), propertiesToScalaMap(opConf));
   }
 
   /**
@@ -44,7 +70,7 @@ public class GemFireJavaRDDFunctions<T> {
    * @param func the PairFunction that converts elements of JavaRDD to key/value pairs
    */
   public <K, V> void saveToGemfire(String regionPath, PairFunction<T, K, V> func) {
-    rddf.saveToGemfire(regionPath, func, rddf.defaultConnectionConf());
+    rddf.saveToGemfire(regionPath, func, rddf.defaultConnectionConf(), emptyStrStrMap());
   }
 
   /**
@@ -58,8 +84,8 @@ public class GemFireJavaRDDFunctions<T> {
    *
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element T
-   * @tparam K the key type of the GemFire region
-   * @tparam V the value type of the GemFire region
+   * @param <K> the key type of the GemFire region
+   * @param <V> the value type of the GemFire region
    * @return JavaPairRDD&lt;T, V>
    */
   public <K, V> JavaPairRDD<T, V> joinGemfireRegion(String regionPath, Function<T, K> func) {
@@ -78,8 +104,8 @@ public class GemFireJavaRDDFunctions<T> {
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element T
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
-   * @tparam K the key type of the GemFire region
-   * @tparam V the value type of the GemFire region
+   * @param <K> the key type of the GemFire region
+   * @param <V> the value type of the GemFire region
    * @return JavaPairRDD&lt;T, V>
    */
   public <K, V> JavaPairRDD<T, V> joinGemfireRegion(
@@ -101,8 +127,8 @@ public class GemFireJavaRDDFunctions<T> {
    *
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element T
-   * @tparam K the key type of the GemFire region
-   * @tparam V the value type of the GemFire region
+   * @param <K> the key type of the GemFire region
+   * @param <V> the value type of the GemFire region
    * @return JavaPairRDD&lt;T, Option&lt;V>>
    */
   public <K, V> JavaPairRDD<T, Option<V>> outerJoinGemfireRegion(String regionPath, Function<T, K> func) {
@@ -121,8 +147,8 @@ public class GemFireJavaRDDFunctions<T> {
    * @param regionPath the region path of the GemFire region
    * @param func the function that generates region key from RDD element T
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
-   * @tparam K the key type of the GemFire region
-   * @tparam V the value type of the GemFire region
+   * @param <K> the key type of the GemFire region
+   * @param <V> the value type of the GemFire region
    * @return JavaPairRDD&lt;T, Option&lt;V>>
    */
   public <K, V> JavaPairRDD<T, Option<V>> outerJoinGemfireRegion(

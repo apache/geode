@@ -30,7 +30,7 @@ object ServerSplitsPartitioner extends GemFireRDDPartitioner {
   override def partitions[K: ClassTag, V: ClassTag]
   (conn: GemFireConnection, md: RegionMetadata, env: Map[String, String]): Array[Partition] = {
     if (md == null) throw new RuntimeException("RegionMetadata is null")
-    val n = env.getOrElse(NumberPartitionsPerServerPropKey, "2").toInt
+    val n = try { env.getOrElse(NumberPartitionsPerServerPropKey, "2").toInt } catch { case e: NumberFormatException => 2 }
     if (!md.isPartitioned || md.getServerBucketMap == null || md.getServerBucketMap.isEmpty)
       Array[Partition](new GemFireRDDPartition(0, Set.empty))
     else {

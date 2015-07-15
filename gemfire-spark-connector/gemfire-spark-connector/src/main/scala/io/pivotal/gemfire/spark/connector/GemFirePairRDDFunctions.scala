@@ -16,11 +16,15 @@ class GemFirePairRDDFunctions[K, V](val rdd: RDD[(K, V)]) extends Serializable w
    * Save the RDD of pairs to GemFire key-value store without any conversion
    * @param regionPath the full path of region that the RDD is stored
    * @param connConf the GemFireConnectionConf object that provides connection to GemFire cluster
+   * @param opConf the optional parameters for this operation
    */
-  def saveToGemfire(regionPath: String, connConf: GemFireConnectionConf = defaultConnectionConf): Unit = {
+  def saveToGemfire(
+      regionPath: String, 
+      connConf: GemFireConnectionConf = defaultConnectionConf, 
+      opConf: Map[String, String] = Map.empty): Unit = {    
     connConf.getConnection.validateRegion[K, V](regionPath)
     logInfo(s"Save RDD id=${rdd.id} to region $regionPath")
-    val writer = new GemFirePairRDDWriter[K, V](regionPath, connConf)
+    val writer = new GemFirePairRDDWriter[K, V](regionPath, connConf, opConf)
     rdd.sparkContext.runJob(rdd, writer.write _)
   }
 
