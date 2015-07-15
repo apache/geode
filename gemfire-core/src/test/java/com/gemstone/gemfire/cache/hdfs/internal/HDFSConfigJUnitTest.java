@@ -81,7 +81,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertEquals(false, r1.getAttributes().getHDFSWriteOnly());
         assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getWriteOnlyFileRolloverInterval() == 3600);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxWriteOnlyFileSize() + " and expected getMaxFileSize: 256MB", store.getMaxWriteOnlyFileSize() == 256);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileSizeLimit() == 256);
         this.c.close();
         
         
@@ -121,7 +121,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         hsf.setSynchronousDiskWrite(false);
         hsf.setHomeDir("/home/hemant");
         hsf.setNameNodeURL("mymachine");
-        hsf.setMaxWriteOnlyFileSize(1);
+        hsf.setWriteOnlyFileSizeLimit(1);
         hsf.setWriteOnlyFileRolloverInterval(10);
         hsf.create("myHDFSStore");
         
@@ -142,7 +142,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getBatchInterval() + " and expected batchsize: 50 ", store.getBatchSize()== 50);
         assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getSynchronousDiskWrite() + " and expected isPersistent: false", store.getSynchronousDiskWrite()== false);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getWriteOnlyFileRolloverInterval() == 10);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxWriteOnlyFileSize() + " and expected getMaxFileSize: 1MB", store.getMaxWriteOnlyFileSize() == 1);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileSizeLimit() == 1);
         this.c.close();
       } finally {
         this.c.close();
@@ -187,7 +187,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertEquals(false, r1.getAttributes().getHDFSWriteOnly());
         assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getWriteOnlyFileRolloverInterval() == 3600);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxWriteOnlyFileSize() + " and expected getMaxFileSize: 256MB", store.getMaxWriteOnlyFileSize() == 256);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileSizeLimit() == 256);
         
         this.c.close();
         
@@ -265,7 +265,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getBatchInterval() + " and expected batchsize: 50", store.getBatchInterval()== 50);
         assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getSynchronousDiskWrite() + " and expected isDiskSynchronous: false", store.getSynchronousDiskWrite()== false);
         assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getWriteOnlyFileRolloverInterval() == 10);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxWriteOnlyFileSize() + " and expected getMaxFileSize: 1MB", store.getMaxWriteOnlyFileSize() == 1);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileSizeLimit() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileSizeLimit() == 1);
         
         this.c.close();
       } finally {
@@ -303,9 +303,9 @@ public class HDFSConfigJUnitTest extends TestCase {
     
     assertTrue("compaction auto-compact mismatch.", store.getMinorCompaction());
     assertTrue("compaction auto-major-compact mismatch.", store.getMajorCompaction());
-    assertEquals("compaction max-input-file-size mismatch.", 512, store.getMaxInputFileSizeMB());
-    assertEquals("compaction min-input-file-count.", 4, store.getMinInputFileCount());
-    assertEquals("compaction max-iteration-size.", 10, store.getMaxInputFileCount());
+    assertEquals("compaction max-input-file-size mismatch.", 512, store.getInputFileSizeMax());
+    assertEquals("compaction min-input-file-count.", 4, store.getInputFileCountMin());
+    assertEquals("compaction max-iteration-size.", 10, store.getInputFileCountMax());
     assertEquals("compaction max-concurrency", 10, store.getMinorCompactionThreads());
     assertEquals("compaction max-major-concurrency", 2, store.getMajorCompactionThreads());
     assertEquals("compaction major-interval", 720, store.getMajorCompactionInterval());
@@ -339,19 +339,19 @@ public class HDFSConfigJUnitTest extends TestCase {
     hsf = this.c.createHDFSStoreFactory();
     
     try {
-      hsf.setMaxInputFileSizeMB(-1);
+      hsf.setInputFileSizeMax(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      hsf.setMinInputFileCount(-1);
+      hsf.setInputFileCountMin(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      hsf.setMaxInputFileCount(-1);
+      hsf.setInputFileCountMax(-1);
       //expected
       fail("validation failed");
     } catch (IllegalArgumentException e) {
@@ -381,16 +381,16 @@ public class HDFSConfigJUnitTest extends TestCase {
       //expected
     }
     try {
-      hsf.setMinInputFileCount(2);
-      hsf.setMaxInputFileCount(1);
+      hsf.setInputFileCountMin(2);
+      hsf.setInputFileCountMax(1);
       hsf.create("test");
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      hsf.setMaxInputFileCount(1);
-      hsf.setMinInputFileCount(2);
+      hsf.setInputFileCountMax(1);
+      hsf.setInputFileCountMin(2);
       hsf.create("test");
       fail("validation failed");
     } catch (IllegalArgumentException e) {

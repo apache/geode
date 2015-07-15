@@ -742,7 +742,7 @@ public class HDFSStoreCommandsJUnitTest {
         will(returnValue(namenode));
         allowing(mockStore).getHomeDir();
         will(returnValue(homeDir));
-        allowing(mockStore).getMaxWriteOnlyFileSize();
+        allowing(mockStore).getWriteOnlyFileSizeLimit();
         will(returnValue(maxFileSize));
         allowing(mockStore).getWriteOnlyFileRolloverInterval();
         will(returnValue(fileRolloverInterval));
@@ -758,11 +758,11 @@ public class HDFSStoreCommandsJUnitTest {
         will(returnValue(minorCompactionThreads));
         allowing(mockStore).getPurgeInterval();
         will(returnValue(purgeInterval));
-        allowing(mockStore).getMaxInputFileCount();
+        allowing(mockStore).getInputFileCountMax();
         will(returnValue(10));
-        allowing(mockStore).getMaxInputFileSizeMB();
+        allowing(mockStore).getInputFileSizeMax();
         will(returnValue(1024));
-        allowing(mockStore).getMinInputFileCount();
+        allowing(mockStore).getInputFileCountMin();
         will(returnValue(2));
         allowing(mockStore).getBlockCacheSize();
         will(returnValue(blockCachesize));

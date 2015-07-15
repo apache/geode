@@ -37,16 +37,16 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
   private String homeDir = DEFAULT_HOME_DIR;
   private String clientConfigFile = null;
   private float blockCacheSize = DEFAULT_BLOCK_CACHE_SIZE;
-  private int maxFileSize = DEFAULT_MAX_WRITE_ONLY_FILE_SIZE;
+  private int maxFileSize = DEFAULT_WRITE_ONLY_FILE_SIZE_LIMIT;
   private int fileRolloverInterval = DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL;
   protected boolean isAutoCompact = DEFAULT_MINOR_COMPACTION;
   protected boolean autoMajorCompact = DEFAULT_MAJOR_COMPACTION;
   protected int maxConcurrency = DEFAULT_MINOR_COMPACTION_THREADS;
   protected int majorCompactionConcurrency = DEFAULT_MAJOR_COMPACTION_THREADS;
   protected int majorCompactionIntervalMins = DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS;
-  protected int maxInputFileSizeMB = DEFAULT_MAX_INPUT_FILE_SIZE_MB;
-  protected int maxInputFileCount = DEFAULT_MAX_INPUT_FILE_COUNT;
-  protected int minInputFileCount = DEFAULT_MIN_INPUT_FILE_COUNT;
+  protected int maxInputFileSizeMB = DEFAULT_INPUT_FILE_SIZE_MAX_MB;
+  protected int maxInputFileCount = DEFAULT_INPUT_FILE_COUNT_MAX;
+  protected int minInputFileCount = DEFAULT_INPUT_FILE_COUNT_MIN;
   protected int oldFileCleanupIntervalMins = DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS;
   
   protected int batchSize = DEFAULT_BATCH_SIZE_MB;
@@ -78,16 +78,16 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
     this.homeDir = config.getHomeDir();
     this.clientConfigFile = config.getHDFSClientConfigFile();
     this.blockCacheSize = config.getBlockCacheSize();
-    this.maxFileSize = config.getMaxWriteOnlyFileSize();
+    this.maxFileSize = config.getWriteOnlyFileSizeLimit();
     this.fileRolloverInterval = config.getWriteOnlyFileRolloverInterval();
     isAutoCompact = config.getMinorCompaction();
     maxConcurrency = config.getMinorCompactionThreads();
     autoMajorCompact = config.getMajorCompaction();
     majorCompactionConcurrency = config.getMajorCompactionThreads();
     majorCompactionIntervalMins = config.getMajorCompactionInterval();
-    maxInputFileSizeMB = config.getMaxInputFileSizeMB();
-    maxInputFileCount = config.getMaxInputFileCount();
-    minInputFileCount = config.getMinInputFileCount();
+    maxInputFileSizeMB = config.getInputFileSizeMax();
+    maxInputFileCount = config.getInputFileCountMax();
+    minInputFileCount = config.getInputFileCountMin();
     oldFileCleanupIntervalMins = config.getPurgeInterval();
     
     batchSize = config.getBatchSize();
@@ -133,9 +133,9 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
       logAttrMutation("fileRolloverInterval", mutator.getWriteOnlyFileRolloverInterval());
       setWriteOnlyFileRolloverInterval(mutator.getWriteOnlyFileRolloverInterval());
     }
-    if (mutator.getMaxWriteOnlyFileSize() >= 0) {
+    if (mutator.getWriteOnlyFileSizeLimit() >= 0) {
       logAttrMutation("MaxFileSize", mutator.getWriteOnlyFileRolloverInterval());
-      setMaxWriteOnlyFileSize(mutator.getMaxWriteOnlyFileSize());
+      setWriteOnlyFileSizeLimit(mutator.getWriteOnlyFileSizeLimit());
     }
     
     if (mutator.getMinorCompaction() != null) {
@@ -160,17 +160,17 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
       logAttrMutation("AutoMajorCompaction", mutator.getMajorCompaction());
       setMajorCompaction(mutator.getMajorCompaction());
     }
-    if (mutator.getMaxInputFileCount() >= 0) {
-      logAttrMutation("maxInputFileCount", mutator.getMaxInputFileCount());
-      setMaxInputFileCount(mutator.getMaxInputFileCount());
+    if (mutator.getInputFileCountMax() >= 0) {
+      logAttrMutation("maxInputFileCount", mutator.getInputFileCountMax());
+      setInputFileCountMax(mutator.getInputFileCountMax());
     }
-    if (mutator.getMaxInputFileSizeMB() >= 0) {
-      logAttrMutation("MaxInputFileSizeMB", mutator.getMaxInputFileSizeMB());
-      setMaxInputFileSizeMB(mutator.getMaxInputFileSizeMB());
+    if (mutator.getInputFileSizeMax() >= 0) {
+      logAttrMutation("MaxInputFileSizeMB", mutator.getInputFileSizeMax());
+      setInputFileSizeMax(mutator.getInputFileSizeMax());
     }
-    if (mutator.getMinInputFileCount() >= 0) {
-      logAttrMutation("MinInputFileCount", mutator.getMinInputFileCount());
-      setMinInputFileCount(mutator.getMinInputFileCount());
+    if (mutator.getInputFileCountMin() >= 0) {
+      logAttrMutation("MinInputFileCount", mutator.getInputFileCountMin());
+      setInputFileCountMin(mutator.getInputFileCountMin());
     }    
     if (mutator.getPurgeInterval() >= 0) {
       logAttrMutation("OldFilesCleanupIntervalMins", mutator.getPurgeInterval());
@@ -248,13 +248,13 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
   }
   
   @Override
-  public HDFSStoreFactory setMaxWriteOnlyFileSize(int maxFileSize) {
+  public HDFSStoreFactory setWriteOnlyFileSizeLimit(int maxFileSize) {
     assertIsPositive(CacheXml.HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL, maxFileSize);
     this.maxFileSize = maxFileSize;
     return this;
   }
   @Override
-  public int getMaxWriteOnlyFileSize() {
+  public int getWriteOnlyFileSizeLimit() {
     return maxFileSize;
   }
 
@@ -323,35 +323,35 @@ public class HDFSStoreConfigHolder implements HDFSStore, HDFSStoreFactory ,Seria
   }
   
   @Override
-  public HDFSStoreFactory setMaxInputFileSizeMB(int size) {
+  public HDFSStoreFactory setInputFileSizeMax(int size) {
     HDFSStoreCreation.assertIsPositive("HDFS_COMPACTION_MAX_INPUT_FILE_SIZE_MB", size);
     this.maxInputFileSizeMB = size;
     return this;
   }
   @Override
-  public int getMaxInputFileSizeMB() {
+  public int getInputFileSizeMax() {
     return maxInputFileSizeMB;
   }
 
   @Override
-  public HDFSStoreFactory setMinInputFileCount(int count) {
+  public HDFSStoreFactory setInputFileCountMin(int count) {
     HDFSStoreCreation.assertIsPositive("HDFS_COMPACTION_MIN_INPUT_FILE_COUNT", count);
     this.minInputFileCount = count;
     return this;
   }
   @Override
-  public int getMinInputFileCount() {
+  public int getInputFileCountMin() {
     return minInputFileCount;
   }
 
   @Override
-  public HDFSStoreFactory setMaxInputFileCount(int count) {
+  public HDFSStoreFactory setInputFileCountMax(int count) {
     HDFSStoreCreation.assertIsPositive("HDFS_COMPACTION_MAX_INPUT_FILE_COUNT", count);
     this.maxInputFileCount = count;
     return this;
   }
   @Override
-  public int getMaxInputFileCount() {
+  public int getInputFileCountMax() {
     return maxInputFileCount;
   }
 

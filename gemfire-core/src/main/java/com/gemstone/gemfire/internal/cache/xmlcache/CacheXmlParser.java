@@ -1124,7 +1124,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     
     String maxFileSize = atts.getValue(HDFS_MAX_WRITE_ONLY_FILE_SIZE);
     if (maxFileSize != null) {
-      attrs.setMaxWriteOnlyFileSize(parseInt(maxFileSize));
+      attrs.setWriteOnlyFileSizeLimit(parseInt(maxFileSize));
     }
     
     String fileRolloverInterval = atts.getValue(HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL);

@@ -494,8 +494,8 @@ public class HDFSStoreImpl implements HDFSStore {
   }
 
   @Override
-  public int getMaxWriteOnlyFileSize() {
-    return configHolder.getMaxWriteOnlyFileSize();
+  public int getWriteOnlyFileSizeLimit() {
+    return configHolder.getWriteOnlyFileSizeLimit();
   }
 
   @Override
@@ -530,18 +530,18 @@ public class HDFSStoreImpl implements HDFSStore {
 
 
   @Override
-  public int getMaxInputFileSizeMB() {
-    return configHolder.getMaxInputFileSizeMB();
+  public int getInputFileSizeMax() {
+    return configHolder.getInputFileSizeMax();
   }
 
   @Override
-  public int getMinInputFileCount() {
-    return configHolder.getMinInputFileCount();
+  public int getInputFileCountMin() {
+    return configHolder.getInputFileCountMin();
   }
 
   @Override
-  public int getMaxInputFileCount() {
-    return configHolder.getMaxInputFileCount();
+  public int getInputFileCountMax() {
+    return configHolder.getInputFileCountMax();
   }
 
   @Override

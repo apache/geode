@@ -91,7 +91,7 @@ public class CreateHDFSStoreFunction extends FunctionAdapter implements Internal
     hdfsStoreFactory.setWriteOnlyFileRolloverInterval(configHolder.getWriteOnlyFileRolloverInterval());
     hdfsStoreFactory.setHomeDir(configHolder.getHomeDir());
     hdfsStoreFactory.setHDFSClientConfigFile(configHolder.getHDFSClientConfigFile());
-    hdfsStoreFactory.setMaxWriteOnlyFileSize(configHolder.getMaxWriteOnlyFileSize());
+    hdfsStoreFactory.setWriteOnlyFileSizeLimit(configHolder.getWriteOnlyFileSizeLimit());
     hdfsStoreFactory.setMajorCompaction(configHolder.getMajorCompaction());
     hdfsStoreFactory.setMajorCompactionInterval(configHolder.getMajorCompactionInterval());
     hdfsStoreFactory.setMajorCompactionThreads(configHolder.getMajorCompactionThreads());

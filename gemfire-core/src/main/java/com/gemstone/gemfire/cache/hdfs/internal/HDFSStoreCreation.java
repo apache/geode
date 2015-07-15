@@ -63,8 +63,8 @@ public class HDFSStoreCreation implements HDFSStoreFactory {
   }
   
   @Override
-  public HDFSStoreFactory setMaxWriteOnlyFileSize(int maxFileSize) {
-    configHolder.setMaxWriteOnlyFileSize(maxFileSize);
+  public HDFSStoreFactory setWriteOnlyFileSizeLimit(int maxFileSize) {
+    configHolder.setWriteOnlyFileSizeLimit(maxFileSize);
     return this;
   }
 
@@ -105,20 +105,20 @@ public class HDFSStoreCreation implements HDFSStoreFactory {
   }
 
   @Override
-  public HDFSStoreFactory setMaxInputFileSizeMB(int size) {
-    configHolder.setMaxInputFileSizeMB(size);
+  public HDFSStoreFactory setInputFileSizeMax(int size) {
+    configHolder.setInputFileSizeMax(size);
     return this;
   }
 
   @Override
-  public HDFSStoreFactory setMinInputFileCount(int count) {
-    configHolder.setMinInputFileCount(count);
+  public HDFSStoreFactory setInputFileCountMin(int count) {
+    configHolder.setInputFileCountMin(count);
     return this;
   }
 
   @Override
-  public HDFSStoreFactory setMaxInputFileCount(int count) {
-    configHolder.setMaxInputFileCount(count);
+  public HDFSStoreFactory setInputFileCountMax(int count) {
+    configHolder.setInputFileCountMax(count);
     return this;
   }
 

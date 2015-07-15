@@ -48,7 +48,7 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
   protected void configureHdfsStoreFactory() throws Exception {
     super.configureHdfsStoreFactory();
     
-    hsf.setMinInputFileCount(3);
+    hsf.setInputFileCountMin(3);
     hsf.setMinorCompaction(false);
     hsf.setMajorCompaction(false);
   }
@@ -346,7 +346,7 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
     TestHoplog thirdHop = (TestHoplog) targets.get(2).get();
 
     // oldest is more than max size is ignored 
-    oldestHop.get().size = HDFSStore.DEFAULT_MAX_INPUT_FILE_SIZE_MB * ONE_MB + 100;
+    oldestHop.get().size = HDFSStore.DEFAULT_INPUT_FILE_SIZE_MAX_MB * ONE_MB + 100;
     List<TrackedReference<Hoplog>> list = (List<TrackedReference<Hoplog>>) targets.clone();
     compactor.getMinorCompactionTargets(list, -1);
     assertEquals(4, list.size());
@@ -355,7 +355,7 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
     }
     
     // third is more than max size but is not ignored
-    thirdHop.size = HDFSStore.DEFAULT_MAX_INPUT_FILE_SIZE_MB * ONE_MB + 100;
+    thirdHop.size = HDFSStore.DEFAULT_INPUT_FILE_SIZE_MAX_MB * ONE_MB + 100;
     oldestHop.increment();
     list = (List<TrackedReference<Hoplog>>) targets.clone();
     compactor.getMinorCompactionTargets(list, -1);
@@ -365,7 +365,7 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
       if (i != 2) {
         assertTrue(((TestHoplog) ref.get()).size - TEN_MB < 5);
       } else {
-        assertTrue(((TestHoplog) ref.get()).size > HDFSStore.DEFAULT_MAX_INPUT_FILE_SIZE_MB * ONE_MB);
+        assertTrue(((TestHoplog) ref.get()).size > HDFSStore.DEFAULT_INPUT_FILE_SIZE_MAX_MB * ONE_MB);
       }
       i++;
     }
@@ -375,7 +375,7 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
     HdfsSortedOplogOrganizer organizer = new HdfsSortedOplogOrganizer(regionManager, 0);
     HoplogCompactor compactor = (HoplogCompactor) organizer.getCompactor();
 
-    assertTrue(TEN_MB * 2 < hdfsStore.getMaxInputFileSizeMB() * ONE_MB);
+    assertTrue(TEN_MB * 2 < hdfsStore.getInputFileSizeMax() * ONE_MB);
     
     ArrayList<TrackedReference<TestHoplog>> targets = new ArrayList<TrackedReference<TestHoplog>>();
     for (int i = 0; i < 5; i++) {
@@ -389,7 +389,7 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
     assertEquals(targets.size(), list.size());
     
     HDFSStoreMutator mutator = hdfsStore.createHdfsStoreMutator();
-    mutator.setMaxInputFileSizeMB(1);
+    mutator.setInputFileSizeMax(1);
     hdfsStore.alter(mutator);
     
     compactor.getMinorCompactionTargets(list, -1);
@@ -400,7 +400,7 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
     HdfsSortedOplogOrganizer organizer = new HdfsSortedOplogOrganizer(regionManager, 0);
     HoplogCompactor compactor = (HoplogCompactor) organizer.getCompactor();
     
-    assertTrue(2 < hdfsStore.getMaxInputFileCount());
+    assertTrue(2 < hdfsStore.getInputFileCountMax());
     
     ArrayList<TrackedReference<TestHoplog>> targets = new ArrayList<TrackedReference<TestHoplog>>();
     for (int i = 0; i < 5; i++) {
@@ -414,8 +414,8 @@ public class TieredCompactionJUnitTest extends BaseHoplogTestCase {
     assertEquals(targets.size(), list.size());
     
     HDFSStoreMutator mutator = hdfsStore.createHdfsStoreMutator();
-    mutator.setMaxInputFileCount(2);
-    mutator.setMinInputFileCount(2);
+    mutator.setInputFileCountMax(2);
+    mutator.setInputFileCountMin(2);
     hdfsStore.alter(mutator);
     
     compactor.getMinorCompactionTargets(list, -1);

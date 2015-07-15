@@ -37,7 +37,7 @@ public class HoplogUtilJUnitTest extends BaseHoplogTestCase {
   protected void configureHdfsStoreFactory() throws Exception {
     super.configureHdfsStoreFactory();
     
-    hsf.setMinInputFileCount(3);
+    hsf.setInputFileCountMin(3);
     hsf.setMinorCompaction(false);
     hsf.setMajorCompaction(false);
   }

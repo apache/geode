@@ -8,19 +8,27 @@
 
 package com.gemstone.gemfire.cache.hdfs;
 
+/**
+ * HDFSStoreMutator provides a means to dynamically alter {@link HDFSStore}'s
+ * behavior. Instances of this interface are created using
+ * {@link HDFSStore#createHdfsStoreMutator} and applied using
+ * {@link HDFSStore#alter}
+ * 
+ * @author ashvina
+ */
 public interface HDFSStoreMutator {
   /**
-   * {@link HDFSStoreFactory#setMaxWriteOnlyFileSize(int)}
+   * {@link HDFSStoreFactory#setWriteOnlyFileSizeLimit(int)}
    */
-  public HDFSStoreMutator setMaxWriteOnlyFileSize(int maxFileSize);
+  public HDFSStoreMutator setWriteOnlyFileSizeLimit(int maxFileSize);
 
   /**
-   * {@link HDFSStore#getMaxWriteOnlyFileSize()}
+   * {@link HDFSStore#getWriteOnlyFileSizeLimit()}
    * 
    * @return value to be used when mutator is executed on hdfsStore. -1 if not
    *         set
    */
-  public int getMaxWriteOnlyFileSize();
+  public int getWriteOnlyFileSizeLimit();
 
   /**
    * {@link HDFSStoreFactory#setWriteOnlyFileRolloverInterval(int)}
@@ -101,43 +109,43 @@ public interface HDFSStoreMutator {
   public int getMajorCompactionThreads();
 
   /**
-   * {@link HDFSStoreFactory#setMaxInputFileSizeMB(int)}
+   * {@link HDFSStoreFactory#setInputFileSizeMax(int)}
    */
-  public HDFSStoreMutator setMaxInputFileSizeMB(int size);
+  public HDFSStoreMutator setInputFileSizeMax(int size);
 
   /**
-   * {@link HDFSStore#getMaxInputFileSizeMB()}
+   * {@link HDFSStore#getInputFileSizeMax()}
    * 
    * @return value to be used when mutator is executed on hdfsStore. -1 if not
    *         set
    */
-  public int getMaxInputFileSizeMB();
+  public int getInputFileSizeMax();
 
   /**
-   * {@link HDFSStoreFactory#setMinInputFileCount(int)}
+   * {@link HDFSStoreFactory#setInputFileCountMin(int)}
    */
-  public HDFSStoreMutator setMinInputFileCount(int count);
+  public HDFSStoreMutator setInputFileCountMin(int count);
 
   /**
-   * {@link HDFSStore#getMinInputFileCount()}
+   * {@link HDFSStore#getInputFileCountMin()}
    * 
    * @return value to be used when mutator is executed on hdfsStore. -1 if not
    *         set
    */
-  public int getMinInputFileCount();
+  public int getInputFileCountMin();
 
   /**
-   * {@link HDFSStoreFactory#setMaxInputFileCount(int)}
+   * {@link HDFSStoreFactory#setInputFileCountMax(int)}
    */
-  public HDFSStoreMutator setMaxInputFileCount(int count);
+  public HDFSStoreMutator setInputFileCountMax(int count);
 
   /**
-   * {@link HDFSStore#getMaxInputFileCount()}
+   * {@link HDFSStore#getInputFileCountMax()}
    * 
    * @return value to be used when mutator is executed on hdfsStore. -1 if not
    *         set
    */
-  public int getMaxInputFileCount();
+  public int getInputFileCountMax();
 
   /**
    * {@link HDFSStoreFactory#setPurgeInterval(int)}

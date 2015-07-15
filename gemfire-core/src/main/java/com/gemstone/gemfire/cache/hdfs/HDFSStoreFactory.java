@@ -48,61 +48,91 @@ public interface HDFSStoreFactory {
 
   /**
    * @see HDFSStore#getHDFSClientConfigFile()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 or more than 100
    */
-  public HDFSStoreFactory setBlockCacheSize(float percentage);
+  public HDFSStoreFactory setBlockCacheSize(float value);
 
   /**
-   * @see HDFSStore#getMaxWriteOnlyFileSize()
+   * Default value {@link HDFSStore#DEFAULT_WRITE_ONLY_FILE_SIZE_LIMIT}
+   * @see HDFSStore#getWriteOnlyFileSizeLimit()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
-  public HDFSStoreFactory setMaxWriteOnlyFileSize(int maxFileSize);
+  public HDFSStoreFactory setWriteOnlyFileSizeLimit(int maxFileSize);
 
   /**
+   * Default value {@link HDFSStore#DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL}
    * @see HDFSStore#getWriteOnlyFileRolloverInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setWriteOnlyFileRolloverInterval(int interval);
 
   /**
+   * Default value {@link HDFSStore#DEFAULT_MINOR_COMPACTION}
    * @see HDFSStore#getMinorCompaction()
    */
   public HDFSStoreFactory setMinorCompaction(boolean auto);
 
   /**
+   * Default value {@link HDFSStore#DEFAULT_MINOR_COMPACTION_THREADS}
    * @see HDFSStore#getMinorCompactionThreads()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setMinorCompactionThreads(int count);
 
   /**
+   * Default value {@link HDFSStore#DEFAULT_MAJOR_COMPACTION}
    * @see HDFSStore#getMajorCompaction()
    */
   public HDFSStoreFactory setMajorCompaction(boolean auto);
 
   /**
+   * Default value {@link HDFSStore#DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS}
    * @see HDFSStore#getMajorCompactionInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setMajorCompactionInterval(int interval);
 
   /**
+   * Default value {@link HDFSStore#DEFAULT_MAJOR_COMPACTION_THREADS}
    * @see HDFSStore#getMajorCompactionThreads()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setMajorCompactionThreads(int count);
 
   /**
-   * @see HDFSStore#getMaxInputFileSizeMB()
+   * Default value {@link HDFSStore#DEFAULT_INPUT_FILE_SIZE_MAX_MB}
+   * @see HDFSStore#getInputFileSizeMax()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
-  public HDFSStoreFactory setMaxInputFileSizeMB(int size);
+  public HDFSStoreFactory setInputFileSizeMax(int size);
 
   /**
-   * @see HDFSStore#getMinInputFileCount()
+   * Default value {@link HDFSStore#DEFAULT_INPUT_FILE_COUNT_MIN}
+   * @see HDFSStore#getInputFileCountMin()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
-  public HDFSStoreFactory setMinInputFileCount(int count);
+  public HDFSStoreFactory setInputFileCountMin(int count);
 
   /**
-   * @see HDFSStore#getMaxInputFileCount()
+   * Default value {@link HDFSStore#DEFAULT_INPUT_FILE_COUNT_MAX}
+   * @see HDFSStore#getInputFileCountMax()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
-  public HDFSStoreFactory setMaxInputFileCount(int count);
+  public HDFSStoreFactory setInputFileCountMax(int count);
 
   /**
    * @see HDFSStore#getPurgeInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setPurgeInterval(int interval);
 
@@ -113,16 +143,22 @@ public interface HDFSStoreFactory {
 
   /**
    * @see HDFSStore#getMaxMemory()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setMaxMemory(int memory);
 
   /**
    * @see HDFSStore#getBatchInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setBatchInterval(int interval);
 
   /**
    * @see HDFSStore#getBatchSize()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setBatchSize(int size);
 
@@ -138,6 +174,8 @@ public interface HDFSStoreFactory {
 
   /**
    * @see HDFSStore#getDispatcherThreads()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
   public HDFSStoreFactory setDispatcherThreads(int dispatcherThreads);
 

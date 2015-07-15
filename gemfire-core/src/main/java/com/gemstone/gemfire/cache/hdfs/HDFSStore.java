@@ -16,11 +16,11 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * store will share the same HDFS persistence attributes. A user will normally
  * perform the following steps to enable HDFS persistence for a region:
  * <ol>
- * <li>[Optional] Creates a Disk store for reliability
- * <li>HDFS buffers will use local persistence till it is persisted on HDFS
- * <li>Creates a HDFS Store
- * <li>Creates a Region connected to HDFS Store Uses region API to create and
- * query data
+ * <li>[Optional] Creates a DiskStore for HDFS buffer reliability (HDFS buffers
+ * will be persisted locally till data lands on HDFS)
+ * <li>Creates a HDFS Store (connects to DiskStore created earlier)
+ * <li>Creates a Region connected to HDFS Store
+ * <li>Uses region API to create and query data
  * </ol>
  * <p>
  * Instances of this interface are created using {@link HDFSStoreFactory#create}
@@ -32,9 +32,9 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 public interface HDFSStore {
   public static final String DEFAULT_HOME_DIR = "gemfire";
   public static final float DEFAULT_BLOCK_CACHE_SIZE = 10f;
-  public static final int DEFAULT_MAX_WRITE_ONLY_FILE_SIZE = 256; 
+  public static final int DEFAULT_WRITE_ONLY_FILE_SIZE_LIMIT = 256;
   public static final int DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL = 3600;
-  
+
   public static final int DEFAULT_BATCH_SIZE_MB = 32;
   public static final int DEFAULT_BATCH_INTERVAL_MILLIS = 60000;
   public static final boolean DEFAULT_WRITEONLY_HDFSSTORE = false;
@@ -42,15 +42,15 @@ public interface HDFSStore {
   public static final boolean DEFAULT_DISK_SYNCHRONOUS = GatewaySender.DEFAULT_DISK_SYNCHRONOUS;
   public static final int DEFAULT_MAX_BUFFER_MEMORY = GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY;
   public static final int DEFAULT_DISPATCHER_THREADS = GatewaySender.DEFAULT_HDFS_DISPATCHER_THREADS;
-  
+
   public static final boolean DEFAULT_MINOR_COMPACTION = true;
   public static final int DEFAULT_MINOR_COMPACTION_THREADS = 10;
   public static final boolean DEFAULT_MAJOR_COMPACTION = true;
   public static final int DEFAULT_MAJOR_COMPACTION_THREADS = 2;
-  public static final int DEFAULT_MAX_INPUT_FILE_SIZE_MB = 512;
-  public static final int DEFAULT_MAX_INPUT_FILE_COUNT = 10;
-  public static final int DEFAULT_MIN_INPUT_FILE_COUNT = 4;
-  
+  public static final int DEFAULT_INPUT_FILE_SIZE_MAX_MB = 512;
+  public static final int DEFAULT_INPUT_FILE_COUNT_MAX = 10;
+  public static final int DEFAULT_INPUT_FILE_COUNT_MIN = 4;
+
   public static final int DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS = 720;
   public static final int DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS = 30;
 
@@ -64,7 +64,16 @@ public interface HDFSStore {
    * URL or NameNode Service URL. NameNode URL can also be provided via
    * hdfs-site.xml (see HDFSClientConfigFile). If the NameNode url is missing
    * HDFSStore creation will fail. HDFS client can also load hdfs configuration
-   * files in the classpath. NameNode URL provided in this way is also fine.
+   * files in the classpath. The following precedence order is applied
+   * <ol>
+   * <li>URL explicitly configured in the HdfsStore
+   * <li>URL provided in client configuration file:
+   * {@link #getHDFSClientConfigFile()}
+   * <li>URL provided in default configuration files loaded by hdfs-client
+   * </ol>
+   * 
+   * HDFSStore will use the selected URL only. It will fail if the selected URL
+   * is not reachable.
    * 
    * @return Namenode url explicitly configured by user
    */
@@ -108,7 +117,7 @@ public interface HDFSStore {
 
   /**
    * @return the percentage of the heap to use for the block cache in the range
-   * 0 ... 100
+   *         0 ... 100
    */
   public float getBlockCacheSize();
 
@@ -116,24 +125,24 @@ public interface HDFSStore {
    * HDFSStore buffer data is persisted on HDFS in batches. The BatchSize
    * defines the maximum size (in megabytes) of each batch that is written to
    * HDFS. This parameter, along with BatchInterval determines the rate at which
-   * data is persisted on HDFS. A higher value means that less number of bigger
-   * batches are persisted to HDFS and hence big files are created on HDFS. But,
-   * bigger batches consume memory.
+   * data is persisted on HDFS. A higher value causes fewer and bigger batches
+   * to be persisted to HDFS and hence big files are created on HDFS. But,
+   * bigger batches consume more memory.
    * 
-   * @return batchsize in MB
+   * @return batch size in MB
    */
   public int getBatchSize();
-  
+
   /**
    * HDFSStore buffer data is persisted on HDFS in batches, and the
-   * BatchInterval defines the maximum time that can elapse between writing
-   * batches to HDFS. This parameter, along with BatchSize determines the rate
-   * at which data is persisted on HDFS.
+   * BatchInterval defines the number of milliseconds that can elapse between
+   * writing batches to HDFS. This parameter, along with BatchSize determines
+   * the rate at which data is persisted on HDFS.
    * 
-   * @return interval in seconds
+   * @return batch interval in milliseconds
    */
   public int getBatchInterval();
-  
+
   /**
    * The maximum number of threads (per region) used to write batches to HDFS.
    * If you have a large number of clients that add or update data in a region,
@@ -143,12 +152,12 @@ public interface HDFSStore {
    * @return The maximum number of threads
    */
   public int getDispatcherThreads();
-  
+
   /**
    * Configure if HDFSStore in-memory buffer data, that has not been persisted
-   * on HDFS yet, should be persisted to a local disk to buffer prevent data
-   * loss. Persisting data may impact write performance. If performance is
-   * critical and buffer data loss is acceptable, disable persistence.
+   * on HDFS yet, should be persisted to a local disk to prevent buffer data
+   * loss. Persisting buffer data may impact write performance. If performance
+   * is critical and buffer data loss is acceptable, disable persistence.
    * 
    * @return true if buffer is persisted locally
    */
@@ -165,38 +174,44 @@ public interface HDFSStore {
   public String getDiskStoreName();
 
   /**
-   * Synchronous flag indicates if synchronous disk writes are enabled or not.
+   * HDFS buffers can be persisted on local disk. Each region update record is
+   * written to the disk synchronously if synchronous disk write is enabled.
+   * Enable this option if the data being persisted is critical and no record
+   * should be lost in case of a crash. This high reliability mode may increase
+   * write latency. If synchronous mode is disabled, data is persisted in
+   * batches which usually results in better performance.
    * 
    * @return true if enabled
    */
   public boolean getSynchronousDiskWrite();
-  
+
   /**
    * For HDFS write-only regions, this defines the maximum size (in megabytes)
    * that an HDFS log file can reach before HDFSStore closes the file and begins
-   * writing to a new file. This clause is ignored for HDFS read/write regions.
+   * writing to a new file. This option is ignored for HDFS read/write regions.
    * Keep in mind that the files are not available for MapReduce processing
    * until the file is closed; you can also set WriteOnlyFileRolloverInterval to
    * specify the maximum amount of time an HDFS log file remains open.
    * 
    * @return max file size in MB.
    */
-  public int getMaxWriteOnlyFileSize();
-  
+  public int getWriteOnlyFileSizeLimit();
+
   /**
-   * For HDFS write-only regions, this defines the maximum time that can elapse
-   * before HDFSStore closes an HDFS file and begins writing to a new file. This
-   * configuration is ignored for HDFS read/write regions.
+   * For HDFS write-only regions, this defines the number of seconds that can
+   * elapse before HDFSStore closes an HDFS file and begins writing to a new
+   * file. This configuration is ignored for HDFS read/write regions.
    * 
-   * @return interval in seconds 
+   * @return interval in seconds
    */
   public int getWriteOnlyFileRolloverInterval();
-  
+
   /**
    * Minor compaction reorganizes data in files to optimize read performance and
    * reduce number of files created on HDFS. Minor compaction process can be
    * I/O-intensive, tune the performance of minor compaction using
-   * MinorCompactionThreads.
+   * MinorCompactionThreads. Minor compaction is not applicable to write-only
+   * regions.
    * 
    * @return true if auto minor compaction is enabled
    */
@@ -206,6 +221,7 @@ public interface HDFSStore {
    * The maximum number of threads that HDFSStore uses to perform minor
    * compaction. You can increase the number of threads used for compaction as
    * necessary in order to fully utilize the performance of your HDFS cluster.
+   * Minor compaction is not applicable to write-only regions.
    * 
    * @return maximum number of threads executing minor compaction
    */
@@ -216,17 +232,18 @@ public interface HDFSStore {
    * HDFS files, which can save space in HDFS and improve performance when
    * reading from HDFS. As major compaction process can be long-running and
    * I/O-intensive, tune the performance of major compaction using
-   * MajorCompactionInterval and MajorCompactionThreads.
+   * MajorCompactionInterval and MajorCompactionThreads. Major compaction is not
+   * applicable to write-only regions.
    * 
    * @return true if auto major compaction is enabled
    */
   public boolean getMajorCompaction();
 
   /**
-   * The amount of time after which HDFSStore performs the next major compaction
-   * cycle.
+   * The number of minutes after which HDFSStore performs the next major
+   * compaction cycle. Major compaction is not applicable to write-only regions.
    * 
-   * @return interval in seconds
+   * @return interval in minutes
    */
   public int getMajorCompactionInterval();
 
@@ -234,34 +251,39 @@ public interface HDFSStore {
    * The maximum number of threads that HDFSStore uses to perform major
    * compaction. You can increase the number of threads used for compaction as
    * necessary in order to fully utilize the performance of your HDFS cluster.
+   * Major compaction is not applicable to write-only regions.
    * 
    * @return maximum number of threads executing major compaction
    */
   public int getMajorCompactionThreads();
-  
+
   /**
-   * HDFSStore creates new files as part of periodic maintenance activity.
-   * Existing files are deleted asynchronously. PurgeInterval defines the amount
-   * of time old files remain available and could be externally, e.g. read by MR
-   * jobs. After this interval has passed, old files are deleted.
+   * HDFSStore may create new files as part of periodic maintenance activity. It
+   * deletes old files asynchronously. PurgeInterval defines the number of
+   * minutes for which old files will remain available to be consumed
+   * externally, e.g. read by MR jobs. After this interval, old files are
+   * deleted. This configuration is not applicable to write-only regions
    * 
-   * @return interval configuration that guides deletion of old files
+   * @return old file purge interval in minutes
    */
   public int getPurgeInterval();
-  
+
   /**
-   * Permanently deletes all HDFS files associated with this this
-   * {@link HDFSStore}. This operation will fail ( {@link IllegalStateException}
-   * ) if any region is still using this store for persistence.
+   * Permanently deletes all HDFS files associated with this {@link HDFSStore}.
+   * This operation will fail if any region is still using this store for
+   * persistence.
+   * 
+   * @exception IllegalStateException
+   *              if any region using this hdfsStore still exists
    */
   public void destroy();
-  
+
   /**
    * @return new instance of mutator object that can be used to alter properties
    *         of this store
    */
   public HDFSStoreMutator createHdfsStoreMutator();
-  
+
   /**
    * Identifies attributes configured in {@link HDFSStoreMutator} and applies
    * the new attribute values to this instance of {@link HDFSStore} dynamically.
@@ -275,23 +297,38 @@ public interface HDFSStore {
   public HDFSStore alter(HDFSStoreMutator mutator);
 
   /**
-   * This advanced configuration affects minor compaction.
-   * @return size threshold (in MB). A file larger than this size will not be
-   *         considered for compaction
+   * A file larger than this size, in megabytes, will not be compacted by minor
+   * compactor. Increasing this value will result in compaction of bigger files.
+   * This will lower the number of files on HDFS at the cost of increased IO.
+   * This option is for advanced users and will need tuning in special cases
+   * only. This option is not applicable to write-only regions.
+   * 
+   * @return size threshold (in MB)
    */
-  public int getMaxInputFileSizeMB();
+  public int getInputFileSizeMax();
 
   /**
-   * This advanced configuration affects minor compaction.
-   * @return minimum count threshold. Compaction cycle will commence if the
-   *         number of files to be compacted is more than this number
+   * A minimum number of files must exist in a bucket directory on HDFS before
+   * minor compaction will start compaction. Keeping a higher value for this
+   * option will reduce the frequency of minor compaction, which in turn may
+   * result in reduced IO overhead. However it may result in increased pressure
+   * on HDFS NameNode. This option is for advanced users and will need tuning in
+   * special cases only. This option is not applicable to write-only regions.
+   * 
+   * @return minimum number of files for minor compaction to get triggered
    */
-  public int getMinInputFileCount();
+  public int getInputFileCountMin();
 
   /**
-   * This advanced configuration affects minor compaction.
-   * @return maximum count threshold.  Compaction cycle will not include more
-   *          files than the maximum
+   * The maximum number of files compacted by Minor compactor in a cycle.
+   * Keeping a higher value for this option will reduce the frequency of minor
+   * compaction, which in turn may result in reduced IO overhead. However it may
+   * result in large number of concurrent IO operations which in-turn may
+   * degrade the performance. This option is for advanced users and will need
+   * tuning in special cases only. This option is not applicable to write-only
+   * regions.
+   * 
+   * @return maximum number of files minor compacted in one cycle
    */
-  public int getMaxInputFileCount();
+  public int getInputFileCountMax();
 }

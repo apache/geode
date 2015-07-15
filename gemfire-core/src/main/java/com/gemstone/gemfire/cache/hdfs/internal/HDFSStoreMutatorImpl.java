@@ -26,13 +26,13 @@ public class HDFSStoreMutatorImpl implements HDFSStoreMutator {
     configHolder = new HDFSStoreConfigHolder(store);
   }
   
-  public HDFSStoreMutator setMaxWriteOnlyFileSize(int maxFileSize) {
-    configHolder.setMaxWriteOnlyFileSize(maxFileSize);
+  public HDFSStoreMutator setWriteOnlyFileSizeLimit(int maxFileSize) {
+    configHolder.setWriteOnlyFileSizeLimit(maxFileSize);
     return this;
   }
   @Override
-  public int getMaxWriteOnlyFileSize() {
-    return configHolder.getMaxWriteOnlyFileSize();
+  public int getWriteOnlyFileSizeLimit() {
+    return configHolder.getWriteOnlyFileSizeLimit();
   }
 
   @Override
@@ -98,33 +98,33 @@ public class HDFSStoreMutatorImpl implements HDFSStoreMutator {
   }
 
   @Override
-  public HDFSStoreMutator setMaxInputFileSizeMB(int size) {
-    configHolder.setMaxInputFileSizeMB(size);
+  public HDFSStoreMutator setInputFileSizeMax(int size) {
+    configHolder.setInputFileSizeMax(size);
     return this;
   }
   @Override
-  public int getMaxInputFileSizeMB() {
-    return configHolder.getMaxInputFileSizeMB();
+  public int getInputFileSizeMax() {
+    return configHolder.getInputFileSizeMax();
   }
   
   @Override
-  public HDFSStoreMutator setMinInputFileCount(int count) {
-    configHolder.setMinInputFileCount(count);
+  public HDFSStoreMutator setInputFileCountMin(int count) {
+    configHolder.setInputFileCountMin(count);
     return this;
   }
   @Override
-  public int getMinInputFileCount() {
-    return configHolder.getMinInputFileCount();
+  public int getInputFileCountMin() {
+    return configHolder.getInputFileCountMin();
   }
   
   @Override
-  public HDFSStoreMutator setMaxInputFileCount(int count) {
-    configHolder.setMaxInputFileCount(count);
+  public HDFSStoreMutator setInputFileCountMax(int count) {
+    configHolder.setInputFileCountMax(count);
     return this;
   }
   @Override
-  public int getMaxInputFileCount() {
-    return configHolder.getMaxInputFileCount();
+  public int getInputFileCountMax() {
+    return configHolder.getInputFileCountMax();
   }
   
   @Override

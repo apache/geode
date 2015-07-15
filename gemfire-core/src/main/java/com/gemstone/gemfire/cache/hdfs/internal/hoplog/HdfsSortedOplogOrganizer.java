@@ -1355,9 +1355,9 @@ public class HdfsSortedOplogOrganizer extends AbstractHoplogOrganizer<SortedHopl
       // minimum number of files that must be present for compaction to be worth
       final int MIN_FILE_COUNT_COMPACTION;
       
-      MAX_COMPACTION_FILE_SIZE = ((long)store.getMaxInputFileSizeMB()) * 1024 *1024;
-      MAX_FILE_COUNT_COMPACTION = store.getMaxInputFileCount();
-      MIN_FILE_COUNT_COMPACTION = store.getMinInputFileCount();
+      MAX_COMPACTION_FILE_SIZE = ((long)store.getInputFileSizeMax()) * 1024 *1024;
+      MAX_FILE_COUNT_COMPACTION = store.getInputFileCountMax();
+      MIN_FILE_COUNT_COMPACTION = store.getInputFileCountMin();
 
       try {
         // skip till first file smaller than the max compaction file size is
