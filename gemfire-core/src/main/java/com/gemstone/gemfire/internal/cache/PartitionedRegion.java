@@ -764,6 +764,7 @@ public class PartitionedRegion extends LocalRegion implements
     // this.scope = Scope.LOCAL;
     this.redundantCopies = ra.getPartitionAttributes().getRedundantCopies();
     this.prStats.setConfiguredRedundantCopies(ra.getPartitionAttributes().getRedundantCopies());
+    this.prStats.setLocalMaxMemory(ra.getPartitionAttributes().getLocalMaxMemory() * 1024L * 1024);
     
     // No redundancy required for writes
     this.minimumWriteRedundancy = Integer.getInteger(

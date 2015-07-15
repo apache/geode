@@ -38,6 +38,7 @@ import com.gemstone.gemfire.internal.cache.partitioned.BecomePrimaryBucketMessag
 import com.gemstone.gemfire.internal.cache.partitioned.MoveBucketMessage.MoveBucketResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperator;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.ParallelBucketOperator;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.RebalanceDirector;
@@ -74,6 +75,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 @SuppressWarnings("synthetic-access")
 public class PartitionedRegionRebalanceOp {
   private static final Logger logger = LogService.getLogger();
+  
+  private static final int MAX_PARALLEL_OPERATIONS = Integer.getInteger("gemfire.MAX_PARALLEL_BUCKET_RECOVERIES", 8);
   
   private final boolean simulate;
   private final boolean replaceOfflineData;
@@ -177,9 +180,10 @@ public class PartitionedRegionRebalanceOp {
 
       GemFireCacheImpl cache = (GemFireCacheImpl) leaderRegion.getCache();
       Map<PartitionedRegion, InternalPRInfo> detailsMap = fetchDetails(cache);
-      BucketOperatorWrapper operator = getBucketOperator(detailsMap);
-      model = buildModel(operator, detailsMap, resourceManager);
-      for(PartitionRebalanceDetailsImpl details : operator.getDetailSet()) {
+      BucketOperatorWrapper serialOperator = getBucketOperator(detailsMap);
+      ParallelBucketOperator parallelOperator = new ParallelBucketOperator(MAX_PARALLEL_OPERATIONS, cache.getDistributionManager().getWaitingThreadPool(), serialOperator);
+      model = buildModel(parallelOperator, detailsMap, resourceManager);
+      for(PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
         details.setPartitionMemberDetailsBefore(model.getPartitionedMemberDetails(details.getRegionPath()));
       }
 
@@ -199,8 +203,9 @@ public class PartitionedRegionRebalanceOp {
           if(this.stats != null) {
             this.stats.incRebalanceMembershipChanges(1);
           }
+          model.waitForOperations();
           detailsMap = fetchDetails(cache);
-          model = buildModel(operator, detailsMap, resourceManager);
+          model = buildModel(parallelOperator, detailsMap, resourceManager);
           director.membershipChanged(model);
         }
 
@@ -222,14 +227,14 @@ public class PartitionedRegionRebalanceOp {
       }
       long end = System.nanoTime();
       
-      for(PartitionRebalanceDetailsImpl details : operator.getDetailSet()) {
+      for(PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
         if(!simulate) {
           details.setTime(end - start);
         }
         details.setPartitionMemberDetailsAfter(model.getPartitionedMemberDetails(details.getRegionPath()));
       }
 
-      return Collections.<PartitionRebalanceInfo>unmodifiableSet(operator.getDetailSet());
+      return Collections.<PartitionRebalanceInfo>unmodifiableSet(serialOperator.getDetailSet());
     } finally {
       if(lock != null) {
         try {
@@ -620,6 +625,7 @@ public class PartitionedRegionRebalanceOp {
   
   private class BucketOperatorImpl implements BucketOperator {
 
+    @Override
     public boolean moveBucket(InternalDistributedMember source,
         InternalDistributedMember target, int bucketId,
         Map<String, Long> colocatedRegionBytes) {
@@ -629,6 +635,7 @@ public class PartitionedRegionRebalanceOp {
       return moveBucketForRegion(source, target, bucketId, leaderRegion);
     }
 
+    @Override
     public boolean movePrimary(InternalDistributedMember source,
         InternalDistributedMember target, int bucketId) {
 
@@ -637,13 +644,29 @@ public class PartitionedRegionRebalanceOp {
       return movePrimaryBucketForRegion(target, bucketId, leaderRegion, isRebalance); 
     }
 
-    public boolean createRedundantBucket(
+    @Override
+    public void createRedundantBucket(
         InternalDistributedMember targetMember, int bucketId,
-        Map<String, Long> colocatedRegionBytes) {
-      return createRedundantBucketForRegion(targetMember, bucketId,
+        Map<String, Long> colocatedRegionBytes, Completion completion) {
+      boolean result = false;
+      try {
+        result = createRedundantBucketForRegion(targetMember, bucketId,
           leaderRegion, isRebalance,replaceOfflineData);
+      } finally {
+        if(result) {
+          completion.onSuccess();
+        } else {
+          completion.onFailure();
+        }
+      }
+    }
+    
+    @Override
+    public void waitForOperations() {
+      //do nothing, all operations are synchronous
     }
 
+    @Override
     public boolean removeBucket(InternalDistributedMember targetMember, int bucketId,
         Map<String, Long> colocatedRegionBytes) {
       return removeRedundantBucketForRegion(targetMember, bucketId,
@@ -670,7 +693,7 @@ public class PartitionedRegionRebalanceOp {
       this.detailSet = rebalanceDetails;
       this.regionCount = detailSet.size();
     }
-    
+    @Override
     public boolean moveBucket(InternalDistributedMember sourceMember,
         InternalDistributedMember targetMember, int id,
         Map<String, Long> colocatedRegionBytes) {
@@ -715,23 +738,23 @@ public class PartitionedRegionRebalanceOp {
       return result;
     }
 
-    public boolean createRedundantBucket(
-        InternalDistributedMember targetMember, int i, 
-        Map<String, Long> colocatedRegionBytes) {
-      boolean result = false;
-      long elapsed = 0;
-      long totalBytes = 0;
-      
+    @Override
+    public void createRedundantBucket(
+        final InternalDistributedMember targetMember, final int i, 
+        final Map<String, Long> colocatedRegionBytes, final Completion completion) {
       
       if(stats != null) {
         stats.startBucketCreate(regionCount);
       }
-      try {
-        long start = System.nanoTime();
-        result = delegate.createRedundantBucket(targetMember, i,  
-            colocatedRegionBytes);
-        elapsed= System.nanoTime() - start;
-        if (result) {
+      
+      final long start = System.nanoTime();
+      delegate.createRedundantBucket(targetMember, i,  
+          colocatedRegionBytes, new Completion() {
+
+        @Override
+        public void onSuccess() {
+          long totalBytes = 0;
+          long elapsed= System.nanoTime() - start;
           if(logger.isDebugEnabled()) {
             logger.debug("Rebalancing {} redundant bucket {} created on {}", leaderRegion, i, targetMember);
           }
@@ -746,20 +769,29 @@ public class PartitionedRegionRebalanceOp {
               totalBytes += regionBytes;
             }
           }
-        } else {
+
+          if(stats != null) {
+            stats.endBucketCreate(regionCount, true, totalBytes, elapsed);
+          }
+
+        }
+
+        @Override
+        public void onFailure() {
+          long elapsed= System.nanoTime() - start;
+
           if (logger.isDebugEnabled()) {
             logger.debug("Rebalancing {} redundant bucket {} failed creation on {}", leaderRegion, i, targetMember);
           }
+
+          if(stats != null) {
+            stats.endBucketCreate(regionCount, false, 0, elapsed);
+          }
         }
-      } finally {
-        if(stats != null) {
-          stats.endBucketCreate(regionCount, result, totalBytes, elapsed);
-        }
-      }
-      
-      return result;
+      });
     }
     
+    @Override
     public boolean removeBucket(
         InternalDistributedMember targetMember, int i, 
         Map<String, Long> colocatedRegionBytes) {
@@ -805,6 +837,7 @@ public class PartitionedRegionRebalanceOp {
       return result;
     }
   
+    @Override
     public boolean movePrimary(InternalDistributedMember source,
         InternalDistributedMember target, int bucketId) {
       boolean result = false;
@@ -837,6 +870,11 @@ public class PartitionedRegionRebalanceOp {
     }
       
       return result;
+    }
+    
+    @Override
+    public void waitForOperations() {
+      delegate.waitForOperations();
     }
 
     public Set<PartitionRebalanceDetailsImpl> getDetailSet() {

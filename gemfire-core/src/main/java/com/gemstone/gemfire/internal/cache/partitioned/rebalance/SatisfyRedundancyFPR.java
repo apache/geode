@@ -76,5 +76,6 @@ public class SatisfyRedundancyFPR extends RebalanceDirectorAdapter {
       
       model.createRedundantBucket(bucket, targetMember);
     }
+    model.waitForOperations();
   }
 }
