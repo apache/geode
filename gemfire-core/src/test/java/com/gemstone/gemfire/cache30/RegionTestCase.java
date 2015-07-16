@@ -1963,6 +1963,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     // After the timeout passes, we will tolerate a slight
     // lag before the invalidate becomes visible (due to
     // system loading)
+    // Slight lag? WAIT_DEFAULT is 60,000 ms. Many of our tests configure 20ms expiration.
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
     tilt += maxWaitTime;
     for (;;) {
@@ -1971,7 +1972,7 @@ public abstract class RegionTestCase extends CacheTestCase {
         if (fetchEntryValue(entry) == null) break;
         fail("Entry failed to invalidate");
       }
-      pause(1000);
+      pause(100);
     }
   }
 
@@ -2028,7 +2029,7 @@ public abstract class RegionTestCase extends CacheTestCase {
         break;
       Assert.assertTrue(System.currentTimeMillis() <= tilt,
           "Entry failed to destroy");
-      pause(1000);
+      pause(100);
     }
   }
   
@@ -2072,7 +2073,7 @@ public abstract class RegionTestCase extends CacheTestCase {
         break;
       Assert.assertTrue(System.currentTimeMillis() <= tilt,
           "Region failed to destroy");
-      pause(1000);
+      pause(100);
     }
   }  
 
@@ -2144,9 +2145,9 @@ public abstract class RegionTestCase extends CacheTestCase {
 
     Region region = null;
     /**
-             * Crank up the expiration so test runs faster.
-             * This property only needs to be set while the region is created
-             */
+     * Crank up the expiration so test runs faster.
+     * This property only needs to be set while the region is created
+     */
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
       region = createRegion(name, attrs);
