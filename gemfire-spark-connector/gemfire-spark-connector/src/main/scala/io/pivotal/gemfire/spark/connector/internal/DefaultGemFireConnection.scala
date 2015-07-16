@@ -23,8 +23,6 @@ private[connector] class DefaultGemFireConnection (
   extends GemFireConnection with Logging {
 
   private val clientCache = initClientCache()
-  /** a lock object only used by getRegionProxy...() */
-  private val regionLock = new Object
 
   /** Register GemFire functions to the GemFire cluster */
   FunctionService.registerFunction(RetrieveRegionMetadataFunction.getInstance())
@@ -81,7 +79,7 @@ private[connector] class DefaultGemFireConnection (
   def getRegionProxy[K, V](regionPath: String): Region[K, V] = {
     val region1: Region[K, V] = clientCache.getRegion(regionPath).asInstanceOf[Region[K, V]]
     if (region1 != null) region1
-    else regionLock.synchronized {
+    else DefaultGemFireConnection.regionLock.synchronized {
       val region2 = clientCache.getRegion(regionPath).asInstanceOf[Region[K, V]]
       if (region2 != null) region2
       else clientCache.createClientRegionFactory[K, V](ClientRegionShortcut.PROXY).create(regionPath)
@@ -116,6 +114,10 @@ private[connector] class DefaultGemFireConnection (
   }
 }
 
+private[connector] object DefaultGemFireConnection {
+  /** a lock object only used by getRegionProxy...() */
+  private val regionLock = new Object
+}
 
 /** The purpose of this class is making unit test DefaultGemFireConnectionManager easier */
 class DefaultGemFireConnectionFactory {
