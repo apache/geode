@@ -19,7 +19,6 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueStats;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
 import com.gemstone.gemfire.test.junit.categories.HoplogTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest
 ;
@@ -36,7 +35,8 @@ public class HDFSCacheLoaderJUnitTest extends BaseHoplogTestCase {
   protected void configureHdfsStoreFactory() throws Exception {
     hsf = this.cache.createHDFSStoreFactory();
     hsf.setHomeDir(testDataDir.toString());
-    hsf.setHDFSEventQueueAttributes(new HDFSEventQueueAttributesFactory().setBatchTimeInterval(100000000).setBatchSizeMB(10000).create());
+    hsf.setBatchInterval(100000000);
+    hsf.setBatchSize(10000);
   }
 
   /**

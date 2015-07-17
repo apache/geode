@@ -83,7 +83,7 @@ public class HDFSUnsortedHoplogOrganizerJUnitTest extends BaseHoplogTestCase {
     readSequenceFile(hdfsStore.getFileSystem(), hoplogs[0].getPath(), 0);
     
     HDFSStoreMutator mutator = hdfsStore.createHdfsStoreMutator();
-    mutator.setFileRolloverInterval(1);
+    mutator.setWriteOnlyFileRolloverInterval(1);
     hdfsStore.alter(mutator);
     
     TimeUnit.MILLISECONDS.sleep(1100);

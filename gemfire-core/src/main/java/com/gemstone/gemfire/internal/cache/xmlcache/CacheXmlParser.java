@@ -78,9 +78,6 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributes;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory.HDFSCompactionConfigFactory;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.query.IndexType;
@@ -1060,75 +1057,60 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
     }
     
-    boolean eventQueueAttributesExist = false;
-    HDFSEventQueueAttributesFactory eventFactory = new HDFSEventQueueAttributesFactory();
     Integer maxMemory = getIntValue(atts, HDFS_MAX_MEMORY);
     if (maxMemory != null) {
-      eventQueueAttributesExist = true;
-      eventFactory.setMaximumQueueMemory(maxMemory);
+      attrs.setMaxMemory(maxMemory);
     }
     
     Integer batchSize = getIntValue(atts, HDFS_BATCH_SIZE);
     if (batchSize != null) {
-      eventQueueAttributesExist = true;
-      eventFactory.setBatchSizeMB(batchSize);
+      attrs.setBatchSize(batchSize);
     }
     
     Integer batchInterval = getIntValue(atts, HDFS_BATCH_INTERVAL);
     if (batchInterval != null) {
-      eventQueueAttributesExist = true;
-      eventFactory.setBatchTimeInterval(batchInterval);
+      attrs.setBatchInterval(batchInterval);
     }
     
     Integer dispatcherThreads = getIntValue(atts, HDFS_DISPATCHER_THREADS);
     if (dispatcherThreads != null) {
-      eventQueueAttributesExist = true;
-      eventFactory.setDispatcherThreads(dispatcherThreads);
+      attrs.setDispatcherThreads(dispatcherThreads);
     }
     
     Boolean bufferPersistent = getBoolean(atts, HDFS_BUFFER_PERSISTENT);
     if (bufferPersistent != null) {
-      eventQueueAttributesExist = true;
-      eventFactory.setPersistent(bufferPersistent);
+      attrs.setBufferPersistent(bufferPersistent);
     }
     
     Boolean synchronousDiskWrite = getBoolean(atts, HDFS_SYNCHRONOUS_DISK_WRITE);
     if (synchronousDiskWrite != null) {
-      eventQueueAttributesExist = true;
-      eventFactory.setDiskSynchronous(synchronousDiskWrite);
+      attrs.setSynchronousDiskWrite(synchronousDiskWrite);
     }
     
     String diskstoreName = atts.getValue(HDFS_DISK_STORE);
     if (diskstoreName != null) {
-      eventQueueAttributesExist = true;
-      eventFactory.setDiskStoreName(diskstoreName);
+      attrs.setDiskStoreName(diskstoreName);
     }
     
-    if (eventQueueAttributesExist) {
-      HDFSEventQueueAttributes eventQAttribs = eventFactory.create();
-      attrs.setHDFSEventQueueAttributes(eventQAttribs);
-    }
-   
-    HDFSCompactionConfigFactory config = attrs.createCompactionConfigFactory(null);
     Integer purgeInterval = getInteger(atts, HDFS_PURGE_INTERVAL);
     if (purgeInterval != null) {
-      config.setOldFilesCleanupIntervalMins(purgeInterval);
+      attrs.setPurgeInterval(purgeInterval);
     }
     Boolean majorCompaction = getBoolean(atts, HDFS_MAJOR_COMPACTION);
     if (majorCompaction != null) {
-      config.setAutoMajorCompaction(Boolean.valueOf(majorCompaction));
+      attrs.setMajorCompaction(Boolean.valueOf(majorCompaction));
     }
     
     // configure major compaction interval
     Integer majorCompactionInterval = getIntValue(atts, HDFS_MAJOR_COMPACTION_INTERVAL);
     if (majorCompactionInterval != null) {
-      config.setMajorCompactionIntervalMins(majorCompactionInterval);
+      attrs.setMajorCompactionInterval(majorCompactionInterval);
     }
     
     // configure compaction concurrency
     Integer value = getIntValue(atts, HDFS_MAJOR_COMPACTION_THREADS);
     if (value != null)
-      config.setMajorCompactionMaxThreads(value);
+      attrs.setMajorCompactionThreads(value);
     
     Boolean minorCompaction = getBoolean(atts, HDFS_MINOR_COMPACTION);
     if (minorCompaction != null) {
@@ -1138,18 +1120,16 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     // configure compaction concurrency
     value = getIntValue(atts, HDFS_MINOR_COMPACTION_THREADS);
     if (value != null)
-      config.setMaxThreads(value);
+      attrs.setMinorCompactionThreads(value);
     
-    attrs.setHDFSCompactionConfig(config.getConfigView());
-
     String maxFileSize = atts.getValue(HDFS_MAX_WRITE_ONLY_FILE_SIZE);
     if (maxFileSize != null) {
-      attrs.setMaxFileSize(parseInt(maxFileSize));
+      attrs.setWriteOnlyFileRolloverSize(parseInt(maxFileSize));
     }
     
     String fileRolloverInterval = atts.getValue(HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL);
     if (fileRolloverInterval != null) {
-      attrs.setFileRolloverInterval(parseInt(fileRolloverInterval));
+      attrs.setWriteOnlyFileRolloverInterval(parseInt(fileRolloverInterval));
     }
     stack.push(name);
     stack.push(attrs);
@@ -1192,60 +1172,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
     }
     return null;
-  }
-  
-  private void startHDFSEventQueue(Attributes atts) {
-    HDFSEventQueueAttributesFactory eventFactory = new HDFSEventQueueAttributesFactory();
-    
-    //batch-size
-    String batchSize = atts.getValue(HDFS_QUEUE_BATCH_SIZE);
-    if(batchSize != null){
-      eventFactory.setBatchSizeMB(Integer.parseInt(batchSize));
-    }
-    
-    //batch-size
-    String batchInterval = atts.getValue(BATCH_TIME_INTERVAL);
-    if(batchInterval != null){
-      eventFactory.setBatchTimeInterval(Integer.parseInt(batchInterval));
-    }
-    
-    //maximum-queue-memory
-    String maxQueueMemory = atts.getValue(MAXIMUM_QUEUE_MEMORY);
-    if(maxQueueMemory != null){
-      eventFactory.setMaximumQueueMemory(Integer.parseInt(maxQueueMemory));
-    }
-    
-    //persistent
-    String persistent = atts.getValue(PERSISTENT);
-    if(persistent != null){
-      eventFactory.setPersistent(Boolean.parseBoolean(persistent));
-    }
-    
-    String diskStoreName = atts.getValue(DISK_STORE_NAME);
-    if(diskStoreName != null){
-      eventFactory.setDiskStoreName(diskStoreName);
-    }
-    
-    String diskSynchronous = atts.getValue(DISK_SYNCHRONOUS);
-    if(diskSynchronous != null){
-      eventFactory.setDiskSynchronous(Boolean.parseBoolean(diskSynchronous));
-    }
-    
-    HDFSEventQueueAttributes eventAttribs = eventFactory.create();
-    stack.push(eventAttribs);
-  }
-  
-  private void endHDFSEventQueue() {
-    HDFSEventQueueAttributes eventAttribs = (HDFSEventQueueAttributes) stack.pop();
-    
-    Object storeCreation = stack.peek();
-    if (!(storeCreation instanceof HDFSStoreCreation))
-      //TODO:HDFS throw a proper error string
-        throw new CacheXmlException("Store attributes should be a child of store");
-    HDFSStoreCreation store = (HDFSStoreCreation)storeCreation;
-    // put back the popped element
-    
-    store.setHDFSEventQueueAttributes(eventAttribs);
   }
   
   /**
@@ -3067,9 +2993,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 	else if (qName.equals(HDFS_STORE)) {
         startHDFSStore(atts);
     }
-    else if (qName.equals(HDFS_EVENT_QUEUE)) {
-      startHDFSEventQueue(atts);
-    }
     else if (qName.equals(COMPRESSOR)) {
     }
     else {
@@ -3480,9 +3403,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (qName.equals(HDFS_STORE)) {
           endHDFSStore();
-      }
-      else if (qName.equals(HDFS_EVENT_QUEUE)) {
-        endHDFSEventQueue();
       }
       else if (qName.equals(COMPRESSOR)) {
         endCompressor();
