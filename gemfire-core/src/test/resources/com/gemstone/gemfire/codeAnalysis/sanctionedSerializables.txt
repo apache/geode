@@ -130,10 +130,7 @@ com/gemstone/gemfire/cache/execute/FunctionException,true,4893171227542647452
 com/gemstone/gemfire/cache/execute/FunctionInvocationTargetException,true,1,id:com/gemstone/gemfire/distributed/DistributedMember
 com/gemstone/gemfire/cache/hdfs/HDFSIOException,false
 com/gemstone/gemfire/cache/hdfs/StoreExistsException,true,1
-com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder,false,blockCacheSize:float,clientConfigFile:java/lang/String,compactionConfig:com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder$AbstractHDFSCompactionConfigHolder,fileRolloverInterval:int,hdfsEventQueueAttrs:com/gemstone/gemfire/cache/hdfs/HDFSEventQueueAttributes,homeDir:java/lang/String,isAutoCompact:boolean,logPrefix:java/lang/String,maxFileSize:int,name:java/lang/String,namenodeURL:java/lang/String
-com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder$AbstractHDFSCompactionConfigHolder,false,autoMajorCompact:boolean,majorCompactionConcurrency:int,majorCompactionIntervalMins:int,maxConcurrency:int,maxInputFileCount:int,maxInputFileSizeMB:int,minInputFileCount:int,oldFileCleanupIntervalMins:int
-com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder$InvalidCompactionConfigHolder,false
-com/gemstone/gemfire/cache/hdfs/internal/SizeTieredHdfsCompactionConfigHolder,false
+com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder,false,autoMajorCompact:boolean,batchIntervalMillis:int,batchSize:int,blockCacheSize:float,clientConfigFile:java/lang/String,diskStoreName:java/lang/String,diskSynchronous:boolean,dispatcherThreads:int,fileRolloverInterval:int,homeDir:java/lang/String,isAutoCompact:boolean,isPersistenceEnabled:boolean,logPrefix:java/lang/String,majorCompactionConcurrency:int,majorCompactionIntervalMins:int,maxConcurrency:int,maxFileSize:int,maxInputFileCount:int,maxInputFileSizeMB:int,maximumQueueMemory:int,minInputFileCount:int,name:java/lang/String,namenodeURL:java/lang/String,oldFileCleanupIntervalMins:int
 com/gemstone/gemfire/cache/hdfs/internal/cardinality/CardinalityMergeException,false
 com/gemstone/gemfire/cache/hdfs/internal/cardinality/HyperLogLog$Builder,false,rsd:double
 com/gemstone/gemfire/cache/hdfs/internal/cardinality/HyperLogLog$HyperLogLogMergeException,false
