@@ -1,0 +1,6 @@
+dependencies {
+    provided project(':gemfire-core')
+    provided project(path: ':gemfire-junit', configuration: 'testOutput')
+
+    compile 'org.quartz-scheduler:quartz:2.2.1'
+}
