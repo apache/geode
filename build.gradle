@@ -355,6 +355,10 @@ subprojects {
       check.dependsOn test
       test.configure {
         onlyIf { ! Boolean.getBoolean('skip.tests') }
+
+        //force tests to be run every time by
+        //saying the results are never up to date
+        outputs.upToDateWhen { false }
     
         def resultsDir = testResultsDir(buildDir, test.name)
         workingDir resultsDir.absolutePath
