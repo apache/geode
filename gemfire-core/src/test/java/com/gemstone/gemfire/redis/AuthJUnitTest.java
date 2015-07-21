@@ -113,4 +113,32 @@ public class AuthJUnitTest {
     jedis.set("foo", "bar"); // No exception
   }
 
+  @Test
+  public void testSeparateClientRequests() {
+    setupCacheWithPassword();
+    Jedis authorizedJedis = null;
+    Jedis nonAuthorizedJedis = null;
+    try {
+      authorizedJedis =  new Jedis("localhost", port, 100000);
+      nonAuthorizedJedis = new Jedis("localhost", port, 100000);
+      String res = authorizedJedis.auth(PASSWORD);
+      assertEquals(res, "OK");
+      authorizedJedis.set("foo", "bar"); // No exception for authorized client
+
+      authorizedJedis.auth(PASSWORD);
+      Exception ex = null;
+      try {                        
+        nonAuthorizedJedis.set("foo", "bar");
+      } catch (JedisDataException e) {
+        ex = e;
+      }
+      assertNotNull(ex);
+    } finally {
+      if (authorizedJedis != null)
+        authorizedJedis.close();
+      if (nonAuthorizedJedis != null)
+        nonAuthorizedJedis.close();
+    }
+  }
+
 }
