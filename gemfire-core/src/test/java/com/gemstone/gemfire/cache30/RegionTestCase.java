@@ -3693,10 +3693,10 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testEntryIdleTtl() {
 
     final String name = this.getUniqueName();
-    final int timeout = 2000; // ms
+    // test no longer waits for this timeout to expire
+    final int timeout = 2000; // seconds
     final String key = "IDLE_TTL_KEY";
     final String value = "IDLE_TTL_VALUE";
-    long tilt;
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     ExpirationAttributes expireIdle =
             new ExpirationAttributes(timeout / 2, ExpirationAction.DESTROY);
@@ -3705,44 +3705,27 @@ public abstract class RegionTestCase extends CacheTestCase {
       new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
     factory.setEntryTimeToLive(expireTtl);
     factory.setStatisticsEnabled(true);
-    TestCacheListener list = new TestCacheListener() {
-      public void afterCreate2(EntryEvent e) { }
-      public void afterDestroy2(EntryEvent e) { }
-    };
-    factory.setCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
-    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    try {
-      region = createRegion(name, attrs);
-    ExpiryTask.suspendExpiration();
+    LocalRegion region = (LocalRegion) createRegion(name, attrs);
    
-    try {
-      tilt = System.currentTimeMillis() + timeout; // *earliest* time to expect expiration
-      region.create(key, value);
-      assertTrue(list.wasInvoked());
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
+    region.create(key, value);
+    EntryExpiryTask eet = region.getEntryExpiryTask(key);
+    final long firstIdleExpiryTime = eet.getIdleExpirationTime();
+    final long firstTTLExpiryTime = eet.getTTLExpirationTime();
+    if ((firstIdleExpiryTime - firstTTLExpiryTime) >= 0) {
+      fail("idle should be less than ttl: idle=" + firstIdleExpiryTime + " ttl=" + firstTTLExpiryTime);
     }
-    } 
-    finally {
-      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-    }
-    // Fondle the entry until timeout
-    for (;;) {
-      if (System.currentTimeMillis() > tilt + 30 * 1000) { // allow a lot of time for slow machine
-        fail("Region did not honor ttl");
-      }
-      Object val = region.get(key);
-      if (val == null) {
-        if (System.currentTimeMillis() < tilt) { // intentionally refetch time
-          fail("Region expired value prematurely?");
-        }
-        break; // success
-      }
-      pause(timeout / 10); // wait then fondle again
+    waitForExpiryClockToChange(region);
+    region.get(key);
+    eet = region.getEntryExpiryTask(key);
+    final long secondIdleExpiryTime = eet.getIdleExpirationTime();
+    final long secondTTLExpiryTime = eet.getTTLExpirationTime();
+    // make sure the get does not change the ttl expiry time
+    assertEquals(firstTTLExpiryTime, secondTTLExpiryTime);
+    // and does change the idle expiry time
+    if ((secondIdleExpiryTime - firstIdleExpiryTime) <= 0) {
+      fail("idle should have increased: idle=" + firstIdleExpiryTime + " idle2=" + secondIdleExpiryTime);
     }
   }
   
@@ -3805,7 +3788,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     
     final String name = this.getUniqueName();
     final String subname = this.getUniqueName() + "-SUB";
-    final int timeout = 222; // ms
+    final int timeout = 22; // ms
     final Object key = "KEY";
     final Object value = "VALUE";
     
