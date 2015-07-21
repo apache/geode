@@ -73,6 +73,7 @@ import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.TransactionEvent;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.TransactionListener;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DMStats;
@@ -4086,6 +4087,29 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       VM vm1 = host.getVM(1);
 
 
+      vm0.invoke(new CacheSerializableRunnable("Create with Idle") {
+        public void run2() throws CacheException {
+          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+          factory.setStatisticsEnabled(true);
+          ExpirationAttributes expire =
+              new ExpirationAttributes(timeout,
+                  ExpirationAction.DESTROY);
+          factory.setEntryIdleTimeout(expire);
+          LocalRegion region =
+              (LocalRegion) createRegion(name, factory.create());
+          if (region.getDataPolicy().withPartitioning()) {
+            // Force all buckets to be created locally so the
+            // test will know that the create happens in this vm
+            // and the update (in vm1) is remote.
+            PartitionRegionHelper.assignBucketsToPartitions(region);
+          }
+          region.create(key, null);
+          EntryExpiryTask eet = region.getEntryExpiryTask(key);
+          region.create("createExpiryTime", eet.getExpirationTime());
+          waitForExpiryClockToChange(region);
+        }
+      });
+
       vm1.invoke(new CacheSerializableRunnable("Create Region " + name) {
         public void run2() throws CacheException {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
@@ -4099,23 +4123,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           } else {
             createRegion(name);
           }          
-        }
-      });
-
-      vm0.invoke(new CacheSerializableRunnable("Create with Idle") {
-        public void run2() throws CacheException {
-          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-          factory.setStatisticsEnabled(true);
-          ExpirationAttributes expire =
-              new ExpirationAttributes(timeout,
-                  ExpirationAction.DESTROY);
-          factory.setEntryIdleTimeout(expire);
-          LocalRegion region =
-              (LocalRegion) createRegion(name, factory.create());
-          region.create(key, null);
-          EntryExpiryTask eet = region.getEntryExpiryTask(key);
-          region.create("createExpiryTime", eet.getExpirationTime());
-          waitForExpiryClockToChange(region);
         }
       });
 

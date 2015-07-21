@@ -3778,8 +3778,14 @@ public abstract class RegionTestCase extends CacheTestCase {
     region.invalidate(key); // touch
     assertSame(eet, region.getEntryExpiryTask(key));
     long invalidateExpiryTime = eet.getExpirationTime();
-    if (invalidateExpiryTime != putExpiryTime) {
-      fail("invalidate did reset the expiration time. putExpiryTime=" + putExpiryTime + " invalidateExpiryTime=" + invalidateExpiryTime);
+    if (region.getConcurrencyChecksEnabled()) {
+      if (putExpiryTime - getExpiryTime <= 0L) {
+        fail("invalidate did not reset the expiration time. putExpiryTime=" + putExpiryTime + " invalidateExpiryTime=" + invalidateExpiryTime);
+      }
+    } else {
+      if (invalidateExpiryTime != putExpiryTime) {
+        fail("invalidate did reset the expiration time. putExpiryTime=" + putExpiryTime + " invalidateExpiryTime=" + invalidateExpiryTime);
+      }
     }
   }
   
