@@ -92,7 +92,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * region expires, due to either time-to-live or idle-timeout (whichever
    * will occur first), or 0 if neither are used.
    */
-  long getExpirationTime() throws EntryNotFoundException {
+  public long getExpirationTime() throws EntryNotFoundException {
     long ttl = getTTLExpirationTime();
     long idle = getIdleExpirationTime();
     if (ttl == 0) {

@@ -2004,7 +2004,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return this.cache;
   }
 
-  protected final long cacheTimeMillis() {
+  public final long cacheTimeMillis() {
     return this.cache.getDistributedSystem().getClock().cacheTimeMillis();
   }
 

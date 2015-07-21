@@ -54,6 +54,7 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -972,6 +973,16 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
       fail("interrupted", e);
     }
     
+  }
+  
+  /**
+   * Blocks until the clock used for expiration on the given region changes.
+   */
+  public static final void waitForExpiryClockToChange(LocalRegion lr) {
+    long startTime = lr.cacheTimeMillis();
+    do {
+      Thread.yield();
+    } while (startTime == lr.cacheTimeMillis());
   }
   
   /** pause for specified ms interval

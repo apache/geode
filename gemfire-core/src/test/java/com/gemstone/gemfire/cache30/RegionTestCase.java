@@ -45,6 +45,7 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.RegionReinitializedException;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
 import com.gemstone.gemfire.internal.cache.EntrySnapshot;
 import com.gemstone.gemfire.internal.cache.ExpiryTask;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -3736,7 +3737,8 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testEntryIdleReset() throws Exception {
 
     final String name = this.getUniqueName();
-    final int timeout = 2000; // ms
+    // Test no longer waits for this timeout to expire
+    final int timeout = 90; // seconds
     final String key = "KEY";
     final String value = "VALUE";
     
@@ -3745,60 +3747,39 @@ public abstract class RegionTestCase extends CacheTestCase {
             new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
     factory.setEntryIdleTimeout(expire);
     factory.setStatisticsEnabled(true);
-    TestCacheListener list = new TestCacheListener() {
-      public void afterCreate2(EntryEvent e) { }
-      public void afterDestroy2(EntryEvent e) { }
-    };
-    factory.setCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
-    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    try {
-      region = createRegion(name, attrs);
+    LocalRegion region = (LocalRegion) createRegion(name, attrs);
+    region.create(key, null);
+    EntryExpiryTask eet = region.getEntryExpiryTask(key);
+    long createExpiryTime = eet.getExpirationTime();
 
-      ExpiryTask.suspendExpiration();
-      Region.Entry entry = null;
-      long tilt;
-      try {
-        region.create(key, null);
-        tilt = System.currentTimeMillis() + timeout;
-        assertTrue(list.wasInvoked());
-        entry = region.getEntry(key);
-      }
-      finally {
-        ExpiryTask.permitExpiration();
-      }
+    waitForExpiryClockToChange(region);
+    region.get(key); // touch
+    assertSame(eet, region.getEntryExpiryTask(key));
+    long getExpiryTime = eet.getExpirationTime();
+    if (getExpiryTime - createExpiryTime <= 0L) {
+      fail("get did not reset the expiration time. createExpiryTime=" + createExpiryTime + " getExpiryTime=" + getExpiryTime);
+    }
+    
+    waitForExpiryClockToChange(region);
+    region.put(key, value); // touch
+    assertSame(eet, region.getEntryExpiryTask(key));
+    long putExpiryTime = eet.getExpirationTime();
+    if (putExpiryTime - getExpiryTime <= 0L) {
+      fail("put did not reset the expiration time. getExpiryTime=" + getExpiryTime + " putExpiryTime=" + putExpiryTime);
+    }
 
-      pause(timeout / 2);
-      long now = System.currentTimeMillis();
-      if (region.getEntry(key) == null && now < tilt) {
-        fail("Entry for key " + key + " destroyed " + (tilt - now) + " ms prematurely");
-      }
-      region.get(key); // touch
-      waitForDestroy(entry, tilt);
-      assertNull(region.getEntry(key));
+    // TODO other ops that should be validated?
 
-      ExpiryTask.suspendExpiration();
-      try {
-        region.put(key, value);
-        tilt = System.currentTimeMillis() + timeout;
-        entry = region.getEntry(key);
-        assertNotNull(entry.getValue());
-      }
-      finally {
-        ExpiryTask.permitExpiration();
-      }
-      pause(timeout / 2);
-      now = System.currentTimeMillis();
-      if (region.getEntry(key) == null && now < tilt) {
-        fail("Entry for key " + key + " destroyed " + (tilt - now) + " ms prematurely");
-      }
-      region.put(key, value); // touch
-      waitForDestroy(entry, tilt);
-    } 
-    finally {
-      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+    // Now verify operations that do not modify the expiry time
+    
+    waitForExpiryClockToChange(region);
+    region.invalidate(key); // touch
+    assertSame(eet, region.getEntryExpiryTask(key));
+    long invalidateExpiryTime = eet.getExpirationTime();
+    if (invalidateExpiryTime != putExpiryTime) {
+      fail("invalidate did reset the expiration time. putExpiryTime=" + putExpiryTime + " invalidateExpiryTime=" + invalidateExpiryTime);
     }
   }
   
