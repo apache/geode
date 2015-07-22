@@ -7,6 +7,7 @@
  */
 package com.gemstone.gemfire.cache.hdfs.internal;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ import dunit.VM;
  * 
  * @author Hemant Bhanawat
  */
+@SuppressWarnings({"serial", "rawtypes", "unchecked", "deprecation"})
 public class ColocatedRegionWithHDFSDUnitTest extends RegionWithHDFSTestBase {
 
   public ColocatedRegionWithHDFSDUnitTest(String name) {
@@ -50,6 +52,8 @@ public class ColocatedRegionWithHDFSDUnitTest extends RegionWithHDFSTestBase {
         hsf.setMaxMemory(3);
         hsf.setBatchInterval(batchInterval);
         hsf.setHomeDir(tmpDir + "/" + folderPath);
+        homeDir = new File(tmpDir + "/" + folderPath).getCanonicalPath();
+        hsf.setHomeDir(homeDir);
         hsf.create(uniqueName);
 
         AttributesFactory af = new AttributesFactory();
