@@ -979,7 +979,9 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * returning.
    */
   public static final void pause(int ms) {
-    getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
+    if (ms > 50) {
+      getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
+    }
     final long target = System.currentTimeMillis() + ms;
     try {
       for (;;) {

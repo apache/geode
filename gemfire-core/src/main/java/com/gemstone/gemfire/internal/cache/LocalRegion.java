@@ -335,7 +335,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @since 5.0
    */
-  final boolean EXPIRY_UNITS_MS = Boolean.getBoolean(EXPIRY_MS_PROPERTY);
+  final boolean EXPIRY_UNITS_MS;
 
   // Indicates that the entries are in fact initialized. It turns out
   // you can't trust the assignment of a volatile (as indicated above)
@@ -590,6 +590,9 @@ public class LocalRegion extends AbstractRegion
       LocalRegion parentRegion, GemFireCacheImpl cache,
       InternalRegionArguments internalRegionArgs) throws DiskAccessException {
     super(cache, attrs,regionName, internalRegionArgs);
+    // Initialized here (and defers to parent) to fix GEODE-128
+    this.EXPIRY_UNITS_MS = parentRegion != null ? parentRegion.EXPIRY_UNITS_MS : Boolean.getBoolean(EXPIRY_MS_PROPERTY);
+
     Assert.assertTrue(regionName != null, "regionName must not be null");
     this.sharedDataView = buildDataView();
     this.regionName = regionName;
@@ -6238,6 +6241,10 @@ public class LocalRegion extends AbstractRegion
       return null;
     }
     else {
+      if (GemFireCacheImpl.internalBeforeNonTXBasicPut != null) {
+        GemFireCacheImpl.internalBeforeNonTXBasicPut.run();
+      }
+      
       RegionEntry oldEntry = this.entries.basicPut(event,
                                    lastModified,
                                    ifNew,

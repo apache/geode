@@ -20,14 +20,25 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 public interface BucketOperator {
 
   /**
-   * Create a redundancy copy of a bucket on a given node
-   * @param targetMember the node to create the bucket on
-   * @param bucketId the id of the bucket to create
-   * @param colocatedRegionBytes the size of the bucket in bytes
-   * @return true if a redundant copy of the bucket was created.
+   * Create a redundancy copy of a bucket on a given node. This call may be
+   * asynchronous, it will notify the completion when the the operation is done.
+   * 
+   * Note that the completion is not required to be threadsafe, so implementors
+   * should ensure the completion is invoked by the calling thread of
+   * createRedundantBucket, usually by invoking the completions in waitForOperations.
+   * 
+   * @param targetMember
+   *          the node to create the bucket on
+   * @param bucketId
+   *          the id of the bucket to create
+   * @param colocatedRegionBytes
+   *          the size of the bucket in bytes
+   * @param completion
+   *          a callback which will receive a notification on the success or
+   *          failure of the operation.
    */
-  boolean createRedundantBucket(InternalDistributedMember targetMember,
-      int bucketId, Map<String, Long> colocatedRegionBytes);
+  void createRedundantBucket(InternalDistributedMember targetMember,
+      int bucketId, Map<String, Long> colocatedRegionBytes, Completion completion);
 
   /**
    * Remove a bucket from the target member.
@@ -57,4 +68,25 @@ public interface BucketOperator {
    */
   boolean movePrimary(InternalDistributedMember source,
       InternalDistributedMember target, int bucketId);
+  
+  /**
+   * Wait for any pending asynchronous operations that this thread submitted
+   * earlier to complete. Currently only createRedundantBucket may be
+   * asynchronous.
+   */
+  public void waitForOperations();
+  
+  /**
+   * Callbacks for asnychonous operations. These methods will be invoked when an
+   * ansynchronous operation finishes.
+   * 
+   * The completions are NOT THREADSAFE.
+   * 
+   * They will be completed when createRedundantBucket or waitForOperations is
+   * called.
+   */
+  public interface Completion {
+    public void onSuccess();
+    public void onFailure();
+  }
 }

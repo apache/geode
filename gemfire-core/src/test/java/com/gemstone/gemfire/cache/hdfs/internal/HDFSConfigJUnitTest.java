@@ -20,18 +20,14 @@ import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore.HDFSCompactionConfig;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory.HDFSCompactionConfigFactory;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.AbstractHoplogOrganizer;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -42,8 +38,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import org.apache.hadoop.hbase.regionserver.StoreFile;
 import org.junit.experimental.categories.Category;
-
-import dunit.VM;
 
 /**
  * A test class for testing the configuration option for HDFS 
@@ -82,12 +76,12 @@ public class HDFSConfigJUnitTest extends TestCase {
        
         r1.put("k1", "v1");
         
-        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getHDFSEventQueueAttributes().getBatchSizeMB() + " and expected batchsize: 32", store.getHDFSEventQueueAttributes().getBatchSizeMB()== 32);
-        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getHDFSEventQueueAttributes().isPersistent() + " and expected isPersistent: false", store.getHDFSEventQueueAttributes().isPersistent()== false);
+        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getBatchSize() + " and expected batchsize: 32", store.getBatchSize()== 32);
+        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getBufferPersistent() + " and expected isPersistent: false", store.getBufferPersistent()== false);
         assertEquals(false, r1.getAttributes().getHDFSWriteOnly());
-        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getHDFSEventQueueAttributes().getDiskStoreName() + " and expected getDiskStoreName: null", store.getHDFSEventQueueAttributes().getDiskStoreName()== null);
-        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getFileRolloverInterval() == 3600);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxFileSize() + " and expected getMaxFileSize: 256MB", store.getMaxFileSize() == 256);
+        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
+        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getWriteOnlyFileRolloverInterval() == 3600);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileRolloverSize() == 256);
         this.c.close();
         
         
@@ -99,12 +93,12 @@ public class HDFSConfigJUnitTest extends TestCase {
               .create("r1");
        
         r1.put("k1", "v1");
-        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getHDFSEventQueueAttributes().getBatchSizeMB() + " and expected batchsize: 32", store.getHDFSEventQueueAttributes().getBatchSizeMB()== 32);
-        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getHDFSEventQueueAttributes().isPersistent() + " and expected isPersistent: false", store.getHDFSEventQueueAttributes().isPersistent()== false);
+        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getBatchSize() + " and expected batchsize: 32", store.getBatchSize()== 32);
+        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getBufferPersistent() + " and expected isPersistent: false", store.getBufferPersistent()== false);
         assertTrue("Mismatch in attributes, actual.isRandomAccessAllowed: " + r1.getAttributes().getHDFSWriteOnly() + " and expected isRandomAccessAllowed: true", r1.getAttributes().getHDFSWriteOnly()== true);
-        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getHDFSEventQueueAttributes().getDiskStoreName() + " and expected getDiskStoreName: null", store.getHDFSEventQueueAttributes().getDiskStoreName()== null);
-        assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getHDFSEventQueueAttributes().getBatchTimeInterval() + " and expected batchsize: 60000", store.getHDFSEventQueueAttributes().getBatchTimeInterval()== 60000);
-        assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getHDFSEventQueueAttributes().isDiskSynchronous() + " and expected isDiskSynchronous: true", store.getHDFSEventQueueAttributes().isDiskSynchronous()== true);
+        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
+        assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getBatchInterval() + " and expected batchsize: 60000", store.getBatchInterval()== 60000);
+        assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getSynchronousDiskWrite() + " and expected isDiskSynchronous: true", store.getSynchronousDiskWrite()== true);
         
         this.c.close();
 
@@ -116,21 +110,19 @@ public class HDFSConfigJUnitTest extends TestCase {
         File[] dirs1 = new File[] { directory };
         DiskStoreFactory dsf = this.c.createDiskStoreFactory();
         dsf.setDiskDirs(dirs1);
-        DiskStore diskStore = dsf.create("mydisk");
+        dsf.create("mydisk");
         
-        HDFSEventQueueAttributesFactory hqf= new HDFSEventQueueAttributesFactory();
-        hqf.setBatchSizeMB(50);
-        hqf.setDiskStoreName("mydisk");
-        hqf.setPersistent(true);
-        hqf.setBatchTimeInterval(50);
-        hqf.setDiskSynchronous(false);
         
         hsf = this.c.createHDFSStoreFactory();
+        hsf.setBatchSize(50);
+        hsf.setDiskStoreName("mydisk");
+        hsf.setBufferPersistent(true);
+        hsf.setBatchInterval(50);
+        hsf.setSynchronousDiskWrite(false);
         hsf.setHomeDir("/home/hemant");
         hsf.setNameNodeURL("mymachine");
-        hsf.setHDFSEventQueueAttributes(hqf.create());
-        hsf.setMaxFileSize(1);
-        hsf.setFileRolloverInterval(10);
+        hsf.setWriteOnlyFileRolloverSize(1);
+        hsf.setWriteOnlyFileRolloverInterval(10);
         hsf.create("myHDFSStore");
         
         
@@ -140,17 +132,17 @@ public class HDFSConfigJUnitTest extends TestCase {
         r1.put("k1", "v1");
         store = c.findHDFSStore(r1.getAttributes().getHDFSStoreName());
         
-        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getHDFSEventQueueAttributes().getBatchSizeMB() + " and expected batchsize: 50", store.getHDFSEventQueueAttributes().getBatchSizeMB()== 50);
-        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getHDFSEventQueueAttributes().isPersistent() + " and expected isPersistent: true", store.getHDFSEventQueueAttributes().isPersistent()== true);
+        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getBatchSize() + " and expected batchsize: 50", store.getBatchSize()== 50);
+        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getBufferPersistent() + " and expected isPersistent: true", store.getBufferPersistent()== true);
         assertTrue("Mismatch in attributes, actual.isRandomAccessAllowed: " + r1.getAttributes().getHDFSWriteOnly() + " and expected isRandomAccessAllowed: true", r1.getAttributes().getHDFSWriteOnly()== true);
-        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getHDFSEventQueueAttributes().getDiskStoreName() + " and expected getDiskStoreName: mydisk", store.getHDFSEventQueueAttributes().getDiskStoreName()== "mydisk");
+        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: mydisk", store.getDiskStoreName()== "mydisk");
         assertTrue("Mismatch in attributes, actual.HDFSStoreName: " + r1.getAttributes().getHDFSStoreName() + " and expected getDiskStoreName: myHDFSStore", r1.getAttributes().getHDFSStoreName()== "myHDFSStore");
         assertTrue("Mismatch in attributes, actual.getFolderPath: " + ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getHomeDir() + " and expected getDiskStoreName: /home/hemant", ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getHomeDir()== "/home/hemant");
         assertTrue("Mismatch in attributes, actual.getNamenode: " + ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getNameNodeURL()+ " and expected getDiskStoreName: mymachine", ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getNameNodeURL()== "mymachine");
-        assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getHDFSEventQueueAttributes().getBatchTimeInterval() + " and expected batchsize: 50 ", store.getHDFSEventQueueAttributes().getBatchSizeMB()== 50);
-        assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getHDFSEventQueueAttributes().isDiskSynchronous() + " and expected isPersistent: false", store.getHDFSEventQueueAttributes().isDiskSynchronous()== false);
-        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getFileRolloverInterval() == 10);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxFileSize() + " and expected getMaxFileSize: 1MB", store.getMaxFileSize() == 1);
+        assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getBatchInterval() + " and expected batchsize: 50 ", store.getBatchSize()== 50);
+        assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getSynchronousDiskWrite() + " and expected isPersistent: false", store.getSynchronousDiskWrite()== false);
+        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getWriteOnlyFileRolloverInterval() == 10);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileRolloverSize() == 1);
         this.c.close();
       } finally {
         this.c.close();
@@ -190,12 +182,12 @@ public class HDFSConfigJUnitTest extends TestCase {
         r1 = this.c.getRegion("/r1");
         HDFSStoreImpl store = c.findHDFSStore(r1.getAttributes().getHDFSStoreName());
         r1.put("k1", "v1");
-        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getHDFSEventQueueAttributes().getBatchSizeMB() + " and expected batchsize: 32", store.getHDFSEventQueueAttributes().getBatchSizeMB()== 32);
-        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getHDFSEventQueueAttributes().isPersistent() + " and expected isPersistent: false", store.getHDFSEventQueueAttributes().isPersistent()== false);
+        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getBatchSize() + " and expected batchsize: 32", store.getBatchSize()== 32);
+        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getBufferPersistent() + " and expected isPersistent: false", store.getBufferPersistent()== false);
         assertEquals(false, r1.getAttributes().getHDFSWriteOnly());
-        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getHDFSEventQueueAttributes().getDiskStoreName() + " and expected getDiskStoreName: null", store.getHDFSEventQueueAttributes().getDiskStoreName()== null);
-        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getFileRolloverInterval() == 3600);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxFileSize() + " and expected getMaxFileSize: 256MB", store.getMaxFileSize() == 256);
+        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
+        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 3600", store.getWriteOnlyFileRolloverInterval() == 3600);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 256MB", store.getWriteOnlyFileRolloverSize() == 256);
         
         this.c.close();
         
@@ -225,10 +217,10 @@ public class HDFSConfigJUnitTest extends TestCase {
         r1 = this.c.getRegion("/r1");
         store = c.findHDFSStore(r1.getAttributes().getHDFSStoreName());
         r1.put("k1", "v1");
-        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getHDFSEventQueueAttributes().getBatchSizeMB() + " and expected batchsize: 32", store.getHDFSEventQueueAttributes().getBatchSizeMB()== 32);
-        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getHDFSEventQueueAttributes().isPersistent() + " and expected isPersistent: false", store.getHDFSEventQueueAttributes().isPersistent()== false);
+        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getBatchSize() + " and expected batchsize: 32", store.getBatchSize()== 32);
+        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getBufferPersistent() + " and expected isPersistent: false", store.getBufferPersistent()== false);
         assertTrue("Mismatch in attributes, actual.isRandomAccessAllowed: " + r1.getAttributes().getHDFSWriteOnly() + " and expected isRandomAccessAllowed: false", r1.getAttributes().getHDFSWriteOnly()== false);
-        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getHDFSEventQueueAttributes().getDiskStoreName() + " and expected getDiskStoreName: null", store.getHDFSEventQueueAttributes().getDiskStoreName()== null);
+        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: null", store.getDiskStoreName()== null);
         
         this.c.close();
         
@@ -263,17 +255,17 @@ public class HDFSConfigJUnitTest extends TestCase {
         r1 = this.c.getRegion("/r1");
         store = c.findHDFSStore(r1.getAttributes().getHDFSStoreName());
         r1.put("k1", "v1");
-        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getHDFSEventQueueAttributes().getBatchSizeMB() + " and expected batchsize: 151", store.getHDFSEventQueueAttributes().getBatchSizeMB()== 151);
-        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getHDFSEventQueueAttributes().isPersistent() + " and expected isPersistent: true", store.getHDFSEventQueueAttributes().isPersistent()== true);
+        assertTrue("Mismatch in attributes, actual.batchsize: " + store.getBatchSize() + " and expected batchsize: 151", store.getBatchSize()== 151);
+        assertTrue("Mismatch in attributes, actual.isPersistent: " + store.getBufferPersistent() + " and expected isPersistent: true", store.getBufferPersistent()== true);
         assertTrue("Mismatch in attributes, actual.isRandomAccessAllowed: " + r1.getAttributes().getHDFSWriteOnly() + " and expected isRandomAccessAllowed: true", r1.getAttributes().getHDFSWriteOnly()== false);
-        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getHDFSEventQueueAttributes().getDiskStoreName() + " and expected getDiskStoreName: mydiskstore", store.getHDFSEventQueueAttributes().getDiskStoreName().equals("mydiskstore"));
+        assertTrue("Mismatch in attributes, actual.getDiskStoreName: " + store.getDiskStoreName() + " and expected getDiskStoreName: mydiskstore", store.getDiskStoreName().equals("mydiskstore"));
         assertTrue("Mismatch in attributes, actual.HDFSStoreName: " + r1.getAttributes().getHDFSStoreName() + " and expected getDiskStoreName: myHDFSStore", r1.getAttributes().getHDFSStoreName().equals("myHDFSStore"));
         assertTrue("Mismatch in attributes, actual.getFolderPath: " + ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getHomeDir() + " and expected getDiskStoreName: mypath", ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getHomeDir().equals("mypath"));
         assertTrue("Mismatch in attributes, actual.getNamenode: " + ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getNameNodeURL()+ " and expected getDiskStoreName: mynamenode", ((GemFireCacheImpl)this.c).findHDFSStore("myHDFSStore").getNameNodeURL().equals("mynamenode"));
-        assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getHDFSEventQueueAttributes().getBatchTimeInterval() + " and expected batchsize: 50", store.getHDFSEventQueueAttributes().getBatchTimeInterval()== 50);
-        assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getHDFSEventQueueAttributes().isDiskSynchronous() + " and expected isDiskSynchronous: false", store.getHDFSEventQueueAttributes().isDiskSynchronous()== false);
-        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getFileRolloverInterval() == 10);
-        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getMaxFileSize() + " and expected getMaxFileSize: 1MB", store.getMaxFileSize() == 1);
+        assertTrue("Mismatch in attributes, actual.batchInterval: " + store.getBatchInterval() + " and expected batchsize: 50", store.getBatchInterval()== 50);
+        assertTrue("Mismatch in attributes, actual.isDiskSynchronous: " + store.getSynchronousDiskWrite() + " and expected isDiskSynchronous: false", store.getSynchronousDiskWrite()== false);
+        assertTrue("Mismatch in attributes, actual.getFileRolloverInterval: " + store.getWriteOnlyFileRolloverInterval() + " and expected getFileRolloverInterval: 10", store.getWriteOnlyFileRolloverInterval() == 10);
+        assertTrue("Mismatch in attributes, actual.getMaxFileSize: " + store.getWriteOnlyFileRolloverSize() + " and expected getMaxFileSize: 1MB", store.getWriteOnlyFileRolloverSize() == 1);
         
         this.c.close();
       } finally {
@@ -293,13 +285,11 @@ public class HDFSConfigJUnitTest extends TestCase {
     assertEquals("hdfs-client-config-file mismatch.", "client", store.getHDFSClientConfigFile());
     assertEquals("read-cache-size mismatch.", 24.5f, store.getBlockCacheSize());
     
-    HDFSCompactionConfig compactConf = store.getHDFSCompactionConfig();
-    assertEquals("compaction strategy mismatch.", "size-oriented", compactConf.getCompactionStrategy());
     assertFalse("compaction auto-compact mismatch.", store.getMinorCompaction());
-    assertTrue("compaction auto-major-compact mismatch.", compactConf.getAutoMajorCompaction());
-    assertEquals("compaction max-concurrency", 23, compactConf.getMaxThreads());
-    assertEquals("compaction max-major-concurrency", 27, compactConf.getMajorCompactionMaxThreads());
-    assertEquals("compaction major-interval", 711, compactConf.getOldFilesCleanupIntervalMins());
+    assertTrue("compaction auto-major-compact mismatch.", store.getMajorCompaction());
+    assertEquals("compaction max-concurrency", 23, store.getMinorCompactionThreads());
+    assertEquals("compaction max-major-concurrency", 27, store.getMajorCompactionThreads());
+    assertEquals("compaction major-interval", 711, store.getPurgeInterval());
   }
   
   /**
@@ -311,18 +301,15 @@ public class HDFSConfigJUnitTest extends TestCase {
     assertEquals("namenode url mismatch.", "url", store.getNameNodeURL());
     assertEquals("home-dir mismatch.", "gemfire", store.getHomeDir());
     
-    HDFSCompactionConfig compactConf = store.getHDFSCompactionConfig();
-    assertNotNull("compaction conf should have initialized to default", compactConf);
-    assertEquals("compaction strategy mismatch.", "size-oriented", compactConf.getCompactionStrategy());
     assertTrue("compaction auto-compact mismatch.", store.getMinorCompaction());
-    assertTrue("compaction auto-major-compact mismatch.", compactConf.getAutoMajorCompaction());
-    assertEquals("compaction max-input-file-size mismatch.", 512, compactConf.getMaxInputFileSizeMB());
-    assertEquals("compaction min-input-file-count.", 4, compactConf.getMinInputFileCount());
-    assertEquals("compaction max-iteration-size.", 10, compactConf.getMaxInputFileCount());
-    assertEquals("compaction max-concurrency", 10, compactConf.getMaxThreads());
-    assertEquals("compaction max-major-concurrency", 2, compactConf.getMajorCompactionMaxThreads());
-    assertEquals("compaction major-interval", 720, compactConf.getMajorCompactionIntervalMins());
-    assertEquals("compaction cleanup-interval", 30, compactConf.getOldFilesCleanupIntervalMins());
+    assertTrue("compaction auto-major-compact mismatch.", store.getMajorCompaction());
+    assertEquals("compaction max-input-file-size mismatch.", 512, store.getInputFileSizeMax());
+    assertEquals("compaction min-input-file-count.", 4, store.getInputFileCountMin());
+    assertEquals("compaction max-iteration-size.", 10, store.getInputFileCountMax());
+    assertEquals("compaction max-concurrency", 10, store.getMinorCompactionThreads());
+    assertEquals("compaction max-major-concurrency", 2, store.getMajorCompactionThreads());
+    assertEquals("compaction major-interval", 720, store.getMajorCompactionInterval());
+    assertEquals("compaction cleanup-interval", 30, store.getPurgeInterval());
   }
   
   /**
@@ -350,62 +337,61 @@ public class HDFSConfigJUnitTest extends TestCase {
 
     HDFSStoreFactory hsf; 
     hsf = this.c.createHDFSStoreFactory();
-    HDFSCompactionConfigFactory ccsf = hsf.createCompactionConfigFactory(null);
     
     try {
-      ccsf.setMaxInputFileSizeMB(-1);
+      hsf.setInputFileSizeMax(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      ccsf.setMinInputFileCount(-1);
+      hsf.setInputFileCountMin(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      ccsf.setMaxInputFileCount(-1);
+      hsf.setInputFileCountMax(-1);
       //expected
       fail("validation failed");
     } catch (IllegalArgumentException e) {
     }
     try {
-      ccsf.setMaxThreads(-1);
+      hsf.setMinorCompactionThreads(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      ccsf.setMajorCompactionIntervalMins(-1);
+      hsf.setMajorCompactionInterval(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      ccsf.setMajorCompactionMaxThreads(-1);
+      hsf.setMajorCompactionThreads(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      ccsf.setOldFilesCleanupIntervalMins(-1);
+      hsf.setPurgeInterval(-1);
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      ccsf.setMinInputFileCount(2);
-      ccsf.setMaxInputFileCount(1);
-      ccsf.create();
+      hsf.setInputFileCountMin(2);
+      hsf.setInputFileCountMax(1);
+      hsf.create("test");
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
     }
     try {
-      ccsf.setMaxInputFileCount(1);
-      ccsf.setMinInputFileCount(2);
-      ccsf.create();
+      hsf.setInputFileCountMax(1);
+      hsf.setInputFileCountMin(2);
+      hsf.create("test");
       fail("validation failed");
     } catch (IllegalArgumentException e) {
       //expected
@@ -483,8 +469,6 @@ public class HDFSConfigJUnitTest extends TestCase {
       HDFSStoreImpl store = (HDFSStoreImpl) hsf.create("myHDFSStore");
       RegionFactory rf1 = this.c.createRegionFactory(RegionShortcut.PARTITION_HDFS);
       //Create a region that evicts everything
-      HDFSEventQueueAttributesFactory heqf = new HDFSEventQueueAttributesFactory();
-      heqf.setBatchTimeInterval(10);
       LocalRegion r1 = (LocalRegion) rf1.setHDFSStoreName("myHDFSStore").setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1)).create("r1");
      
       //Populate about many times our block cache size worth of data

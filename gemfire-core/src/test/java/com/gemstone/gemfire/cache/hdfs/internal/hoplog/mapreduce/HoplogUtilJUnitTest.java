@@ -19,7 +19,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory.HDFSCompactionConfigFactory;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.AbstractHoplogOrganizer;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.BaseHoplogTestCase;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HdfsSortedOplogOrganizer;
@@ -38,11 +37,9 @@ public class HoplogUtilJUnitTest extends BaseHoplogTestCase {
   protected void configureHdfsStoreFactory() throws Exception {
     super.configureHdfsStoreFactory();
     
-    HDFSCompactionConfigFactory factory = hsf.createCompactionConfigFactory(null);
-    factory.setMinInputFileCount(3);
+    hsf.setInputFileCountMin(3);
     hsf.setMinorCompaction(false);
-    factory.setAutoMajorCompaction(false);
-    hsf.setHDFSCompactionConfig(factory.create());
+    hsf.setMajorCompaction(false);
   }
   
   public void testHoplogListingMultiBucket() throws Exception {

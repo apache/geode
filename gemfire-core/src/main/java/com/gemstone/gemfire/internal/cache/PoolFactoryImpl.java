@@ -222,8 +222,7 @@ public class PoolFactoryImpl implements PoolFactory {
 //      ex.initCause(cause);
 //      throw ex;
       // Fix for #45348
-      GemFireCacheImpl cache =GemFireCacheImpl.getInstance();
-      logger.fatal(LocalizedMessage.create(LocalizedStrings.PoolFactoryImpl_HOSTNAME_UNKNOWN, host));
+      logger.warn(LocalizedMessage.create(LocalizedStrings.PoolFactoryImpl_HOSTNAME_UNKNOWN, host));
       InetSocketAddress sockAddr = new InetSocketAddress(host, port);
       l.add(sockAddr);
     }

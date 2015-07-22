@@ -49,6 +49,7 @@ import dunit.DistributedTestCase;
 import dunit.Host;
 import dunit.SerializableRunnable;
 import dunit.VM;
+import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * Tests the BridgeMembership API including BridgeMembershipListener.
@@ -446,7 +447,9 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     // unregister and verify listener is not notified
     BridgeMembership.unregisterBridgeMembershipListener(listener);
     InternalBridgeMembership.notifyJoined(clientJoined, true);
-    pause(2000);
+    synchronized(listener) {
+      listener.wait(20);
+    }
     assertFalse(fired[0]);
     assertNull(member[0]);
     assertNull(memberId[0]);
@@ -484,8 +487,10 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     
     final DistributedMember clientJoined = new TestDistributedMember("clientJoined");
     InternalBridgeMembership.notifyJoined(clientJoined, true);
-    pause(2000);
     for (int i = 0; i < NUM_LISTENERS; i++) {
+      synchronized(listeners[i]) {
+        listeners[i].wait(20);
+      }
       assertFalse(fired[i]);
       assertNull(member[i]);
       assertNull(memberId[i]);
@@ -667,8 +672,10 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     assertEquals(0, registeredListeners.length);
     
     InternalBridgeMembership.notifyJoined(clientJoined, true);
-    pause(2000);
     for (int i = 0; i < NUM_LISTENERS; i++) {
+      synchronized(listeners[i]) {
+        listeners[i].wait(20);
+      }
       assertFalse(fired[i]);
       assertNull(member[i]);
       assertNull(memberId[i]);
@@ -725,7 +732,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
         isClient[JOINED] = event.isClient();
-        notify();
+        notifyAll();
       }
       public synchronized void memberLeft(BridgeMembershipEvent event) {
         getLogWriter().info("[testBridgeMembershipEventsInClient] memberLeft: " + event);
@@ -737,7 +744,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         member[CRASHED] = event.getMember();
         memberId[CRASHED] = event.getMemberId();
         isClient[CRASHED] = event.isClient();
-        notify();
+        notifyAll();
       }
     };
     BridgeMembership.registerBridgeMembershipListener(listener);
@@ -798,7 +805,11 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     getLogWriter().info("[testBridgeMembershipEventsInClient] sanity check");
     DistributedMember test = new TestDistributedMember("test");
     InternalBridgeMembership.notifyJoined(test, SERVER);
-    pause(2000);
+    synchronized(listener) {
+      if (!fired[JOINED] && !fired[CRASHED]) {
+        listener.wait(2000);
+      }
+    }
     
     assertTrue(fired[JOINED]);
     assertEquals(test, member[JOINED]);
@@ -832,7 +843,11 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     catch (CacheException ex) {
       fail("While creating Region on Edge", ex);
     }
-    pause(60 * 1000);
+    synchronized(listener) {
+      if (!fired[JOINED] && !fired[CRASHED]) {
+        listener.wait(60 * 1000);
+      }
+    }
     
     getLogWriter().info("[testBridgeMembershipEventsInClient] assert client detected server join");
     
@@ -881,7 +896,11 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
           stopBridgeServers(getCache());
         }
       });
-      pause(60 * 1000);
+      synchronized(listener) {
+        if (!fired[JOINED] && !fired[CRASHED]) {
+          listener.wait(60 * 1000);
+        }
+      }
     }
     finally {
       bgexecLogger.info(removeExpected);
@@ -918,7 +937,11 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         }
       }
     });
-    pause(60 * 1000);
+    synchronized(listener) {
+      if (!fired[JOINED] && !fired[CRASHED]) {
+        listener.wait(60 * 1000);
+      }
+    }
     
     getLogWriter().info("[testBridgeMembershipEventsInClient] assert client detected server recovery");
     assertTrue(fired[JOINED]);
@@ -954,7 +977,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
         isClient[JOINED] = event.isClient();
-        notify();
+        notifyAll();
         assertFalse(fired[LEFT] || fired[CRASHED]);
       }
       public synchronized void memberLeft(BridgeMembershipEvent event) {
@@ -963,7 +986,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         member[LEFT] = event.getMember();
         memberId[LEFT] = event.getMemberId();
         isClient[LEFT] = event.isClient();
-        notify();
+        notifyAll();
         assertFalse(fired[JOINED] || fired[CRASHED]);
       }
       public synchronized void memberCrashed(BridgeMembershipEvent event) {
@@ -972,7 +995,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         member[CRASHED] = event.getMember();
         memberId[CRASHED] = event.getMemberId();
         isClient[CRASHED] = event.isClient();
-        notify();
+        notifyAll();
         assertFalse(fired[JOINED] || fired[LEFT]);
       }
     };
@@ -1018,7 +1041,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     DistributedMember test = new TestDistributedMember("test");
     InternalBridgeMembership.notifyJoined(test, CLIENT);
     synchronized(listener) {
-      if (!fired[JOINED]) {
+      if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
         listener.wait(2000);
       }
     }
@@ -1061,7 +1084,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
                                                 "getDistributedMember");
                                                 
     synchronized(listener) {
-      if (!fired[JOINED]) {
+      if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
         listener.wait(60000);
       }
     }
@@ -1099,7 +1122,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     });
 
     synchronized(listener) {
-      if (!fired[LEFT]) {
+      if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
         listener.wait(60000);
       }
     }
@@ -1125,7 +1148,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
                                          "getMemberId");
                                                 
     synchronized(listener) {
-      if (!fired[JOINED]) {
+      if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
         listener.wait(60000);
       }
     }
@@ -1163,7 +1186,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       });
   
       synchronized(listener) {
-        if (!fired[CRASHED]) {
+        if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
           listener.wait(60000);
         }
       }
@@ -1221,7 +1244,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
         isClient[JOINED] = event.isClient();
-        notify();
+        notifyAll();
       }
       public synchronized void memberLeft(BridgeMembershipEvent event) {
       }
@@ -1255,7 +1278,9 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     
 
     InternalBridgeMembership.notifyJoined(serverJoined, SERVER);
-    pause(2000);
+    synchronized(listener) {
+      listener.wait(20);
+    }
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
     assertNull(memberId[JOINED]);
@@ -1330,7 +1355,25 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     Collection clientMemberIds = Arrays.asList(clientMemberIdArray);
                                                 
-    pauseForClientToJoin(); // hopefully this is long enough 4 clients
+    {
+      final int expectedClientCount = clientMemberIds.size();
+      WaitCriterion wc = new WaitCriterion() {
+        public String description() {
+          return "wait for clients";
+        }
+        public boolean done() {
+          Map connectedClients = InternalBridgeMembership.getConnectedClients(false);
+          if (connectedClients == null) {
+            return false;
+          }
+          if (connectedClients.size() != expectedClientCount) {
+            return false;
+          }
+          return true;
+        }
+      };
+      waitForCriterion(wc, 10000, 100, false);
+    }
     
     Map connectedClients = InternalBridgeMembership.getConnectedClients(false);
     assertNotNull(connectedClients);
@@ -1409,8 +1452,28 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       region.get("KEY-1");
     }
 
-    pauseForClientToJoin(); // hopefully this is long enough 4 servers
-    pauseForClientToJoin(); // hopefully this is long enough 4 servers
+    {
+      final int expectedVMCount = host.getVMCount();
+      WaitCriterion wc = new WaitCriterion() {
+        public String description() {
+          return "wait for pools and servers";
+        }
+        public boolean done() {
+          if (PoolManager.getAll().size() != expectedVMCount) {
+            return false;
+          }
+          Map connectedServers = InternalBridgeMembership.getConnectedServers();
+          if (connectedServers == null) {
+            return false;
+          }
+          if (connectedServers.size() != expectedVMCount) {
+            return false;
+          }
+          return true;
+        }
+      };
+      waitForCriterion(wc, 10000, 100, false);
+    }
 
     {
       assertEquals(host.getVMCount(), PoolManager.getAll().size());
@@ -1524,7 +1587,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     for (int i = 0; i < clientCounts.length; i++) {
       totalClientCounts += clientCounts[i];
     }
-    // jeeze... this assertion fails because the count is 4
+    // this assertion fails because the count is 4
     //assertEquals(1, totalClientCounts);
   }
   protected static int testGetNotifiedClients_port;

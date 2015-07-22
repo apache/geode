@@ -246,7 +246,8 @@ public class PartitionedRegionTestHelper
 public static synchronized void closeCache()
  {
   if(cache != null){
-  cache.close();
+    cache.close();
+    cache = null;
   }
    
  }
