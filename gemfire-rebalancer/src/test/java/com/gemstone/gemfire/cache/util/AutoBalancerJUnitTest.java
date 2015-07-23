@@ -3,6 +3,7 @@ package com.gemstone.gemfire.cache.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.util.Properties;
@@ -23,21 +24,24 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.control.RebalanceFactory;
+import com.gemstone.gemfire.cache.control.RebalanceOperation;
+import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.util.AutoBalancer.AuditScheduler;
 import com.gemstone.gemfire.cache.util.AutoBalancer.CacheOperationFacade;
 import com.gemstone.gemfire.cache.util.AutoBalancer.GeodeCacheFacade;
 import com.gemstone.gemfire.cache.util.AutoBalancer.OOBAuditor;
+import com.gemstone.gemfire.cache.util.AutoBalancer.SizeBasedOOBAuditor;
 import com.gemstone.gemfire.cache.util.AutoBalancer.TimeProvider;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class AutoBalancerJUnitTest {
 
-  // OOB > threshold
-  // OOB < threshold
   // OOB > threshold && size < min
   // OOB > threshold && size < min
   // OOB critical nodes
@@ -314,6 +318,104 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
+  public void testFailExecuteIfBalanced() throws InterruptedException {
+    cache = createBasicCache();
+
+    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCacheFacade).acquireAutoBalanceLock();
+        will(returnValue(true));
+        never(mockCacheFacade).rebalance();
+        oneOf(mockCacheFacade).incrementAttemptCounter();
+        oneOf(mockCacheFacade).releaseAutoBalanceLock();
+      }
+    });
+
+    AutoBalancer balancer = new AutoBalancer();
+    balancer.setCacheOperationFacade(mockCacheFacade);
+
+    SizeBasedOOBAuditor auditor = balancer.new SizeBasedOOBAuditor() {
+      @Override
+      boolean needsRebalancing() {
+        return false;
+      }
+    };
+    balancer.setOOBAuditor(auditor);
+    balancer.getOOBAuditor().execute();
+  }
+
+  @Test
+  public void testOOBWhenBelowSizeThreshold() {
+    final long totalSize = 1000L;
+
+    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
+    mockContext.checking(new Expectations() {
+      {
+        // first run
+        oneOf(mockCacheFacade).getTotalDataSize();
+        will(returnValue(totalSize));
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        // half of threshold limit
+        will(returnValue((AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT * totalSize / 100) / 2));
+
+        // second run
+        oneOf(mockCacheFacade).getTotalDataSize();
+        will(returnValue(totalSize));
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        // nothing to transfer
+        will(returnValue(0L));
+      }
+    });
+
+    AutoBalancer balancer = new AutoBalancer();
+    balancer.setCacheOperationFacade(mockCacheFacade);
+    balancer.init(getBasicConfig());
+    SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
+
+    // first run
+    assertFalse(auditor.needsRebalancing());
+
+    // second run
+    assertFalse(auditor.needsRebalancing());
+  }
+
+  @Test
+  public void testOOBWhenBelowAboveThreshold() {
+    final long totalSize = 1000L;
+
+    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
+    mockContext.checking(new Expectations() {
+      {
+        // first run
+        oneOf(mockCacheFacade).getTotalDataSize();
+        will(returnValue(totalSize));
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        // twice threshold
+        will(returnValue((AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT * totalSize / 100) * 2));
+
+        // second run
+        oneOf(mockCacheFacade).getTotalDataSize();
+        will(returnValue(totalSize));
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        // more than total size
+        will(returnValue(2 * totalSize));
+      }
+    });
+
+    AutoBalancer balancer = new AutoBalancer();
+    balancer.setCacheOperationFacade(mockCacheFacade);
+    balancer.init(getBasicConfig());
+    SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
+
+    // first run
+    assertTrue(auditor.needsRebalancing());
+
+    // second run
+    assertTrue(auditor.needsRebalancing());
+  }
+
+  @Test
   public void testInitializerCacheXML() {
     String configStr = "<cache xmlns=\"http://schema.pivotal.io/gemfire/cache\"                          "
         + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"                                      "
@@ -365,10 +467,7 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    // every second schedule
-    String someSchedule = "* * * * * ?";
-    Properties props = new Properties();
-    props.put(AutoBalancer.SCHEDULE, someSchedule);
+    Properties props = getBasicConfig();
 
     assertEquals(0, count);
     AutoBalancer autoR = new AutoBalancer();
@@ -392,10 +491,50 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
+  public void testOOBAuditorInit() {
+    AutoBalancer balancer = new AutoBalancer();
+    balancer.init(getBasicConfig());
+    SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
+    assertEquals(AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT, auditor.getSizeThreshold());
+
+    Properties props = getBasicConfig();
+    props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "17");
+    balancer = new AutoBalancer();
+    balancer.init(props);
+    auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
+    assertEquals(17, auditor.getSizeThreshold());
+  }
+
+  @Test(expected = GemFireConfigException.class)
+  public void testSizeThresholdNegative() {
+    AutoBalancer balancer = new AutoBalancer();
+    Properties props = getBasicConfig();
+    props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "-1");
+    balancer.init(props);
+  }
+
+  @Test(expected = GemFireConfigException.class)
+  public void testSizeThresholdZero() {
+    AutoBalancer balancer = new AutoBalancer();
+    Properties props = getBasicConfig();
+    props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "0");
+    balancer.init(props);
+  }
+
+  @Test(expected = GemFireConfigException.class)
+  public void testSizeThresholdToohigh() {
+    AutoBalancer balancer = new AutoBalancer();
+    Properties props = getBasicConfig();
+    props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "100");
+    balancer.init(props);
+  }
+
+  @Test
   public void testAutoBalancerInit() {
     final String someSchedule = "1 * * * 1 *";
     final Properties props = new Properties();
     props.put(AutoBalancer.SCHEDULE, someSchedule);
+    props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, 17);
 
     final AuditScheduler mockScheduler = mockContext.mock(AuditScheduler.class);
     final OOBAuditor mockAuditor = mockContext.mock(OOBAuditor.class);
@@ -414,8 +553,72 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
-  public void testNullInitialization() {
+  public void testMinimalConfiguration() {
     AutoBalancer autoR = new AutoBalancer();
-    autoR.init(null);
+    try {
+      autoR.init(null);
+      fail();
+    } catch (GemFireConfigException e) {
+      // expected
+    }
+
+    Properties props = getBasicConfig();
+    autoR.init(props);
+  }
+
+  @Test
+  public void testFacadeTotalTransferSize() throws Exception {
+    assertEquals(12345, getFacadeForResourceManagerOps(true).getTotalTransferSize());
+  }
+  
+  @Test
+  public void testFacadeRebalance() throws Exception {
+    getFacadeForResourceManagerOps(false).rebalance();
+  }
+
+  private GeodeCacheFacade getFacadeForResourceManagerOps(final boolean simulate) throws Exception {
+    final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
+    final InternalResourceManager mockRM = mockContext.mock(InternalResourceManager.class);
+    final RebalanceFactory mockRebalanceFactory = mockContext.mock(RebalanceFactory.class);
+    final RebalanceOperation mockRebalanceOperation = mockContext.mock(RebalanceOperation.class);
+    final RebalanceResults mockRebalanceResults = mockContext.mock(RebalanceResults.class);
+    
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCache).getResourceManager();
+        will(returnValue(mockRM));
+        oneOf(mockRM).createRebalanceFactory();
+        will(returnValue(mockRebalanceFactory));
+        if (simulate) {
+          oneOf(mockRebalanceFactory).simulate();
+        } else {
+          oneOf(mockRebalanceFactory).start();
+        }
+        will(returnValue(mockRebalanceOperation));
+        oneOf(mockRebalanceOperation).getResults();
+        will(returnValue(mockRebalanceResults));
+        if (simulate) {
+          atLeast(1).of(mockRebalanceResults).getTotalBucketTransferBytes();
+          will(returnValue(12345L));
+        }
+        allowing(mockRebalanceResults);
+      }
+    });
+    
+    GeodeCacheFacade facade = new GeodeCacheFacade() {
+      @Override
+      GemFireCacheImpl getCache() {
+        return mockCache;
+      }
+    };
+    
+    return facade;
+  }
+  
+  private Properties getBasicConfig() {
+    Properties props = new Properties();
+    // every second schedule
+    props.put(AutoBalancer.SCHEDULE, "* * * * * ?");
+    return props;
   }
 }

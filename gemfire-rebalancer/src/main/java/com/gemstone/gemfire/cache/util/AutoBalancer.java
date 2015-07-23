@@ -50,13 +50,38 @@ import com.gemstone.gemfire.internal.logging.LogService;
  */
 public class AutoBalancer implements Declarable {
   /**
-   * Use this configuration to provide out-of-balance audit. If the audit finds
-   * the system to be out-of-balance, it will trigger re-balancing. Any valid
-   * cron string is accepted. The first value represent second.
+   * Use this configuration to manage out-of-balance audit frequency. If the
+   * auditor finds the system to be out-of-balance, it will trigger
+   * re-balancing. Any valid cron string is accepted. The sub-expressions
+   * represent the following:
+   * <OL>
+   * <LI>Seconds
+   * <LI>Minutes
+   * <LI>Hours
+   * <LI>Day-of-Month
+   * <LI>Month
+   * <LI>Day-of-Week
+   * <LI>Year (optional field)
+   * 
    * <P>
-   * For. e.g. {@code 0 0 * * * *} for auditing the system every hour
+   * For. e.g. {@code 0 0 * * * ?} for auditing the system every hour
    */
   public static final String SCHEDULE = "schedule";
+
+  /**
+   * Use this configuration to manage re-balance threshold. Rebalance operation
+   * will be triggered if the total number of bytes rebalance operation may move
+   * is more than this threshold, percentage of the total data size.
+   * <P>
+   * Default {@value AutoBalancer#DEFAULT_SIZE_THRESHOLD_PERCENT}
+   */
+  public static final String SIZE_THRESHOLD_PERCENT = "size-threshold-percent";
+
+  /**
+   * Default value of {@link AutoBalancer#SIZE_THRESHOLD_PERCENT}. If 10% of
+   * data is misplaced, its a good time to redistribute buckets
+   */
+  public static final int DEFAULT_SIZE_THRESHOLD_PERCENT = 10;
 
   /**
    * Name of the DistributedLockService that {@link AutoBalancer} will use to
@@ -79,12 +104,13 @@ public class AutoBalancer implements Declarable {
       logger.debug("Initiazing " + this.getClass().getSimpleName() + " with " + props);
     }
 
-    if (props != null) {
-      String schedule = props.getProperty(SCHEDULE);
+    auditor.init(props);
 
-      auditor.init(props);
-      scheduler.init(schedule);
+    String schedule = null;
+    if (props != null) {
+      schedule = props.getProperty(SCHEDULE);
     }
+    scheduler.init(schedule);
   }
 
   /**
@@ -161,10 +187,21 @@ public class AutoBalancer implements Declarable {
    * <LI>release lock
    */
   class SizeBasedOOBAuditor implements OOBAuditor {
+    private int sizeThreshold = DEFAULT_SIZE_THRESHOLD_PERCENT;
+
     @Override
     public void init(Properties props) {
       if (logger.isDebugEnabled()) {
         logger.debug("Initiazing " + this.getClass().getSimpleName());
+      }
+
+      if (props != null) {
+        if (props.getProperty(SIZE_THRESHOLD_PERCENT) != null) {
+          sizeThreshold = Integer.valueOf(props.getProperty(SIZE_THRESHOLD_PERCENT));
+          if (sizeThreshold <= 0 || sizeThreshold >= 100) {
+            throw new GemFireConfigException(SIZE_THRESHOLD_PERCENT + " should be integer, 1 to 99");
+          }
+        }
       }
     }
 
@@ -178,11 +215,52 @@ public class AutoBalancer implements Declarable {
         }
         return;
       }
+
       try {
+        result = needsRebalancing();
+        if (!result) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Rebalancing is not needed");
+          }
+          return;
+        }
+
         cacheFacade.rebalance();
       } finally {
         cacheFacade.releaseAutoBalanceLock();
       }
+    }
+
+    /**
+     * By default auto-balancer will avoid rebalancing, because a user can
+     * always trigger rebalance manually. So in case of error or inconsistent
+     * data, return false. Return true if
+     * <OL>
+     * <LI>total transfer size is above threshold percent of total data size at
+     * cluster level
+     * <LI>If some smaller capacity nodes are heavily loaded while bigger
+     * capacity nodes are balanced. In such a scenario transfer size based
+     * trigger may not cause rebalance.
+     */
+    boolean needsRebalancing() {
+      // test cluster level status
+      long transferSize = cacheFacade.getTotalTransferSize();
+      long totalSize = cacheFacade.getTotalDataSize();
+
+      if (totalSize > 0) {
+        int transferPercent = (int) ((100.0 * transferSize) / totalSize);
+        if (transferPercent >= sizeThreshold) {
+          return true;
+        }
+      }
+
+      // TODO test member level skew
+
+      return false;
+    }
+
+    public int getSizeThreshold() {
+      return sizeThreshold;
     }
   }
 
@@ -191,6 +269,34 @@ public class AutoBalancer implements Declarable {
    * auto-balancing
    */
   static class GeodeCacheFacade implements CacheOperationFacade {
+    @Override
+    public long getTotalDataSize() {
+      // TODO Auto-generated method stub
+      return getTotalTransferSize();
+    }
+
+    @Override
+    public long getTotalTransferSize() {
+      try {
+        RebalanceOperation operation = getCache().getResourceManager().createRebalanceFactory().simulate();
+        RebalanceResults result = operation.getResults();
+        if (logger.isDebugEnabled()) {
+          logger.debug("Rebalance estimate: RebalanceResultsImpl [TotalBucketCreateBytes="
+              + result.getTotalBucketCreateBytes() + ", TotalBucketCreatesCompleted="
+              + result.getTotalBucketCreatesCompleted() + ", TotalBucketTransferBytes="
+              + result.getTotalBucketTransferBytes() + ", TotalBucketTransfersCompleted="
+              + result.getTotalBucketTransfersCompleted() + ", TotalPrimaryTransfersCompleted="
+              + result.getTotalPrimaryTransfersCompleted() + "]");
+        }
+        return result.getTotalBucketTransferBytes();
+      } catch (CancellationException e) {
+        logger.info("Error while trying to estimate rebalance cost ", e);
+      } catch (InterruptedException e) {
+        logger.info("Error while trying to estimate rebalance cost ", e);
+      }
+      return 0;
+    }
+
     @Override
     public void incrementAttemptCounter() {
       GemFireCacheImpl cache = getCache();
@@ -203,20 +309,23 @@ public class AutoBalancer implements Declarable {
 
     @Override
     public void rebalance() {
-      RebalanceOperation operation = getCache().getResourceManager().createRebalanceFactory().simulate();
       try {
+        RebalanceOperation operation = getCache().getResourceManager().createRebalanceFactory().start();
         RebalanceResults result = operation.getResults();
-        logger.info(result.getTotalBucketTransfersCompleted() + " " + result.getTotalBucketTransferBytes());
+        logger.info("Rebalance result: RebalanceResultsImpl [TotalBucketCreateBytes="
+            + result.getTotalBucketCreateBytes() + ", TotalBucketCreatesCompleted="
+            + result.getTotalBucketCreatesCompleted() + ", TotalBucketTransferBytes="
+            + result.getTotalBucketTransferBytes() + ", TotalBucketTransfersCompleted="
+            + result.getTotalBucketTransfersCompleted() + ", TotalPrimaryTransfersCompleted="
+            + result.getTotalPrimaryTransfersCompleted() + "]");
       } catch (CancellationException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        logger.info("Error rebalancing the cluster", e);
       } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        logger.info("Error rebalancing the cluster", e);
       }
     }
 
-    private GemFireCacheImpl getCache() {
+    GemFireCacheImpl getCache() {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         throw new IllegalStateException("Missing cache instance.");
@@ -288,6 +397,10 @@ public class AutoBalancer implements Declarable {
     void rebalance();
 
     void incrementAttemptCounter();
+
+    long getTotalDataSize();
+
+    long getTotalTransferSize();
   }
 
   /**
