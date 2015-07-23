@@ -13,7 +13,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CopyHelper;
@@ -1126,6 +1125,13 @@ public class EntryEventImpl
     return null;
   }
 
+  public final String getNewValueStringForm() {
+    return StringUtils.forceToString(basicGetNewValue());
+  }
+  public final String getOldValueStringForm() {
+    return StringUtils.forceToString(basicGetOldValue());
+  }
+  
   protected boolean applyDelta(boolean throwOnNullOldValue)
       throws EntryNotFoundException {
     if (this.newValue != null || this.delta == null) {

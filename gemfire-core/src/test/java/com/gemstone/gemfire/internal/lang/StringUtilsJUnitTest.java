@@ -9,9 +9,16 @@ package com.gemstone.gemfire.internal.lang;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -304,6 +311,32 @@ public class StringUtilsJUnitTest {
 
     assertNotNull(actualLine);
     assertEquals(expectedLine, actualLine);
+  }
+  
+  @Test
+  public void testForceToString() throws IOException {
+    assertEquals("null", StringUtils.forceToString(null));
+    assertEquals("Object[][]", StringUtils.forceToString(new Object[0][0]));
+    assertEquals("byte[1, 2]", StringUtils.forceToString(new byte[]{1,2}));
+    assertEquals("int[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]", StringUtils.forceToString(new int[]{1,2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}));
+    assertEquals("long[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 1 more]", StringUtils.forceToString(new long[]{1,2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}));
+    assertEquals("short[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 2 more]", StringUtils.forceToString(new short[]{1,2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}));
+    assertEquals("char[1, 2, 3]", StringUtils.forceToString(new char[]{'1','2','3'}));
+    assertEquals("boolean[true, false]", StringUtils.forceToString(new boolean[]{true, false}));
+    assertEquals("float[1.0]", StringUtils.forceToString(new float[]{1.0f}));
+    assertEquals("double[1.0, 2.0]", StringUtils.forceToString(new double[]{1.0, 2.0}));
+    assertEquals("String[start, middle, end]", StringUtils.forceToString(new String[]{"start", "middle", "end"}));
+    // make sure CacheDeserializables do not get deserialized when getting their string form
+    Object v = "value";
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    DataSerializer.writeObject(v, dos);
+    dos.flush();
+    byte[] valueBytes = baos.toByteArray();
+    CachedDeserializable cd = CachedDeserializableFactory.create(valueBytes);
+    assertSame(valueBytes, cd.getValue());
+    assertEquals("value", StringUtils.forceToString(cd));
+    assertSame(valueBytes, cd.getValue());
   }
 
 }
