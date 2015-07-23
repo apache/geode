@@ -146,7 +146,7 @@ public class RegionFactoryJUnitTest {
     r1 = factory.create(r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
   }
-  
+
   /**
    * Test RegionFactory with Cache close and DistributedSystem disconnect
    */
@@ -1098,6 +1098,23 @@ public class RegionFactoryJUnitTest {
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(5, ra.getPartitionAttributes().getTotalNumBuckets());
     assertEquals(2, ra.getPartitionAttributes().getRedundantCopies());
+  }
+
+  @Test
+  public void testCacheCloseUsingTryWithResources() throws Exception {
+    Cache extCache;
+
+    // try block creates and close cache
+    try (Cache cache = new CacheFactory(createGemFireProperties()).create()) {
+      extCache = cache;
+      assertEquals(false, cache.isClosed());
+    }
+
+    if (extCache != null) {
+      assertEquals(true, extCache.isClosed());
+    } else {
+      fail("CacheFactory must be created.");
+    }
   }
 
   private String getName() {
