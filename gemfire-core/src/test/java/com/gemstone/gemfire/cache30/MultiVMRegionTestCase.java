@@ -1004,18 +1004,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         };
 
     Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-
-    vm0.invoke(create);
-
     int vmCount = host.getVMCount();
-    for (int i = 1; i < vmCount; i++) {
+    for (int i = 0; i < vmCount; i++) {
       VM vm = host.getVM(i);
       vm.invoke(create);
     }
 
-    Thread.sleep(250);
-
+    pause();
 
     SerializableRunnable invalidate =
       new CacheSerializableRunnable("Invalidate Entry") {
@@ -1047,6 +1042,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm.invoke(verify);
     }
 
+    // Why is this long 2.5 second pause needed on no-ack?
     pauseIfNecessary(2500);  // wait for messages to acquiesce before tearing down
     getLogWriter().info("Tearing down...");
   }
@@ -1211,7 +1207,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pauseIfNecessary();
+    // I see no reason to pause here.
+    // The test used to pause here but only if no-ack.
+    // But we have no operations to wait for.
+    // The last thing we did was install a listener in vm1
+    // and it is possible that vm0 does not yet know we have
+    // a listener but for this test it does not matter.
+    // So I'm commenting out the following pause:
+    //pauseIfNecessary();
 
     vm0.invoke(new CacheSerializableRunnable("Update") {
         public void run2() throws CacheException {
@@ -1221,11 +1224,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pauseIfNecessary();
-
     vm1.invoke(new CacheSerializableRunnable("Verify Update") {
         public void run2() throws CacheException {
-          assertTrue(listener.wasInvoked());
+          listener.waitForInvocation(3000, 10);
 
           // Setup listener for next test
           final Region region =
@@ -1266,11 +1267,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pause();
-
     vm1.invoke(new CacheSerializableRunnable("Verify Invalidate") {
         public void run2() throws CacheException {
-          assertTrue(listener.wasInvoked());
+          listener.waitForInvocation(3000, 10);
 
           // Setup listener for next test
           final Region region =
@@ -1306,11 +1305,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pause();
-
     vm1.invoke(new CacheSerializableRunnable("Verify Destroy") {
         public void run2() throws CacheException {
-          assertTrue(listener.wasInvoked());
+          listener.waitForInvocation(3000, 10);
 
           // Setup listener for next test
           final Region region =
@@ -1337,11 +1334,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pause();
-
     vm1.invoke(new CacheSerializableRunnable("Verify Invalidate Region") {
         public void run2() throws CacheException {
-          assertTrue(listener.wasInvoked());
+          listener.waitForInvocation(3000, 10);
 
           // Setup listener for next test
           final Region region =
@@ -1368,11 +1363,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pause();
-
     vm1.invoke(new CacheSerializableRunnable("Verify Destroy Region") {
         public void run2() throws CacheException {
-          assertTrue(listener.wasInvoked());
+          listener.waitForInvocation(3000, 10);
         }
       });
   }
@@ -1426,20 +1419,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pauseIfNecessary();
-
-
     vm0.invoke(new CacheSerializableRunnable("Invalidate Root Region") {
         public void run2() throws CacheException {
           getRootRegion().invalidateRegion(getSystem().getDistributedMember());
         }
       });
 
-    pauseIfNecessary();
-
     vm1.invoke(new CacheSerializableRunnable("Verify Invalidate Region") {
         public void run2() throws CacheException {
-          assertTrue(listener.wasInvoked());
+          listener.waitForInvocation(3000, 10);
 
           // Setup listener for next test
           final Region region =
@@ -1458,19 +1446,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-    pauseIfNecessary();
-
     vm0.invoke(new CacheSerializableRunnable("Destroy Root Region") {
         public void run2() throws CacheException {
           getRootRegion().destroyRegion(getSystem().getDistributedMember());
         }
       });
 
-    pauseIfNecessary();
-
     vm1.invoke(new CacheSerializableRunnable("Verify Destroy Region") {
         public void run2() throws CacheException {
-          assertTrue(listener.wasInvoked());
+          listener.waitForInvocation(3000, 10);
         }
       });
   }
