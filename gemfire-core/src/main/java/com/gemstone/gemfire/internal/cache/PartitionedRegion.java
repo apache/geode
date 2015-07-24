@@ -1979,7 +1979,7 @@ public class PartitionedRegion extends LocalRegion implements
     // this can return a BAG even if it's a DISTINCT select expression,
     // since the expectation is that the duplicates will be removed at the end
     SelectResults results = selectExpr
-        .getEmptyResultSet(parameters, getCache());
+        .getEmptyResultSet(parameters, getCache(), query);
 
     PartitionedRegionQueryEvaluator prqe = new PartitionedRegionQueryEvaluator(this.getSystem(), this, query,
         parameters, results, allBuckets);
