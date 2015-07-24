@@ -153,6 +153,14 @@ public abstract class RegionTestCase extends CacheTestCase {
   protected void pauseIfNecessary(int ms) {
   }
   
+  /**
+   * Make sure all messages done on region r have
+   * been processed on the remote side.
+   */
+  protected void flushIfNecessary(Region r) {
+    // Only needed for no-ack regions
+  }
+  
   //////////////////////  Test Methods  //////////////////////
   
   /**
