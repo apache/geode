@@ -101,7 +101,7 @@ public class AutoBalancer implements Declarable {
   @Override
   public void init(Properties props) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Initiazing " + this.getClass().getSimpleName() + " with " + props);
+      logger.debug("Initializing " + this.getClass().getSimpleName() + " with " + props);
     }
 
     auditor.init(props);
@@ -140,7 +140,7 @@ public class AutoBalancer implements Declarable {
     @Override
     public void init(String schedule) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Initiazing " + this.getClass().getSimpleName() + " with " + schedule);
+        logger.debug("Initializing " + this.getClass().getSimpleName() + " with " + schedule);
       }
 
       if (schedule == null || schedule.isEmpty()) {
@@ -192,7 +192,7 @@ public class AutoBalancer implements Declarable {
     @Override
     public void init(Properties props) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Initiazing " + this.getClass().getSimpleName());
+        logger.debug("Initializing " + this.getClass().getSimpleName());
       }
 
       if (props != null) {
@@ -303,7 +303,7 @@ public class AutoBalancer implements Declarable {
       try {
         cache.getResourceManager().getStats().incAutoRebalanceAttempts();
       } catch (Exception e) {
-        logger.warn("Failed ot increment AutoBalanceAttempts counter");
+        logger.warn("Failed to increment AutoBalanceAttempts counter");
       }
     }
 
@@ -312,12 +312,14 @@ public class AutoBalancer implements Declarable {
       try {
         RebalanceOperation operation = getCache().getResourceManager().createRebalanceFactory().start();
         RebalanceResults result = operation.getResults();
-        logger.info("Rebalance result: RebalanceResultsImpl [TotalBucketCreateBytes="
-            + result.getTotalBucketCreateBytes() + ", TotalBucketCreatesCompleted="
+        logger.info("Rebalance result: [TotalBucketCreateBytes=" + result.getTotalBucketCreateBytes()
+            + ", TotalBucketCreateTime=" + result.getTotalBucketCreateTime() + ", TotalBucketCreatesCompleted="
             + result.getTotalBucketCreatesCompleted() + ", TotalBucketTransferBytes="
-            + result.getTotalBucketTransferBytes() + ", TotalBucketTransfersCompleted="
-            + result.getTotalBucketTransfersCompleted() + ", TotalPrimaryTransfersCompleted="
-            + result.getTotalPrimaryTransfersCompleted() + "]");
+            + result.getTotalBucketTransferBytes() + ", TotalBucketTransferTime=" + result.getTotalBucketTransferTime()
+            + ", TotalBucketTransfersCompleted=" + +result.getTotalBucketTransfersCompleted()
+            + ", TotalPrimaryTransferTime=" + result.getTotalPrimaryTransferTime()
+            + ", TotalPrimaryTransfersCompleted=" + result.getTotalPrimaryTransfersCompleted() + ", TotalTime="
+            + result.getTotalTime() + "]");
       } catch (CancellationException e) {
         logger.info("Error rebalancing the cluster", e);
       } catch (InterruptedException e) {
@@ -338,7 +340,7 @@ public class AutoBalancer implements Declarable {
 
       boolean result = dls.lock(AUTO_BALANCER_LOCK, 0, -1);
       if (logger.isDebugEnabled()) {
-        logger.debug("Grabed AutoBalancer lock? " + result);
+        logger.debug("Grabbed AutoBalancer lock? " + result);
       }
       return result;
     }
@@ -347,7 +349,7 @@ public class AutoBalancer implements Declarable {
       DistributedLockService dls = getDLS();
       dls.unlock(AUTO_BALANCER_LOCK);
       if (logger.isDebugEnabled()) {
-        logger.debug("Successfully release auto-balance ownership");
+        logger.debug("Successfully released auto-balance ownership");
       }
     }
 
