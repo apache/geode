@@ -45,6 +45,7 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.RegionReinitializedException;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
 import com.gemstone.gemfire.internal.cache.EntrySnapshot;
 import com.gemstone.gemfire.internal.cache.ExpiryTask;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -2403,16 +2404,18 @@ public abstract class RegionTestCase extends CacheTestCase {
   }
 
   /**
-   * Expire an entry with a ttl time.  Set a new ttl time, create the
-   * same entry again, make sure it observes the <em>new</em> ttl time.
+   * Configure entry expiration with a ttl time.
+   * Create an entry and records its scheduled expiration time.
+   * Then mutate the region expiration configuration and confirm
+   * that the entry's expiration time is rescheduled.
    */
   public void testEntryTtl3() {
     final String name = this.getUniqueName();
-    final int timeout1 = 200; // ms
-    final int timeout2 = 2000;
+    // test no longer waits for this expiration to happen
+    final int timeout1 = 500 * 1000; // ms
+    final int timeout2 = 2000 * 1000; // ms
     final String key1 = "KEY1";
     final String value1 = "VALUE1";
-    final String value2 = "VALUE2";
     
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     ExpirationAttributes expire1 =
@@ -2428,138 +2431,63 @@ public abstract class RegionTestCase extends CacheTestCase {
     factory.addCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
+    LocalRegion region;
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      region = createRegion(name, attrs);
+      region = (LocalRegion) createRegion(name, attrs);
+    } finally {
+      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+    }
 
-      // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in
-      // invalidate");
-      ExpiryTask.suspendExpiration();
-      Region.Entry entry = null;
-      long tilt;
-      eventCount = 0;
-      try {
-        region.create(key1, value1);
-        tilt = System.currentTimeMillis() + timeout1;
-        assertTrue(list.waitForInvocation(1000));
-        entry = region.getEntry(key1);
-        Assert.assertTrue(value1.equals(entry.getValue()));
-      }
-      finally {
-        ExpiryTask.permitExpiration();
-      }
-      waitForInvalidate(entry, tilt);
-      if (!getRegionAttributes().getDataPolicy().withPartitioning()) {
-        // Disk regions are VERY slow, so we need to wait for the event...
-        WaitCriterion wc = new WaitCriterion() {
-          public boolean done() {
-            return eventCount == 1;
-          }
-          public String description() {
-            return "eventCount never became 1";
-          }
-        };
-        DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-      }
-      eventCount = 0;
+    region.create(key1, value1);
+    EntryExpiryTask eet = region.getEntryExpiryTask(key1);
+    final long firstExpiryTime = eet.getExpirationTime();
 
-      // Do it again with a put (I guess)
-      ExpiryTask.suspendExpiration();
-      try {
-        region.put(key1, value1);
-        tilt = System.currentTimeMillis() + timeout1;
-        entry = region.getEntry(key1);
-        Assert.assertTrue(value1.equals(entry.getValue()));
-        assertTrue(list.waitForInvocation(1000));
-      }
-      finally {
-        ExpiryTask.permitExpiration();
-      }
-      waitForInvalidate(entry, tilt);
-      if (!getRegionAttributes().getDataPolicy().withPartitioning()) {
-        // Disk regions are VERY slow, so we need to wait for the event...
-        WaitCriterion wc = new WaitCriterion() {
-          public boolean done() {
-            return eventCount == 1;
-          }
-          public String description() {
-            return "eventCount never became 1";
-          }
-        };
-        DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-      }
-      eventCount = 0;
-
-      // Change custom expiry for this region now...
-      AttributesMutator mutt = region.getAttributesMutator();
-      ExpirationAttributes expire2 = new ExpirationAttributes(timeout2,
-          ExpirationAction.INVALIDATE);
-      mutt.setEntryTimeToLive(expire2);
-
-      ExpiryTask.suspendExpiration();
-      try {
-        region.put(key1, value2);
-        tilt = System.currentTimeMillis() + timeout2;
-        entry = region.getEntry(key1);
-        Assert.assertTrue(value2.equals(entry.getValue()));
-        assertTrue(list.waitForInvocation(1000));
-      }
-      finally {
-        ExpiryTask.permitExpiration();
-        if (region.getAttributes().getPartitionAttributes() != null)
-          System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-      }
-      waitForInvalidate(entry, tilt);
-      if (!region.getAttributes().getDataPolicy().withPartitioning()) {
-        // Disk regions are VERY slow, so we need to wait for the event...
-        WaitCriterion wc = new WaitCriterion() {
-          public boolean done() {
-            return eventCount == 1;
-          }
-          public String description() {
-            return "eventCount never became 1";
-          }
-        };
-        DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-      }
-      eventCount = 0;
-    
-    // Change custom expiry for this region now...
-    mutt = region.getAttributesMutator();
-    expire2 =
-      new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
+    AttributesMutator mutt = region.getAttributesMutator();
+    ExpirationAttributes expire2 = new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
     mutt.setEntryTimeToLive(expire2);
+    eet = region.getEntryExpiryTask(key1);
+    final long secondExpiryTime = eet.getExpirationTime();
+    if ((secondExpiryTime - firstExpiryTime) <= 0) {
+      fail("expiration time should have been greater after changing region config from 500 to 2000. firstExpiryTime=" + firstExpiryTime + " secondExpiryTime=" + secondExpiryTime);
+    }
     
-    ExpiryTask.suspendExpiration();
-    try {
-      region.put(key1, value2);
-      tilt = System.currentTimeMillis() + timeout2;
-      entry = region.getEntry(key1);
-      Assert.assertTrue(value2.equals(entry.getValue()));
-      assertTrue(list.waitForInvocation(5000));
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
-    }
-    waitForInvalidate(entry, tilt);
-    if (!region.getAttributes().getDataPolicy().withPartitioning()) {
-      // Disk regions are VERY slow, so we need to wait for the event...
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return eventCount == 1;
-        }
-        public String description() {
-          return "eventCount never became 1";
-        }
-      };
-      DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-    }
+    // now set back to be more recent
+    mutt = region.getAttributesMutator();
+    ExpirationAttributes expire3 = new ExpirationAttributes(timeout1, ExpirationAction.INVALIDATE);
+    mutt.setEntryTimeToLive(expire3);
+    eet = region.getEntryExpiryTask(key1);
+    final long thirdExpiryTime = eet.getExpirationTime();
+    assertEquals(firstExpiryTime, thirdExpiryTime);
+    // confirm that it still has not expired
+    assertEquals(0, eventCount);
+    
+    // now set it to a really short time and make sure it expires immediately
+    waitForExpiryClockToChange(region);
+    final Region.Entry entry = region.getEntry(key1);
+    mutt = region.getAttributesMutator();
+    ExpirationAttributes expire4 = new ExpirationAttributes(1, ExpirationAction.INVALIDATE);
+    mutt.setEntryTimeToLive(expire4);
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return fetchEntryValue(entry) == null;
+      }
+      public String description() {
+        return "entry never became invalid";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 10 * 1000, 10, true);
+
+    WaitCriterion waitForEventCountToBeOne = new WaitCriterion() {
+      public boolean done() {
+        return eventCount == 1;
+      }
+      public String description() {
+        return "eventCount never became 1";
+      }
+    };
+    DistributedTestCase.waitForCriterion(waitForEventCountToBeOne, 10 * 1000, 10, true);
     eventCount = 0;
-  }
-  finally {
-    System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-    }
   }
 
 //  /**
@@ -3110,22 +3038,22 @@ public abstract class RegionTestCase extends CacheTestCase {
   }
   
   /**
-   * Expire an entry with a custom idle time.  Set a new idle time, create the
-   * same entry again, make sure it observes the <em>new</em> idle time.
+   * Configure custome entry expiration with an idle time.
+   * Create an entry and records its scheduled expiration time.
+   * Then mutate the region expiration configuration and confirm
+   * that the entry's expiration time is rescheduled.
    */
   public void testCustomEntryIdleTimeout3() {
-
     final String name = this.getUniqueName();
-    final int timeout1 = 200; // ms
-    final int timeout2 = 2000;
+    // test no longer waits for this expiration to happen
+    final int timeout1 = 500 * 1000; // ms
+    final int timeout2 = 2000 * 1000; // ms
     final String key1 = "KEY1";
     final String value1 = "VALUE1";
-    final String value2 = "VALUE2";
     
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     ExpirationAttributes expire1 =
             new ExpirationAttributes(timeout1, ExpirationAction.INVALIDATE);
-//    factory.setEntryIdleTimeout(expire);
     factory.setCustomEntryIdleTimeout(new TestExpiry(key1, expire1));
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
@@ -3137,119 +3065,78 @@ public abstract class RegionTestCase extends CacheTestCase {
     factory.addCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
+    LocalRegion region;
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      region = createRegion(name, attrs);
-    } 
-    finally {
-      if(region.getAttributes().getPartitionAttributes() == null)
-        System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+      region = (LocalRegion) createRegion(name, attrs);
+    } finally {
+      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
 
-    // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
-    ExpiryTask.suspendExpiration();
-    Region.Entry entry = null;
-    long tilt;
-    try {
-      region.create(key1, value1);
-      tilt = System.currentTimeMillis() + timeout1;
-      assertTrue(list.waitForInvocation(5000));
-      entry = region.getEntry(key1);
-      Assert.assertTrue(value1.equals(entry.getValue()));
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
-    }
-    waitForInvalidate(entry, tilt);
-    if (!getRegionAttributes().getDataPolicy().withPartitioning()) {
-      // Disk regions are VERY slow, so we need to wait for the event...
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return eventCount == 1;
-        }
-        public String description() {
-          return "eventCount never became 1";
-        }
-      };
-      DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-    }
-    eventCount = 0;
+    region.create(key1, value1);
+    EntryExpiryTask eet = region.getEntryExpiryTask(key1);
+    final long firstExpiryTime = eet.getExpirationTime();
 
-    // Do it again with a put (I guess)
-    ExpiryTask.suspendExpiration();
-    try {
-      region.put(key1, value1);
-      tilt = System.currentTimeMillis() + timeout1;
-      entry = region.getEntry(key1);
-      Assert.assertTrue(value1.equals(entry.getValue()));
-      assertTrue(list.waitForInvocation(5000));
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
-    }
-    waitForInvalidate(entry, tilt);
-    if (!getRegionAttributes().getDataPolicy().withPartitioning()) {
-      // Disk regions are VERY slow, so we need to wait for the event...
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return eventCount == 1;
-        }
-        public String description() {
-          return "eventCount never became 1";
-        }
-      };
-      DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-    }
-    eventCount = 0;
-    
-    // Change custom expiry for this region now...
     AttributesMutator mutt = region.getAttributesMutator();
-    ExpirationAttributes expire2 =
-      new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
+    ExpirationAttributes expire2 = new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
     mutt.setCustomEntryIdleTimeout(new TestExpiry(key1, expire2));
+    eet = region.getEntryExpiryTask(key1);
+    final long secondExpiryTime = eet.getExpirationTime();
+    if ((secondExpiryTime - firstExpiryTime) <= 0) {
+      fail("expiration time should have been greater after changing region config from 500 to 2000. firstExpiryTime=" + firstExpiryTime + " secondExpiryTime=" + secondExpiryTime);
+    }
     
-    ExpiryTask.suspendExpiration();
-    try {
-      region.put(key1, value2);
-      tilt = System.currentTimeMillis() + timeout2;
-      entry = region.getEntry(key1);
-      Assert.assertTrue(value2.equals(entry.getValue()));
-      assertTrue(list.waitForInvocation(5000));
-    } 
-    finally {
-      if(region.getAttributes().getPartitionAttributes() != null)
-        System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-      ExpiryTask.permitExpiration();
-    }
-    waitForInvalidate(entry, tilt);
-    if (!getRegionAttributes().getDataPolicy().withPartitioning()) {
-      // Disk regions are VERY slow, so we need to wait for the event...
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return eventCount == 1;
-        }
-        public String description() {
-          return "eventCount never became 1";
-        }
-      };
-      DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-    }
+    // now set back to be more recent
+    mutt = region.getAttributesMutator();
+    ExpirationAttributes expire3 = new ExpirationAttributes(timeout1, ExpirationAction.INVALIDATE);
+    mutt.setCustomEntryIdleTimeout(new TestExpiry(key1, expire3));
+    eet = region.getEntryExpiryTask(key1);
+    final long thirdExpiryTime = eet.getExpirationTime();
+    assertEquals(firstExpiryTime, thirdExpiryTime);
+    // confirm that it still has not expired
+    assertEquals(0, eventCount);
+    
+    // now set it to a really short time and make sure it expires immediately
+    waitForExpiryClockToChange(region);
+    final Region.Entry entry = region.getEntry(key1);
+    mutt = region.getAttributesMutator();
+    ExpirationAttributes expire4 = new ExpirationAttributes(1, ExpirationAction.INVALIDATE);
+    mutt.setCustomEntryIdleTimeout(new TestExpiry(key1, expire4));
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return fetchEntryValue(entry) == null;
+      }
+      public String description() {
+        return "entry never became invalid";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 10 * 1000, 10, true);
+
+    WaitCriterion waitForEventCountToBeOne = new WaitCriterion() {
+      public boolean done() {
+        return eventCount == 1;
+      }
+      public String description() {
+        return "eventCount never became 1";
+      }
+    };
+    DistributedTestCase.waitForCriterion(waitForEventCountToBeOne, 10 * 1000, 10, true);
     eventCount = 0;
   }
 
   /**
-   * Expire an entry with a given idle time.  Set a new idle time, create the
-   * same entry again, make sure it observes the <em>new</em> idle time.
+   * Configure entry expiration with a idle time.
+   * Create an entry and records its scheduled expiration time.
+   * Then mutate the region expiration configuration and confirm
+   * that the entry's expiration time is rescheduled.
    */
   public void testEntryIdleTimeout3() {
-
     final String name = this.getUniqueName();
-    final int timeout1 = 200; // ms
-    final int timeout2 = 2000;
+    // test no longer waits for this expiration to happen
+    final int timeout1 = 500 * 1000; // ms
+    final int timeout2 = 2000 * 1000; // ms
     final String key1 = "KEY1";
     final String value1 = "VALUE1";
-    final String value2 = "VALUE2";
     
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     ExpirationAttributes expire1 =
@@ -3265,104 +3152,62 @@ public abstract class RegionTestCase extends CacheTestCase {
     factory.addCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
+    LocalRegion region;
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      region = createRegion(name, attrs);
-    } 
-    finally {
-      if(region.getAttributes().getPartitionAttributes() == null)
-        System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+      region = (LocalRegion) createRegion(name, attrs);
+    } finally {
+      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
 
-    // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
-    ExpiryTask.suspendExpiration();
-    Region.Entry entry = null;
-    long tilt;
-    try {
-      region.create(key1, value1);
-      tilt = System.currentTimeMillis() + timeout1;
-      assertTrue(list.waitForInvocation(5000));
-      entry = region.getEntry(key1);
-      Assert.assertTrue(value1.equals(entry.getValue()));
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
-    }
-    waitForInvalidate(entry, tilt);
-    if (!getRegionAttributes().getDataPolicy().withPartitioning()) {
-      // Disk regions are VERY slow, so we need to wait for the event...
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return eventCount == 1;
-        }
-        public String description() {
-          return "eventCount never became 1";
-        }
-      };
-      DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-    }
-    eventCount = 0;
+    region.create(key1, value1);
+    EntryExpiryTask eet = region.getEntryExpiryTask(key1);
+    final long firstExpiryTime = eet.getExpirationTime();
 
-    // Do it again with a put (I guess)
-    ExpiryTask.suspendExpiration();
-    try {
-      region.put(key1, value1);
-      tilt = System.currentTimeMillis() + timeout1;
-      entry = region.getEntry(key1);
-      Assert.assertTrue(value1.equals(entry.getValue()));
-      assertTrue(list.waitForInvocation(5000));
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
-    }
-    waitForInvalidate(entry, tilt);
-    if (!getRegionAttributes().getDataPolicy().withPartitioning()) {
-      // Disk regions are VERY slow, so we need to wait for the event...
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return eventCount == 1;
-        }
-        public String description() {
-          return "eventCount never became 1";
-        }
-      };
-      DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-    }
-    eventCount = 0;
-    
-    // Change expiry for this region now...
     AttributesMutator mutt = region.getAttributesMutator();
-    ExpirationAttributes expire2 =
-      new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
+    ExpirationAttributes expire2 = new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
     mutt.setEntryIdleTimeout(expire2);
+    eet = region.getEntryExpiryTask(key1);
+    final long secondExpiryTime = eet.getExpirationTime();
+    if ((secondExpiryTime - firstExpiryTime) <= 0) {
+      fail("expiration time should have been greater after changing region config from 500 to 2000. firstExpiryTime=" + firstExpiryTime + " secondExpiryTime=" + secondExpiryTime);
+    }
     
-    ExpiryTask.suspendExpiration();
-    try {
-      region.put(key1, value2);
-      tilt = System.currentTimeMillis() + timeout2;
-      entry = region.getEntry(key1);
-      Assert.assertTrue(value2.equals(entry.getValue()));
-      assertTrue(list.waitForInvocation(5000));
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
-      if(region.getAttributes().getPartitionAttributes() != null)
-        System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-    }
-    waitForInvalidate(entry, tilt);
-    if (!region.getAttributes().getDataPolicy().withPartitioning()) {
-      // Disk regions are VERY slow, so we need to wait for the event...
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return eventCount == 1;
-        }
-        public String description() {
-          return "eventCount never became 1";
-        }
-      };
-      DistributedTestCase.waitForCriterion(wc, 10 * 1000, 100, true);
-    }
+    // now set back to be more recent
+    mutt = region.getAttributesMutator();
+    ExpirationAttributes expire3 = new ExpirationAttributes(timeout1, ExpirationAction.INVALIDATE);
+    mutt.setEntryIdleTimeout(expire3);
+    eet = region.getEntryExpiryTask(key1);
+    final long thirdExpiryTime = eet.getExpirationTime();
+    assertEquals(firstExpiryTime, thirdExpiryTime);
+    // confirm that it still has not expired
+    assertEquals(0, eventCount);
+    
+    // now set it to a really short time and make sure it expires immediately
+    waitForExpiryClockToChange(region);
+    final Region.Entry entry = region.getEntry(key1);
+    mutt = region.getAttributesMutator();
+    ExpirationAttributes expire4 = new ExpirationAttributes(1, ExpirationAction.INVALIDATE);
+    mutt.setEntryIdleTimeout(expire4);
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return fetchEntryValue(entry) == null;
+      }
+      public String description() {
+        return "entry never became invalid";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 10 * 1000, 10, true);
+
+    WaitCriterion waitForEventCountToBeOne = new WaitCriterion() {
+      public boolean done() {
+        return eventCount == 1;
+      }
+      public String description() {
+        return "eventCount never became 1";
+      }
+    };
+    DistributedTestCase.waitForCriterion(waitForEventCountToBeOne, 10 * 1000, 10, true);
     eventCount = 0;
   }
 
@@ -3736,7 +3581,8 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testEntryIdleReset() throws Exception {
 
     final String name = this.getUniqueName();
-    final int timeout = 2000; // ms
+    // Test no longer waits for this timeout to expire
+    final int timeout = 90; // seconds
     final String key = "KEY";
     final String value = "VALUE";
     
@@ -3745,60 +3591,45 @@ public abstract class RegionTestCase extends CacheTestCase {
             new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
     factory.setEntryIdleTimeout(expire);
     factory.setStatisticsEnabled(true);
-    TestCacheListener list = new TestCacheListener() {
-      public void afterCreate2(EntryEvent e) { }
-      public void afterDestroy2(EntryEvent e) { }
-    };
-    factory.setCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
-    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    try {
-      region = createRegion(name, attrs);
+    LocalRegion region = (LocalRegion) createRegion(name, attrs);
+    region.create(key, null);
+    EntryExpiryTask eet = region.getEntryExpiryTask(key);
+    long createExpiryTime = eet.getExpirationTime();
 
-      ExpiryTask.suspendExpiration();
-      Region.Entry entry = null;
-      long tilt;
-      try {
-        region.create(key, null);
-        tilt = System.currentTimeMillis() + timeout;
-        assertTrue(list.wasInvoked());
-        entry = region.getEntry(key);
-      }
-      finally {
-        ExpiryTask.permitExpiration();
-      }
+    waitForExpiryClockToChange(region);
+    region.get(key); // touch
+    assertSame(eet, region.getEntryExpiryTask(key));
+    long getExpiryTime = eet.getExpirationTime();
+    if (getExpiryTime - createExpiryTime <= 0L) {
+      fail("get did not reset the expiration time. createExpiryTime=" + createExpiryTime + " getExpiryTime=" + getExpiryTime);
+    }
+    
+    waitForExpiryClockToChange(region);
+    region.put(key, value); // touch
+    assertSame(eet, region.getEntryExpiryTask(key));
+    long putExpiryTime = eet.getExpirationTime();
+    if (putExpiryTime - getExpiryTime <= 0L) {
+      fail("put did not reset the expiration time. getExpiryTime=" + getExpiryTime + " putExpiryTime=" + putExpiryTime);
+    }
 
-      pause(timeout / 2);
-      long now = System.currentTimeMillis();
-      if (region.getEntry(key) == null && now < tilt) {
-        fail("Entry for key " + key + " destroyed " + (tilt - now) + " ms prematurely");
-      }
-      region.get(key); // touch
-      waitForDestroy(entry, tilt);
-      assertNull(region.getEntry(key));
+    // TODO other ops that should be validated?
 
-      ExpiryTask.suspendExpiration();
-      try {
-        region.put(key, value);
-        tilt = System.currentTimeMillis() + timeout;
-        entry = region.getEntry(key);
-        assertNotNull(entry.getValue());
+    // Now verify operations that do not modify the expiry time
+    
+    waitForExpiryClockToChange(region);
+    region.invalidate(key); // touch
+    assertSame(eet, region.getEntryExpiryTask(key));
+    long invalidateExpiryTime = eet.getExpirationTime();
+    if (region.getConcurrencyChecksEnabled()) {
+      if (putExpiryTime - getExpiryTime <= 0L) {
+        fail("invalidate did not reset the expiration time. putExpiryTime=" + putExpiryTime + " invalidateExpiryTime=" + invalidateExpiryTime);
       }
-      finally {
-        ExpiryTask.permitExpiration();
+    } else {
+      if (invalidateExpiryTime != putExpiryTime) {
+        fail("invalidate did reset the expiration time. putExpiryTime=" + putExpiryTime + " invalidateExpiryTime=" + invalidateExpiryTime);
       }
-      pause(timeout / 2);
-      now = System.currentTimeMillis();
-      if (region.getEntry(key) == null && now < tilt) {
-        fail("Entry for key " + key + " destroyed " + (tilt - now) + " ms prematurely");
-      }
-      region.put(key, value); // touch
-      waitForDestroy(entry, tilt);
-    } 
-    finally {
-      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
   }
   
@@ -3862,10 +3693,10 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testEntryIdleTtl() {
 
     final String name = this.getUniqueName();
-    final int timeout = 2000; // ms
+    // test no longer waits for this timeout to expire
+    final int timeout = 2000; // seconds
     final String key = "IDLE_TTL_KEY";
     final String value = "IDLE_TTL_VALUE";
-    long tilt;
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     ExpirationAttributes expireIdle =
             new ExpirationAttributes(timeout / 2, ExpirationAction.DESTROY);
@@ -3874,44 +3705,27 @@ public abstract class RegionTestCase extends CacheTestCase {
       new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
     factory.setEntryTimeToLive(expireTtl);
     factory.setStatisticsEnabled(true);
-    TestCacheListener list = new TestCacheListener() {
-      public void afterCreate2(EntryEvent e) { }
-      public void afterDestroy2(EntryEvent e) { }
-    };
-    factory.setCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
-    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    try {
-      region = createRegion(name, attrs);
-    ExpiryTask.suspendExpiration();
+    LocalRegion region = (LocalRegion) createRegion(name, attrs);
    
-    try {
-      tilt = System.currentTimeMillis() + timeout; // *earliest* time to expect expiration
-      region.create(key, value);
-      assertTrue(list.wasInvoked());
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
+    region.create(key, value);
+    EntryExpiryTask eet = region.getEntryExpiryTask(key);
+    final long firstIdleExpiryTime = eet.getIdleExpirationTime();
+    final long firstTTLExpiryTime = eet.getTTLExpirationTime();
+    if ((firstIdleExpiryTime - firstTTLExpiryTime) >= 0) {
+      fail("idle should be less than ttl: idle=" + firstIdleExpiryTime + " ttl=" + firstTTLExpiryTime);
     }
-    } 
-    finally {
-      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-    }
-    // Fondle the entry until timeout
-    for (;;) {
-      if (System.currentTimeMillis() > tilt + 30 * 1000) { // allow a lot of time for slow machine
-        fail("Region did not honor ttl");
-      }
-      Object val = region.get(key);
-      if (val == null) {
-        if (System.currentTimeMillis() < tilt) { // intentionally refetch time
-          fail("Region expired value prematurely?");
-        }
-        break; // success
-      }
-      pause(timeout / 10); // wait then fondle again
+    waitForExpiryClockToChange(region);
+    region.get(key);
+    eet = region.getEntryExpiryTask(key);
+    final long secondIdleExpiryTime = eet.getIdleExpirationTime();
+    final long secondTTLExpiryTime = eet.getTTLExpirationTime();
+    // make sure the get does not change the ttl expiry time
+    assertEquals(firstTTLExpiryTime, secondTTLExpiryTime);
+    // and does change the idle expiry time
+    if ((secondIdleExpiryTime - firstIdleExpiryTime) <= 0) {
+      fail("idle should have increased: idle=" + firstIdleExpiryTime + " idle2=" + secondIdleExpiryTime);
     }
   }
   
@@ -3974,7 +3788,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     
     final String name = this.getUniqueName();
     final String subname = this.getUniqueName() + "-SUB";
-    final int timeout = 222; // ms
+    final int timeout = 22; // ms
     final Object key = "KEY";
     final Object value = "VALUE";
     

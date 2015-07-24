@@ -73,6 +73,7 @@ import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.TransactionEvent;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.TransactionListener;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DMStats;
@@ -82,6 +83,7 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -106,6 +108,7 @@ import dunit.RMIException;
 import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
 import dunit.VM;
+import dunit.DistributedTestCase.WaitCriterion;
 
 
 /**
@@ -4071,11 +4074,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
      * Tests to makes sure that a distributed update resets the
      * expiration timer.
      */
-    public void testUpdateResetsIdleTime()
-    throws InterruptedException {
+    public void testUpdateResetsIdleTime() throws InterruptedException {
 
       final String name = this.getUniqueName();
-      final int timeout = 2;
+      // test no longer waits for this timeout to expire
+      final int timeout = 90; // seconds
       final Object key = "KEY";
       final Object value = "VALUE";
 
@@ -4084,13 +4087,36 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       VM vm1 = host.getVM(1);
 
 
+      vm0.invoke(new CacheSerializableRunnable("Create with Idle") {
+        public void run2() throws CacheException {
+          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+          factory.setStatisticsEnabled(true);
+          ExpirationAttributes expire =
+              new ExpirationAttributes(timeout,
+                  ExpirationAction.DESTROY);
+          factory.setEntryIdleTimeout(expire);
+          LocalRegion region =
+              (LocalRegion) createRegion(name, factory.create());
+          if (region.getDataPolicy().withPartitioning()) {
+            // Force all buckets to be created locally so the
+            // test will know that the create happens in this vm
+            // and the update (in vm1) is remote.
+            PartitionRegionHelper.assignBucketsToPartitions(region);
+          }
+          region.create(key, null);
+          EntryExpiryTask eet = region.getEntryExpiryTask(key);
+          region.create("createExpiryTime", eet.getExpirationTime());
+          waitForExpiryClockToChange(region);
+        }
+      });
+
       vm1.invoke(new CacheSerializableRunnable("Create Region " + name) {
         public void run2() throws CacheException {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
           factory.setStatisticsEnabled(true);
           ExpirationAttributes expire =
-            new ExpirationAttributes(timeout,
-                                     ExpirationAction.DESTROY);
+              new ExpirationAttributes(timeout,
+                  ExpirationAction.DESTROY);
           factory.setEntryIdleTimeout(expire);
           if(getRegionAttributes().getPartitionAttributes() != null){
             createRegion(name, factory.create());  
@@ -4100,22 +4126,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-      vm0.invoke(new CacheSerializableRunnable("Create with Idle") {
-          public void run2() throws CacheException {
-            AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-            factory.setStatisticsEnabled(true);
-            ExpirationAttributes expire =
-              new ExpirationAttributes(timeout,
-                                       ExpirationAction.DESTROY);
-            factory.setEntryIdleTimeout(expire);
-            Region region =
-              createRegion(name, factory.create());
-            region.create(key, null);
-          }
-        });
-
-      pause((timeout * 1000) / 2);
-
       vm1.invoke(new CacheSerializableRunnable("Update entry") {
         public void run2() throws CacheException {
           final Region r = getRootRegion().getSubregion(name);
@@ -4124,40 +4134,30 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
 
-      final long tilt1 = System.currentTimeMillis();
-      pause(((timeout * 1000) / 2) + 125);
-
       vm0.invoke(new CacheSerializableRunnable("Verify reset") {
-          public void run2() throws CacheException {
-            Region region =
-              getRootRegion().getSubregion(name);
-            Region.Entry entry = region.getEntry(key);
-            if (entry == null) {
-              assertTrue(System.currentTimeMillis() >= tilt1);
-              fail("testUpdateResetsIdleTime: machine too slow to validate");
+        public void run2() throws CacheException {
+          final LocalRegion region =
+              (LocalRegion) getRootRegion().getSubregion(name);
+
+          // wait for update to reach us from vm1 (needed if no-ack)
+          WaitCriterion waitForUpdate = new WaitCriterion() {
+            public boolean done() {
+              return value.equals(region.get(key));
             }
-            assertEquals(value, entry.getValue());
-          }
-        });
+            public String description() {
+              return "never saw update of " + key;
+            }
+          };
+          DistributedTestCase.waitForCriterion(waitForUpdate, 3000, 10, true);
 
-      pause((timeout * 1000) + 500);
-
-      vm0.invoke(new CacheSerializableRunnable("Verify destroy") {
-          public void run2() throws CacheException {
-            WaitCriterion wc = new WaitCriterion() {
-              public boolean done() {
-                Region region =
-                  getRootRegion().getSubregion(name);
-                Region.Entry entry = region.getEntry(key);
-                return entry == null;
-              }
-              public String description() {
-                return "Entry never destroyed";
-              }
-            };
-            DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
+          EntryExpiryTask eet = region.getEntryExpiryTask(key);
+          long createExpiryTime = (Long) region.get("createExpiryTime");
+          long updateExpiryTime = eet.getExpirationTime();
+          if (updateExpiryTime - createExpiryTime <= 0L) {
+            fail("update did not reset the expiration time. createExpiryTime=" + createExpiryTime + " updateExpiryTime=" + updateExpiryTime);
           }
-        });
+        }
+      });
     }
 
 

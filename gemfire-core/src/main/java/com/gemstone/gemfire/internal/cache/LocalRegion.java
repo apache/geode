@@ -8802,6 +8802,20 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
+  /**
+   * Used by unit tests to get access to the EntryExpiryTask
+   * of the given key. Returns null if the entry exists but
+   * does not have an expiry task.
+   * @throws EntryNotFoundException if no entry exists key.
+   */
+  public EntryExpiryTask getEntryExpiryTask(Object key) {
+    RegionEntry re = this.getRegionEntry(key);
+    if (re == null) {
+      throw new EntryNotFoundException("Entry for key " + key + " does not exist.");
+    }
+    return this.entryExpiryTasks.get(re);
+  }
+  
   private void addExpiryTask(RegionEntry re, boolean ifAbsent)
   {
     if (isProxy()) {

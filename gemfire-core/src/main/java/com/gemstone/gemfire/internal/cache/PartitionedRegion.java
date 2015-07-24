@@ -11450,5 +11450,13 @@ public class PartitionedRegion extends LocalRegion implements
     return this.getLocalMaxMemory() != 0;
   }
   
+  @Override
+  public EntryExpiryTask getEntryExpiryTask(Object key) {
+    BucketRegion br = this.getDataStore().getLocalBucketByKey(key);
+    if (br == null) {
+      throw new EntryNotFoundException("Bucket for key " + key + " does not exist.");
+    }
+    return br.getEntryExpiryTask(key);
+  }
 }
 
