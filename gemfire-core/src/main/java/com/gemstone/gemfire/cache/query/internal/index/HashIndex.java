@@ -73,6 +73,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.pdx.internal.PdxString;
 
 /**
  * A HashIndex is an index that can be used for equal and not equals queries It
@@ -1554,6 +1555,16 @@ public class HashIndex extends AbstractIndex {
         return true;
       } else {
         try {
+          if (fieldValue instanceof PdxString) {
+           if (indexKey instanceof String) {
+             fieldValue = ((PdxString) fieldValue).toString(); 
+           }
+         }
+         else if (indexKey instanceof PdxString) {
+           if (fieldValue instanceof String) {
+             fieldValue = new PdxString((String)fieldValue);
+           }
+         }
          return TypeUtils.compare(fieldValue, indexKey, OQLLexerTokenTypes.TOK_EQ).equals(Boolean.TRUE);
         }
         catch (TypeMismatchException e) {
