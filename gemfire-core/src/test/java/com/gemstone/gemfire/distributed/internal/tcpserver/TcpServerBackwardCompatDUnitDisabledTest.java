@@ -19,9 +19,6 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.org.jgroups.stack.GossipClient;
-import com.gemstone.org.jgroups.stack.GossipServer;
-import com.gemstone.org.jgroups.stack.IpAddress;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -140,21 +137,24 @@ public class TcpServerBackwardCompatDUnitDisabledTest extends DistributedTestCas
           TcpServer.OLDTESTVERSION -= 100;
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION, Version.CURRENT_ORDINAL);
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION, Version.GFE_57.ordinal());
-          assertEquals("Gossip Version and Test version are not same", GossipServer.GOSSIPVERSION, TcpServer.TESTVERSION);
-          assertEquals("Previous Gossip Version and Test version are not same", GossipServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
+          assertEquals("Gossip Version and Test version are not same", TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
+          assertEquals("Previous Gossip Version and Test version are not same", TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
 
           Locator.startLocatorAndDS(port1, logFile1, props);
 
           // Start a gossip client to connect to first locator "locator0".
-          final GossipClient client = new GossipClient(new IpAddress(InetAddress.getLocalHost(), port1),  500);
-          client.register("mygroup1", new IpAddress(InetAddress.getLocalHost(), port1), 5000, false);
+          fail("this test must be fixed to work with the jgroups replacement");
+          // TODO
+//          final GossipClient client = new GossipClient(new IpAddress(InetAddress.getLocalHost(), port1),  500);
+//          client.register("mygroup1", new IpAddress(InetAddress.getLocalHost(), port1), 5000, false);
 
           WaitCriterion ev = new WaitCriterion() {
             public boolean done() {
               try {
-                Vector members = client.getMembers("mygroup1", 
-                    new IpAddress(InetAddress.getLocalHost(), port0), true, 5000);
-                return members.size() == 2;
+                // TODO
+//                Vector members = client.getMembers("mygroup1", 
+//                    new IpAddress(InetAddress.getLocalHost(), port0), true, 5000);
+//                return members.size() == 2;
               }
               catch (Exception e) {
                 e.printStackTrace();
@@ -168,10 +168,12 @@ public class TcpServerBackwardCompatDUnitDisabledTest extends DistributedTestCas
           };
           
           DistributedTestCase.waitForCriterion(ev, 1000, 200, true);
-          Vector members = client.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), port0), true, 5000);
-          Assert.assertEquals(2, members.size());
-          Assert.assertTrue(members.contains(new IpAddress(InetAddress.getLocalHost(), port0)));
-          Assert.assertTrue(members.contains(new IpAddress(InetAddress.getLocalHost(), port1)));
+          fail("this test must be fixed to work with the jgroups replacement");
+          // TODO
+//          Vector members = client.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), port0), true, 5000);
+//          Assert.assertEquals(2, members.size());
+//          Assert.assertTrue(members.contains(new IpAddress(InetAddress.getLocalHost(), port0)));
+//          Assert.assertTrue(members.contains(new IpAddress(InetAddress.getLocalHost(), port1)));
 
         } catch (IOException e) {
           fail("Locator1 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
@@ -200,28 +202,31 @@ public class TcpServerBackwardCompatDUnitDisabledTest extends DistributedTestCas
           TcpServer.OLDTESTVERSION -= 100;
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION, Version.CURRENT_ORDINAL);
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION, Version.GFE_57.ordinal());
-          assertEquals("Gossip Version and Test version are not same", GossipServer.GOSSIPVERSION, TcpServer.TESTVERSION);
-          assertEquals("Previous Gossip Version and Test version are not same", GossipServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
+          assertEquals("Gossip Version and Test version are not same", TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
+          assertEquals("Previous Gossip Version and Test version are not same", TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
 
           Locator.startLocatorAndDS(port0, logFile0, props);
 
           // A new gossip client with new GOSSIPVERSION must be able
           // to connect with new locator on port1, remote locator.
           // Reuse locator0 VM.
-          final GossipClient client2 = new GossipClient(new IpAddress(InetAddress.getLocalHost(), port1),  500);
-          Vector<IpAddress> members = client2.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), port1), true, 5000);
-          Assert.assertEquals(2, members.size());
+          fail("this test must be fixed to work with the jgroups replacement");
+          // TODO
+//          final GossipClient client2 = new GossipClient(new IpAddress(InetAddress.getLocalHost(), port1),  500);
+//          Vector<IpAddress> members = client2.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), port1), true, 5000);
+//          Assert.assertEquals(2, members.size());
           // As they are coming from other locator, their pid is of other locator process.
-          getLogWriter().info(members.get(0) + " " + members.get(1));
+//          getLogWriter().info(members.get(0) + " " + members.get(1));
 
-          for (IpAddress ipAddr : members) {
-            int port = ipAddr.getPort();
-            String hostname = ipAddr.getIpAddress().getHostAddress();
-            int pid = ipAddr.getProcessId();
-            Assert.assertTrue(" " + ipAddr, port == port0 || port == port1);
-            Assert.assertTrue(" " + ipAddr, hostname.equals(InetAddress.getLocalHost().getHostAddress()));
-            Assert.assertTrue(" " + ipAddr, pid == locator1.getPid());
-          }
+          // TODO
+//          for (IpAddress ipAddr : members) {
+//            int port = ipAddr.getPort();
+//            String hostname = ipAddr.getIpAddress().getHostAddress();
+//            int pid = ipAddr.getProcessId();
+//            Assert.assertTrue(" " + ipAddr, port == port0 || port == port1);
+//            Assert.assertTrue(" " + ipAddr, hostname.equals(InetAddress.getLocalHost().getHostAddress()));
+//            Assert.assertTrue(" " + ipAddr, pid == locator1.getPid());
+//          }
 
         } catch (IOException e) {
           fail("Locator0 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);

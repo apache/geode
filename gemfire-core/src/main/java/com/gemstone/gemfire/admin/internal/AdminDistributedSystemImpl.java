@@ -1765,13 +1765,6 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    */
   private String getBindAddress() {
     return this.config.getBindAddress();
-
-//     String bindAddress = 
-//         System.getProperty("gemfire.jg-bind-address");
-//     if (bindAddress == null || bindAddress.length() == 0) {
-//       return DistributionConfig.DEFAULT_BIND_ADDRESS;
-//     }
-//     return bindAddress;
   }
 
   /** Returns whether or not the given member is running */

@@ -44,8 +44,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.CreationStackGenerator;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
@@ -66,11 +65,6 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.org.jgroups.Event;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.stack.IpAddress;
-import com.gemstone.org.jgroups.stack.Protocol;
-import com.gemstone.org.jgroups.util.GemFireTracer;
 
 import dunit.standalone.DUnitLauncher;
 
@@ -544,19 +538,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * test with disconnectFromDS() or disconnectAllFromDS().
    */
   public void crashDistributedSystem(final DistributedSystem msys) {
-    MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-    MembershipManagerHelper.playDead(msys);
-    JChannel c = MembershipManagerHelper.getJChannel(msys);
-    Protocol udp = c.getProtocolStack().findProtocol("UDP");
-    udp.stop();
-    udp.passUp(new Event(Event.EXIT, new RuntimeException("killing member's ds")));
-    try {
-      MembershipManagerHelper.getJChannel(msys).waitForClose();
-    }
-    catch (InterruptedException ie) {
-      Thread.currentThread().interrupt();
-      // attempt rest of work with interrupt bit set
-    }
+    MembershipManagerHelper.crashDistributedSystem(msys);
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
@@ -765,7 +747,6 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
 
 
   private static void cleanupThisVM() {
-    IpAddress.resolve_dns = true;
     SocketCreator.resolve_dns = true;
     InitialImageOperation.slowImageProcessing = 0;
     DistributionMessageObserver.setInstance(null);
@@ -779,8 +760,6 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     InternalBridgeMembership.unregisterAllListeners();
     ClientStatsManager.cleanupForTests();
     unregisterInstantiatorsInThisVM();
-    GemFireTracer.DEBUG = Boolean.getBoolean("DistributionManager.DEBUG_JAVAGROUPS");
-    Protocol.trace = GemFireTracer.DEBUG;
     DistributionMessageObserver.setInstance(null);
     QueryObserverHolder.reset();
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {

@@ -86,6 +86,8 @@ public class DistributionChannel  {
 
     long start = System.currentTimeMillis();
 
+    logger.debug("DistributionChannel disconnecting with "+ membershipManager + "; duringStartup="+duringStartup);
+    
     if (membershipManager != null) {
       sb.append(membershipManager.getLocalMember());
       sb.append(" (took ");

@@ -10,7 +10,7 @@ package com.gemstone.gemfire.internal.logging;
 import java.io.PrintStream;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * A log writer for security related logs. This will prefix all messages with

@@ -27,24 +27,16 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionException;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper;
-import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.org.jgroups.Event;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.protocols.FD_SOCK;
-import com.gemstone.org.jgroups.protocols.PingWaiter;
-import com.gemstone.org.jgroups.protocols.pbcast.GMS;
-import com.gemstone.org.jgroups.stack.Protocol;
 
 import dunit.AsyncInvocation;
 import dunit.DistributedTestCase;
@@ -268,8 +260,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
 //        boolean setting = GemFireTracer.DEBUG;
         try {
           System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
-//          GemFireTracer.DEBUG = true;
-          PingWaiter.TEST_HOOK_IGNORE_REQUIRED_RESPONSE = true;
+          fail("ignore required response must be implemented for the jgroups replacement");
+//          PingWaiter.TEST_HOOK_IGNORE_REQUIRED_RESPONSE = true;
           Locator myLocator = Locator.startLocatorAndDS(port1, new File("testBug30341Locator1.log"), properties);
           myLocator.stop();
         } catch (SystemConnectException e) {
@@ -277,8 +269,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
         } catch (GemFireConfigException e) {
           return Boolean.TRUE;
         } finally {
-//          GemFireTracer.DEBUG = setting;
-          PingWaiter.TEST_HOOK_IGNORE_REQUIRED_RESPONSE = false;
+//          PingWaiter.TEST_HOOK_IGNORE_REQUIRED_RESPONSE = false;
           System.getProperties().remove("p2p.joinTimeout");
         }
         return Boolean.FALSE;
@@ -521,23 +512,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
           public void run() {
             Locator loc = Locator.getLocators().iterator().next();
             DistributedSystem msys = loc.getDistributedSystem();
-            MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-            MembershipManagerHelper.playDead(msys);
-            JChannel c = MembershipManagerHelper.getJChannel(msys);
-            Protocol udp = c.getProtocolStack().findProtocol("UDP");
-            udp.stop();
-            udp.passUp(new Event(Event.EXIT, new Exception("killing locator's ds")));
-            try {
-              MembershipManagerHelper.getJChannel(msys).waitForClose();
-            }
-            catch (InterruptedException ie) {
-              Thread.currentThread().interrupt();
-              // attempt rest of work with interrupt bit set
-            }
+            MembershipManagerHelper.crashDistributedSystem(msys);
             loc.stop();
-//            LogWriter bLogger =
-//              new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
-            MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
           }
       };
 
@@ -664,22 +640,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
           public void run() {
             Locator loc = Locator.getLocators().iterator().next();
             DistributedSystem msys = loc.getDistributedSystem();
-            MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-            MembershipManagerHelper.playDead(msys);
-            JChannel c = MembershipManagerHelper.getJChannel(msys);
-            Protocol udp = c.getProtocolStack().findProtocol("UDP");
-            udp.stop();
-            udp.passUp(new Event(Event.EXIT, new Exception("killing locators ds")));
-            try {
-              MembershipManagerHelper.getJChannel(msys).waitForClose();
-            }
-            catch (InterruptedException ie) {
-              Thread.currentThread().interrupt();
-              // attempt rest of work with interrupt bit set
-            }
-//            loc.stop();
-//            LogWriter bLogger =
-//              new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+            loc.stop();
           }
       };
 
@@ -709,7 +670,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
       try {
         // a new view won't be installed for 10 seconds (5*member-timeout of 2000)
         // so we'll detect loss of two members in one view
-        GMS.TEST_HOOK_SLOW_VIEW_CASTING=10;
+        fail("slow view casting must be implemented for the jgroups replacement");
+//        GMS.TEST_HOOK_SLOW_VIEW_CASTING=10;
 
         // disconnect the first vm and locator to demonstrate that the third vm and the
         // locator notice the failure and notify of quorum loss
@@ -831,16 +793,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             msys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
             msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
             msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
-            MembershipManagerHelper.playDead(msys);
-            JChannel c = MembershipManagerHelper.getJChannel(msys);
-            Protocol udp = c.getProtocolStack().findProtocol("UDP");
-            udp.stop();
-            udp.passUp(new Event(Event.EXIT, new Exception("killing members ds")));
-            try {
-              MembershipManagerHelper.getJChannel(msys).waitForClose();
-            } catch (InterruptedException ie) {
-              Thread.currentThread().interrupt();
-            }
+            MembershipManagerHelper.crashDistributedSystem(msys);
           }
       };
 
@@ -988,28 +941,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
             msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
             msys.getLogWriter().info("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
-
-            JChannel c = MembershipManagerHelper.getJChannel(msys);
-            JChannelTestHook hook = new JChannelTestHook();
-            MembershipManagerHelper.addTestHook(msys, hook);
-            try {
-              MembershipManagerHelper.playDead(msys);
-              Protocol udp = c.getProtocolStack().findProtocol("UDP");
-              udp.stop();
-              udp.passUp(new Event(Event.EXIT, new ForcedDisconnectException("killing members ds")));
-              
-              c.setClosed(true);
-              try {
-                MembershipManagerHelper.getJChannel(msys).waitForClose();
-              }
-              catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                // attempt rest of work with interrupt bit set
-              }
-            } finally {
-              MembershipManagerHelper.removeTestHook(msys, hook);
-              hook.reset();
-            }
+            MembershipManagerHelper.crashDistributedSystem(msys);
           }
       };
 
@@ -1047,16 +979,14 @@ public class LocatorDUnitTest extends DistributedTestCase {
         @Override
         public void run() {
           DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
-          JGroupMembershipManager jmm = MembershipManagerHelper.getMembershipManager(msys);
+          MembershipManager mmgr = MembershipManagerHelper.getMembershipManager(msys);
           
-          JChannel c = MembershipManagerHelper.getJChannel(msys);
-          
-          // check for shutdown cause in JGroupsMembershipManager. Following call should
+          // check for shutdown cause in MembershipManager. Following call should
           // throw DistributedSystemDisconnectedException which should have cause as
           // ForceDisconnectException.
           try {
             msys.getLogWriter().info("<ExpectedException action=add>Membership: requesting removal of </ExpectedException>");
-            jmm.requestMemberRemoval(mem1, "test reasons");
+            mmgr.requestMemberRemoval(mem1, "test reasons");
             msys.getLogWriter().info("<ExpectedException action=remove>Membership: requesting removal of </ExpectedException>");
             
             fail("It should have thrown exception in requestMemberRemoval");
@@ -1065,11 +995,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
             assertTrue(
                 "This should have been ForceDisconnectException but found "
                     + cause, cause instanceof ForcedDisconnectException);
-          } finally {
-            c.getProtocolStack().stop();
-            c.getProtocolStack().destroy();
-//            c.getTestHook().reset();
-//            c.unregisterTestHook();
           }
         }
       });
@@ -1170,18 +1095,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             msys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
             msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
             msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
-            MembershipManagerHelper.playDead(msys);
-            JChannel c = MembershipManagerHelper.getJChannel(msys);
-            Protocol udp = c.getProtocolStack().findProtocol("UDP");
-            udp.stop();
-            udp.passUp(new Event(Event.EXIT, new Exception("killing locator's ds")));
-            try {
-              MembershipManagerHelper.getJChannel(msys).waitForClose();
-            }
-            catch (InterruptedException ie) {
-              Thread.currentThread().interrupt();
-              // attempt rest of work with interrupt bit set
-            }
+            MembershipManagerHelper.crashDistributedSystem(msys);
             loc.stop();
           }
       };
@@ -1431,8 +1345,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
 
     system = (InternalDistributedSystem)getSystem(props);
 
-    assertTrue(waitUntilFDConnected(30000)); // FD_SOCK must connect in order for normal-disconnect feature to be tested here
-    
     final DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
     getLogWriter().info("coordinator before termination of locator is " + coord);
 
@@ -1520,34 +1432,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
     return false;
   }
   
-  public static boolean anyNormalFDDisconnects() {
-    DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-    if (sys != null && sys.isConnected()) {
-      FD_SOCK fdProtocol = (FD_SOCK)MembershipManagerHelper.getJChannel(sys).getProtocolStack().findProtocol("FD_SOCK");
-      if (fdProtocol.normalDisconnectCount > 0) {
-        getLogWriter().warning("Found " + fdProtocol.normalDisconnectCount + " normal-status disconnects have happened.  Expected none since other members crashed");
-        return true;
-      }
-    }
-    return false;
-  }
-  
-  public static boolean waitUntilFDConnected(long timeout) {
-    DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-    if (sys != null && sys.isConnected()) {
-      FD_SOCK fdProtocol = (FD_SOCK)MembershipManagerHelper.getJChannel(sys).getProtocolStack().findProtocol("FD_SOCK");
-      long endTime = System.currentTimeMillis() + timeout;
-      while (!fdProtocol.isConnectedToPingDest && System.currentTimeMillis() < endTime) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-      return fdProtocol.isConnectedToPingDest;
-    }
-    return false;
-  }
 
   static boolean beforeFailureNotificationReceived;
   static boolean afterFailureNotificationReceived;
@@ -1989,23 +1873,11 @@ public class LocatorDUnitTest extends DistributedTestCase {
         };
     vm0.invoke(connect);
     
-    int count = ((InternalLocator)locator).getLocatorHandler().getMemberCount();
-    Assert.assertTrue( count == 2, "The number of members in the discovery set should be 2 but is " + count);
-    
     getLogWriter().info("Stopping locator");
     locator.stop();
     
     getLogWriter().info("Starting locator");
     locator = Locator.startLocatorAndDS(port1, logFile, p);
-    
-    // the count could be 2 or 3, depending on whether the locator happened to
-    // reuse the membership port that it had last time.  Having a count of 1
-    // means that it did not recover from disk and did not find the member in
-    // vm0
-    count = ((InternalLocator)locator).getLocatorHandler().getMemberCount();
-    Assert.assertTrue( count > 1,
-         "The number of members in the discovery set should be > 1 but is " + count
-         +"; locator recovery failed!");
     
     vm0.invoke(new SerializableRunnable("disconnect") {
       public void run() {
@@ -2080,47 +1952,15 @@ public class LocatorDUnitTest extends DistributedTestCase {
     sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
     sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
     try {
-      MembershipManagerHelper.playDead(sys);
-      JChannel c = MembershipManagerHelper.getJChannel(sys);
-      Protocol udp = c.getProtocolStack().findProtocol("UDP");
-      udp.stop();
-      udp.passUp(new Event(Event.EXIT, new Exception("killing locator's ds")));
-      MembershipManagerHelper.getJChannel(sys).waitForClose();
+      MembershipManagerHelper.crashDistributedSystem(sys);
     }
     catch (DistributedSystemDisconnectedException se) {
       // it's okay for the system to already be shut down
-    }
-    catch (InterruptedException ie) {
-      Thread.currentThread().interrupt();
-      // attempt rest of work with interrupt bit set
     }
     sys.getLogWriter().info("<ExpectedException action=remove>service failure</ExpectedException>");
     sys.getLogWriter().info("<ExpectedException action=remove>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
   }
 
-  //New test hook which blocks before closing channel.
-  class JChannelTestHook implements com.gemstone.org.jgroups.debug.JChannelTestHook {
-
-    volatile boolean unboundedWait = true;
-
-    public void reset() {
-      unboundedWait = false;
-    }
-
-
-    @Override
-    public void beforeChannelClosing(String string, Throwable cause) {
-      InternalDistributedSystem.getAnyInstance().getLogWriter().info("Inside JChannelTestHook.beforeChannelClosing with " + cause);
-    // stop here for a while and check for shutdown cause in
-    // JGroupsMembershipManager.
-      if (cause instanceof ForcedDisconnectException) {
-        while (unboundedWait) {
-          pause(500);
-        }
-      }
-    }
-
-  }
   
   class MyMembershipListener implements MembershipListener {
     boolean quorumLostInvoked;

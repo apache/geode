@@ -19,6 +19,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -809,7 +810,7 @@ public class TCPConduit implements Runnable {
    * with the key
    * @since 5.1
    */
-  public void waitForThreadOwnedOrderedConnectionState(Stub member, HashMap channelState)
+  public void waitForThreadOwnedOrderedConnectionState(Stub member, Map channelState)
     throws InterruptedException
   {
     // if (Thread.interrupted()) throw new InterruptedException(); not necessary done in waitForThreadOwnedOrderedConnectionState

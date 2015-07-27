@@ -24,6 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLException;
 
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.SystemFailure;
@@ -40,9 +42,8 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.org.jgroups.stack.GossipServer;
-import com.gemstone.org.jgroups.util.GemFireTracer;
-import com.gemstone.org.jgroups.util.ExternalStrings;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * TCP server which listens on a port and delegates requests to a request
@@ -53,13 +54,12 @@ import com.gemstone.org.jgroups.util.ExternalStrings;
  * share the same gossip server port.
  * 
  * @author dsmith
- * @author Bela Ban Oct 4 2001
  * @since 5.7
  * 
  */
 public class TcpServer {
   /**
-   * The version of the gossip protocol
+   * The version of the tcp server protocol
    * <p>
    * This should be incremented if the gossip message structures change
    * 
@@ -70,10 +70,10 @@ public class TcpServer {
    * with the addition of support for all old versions of clients you can no
    * longer change this version number
    */
-  public final static int GOSSIPVERSION = GossipServer.getCurrentGossipVersion();
+  public final static int GOSSIPVERSION = 1003;
   // Don't change it ever. We did NOT send GemFire version in a Gossip request till 1001 version.
   // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a GossipServer.
-  public final static int OLDGOSSIPVERSION = GossipServer.getOldGossipVersion();
+  public final static int OLDGOSSIPVERSION = 1001;
 
   private static/* GemStoneAddition */final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
@@ -86,6 +86,9 @@ public class TcpServer {
   private static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
   private static int MAX_POOL_SIZE = Integer.getInteger("gemfire.TcpServer.MAX_POOL_SIZE", 100).intValue();
   private static int POOL_IDLE_TIMEOUT = 60 * 1000;
+  
+  private static final Logger log = LogService.getLogger();
+  
   protected/*GemStoneAddition*/ final/*GemStoneAddition*/ static int READ_TIMEOUT = Integer.getInteger("gemfire.TcpServer.READ_TIMEOUT", 60 * 1000).intValue();
   //This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure the locator backlog.
   private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000).intValue();
@@ -96,8 +99,6 @@ public class TcpServer {
   private/*GemStoneAddition*/ ServerSocket srv_sock = null;
   private InetAddress bind_address;
   private volatile boolean shuttingDown = false; // GemStoneAddition
-  private final GemFireTracer log = GemFireTracer
-      .getLog(TcpServer.class);
   private final PoolStatHelper poolHelper;
   private/*GemStoneAddition*/ final TcpHandler handler;
   
@@ -229,11 +230,9 @@ public class TcpServer {
     return srv_sock.getLocalSocketAddress(); 
   }
 
-  protected/*GemStoneAddition*/ void run() {
+  protected void run() {
     Socket sock = null;
-    // boolean looping=true;
 
-    // while(looping) {
     while (!shuttingDown) {
       if (SystemFailure.getFailure() != null) {
         // Allocate no objects here!
@@ -264,17 +263,16 @@ public class TcpServer {
         continue;
       }
     }
-    // [GemStoneAddition] Close the server socket, duh. See bug 32856.
+
     try {
       srv_sock.close();
 
     } catch (java.io.IOException ex) {
-      log.getLogWriter().warning(
-          ExternalStrings.ONE_ARG,
+      log.warn(
           "exception closing server socket during shutdown", ex);
     }
 
-    if (shuttingDown) { // GemStoneAddition
+    if (shuttingDown) {
       log.info("locator shutting down");
       executor.shutdown();
       try {
@@ -299,8 +297,7 @@ public class TcpServer {
       @SuppressWarnings("synthetic-access")
       public void run() {
         long startTime = DistributionStats.getStatTime();
-        DataInputStream input = null; // GemStoneAddition -- initialize it for
-                                      // the finally block
+        DataInputStream input = null;
         Object request, response;
         try {
           SocketCreator.getDefaultInstance().configureServerSSLSocket(sock);
@@ -312,10 +309,9 @@ public class TcpServer {
           try {
             input = new DataInputStream(sock.getInputStream());
           } catch (StreamCorruptedException e) {
-            // GemStoneAddition
             // bug 36679: Some garbage can be left on the socket stream
             // if a peer disappears at exactly the wrong moment.
-            log.getLogWriter().fine(
+            log.debug(
                 "Discarding illegal request from "
                     + (sock.getInetAddress().getHostAddress() + ":" + sock
                         .getPort()), e);
@@ -329,19 +325,18 @@ public class TcpServer {
               && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
             versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP
                 .get(gossipVersion);
-            if (gossipVersion < getCurrentGossipVersion()) {
-              if (log.isTraceEnabled()) {
-                log.debug(
-                    "Received request from "
-                        + sock.getInetAddress().getHostAddress()
-                        + " This locator is running: " + getCurrentGossipVersion()
-                        + ", but request was version: " + gossipVersion
-                        + ", version ordinal: " + versionOrdinal);
-              }
-            }
+//            if (gossipVersion < getCurrentGossipVersion()) {
+//              if (log.isTraceEnabled()) {
+//                log.debug(
+//                    "Received request from "
+//                        + sock.getInetAddress().getHostAddress()
+//                        + " This locator is running: " + getCurrentGossipVersion()
+//                        + ", but request was version: " + gossipVersion
+//                        + ", version ordinal: " + versionOrdinal);
+//              }
+//            }
           }
-          // Close the socket. We can not accept requests from newer GOSSIP
-          // VERSION.
+          // Close the socket. We can not accept requests from a newer version
           else {
             sock.close();
             return;
@@ -351,14 +346,14 @@ public class TcpServer {
             versionOrdinal = input.readShort();
           }
 
-          if (log.getLogWriter().fineEnabled()) {
-            log.getLogWriter().fine("Locator reading request from " + sock.getInetAddress() + " with version " + Version.fromOrdinal(versionOrdinal, false));
+          if (log.isDebugEnabled()) {
+            log.debug("Locator reading request from " + sock.getInetAddress() + " with version " + Version.fromOrdinal(versionOrdinal, false));
           }
           input = new VersionedDataInputStream(input, Version.fromOrdinal(
                   versionOrdinal, false));
           request = DataSerializer.readObject(input);
-          if (log.getLogWriter().fineEnabled()) {
-            log.getLogWriter().fine("Locator received request " + request + " from " + sock.getInetAddress());
+          if (log.isDebugEnabled()) {
+            log.debug("Locator received request " + request + " from " + sock.getInetAddress());
           }
           if (request instanceof ShutdownRequest) {
             shuttingDown = true;
@@ -392,8 +387,6 @@ public class TcpServer {
 
           handler.endResponse(request,startTime);
 
-          // input.close(); GemStoneAddition close in finally block
-          // sock.close(); GemStoneAddition close in finally block
         } catch (EOFException ex) {
           // client went away - ignore
         } catch (CancelException ex) {
@@ -403,7 +396,7 @@ public class TcpServer {
           if (sock != null) {
             sender = sock.getInetAddress().getHostAddress();
           }
-          log.getLogWriter().info(ExternalStrings.ONE_ARG,
+          log.info(
               "Unable to process request from " + sender + " exception=" + ex.getMessage());
         } catch (Exception ex) {
           String sender = null;
@@ -414,23 +407,15 @@ public class TcpServer {
             //IOException could be caused by a client failure. Don't
             //log with severe.
             if (!sock.isClosed()) {
-              log.getLogWriter().info(
-                  ExternalStrings.ONE_ARG,
+              log.info(
                   "Exception in processing request from " + sender, ex);
             }
           }
           else {
-            log.getLogWriter().severe(
-                ExternalStrings.TCPSERVER_EXCEPTION_IN_PROCESSING_REQUEST_FROM_0,
+            log.fatal("Exception in processing request from " + 
                 sender, ex);
           }
-            // GemStoneAddition do this in the finally block
-            // try {
-            // sock.close();
-            // }
-            // catch (IOException ioe) {
-            // log.getLogWriter().warning("Exception closing socket", ioe);
-            // }
+
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
           // If this ever returns, rethrow the error.  We're poisoned
@@ -448,8 +433,7 @@ public class TcpServer {
             sender = sock.getInetAddress().getHostAddress();
           }
           try {
-            log.getLogWriter().severe(
-                ExternalStrings.TCPSERVER_EXCEPTION_IN_PROCESSING_REQUEST_FROM_0,
+            log.fatal("Exception in processing request from " +
                 sender, ex);
           } catch (VirtualMachineError err) {
             SystemFailure.initiateFailure(err);
@@ -466,14 +450,13 @@ public class TcpServer {
             // for surviving and debugging exceptions getting the logger
             t.printStackTrace();
           }
-        } finally { // GemStoneAddition: be safe about closing
+        } finally {
           // Normal path closes input first, so let's do that here...
           if (input != null) {
             try {
               input.close();
             } catch (IOException e) {
-              log.getLogWriter().warning(
-                ExternalStrings.ONE_ARG,
+              log.warn(
                 "Exception closing input stream", e);
             }
           }
@@ -484,8 +467,7 @@ public class TcpServer {
           try {
             sock.close();
           } catch (IOException e) {
-            log.getLogWriter().warning(
-                ExternalStrings.ONE_ARG,
+            log.warn(
                 "Exception closing socket", e);
           }
         }
@@ -494,10 +476,7 @@ public class TcpServer {
     executor.execute(clientTask);
   }
 
-  protected/*GemStoneAddition*/ Object handleInfoRequest(Object request) {
-    // Return a GossipData.INFO_RSP with two "members": the
-    // working directory of this locator and the product
-    // directory of this locator.
+  protected Object handleInfoRequest(Object request) {
     String[] info = new String[2];
     info[0] = System.getProperty("user.dir");
 
@@ -515,7 +494,7 @@ public class TcpServer {
     return new InfoResponse(info);
   }
 
-  protected /*GemStone Addition */ Object handleVersionRequest(Object request) {
+  protected Object handleVersionRequest(Object request) {
     VersionResponse response = new VersionResponse();
     response.setVersionOrdinal(Version.CURRENT_ORDINAL);
     return response;

@@ -1229,7 +1229,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     return new AddressComparor() {
       public boolean areSameZone(InternalDistributedMember member1,
           InternalDistributedMember member2) {
-        return member1.getIpAddress().equals(member2.getIpAddress());
+        return member1.getInetAddress().equals(member2.getInetAddress());
       }
 
       public boolean enforceUniqueZones() {

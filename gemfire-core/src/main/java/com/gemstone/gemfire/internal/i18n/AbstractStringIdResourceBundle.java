@@ -9,9 +9,8 @@
 package com.gemstone.gemfire.internal.i18n;
 
 import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.i18n.StringIdImpl;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.org.jgroups.util.StringId;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
@@ -121,7 +120,7 @@ public class AbstractStringIdResourceBundle {
   public String getString(StringId key) {
     if (usingRawMode())
       return key.getRawText();
-    String txt = (String) data.get(((StringIdImpl)key).id);
+    String txt = (String) data.get(((StringId)key).id);
     if( txt != null ) {
       return txt;
     } else {

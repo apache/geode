@@ -73,18 +73,9 @@ public class Ping extends BaseCommand {
     Message replyMsg = servConn.getReplyMessage();
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     replyMsg.setMessageType(MessageType.REPLY);
-    if (Version.GFE_81.compareTo(servConn.getClientVersion()) > 0) {
-      replyMsg.setNumberOfParts(1);
-      replyMsg.setTransactionId(origMsg.getTransactionId());
-      replyMsg.addBytesPart(OK_BYTES);
-    } else {
-      replyMsg.setNumberOfParts(2);
-      replyMsg.setTransactionId(origMsg.getTransactionId());
-      replyMsg.addBytesPart(OK_BYTES);
-      long cacheTime = InternalDistributedSystem.getConnectedInstance()
-          .getDistributionManager().cacheTimeMillis();
-      replyMsg.addLongPart(cacheTime);
-    }
+    replyMsg.setNumberOfParts(1);
+    replyMsg.setTransactionId(origMsg.getTransactionId());
+    replyMsg.addBytesPart(OK_BYTES);
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {
       logger.trace("{}: rpl tx: {}", servConn.getName(), origMsg.getTransactionId());

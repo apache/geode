@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
@@ -38,6 +39,7 @@ import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -56,7 +58,6 @@ import com.gemstone.gemfire.internal.tcp.Stub;
 import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
-import com.gemstone.org.jgroups.util.StringId;
 
 /**
  * @author Bruce Schuchardt
@@ -125,7 +126,7 @@ public class DirectChannel {
         throws ConnectionException {
       this.receiver = dm;
 
-      this.address = initAddress(dm);
+      this.address = initAddress(dm, dc);
       boolean isBindAddress = dc.getBindAddress() != null;
       try {
         int port = Integer.getInteger("tcpServerPort", 0).intValue();
@@ -882,9 +883,9 @@ public class DirectChannel {
     return this.conduit;
   }
 
-  private InetAddress initAddress(DistributedMembershipListener dm) {
+  private InetAddress initAddress(DistributedMembershipListener dm, DistributionConfig dc) {
 
-    String bindAddress = System.getProperty("gemfire.jg-bind-address");
+    String bindAddress = dc.getBindAddress();
 
     try {
       /* note: had to change the following to make sure the prop wasn't empty 
@@ -906,7 +907,7 @@ public class DirectChannel {
   /** Create a TCPConduit stub from a JGroups InternalDistributedMember */
   public Stub createConduitStub(InternalDistributedMember addr) {
     int port = addr.getDirectChannelPort();
-    Stub stub = new Stub(addr.getIpAddress(), port, addr.getVmViewId());
+    Stub stub = new Stub(addr.getInetAddress(), port, addr.getVmViewId());
     return stub;
   }
   
@@ -947,7 +948,7 @@ public class DirectChannel {
    * wait for the given connections to process the number of messages
    * associated with the connection in the given map
    */
-  public void waitForChannelState(Stub member, HashMap channelState)
+  public void waitForChannelState(Stub member, Map channelState)
     throws InterruptedException
   {
     if (Thread.interrupted()) throw new InterruptedException();

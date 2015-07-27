@@ -62,7 +62,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import mx4j.tools.adaptor.http.HttpAdaptor;

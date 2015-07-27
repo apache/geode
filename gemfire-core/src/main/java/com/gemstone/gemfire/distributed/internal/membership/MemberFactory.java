@@ -11,7 +11,7 @@ import java.net.InetAddress;
 
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMemberFactory;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberFactory;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 
 /**
@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
  */
 public class MemberFactory {
   
-  private static final MemberServices services = new JGroupMemberFactory();
+  private static final MemberServices services = new GMSMemberFactory();
 
   /**
    * Return a blank NetMember (used by externalization)
@@ -45,8 +45,8 @@ public class MemberFactory {
    * @return the new NetMember
    */
   static public NetMember newNetMember(InetAddress i, int p,
-      boolean splitBrainEnabled, boolean canBeCoordinator, MemberAttributes payload) {
-    return services.newNetMember(i, p, splitBrainEnabled, canBeCoordinator, payload);
+      boolean splitBrainEnabled, boolean canBeCoordinator, short version, MemberAttributes payload) {
+    return services.newNetMember(i, p, splitBrainEnabled, canBeCoordinator, payload, version);
   }
 
   /**

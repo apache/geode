@@ -14,7 +14,7 @@ import java.io.StringWriter;
 import java.util.Date;
 
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
   * Implementation of {@link com.gemstone.gemfire.i18n.LogWriterI18n}

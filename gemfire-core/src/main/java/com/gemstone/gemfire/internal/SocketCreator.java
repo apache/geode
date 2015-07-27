@@ -78,7 +78,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.PasswordUtil;
-import com.gemstone.org.jgroups.util.ConnectionWatcher;
 
 import java.util.*;
 
@@ -107,7 +106,7 @@ import org.apache.logging.log4j.Logger;
  * Additional properties will be set as System properties to be available
  * as needed by other provider implementations.
  */
-public class SocketCreator  implements com.gemstone.org.jgroups.util.SockCreator {
+public class SocketCreator {
 
   private static final Logger logger = LogService.getLogger();
   

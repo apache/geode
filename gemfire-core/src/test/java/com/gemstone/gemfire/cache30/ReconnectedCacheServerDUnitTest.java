@@ -7,12 +7,8 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import java.util.Properties;
-
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 
@@ -51,7 +47,7 @@ public class ReconnectedCacheServerDUnitTest extends CacheTestCase {
     GemFireCacheImpl gc = (GemFireCacheImpl)cache;
     
     // fool the system into thinking cluster-config is being used
-    JGroupMembershipManager mgr = (JGroupMembershipManager)MembershipManagerHelper
+    GMSMembershipManager mgr = (GMSMembershipManager)MembershipManagerHelper
            .getMembershipManager(gc.getDistributedSystem());
     mgr.saveCacheXmlForReconnect(true);
     

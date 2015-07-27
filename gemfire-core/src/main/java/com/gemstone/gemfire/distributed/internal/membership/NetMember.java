@@ -7,6 +7,9 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.net.InetAddress;
 
 /**
@@ -23,13 +26,15 @@ public interface NetMember
 
   public abstract MemberAttributes getAttributes();
 
-  public abstract InetAddress getIpAddress();
+  public abstract InetAddress getInetAddress();
 
   public abstract int getPort();
   
   public abstract void setPort(int p);
 
   public abstract boolean isMulticastAddress();
+  
+  public short getVersionOrdinal();
   
   /**
    * return a flag stating whether the member has network partition detection enabled
@@ -41,7 +46,9 @@ public interface NetMember
    * return a flag stating whether the member can be the membership coordinator
    * @since 5.6
    */
-  public abstract boolean canBeCoordinator();
+  public abstract boolean preferredForCoordinator();
+  
+  public byte getMemberWeight();
 
   /**
    * Establishes an order between 2 addresses. Assumes other contains non-null IpAddress.
@@ -66,5 +73,11 @@ public interface NetMember
   public abstract int hashCode();
 
   public abstract String toString();
+  
+  /** write identity information not known by DistributedMember instances */
+  public abstract void writeAdditionalData(DataOutput out) throws IOException;
+  
+  /** read identity information not known by DistributedMember instances */
+  public abstract void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException;
 
  }

@@ -1,6 +1,5 @@
 rootProject.name = 'gemfire'
 
-include 'gemfire-jgroups'
 include 'gemfire-joptsimple'
 include 'gemfire-json'
 include 'gemfire-junit'

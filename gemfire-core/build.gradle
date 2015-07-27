@@ -12,6 +12,7 @@ configurations {
 
 dependencies {
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compile 'org.jgroups:jgroups:3.6.4'
   compile 'antlr:antlr:2.7.7'
   compile 'com.fasterxml.jackson.core:jackson-annotations:2.2.0'
   compile 'com.fasterxml.jackson.core:jackson-core:2.2.0'
@@ -70,7 +71,6 @@ dependencies {
   testRuntime 'commons-io:commons-io:2.1'
   testRuntime 'log4j:log4j:1.2.17'
   
-  compile project(':gemfire-jgroups')
   compile project(':gemfire-joptsimple')
   compile project(':gemfire-json')
   

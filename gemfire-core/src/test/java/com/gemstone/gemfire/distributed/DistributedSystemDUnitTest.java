@@ -7,30 +7,37 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-
-import dunit.*;
-
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionException;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystemJUnitTest;
+import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper;
-import com.gemstone.org.jgroups.protocols.pbcast.ClientGmsImpl;
-import com.gemstone.org.jgroups.util.ExternalStrings;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.SocketCreator;
+
+import dunit.DistributedTestCase;
+import dunit.Host;
+import dunit.VM;
 
 /**
  * Tests the functionality of the {@link DistributedSystem} class.
@@ -244,7 +251,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     config.setProperty("tcp-port", String.valueOf(tcpPort));
     system = (InternalDistributedSystem)DistributedSystem.connect(config);
     DistributionManager dm = (DistributionManager)system.getDistributionManager();
-    JGroupMembershipManager mgr = (JGroupMembershipManager)dm.getMembershipManager();
+    GMSMembershipManager mgr = (GMSMembershipManager)dm.getMembershipManager();
     int actualPort = mgr.getDirectChannelPort();
     system.disconnect();
     assertEquals(tcpPort, actualPort);
@@ -282,15 +289,6 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
         // expected
       }
     }
-  }
-
-  /** test jgroups handling of a request to retransmit a large message */
-  public void testBug43652() throws Exception {
-    DistributedSystem sys = getSystem();
-    JGroupMembershipManager mgr = MembershipManagerHelper.getMembershipManager(sys);
-    boolean result = mgr.getNakAck().testRetransmitLargeMessage(new byte[75000]);
-    assertTrue(result);
-    sys.disconnect();
   }
 
   public void testUDPPortRange() throws Exception {
@@ -412,44 +410,47 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
   static volatile String problem;
   
   public void testInterruptedWhileConnecting() throws Exception {
-    Runnable r = new Runnable() {
-      public void run() {
-        ClientGmsImpl.SLOW_JOIN_LOCK = new Object();
-        ClientGmsImpl.SLOW_JOIN = true;
-        try {
-          assertTrue("should be disconnected at this point", InternalDistributedSystem.getConnectedInstance() == null);
-          getSystem();
-          problem = "a connection to the distributed system was established but it should have failed";
-        } catch (SystemConnectException e) {
-          if (!e.getMessage().endsWith(ExternalStrings.ClientGmsImpl_JOIN_INTERRUPTED.getRawText())) {
-            problem = "got a system connect exception but it was for the wrong reason";
-            getLogWriter().info("wrong exception thrown: '" + e.getMessage() + "' (wanted '"+
-              ExternalStrings.ClientGmsImpl_JOIN_INTERRUPTED.getRawText()+"')", e);
-          }
-        } finally {
-          ClientGmsImpl.SLOW_JOIN = false;
-          ClientGmsImpl.SLOW_JOIN_LOCK = null;
-        }
-      }
-    };
-    Thread connectThread = new Thread(r, "testInterruptedWhileConnecting connect thread");
-    ClientGmsImpl.SLOW_JOIN = false;
-    connectThread.start();
-    while (ClientGmsImpl.SLOW_JOIN == false) {
-      pause(1000);
-    }
-    pause(5000);
-    connectThread.interrupt();
-    connectThread.join(60000);
-    getLogWriter().info("done waiting for connectThread.  Thread is " +
-      (connectThread.isAlive()? "still alive" : "stopped"));
-    if (ClientGmsImpl.SLOW_JOIN) {
-      problem = "failed to either connect or get an exception - one of these should have happened";
-      dumpMyThreads(getLogWriter());
-    }
-    if (problem != null) {
-      fail(problem);
-    }
+    fail("testInterruptedWhileConnecting must be reimplemented for the new GMS");
+  }
+  public void _testInterruptedWhileConnecting() throws Exception {
+//    Runnable r = new Runnable() {
+//      public void run() {
+//        ClientGmsImpl.SLOW_JOIN_LOCK = new Object();
+//        ClientGmsImpl.SLOW_JOIN = true;
+//        try {
+//          assertTrue("should be disconnected at this point", InternalDistributedSystem.getConnectedInstance() == null);
+//          getSystem();
+//          problem = "a connection to the distributed system was established but it should have failed";
+//        } catch (SystemConnectException e) {
+//          if (!e.getMessage().endsWith(ExternalStrings.ClientGmsImpl_JOIN_INTERRUPTED.getRawText())) {
+//            problem = "got a system connect exception but it was for the wrong reason";
+//            getLogWriter().info("wrong exception thrown: '" + e.getMessage() + "' (wanted '"+
+//              ExternalStrings.ClientGmsImpl_JOIN_INTERRUPTED.getRawText()+"')", e);
+//          }
+//        } finally {
+//          ClientGmsImpl.SLOW_JOIN = false;
+//          ClientGmsImpl.SLOW_JOIN_LOCK = null;
+//        }
+//      }
+//    };
+//    Thread connectThread = new Thread(r, "testInterruptedWhileConnecting connect thread");
+//    ClientGmsImpl.SLOW_JOIN = false;
+//    connectThread.start();
+//    while (ClientGmsImpl.SLOW_JOIN == false) {
+//      pause(1000);
+//    }
+//    pause(5000);
+//    connectThread.interrupt();
+//    connectThread.join(60000);
+//    getLogWriter().info("done waiting for connectThread.  Thread is " +
+//      (connectThread.isAlive()? "still alive" : "stopped"));
+//    if (ClientGmsImpl.SLOW_JOIN) {
+//      problem = "failed to either connect or get an exception - one of these should have happened";
+//      dumpMyThreads(getLogWriter());
+//    }
+//    if (problem != null) {
+//      fail(problem);
+//    }
   }
 
   

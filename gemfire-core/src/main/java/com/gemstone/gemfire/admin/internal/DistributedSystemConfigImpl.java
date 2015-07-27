@@ -43,7 +43,6 @@ import com.gemstone.gemfire.internal.logging.LogWriterFactory;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
-import com.gemstone.org.jgroups.util.StringId;
 
 /**
  * An implementation of the configuration object for an

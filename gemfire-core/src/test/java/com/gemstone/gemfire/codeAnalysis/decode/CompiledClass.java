@@ -23,7 +23,6 @@ import com.gemstone.gemfire.codeAnalysis.decode.cp.CpDouble;
 import com.gemstone.gemfire.codeAnalysis.decode.cp.CpLong;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.logging.PureLogWriter;
-import com.gemstone.org.jgroups.util.StreamableFixedID;
 
 
 /**
@@ -178,8 +177,7 @@ public class CompiledClass implements Comparable {
         Class realClass = Class.forName(name);
         return Serializable.class.isAssignableFrom(realClass)
           && !DataSerializable.class.isAssignableFrom(realClass)
-          && !DataSerializableFixedID.class.isAssignableFrom(realClass)
-          && !StreamableFixedID.class.isAssignableFrom(realClass);
+          && !DataSerializableFixedID.class.isAssignableFrom(realClass);
       } catch (UnsatisfiedLinkError e) {
         System.out.println("Unable to load actual class " + name + " external JNI dependencies");
       } catch (NoClassDefFoundError e) {

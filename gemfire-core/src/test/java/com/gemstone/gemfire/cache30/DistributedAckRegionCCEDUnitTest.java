@@ -242,7 +242,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         NetMember nm = CCRegion.getDistributionManager().getDistributionManagerId().getNetMember();
         InternalDistributedMember mbr = null;
         try {
-          mbr = new InternalDistributedMember(nm.getIpAddress().getCanonicalHostName(), nm.getPort()-1, "fake_id", "fake_id_ustring");
+          mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(), nm.getPort()-1, "fake_id", "fake_id_ustring");
           tag.setMemberID(mbr);
         } catch (UnknownHostException e) {
           fail("could not create member id", e);

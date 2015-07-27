@@ -7,7 +7,6 @@ import java.util.Properties;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 

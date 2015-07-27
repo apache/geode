@@ -575,7 +575,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
     InternalDistributedMember iMember = (InternalDistributedMember) member;
     final StringBuilder sb = new StringBuilder();
-    sb.append(iMember.getIpAddress().getHostAddress());
+    sb.append(iMember.getInetAddress().getHostAddress());
     sb.append("<v" + iMember.getVmViewId() + ">"); // View ID will be 0 for
     // Loner, but in that case no
     // federation as well

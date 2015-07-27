@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -88,7 +87,7 @@ import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
 import com.gemstone.gemfire.internal.tcp.Stub;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * The <code>DistributionManager</code> uses a {@link
@@ -569,7 +568,7 @@ public class DistributionManager
    * @return true if id1 and id2 are from the same host, false otherwise
    */
   public static boolean isSameHost(InternalDistributedMember id1, InternalDistributedMember id2) {
-    return (id1.getIpAddress().equals(id2.getIpAddress()));
+    return (id1.getInetAddress().equals(id2.getInetAddress()));
   }
 
   // @todo davidw Modify JGroups so that we do not have to send out a
@@ -613,7 +612,7 @@ public class DistributionManager
       {
         InternalDistributedMember id = dm.getDistributionManagerId();
         if (!"".equals(id.getName())) {
-          for (InternalDistributedMember m: (Vector<InternalDistributedMember>)dm.getViewMembers()) {
+          for (InternalDistributedMember m: (List<InternalDistributedMember>)dm.getViewMembers()) {
             if (m.equals(id)) {
               // I'm counting on the members returned by getViewMembers being ordered such that
               // members that joined before us will precede us AND members that join after us
@@ -1180,16 +1179,6 @@ public class DistributionManager
     StringBuffer sb = new StringBuffer(" (took ");
 
    long start = System.currentTimeMillis();
-    {
-      DistributionConfig config = system.getConfig();
-      String bindAddress = config.getBindAddress();
-      if (bindAddress != null && !bindAddress.equals(DistributionConfig.DEFAULT_BIND_ADDRESS)) {
-        System.setProperty("gemfire.jg-bind-address", bindAddress);
-      }
-      else {
-        System.getProperties().remove("gemfire.jg-bind-address");
-      }
-    }
     
     // Create direct channel first
 //    DirectChannel dc = new DirectChannel(new MyListener(this), system.getConfig(), logger, null);
@@ -1329,8 +1318,8 @@ public class DistributionManager
    */
   public boolean areOnEquivalentHost(InternalDistributedMember member1,
                                      InternalDistributedMember member2) {
-    Set<InetAddress> equivalents1 = getEquivalents(member1.getIpAddress());
-    return equivalents1.contains(member2.getIpAddress());
+    Set<InetAddress> equivalents1 = getEquivalents(member1.getInetAddress());
+    return equivalents1.contains(member2.getInetAddress());
   }
   
   /**
@@ -1432,8 +1421,8 @@ public class DistributionManager
     return this.dmType;
   }
   
-  public Vector getViewMembers() {
-    Vector result = null;
+  public List<InternalDistributedMember> getViewMembers() {
+    NetView result = null;
     DistributionChannel ch = this.channel;
     if (ch != null) {
       MembershipManager mgr = ch.getMembershipManager();
@@ -1442,13 +1431,13 @@ public class DistributionManager
         }
     }
     if (result == null) {
-      result = new Vector();
+      result = new NetView();
     }
-    return result;
+    return result.getMembers();
   }
   /* implementation of DM.getOldestMember */
   public DistributedMember getOldestMember(Collection c) throws NoSuchElementException {
-    Vector view = getViewMembers();
+    List<InternalDistributedMember> view = getViewMembers();
     for (int i=0; i<view.size(); i++) {
       Object viewMbr = view.get(i);
       Iterator it = c.iterator();
@@ -1476,23 +1465,7 @@ public class DistributionManager
     if (v == null)
       return "null";
     
-    StringBuffer sb = new StringBuffer();
-    Object leadObj = v.getLeadMember();
-    InternalDistributedMember lead = leadObj==null? null
-                            : new InternalDistributedMember(v.getLeadMember());
-    sb.append("[");
-    Iterator it = v.iterator();
-    while (it.hasNext()) {
-      InternalDistributedMember m = (InternalDistributedMember)it.next();
-      sb.append(m.toString());
-      if (lead != null && lead.equals(m)) {
-        sb.append("{lead}");
-      }
-      if (it.hasNext())
-        sb.append(", ");
-    }
-    sb.append("]");
-    return sb.toString();
+    return v.toString();
   }
 
   /**
@@ -1510,10 +1483,10 @@ public class DistributionManager
       logger.info(LocalizedMessage.create(LocalizedStrings.DistributionManager_INITIAL_MEMBERSHIPMANAGER_VIEW___0, printView(v)));
       
       // Add them all to our view
-      Iterator it = v.iterator();
+      Iterator<InternalDistributedMember> it = v.getMembers().iterator();
       while (it.hasNext()) {
-        addNewMember((InternalDistributedMember)it.next(), null);
-	}
+        addNewMember(it.next(), null);
+      }
       
       // Figure out who the elder is...
       selectElder(); // ShutdownException could be thrown here
@@ -3191,19 +3164,19 @@ public class DistributionManager
    * @return the elder candidate, possibly this VM.
    */
   private InternalDistributedMember getElderCandidate() {
-    Vector theMembers = getViewMembers();
+    List<InternalDistributedMember> theMembers = getViewMembers();
     
 //    Assert.assertTrue(!closeInProgress 
 //        && theMembers.contains(this.myid)); // bug36202?
     
     int elderCandidates = 0;
-    Iterator it;
+    Iterator<InternalDistributedMember> it;
     
     // for bug #50510 we need to know if there are any members older than v8.0
     it = theMembers.iterator();
     boolean anyPre80Members = false;
     while (it.hasNext()) {
-      InternalDistributedMember member = (InternalDistributedMember)it.next();
+      InternalDistributedMember member = it.next();
       if (member.getVersionObject().compareTo(Version.GFE_80) < 0) {
         anyPre80Members = true;
       }
@@ -3213,7 +3186,7 @@ public class DistributionManager
     if (!this.adam) {
       it = theMembers.iterator();
       while (it.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) it.next();
+        InternalDistributedMember member = it.next();
         int managerType = member.getVmKind();
         if (managerType == ADMIN_ONLY_DM_TYPE)
           continue;
@@ -3243,7 +3216,7 @@ public class DistributionManager
     // Second pass over members...
     it = theMembers.iterator();
     while (it.hasNext()) {
-      InternalDistributedMember member = (InternalDistributedMember) it.next(); 
+      InternalDistributedMember member = it.next(); 
       int managerType = member.getVmKind();
       if (managerType == ADMIN_ONLY_DM_TYPE)
         continue;
@@ -4859,7 +4832,7 @@ public class DistributionManager
       this.view = view;
     }
     public long getViewId() {
-      return view.getViewNumber();
+      return view.getViewId();
     }
     @Override
     public int eventType() {
@@ -4932,10 +4905,10 @@ public class DistributionManager
       }
     } else {
       buddyMembers.add(targetMember);
-      Set targetAddrs = getEquivalents(targetMember.getIpAddress());
+      Set targetAddrs = getEquivalents(targetMember.getInetAddress());
       for (Iterator i = getDistributionManagerIds().iterator(); i.hasNext();) {
         InternalDistributedMember o = (InternalDistributedMember)i.next();
-        if (SetUtils.intersectsWith(targetAddrs, getEquivalents(o.getIpAddress()))) {
+        if (SetUtils.intersectsWith(targetAddrs, getEquivalents(o.getInetAddress()))) {
           buddyMembers.add(o);
         }
       }
@@ -5000,7 +4973,7 @@ public class DistributionManager
     } else {
       for (Iterator it=ids.iterator(); it.hasNext(); ) {
         InternalDistributedMember mbr = (InternalDistributedMember)it.next();
-        if (mbr.getProcessId() > 0 && mbr.getIpAddress().equals(this.myid.getIpAddress())) {
+        if (mbr.getProcessId() > 0 && mbr.getInetAddress().equals(this.myid.getInetAddress())) {
           if (!mbr.equals(myid)) {
             if (!OSProcess.printStacks(mbr.getProcessId(), false)) {
               requiresMessage.add(mbr);

@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -40,16 +39,11 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ReconnectListener;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
-import com.gemstone.org.jgroups.Event;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.protocols.pbcast.GMS;
-import com.gemstone.org.jgroups.stack.Protocol;
 
 import dunit.AsyncInvocation;
 import dunit.DistributedTestCase;
@@ -276,9 +270,9 @@ public class ReconnectDUnitTest extends CacheTestCase
     // disable disconnects in the locator so we have some stability
     host.getVM(locatorVMNumber).invoke(new SerializableRunnable("disable force-disconnect") {
       public void run() {
-        GMS gms = (GMS)MembershipManagerHelper.getJChannel(InternalDistributedSystem.getConnectedInstance())
-          .getProtocolStack().findProtocol("GMS");
-        gms.disableDisconnectOnQuorumLossForTesting();
+        GMSMembershipManager mgr = (GMSMembershipManager)MembershipManagerHelper
+            .getMembershipManager(InternalDistributedSystem.getConnectedInstance());
+        mgr.disableDisconnectOnQuorumLossForTesting();
       }}
     );
 
@@ -1189,20 +1183,7 @@ public class ReconnectDUnitTest extends CacheTestCase
         DistributedTestCase.system = null;
         final DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
         final Locator oldLocator = Locator.getLocator();
-//        MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-        MembershipManagerHelper.playDead(msys);
-        JChannel c = MembershipManagerHelper.getJChannel(msys);
-        Protocol udp = c.getProtocolStack().findProtocol("UDP");
-//        udp.stop();
-        udp.passUp(new Event(Event.EXIT, new ForcedDisconnectException("killing member's ds")));
-//        try {
-//          MembershipManagerHelper.getJChannel(msys).waitForClose();
-//        }
-//        catch (InterruptedException ie) {
-//          Thread.currentThread().interrupt();
-//          // attempt rest of work with interrupt bit set
-//        }
-//        MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
+        MembershipManagerHelper.crashDistributedSystem(msys);
         if (oldLocator != null) {
           WaitCriterion wc = new WaitCriterion() {
             public boolean done() {

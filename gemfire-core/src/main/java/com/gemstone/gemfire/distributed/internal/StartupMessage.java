@@ -249,7 +249,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
 
     if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
       if (this.interfaces == null || this.interfaces.size() == 0) {
-        final com.gemstone.org.jgroups.util.StringId msg = 
+        final com.gemstone.gemfire.i18n.StringId msg = 
           LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_PEER_HAS_NO_NETWORK_INTERFACES;
         rejectionMessage = msg.toLocalizedString(getSender());
       }

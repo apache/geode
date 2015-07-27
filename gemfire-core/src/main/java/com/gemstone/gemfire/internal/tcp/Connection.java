@@ -58,6 +58,7 @@ import com.gemstone.gemfire.distributed.internal.ReplySender;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.DSFIDFactory;
@@ -74,7 +75,6 @@ import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MsgReader.Header;
 import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
-import com.gemstone.org.jgroups.util.StringId;
 
 /** <p>Connection is a socket holder that sends and receives serialized
     message objects.  A Connection may be closed to preserve system
@@ -849,7 +849,7 @@ public class Connection implements Runnable {
     // This keeps us from allocating an extra DirectByteBuffer.
     InternalDistributedMember myAddr = this.owner.getConduit().getLocalAddress();
     synchronized (myAddr) {
-      while (myAddr.getIpAddress() == null) {
+      while (myAddr.getInetAddress() == null) {
         try {
           myAddr.wait(); // spurious wakeup ok
         }
@@ -2275,7 +2275,7 @@ public class Connection implements Runnable {
                     .toLocalizedString(new Object[]{new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
               }
               InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
-              Stub stub = new Stub(remote.getIpAddress()/*fix for bug 33615*/, remote.getDirectChannelPort(), remote.getVmViewId());
+              Stub stub = new Stub(remote.getInetAddress()/*fix for bug 33615*/, remote.getDirectChannelPort(), remote.getVmViewId());
               setRemoteAddr(remote, stub);
               Thread.currentThread().setName(LocalizedStrings.Connection_P2P_MESSAGE_READER_FOR_0.toLocalizedString(this.remoteAddr, this.socket.getPort()));
               this.sharedResource = dis.readBoolean();
@@ -3764,7 +3764,7 @@ public class Connection implements Runnable {
                   throw new IllegalStateException(LocalizedStrings.Connection_DETECTED_WRONG_VERSION_OF_GEMFIRE_PRODUCT_DURING_HANDSHAKE_EXPECTED_0_BUT_FOUND_1.toLocalizedString(new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
                 }
                 InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
-                Stub stub = new Stub(remote.getIpAddress()/*fix for bug 33615*/, remote.getDirectChannelPort(), remote.getVmViewId());
+                Stub stub = new Stub(remote.getInetAddress()/*fix for bug 33615*/, remote.getDirectChannelPort(), remote.getVmViewId());
                 setRemoteAddr(remote, stub);
                 this.sharedResource = dis.readBoolean();
                 this.preserveOrder = dis.readBoolean();

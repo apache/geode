@@ -10,11 +10,10 @@ package com.gemstone.gemfire.distributed.internal;
 import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import com.gemstone.gemfire.CancelCriterion;
@@ -23,9 +22,7 @@ import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.locks.ElderState;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 
 /**
  * This interface defines the services provided  by any class that
@@ -285,7 +282,7 @@ public interface DM extends ReplySender {
    * Returns the ordered list of current DistributionManagers in
    * oldest-to-youngest order.  Added for DLockGrantor
    */
-  public Vector getViewMembers();
+  public List<InternalDistributedMember> getViewMembers();
   /**
    * Returns the oldest member in the given set of distribution managers.  The
    * current implementation may use n*n/2 comparisons, so use this judiciously

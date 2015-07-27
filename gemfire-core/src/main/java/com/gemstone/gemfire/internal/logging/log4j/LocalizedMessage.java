@@ -2,7 +2,8 @@ package com.gemstone.gemfire.internal.logging.log4j;
 
 import org.apache.logging.log4j.message.Message;
 
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
+
 
 /**
  * An implementation of a Log4j {@link Message} that wraps a {@link StringId}.

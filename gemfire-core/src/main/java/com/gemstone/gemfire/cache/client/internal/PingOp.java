@@ -66,22 +66,6 @@ public class PingOp {
     @Override
     protected Object processResponse(Message msg) throws Exception {
       processAck(msg, "ping");
-      final int msgType = msg.getMessageType();
-      if (msgType == MessageType.REPLY  &&  msg.getNumberOfParts() > 1) {
-        long endTime = System.currentTimeMillis();
-        long serverTime = msg.getPart(1).getLong();
-        // the new clock offset is computed assuming that the server's timestamp was
-        // taken mid-way between when the ping was sent and the reply was
-        // received:
-        //    timestampElapsedTime = (endTime - startTime)/2
-        //    localTime = startTime + timestampElapsedTime
-        //    offsetFromServer = serverTime - localTime
-        long newCacheTimeOffset = serverTime - startTime/2 - endTime/2;
-        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-        if (ds != null && ds.isLoner()) { // check for loner so we don't jump time offsets across WAN connections
-          ds.getClock().setCacheTimeOffset(null, newCacheTimeOffset, false);
-        }
-      }
       return null;
     }
     @Override

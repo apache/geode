@@ -13,15 +13,11 @@ import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper; // in test tree
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.Event;
-import com.gemstone.org.jgroups.protocols.FD_SOCK;
-import com.gemstone.org.jgroups.stack.Protocol;
 
 import java.util.*;
 
@@ -123,20 +119,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
           // a crash.  In post-5.1.x, this could use SystemFailure.initFailure()
           GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
           InternalDistributedSystem sys = (InternalDistributedSystem)cache.getDistributedSystem();
-          MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-          MembershipManagerHelper.playDead(sys);
-          JChannel c = MembershipManagerHelper.getJChannel(sys);
-          Protocol udp = c.getProtocolStack().findProtocol("UDP");
-          udp.stop();
-          udp.passUp(new Event(Event.EXIT, new Exception("killing locators ds")));
-          try {
-            MembershipManagerHelper.getJChannel(sys).waitForClose();
-          }
-          catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            // attempt rest of work with interrupt bit set
-          }
-          MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
+          MembershipManagerHelper.crashDistributedSystem(sys);
         }
       });
   }

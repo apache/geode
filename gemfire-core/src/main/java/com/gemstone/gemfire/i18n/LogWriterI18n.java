@@ -8,12 +8,10 @@
 
 package com.gemstone.gemfire.i18n;
 
+import java.util.logging.Handler;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.org.jgroups.util.GFLogWriter;
-import com.gemstone.org.jgroups.util.StringId;
-
-import java.util.logging.Handler;
 /**
   * Defines methods available to clients that want to write a log message
   * to their GemFire distributed system log file.
@@ -80,7 +78,7 @@ import java.util.logging.Handler;
   *
   * @author kbanks
   */
-public interface LogWriterI18n extends GFLogWriter {
+public interface LogWriterI18n {
     /**
      * @return true if "severe" log messages are enabled.
      */

@@ -31,7 +31,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.org.jgroups.util.VersionedStreamable;
 
 /**
  * Test the DSFID serialization framework added for rolling upgrades in 7.1
@@ -212,16 +211,7 @@ public class BackwardCompatibilitySerializationJUnitTest {
     Version[] versions = null;
     if (ds instanceof SerializationVersions) {
       versions = ((SerializationVersions)ds).getSerializationVersions();
-    } else {
-      short[] ordinals = ((VersionedStreamable)ds).getSerializationVersions();
-      if (ordinals != null && ordinals.length > 0) {
-        versions = new Version[ordinals.length];
-        for (int i=ordinals.length; i>=0; i--) {
-          versions[i] = Version.fromOrdinalNoThrow(ordinals[i], false);
-        }
-      }
     }
-
     if (versions != null && versions.length > 0) {
       for (int i = 0; i < versions.length; i++) {
         try {

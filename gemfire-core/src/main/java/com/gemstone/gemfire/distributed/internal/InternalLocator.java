@@ -12,24 +12,15 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,26 +39,14 @@ import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorDiscovery;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorHelper;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorJoinMessage;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListenerImpl;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinResponse;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingResponse;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorResponse;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ConnectListener;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.GFJGBasicAdapter;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMember;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.LocatorImpl;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
@@ -94,11 +73,16 @@ import com.gemstone.gemfire.management.internal.configuration.handlers.SharedCon
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-import com.gemstone.org.jgroups.Address;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.stack.GossipData;
-import com.gemstone.org.jgroups.stack.GossipServer;
-import com.gemstone.org.jgroups.util.GemFireTracer;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorDiscovery;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorHelper;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorJoinMessage;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListenerImpl;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinResponse;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingRequest;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingResponse;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorRequest;
+//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorResponse;
 
 /**
  * Provides the implementation of a distribution <code>Locator</code>
@@ -178,8 +162,8 @@ public class InternalLocator extends Locator implements ConnectListener {
   //the system is started.
   private Properties env;
   
-  /** the gossip server used for peer location */
-  private LocatorImpl locatorImpl;
+  /** the TcpHandler used for peer location */
+  private GMSLocator locatorImpl;
   
   private DistributionConfigImpl config;
   
@@ -531,7 +515,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     this.bindAddress = bindAddress;
     this.hostnameForClients = hostnameForClients;
     if (stateF == null) {
-      this.stateFile = new File("locator" + port + "state.dat");
+      this.stateFile = new File("locator" + port + "view.dat");
     }
     else {
       this.stateFile = stateF;
@@ -610,11 +594,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     this.handler = new PrimaryHandler(this.port, this, locatorListener);
   
-    GemFireTracer tracer = GemFireTracer.getLog(InternalLocator.class);
-    tracer.setLogWriter(logWriter);
-    tracer.setSecurityLogWriter(securityLogWriter);
-    tracer.setLogger(LogService.getLogger(GemFireTracer.class));
-    
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
     stats = new LocatorStats();
     server = new TcpServer(this.port, this.bindAddress, null, this.config,
@@ -685,13 +664,9 @@ public class InternalLocator extends Locator implements ConnectListener {
     //com.gemstone.org.jgroups.util.GemFireTracer
     //    .setSecurityLogWriter(this.securityLogWriter);
     
-    // install gemfire serialization and socket functions into jgroups
-    JChannel.setDefaultGFFunctions(new GFJGBasicAdapter());
-    this.locatorImpl = new LocatorImpl(port, EXPIRY_MS,
-        this.bindAddress, this.stateFile, locatorsProp, locatorsAreCoordinators,
-        networkPartitionDetectionEnabled, withDS
-        );
-    this.handler.addHandler(GossipData.class, this.locatorImpl);
+    this.locatorImpl = new GMSLocator(port, this.bindAddress, this.stateFile,
+        locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled);
+    this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
     peerLocator = true;
     if(!server.isAlive()) {
       startTcpServer();
@@ -701,7 +676,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * @return the gossipServer
    */
-  public LocatorImpl getLocatorHandler() {
+  public GMSLocator getLocatorHandler() {
     return this.locatorImpl;
   }
   
@@ -748,14 +723,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (existing != null) {
       // LOG: changed from config to info
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_USING_EXISTING_DISTRIBUTED_SYSTEM__0, existing));
-      if (getLocatorHandler() != null) {
-        // let the GossipServer know the system's address so they can start
-        // servicing requests
-        Address addr = ((JGroupMember)existing.getDistributedMember().getNetMember()).getAddress();
-        getLocatorHandler().setLocalAddress(addr);
-      }
-      // don't set the ds variable, so it won't be closed by the locator shutting down
-     
       startCache(existing);
     }
     else {
@@ -818,6 +785,10 @@ public class InternalLocator extends Locator implements ConnectListener {
         logger.info(LogMarker.CONFIG, LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0, this.config.toLoggerString()));
 
         myDs = (InternalDistributedSystem)DistributedSystem.connect(connectEnv);
+        
+        if (peerLocator) {
+          this.locatorImpl.setMembershipManager(myDs.getDM().getMembershipManager());
+        }
         
         myDs.addDisconnectListener(new DisconnectListener() {
           @Override
@@ -1323,13 +1294,20 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     public Object processRequest(Object request) throws IOException {
-      TcpHandler handler = (TcpHandler)handlerMapping.get(request.getClass());
+      TcpHandler handler = null;
+      if (request instanceof PeerLocatorRequest) {
+        handler = (TcpHandler)handlerMapping.get(PeerLocatorRequest.class);
+      }
+      else {
+        handler = (TcpHandler)handlerMapping.get(request.getClass());
+      }
+      
       if (handler != null) {
         Object result;
         result = handler.processRequest(request);
         return result;
       }
-      else {
+      else {  
         Object response;
         if(locatorListener != null){
           response = locatorListener.handleRequest(request);

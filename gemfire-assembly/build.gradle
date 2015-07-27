@@ -23,7 +23,6 @@ dependencies {
   
   archives project(':gemfire-json')  
   archives project(':gemfire-joptsimple')  
-  archives project(':gemfire-jgroups')  
   archives project(':gemfire-core')  
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
@@ -112,7 +111,8 @@ def cp = {
       it.contains('spring-core') ||
       it.contains('spring-shell') ||
       it.contains('snappy-java') ||
-      it.contains('hbase')
+      it.contains('hbase') ||
+      it.contains('jgroups')
     }.join(' ') 
 }
 
@@ -163,9 +163,6 @@ distributions {
       
       into ('lib') {
         exclude 'annotation*.jar'
-        from project(":gemfire-jgroups").configurations.runtime
-        from project(":gemfire-jgroups").configurations.archives.allArtifacts.files
-
         from project(":gemfire-json").configurations.runtime
         from project(":gemfire-json").configurations.archives.allArtifacts.files
 
@@ -213,10 +210,9 @@ def MavenRepos = [ springReleaseRepo, springSnapshotRepo, springLibsReleaseRepo,
 
 // Jars to be published via Maven
 def coreJar = [publicationName:'coreJar', project:project(":gemfire-core").name]
-def jgroupsJar = [publicationName:'jgroupsJar', project:project(":gemfire-jgroups").name]
 def jsonJar = [publicationName:'jsonJar', project:project(":gemfire-json").name]
 def joptsimpleJar = [publicationName:'joptsimpleJar', project:project(":gemfire-joptsimple").name]
-def MavenJars = [ coreJar, jgroupsJar, jsonJar, joptsimpleJar ]
+def MavenJars = [ coreJar, jsonJar, joptsimpleJar ]
 
 afterEvaluate {
   publishing {

@@ -25,7 +25,7 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
  */
 public class GemFireTracer  {
     /** whether jgroups debugging should be turned on */
-    public static boolean DEBUG = Boolean.getBoolean("JGroups.DEBUG");
+    public static boolean DEBUG = true; //Boolean.getBoolean("JGroups.DEBUG");
     
     private static Logger logger;
     

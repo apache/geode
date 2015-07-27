@@ -10,7 +10,6 @@ package com.gemstone.gemfire.distributed.internal;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -20,8 +19,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.org.jgroups.ChannelClosedException;
-import com.gemstone.org.jgroups.ChannelNotConnectedException;
 
 public class StartupOperation {
   private static final Logger logger = LogService.getLogger();
@@ -45,7 +42,6 @@ public class StartupOperation {
   boolean sendStartupMessage(Set recipients, long timeout, Set interfaces, 
       String redundancyZone, boolean enforceUniqueZone)
             throws InterruptedException, ReplyException,
-              ChannelNotConnectedException, ChannelClosedException,
               java.net.UnknownHostException, IOException
   {
     if (Thread.interrupted()) throw new InterruptedException();

@@ -3,7 +3,7 @@ package com.gemstone.gemfire.internal.process;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Extracted from LogWriterImpl and changed to static.

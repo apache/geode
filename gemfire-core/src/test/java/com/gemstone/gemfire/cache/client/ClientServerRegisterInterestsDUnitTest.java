@@ -2,6 +2,7 @@ package com.gemstone.gemfire.cache.client;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,7 +17,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.org.jgroups.util.Stack;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -59,7 +59,7 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
   public void tearDown2() throws Exception {
     super.tearDown2();
     serverPort.set(0);
-    entryEvents.removeAll();
+    entryEvents.clear();
     gemfireServerVm.invoke(new SerializableRunnable() {
       @Override public void run() {
         CacheFactory.getAnyInstance().close();

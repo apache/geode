@@ -68,7 +68,6 @@ public class BindDistributedSystemJUnitTest {
     // make sure bindTo is the loopback... needs to be later in test...
     assertEquals(true, InetAddressUtil.isLoopback(bindTo));
 
-    //System.setProperty("gemfire.jg-bind-address", bindTo);
     Properties props = new Properties();
     props.setProperty(DistributionConfig.BIND_ADDRESS_NAME, bindTo);
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,
@@ -120,15 +119,6 @@ public class BindDistributedSystemJUnitTest {
 //      DistributionManager dm =
 //          ((AdminDistributedSystemImpl) distSys).getDistributionManager();
 //      checkDistributionPorts(dm, bindTo);
-
-      // check gemfire.jg-bind-address...
-      if (true) {// kill this block if we stop using gemfire.jg-bind-address
-        // validate the bindAddress using gemfire.jg-bind-address...
-        String bindAddress = System.getProperty("gemfire.jg-bind-address");
-        InetAddress address = InetAddress.getByName(bindAddress);
-        assertNotNull(address);
-        assertEquals(InetAddress.getByName(bindTo), address);
-      }
 
     }
     finally {

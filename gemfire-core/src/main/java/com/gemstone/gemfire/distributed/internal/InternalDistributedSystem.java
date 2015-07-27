@@ -55,8 +55,8 @@ import com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.LocatorImpl;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DSFIDFactory;
@@ -66,7 +66,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.LinuxProcFsStatistics;
 import com.gemstone.gemfire.internal.LocalStatisticsImpl;
-import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.OsStatisticsFactory;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.StatisticsImpl;
@@ -98,7 +97,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.org.jgroups.util.GemFireTracer;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that
@@ -562,11 +560,8 @@ public final class InternalDistributedSystem
       this.securityLogWriter = LogWriterFactory.createLogWriterLogger(this.isLoner, true, this.config, false);
       this.securityLogWriter.fine("SecurityLogWriter is created.");
     }
-
-    GemFireTracer tracer = GemFireTracer.getLog(InternalDistributedSystem.class);
-    tracer.setLogWriter(this.logWriter);
-    tracer.setSecurityLogWriter(this.securityLogWriter);
-    tracer.setLogger(LogService.getLogger(GemFireTracer.class));
+    
+    Services.setSecurityLogWriter(this.securityLogWriter);
 
     this.clock = new DSClock(this.isLoner);
     
@@ -743,11 +738,6 @@ public final class InternalDistributedSystem
           boolean startedPeerLocation = false;
           try {
             this.startedLocator.startPeerLocation(true);
-            if (this.isConnected) {
-              InternalDistributedMember id = this.dm.getDistributionManagerId();
-              LocatorImpl gs = this.startedLocator.getLocatorHandler();
-              gs.setLocalAddress(id);
-            }
             startedPeerLocation = true;
           } finally {
             if (!startedPeerLocation) {
@@ -1157,14 +1147,14 @@ public final class InternalDistributedSystem
   private static volatile boolean emergencyClassesLoaded = false;
   
   /**
-   * Ensure that the JGroupMembershipManager class gets loaded.
+   * Ensure that the MembershipManager class gets loaded.
    * 
    * @see SystemFailure#loadEmergencyClasses()
    */
   static public void loadEmergencyClasses() {
     if (emergencyClassesLoaded) return;
     emergencyClassesLoaded = true;
-    JGroupMembershipManager.loadEmergencyClasses();
+    GMSMembershipManager.loadEmergencyClasses();
   }
   
   /**
@@ -1590,10 +1580,10 @@ public final class InternalDistributedSystem
     //Search through the set of all members
     for(InternalDistributedMember member: allMembers) {
       
-      Set<InetAddress> equivalentAddresses = dm.getEquivalents(member.getIpAddress());
+      Set<InetAddress> equivalentAddresses = dm.getEquivalents(member.getInetAddress());
       //Check to see if the passed in address is matches one of the addresses on
       //the given member.
-      if(address.equals(member.getIpAddress()) || equivalentAddresses.contains(address)) {
+      if(address.equals(member.getInetAddress()) || equivalentAddresses.contains(address)) {
         results.add(member);
       }
     }

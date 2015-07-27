@@ -38,14 +38,11 @@ import com.gemstone.gemfire.distributed.internal.locks.ElderState;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.GFJGBasicAdapter;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.org.jgroups.JChannel;
 
 /**
  * A <code>LonerDistributionManager</code> is a dm that never communicates
@@ -74,12 +71,11 @@ public class LonerDistributionManager implements DM {
    */
   public LonerDistributionManager(InternalDistributedSystem system,
                                   InternalLogWriter logger) {
-    JChannel.setDefaultGFFunctions(new GFJGBasicAdapter());
     this.system = system;
     this.logger = logger;
     this.id = generateMemberId();
     this.allIds = Collections.singleton(id);
-    this.viewMembers = new Vector(allIds);
+    this.viewMembers = new ArrayList<InternalDistributedMember>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
   }
 
@@ -112,7 +108,7 @@ public class LonerDistributionManager implements DM {
   }*/
 
   private final Set<InternalDistributedMember> allIds;// = Collections.singleton(id);
-  private final Vector viewMembers;// = new Vector(allIds);
+  private final List<InternalDistributedMember> viewMembers;
   private ConcurrentMap<InternalDistributedMember, InternalDistributedMember> canonicalIds = new ConcurrentHashMap();
   static private final DummyDMStats stats = new DummyDMStats();
   static private final DummyExecutor executor = new DummyExecutor();
@@ -276,7 +272,9 @@ public class LonerDistributionManager implements DM {
   public void restartCommunications() {
 
   }
-  public Vector getViewMembers() {
+  
+  @Override
+  public List<InternalDistributedMember> getViewMembers() {
     return viewMembers;
   }
 
@@ -810,7 +808,7 @@ public class LonerDistributionManager implements DM {
   
   public Set<InetAddress> getEquivalents(InetAddress in) {
     Set<InetAddress> value = new HashSet<InetAddress>();
-    value.add(this.getId().getIpAddress());
+    value.add(this.getId().getInetAddress());
     return value;
   }
 
