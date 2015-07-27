@@ -1,10 +1,9 @@
 package com.gemstone.gemfire.test.golden;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that test output containing an unexpected ERROR message
@@ -12,12 +11,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * 
  * @author Kirk Lund
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class FailWithLoggerErrorInOutputJUnitTest extends FailWithProblemInOutputTestCase {
-  
-  public FailWithLoggerErrorInOutputJUnitTest() {
-    super(FailWithLoggerErrorInOutputJUnitTest.class.getSimpleName());
-  }
   
   @Override
   String problem() {
@@ -25,12 +20,11 @@ public class FailWithLoggerErrorInOutputJUnitTest extends FailWithProblemInOutpu
   }
   
   @Override
-  void outputProblem(String message) {
-    Logger logger = LogService.getLogger();
-    logger.error(message);
+  void outputProblemInProcess(final String message) {
+    LogService.getLogger().error(message);
   }
   
-  public static void main(String[] args) throws Exception {
-    new FailWithLoggerErrorInOutputJUnitTest().execute();
+  public static void main(final String[] args) throws Exception {
+    new FailWithLoggerErrorInOutputJUnitTest().executeInProcess();
   }
 }

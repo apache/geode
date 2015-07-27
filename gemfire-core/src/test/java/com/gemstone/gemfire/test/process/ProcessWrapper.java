@@ -1,5 +1,7 @@
 package com.gemstone.gemfire.test.process;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -19,28 +22,26 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.internal.logging.LogService;
 
-import com.gemstone.gemfire.test.process.*;
-
-import junit.framework.Assert;
-
 /**
- * Wraps spawned process to capture output and provide hooks to the
- * {@link java.lang.Process} object.
+ * Wraps spawned {@link java.lang.Process} to capture output and provide interaction with the process.
  *
  * @author Kirk Lund
  * @since 4.1.1
  */
-public class ProcessWrapper extends Assert {
+public class ProcessWrapper {
   private static final Logger logger = LogService.getLogger();
 
-  protected static final String TIMEOUT_MILLIS_PROPERTY = "quickstart.test.TIMEOUT_MILLIS";
-  private static final long TIMEOUT_MILLIS = Long.getLong(TIMEOUT_MILLIS_PROPERTY, 5 * 60 * 1000L); 
-  private static final boolean JAVA_AWT_HEADLESS = true;
+  protected static final String TIMEOUT_MILLIS_PROPERTY = "process.test.timeoutMillis";
+  protected static final long TIMEOUT_MILLIS_DEFAULT = 5 * 60 * 1000;
+  private static final long DELAY = 10;
 
-  private final String[] jvmArgs;  
+  private final boolean headless;
+  private final long timeoutMillis; 
+  
+  private final String[] jvmArguments;  
   
   private final Class<?> mainClass;
-  private final String[] mainArgs;
+  private final String[] mainArguments;
 
   private volatile Process process;
   private volatile Throwable processException;
@@ -60,54 +61,45 @@ public class ProcessWrapper extends Assert {
   private ProcessStreamReader stdout;
   private ProcessStreamReader stderr;
   
-  public ProcessWrapper(Class<?> main, String[] mainArgs) {
-    this(main, mainArgs, true);
-  }
-
-  public ProcessWrapper(Class<?> main, String[] mainArgs, boolean useMainLauncher) {
-    this(null, main, mainArgs, true);
-  }
-  
-  public ProcessWrapper(String[] jvmArgs, Class<?> main, String[] mainArgs, boolean useMainLauncher) {
-    this.jvmArgs = jvmArgs;
+  private ProcessWrapper(final String[] jvmArguments, final Class<?> mainClass, final String[] mainArguments, final boolean useMainLauncher, final boolean headless, final long timeoutMillis) {
+    this.jvmArguments = jvmArguments;
+    this.mainClass = mainClass;
+    this.mainArguments = mainArguments;
+    this.useMainLauncher = useMainLauncher;
+    this.headless = headless;
+    this.timeoutMillis = timeoutMillis;
     
-    this.mainClass = main;
-    this.mainArgs = mainArgs;
-
     this.lineBuffer = new LinkedBlockingQueue<String>();
     this.allLines = Collections.synchronizedList(new ArrayList<String>());
-    
-    this.useMainLauncher = useMainLauncher;
   }
   
-  public ProcessStreamReader getStandardOutReader() { // TODO:protected
+  public ProcessStreamReader getStandardOutReader() {
     synchronized (this.exitValue) {
       return stdout;
     }
   }
   
-  public ProcessStreamReader getStandardErrorReader() { // TODO:protected
+  public ProcessStreamReader getStandardErrorReader() {
     synchronized (this.exitValue) {
       return stderr;
     }
   }
   
-  private void waitForProcessStart() throws InterruptedException {
-    long start = System.currentTimeMillis();
+  private void waitForProcessStart() throws InterruptedException, TimeoutException {
+    final long start = System.currentTimeMillis();
     boolean done = false;
     while (!done) {
       synchronized (this.exitValue) {
-        done = (this.process != null || this.processException != null) && 
-            (this.started || this.exitValue.get() > -1 || this.interrupted);
+        done = (this.process != null || this.processException != null) && (this.started || this.exitValue.get() > -1 || this.interrupted);
       }
-      if (!done && System.currentTimeMillis() > start + TIMEOUT_MILLIS) {
-        fail("Timed out launching process");
+      if (!done && System.currentTimeMillis() > start + timeoutMillis) {
+        throw new TimeoutException("Timed out launching process");
       }
-      Thread.sleep(100);
+      Thread.sleep(DELAY);
     }
   }
   
-  public boolean isAlive() throws InterruptedException {
+  public boolean isAlive() throws InterruptedException, TimeoutException {
     checkStarting();
     waitForProcessStart();
     
@@ -126,9 +118,9 @@ public class ProcessWrapper extends Assert {
     return this;
   }
 
-  public int waitFor(long timeout, boolean throwOnTimeout) throws InterruptedException {
+  public int waitFor(final long timeout, final boolean throwOnTimeout) throws InterruptedException {
     checkStarting();
-    Thread thread = getThread();
+    final Thread thread = getThread();
     thread.join(timeout);
     synchronized (this.exitValue) {
       if (throwOnTimeout) {
@@ -138,29 +130,29 @@ public class ProcessWrapper extends Assert {
     }
   }
   
-  public int waitFor(long timeout) throws InterruptedException {
+  public int waitFor(final long timeout) throws InterruptedException {
     return waitFor(timeout, false);
   }
   
-  public int waitFor(boolean throwOnTimeout) throws InterruptedException {
-    return waitFor(TIMEOUT_MILLIS, throwOnTimeout);
+  public int waitFor(final boolean throwOnTimeout) throws InterruptedException {
+    return waitFor(timeoutMillis, throwOnTimeout);
   }
   
   public int waitFor() throws InterruptedException {
-    return waitFor(TIMEOUT_MILLIS, false);
+    return waitFor(timeoutMillis, false);
   }
   
   public String getOutput() { 
     return getOutput(false);
   }
 
-  public String getOutput(boolean ignoreStopped) { 
+  public String getOutput(final boolean ignoreStopped) { 
     checkStarting();
     if (!ignoreStopped) {
       checkStopped();
     }
-    StringBuffer sb = new StringBuffer();
-    Iterator<String> iterator = allLines.iterator();
+    final StringBuffer sb = new StringBuffer();
+    final Iterator<String> iterator = this.allLines.iterator();
     while (iterator.hasNext()) {
       sb.append(iterator.next() + "\n");
     }
@@ -173,25 +165,24 @@ public class ProcessWrapper extends Assert {
     return this;
   }
 
-  public ProcessWrapper sendInput(String input) {
+  public ProcessWrapper sendInput(final String input) {
     checkStarting();
-    PrintStream ps = new PrintStream(this.process.getOutputStream());
+    final PrintStream ps = new PrintStream(this.process.getOutputStream());
     ps.println(input);
     ps.flush();
     return this;
   }
 
-  public ProcessWrapper failIfOutputMatches(String patternString, long timeoutMillis) throws InterruptedException {
+  public ProcessWrapper failIfOutputMatches(final String patternString, final long timeoutMillis) throws InterruptedException {
     checkStarting();
     checkOk();
-
-    Pattern pattern = Pattern.compile(patternString);
     
+    final Pattern pattern = Pattern.compile(patternString);
     logger.debug("failIfOutputMatches waiting for \"{}\"...", patternString);
-    long start = System.currentTimeMillis();
+    final long start = System.currentTimeMillis();
+    
     while(System.currentTimeMillis() <= start+timeoutMillis) {
-      String line = lineBuffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
-
+      final String line = lineBuffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
       if (line != null && pattern.matcher(line).matches()) {
         fail("failIfOutputMatches Matched pattern \"" + patternString + "\" against output \"" + line + "\". Output: " + this.allLines);
       }
@@ -203,18 +194,17 @@ public class ProcessWrapper extends Assert {
    * Waits for the process stdout or stderr stream to contain the specified 
    * text. Uses the specified timeout for debugging purposes.
    */
-  public ProcessWrapper waitForOutputToMatch(String patternString, long timeoutMillis) throws InterruptedException {
+  public ProcessWrapper waitForOutputToMatch(final String patternString, final long timeoutMillis) throws InterruptedException {
     checkStarting();
     checkOk();
 
-    Pattern pattern = Pattern.compile(patternString);
-    
+    final Pattern pattern = Pattern.compile(patternString);
     logger.debug("ProcessWrapper:waitForOutputToMatch waiting for \"{}\"...", patternString);
+    
     while(true) {
-      String line = this.lineBuffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
-
+      final String line = this.lineBuffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
       if (line == null) {
-        fail("Timed out waiting for output \"" + patternString + "\" after " + TIMEOUT_MILLIS + " ms. Output: " + new OutputFormatter(this.allLines));
+        fail("Timed out waiting for output \"" + patternString + "\" after " + timeoutMillis + " ms. Output: " + new OutputFormatter(this.allLines));
       }
       
       if (pattern.matcher(line).matches()) {
@@ -231,19 +221,19 @@ public class ProcessWrapper extends Assert {
    * Waits for the process stdout or stderr stream to contain the specified 
    * text. Uses the default timeout.
    */
-  public ProcessWrapper waitForOutputToMatch(String patternString) throws InterruptedException {
-    return waitForOutputToMatch(patternString, TIMEOUT_MILLIS);
+  public ProcessWrapper waitForOutputToMatch(final String patternString) throws InterruptedException {
+    return waitForOutputToMatch(patternString, timeoutMillis);
   }
 
-  public ProcessWrapper execute() throws InterruptedException {
+  public ProcessWrapper execute() throws InterruptedException, TimeoutException {
     return execute(null, new File(System.getProperty("user.dir")));
   }
 
-  public ProcessWrapper execute(Properties props) throws InterruptedException {
-    return execute(props, new File(System.getProperty("user.dir")));
+  public ProcessWrapper execute(final Properties properties) throws InterruptedException, TimeoutException {
+    return execute(properties, new File(System.getProperty("user.dir")));
   }
   
-  public ProcessWrapper execute(final Properties props, final File workingDirectory) throws InterruptedException {
+  public ProcessWrapper execute(final Properties properties, final File workingDirectory) throws InterruptedException, TimeoutException {
     synchronized (this.exitValue) {
       if (this.starting) {
         throw new IllegalStateException("ProcessWrapper can only be executed once");
@@ -251,7 +241,7 @@ public class ProcessWrapper extends Assert {
       this.starting = true;
       this.processThread = new Thread(new Runnable() {
         public void run() {
-          exec(props, workingDirectory);
+          start(properties, workingDirectory);
         }
       }, "ProcessWrapper Process Thread");
     }
@@ -261,7 +251,7 @@ public class ProcessWrapper extends Assert {
 
     synchronized (this.exitValue) {
       if (this.processException != null) {
-        System.out.println("ProcessWrapper:execute failed with " + this.processException);
+        logger.error("ProcessWrapper:execute failed with " + this.processException);
         this.processException.printStackTrace();
       }
     }
@@ -272,36 +262,35 @@ public class ProcessWrapper extends Assert {
     return this;
   }
 
-  private void exec(Properties dsProps, final File workingDirectory) {
-    List<String> vmArgList = new ArrayList<String>();
+  private void start(final Properties properties, final File workingDirectory) {
+    final List<String> jvmArgumentsList = new ArrayList<String>();
 
-    if (dsProps != null) {
-      for (Map.Entry<Object, Object> entry : dsProps.entrySet()) {
+    if (properties != null) {
+      for (Map.Entry<Object, Object> entry : properties.entrySet()) {
         if (!entry.getKey().equals("log-file")) {
-          vmArgList.add("-D" + entry.getKey() + "=" + entry.getValue());
+          jvmArgumentsList.add("-D" + entry.getKey() + "=" + entry.getValue());
         }
       }
     }
 
-    if (JAVA_AWT_HEADLESS) {
-      vmArgList.add("-Djava.awt.headless=true");
+    if (this.headless) {
+      jvmArgumentsList.add("-Djava.awt.headless=true");
     }
     
-    if (this.jvmArgs != null) {
-      for (String vmArg: this.jvmArgs) {
-        vmArgList.add(vmArg);
+    if (this.jvmArguments != null) {
+      for (String jvmArgument: this.jvmArguments) {
+        jvmArgumentsList.add(jvmArgument);
       }
     }
     
-    String[] vmArgs = vmArgList.toArray(new String[vmArgList.size()]);
-
     try {
       synchronized (this.exitValue) {
-        String[] command = defineCommand(vmArgs);
+        final String[] command = defineCommand(jvmArgumentsList.toArray(new String[jvmArgumentsList.size()]));
         this.process = new ProcessBuilder(command).directory(workingDirectory).start();
         
-        StringBuilder processCommand = new StringBuilder();
+        final StringBuilder processCommand = new StringBuilder();
         boolean addSpace = false;
+        
         for (String string : command) {
           if (addSpace) {
             processCommand.append(" ");
@@ -309,16 +298,16 @@ public class ProcessWrapper extends Assert {
           processCommand.append(string);
           addSpace = true;
         }
-        String commandString = processCommand.toString();
-        System.out.println("Executing " + commandString);
+        
+        final String commandString = processCommand.toString();
+        logger.debug("Starting " + commandString);
+        
         final ProcessStreamReader stdOut = new ProcessStreamReader(commandString, this.process.getInputStream(), this.lineBuffer, this.allLines);
         final ProcessStreamReader stdErr = new ProcessStreamReader(commandString, this.process.getErrorStream(), this.lineBuffer, this.allLines);
   
         this.stdout = stdOut;
         this.stderr = stdErr;
-  
         this.outputReader = new ProcessOutputReader(this.process, stdOut, stdErr, this.allLines);
-      
         this.started = true;
       }
       
@@ -342,51 +331,40 @@ public class ProcessWrapper extends Assert {
     }
   }
   
-  private String[] defineCommand(String[] vmArgs) {
-    File javabindir = new File(System.getProperty("java.home"), "bin");
-    File javaexe = new File(javabindir, "java");
+  private String[] defineCommand(final String[] jvmArguments) {
+    final File javaBinDir = new File(System.getProperty("java.home"), "bin");
+    final File javaExe = new File(javaBinDir, "java");
 
-    List<String> argList = new ArrayList<String>();
-    argList.add(javaexe.getPath());
-    argList.add("-classpath");
-    argList.add(System.getProperty("java.class.path"));
+    final List<String> argumentList = new ArrayList<String>();
+    argumentList.add(javaExe.getPath());
+    argumentList.add("-classpath");
+    argumentList.add(System.getProperty("java.class.path"));
 
     // -d64 is not a valid option for windows and results in failure
-    int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
+    final int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
     if (bits == 64 && !(System.getProperty("os.name").toLowerCase().contains("windows"))) {
-      argList.add("-d64");
+      argumentList.add("-d64");
     }
 
-    argList.add("-Djava.library.path=" + System.getProperty("java.library.path"));
+    argumentList.add("-Djava.library.path=" + System.getProperty("java.library.path"));
 
-    if (vmArgs != null) {
-      argList.addAll(Arrays.asList(vmArgs));
+    if (jvmArguments != null) {
+      argumentList.addAll(Arrays.asList(jvmArguments));
     }
 
     if (this.useMainLauncher) {
-      argList.add(MainLauncher.class.getName());
+      argumentList.add(MainLauncher.class.getName());
     }
-    argList.add(mainClass.getName());
+    argumentList.add(mainClass.getName());
     
-    if (mainArgs != null) {
-      argList.addAll(Arrays.asList(mainArgs));
+    if (mainArguments != null) {
+      argumentList.addAll(Arrays.asList(mainArguments));
     }
 
-    String[] cmd = argList.toArray(new String[argList.size()]);
-    return cmd;
+    final String[] command = argumentList.toArray(new String[argumentList.size()]);
+    return command;
   }
   
-  private String toString(String[] strings) {
-    if (strings == null || strings.length < 1) {
-      return null;
-    }
-    StringBuilder sb = new StringBuilder();
-    for (String string : strings) {
-      sb.append(string).append("\n");
-    }
-    return sb.toString();
-  }
-
   private void checkStarting() throws IllegalStateException {
     synchronized (this.exitValue) {
       if (!this.starting) {
@@ -405,8 +383,7 @@ public class ProcessWrapper extends Assert {
   
   private void checkOk() throws RuntimeException {
     if (this.processException != null) {
-      RuntimeException rt = new RuntimeException("Failed to launch process", this.processException);
-      throw rt;
+      throw new RuntimeException("Failed to launch process", this.processException);
     }
   }
 
@@ -416,8 +393,9 @@ public class ProcessWrapper extends Assert {
     }
   }
   
+  @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
     sb.append(this.mainClass);
     sb.append("}");
@@ -425,31 +403,46 @@ public class ProcessWrapper extends Assert {
   }
 
   public static class Builder {
-    private String[] jvmArgs = null;
-    private Class<?> main;
-    private String[] mainArgs = null;
+    private String[] jvmArguments = null;
+    private Class<?> mainClass;
+    private String[] mainArguments = null;
     private boolean useMainLauncher = true;
+    private boolean headless = true;
+    private long timeoutMillis = TIMEOUT_MILLIS_DEFAULT;
+    private boolean inline = false;
     public Builder() {
       //nothing
     }
-    public Builder jvmArgs(String[] jvmArgs) {
-      this.jvmArgs = jvmArgs;
+    public Builder jvmArguments(final String[] jvmArguments) {
+      this.jvmArguments = jvmArguments;
       return this;
     }
-    public Builder main(Class<?> main) { 
-      this.main = main;
+    public Builder mainClass(final Class<?> mainClass) { 
+      this.mainClass = mainClass;
       return this;
     }
-    public Builder mainArgs(String[] mainArgs) {
-      this.mainArgs = mainArgs;
+    public Builder mainArguments(final String[] mainArguments) {
+      this.mainArguments = mainArguments;
       return this;
     }
-    public Builder useMainLauncher(boolean useMainLauncher) {
+    public Builder useMainLauncher(final boolean useMainLauncher) {
       this.useMainLauncher = useMainLauncher;
       return this;
     }
+    public Builder headless(final boolean headless) {
+      this.headless = headless;
+      return this;
+    }
+    public Builder timeoutMillis(final long timeoutMillis) {
+      this.timeoutMillis = timeoutMillis;
+      return this;
+    }
+    public Builder inline(final boolean inline) {
+      this.inline = inline;
+      return this;
+    }
     public ProcessWrapper build() {
-      return new ProcessWrapper(jvmArgs, main, mainArgs, useMainLauncher);
+      return new ProcessWrapper(jvmArguments, mainClass, mainArguments, useMainLauncher, headless, timeoutMillis);
     }
   }
 }

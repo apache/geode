@@ -1,17 +1,23 @@
 package com.gemstone.gemfire.test.golden;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.process.ProcessWrapper;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.AssertionFailedError;
-
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class FailWithTimeoutOfWaitForOutputToMatchJUnitTest extends FailOutputTestCase {
   
-  public FailWithTimeoutOfWaitForOutputToMatchJUnitTest() {
-    super("FailWithTimeoutOfWaitForOutputToMatchJUnitTest");
+  private static final long timeoutMillis = 1000;
+
+  private ProcessWrapper process;
+  
+  public void subTearDown() throws Exception {
+    this.process.waitFor();
+    assertFalse(this.process.isAlive());
   }
   
   @Override
@@ -20,29 +26,28 @@ public class FailWithTimeoutOfWaitForOutputToMatchJUnitTest extends FailOutputTe
   }
   
   @Override
-  void outputProblem(String message) {
+  void outputProblemInProcess(final String message) {
     System.out.println(message);
   }
   
+  /**
+   * Process output has an extra line and should fail
+   */
+  @Test
   public void testFailWithTimeoutOfWaitForOutputToMatch() throws Exception {
-    // output has an extra line and should fail
-    final ProcessWrapper process = createProcessWrapper(getClass());
-    process.execute(createProperties());
-    process.waitForOutputToMatch("Begin " + name() + "\\.main");
+    this.process = createProcessWrapper(new ProcessWrapper.Builder().timeoutMillis(timeoutMillis), getClass());
+    this.process.execute(createProperties());
+    this.process.waitForOutputToMatch("Begin " + name() + "\\.main");
+    
     try {
-      process.waitForOutputToMatch(problem());
+      this.process.waitForOutputToMatch(problem());
       fail("assertOutputMatchesGoldenFile should have failed due to " + problem());
-    } catch (AssertionFailedError expected) {
+    } catch (AssertionError expected) {
       assertTrue(expected.getMessage().contains(problem()));
     }
-    // the following should generate no failures if timeout and tearDown are all working properly
-    assertNotNull(process);
-    assertTrue(process.isAlive());
-    tearDown();
-    process.waitFor();
   }
   
   public static void main(String[] args) throws Exception {
-    new FailWithTimeoutOfWaitForOutputToMatchJUnitTest().execute();
+    new FailWithTimeoutOfWaitForOutputToMatchJUnitTest().executeInProcess();
   }
 }
