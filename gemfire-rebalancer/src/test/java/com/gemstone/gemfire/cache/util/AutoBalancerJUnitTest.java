@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,6 +28,7 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.control.RebalanceFactory;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
+import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
 import com.gemstone.gemfire.cache.util.AutoBalancer.AuditScheduler;
 import com.gemstone.gemfire.cache.util.AutoBalancer.CacheOperationFacade;
 import com.gemstone.gemfire.cache.util.AutoBalancer.GeodeCacheFacade;
@@ -36,7 +38,11 @@ import com.gemstone.gemfire.cache.util.AutoBalancer.TimeProvider;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
+import com.gemstone.gemfire.internal.cache.partitioned.InternalPRInfo;
+import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -570,7 +576,7 @@ public class AutoBalancerJUnitTest {
   public void testFacadeTotalTransferSize() throws Exception {
     assertEquals(12345, getFacadeForResourceManagerOps(true).getTotalTransferSize());
   }
-  
+
   @Test
   public void testFacadeRebalance() throws Exception {
     getFacadeForResourceManagerOps(false).rebalance();
@@ -582,7 +588,7 @@ public class AutoBalancerJUnitTest {
     final RebalanceFactory mockRebalanceFactory = mockContext.mock(RebalanceFactory.class);
     final RebalanceOperation mockRebalanceOperation = mockContext.mock(RebalanceOperation.class);
     final RebalanceResults mockRebalanceResults = mockContext.mock(RebalanceResults.class);
-    
+
     mockContext.checking(new Expectations() {
       {
         oneOf(mockCache).getResourceManager();
@@ -604,17 +610,104 @@ public class AutoBalancerJUnitTest {
         allowing(mockRebalanceResults);
       }
     });
-    
+
     GeodeCacheFacade facade = new GeodeCacheFacade() {
       @Override
       GemFireCacheImpl getCache() {
         return mockCache;
       }
     };
-    
+
     return facade;
   }
-  
+
+  @Test
+  public void testFacadeTotalBytesNoRegion() {
+    final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCache).getPartitionedRegions();
+        will(returnValue(new HashSet<PartitionedRegion>()));
+      }
+    });
+
+    GeodeCacheFacade facade = new GeodeCacheFacade() {
+      @Override
+      GemFireCacheImpl getCache() {
+        return mockCache;
+      }
+    };
+
+    assertEquals(0, facade.getTotalDataSize());
+  }
+
+  @Test
+  public void testFacadeTotalBytes2Regions() {
+    cache = createBasicCache();
+
+    final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
+
+    final PartitionedRegion mockR1 = mockContext.mock(PartitionedRegion.class, "r1");
+    final PartitionedRegion mockR2 = mockContext.mock(PartitionedRegion.class, "r2");
+    final HashSet<PartitionedRegion> regions = new HashSet<>();
+    regions.add(mockR1);
+    regions.add(mockR2);
+
+    final PRHARedundancyProvider mockRedundancyProviderR1 = mockContext.mock(PRHARedundancyProvider.class, "prhaR1");
+    final InternalPRInfo mockR1PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR1");
+    final PartitionMemberInfo mockR1M1Info = mockContext.mock(PartitionMemberInfo.class, "r1M1");
+    final PartitionMemberInfo mockR1M2Info = mockContext.mock(PartitionMemberInfo.class, "r1M2");
+    final HashSet<PartitionMemberInfo> r1Members = new HashSet<>();
+    r1Members.add(mockR1M1Info);
+    r1Members.add(mockR1M2Info);
+
+    final PRHARedundancyProvider mockRedundancyProviderR2 = mockContext.mock(PRHARedundancyProvider.class, "prhaR2");
+    final InternalPRInfo mockR2PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR2");
+    final PartitionMemberInfo mockR2M1Info = mockContext.mock(PartitionMemberInfo.class, "r2M1");
+    final HashSet<PartitionMemberInfo> r2Members = new HashSet<>();
+    r2Members.add(mockR2M1Info);
+
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCache).getPartitionedRegions();
+        will(returnValue(regions));
+        exactly(2).of(mockCache).getResourceManager();
+        will(returnValue(cache.getResourceManager()));
+        allowing(mockR1).getFullPath();
+        oneOf(mockR1).getRedundancyProvider();
+        will(returnValue(mockRedundancyProviderR1));
+        allowing(mockR2).getFullPath();
+        oneOf(mockR2).getRedundancyProvider();
+        will(returnValue(mockRedundancyProviderR2));
+
+        oneOf(mockRedundancyProviderR1).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
+        will(returnValue(mockR1PRInfo));
+        oneOf(mockR1PRInfo).getPartitionMemberInfo();
+        will(returnValue(r1Members));
+        atLeast(1).of(mockR1M1Info).getSize();
+        will(returnValue(123L));
+        atLeast(1).of(mockR1M2Info).getSize();
+        will(returnValue(74L));
+
+        oneOf(mockRedundancyProviderR2).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
+        will(returnValue(mockR2PRInfo));
+        oneOf(mockR2PRInfo).getPartitionMemberInfo();
+        will(returnValue(r2Members));
+        atLeast(1).of(mockR2M1Info).getSize();
+        will(returnValue(3475L));
+      }
+    });
+
+    GeodeCacheFacade facade = new GeodeCacheFacade() {
+      @Override
+      GemFireCacheImpl getCache() {
+        return mockCache;
+      }
+    };
+
+    assertEquals(123 + 74 + 3475, facade.getTotalDataSize());
+  }
+
   private Properties getBasicConfig() {
     Properties props = new Properties();
     // every second schedule

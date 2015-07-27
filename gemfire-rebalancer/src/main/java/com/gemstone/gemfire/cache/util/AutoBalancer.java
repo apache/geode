@@ -2,6 +2,7 @@ package com.gemstone.gemfire.cache.util;
 
 import java.util.Date;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,9 +18,13 @@ import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
+import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.partitioned.InternalPRInfo;
+import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
@@ -271,8 +276,20 @@ public class AutoBalancer implements Declarable {
   static class GeodeCacheFacade implements CacheOperationFacade {
     @Override
     public long getTotalDataSize() {
-      // TODO Auto-generated method stub
-      return getTotalTransferSize();
+      long totalSize = 0;
+      GemFireCacheImpl cache = getCache();
+      for (PartitionedRegion region : cache.getPartitionedRegions()) {
+        LoadProbe probe = cache.getResourceManager().getLoadProbe();
+        InternalPRInfo info = region.getRedundancyProvider().buildPartitionedRegionInfo(true, probe);
+        Set<PartitionMemberInfo> membersInfo = info.getPartitionMemberInfo();
+        for (PartitionMemberInfo member : membersInfo) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Region:{}, Member: {}, Size: {}", region.getFullPath(), member, member.getSize());
+          }
+          totalSize += member.getSize();
+        }
+      }
+      return totalSize;
     }
 
     @Override
