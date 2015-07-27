@@ -34,6 +34,7 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperator.Completion;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.CompositeDirector;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
@@ -477,13 +478,14 @@ public class PartitionedRegionLoadModelJUnitTest {
     InternalDistributedMember member3 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 3);
     MyBucketOperator op = new MyBucketOperator() {
       @Override
-      public boolean createRedundantBucket(
+      public void createRedundantBucket(
           InternalDistributedMember targetMember, int i,
-          Map<String, Long> colocatedRegionBytes) {
+          Map<String, Long> colocatedRegionBytes, Completion completion) {
         if(targetMember.equals(member2)) {
-          return false;
+          completion.onFailure();
+        } else {
+          super.createRedundantBucket(targetMember, i, colocatedRegionBytes, completion);
         }
-        return super.createRedundantBucket(targetMember, i, colocatedRegionBytes);
       }
       
     };
@@ -507,6 +509,57 @@ public class PartitionedRegionLoadModelJUnitTest {
     expectedCreates.add(new Create(member3, 2));
     expectedCreates.add(new Create(member3, 3));
     assertEquals(expectedCreates, op.creates);
+  }
+  
+  /**
+   * Test that redundancy satisfation can handle asynchronous failures
+   * and complete the job correctly. 
+   * @throws Exception
+   */
+  @Test
+  public void testRedundancySatisfactionWithAsyncFailures() throws Exception {
+    InternalDistributedMember member1 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 1);
+    InternalDistributedMember member2 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 2);
+    InternalDistributedMember member3 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 3);
+    
+    BucketOperatorWithFailures operator = new BucketOperatorWithFailures();
+    operator.addBadMember(member2);
+    bucketOperator = operator;
+    PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(
+        bucketOperator, 1, 6, getAddressComparor(false),
+        Collections.<InternalDistributedMember>emptySet(), null);
+    PartitionMemberInfoImpl details1 = buildDetails(member1, 500, 500, new long[] {1,1,1,1,1,1}, new long[] {1,1,1,1,1,1});
+    PartitionMemberInfoImpl details2 = buildDetails(member2, 500, 500, new long[] {0,0,0,0,0,0}, new long[] {0,0,0,0,0,0});
+    PartitionMemberInfoImpl details3 = buildDetails(member3, 500, 500, new long[] {0,0,0,0,0,0}, new long[] {0,0,0,0,0,0});
+    model.addRegion("a", Arrays.asList(details1, details2, details3), new FakeOfflineDetails(), true);
+    
+    Set<PartitionMemberInfo> details = model.getPartitionedMemberDetails("a");
+    assertEquals(3, details.size());
+    
+    //TODO - make some assertions about what's in the details
+
+    //we expect 6 moves (3 of these will fail)
+    assertEquals(6, doMoves(new CompositeDirector(true, true, false, false), model));
+    
+    assertEquals(3, bucketOperator.creates.size());
+    for(Completion completion: operator.pendingSuccesses) {
+      completion.onSuccess();
+    }
+    for(Completion completion: operator.pendingFailures) {
+      completion.onFailure();
+    }
+    
+    //Now the last two moves will get reattempted to a new location (because the last location failed)
+    assertEquals(3, doMoves(new CompositeDirector(true, true, false, false), model));
+    
+    List<Create> expectedCreates = new ArrayList<Create>();
+    expectedCreates.add(new Create(member3, 1));
+    expectedCreates.add(new Create(member3, 3));
+    expectedCreates.add(new Create(member3, 5));
+    expectedCreates.add(new Create(member3, 0));
+    expectedCreates.add(new Create(member3, 2));
+    expectedCreates.add(new Create(member3, 4));
+    assertEquals(expectedCreates, bucketOperator.creates);
   }
   
   /**
@@ -1394,14 +1447,15 @@ public class PartitionedRegionLoadModelJUnitTest {
     private MoveType lastMove = null;
     
 
-    public boolean createRedundantBucket(
-        InternalDistributedMember targetMember, int i, Map<String, Long> colocatedRegionBytes) {
+    @Override
+    public void createRedundantBucket(
+        InternalDistributedMember targetMember, int i, Map<String, Long> colocatedRegionBytes, Completion completion) {
       creates.add(new Create(targetMember, i));
       if(DEBUG) {
         System.out.println("Created bucket " + i + " on " + targetMember);
       }
       lastMove = MoveType.CREATE;
-      return true;
+      completion.onSuccess();
     }
 
     @Override
@@ -1439,6 +1493,35 @@ public class PartitionedRegionLoadModelJUnitTest {
     }
     
     
+  }
+  
+  public static class BucketOperatorWithFailures extends MyBucketOperator {
+    List<Completion> pendingSuccesses = new ArrayList<Completion>();
+    List<Completion> pendingFailures = new ArrayList<Completion>();
+    Set<InternalDistributedMember> badMembers = new HashSet<InternalDistributedMember> ();
+
+    public void addBadMember(InternalDistributedMember member) {
+      this.badMembers.add(member);
+    }
+    @Override
+    public void createRedundantBucket(InternalDistributedMember targetMember,
+        int i, Map<String, Long> colocatedRegionBytes, Completion completion) {
+      if(badMembers.contains(targetMember)) {
+        pendingFailures.add(completion);
+      } else {
+        super.createRedundantBucket(targetMember, i, colocatedRegionBytes, new Completion() {
+          @Override
+          public void onSuccess() {
+          }
+
+          @Override
+          public void onFailure() {
+          }
+        });
+        
+        pendingSuccesses.add(completion);
+;      }
+    }
   }
   
   private static enum MoveType {

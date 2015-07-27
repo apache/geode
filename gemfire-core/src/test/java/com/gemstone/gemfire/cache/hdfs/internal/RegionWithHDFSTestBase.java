@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -39,9 +38,12 @@ import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
 import dunit.VM;
 
+@SuppressWarnings({"serial", "rawtypes", "unchecked"})
 public abstract class RegionWithHDFSTestBase extends CacheTestCase {
 
   protected String tmpDir;
+
+  public static String homeDir = null;
 
   protected abstract void checkWithGetAll(String uniqueName, ArrayList arrayl);
 
@@ -70,7 +72,34 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
   @Override
   public void tearDown2() throws Exception {
     super.tearDown2();
-    FileUtil.delete(new File(tmpDir));
+    for (int h = 0; h < Host.getHostCount(); h++) {
+      Host host = Host.getHost(h);
+      SerializableCallable cleanUp = cleanUpStoresAndDisconnect();
+      for (int v = 0; v < host.getVMCount(); v++) {
+        VM vm = host.getVM(v);
+        // This store will be deleted by the first VM itself. Invocations from
+        // subsequent VMs will be no-op.
+        vm.invoke(cleanUp);
+      }
+    }
+  }
+
+  public SerializableCallable cleanUpStoresAndDisconnect() throws Exception {
+    SerializableCallable cleanUp = new SerializableCallable() {
+      public Object call() throws Exception {
+        File file;
+        if (homeDir != null) {
+          file = new File(homeDir);
+          FileUtil.delete(file);
+          homeDir = null;
+        }
+        file = new File(tmpDir);
+        FileUtil.delete(file);
+        disconnectFromDS();
+        return 0;
+      }
+    };
+    return cleanUp;
   }
 
   @Override
@@ -491,7 +520,6 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
    * @throws Exception
    */
   protected HashMap<String, HashMap<String, String>>  createFilesAndEntriesMap(VM vm0, final String uniqueName, final String regionName) throws Exception {
-    @SuppressWarnings("unchecked")
     HashMap<String, HashMap<String, String>> entriesToFileMap = (HashMap<String, HashMap<String, String>>) 
     vm0.invoke( new SerializableCallable() {
       public Object call() throws Exception {
@@ -523,6 +551,7 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
         
         return entriesToFileMap;
       }
+      @SuppressWarnings("deprecation")
       public void readSequenceFile(FileSystem inputFS, Path sequenceFileName,  
           HashMap<String, String> entriesMap) throws IOException {
         SequenceFileHoplog hoplog = new SequenceFileHoplog(inputFS, sequenceFileName, null);
@@ -588,8 +617,7 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
           public Object call() throws Exception {
             
             HDFSRegionDirector director = HDFSRegionDirector.getInstance();
-            final SortedOplogStatistics stats = director.getInstance().getHdfsRegionStats("/" + uniqueName);
-            long end =System.nanoTime() + TimeUnit.SECONDS.toNanos(120);
+            final SortedOplogStatistics stats = director.getHdfsRegionStats("/" + uniqueName);
             waitForCriterion(new WaitCriterion() {
               @Override
               public boolean done() {

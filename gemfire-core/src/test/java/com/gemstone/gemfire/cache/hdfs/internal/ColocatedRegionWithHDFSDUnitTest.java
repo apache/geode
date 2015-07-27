@@ -7,10 +7,10 @@
  */
 package com.gemstone.gemfire.cache.hdfs.internal;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -18,11 +18,8 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import dunit.AsyncInvocation;
 import dunit.SerializableCallable;
@@ -33,6 +30,7 @@ import dunit.VM;
  * 
  * @author Hemant Bhanawat
  */
+@SuppressWarnings({"serial", "rawtypes", "unchecked", "deprecation"})
 public class ColocatedRegionWithHDFSDUnitTest extends RegionWithHDFSTestBase {
 
   public ColocatedRegionWithHDFSDUnitTest(String name) {
@@ -48,16 +46,14 @@ public class ColocatedRegionWithHDFSDUnitTest extends RegionWithHDFSTestBase {
       final long timeForRollover, final long maxFileSize) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
-        HDFSEventQueueAttributesFactory hqf = new HDFSEventQueueAttributesFactory();
-        hqf.setBatchSizeMB(batchSizeMB);
-        hqf.setPersistent(queuePersistent);
-        hqf.setMaximumQueueMemory(3);
-        hqf.setBatchTimeInterval(batchInterval);
-
         HDFSStoreFactory hsf = getCache().createHDFSStoreFactory();
-        String homeDir = tmpDir + "/" + folderPath;
+        hsf.setBatchSize(batchSizeMB);
+        hsf.setBufferPersistent(queuePersistent);
+        hsf.setMaxMemory(3);
+        hsf.setBatchInterval(batchInterval);
+        hsf.setHomeDir(tmpDir + "/" + folderPath);
+        homeDir = new File(tmpDir + "/" + folderPath).getCanonicalPath();
         hsf.setHomeDir(homeDir);
-        hsf.setHDFSEventQueueAttributes(hqf.create());
         hsf.create(uniqueName);
 
         AttributesFactory af = new AttributesFactory();

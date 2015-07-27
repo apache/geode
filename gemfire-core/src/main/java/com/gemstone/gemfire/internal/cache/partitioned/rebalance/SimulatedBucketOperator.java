@@ -18,9 +18,10 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
  */
 public class SimulatedBucketOperator implements BucketOperator {
 
-  public boolean createRedundantBucket(
-      InternalDistributedMember targetMember, int i, Map<String, Long> colocatedRegionBytes) {
-    return true;
+  public void createRedundantBucket(
+      InternalDistributedMember targetMember, int i, Map<String, Long> colocatedRegionBytes, 
+      BucketOperator.Completion completion) {
+    completion.onSuccess();
   }
   
   public boolean moveBucket(InternalDistributedMember source,
@@ -37,5 +38,9 @@ public class SimulatedBucketOperator implements BucketOperator {
   public boolean removeBucket(InternalDistributedMember memberId, int id,
       Map<String, Long> colocatedRegionSizes) {
     return true;
+  }
+
+  @Override
+  public void waitForOperations() {
   }
 }

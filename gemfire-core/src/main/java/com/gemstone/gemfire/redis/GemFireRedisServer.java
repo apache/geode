@@ -92,7 +92,7 @@ import com.gemstone.gemfire.internal.redis.executor.hll.HyperLogLogPlus;
  * <p>
  * Supported Transaction commands - DISCARD, EXEC, MULTI
  * <P>
- * Supported Server commands - ECHO, PING, TIME, QUIT
+ * Supported Server commands - AUTH, ECHO, PING, TIME, QUIT
  * <p>
  * <p>
  * The command executors are not explicitly documented but the functionality
@@ -131,12 +131,6 @@ public class GemFireRedisServer {
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
 
-  /**
-   * This field specifies the number of threads the will be working to interpret
-   * and execute the commands
-   *
-  private static final int DEFAULT_WORKER_THREADS_PER_CORE = 4;
-   */
   /**
    * The number of threads that will work on handling requests
    */
@@ -486,7 +480,9 @@ public class GemFireRedisServer {
       workerGroup = new NioEventLoopGroup(this.numWorkerThreads, workerThreadFactory);
       socketClass = NioServerSocketChannel.class;
     }
-
+    InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
+    String pwd = system.getConfig().getRedisPassword();
+    final byte[] pwdB = Coder.stringToBytes(pwd);
     ServerBootstrap b = new ServerBootstrap();
     b.group(bossGroup, workerGroup)
     .channel(socketClass)
@@ -497,7 +493,7 @@ public class GemFireRedisServer {
           logger.fine("GemFireRedisServer-Connection established with " + ch.remoteAddress());
         ChannelPipeline p = ch.pipeline();
         p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
-        p.addLast(ExecutionHandlerContext.class.getSimpleName(), new ExecutionHandlerContext(ch, cache, regionCache, GemFireRedisServer.this));
+        p.addLast(ExecutionHandlerContext.class.getSimpleName(), new ExecutionHandlerContext(ch, cache, regionCache, GemFireRedisServer.this, pwdB));
       }
     })
     .option(ChannelOption.SO_REUSEADDR, true)

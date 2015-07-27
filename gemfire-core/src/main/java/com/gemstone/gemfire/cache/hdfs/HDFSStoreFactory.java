@@ -10,14 +10,16 @@ package com.gemstone.gemfire.cache.hdfs;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore.HDFSCompactionConfig;
 
 /**
  * Factory for creating instances of {@link HDFSStore}. To get an instance of
  * this factory call {@link Cache#createHDFSStoreFactory}.
  * <P>
- * To use this factory configure it with the <code>set</code> methods and then
- * call {@link #create} to produce a HDFS store instance.
+ * Usage
+ * <ol>
+ * <li> configure factory using <code>set</code> methods
+ * <li> call {@link #create} to produce a HDFSStore instance.
+ * </ol>
  * 
  * @author Hemant Bhanawat
  * @author Ashvin Agrawal
@@ -25,171 +27,170 @@ import com.gemstone.gemfire.cache.hdfs.HDFSStore.HDFSCompactionConfig;
 public interface HDFSStoreFactory {
 
   /**
-   * @param name
-   *          name of HDFSStore provided at while creating the instance
+   * @see HDFSStore#getName()
    */
   public HDFSStoreFactory setName(String name);
 
   /**
-   * @param url
-   *          Namenode URL associated with this store
+   * @see HDFSStore#getNameNodeURL()
    */
   public HDFSStoreFactory setNameNodeURL(String url);
 
   /**
-   * @param dir
-   *          Home directory where regions using this store will be persisted
+   * @see HDFSStore#getHomeDir()
    */
   public HDFSStoreFactory setHomeDir(String dir);
 
   /**
-   * @param file
-   *          hdfs client configuration referred by this store
+   * @see HDFSStore#getHDFSClientConfigFile()
    */
-  public HDFSStoreFactory setHDFSClientConfigFile(String file);
+  public HDFSStoreFactory setHDFSClientConfigFile(String filePath);
 
   /**
-   * @param config
-   *          Instance of compaction configuration associated with this store
+   * @see HDFSStore#getHDFSClientConfigFile()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 or more than 100
    */
-  public HDFSStoreFactory setHDFSCompactionConfig(HDFSCompactionConfig config);
-  
+  public HDFSStoreFactory setBlockCacheSize(float value);
+
   /**
-   * @param percentage
-   *          Size of the block cache as a percentage of the heap in the range
-   *          0 ... 100 
+   * Default value {@link HDFSStore#DEFAULT_WRITE_ONLY_FILE_SIZE_LIMIT}
+   * @see HDFSStore#getWriteOnlyFileRolloverSize()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
-  public HDFSStoreFactory setBlockCacheSize(float percentage);
-  
+  public HDFSStoreFactory setWriteOnlyFileRolloverSize(int maxFileSize);
+
   /**
-   * Sets the HDFS event queue attributes
-   * This causes the store to use the {@link HDFSEventQueueAttributes}.
-   * @param hdfsEventQueueAttrs the attributes of the HDFS Event queue
-   * @return a reference to this RegionFactory object
-   * 
+   * Default value {@link HDFSStore#DEFAULT_WRITE_ONLY_FILE_ROLLOVER_INTERVAL}
+   * @see HDFSStore#getWriteOnlyFileRolloverInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
-  public HDFSStoreFactory setHDFSEventQueueAttributes(HDFSEventQueueAttributes hdfsEventQueueAttrs);
-  
+  public HDFSStoreFactory setWriteOnlyFileRolloverInterval(int interval);
+
   /**
-   * For write only tables, data is written to a single file until the file 
-   * reaches a size specified by this API or the time 
-   * for file rollover specified by {@link #setFileRolloverInterval(int)} has passed.  
-   * Default is 256 MB. 
-   * 
-   * @param maxFileSize max file size in MB
-   */
-  public HDFSStoreFactory setMaxFileSize(int maxFileSize);
-  
-  /**
-   * For write only tables, data is written to a single file until the file 
-   * reaches a certain size specified by {@link #setMaxFileSize(int)} or the time 
-   * for file rollover has passed. Default is 3600 seconds. 
-   * 
-   * @param rolloverIntervalInSecs time in seconds after which a file will be rolled over into a new file
-   */
-  public HDFSStoreFactory setFileRolloverInterval(int rolloverIntervalInSecs);
-  
-  /**
-   * @param auto
-   *          true if auto compaction is enabled
+   * Default value {@link HDFSStore#DEFAULT_MINOR_COMPACTION}
+   * @see HDFSStore#getMinorCompaction()
    */
   public HDFSStoreFactory setMinorCompaction(boolean auto);
 
   /**
-   * @param strategy
-   *          name of the compaction strategy or null for letting system choose
-   *          and apply default compaction strategy
-   * @return instance of {@link HDFSCompactionConfigFactory}
+   * Default value {@link HDFSStore#DEFAULT_MINOR_COMPACTION_THREADS}
+   * @see HDFSStore#getMinorCompactionThreads()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
    */
-  public HDFSCompactionConfigFactory createCompactionConfigFactory(String strategy);
-
-  public static interface HDFSCompactionConfigFactory {
-
-    /**
-     * @param size
-     *          size threshold (in MB). A file larger than this size will not be
-     *          considered for compaction
-     */
-    public HDFSCompactionConfigFactory setMaxInputFileSizeMB(int size);
-
-    /**
-     * @param count
-     *          minimum count threshold. Compaction cycle will commence if the
-     *          number of files to be compacted is more than this number
-     */
-    public HDFSCompactionConfigFactory setMinInputFileCount(int count);
-
-    /**
-     * @param count
-     *          maximum count threshold.  Compaction cycle will not include more
-     *          files than the maximum
-     */
-    public HDFSCompactionConfigFactory setMaxInputFileCount(int count);
-
-    /**
-     * @param count
-     *          maximum number of threads executing minor compaction. Count must
-     *          be greater than 0
-     */
-    public HDFSCompactionConfigFactory setMaxThreads(int count);
-
-    /**
-     * @param auto
-     *          true if auto major compaction is enabled
-     */
-    public HDFSCompactionConfigFactory setAutoMajorCompaction(boolean auto);
-
-    /**
-     * @param interval
-     *          interval configuration that guides major compaction frequency
-     */
-    public HDFSCompactionConfigFactory setMajorCompactionIntervalMins(int interval);
-
-    /**
-     * @param count
-     *          maximum number of threads executing major compaction. Count must
-     *          be greater than 0
-     */
-    public HDFSCompactionConfigFactory setMajorCompactionMaxThreads(int count);
-    
-    /**
-     * @param interval
-     *          interval configuration that guides deletion of old files
-     */
-    public HDFSCompactionConfigFactory setOldFilesCleanupIntervalMins(int interval);
-    
-    /**
-     * Create a {@link HDFSCompactionConfig}. The returned instance will have
-     * the same configuration as that this factory.
-     * 
-     * @return the newly created {@link HDFSCompactionConfig}
-     * @throws GemFireConfigException
-     *           if the cache xml is invalid
-     */
-    public HDFSCompactionConfig create() throws GemFireConfigException;
-    
-    /**
-     * @return A {@link HDFSCompactionConfig} view of this factory
-     * @throws GemFireConfigException
-     */
-    public HDFSCompactionConfig getConfigView();
-  }
+  public HDFSStoreFactory setMinorCompactionThreads(int count);
 
   /**
-   * Create a new HDFS store. The returned HDFS store's configuration will be
-   * the same as this factory's configuration.
+   * Default value {@link HDFSStore#DEFAULT_MAJOR_COMPACTION}
+   * @see HDFSStore#getMajorCompaction()
+   */
+  public HDFSStoreFactory setMajorCompaction(boolean auto);
+
+  /**
+   * Default value {@link HDFSStore#DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS}
+   * @see HDFSStore#getMajorCompactionInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setMajorCompactionInterval(int interval);
+
+  /**
+   * Default value {@link HDFSStore#DEFAULT_MAJOR_COMPACTION_THREADS}
+   * @see HDFSStore#getMajorCompactionThreads()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setMajorCompactionThreads(int count);
+
+  /**
+   * Default value {@link HDFSStore#DEFAULT_INPUT_FILE_SIZE_MAX_MB}
+   * @see HDFSStore#getInputFileSizeMax()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setInputFileSizeMax(int size);
+
+  /**
+   * Default value {@link HDFSStore#DEFAULT_INPUT_FILE_COUNT_MIN}
+   * @see HDFSStore#getInputFileCountMin()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setInputFileCountMin(int count);
+
+  /**
+   * Default value {@link HDFSStore#DEFAULT_INPUT_FILE_COUNT_MAX}
+   * @see HDFSStore#getInputFileCountMax()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setInputFileCountMax(int count);
+
+  /**
+   * @see HDFSStore#getPurgeInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setPurgeInterval(int interval);
+
+  /**
+   * @see HDFSStore#getDiskStoreName()
+   */
+  public HDFSStoreFactory setDiskStoreName(String name);
+
+  /**
+   * @see HDFSStore#getMaxMemory()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setMaxMemory(int memory);
+
+  /**
+   * @see HDFSStore#getBatchInterval()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setBatchInterval(int interval);
+
+  /**
+   * @see HDFSStore#getBatchSize()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setBatchSize(int size);
+
+  /**
+   * @see HDFSStore#getBufferPersistent()
+   */
+  public HDFSStoreFactory setBufferPersistent(boolean isPersistent);
+
+  /**
+   * @see HDFSStore#getSynchronousDiskWrite()
+   */
+  public HDFSStoreFactory setSynchronousDiskWrite(boolean isSynchronous);
+
+  /**
+   * @see HDFSStore#getDispatcherThreads()
+   * @exception IllegalArgumentException
+   *              if the {@code value} is less than 0 
+   */
+  public HDFSStoreFactory setDispatcherThreads(int dispatcherThreads);
+
+  /**
+   * Validates all attribute values and assigns defaults where applicable.
+   * Creates a new instance of {@link HDFSStore} based on the current attribute
+   * values configured in this factory.
    * 
    * @param name
    *          the name of the HDFSStore
    * @return the newly created HDFSStore.
    * @throws GemFireConfigException
-   *           if the cache xml is invalid
+   *           if the configuration is invalid
    * @throws StoreExistsException
-   *           if another instance of {@link HDFSStore} with the same exists
+   *           if a {@link HDFSStore} with the same name exists
    */
-  public HDFSStore create(String name) throws GemFireConfigException,
-      StoreExistsException;
-
-  // TODO this is the only non-factory instance getter in this class
-  HDFSEventQueueAttributes getHDFSEventQueueAttributes();
+  public HDFSStore create(String name) throws GemFireConfigException, StoreExistsException;
 }

@@ -39,7 +39,7 @@ import com.gemstone.gemfire.pdx.PdxInstanceFactory;
  * @since 6.5
  * @author darrel
  */
-public interface RegionService {
+public interface RegionService extends AutoCloseable {
   /**
    * the cancellation criterion for this service
    * @return the service's cancellation object

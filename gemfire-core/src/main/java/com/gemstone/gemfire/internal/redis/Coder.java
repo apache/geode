@@ -65,7 +65,7 @@ public class Coder {
   public static final byte[] bEMPTY_ARRAY = stringToBytes("*0\r\n"); // {'*', '0', '\r', '\n'};
 
   public static final byte[] err = stringToBytes("ERR ");
-
+  public static final byte[] noAuth = stringToBytes("NOAUTH ");
   public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
 
   /**
@@ -268,6 +268,16 @@ public class Coder {
     ByteBuf response = alloc.buffer(errorAr.length + 25);
     response.writeByte(ERROR_ID);
     response.writeBytes(err);
+    response.writeBytes(errorAr);
+    response.writeBytes(CRLFar);
+    return response;
+  }
+  
+  public static final ByteBuf getNoAuthResponse(ByteBufAllocator alloc, String error) {
+    byte[] errorAr = stringToBytes(error);
+    ByteBuf response = alloc.buffer(errorAr.length + 25);
+    response.writeByte(ERROR_ID);
+    response.writeBytes(noAuth);
     response.writeBytes(errorAr);
     response.writeBytes(CRLFar);
     return response;

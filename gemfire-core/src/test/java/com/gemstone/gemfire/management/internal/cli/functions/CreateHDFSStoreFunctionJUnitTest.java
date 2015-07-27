@@ -31,13 +31,12 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSEventQueueAttributesImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreConfigHolder;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreConfigHolder.AbstractHDFSCompactionConfigHolder;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.management.internal.cli.commands.HDFSStoreCommandsJUnitTest;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.test.junit.categories.HoplogTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest
@@ -95,12 +94,12 @@ public class CreateHDFSStoreFunctionJUnitTest {
     
     final TestResultSender testResultSender = new TestResultSender();
     
-    final HDFSStoreImpl mockHdfsStore = createMockHDFSStoreImpl("hdfsStoreName", "hdfs://localhost:9000", "testDir",
+    final HDFSStoreImpl mockHdfsStore = createMockHDFSStoreImpl(mockContext, "hdfsStoreName", "hdfs://localhost:9000", "testDir",
         1024, 20, .25f, null, 20, 20, null, false, 0, 1024, false, false, true, 20, 20, 10, 100);
     
-    final HDFSStoreConfigHolder mockHdfsStoreConfigHolder = createMockHDFSStoreConfigHolder("hdfsStoreName",
-        "hdfs://localhost:9000", "testDir", 1024, 20, .25f, null, 40, 40, null, false, 0, 2048, true, true, true, 40,
-        40, 40, 800);
+    final HDFSStoreConfigHolder mockHdfsStoreConfigHolder = HDFSStoreCommandsJUnitTest.createMockHDFSStoreConfigHolder(
+        mockContext, "hdfsStoreName", "hdfs://localhost:9000", "testDir", 1024, 20, .25f, null, 40, 40, null, false, 0,
+        2048, true, true, true, 40, 40, 40, 800);
     
     final CreateHDFSStoreFunction function = new TestCreateHDFSStoreFunction(mockCache, mockMember, xmlEntity , mockHdfsStore);
 
@@ -144,10 +143,10 @@ public class CreateHDFSStoreFunctionJUnitTest {
     final String memberName = "mockMemberName";
     
     final TestResultSender testResultSender = new TestResultSender();
-    final HDFSStoreImpl mockHdfsStore = createMockHDFSStoreImpl("hdfsStoreName", "hdfs://localhost:9000", "testDir",
+    final HDFSStoreImpl mockHdfsStore = createMockHDFSStoreImpl(mockContext, "hdfsStoreName", "hdfs://localhost:9000", "testDir",
         1024, 20, .25f, null, 20, 20, null, false, 0, 1024, false, false, true, 20, 20, 10, 100);
     
-    final HDFSStoreConfigHolder mockHdfsStoreConfigHolder = createMockHDFSStoreConfigHolder("hdfsStoreName",
+    final HDFSStoreConfigHolder mockHdfsStoreConfigHolder = HDFSStoreCommandsJUnitTest.createMockHDFSStoreConfigHolder(mockContext, "hdfsStoreName",
         "hdfs://localhost:9000", "testDir", 1024, 20, .25f, null, 40, 40, null, false, 0, 2048, true, true, true, 40,
         40, 40, 800);
     
@@ -189,12 +188,12 @@ public class CreateHDFSStoreFunctionJUnitTest {
     final String memberName = "mockMemberName";
     
     final TestResultSender testResultSender = new TestResultSender();
-    final HDFSStoreImpl mockHdfsStore = createMockHDFSStoreImpl("hdfsStoreName", "hdfs://localhost:9000", "testDir",
+    final HDFSStoreImpl mockHdfsStore = createMockHDFSStoreImpl(mockContext, "hdfsStoreName", "hdfs://localhost:9000", "testDir",
         1024, 20, .25f, null, 20, 20, null, false, 0, 1024, false, false, true, 20, 20, 10, 100);
     
-    final HDFSStoreConfigHolder mockHdfsStoreConfigHolder = createMockHDFSStoreConfigHolder("hdfsStoreName",
-        "hdfs://localhost:9000", "testDir", 1024, 20, .25f, null, 40, 40, null, false, 0, 2048, true, true, true, 40,
-        40, 40, 800);
+    final HDFSStoreConfigHolder mockHdfsStoreConfigHolder = HDFSStoreCommandsJUnitTest.createMockHDFSStoreConfigHolder(
+        mockContext, "hdfsStoreName", "hdfs://localhost:9000", "testDir", 1024, 20, .25f, null, 40, 40, null, false, 0,
+        2048, true, true, true, 40, 40, 40, 800);
     
     final CreateHDFSStoreFunction function = new TestCreateHDFSStoreFunction(mockCache, mockMember, xmlEntity , mockHdfsStore) {
       @Override
@@ -223,7 +222,7 @@ public class CreateHDFSStoreFunctionJUnitTest {
 
   }
 
-  protected HDFSStoreImpl createMockHDFSStoreImpl(final String storeName, final String namenode, final String homeDir,
+  public static HDFSStoreImpl createMockHDFSStoreImpl(Mockery mockContext, final String storeName, final String namenode, final String homeDir,
       final int maxFileSize, final int fileRolloverInterval, final float blockCachesize, final String clientConfigFile,
       final int batchSize, final int batchInterval, final String diskStoreName, final boolean syncDiskwrite,
       final int dispatcherThreads, final int maxMemory, final boolean bufferPersistent, final boolean minorCompact,
@@ -232,134 +231,13 @@ public class CreateHDFSStoreFunctionJUnitTest {
 
     HDFSStoreImpl mockHdfsStore = mockContext.mock(HDFSStoreImpl.class, "HDFSStoreImpl");
 
-    HDFSEventQueueAttributesImpl mockEventQueue = createMockEventQueue("hdfsStore_" + storeName, batchSize,
-        batchInterval, diskStoreName, syncDiskwrite, dispatcherThreads, maxMemory, bufferPersistent);
-
-    AbstractHDFSCompactionConfigHolder mockCompactionConfig = createMockHDFSCompactionConfigHolder("hdfsStore_"
-        + storeName, minorCompact, majorCompact, majorCompactionInterval, majorCompactionThreads,
-        minorCompactionThreads, purgeInterval);
-
-    mockHdfsStore = (HDFSStoreImpl)createMockStore(mockHdfsStore, storeName, namenode, homeDir, maxFileSize,
-        fileRolloverInterval, minorCompact, blockCachesize, clientConfigFile, mockCompactionConfig, mockEventQueue);
+    HDFSStoreCommandsJUnitTest.createMockStore(mockContext, mockHdfsStore, storeName, namenode, homeDir, maxFileSize,
+        fileRolloverInterval, minorCompact, minorCompactionThreads, majorCompact, majorCompactionThreads,
+        majorCompactionInterval, purgeInterval, blockCachesize, clientConfigFile, batchSize, batchInterval,
+        diskStoreName, syncDiskwrite, dispatcherThreads, maxMemory, bufferPersistent);
+    
     return mockHdfsStore;
   }
-
-  protected HDFSStoreConfigHolder createMockHDFSStoreConfigHolder(final String storeName, final String namenode,
-      final String homeDir, final int maxFileSize, final int fileRolloverInterval, final float blockCachesize,
-      final String clientConfigFile, final int batchSize, final int batchInterval, final String diskStoreName,
-      final boolean syncDiskwrite, final int dispatcherThreads, final int maxMemory, final boolean bufferPersistent,
-      final boolean minorCompact, final boolean majorCompact, final int majorCompactionInterval,
-      final int majorCompactionThreads, final int minorCompactionThreads, final int purgeInterval) {
-
-    HDFSStoreConfigHolder mockHdfsStore = mockContext.mock(HDFSStoreConfigHolder.class, "HDFSStoreConfigHolder");
-    HDFSEventQueueAttributesImpl mockEventQueue = createMockEventQueue("hdfsStoreConfig_" + storeName, batchSize,
-        batchInterval, diskStoreName, syncDiskwrite, dispatcherThreads, maxMemory, bufferPersistent);
-
-    AbstractHDFSCompactionConfigHolder mockCompactionConfig = createMockHDFSCompactionConfigHolder("hdfsStoreConfig_"
-        + storeName, minorCompact, majorCompact, majorCompactionInterval, majorCompactionThreads,
-        minorCompactionThreads, purgeInterval);
-
-    mockHdfsStore = (HDFSStoreConfigHolder)createMockStore(mockHdfsStore, storeName, namenode, homeDir, maxFileSize,
-        fileRolloverInterval, minorCompact, blockCachesize, clientConfigFile, mockCompactionConfig, mockEventQueue);
-    return mockHdfsStore;
-
-  }
-
-  private HDFSEventQueueAttributesImpl createMockEventQueue(final String name, final int batchSize,
-      final int batchInterval, final String diskStoreName, final boolean syncDiskwrite, final int dispatcherThreads,
-      final int maxMemory, final boolean bufferPersistent) {
-
-    final HDFSEventQueueAttributesImpl mockEventQueue = mockContext.mock(HDFSEventQueueAttributesImpl.class, name
-        + "EventQueueImpl");
-
-    mockContext.checking(new Expectations() {
-      {
-        allowing(mockEventQueue).getBatchSizeMB();
-        will(returnValue(batchSize));
-        allowing(mockEventQueue).getBatchTimeInterval();
-        will(returnValue(batchInterval));
-        allowing(mockEventQueue).getDiskStoreName();
-        will(returnValue(diskStoreName));
-        allowing(mockEventQueue).isDiskSynchronous();
-        will(returnValue(syncDiskwrite));
-        allowing(mockEventQueue).isPersistent();
-        will(returnValue(bufferPersistent));
-        allowing(mockEventQueue).getDispatcherThreads();
-        will(returnValue(dispatcherThreads));
-        allowing(mockEventQueue).getMaximumQueueMemory();
-        will(returnValue(maxMemory));
-      }
-    });
-
-    return mockEventQueue;
-  }
-
-  private AbstractHDFSCompactionConfigHolder createMockHDFSCompactionConfigHolder(final String name,
-      final boolean minorCompact, final boolean majorCompact, final int majorCompactionInterval,
-      final int majorCompactionThreads, final int minorCompactionThreads, final int purgeInterval) {
-
-    final AbstractHDFSCompactionConfigHolder mockCompactionConfig = mockContext.mock(
-        AbstractHDFSCompactionConfigHolder.class, name + "CompactionConfig");
-
-    mockContext.checking(new Expectations() {
-      {
-        allowing(mockCompactionConfig).getAutoMajorCompaction();
-        will(returnValue(majorCompact));
-        allowing(mockCompactionConfig).getMajorCompactionIntervalMins();
-        will(returnValue(majorCompactionInterval));
-        allowing(mockCompactionConfig).getMajorCompactionMaxThreads();
-        will(returnValue(majorCompactionThreads));
-        allowing(mockCompactionConfig).getMaxThreads();
-        will(returnValue(minorCompactionThreads));
-        allowing(mockCompactionConfig).getOldFilesCleanupIntervalMins();
-        will(returnValue(purgeInterval));
-        allowing(mockCompactionConfig).getMaxInputFileCount();
-        will(returnValue(10));
-        allowing(mockCompactionConfig).getMaxInputFileSizeMB();
-        will(returnValue(1024));
-        allowing(mockCompactionConfig).getMinInputFileCount();
-        will(returnValue(2));
-        allowing(mockCompactionConfig).getCompactionStrategy();
-        will(returnValue(null));
-      }
-    });
-
-    return mockCompactionConfig;
-  }
-
-  private HDFSStore createMockStore(final HDFSStore mockStore, final String storeName, final String namenode,
-      final String homeDir, final int maxFileSize, final int fileRolloverInterval, final boolean minorCompact, final float blockCachesize,
-      final String clientConfigFile, final AbstractHDFSCompactionConfigHolder mockCompactionConfig,
-      final HDFSEventQueueAttributesImpl mockEventQueue) {
-
-    mockContext.checking(new Expectations() {
-      {
-        allowing(mockStore).getName();
-        will(returnValue(storeName));
-        allowing(mockStore).getNameNodeURL();
-        will(returnValue(namenode));
-        allowing(mockStore).getHomeDir();
-        will(returnValue(homeDir));
-        allowing(mockStore).getMaxFileSize();
-        will(returnValue(maxFileSize));
-        allowing(mockStore).getFileRolloverInterval();
-        will(returnValue(fileRolloverInterval));
-        allowing(mockStore).getMinorCompaction();
-        will(returnValue(minorCompact));
-        allowing(mockStore).getBlockCacheSize();
-        will(returnValue(blockCachesize));
-        allowing(mockStore).getHDFSClientConfigFile();
-        will(returnValue(clientConfigFile));
-        allowing(mockStore).getHDFSEventQueueAttributes();
-        will(returnValue(mockEventQueue));
-        allowing(mockStore).getHDFSCompactionConfig();
-        will(returnValue(mockCompactionConfig));
-      }
-    });
-    return mockStore;
-
-  }
-
 
   protected static class TestCreateHDFSStoreFunction extends CreateHDFSStoreFunction {
     private static final long serialVersionUID = 1L;

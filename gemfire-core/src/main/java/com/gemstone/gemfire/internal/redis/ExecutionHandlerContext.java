@@ -45,9 +45,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   private Queue<Command> transactionQueue;
   private final RegionCache regionCache;
+  private final byte[] authPwd;
 
+  private boolean isAuthenticated;
 
-  public ExecutionHandlerContext(Channel ch, Cache cache, RegionCache regions, GemFireRedisServer server) {
+  public ExecutionHandlerContext(Channel ch, Cache cache, RegionCache regions, GemFireRedisServer server, byte[] pwd) {
     this.cache = cache;
     this.server = server;
     this.logger = cache.getLogger();
@@ -66,6 +68,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.transactionID = null;
     this.transactionQueue = null; // Lazy
     this.regionCache = regions;
+    this.authPwd = pwd;
+    this.isAuthenticated = pwd != null ? false : true;
   }
 
   private void flushChannel() {
@@ -137,22 +141,35 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   public void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
     RedisCommandType type = command.getCommandType();
-    if (type == RedisCommandType.SHUTDOWN) {
-      this.server.shutdown();
-      return;
-    }
     Executor exec = type.getExecutor();
-    if (hasTransaction() && !(exec instanceof TransactionExecutor))
-      executeWithTransaction(ctx, exec, command);
-    else
-      executeWithoutTransaction(exec, command, MAXIMUM_NUM_RETRIES); 
+    if (isAuthenticated) {
+      if (type == RedisCommandType.SHUTDOWN) {
+        this.server.shutdown();
+        return;
+      }
+      if (hasTransaction() && !(exec instanceof TransactionExecutor))
+        executeWithTransaction(ctx, exec, command);
+      else
+        executeWithoutTransaction(exec, command, MAXIMUM_NUM_RETRIES); 
 
-    if (hasTransaction() && command.getCommandType() != RedisCommandType.MULTI)
-      writeToChannel(Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
-    else 
-      writeToChannel(command.getResponse());
-    if (type == RedisCommandType.QUIT) {
+      if (hasTransaction() && command.getCommandType() != RedisCommandType.MULTI) {
+        writeToChannel(Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
+      } else {
+        ByteBuf response = command.getResponse();
+        writeToChannel(response);
+      }
+    } else if (type == RedisCommandType.QUIT) {
+      exec.executeCommand(command, this);
+      ByteBuf response = command.getResponse();
+      writeToChannel(response);
       channelInactive(ctx);
+    } else if (type == RedisCommandType.AUTH) {
+      exec.executeCommand(command, this);
+      ByteBuf response = command.getResponse();
+      writeToChannel(response);
+    } else {
+      ByteBuf r = Coder.getNoAuthResponse(this.byteBufAllocator, RedisConstants.ERROR_NOT_AUTH);
+      writeToChannel(r);
     }
   }
 
@@ -271,4 +288,23 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return this.cache.getCacheTransactionManager();
   }
 
+  public LogWriter getLogger() {
+    return this.cache.getLogger();
+  }
+
+  public Channel getChannel() {
+    return this.channel;
+  }
+
+  public byte[] getAuthPwd() {
+    return this.authPwd;
+  }
+
+  public boolean isAuthenticated() {
+    return this.isAuthenticated;
+  }
+
+  public void setAuthenticationVerified() {
+    this.isAuthenticated = true;
+  }
 }

@@ -382,15 +382,15 @@ public class HDFSCompactionManagerJUnitTest extends BaseHoplogTestCase {
     if (testMajor) {
       alterMajorCompaction(hdfsStore, true);
       defaultThreadCount = 2;
-      mutator.getCompactionConfigMutator().setMajorCompactionMaxThreads(15);
+      mutator.setMajorCompactionThreads(15);
       if (decrease) {
-        mutator.getCompactionConfigMutator().setMajorCompactionMaxThreads(1);
+        mutator.setMajorCompactionThreads(1);
       }
     } else {
       alterMinorCompaction(hdfsStore, true);
-      mutator.getCompactionConfigMutator().setMaxThreads(15);
+      mutator.setMinorCompactionThreads(15);
       if (decrease) {
-        mutator.getCompactionConfigMutator().setMaxThreads(1);
+        mutator.setMinorCompactionThreads(1);
       }
     }
     

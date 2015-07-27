@@ -2861,6 +2861,18 @@ public interface DistributionConfig extends Config, LogConfig {
   public boolean isRedisBindAddressModifiable();
   public static String REDIS_BIND_ADDRESS_NAME = "redis-bind-address";
   public static String DEFAULT_REDIS_BIND_ADDRESS = "";
+  
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#redis-password">"redis-password"</a> property
+   * @return the authentication password for GemFireRedisServer
+   * @since 8.0
+   */
+  public String getRedisPassword();
+  public void setRedisPassword(String password);
+  public boolean isRedisPasswordModifiable();
+  public static String REDIS_PASSWORD_NAME = "redis-password";
+  public static String DEFAULT_REDIS_PASSWORD = "";
 
 
   //Added for the HTTP service

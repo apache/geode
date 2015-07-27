@@ -40,6 +40,7 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.pdx.PdxInstance;
 
 @Category(IntegrationTest.class)
 public class HashIndexJUnitTest {
@@ -1354,6 +1355,23 @@ public class HashIndexJUnitTest {
       HashIndexSet.TEST_ALWAYS_REHASH = false;
     }
   }
+
+  @Test
+  public void testPdxWithStringIndexKeyValues() throws Exception {
+    createPartitionedRegion("test_region");
+    int numEntries = 10;
+    Index index = qs.createHashIndex("idHash", "p.id", "/test_region p");
+    for (int i = 0; i < numEntries; i++) {
+      PdxInstance record = CacheUtils.getCache().createPdxInstanceFactory("test_region").writeString("id", "" + i).writeString("domain", "A").create();
+      region.put("" + i, record);
+    }
+    
+    SelectResults results = (SelectResults) qs.newQuery(
+        "SELECT DISTINCT tr.domain FROM /test_region tr WHERE tr.id='1'").execute();
+    assertEquals(1, results.size());
+    assertTrue(observer.indexUsed);
+  }
+
    
   private void printIndex(Index index) {
    if (index instanceof PartitionedIndex) {

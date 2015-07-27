@@ -3199,7 +3199,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         }
         // if there is no disk store, use the one configured for hdfs queue
         if (attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && diskStoreName == null) {
-          diskStoreName = hdfsStore.getHDFSEventQueueAttributes().getDiskStoreName();
+          diskStoreName = hdfsStore.getDiskStoreName();
         }
       }
       // set LRU heap eviction with overflow to disk for HDFS stores with

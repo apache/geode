@@ -46,7 +46,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
    * hosting the data. 
    */
   @Ignore("Disabled due to bug #50618")
-  public void DISABLED_testServerGetAllFunction(){
+  public void testServerGetAllFunction(){
     createScenario();
     client.invoke(SingleHopGetAllPutAllDUnitTest.class,
         "getAll");
@@ -60,17 +60,19 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
   public static void getAll() {
     Region region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
-    final List testKeysList = new ArrayList();
+    final List testValueList = new ArrayList();
+    final List testKeyList = new ArrayList();
     for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
-      testKeysList.add("execKey-" + i);
+      testValueList.add("execKey-" + i);    
     }
     DistributedSystem.setThreadsSocketPolicy(false);
     try {
       int j = 0;
       Map origVals = new HashMap();
-      for (Iterator i = testKeysList.iterator(); i.hasNext();) {
-        Integer val = new Integer(j++);
-        Object key = i.next();
+      for (Iterator i = testValueList.iterator(); i.hasNext();) {
+        testKeyList.add(j);
+        Integer key = new Integer(j++);
+        Object val = i.next();
         origVals.put(key, val);
         region.put(key, val);
       }
@@ -79,10 +81,10 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
       verifyMetadata();
       
       // check if the function was routed to pruned nodes
-      Map resultMap = region.getAll(testKeysList);
+      Map resultMap = region.getAll(testKeyList);
       assertTrue(resultMap.equals(origVals));
       pause(2000);
-      Map secondResultMap = region.getAll(testKeysList);
+      Map secondResultMap = region.getAll(testKeyList);
       assertTrue(secondResultMap.equals(origVals));
     }
     catch (Exception e) {

@@ -58,7 +58,7 @@ public class ChunkValueWrapperJUnitTest {
   
   @Test
   public void testGetBytesAsString() {
-    assertEquals("[0, 0, 0, 0, 0, 0, 0, 0]", createChunkValueWrapper(new byte[8], false).getBytesAsString());
+    assertEquals("byte[0, 0, 0, 0, 0, 0, 0, 0]", createChunkValueWrapper(new byte[8], false).getBytesAsString());
   }
   
   @Test

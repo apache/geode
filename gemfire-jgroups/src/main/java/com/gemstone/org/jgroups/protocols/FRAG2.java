@@ -234,7 +234,7 @@ public class FRAG2 extends Protocol  {
 
         case Event.CONFIG:
             passUp(evt);
-            if(log.isInfoEnabled()) log.info(ExternalStrings.FRAG2_RECEIVED_CONFIG_EVENT__0, evt.getArg());
+            if(log.isInfoEnabled()) log.info(ExternalStrings.FRAG2_RECEIVED_CONFIG_EVENT__0, (Object)evt.getArg());
             handleConfigEvent((HashMap)evt.getArg());
             return;
             
