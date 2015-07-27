@@ -603,6 +603,7 @@ com/gemstone/gemfire/internal/redis/RedisCommandType$96,false,dataType:com/gemst
 com/gemstone/gemfire/internal/redis/RedisCommandType$97,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$98,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$99,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
+com/gemstone/gemfire/internal/redis/RedisCommandType$113,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisDataType,false
 com/gemstone/gemfire/internal/redis/RedisDataType$1,false
 com/gemstone/gemfire/internal/redis/RedisDataType$2,false
