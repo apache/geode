@@ -8,15 +8,14 @@
 package com.gemstone.gemfire.distributed.internal.membership;
 
 import java.io.NotSerializableException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.tcp.Stub;
 
@@ -137,7 +136,7 @@ public interface MembershipManager {
   public Set send(
       InternalDistributedMember[] destinations,
       DistributionMessage content,
-      DistributionStats stats)
+      DMStats stats)
   throws NotSerializableException;
   
   /**

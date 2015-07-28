@@ -21,7 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -109,19 +108,13 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * here so it is available to the UDP protocol for passing off
    * the ping-pong responses used in the quorum-checking algorithm. 
    */
-  private volatile JGroupsQuorumChecker quorumChecker;
+  private volatile QuorumChecker quorumChecker;
   
   /**
    * during an auto-reconnect attempt set this to the old DistributedSystem's
    * UDP port socket.  The failure detection protocol will pick it up and use it.
    */
   private volatile DatagramSocket oldDSUDPSocket;
-  
-  /**
-   * A general use timer
-   */
-  private Timer timer = new Timer("Membership Timer", true);
-  
   
   /**
    * Trick class to make the startup synch more
@@ -1720,8 +1713,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
 //    stubToMemberMap.clear();
 //    memberToStubMap.clear();
     
-    this.timer.cancel();
-    
     if (DEBUG) {
       System.err.println("DEBUG: done closing GroupMembershipService");
     }
@@ -1942,9 +1933,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * all received it)
    * @throws NotSerializableException if the message is not serializable
    */
-  private Set directChannelSend(InternalDistributedMember[] destinations,
+  private Set<InternalDistributedMember> directChannelSend(InternalDistributedMember[] destinations,
       DistributionMessage content,
-      com.gemstone.gemfire.distributed.internal.DistributionStats theStats)
+      DMStats theStats)
       throws NotSerializableException
   {
     boolean allDestinations;
@@ -2003,7 +1994,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
             new Object[] {content, member, view}), th);
 //        Assert.assertTrue(false, "messaging contract failure");
       }
-      return new HashSet(members);
+      return new HashSet<InternalDistributedMember>(members);
     } // catch ConnectionExceptions
     catch (ToDataException e) {
       throw e; // error in user data
@@ -2062,7 +2053,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * probes.  It is made available here for the UDP protocol to
    * hand off ping-pong responses to the checker.
    */
-  public JGroupsQuorumChecker getQuorumCheckerImpl() {
+  public QuorumChecker getQuorumCheckerImpl() {
     return this.quorumChecker;
   }
   
@@ -2084,10 +2075,10 @@ public class GMSMembershipManager implements MembershipManager, Manager
       return this.quorumChecker;
     }
     try {
-      // TODO: we really need JChannel instead of a datagram socket because jgroup
-      // doesn't have the "ping" handling that I built into the TP protocol.  Maybe we should just
-      // keep the JGroupsMessenger and use it to send PingMessages.  We'd want to
-      // bypass UNICAST and wipe out all message handlers except for the Pings.
+      // TODO: creation of the quorum checker should be delegated to the
+      // Messenger component.  For JGroups we we really need JChannel instead
+      // of a datagram socket because jgroup
+      // doesn't have the "ping" handling that I built into the TP protocol.s
       DatagramSocket sock = new DatagramSocket(this.address.getPort(),
                                this.address.getNetMember().getInetAddress());
       JGroupsQuorumChecker impl = new JGroupsQuorumChecker(
@@ -2123,7 +2114,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   public Set send(InternalDistributedMember[] destinations,
       DistributionMessage msg,
-      com.gemstone.gemfire.distributed.internal.DistributionStats theStats)
+      DMStats theStats)
       throws NotSerializableException
   {
     Set result = null;
@@ -2914,13 +2905,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
   }
   
-  /**
-   * returns the general purpose membership timer
-   */
-  public Timer getTimer() {
-    return this.timer;
-  }
-
   @Override
   public void stopped() {
   }
@@ -2933,24 +2917,15 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       latestViewId = v.getViewId();
       latestView = v;
-      if (logger.isDebugEnabled()) {
-        logger.debug("MembershipManager: initial view is {}", latestView);
-      }
+      logger.debug("MembershipManager: initial view is {}", latestView);
     } else {
       handleOrDeferViewEvent(v);
     }
   }
 
   @Override
-  public void send(DistributionMessage m) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public InternalDistributedMember getMemberID(NetMember m) {
-    // TODO Auto-generated method stub
-    return null;
+  public Set<InternalDistributedMember> send(DistributionMessage m) throws NotSerializableException {
+    return send(m.getRecipients(), m, this.services.getStatistics());
   }
 
   @Override
@@ -3000,7 +2975,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   @Override
   public void setSecurityLogWriter(InternalLogWriter writer) {
-    services.setSecurityLogWriter(writer);
+    Services.setSecurityLogWriter(writer);
   }
 
 }

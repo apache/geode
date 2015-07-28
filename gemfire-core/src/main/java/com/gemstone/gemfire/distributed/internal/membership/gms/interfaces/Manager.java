@@ -1,6 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
 import java.io.NotSerializableException;
+import java.util.Set;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -23,10 +24,9 @@ public interface Manager extends Service, MessageHandler {
   /**
    * Sends a message using a selected distribution channel
    * (e.g. Messenger or DirectChannel)
+   * @return a set of recipients that did not receive the message
    */
-  void send(DistributionMessage m) throws NotSerializableException;
-
-  InternalDistributedMember getMemberID(NetMember m);
+  Set<InternalDistributedMember> send(DistributionMessage m) throws NotSerializableException;
 
   void forceDisconnect(String reason);
 

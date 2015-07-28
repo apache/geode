@@ -237,7 +237,8 @@ public class JGroupsMessenger implements Messenger {
       throw new SystemConnectException("unable to create jgroups channel", e);
     }
     
-    findLocalAddress();
+    establishLocalAddress();
+    
     DistributionConfig config = services.getConfig().getDistributionConfig();
     boolean isLocator = (MemberAttributes.DEFAULT.getVmKind() == DistributionManager.LOCATOR_DM_TYPE); 
     
@@ -289,7 +290,7 @@ public class JGroupsMessenger implements Messenger {
   
 
   
-  private void findLocalAddress() {
+  private void establishLocalAddress() {
     UUID logicalAddress = (UUID)myChannel.getAddress();
     
     IpAddress ipaddr = (IpAddress)myChannel.down(new Event(Event.GET_PHYSICAL_ADDRESS));
@@ -326,6 +327,7 @@ public class JGroupsMessenger implements Messenger {
         }
       }
     }
+    myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
   }
 
   @Override
@@ -534,7 +536,7 @@ public class JGroupsMessenger implements Messenger {
     }
     Message msg = new Message();
     msg.setDest(null);
-//    msg.setSrc(src.asIpAddress());
+    msg.setSrc(src);
     //log.info("Creating message with payload " + gfmsg);
     if (gfmsg instanceof com.gemstone.gemfire.internal.cache.DistributedCacheOperation.CacheOperationMessage) {
       com.gemstone.gemfire.internal.cache.DistributedCacheOperation.CacheOperationMessage cmsg =
@@ -551,8 +553,7 @@ public class JGroupsMessenger implements Messenger {
       HeapDataOutputStream out_stream =
         new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
         Version.CURRENT.writeOrdinal(out_stream, true);
-        // TODO: preserialize this when the address is established
-        DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
+//        DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
         DataSerializer.writeObject(gfmsg, out_stream);
         msg.setBuffer(out_stream.toByteArray());
     }
@@ -566,11 +567,72 @@ public class JGroupsMessenger implements Messenger {
     return msg;
   }
 
+
+  /**
+   * deserialize a jgroups payload.  If it's a DistributionMessage find
+   * the ID of the sender and establish it as the message's sender
+   */
+  Object readJGMessage(Message jgmsg) {
+    Object result = null;
+    
+    int messageLength = jgmsg.getLength();
+    
+    if (messageLength == 0) {
+      // jgroups messages with no payload are used for protocol interchange, such
+      // as STABLE_GOSSIP
+      logger.debug("Message length is zero - ignoring");
+      return null;
+    }
+
+    InternalDistributedMember sender = null;
+
+    Exception problem = null;
+    try {
+      byte[] buf = jgmsg.getRawBuffer();
+      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(buf, 
+          jgmsg.getOffset(), jgmsg.getLength()));
+
+      short ordinal = Version.readOrdinal(dis);
+      
+      if (ordinal < Version.CURRENT_ORDINAL) {
+        dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(
+            ordinal, true));
+      }
+      
+      Address s = jgmsg.getSrc();
+      sender = getMemberFromView(s, ordinal);
+
+      result = DataSerializer.readObject(dis);
+      if (result instanceof DistributionMessage) {
+        ((DistributionMessage) result).setSender(sender);
+      }
+
+      logger.debug("JGroupsReceiver deserialized {}", result);
+
+    }
+    catch (ClassNotFoundException e) {
+      problem = e;
+    }
+    catch (IOException e) {
+      problem = e;
+    }
+    catch (RuntimeException e) {
+      problem = e;
+    }
+    if (problem != null) {
+      logger.error(LocalizedMessage.create(
+            LocalizedStrings.GroupMembershipService_EXCEPTION_DESERIALIZING_MESSAGE_PAYLOAD_0, jgmsg), problem);
+      return null;
+    }
+
+    return result;
+  }
+  
   
   /** look for certain messages that may need to be altered before being sent */
   private void filterMessage(DistributionMessage m) {
     if (m instanceof JoinResponseMessage) {
-      // TODO: does the new JGroups need to have the NAKACK digest transmitted
+      // TODO: for mcast does the new JGroups need to have the NAKACK digest transmitted
       // to new members at join-time?  The old JGroups needs this and it would require us to
       // install an uphandler for JChannel to handle GET_DIGEST_OK events.
       // I (bruce) am postponing looking into this until we move to the new version of jgroups.
@@ -581,6 +643,45 @@ public class JGroupsMessenger implements Messenger {
   public InternalDistributedMember getMemberID() {
     return localAddress;
   }
+
+  /**
+   * returns the member ID for the given GMSMember object
+   */
+  private InternalDistributedMember getMemberFromView(Address jgId, short version) {
+    NetView v = services.getJoinLeave().getView();
+    GMSMember gm = null;
+    
+    if ( !(jgId instanceof JGAddress) ) {
+      // not one of our addresses - gather info from JGroups to form
+      // a GMSAddress or fish for the ID using the UUID
+      IpAddress pa = (IpAddress)myChannel.down(new Event(Event.GET_PHYSICAL_ADDRESS, jgId));
+      if (pa == null) {
+        // worst-case scenario - we only have a UUID
+        for (InternalDistributedMember m: v.getMembers()) {
+          if (((GMSMember)m.getNetMember()).getUUID().equals(jgId)) {
+            return m;
+          }
+        }
+      }
+      gm = new GMSMember(pa.getIpAddress(), pa.getPort(),
+          false/*unknown*/, false/*unknown*/, version);
+    }
+    else {
+      JGAddress addr = (JGAddress)jgId;
+      gm = new GMSMember(addr.getInetAddress(), addr.getPort(),
+          false/*unknown*/, false/*unknown*/, version);
+    }
+    
+    if (v != null) {
+      for (InternalDistributedMember m: v.getMembers()) {
+        if (m.getNetMember().equals(jgId)) {
+          return m;
+        }
+      }
+    }
+    return new InternalDistributedMember(gm);
+  }
+
 
   @Override
   public void emergencyClose() {
@@ -622,49 +723,7 @@ public class JGroupsMessenger implements Messenger {
 
       logger.debug("JGroupsReceiver received {} headers: {}", jgmsg, jgmsg.getHeaders());
       
-      Object o = null;
-      int messageLength = jgmsg.getLength();
-      
-      if (messageLength == 0) {
-        // jgroups messages with no payload are used for protocol interchange, such
-        // as STABLE_GOSSIP
-        logger.debug("Message length is zero - ignoring");
-        return;
-      }
-
-      GMSMember sender = null;
-
-      Exception problem = null;
-      try {
-        byte[] buf = jgmsg.getRawBuffer();
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(buf, 
-            jgmsg.getOffset(), jgmsg.getLength()));
-
-        short ordinal = Version.readOrdinal(dis);
-        
-        if (ordinal < Version.CURRENT_ORDINAL) {
-          dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(
-              ordinal, true));
-        }
-        
-        sender = DataSerializer.readObject(dis);
-        o = DataSerializer.readObject(dis);
-      }
-      catch (ClassNotFoundException e) {
-        problem = e;
-      }
-      catch (IOException e) {
-        problem = e;
-      }
-      catch (RuntimeException e) {
-        problem = e;
-      }
-      if (problem != null) {
-        logger.error(LocalizedMessage.create(
-              LocalizedStrings.GroupMembershipService_EXCEPTION_DESERIALIZING_MESSAGE_PAYLOAD_0, jgmsg), problem);
-        return;
-      }
-      
+      Object o = readJGMessage(jgmsg);
       if (o == null) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.GroupMembershipService_MEMBERSHIP_GEMFIRE_RECEIVED_NULL_MESSAGE_FROM__0, String.valueOf(jgmsg)));
@@ -672,7 +731,7 @@ public class JGroupsMessenger implements Messenger {
             LocalizedStrings.GroupMembershipService_MEMBERSHIP_MESSAGE_HEADERS__0, jgmsg.printObjectHeaders()));
         return;
       } else if ( !(o instanceof DistributionMessage) ) {
-        logger.warn("Received something other than a message from " + sender + " ("+jgmsg.getSrc()+") : " + o);
+        logger.warn("Received something other than a message from " + jgmsg.getSrc() + ": " + o);
         return;
       }
 
@@ -689,19 +748,14 @@ public class JGroupsMessenger implements Messenger {
       }
 
       msg.resetTimestamp();
-      msg.setBytesRead(messageLength);
+      msg.setBytesRead(jgmsg.getLength());
             
-      if (sender == null) {
+      if (msg.getSender() == null) {
         Exception e = new Exception(LocalizedStrings.GroupMembershipService_NULL_SENDER.toLocalizedString());
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.GroupMembershipService_MEMBERSHIP_GEMFIRE_RECEIVED_A_MESSAGE_WITH_NO_SENDER_ADDRESS), e);
       }
       
-      InternalDistributedMember dm = getMemberFromView(sender);
-      msg.setSender(dm);
-
-      logger.debug("JGroupsReceiver deserialized {}", msg);
-
       try {
         MessageHandler h = getMessageHandler(msg);
         logger.debug("Handler for this message is {}", h);
@@ -737,27 +791,6 @@ public class JGroupsMessenger implements Messenger {
     }
     
     
-    /**
-     * returns the member ID for the given GMSMember object
-     */
-    private InternalDistributedMember getMemberFromView(GMSMember mbr) {
-      NetView v = services.getJoinLeave().getView();
-      InternalDistributedMember dm = null;
-      if (v != null) {
-        for (InternalDistributedMember m: v.getMembers()) {
-          if (m.getNetMember().equals(mbr)) {
-            dm = m;
-            break;
-          }
-        }
-      }
-      if (dm == null) {
-        dm = new InternalDistributedMember(mbr);
-      }
-      return dm;
-    }
-
-
     @Override
     public void block() {
     }

@@ -1,5 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms;
 
+import java.util.Timer;
+
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelCriterion;
@@ -46,13 +48,29 @@ public class Services {
 
   private InternalLogWriter securityLogWriter;
   
+  private Timer timer = new Timer("Membership Timer", true);
   
+  
+
+  /**
+   * A common logger for membership classes
+   */
   public static Logger getLogger() {
     return logger;
   }
-  
+
+  /**
+   * The thread group for all membership threads
+   */
   public static ThreadGroup getThreadGroup() {
     return threadGroup;
+  }
+  
+  /**
+   * a timer used for membership tasks
+   */
+  public Timer getTimer() {
+    return this.timer;
   }
   
 
@@ -126,6 +144,7 @@ public class Services {
     this.auth.stop();
     this.messenger.stop();
     this.manager.stop();
+    this.timer.cancel();
   }
   
   public static void setSecurityLogWriter(InternalLogWriter writer) {
