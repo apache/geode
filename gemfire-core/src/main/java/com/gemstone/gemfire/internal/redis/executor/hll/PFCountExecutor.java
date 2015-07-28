@@ -22,7 +22,7 @@ public class PFCountExecutor extends HllExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, HyperLogLogPlus> keyRegion = context.getRegionCache().gethLLRegion();
+    Region<ByteArrayWrapper, HyperLogLogPlus> keyRegion = context.getRegionProvider().gethLLRegion();
 
     List<HyperLogLogPlus> hlls = new ArrayList<HyperLogLogPlus>();
 

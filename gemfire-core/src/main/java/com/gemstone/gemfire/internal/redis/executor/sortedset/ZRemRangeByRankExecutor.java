@@ -69,7 +69,7 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
     try {
       if (startRank == 0 && stopRank == sSetSize- 1) {
         numRemoved = keyRegion.size();
-        context.getRegionCache().removeKey(key);
+        context.getRegionProvider().removeKey(key);
       } else {
         removeList = getRemoveKeys(context, key, startRank, stopRank);
       }
@@ -89,7 +89,7 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
           numRemoved++;
       }
       if (keyRegion.isEmpty())
-        context.getRegionCache().removeKey(key);
+        context.getRegionProvider().removeKey(key);
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }

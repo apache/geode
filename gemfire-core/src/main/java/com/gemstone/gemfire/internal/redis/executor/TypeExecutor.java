@@ -21,7 +21,7 @@ public class TypeExecutor extends AbstractExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisDataType type = context.getRegionCache().getRedisDataType(key);
+    RedisDataType type = context.getRegionProvider().getRedisDataType(key);
 
     if (type == null)
       command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), "none"));

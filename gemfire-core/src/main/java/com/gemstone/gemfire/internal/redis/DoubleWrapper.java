@@ -7,6 +7,12 @@ import java.io.IOException;
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 
+/**
+ * This is a wrapper class for doubles, similar to {@link ByteArrayWrapper}
+ * 
+ * @author Vitaliy Gavrilov
+ *
+ */
 public class DoubleWrapper implements DataSerializable, Comparable<Object> {
 
   private static final long serialVersionUID = 6946858357297398633L;
@@ -35,14 +41,6 @@ public class DoubleWrapper implements DataSerializable, Comparable<Object> {
     Double other;
     if (arg0 instanceof DoubleWrapper) {
       other = ((DoubleWrapper) arg0).score;
-    } else if (arg0 instanceof String) {
-      String arg = (String) arg0;
-      if (arg.equalsIgnoreCase("INFINITY"))
-        other = Double.POSITIVE_INFINITY;
-      else if (arg.equalsIgnoreCase("-INFINITY"))
-        other = Double.NEGATIVE_INFINITY;
-      else
-        return 0;
     } else if (arg0 instanceof Double) {
       other = (Double) arg0;
     } else

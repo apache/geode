@@ -163,9 +163,7 @@ public class ZRangeByLexExecutor extends SortedSetExecutor {
     }
     if (limit > 0)
       params[params.length - 1] =  (limit + offset);
-
     SelectResults<ByteArrayWrapper> results = (SelectResults<ByteArrayWrapper>) query.execute(params);
-
     List<ByteArrayWrapper> list = results.asList();
     int size = list.size();
     return list.subList(Math.min(size, offset), size);

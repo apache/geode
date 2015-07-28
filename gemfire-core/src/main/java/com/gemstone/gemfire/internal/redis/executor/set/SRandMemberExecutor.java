@@ -28,7 +28,7 @@ public class SRandMemberExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion = (Region<ByteArrayWrapper, Boolean>) context.getRegionCache().getRegion(key);
+    Region<ByteArrayWrapper, Boolean> keyRegion = (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
 
     int count = 1;
 
@@ -49,7 +49,7 @@ public class SRandMemberExecutor extends SetExecutor {
     int members = keyRegion.size();
 
     if (members <= count && count != 1) {
-      command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), keyRegion.keySet()));
+      command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), new HashSet<ByteArrayWrapper>(keyRegion.keySet())));
       return;
     }
 

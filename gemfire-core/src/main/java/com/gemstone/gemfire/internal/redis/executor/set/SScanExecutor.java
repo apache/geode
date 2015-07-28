@@ -30,7 +30,7 @@ public class SScanExecutor extends AbstractScanExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion = (Region<ByteArrayWrapper, Boolean>) context.getRegionCache().getRegion(key);
+    Region<ByteArrayWrapper, Boolean> keyRegion = (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
     if (keyRegion == null) {
       command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), new ArrayList<String>()));
       return;
@@ -96,7 +96,7 @@ public class SScanExecutor extends AbstractScanExecutor {
     }
 
     @SuppressWarnings("unchecked")
-    List<ByteArrayWrapper> returnList = (List<ByteArrayWrapper>) getIteration(keyRegion.keySet(), matchPattern, count, cursor);
+    List<ByteArrayWrapper> returnList = (List<ByteArrayWrapper>) getIteration(new ArrayList(keyRegion.keySet()), matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }

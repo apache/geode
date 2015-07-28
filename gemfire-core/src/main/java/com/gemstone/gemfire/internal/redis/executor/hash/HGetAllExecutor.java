@@ -1,16 +1,17 @@
 package com.gemstone.gemfire.internal.redis.executor.hash;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.redis.ByteArrayWrapper;
+import com.gemstone.gemfire.internal.redis.Coder;
 import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.RedisConstants.ArityDef;
 import com.gemstone.gemfire.internal.redis.RedisDataType;
-import com.gemstone.gemfire.internal.redis.Coder;
 
 public class HGetAllExecutor extends HashExecutor {
 
@@ -33,7 +34,7 @@ public class HGetAllExecutor extends HashExecutor {
       return;
     }
 
-    Set<Map.Entry<ByteArrayWrapper,ByteArrayWrapper>> entries = keyRegion.entrySet();
+    Collection<Map.Entry<ByteArrayWrapper,ByteArrayWrapper>> entries = new ArrayList(keyRegion.entrySet()); // This creates a CopyOnRead behavior
    
    if (entries.isEmpty()) {
      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));

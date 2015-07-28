@@ -74,7 +74,7 @@ public class ZRemRangeByScoreExecutor extends SortedSetExecutor {
     try {
       if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY && startInclusive && stopInclusive) {
         numRemoved = keyRegion.size();
-        context.getRegionCache().removeKey(key);
+        context.getRegionProvider().removeKey(key);
       } else {
         removeList = getKeys(context, key, keyRegion, start, stop, startInclusive, stopInclusive);
       }
@@ -93,7 +93,7 @@ public class ZRemRangeByScoreExecutor extends SortedSetExecutor {
         if (oldVal != null)
           numRemoved++;
         if (keyRegion.isEmpty())
-          context.getRegionCache().removeKey(key);
+          context.getRegionProvider().removeKey(key);
       }
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));

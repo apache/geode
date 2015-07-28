@@ -10,10 +10,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.gemstone.gemfire.cache.query.Struct;
 
+/**
+ * This is a safe encoder and decoder for all redis matching needs
+ * 
+ * @author Vitaliy Gavrilov
+ *
+ */
 public class Coder {
 
   /*
@@ -118,23 +123,6 @@ public class Coder {
     response.writeBytes(CRLFar);
     response.writeBytes(valueAr);
     response.writeBytes(CRLFar);
-    return response;
-  }
-
-  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, Set<String> items) {
-    Iterator<String> it = items.iterator();
-    ByteBuf response = alloc.buffer();
-    response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
-    response.writeBytes(CRLFar);
-    while(it.hasNext()) {
-      String next = it.next();
-      response.writeByte(BULK_STRING_ID);
-      response.writeBytes(intToBytes(next.length()));
-      response.writeBytes(CRLFar);
-      response.writeBytes(stringToBytes(next));
-      response.writeBytes(CRLFar);
-    }
     return response;
   }
 

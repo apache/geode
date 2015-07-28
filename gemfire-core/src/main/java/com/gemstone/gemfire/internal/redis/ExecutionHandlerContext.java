@@ -15,17 +15,33 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.TransactionException;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
+import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.internal.redis.executor.transactions.TransactionExecutor;
 import com.gemstone.gemfire.redis.GemFireRedisServer;
 
+/**
+ * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is
+ * the last part of the channel pipeline. The {@link ByteToCommandDecoder} forwards a
+ * {@link Command} to this class which executes it and sends the result back to the
+ * client. Additionally, all exception handling is done by this class. 
+ * <p>
+ * Besides being part of Netty's pipeline, this class also serves as a context to the
+ * execution of a command. It abstracts transactions, provides access to the {@link RegionProvider}
+ * and anything else an executing {@link Command} may need.
+ * 
+ * @author Vitaliy Gavrilov
+ *
+ */
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
-  private static final int MAXIMUM_NUM_RETRIES = 5;
+  private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
+  private static final int MAXIMUM_NUM_RETRIES = (1000*60)/WAIT_REGION_DSTRYD_MILLIS; // 60 seconds total
 
   private final Cache cache;
   private final GemFireRedisServer server;
@@ -44,12 +60,23 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Queue of commands for a given transaction
    */
   private Queue<Command> transactionQueue;
-  private final RegionCache regionCache;
+  private final RegionProvider regionProvider;
   private final byte[] authPwd;
 
   private boolean isAuthenticated;
 
-  public ExecutionHandlerContext(Channel ch, Cache cache, RegionCache regions, GemFireRedisServer server, byte[] pwd) {
+  /**
+   * Default constructor for execution contexts. 
+   * 
+   * @param ch Channel used by this context, should be one to one
+   * @param cache The Geode cache instance of this vm
+   * @param regionProvider The region provider of this context
+   * @param server Instance of the server it is attached to, only used so that any execution can initiate a shutdwon
+   * @param pwd Authentication password for each context, can be null
+   */
+  public ExecutionHandlerContext(Channel ch, Cache cache, RegionProvider regionProvider, GemFireRedisServer server, byte[] pwd) {
+    if (ch == null || cache == null || regionProvider == null || server == null)
+      throw new IllegalArgumentException("Only the authentication password may be null");
     this.cache = cache;
     this.server = server;
     this.logger = cache.getLogger();
@@ -67,7 +94,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.byteBufAllocator = channel.alloc();
     this.transactionID = null;
     this.transactionQueue = null; // Lazy
-    this.regionCache = regions;
+    this.regionProvider = regionProvider;
     this.authPwd = pwd;
     this.isAuthenticated = pwd != null ? false : true;
   }
@@ -78,19 +105,25 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void writeToChannel(Object message) {
+  private void writeToChannel(ByteBuf message) {
     channel.write(message, channel.voidPromise());
     if (!needChannelFlush.getAndSet(true)) {
       this.lastExecutor.execute(flusher);
     }
   }
 
+  /**
+   * This will handle the execution of received commands
+   */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     executeCommand(ctx, command);
   }
 
+  /**
+   * Exception handler for the entire pipeline
+   */
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
     if (cause instanceof IOException) {
@@ -107,15 +140,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = Coder.getWrongTypeResponse(this.byteBufAllocator, cause.getMessage());
     else if (cause instanceof DecoderException && cause.getCause() instanceof RedisCommandParserException)
       response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.PARSING_EXCEPTION_MESSAGE);
-    else if (cause instanceof RegionCreationException)
+    else if (cause instanceof RegionCreationException) {
+      this.logger.error(cause);
       response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.ERROR_REGION_CREATION);
-    else if (cause instanceof InterruptedException)
+    } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException)
       response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_SHUTDOWN);
     else if (cause instanceof IllegalStateException) {
-      response = Coder.getErrorResponse(this.byteBufAllocator,  cause.getMessage());
+      response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
     } else {
       if (this.logger.errorEnabled())
-        this.logger.error("GemFireRedisServer-Unexpected error handler", cause);
+        this.logger.error("GemFireRedisServer-Unexpected error handler for " + ctx.channel(), cause);
       response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_MESSAGE);
     }
     return response;
@@ -129,17 +163,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     ctx.close();
   }
 
-  /**
-   * This method is used to execute the command. The executor is 
-   * determined by the {@link RedisCommandType} and then the execution
-   * is started.
-   * 
-   * @param command Command to be executed
-   * @param cache The Cache instance of this server
-   * @param client The client data associated with the client
-   * @throws Exception 
-   */
-  public void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
+  private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
     RedisCommandType type = command.getCommandType();
     Executor exec = type.getExecutor();
     if (isAuthenticated) {
@@ -150,7 +174,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       if (hasTransaction() && !(exec instanceof TransactionExecutor))
         executeWithTransaction(ctx, exec, command);
       else
-        executeWithoutTransaction(exec, command, MAXIMUM_NUM_RETRIES); 
+        executeWithoutTransaction(exec, command); 
 
       if (hasTransaction() && command.getCommandType() != RedisCommandType.MULTI) {
         writeToChannel(Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
@@ -179,31 +203,23 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * 
    * @param exec Executor to use
    * @param command Command to execute
-   * @param cache Cache instance
-   * @param client Client data associated with client
-   * @param n Recursive max depth of retries
    * @throws Exception Throws exception if exception is from within execution and not to be handled
    */
-  private void executeWithoutTransaction(final Executor exec, Command command, int n) throws Exception {
-    try {
-      exec.executeCommand(command, this);
-    } catch (RegionDestroyedException e) {
-      if (n > 0)
-        executeWithoutTransaction(exec, command, n - 1);
-      else
-        throw e;
+  private void executeWithoutTransaction(final Executor exec, Command command) throws Exception {
+    Exception cause = null;
+    for (int i = 0; i < MAXIMUM_NUM_RETRIES; i++) {
+      try {
+        exec.executeCommand(command, this);
+        return;
+      } catch (Exception e) {
+        cause = e;
+        if (e instanceof RegionDestroyedException || e.getCause() instanceof QueryInvocationTargetException)
+          Thread.sleep(WAIT_REGION_DSTRYD_MILLIS);
+      }
     }
+    throw cause;
   }
 
-  /**
-   * Private method to execute a command when a transaction has been started
-   * 
-   * @param exec Executor to use
-   * @param command Command to execute
-   * @param cache Cache instance
-   * @param client Client data associated with client
-   * @throws Exception Throws exception if exception is from within execution and unrelated to transactions
-   */
   private void executeWithTransaction(ChannelHandlerContext ctx, final Executor exec, Command command) throws Exception {
     CacheTransactionManager txm = cache.getCacheTransactionManager();
     TransactionId transactionId = getTransactionID();
@@ -276,34 +292,71 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return this.transactionQueue;
   }
 
+  /**
+   * {@link ByteBuf} allocator for this context. All executors
+   * must use this pooled allocator as opposed to having unpooled buffers
+   * for maximum performance
+   * 
+   * @return allocator instance
+   */
   public ByteBufAllocator getByteBufAllocator() {
     return this.byteBufAllocator;
   }
 
-  public RegionCache getRegionCache() {
-    return this.regionCache;
+  /**
+   * Gets the provider of Regions
+   * 
+   * @return Provider
+   */
+  public RegionProvider getRegionProvider() {
+    return this.regionProvider;
   }
 
+  /**
+   * Getter for manager to allow pausing and resuming transactions
+   * @return Instance
+   */
   public CacheTransactionManager getCacheTransactionManager() {
     return this.cache.getCacheTransactionManager();
   }
 
+  /**
+   * Getter for logger
+   * @return instance
+   */
   public LogWriter getLogger() {
     return this.cache.getLogger();
   }
 
+  /**
+   * Get the channel for this context
+   * @return instance
+   *
   public Channel getChannel() {
     return this.channel;
   }
+   */
 
+  /**
+   * Get the authentication password, this will be same server wide.
+   * It is exposed here as opposed to {@link GemFireRedisServer}.
+   * @return password
+   */
   public byte[] getAuthPwd() {
     return this.authPwd;
   }
 
+  /**
+   * Checker if user has authenticated themselves
+   * @return True if no authentication required or authentication complete, false otherwise
+   */
   public boolean isAuthenticated() {
     return this.isAuthenticated;
   }
 
+  /**
+   * Lets this context know the authentication is complete
+   */
   public void setAuthenticationVerified() {
     this.isAuthenticated = true;
   }
