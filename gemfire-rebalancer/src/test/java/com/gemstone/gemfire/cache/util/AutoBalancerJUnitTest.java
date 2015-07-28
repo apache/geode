@@ -2,11 +2,14 @@ package com.gemstone.gemfire.cache.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,10 +50,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class AutoBalancerJUnitTest {
-
-  // OOB > threshold && size < min
-  // OOB > threshold && size < min
-  // OOB critical nodes
   GemFireCacheImpl cache;
   Mockery mockContext;
 
@@ -355,19 +354,20 @@ public class AutoBalancerJUnitTest {
   public void testOOBWhenBelowSizeThreshold() {
     final long totalSize = 1000L;
 
+    final Map<PartitionedRegion, InternalPRInfo> details = new HashMap<>();
     final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     mockContext.checking(new Expectations() {
       {
+        allowing(mockCacheFacade).getRegionMemberDetails();
+        will(returnValue(details));
         // first run
-        oneOf(mockCacheFacade).getTotalDataSize();
+        oneOf(mockCacheFacade).getTotalDataSize(details);
         will(returnValue(totalSize));
         oneOf(mockCacheFacade).getTotalTransferSize();
         // half of threshold limit
         will(returnValue((AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT * totalSize / 100) / 2));
 
         // second run
-        oneOf(mockCacheFacade).getTotalDataSize();
-        will(returnValue(totalSize));
         oneOf(mockCacheFacade).getTotalTransferSize();
         // nothing to transfer
         will(returnValue(0L));
@@ -376,7 +376,9 @@ public class AutoBalancerJUnitTest {
 
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
-    balancer.init(getBasicConfig());
+    Properties config = getBasicConfig();
+    config.put(AutoBalancer.SIZE_MINIMUM, "10");
+    balancer.init(config);
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
 
     // first run
@@ -387,22 +389,18 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
-  public void testOOBWhenBelowAboveThreshold() {
+  public void testOOBWhenAboveThresholdButBelowMin() {
     final long totalSize = 1000L;
 
     final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     mockContext.checking(new Expectations() {
       {
         // first run
-        oneOf(mockCacheFacade).getTotalDataSize();
-        will(returnValue(totalSize));
         oneOf(mockCacheFacade).getTotalTransferSize();
         // twice threshold
         will(returnValue((AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT * totalSize / 100) * 2));
 
         // second run
-        oneOf(mockCacheFacade).getTotalDataSize();
-        will(returnValue(totalSize));
         oneOf(mockCacheFacade).getTotalTransferSize();
         // more than total size
         will(returnValue(2 * totalSize));
@@ -411,16 +409,59 @@ public class AutoBalancerJUnitTest {
 
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
-    balancer.init(getBasicConfig());
+    Properties config = getBasicConfig();
+    config.put(AutoBalancer.SIZE_MINIMUM, "" + (totalSize * 5));
+    balancer.init(config);
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
 
     // first run
-    assertTrue(auditor.needsRebalancing());
+    assertFalse(auditor.needsRebalancing());
 
+    // second run
+    assertFalse(auditor.needsRebalancing());
+  }
+
+  @Test
+  public void testOOBWhenAboveThresholdAndMin() {
+    final long totalSize = 1000L;
+    
+    final Map<PartitionedRegion, InternalPRInfo> details = new HashMap<>();
+    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
+    mockContext.checking(new Expectations() {
+      {
+        allowing(mockCacheFacade).getRegionMemberDetails();
+        will(returnValue(details));
+        
+        // first run
+        oneOf(mockCacheFacade).getTotalDataSize(details);
+        will(returnValue(totalSize));
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        // twice threshold
+        will(returnValue((AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT * totalSize / 100) * 2));
+        
+        // second run
+        oneOf(mockCacheFacade).getTotalDataSize(details);
+        will(returnValue(totalSize));
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        // more than total size
+        will(returnValue(2 * totalSize));
+      }
+    });
+    
+    AutoBalancer balancer = new AutoBalancer();
+    balancer.setCacheOperationFacade(mockCacheFacade);
+    Properties config = getBasicConfig();
+    config.put(AutoBalancer.SIZE_MINIMUM, "10");
+    balancer.init(config);
+    SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
+    
+    // first run
+    assertTrue(auditor.needsRebalancing());
+    
     // second run
     assertTrue(auditor.needsRebalancing());
   }
-
+  
   @Test
   public void testInitializerCacheXML() {
     String configStr = "<cache xmlns=\"http://schema.pivotal.io/gemfire/cache\"                          "
@@ -502,17 +543,20 @@ public class AutoBalancerJUnitTest {
     balancer.init(getBasicConfig());
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
     assertEquals(AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT, auditor.getSizeThreshold());
+    assertEquals(AutoBalancer.DEFAULT_SIZE_MINIMUM, auditor.getSizeMinimum());
 
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "17");
+    props.put(AutoBalancer.SIZE_MINIMUM, "10");
     balancer = new AutoBalancer();
     balancer.init(props);
     auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
     assertEquals(17, auditor.getSizeThreshold());
+    assertEquals(10, auditor.getSizeMinimum());
   }
 
   @Test(expected = GemFireConfigException.class)
-  public void testSizeThresholdNegative() {
+  public void testConfigTransferThresholdNegative() {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "-1");
@@ -520,7 +564,15 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test(expected = GemFireConfigException.class)
-  public void testSizeThresholdZero() {
+  public void testConfigSizeMinNegative() {
+    AutoBalancer balancer = new AutoBalancer();
+    Properties props = getBasicConfig();
+    props.put(AutoBalancer.SIZE_MINIMUM, "-1");
+    balancer.init(props);
+  }
+
+  @Test(expected = GemFireConfigException.class)
+  public void testConfigTransferThresholdZero() {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "0");
@@ -528,7 +580,7 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test(expected = GemFireConfigException.class)
-  public void testSizeThresholdToohigh() {
+  public void testConfigTransferThresholdTooHigh() {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "100");
@@ -623,6 +675,13 @@ public class AutoBalancerJUnitTest {
 
   @Test
   public void testFacadeTotalBytesNoRegion() {
+    CacheOperationFacade facade = new AutoBalancer().getCacheOperationFacade();
+
+    assertEquals(0, facade.getTotalDataSize(new HashMap<PartitionedRegion, InternalPRInfo>()));
+  }
+
+  @Test
+  public void testFacadeCollectMemberDetailsNoRegion() {
     final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
     mockContext.checking(new Expectations() {
       {
@@ -638,11 +697,11 @@ public class AutoBalancerJUnitTest {
       }
     };
 
-    assertEquals(0, facade.getTotalDataSize());
+    assertEquals(0, facade.getRegionMemberDetails().size());
   }
 
   @Test
-  public void testFacadeTotalBytes2Regions() {
+  public void testFacadeCollectMemberDetails2Regions() {
     cache = createBasicCache();
 
     final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
@@ -655,17 +714,9 @@ public class AutoBalancerJUnitTest {
 
     final PRHARedundancyProvider mockRedundancyProviderR1 = mockContext.mock(PRHARedundancyProvider.class, "prhaR1");
     final InternalPRInfo mockR1PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR1");
-    final PartitionMemberInfo mockR1M1Info = mockContext.mock(PartitionMemberInfo.class, "r1M1");
-    final PartitionMemberInfo mockR1M2Info = mockContext.mock(PartitionMemberInfo.class, "r1M2");
-    final HashSet<PartitionMemberInfo> r1Members = new HashSet<>();
-    r1Members.add(mockR1M1Info);
-    r1Members.add(mockR1M2Info);
 
     final PRHARedundancyProvider mockRedundancyProviderR2 = mockContext.mock(PRHARedundancyProvider.class, "prhaR2");
     final InternalPRInfo mockR2PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR2");
-    final PartitionMemberInfo mockR2M1Info = mockContext.mock(PartitionMemberInfo.class, "r2M1");
-    final HashSet<PartitionMemberInfo> r2Members = new HashSet<>();
-    r2Members.add(mockR2M1Info);
 
     mockContext.checking(new Expectations() {
       {
@@ -682,19 +733,9 @@ public class AutoBalancerJUnitTest {
 
         oneOf(mockRedundancyProviderR1).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
         will(returnValue(mockR1PRInfo));
-        oneOf(mockR1PRInfo).getPartitionMemberInfo();
-        will(returnValue(r1Members));
-        atLeast(1).of(mockR1M1Info).getSize();
-        will(returnValue(123L));
-        atLeast(1).of(mockR1M2Info).getSize();
-        will(returnValue(74L));
 
         oneOf(mockRedundancyProviderR2).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
         will(returnValue(mockR2PRInfo));
-        oneOf(mockR2PRInfo).getPartitionMemberInfo();
-        will(returnValue(r2Members));
-        atLeast(1).of(mockR2M1Info).getSize();
-        will(returnValue(3475L));
       }
     });
 
@@ -705,7 +746,64 @@ public class AutoBalancerJUnitTest {
       }
     };
 
-    assertEquals(123 + 74 + 3475, facade.getTotalDataSize());
+    Map<PartitionedRegion, InternalPRInfo> map = facade.getRegionMemberDetails();
+    assertNotNull(map);
+    assertEquals(2, map.size());
+    assertEquals(map.get(mockR1), mockR1PRInfo);
+    assertEquals(map.get(mockR2), mockR2PRInfo);
+  }
+
+  @Test
+  public void testFacadeTotalBytes2Regions() {
+    final PartitionedRegion mockR1 = mockContext.mock(PartitionedRegion.class, "r1");
+    final PartitionedRegion mockR2 = mockContext.mock(PartitionedRegion.class, "r2");
+    final HashSet<PartitionedRegion> regions = new HashSet<>();
+    regions.add(mockR1);
+    regions.add(mockR2);
+
+    final InternalPRInfo mockR1PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR1");
+    final PartitionMemberInfo mockR1M1Info = mockContext.mock(PartitionMemberInfo.class, "r1M1");
+    final PartitionMemberInfo mockR1M2Info = mockContext.mock(PartitionMemberInfo.class, "r1M2");
+    final HashSet<PartitionMemberInfo> r1Members = new HashSet<>();
+    r1Members.add(mockR1M1Info);
+    r1Members.add(mockR1M2Info);
+
+    final InternalPRInfo mockR2PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR2");
+    final PartitionMemberInfo mockR2M1Info = mockContext.mock(PartitionMemberInfo.class, "r2M1");
+    final HashSet<PartitionMemberInfo> r2Members = new HashSet<>();
+    r2Members.add(mockR2M1Info);
+
+    final Map<PartitionedRegion, InternalPRInfo> details = new HashMap<>();
+    details.put(mockR1, mockR1PRInfo);
+    details.put(mockR2, mockR2PRInfo);
+
+    mockContext.checking(new Expectations() {
+      {
+        allowing(mockR1).getFullPath();
+        allowing(mockR2).getFullPath();
+
+        oneOf(mockR1PRInfo).getPartitionMemberInfo();
+        will(returnValue(r1Members));
+        atLeast(1).of(mockR1M1Info).getSize();
+        will(returnValue(123L));
+        atLeast(1).of(mockR1M2Info).getSize();
+        will(returnValue(74L));
+
+        oneOf(mockR2PRInfo).getPartitionMemberInfo();
+        will(returnValue(r2Members));
+        atLeast(1).of(mockR2M1Info).getSize();
+        will(returnValue(3475L));
+      }
+    });
+
+    GeodeCacheFacade facade = new GeodeCacheFacade() {
+      @Override
+      public Map<PartitionedRegion, InternalPRInfo> getRegionMemberDetails() {
+        return details;
+      }
+    };
+
+    assertEquals(123 + 74 + 3475, facade.getTotalDataSize(details));
   }
 
   private Properties getBasicConfig() {

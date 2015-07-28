@@ -1,6 +1,8 @@
 package com.gemstone.gemfire.cache.util;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -74,9 +76,9 @@ public class AutoBalancer implements Declarable {
   public static final String SCHEDULE = "schedule";
 
   /**
-   * Use this configuration to manage re-balance threshold. Rebalance operation
+   * Use this configuration to manage re-balance invocation. Rebalance operation
    * will be triggered if the total number of bytes rebalance operation may move
-   * is more than this threshold, percentage of the total data size.
+   * is more than this threshold, in percentage of the total data size.
    * <P>
    * Default {@value AutoBalancer#DEFAULT_SIZE_THRESHOLD_PERCENT}
    */
@@ -87,6 +89,26 @@ public class AutoBalancer implements Declarable {
    * data is misplaced, its a good time to redistribute buckets
    */
   public static final int DEFAULT_SIZE_THRESHOLD_PERCENT = 10;
+
+  /**
+   * In the initial data load phases,
+   * {@link AutoBalancer#SIZE_THRESHOLD_PERCENT} based rebalance invocation may
+   * be unnecessary. Rebalance should not be triggered if the total data size
+   * managed by cluster is too small. Rebalance operation will be triggered if
+   * the total number of bytes rebalance operation may move is more than this
+   * number of bytes.
+   * <P>
+   * Default {@value AutoBalancer#DEFAULT_SIZE_MINIMUM}
+   */
+  public static final String SIZE_MINIMUM = "size-minimum";
+
+  /**
+   * Default value of {@link AutoBalancer#SIZE_MINIMUM}. In the initial data
+   * load phases, {@link AutoBalancer#SIZE_THRESHOLD_PERCENT} based rebalance
+   * invocation may be unnecessary. Do not rebalance if the data to be moved is
+   * less than 100MB
+   */
+  public static final int DEFAULT_SIZE_MINIMUM = 100 * 1024 * 1024;
 
   /**
    * Name of the DistributedLockService that {@link AutoBalancer} will use to
@@ -193,6 +215,7 @@ public class AutoBalancer implements Declarable {
    */
   class SizeBasedOOBAuditor implements OOBAuditor {
     private int sizeThreshold = DEFAULT_SIZE_THRESHOLD_PERCENT;
+    private int sizeMinimum = DEFAULT_SIZE_MINIMUM;
 
     @Override
     public void init(Properties props) {
@@ -205,6 +228,12 @@ public class AutoBalancer implements Declarable {
           sizeThreshold = Integer.valueOf(props.getProperty(SIZE_THRESHOLD_PERCENT));
           if (sizeThreshold <= 0 || sizeThreshold >= 100) {
             throw new GemFireConfigException(SIZE_THRESHOLD_PERCENT + " should be integer, 1 to 99");
+          }
+        }
+        if (props.getProperty(SIZE_MINIMUM) != null) {
+          sizeMinimum = Integer.valueOf(props.getProperty(SIZE_MINIMUM));
+          if (sizeMinimum <= 0) {
+            throw new GemFireConfigException(SIZE_MINIMUM + " should be greater than 0");
           }
         }
       }
@@ -250,7 +279,12 @@ public class AutoBalancer implements Declarable {
     boolean needsRebalancing() {
       // test cluster level status
       long transferSize = cacheFacade.getTotalTransferSize();
-      long totalSize = cacheFacade.getTotalDataSize();
+      if (transferSize <= sizeMinimum) {
+        return false;
+      }
+
+      Map<PartitionedRegion, InternalPRInfo> details = cacheFacade.getRegionMemberDetails();
+      long totalSize = cacheFacade.getTotalDataSize(details);
 
       if (totalSize > 0) {
         int transferPercent = (int) ((100.0 * transferSize) / totalSize);
@@ -264,8 +298,12 @@ public class AutoBalancer implements Declarable {
       return false;
     }
 
-    public int getSizeThreshold() {
+    int getSizeThreshold() {
       return sizeThreshold;
+    }
+
+    public long getSizeMinimum() {
+      return sizeMinimum;
     }
   }
 
@@ -275,18 +313,30 @@ public class AutoBalancer implements Declarable {
    */
   static class GeodeCacheFacade implements CacheOperationFacade {
     @Override
-    public long getTotalDataSize() {
-      long totalSize = 0;
+    public Map<PartitionedRegion, InternalPRInfo> getRegionMemberDetails() {
       GemFireCacheImpl cache = getCache();
+      Map<PartitionedRegion, InternalPRInfo> detailsMap = new HashMap<>();
       for (PartitionedRegion region : cache.getPartitionedRegions()) {
         LoadProbe probe = cache.getResourceManager().getLoadProbe();
         InternalPRInfo info = region.getRedundancyProvider().buildPartitionedRegionInfo(true, probe);
-        Set<PartitionMemberInfo> membersInfo = info.getPartitionMemberInfo();
-        for (PartitionMemberInfo member : membersInfo) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Region:{}, Member: {}, Size: {}", region.getFullPath(), member, member.getSize());
+        detailsMap.put(region, info);
+      }
+      return detailsMap;
+    }
+
+    @Override
+    public long getTotalDataSize(Map<PartitionedRegion, InternalPRInfo> details) {
+      long totalSize = 0;
+      if (details != null) {
+        for (PartitionedRegion region : details.keySet()) {
+          InternalPRInfo info = details.get(region);
+          Set<PartitionMemberInfo> membersInfo = info.getPartitionMemberInfo();
+          for (PartitionMemberInfo member : membersInfo) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Region:{}, Member: {}, Size: {}", region.getFullPath(), member, member.getSize());
+            }
+            totalSize += member.getSize();
           }
-          totalSize += member.getSize();
         }
       }
       return totalSize;
@@ -417,7 +467,9 @@ public class AutoBalancer implements Declarable {
 
     void incrementAttemptCounter();
 
-    long getTotalDataSize();
+    Map<PartitionedRegion, InternalPRInfo> getRegionMemberDetails();
+
+    long getTotalDataSize(Map<PartitionedRegion, InternalPRInfo> details);
 
     long getTotalTransferSize();
   }
@@ -455,5 +507,9 @@ public class AutoBalancer implements Declarable {
    */
   public void setCacheOperationFacade(CacheOperationFacade facade) {
     this.cacheFacade = facade;
+  }
+
+  public CacheOperationFacade getCacheOperationFacade() {
+    return this.cacheFacade;
   }
 }
