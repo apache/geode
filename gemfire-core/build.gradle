@@ -92,16 +92,6 @@ sourceSets {
   }
 }
  
-
-//  task rerunTest(type:Test) {
-//    include '**/CacheXml81DUnitTest.class'
-//    include '**/CacheXml82DUnitTest.class'
-//    include '**/ServerLauncherLocalDUnitTest.class'
-//    include '**/ServerLauncherLocalFileDUnitTest.class'
-//    include '**/JSONPdxClientServerDUnitTest.class'
-//    include '**/PRColocatedEquiJoinDUnitTest.class'
-//  }
-
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
