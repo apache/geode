@@ -182,13 +182,36 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *
    */
   public static CacheXmlParser parse(InputStream is) {
+	  
+	/**
+	*  The API doc http://java.sun.com/javase/6/docs/api/org/xml/sax/InputSource.html for the SAX
+	*  InputSource says: "... standard processing of both byte and character streams is to close 
+	*  them on as part of end-of-parse cleanup, so applications should not attempt to re-use such
+	*  streams after they have been handed to a parser." 
+	*
+	*  In order to block the parser from closing the stream, we wrap the InputStream in a filter, 
+	*  i.e., UnclosableInputStream, whose close() function does nothing.
+	*   
+	*/
+	class UnclosableInputStream extends BufferedInputStream{
+        public UnclosableInputStream(InputStream stream)
+        {
+            super(stream);
+        }
+
+        @Override
+        public void close()
+        {
+        }
+    }
+	 
     CacheXmlParser handler = new CacheXmlParser();
     try {
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE, true);
       factory.setValidating(true);
       factory.setNamespaceAware(true);     
-      BufferedInputStream bis = new BufferedInputStream(is);
+      UnclosableInputStream bis = new UnclosableInputStream(is);
       try {
         SAXParser parser = factory.newSAXParser();
         // Parser always reads one buffer plus a little extra worth before
