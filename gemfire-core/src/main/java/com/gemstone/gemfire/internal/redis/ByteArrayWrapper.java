@@ -12,7 +12,7 @@ import com.gemstone.gemfire.DataSerializer;
  * This class is a wrapper for the any Regions that need to store a 
  * byte[]. The only data this an instance will store is a byte[]
  * for the data but it is also serializable and comparable so it is able to be used
- * in querying. The hash code and to string variant are created lazily
+ * in querying
  * 
  * @author Vitaliy Gavrilov
  *
@@ -97,6 +97,13 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
     return this.hashCode;
   }
 
+
+  /**
+   * This equals is neither symmetric and therefore not transitive, 
+   * because a String with the same underlying bytes is considered
+   * equal. Clearly calling {@link String#equals(Object)) would not 
+   * yield the same result
+   */
   @Override
   public boolean equals(Object other) {
     if (other instanceof ByteArrayWrapper)
@@ -109,7 +116,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   /**
    * This is a byte to byte comparator, it is not lexicographical but purely compares
-   * byte values
+   * byte by byte values
    */
   @Override
   public int compareTo(ByteArrayWrapper other) {

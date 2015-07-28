@@ -23,7 +23,6 @@ public enum RedisDataType {
    * Strings Regions
    */
   REDIS_STRING {
-
     @Override
     public String toString() {
       return "string";
@@ -34,7 +33,6 @@ public enum RedisDataType {
    * Hashes Regions
    */
   REDIS_HASH {
-
     @Override
     public String toString() {
       return "hash";
@@ -45,7 +43,6 @@ public enum RedisDataType {
    * Lists Regions
    */
   REDIS_LIST {
-
     @Override
     public String toString() {
       return "list";
@@ -56,7 +53,6 @@ public enum RedisDataType {
    * Sets Regions
    */
   REDIS_SET {
-    
     @Override
     public String toString() {
       return "set";
@@ -67,7 +63,6 @@ public enum RedisDataType {
    * SortedSets Regions
    */
   REDIS_SORTEDSET {
-    
     @Override
     public String toString() {
       return "zset";
@@ -78,7 +73,6 @@ public enum RedisDataType {
    * HyperLogLog Regions
    */
   REDIS_HLL {
-    
     @Override
     public String toString() {
       return "hyperloglog";
@@ -89,7 +83,6 @@ public enum RedisDataType {
    * Regions protected from overwrite or deletion
    */
   REDIS_PROTECTED {
-    
     @Override
     public String toString() {
       return "protected";
@@ -100,8 +93,6 @@ public enum RedisDataType {
    * None
    */
   NONE {
-    
-    
     @Override
     public String toString() {
       return "none";

@@ -8,7 +8,7 @@ import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.Extendable;
 import com.gemstone.gemfire.internal.redis.RedisConstants.ArityDef;
-import com.gemstone.gemfire.internal.redis.RegionCache;
+import com.gemstone.gemfire.internal.redis.RegionProvider;
 
 public class ExpireExecutor extends AbstractExecutor implements Extendable {
 
@@ -29,7 +29,7 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
       return;
     }
     ByteArrayWrapper wKey = command.getKey();
-    RegionCache rC = context.getRegionCache();
+    RegionProvider rC = context.getRegionProvider();
         byte[] delayByteArray = commandElems.get(SECONDS_INDEX);
     long delay;
     try {

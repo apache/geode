@@ -33,7 +33,7 @@ public abstract class PushXExecutor extends ListExecutor implements Extendable {
     checkDataType(key, RedisDataType.REDIS_LIST, context);    
     pushElements(key, commandElems, 2, 3, keyRegion, pushType(), context);
     
-    int listSize = keyRegion.size();
+    int listSize = keyRegion.size() - LIST_EMPTY_SIZE;
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), listSize));
   }

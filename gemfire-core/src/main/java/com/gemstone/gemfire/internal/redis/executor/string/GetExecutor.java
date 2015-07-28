@@ -12,7 +12,7 @@ public class GetExecutor extends StringExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    Region<ByteArrayWrapper, ByteArrayWrapper> r= context.getRegionCache().getStringsRegion();
+    Region<ByteArrayWrapper, ByteArrayWrapper> r= context.getRegionProvider().getStringsRegion();
 
     if (command.getProcessedCommand().size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETEXECUTOR));

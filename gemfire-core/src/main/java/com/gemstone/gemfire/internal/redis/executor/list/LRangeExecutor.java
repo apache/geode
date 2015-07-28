@@ -43,7 +43,7 @@ public class LRangeExecutor extends ListExecutor {
       return;
     }
 
-    int listSize = keyRegion.size();
+    int listSize = keyRegion.size() - LIST_EMPTY_SIZE;
     if (listSize == 0) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
@@ -70,7 +70,7 @@ public class LRangeExecutor extends ListExecutor {
     
     List<Struct> range;
     try {
-      range = getRange(context, key, redisStart, redisStop);
+      range = getRange(context, key, redisStart, redisStop, keyRegion);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -81,14 +81,12 @@ public class LRangeExecutor extends ListExecutor {
       command.setResponse(Coder.getBulkStringArrayResponseOfValues(context.getByteBufAllocator(), range));
   }
 
-  private List<Struct> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start, int stop) throws Exception {
+  private List<Struct> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start, int stop, Region r) throws Exception {
 
     Query query = getQuery(key, ListQuery.LRANGE, context);
 
-    Object[] params = {new Integer(stop + 1)};
-
+    Object[] params = {Integer.valueOf(stop + 1)};
     SelectResults<Struct> results = (SelectResults<Struct>) query.execute(params);
-
     int size = results.size();
     if (results == null || size <= start) {
       return null;

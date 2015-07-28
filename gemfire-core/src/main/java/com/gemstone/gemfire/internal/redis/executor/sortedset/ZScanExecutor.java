@@ -2,6 +2,7 @@ package com.gemstone.gemfire.internal.redis.executor.sortedset;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -31,7 +32,7 @@ public class ZScanExecutor extends AbstractScanExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    Region<ByteArrayWrapper, DoubleWrapper> keyRegion = (Region<ByteArrayWrapper, DoubleWrapper>) context.getRegionCache().getRegion(key);
+    Region<ByteArrayWrapper, DoubleWrapper> keyRegion = (Region<ByteArrayWrapper, DoubleWrapper>) context.getRegionProvider().getRegion(key);
     checkDataType(key, RedisDataType.REDIS_SORTEDSET, context);
     if (keyRegion == null) {
       command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), new ArrayList<String>()));
@@ -96,7 +97,7 @@ public class ZScanExecutor extends AbstractScanExecutor {
       return;
     }
 
-    List<ByteArrayWrapper> returnList = (List<ByteArrayWrapper>) getIteration(keyRegion.entrySet(), matchPattern, count, cursor);
+    List<ByteArrayWrapper> returnList = (List<ByteArrayWrapper>) getIteration(new HashSet(keyRegion.entrySet()), matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }

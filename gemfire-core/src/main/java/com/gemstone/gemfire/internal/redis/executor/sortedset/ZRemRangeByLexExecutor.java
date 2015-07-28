@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.internal.redis.executor.sortedset;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class ZRemRangeByLexExecutor extends SortedSetExecutor {
 
   private Collection<ByteArrayWrapper> getRange(ByteArrayWrapper key, Region<ByteArrayWrapper, DoubleWrapper> keyRegion, ExecutionHandlerContext context, ByteArrayWrapper start, ByteArrayWrapper stop, boolean startInclusive, boolean stopInclusive) throws Exception {
     if (start.equals("-") && stop.equals("+"))
-      return keyRegion.keySet();
+      return new ArrayList<ByteArrayWrapper>(keyRegion.keySet());
     else if (start.equals("+") || stop.equals("-"))
       return null;
 

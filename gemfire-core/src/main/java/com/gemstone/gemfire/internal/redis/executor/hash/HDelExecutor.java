@@ -43,7 +43,7 @@ public class HDelExecutor extends HashExecutor {
         numDeleted++;
     }
     if (keyRegion.isEmpty()) {
-      context.getRegionCache().removeKey(key, RedisDataType.REDIS_HASH);
+      context.getRegionProvider().removeKey(key, RedisDataType.REDIS_HASH);
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }

@@ -12,12 +12,12 @@ public abstract class HashExecutor extends AbstractExecutor {
   
   @SuppressWarnings("unchecked")
   protected Region<ByteArrayWrapper, ByteArrayWrapper> getOrCreateRegion(ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
-   return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionCache().getOrCreateRegion(key, type, context);
+   return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider().getOrCreateRegion(key, type, context);
   }
   
   @SuppressWarnings("unchecked")
   protected Region<ByteArrayWrapper, ByteArrayWrapper> getRegion(ExecutionHandlerContext context, ByteArrayWrapper key) {
-   return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionCache().getRegion(key);
+   return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider().getRegion(key);
   }
   
 }

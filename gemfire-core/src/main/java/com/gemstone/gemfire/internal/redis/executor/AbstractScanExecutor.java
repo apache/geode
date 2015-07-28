@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.internal.redis.executor.org.apache.hadoop.fs.GlobPattern;
+import com.gemstone.gemfire.internal.redis.org.apache.hadoop.fs.GlobPattern;
 
 
 public abstract class AbstractScanExecutor extends AbstractExecutor {

@@ -52,7 +52,7 @@ public class LSetExecutor extends ListExecutor {
       return;
     }
 
-    int listSize = keyRegion.size();
+    int listSize = keyRegion.size() - LIST_EMPTY_SIZE;
     if (index < 0)
       index += listSize;
     if (index < 0 || index > listSize) {
@@ -79,7 +79,7 @@ public class LSetExecutor extends ListExecutor {
   private Integer getIndexKey(ExecutionHandlerContext context, ByteArrayWrapper key, int index) throws Exception {
     Query query = getQuery(key, ListQuery.LSET, context);
 
-    Object[] params = {new Integer(index + 1)};
+    Object[] params = {Integer.valueOf(index + 1)};
     
     SelectResults<Integer> results = (SelectResults<Integer>) query.execute(params);
     int size = results.size();

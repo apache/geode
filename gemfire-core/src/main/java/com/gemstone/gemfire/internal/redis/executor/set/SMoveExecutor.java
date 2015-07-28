@@ -32,7 +32,7 @@ public class SMoveExecutor extends SetExecutor {
     checkDataType(source, RedisDataType.REDIS_SET, context);
     checkDataType(destination, RedisDataType.REDIS_SET, context);
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> sourceRegion = (Region<ByteArrayWrapper, Boolean>) context.getRegionCache().getRegion(source);
+    Region<ByteArrayWrapper, Boolean> sourceRegion = (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(source);
 
     if (sourceRegion == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
