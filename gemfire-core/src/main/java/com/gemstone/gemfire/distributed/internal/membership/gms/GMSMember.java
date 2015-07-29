@@ -20,6 +20,7 @@ import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -36,8 +37,11 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  */
 public class GMSMember implements NetMember, DataSerializableFixedID {
+  // whether to show UUID info in toString()
+  private final static boolean SHOW_UUIDS = Boolean.getBoolean("gemfire.show_UUIDs");
+  
   private int udpPort=0;
-  private boolean shouldNotBeCoordinator;
+  private boolean preferredForCoordinator;
   private boolean splitBrainEnabled;
   private byte memberWeight;
   private InetAddress inetAddr;
@@ -84,7 +88,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    */
   public GMSMember(GMSMember m) {
     udpPort=m.udpPort;
-    shouldNotBeCoordinator=m.shouldNotBeCoordinator;
+    preferredForCoordinator=m.preferredForCoordinator;
     splitBrainEnabled=m.splitBrainEnabled;
     memberWeight=m.memberWeight;
     inetAddr=m.inetAddr;
@@ -124,16 +128,22 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
    * @param splitBrainEnabled whether the member has network partition detection enabled
-   * @param canBeCoordinator whether the member can be group coordinator
-   * @param version TODO
+   * @param preferredForCoordinator whether the member can be group coordinator
+   * @param version the member's version ordinal
+   * @param msbs - most significant bytes of UUID
+   * @param lsbs - least significant bytes of UUID
    */
-  public GMSMember(InetAddress i, int p, boolean splitBrainEnabled, boolean canBeCoordinator, short version) {
+  public GMSMember(InetAddress i, int p, boolean splitBrainEnabled, boolean preferredForCoordinator,
+      short version,
+      long msbs, long lsbs) {
     setAttributes(MemberAttributes.DEFAULT);
     this.inetAddr = i;
     this.udpPort=p;
     this.splitBrainEnabled = splitBrainEnabled;
-    this.shouldNotBeCoordinator = !canBeCoordinator;
+    this.preferredForCoordinator = preferredForCoordinator;
     this.versionOrdinal = version;
+    this.uuidMSBs = msbs;
+    this.uuidLSBs = lsbs;
   }
 
   public int getPort() {
@@ -149,7 +159,11 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
   
   public boolean preferredForCoordinator() {
-    return !this.shouldNotBeCoordinator;
+    return this.preferredForCoordinator;
+  }
+  
+  public void setPreferredForCoordinator(boolean preferred) {
+    this.preferredForCoordinator = preferred;
   }
   
   public InetAddress getInetAddress() {
@@ -278,8 +292,12 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(100);
+    String uuid = SHOW_UUIDS? (";uuid=" + getUUID().toStringLong()) 
+        : ((this.uuidLSBs == 0 && this.uuidMSBs == 0)? "; no uuid" : "; uuid set");
+
     sb.append("GMSMember[addr=").append(inetAddr).append(";port=").append(udpPort)
       .append(";processId=").append(processId).append(";name=").append(name)
+      .append(uuid)
       .append("]");
     return sb.toString();
   }
@@ -287,10 +305,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   
   public int getUdpPort() {
     return udpPort;
-  }
-
-  public boolean isShouldNotBeCoordinator() {
-    return shouldNotBeCoordinator;
   }
 
   public boolean isSplitBrainEnabled() {
@@ -335,10 +349,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   public void setUdpPort(int udpPort) {
     this.udpPort = udpPort;
-  }
-
-  public void setShouldNotBeCoordinator(boolean shouldNotBeCoordinator) {
-    this.shouldNotBeCoordinator = shouldNotBeCoordinator;
   }
 
   public void setSplitBrainEnabled(boolean splitBrainEnabled) {
@@ -397,7 +407,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
 
   static final int SB_ENABLED = 0x01;
-  static final int SHOULD_NOT_BE_COORD = 0x02;
+  static final int PREFERRED_FOR_COORD = 0x02;
   
   @Override
   public void toData(DataOutput out) throws IOException {
@@ -405,7 +415,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     
     int flags = 0;
     if (splitBrainEnabled) flags |= SB_ENABLED;
-    if (shouldNotBeCoordinator) flags |= SHOULD_NOT_BE_COORD;
+    if (preferredForCoordinator) flags |= PREFERRED_FOR_COORD;
     out.writeInt(flags);
 
     DataSerializer.writeInetAddress(inetAddr, out);
@@ -417,8 +427,10 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     out.writeInt(vmKind);
     DataSerializer.writeString(name,  out);
     DataSerializer.writeStringArray(groups, out);
-    out.writeLong(uuidLSBs);
     out.writeLong(uuidMSBs);
+    out.writeLong(uuidLSBs);
+//    InternalDataSerializer.writeSignedVL(uuidLSBs, out);
+//    InternalDataSerializer.writeSignedVL(uuidMSBs, out);
   }
 
   @Override
@@ -427,7 +439,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     
     int flags = in.readInt();
     this.splitBrainEnabled = (flags & SB_ENABLED) != 0;
-    this.shouldNotBeCoordinator = (flags & SHOULD_NOT_BE_COORD) != 0;
+    this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD) != 0;
     
     this.inetAddr = DataSerializer.readInetAddress(in);
     this.udpPort = in.readInt();
@@ -440,18 +452,24 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.groups = DataSerializer.readStringArray(in);
     this.uuidLSBs = in.readLong();
     this.uuidMSBs = in.readLong();
+//    this.uuidLSBs = InternalDataSerializer.readUnsignedVL(in);
+//    this.uuidMSBs = InternalDataSerializer.readUnsignedVL(in);
   }
 
   @Override
   public void writeAdditionalData(DataOutput out) throws IOException {
-    out.writeLong(uuidLSBs);
     out.writeLong(uuidMSBs);
+    out.writeLong(uuidLSBs);
+//    InternalDataSerializer.writeSignedVL(uuidLSBs, out);
+//    InternalDataSerializer.writeSignedVL(uuidMSBs, out);
   }
 
   @Override
   public void readAdditionalData(DataInput in) throws ClassNotFoundException,
       IOException {
-    this.uuidLSBs = in.readLong();
     this.uuidMSBs = in.readLong();
+    this.uuidLSBs = in.readLong();
+//    this.uuidLSBs = InternalDataSerializer.readUnsignedVL(in);
+//    this.uuidMSBs = InternalDataSerializer.readUnsignedVL(in);
   }
 }

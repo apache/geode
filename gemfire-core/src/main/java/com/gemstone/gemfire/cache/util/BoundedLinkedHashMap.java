@@ -18,7 +18,6 @@ import java.util.Map;
  *
  * @since 4.2
  */
-@Deprecated
 public class BoundedLinkedHashMap extends LinkedHashMap
 {
   private static final long serialVersionUID = -3419897166186852692L;

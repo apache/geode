@@ -15,7 +15,7 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Responses;
 
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 
 /**
  * JGroups will not send messages that have IpAddress destination addresses.
@@ -29,7 +29,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberService
  */
 public class AddressManager extends Protocol {
 
-  private static final Logger logger = GMSMemberServices.getLogger();
+  private static final Logger logger = Services.getLogger();
   
   private UDP udp;
   private Method setPingData;
@@ -51,6 +51,7 @@ public class AddressManager extends Protocol {
         try {
           if (laddr instanceof JGAddress) {
             PingData pd = new PingData(laddr, true, laddr.toString(), newIpAddress(laddr));
+            logger.debug("AddressManager.FIND_MBRS adding response {}", pd);
             responses.addResponse(pd, false);
             updateUDPCache(pd);
           }

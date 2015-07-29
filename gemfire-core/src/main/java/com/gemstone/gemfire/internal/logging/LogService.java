@@ -121,8 +121,8 @@ public class LogService extends LogManager {
   private static final void setLog4jConfigFileProperty() {
     // fix bug #52175
     final URL configInClasspath = ConfigLocator.findConfigInClasspath();
-    if (configInClasspath != null
-        && !configInClasspath.getPath().contains("jgroups-")) { // jgroups jar contains a log4j config file!
+    if (configInClasspath != null) {
+//      System.out.println("log config is " + configInClasspath);
       // Log4J 2 will find the configuration file in classpath so do nothing
       configFileInformation = "Using log4j configuration found in classpath: '" + configInClasspath.toString() + "'";
       StatusLogger.getLogger().info(configFileInformation);
@@ -135,6 +135,7 @@ public class LogService extends LogManager {
     if (configFileName != null) {
       final URL configUrl = LogService.class.getResource(configFileName);// log4j2-cli.xml is non-null, external is null
       if (configUrl == null) {
+//        System.out.println("log config (2) is " + configUrl);
         //We will let log4j2 handle the null case and just log what file we are attempting to use
         configFileInformation = "Using log4j configuration file specified by " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + ": '" + configFileName + "'";
         StatusLogger.getLogger().info(configFileInformation);
@@ -144,6 +145,7 @@ public class LogService extends LogManager {
         //If the resource can be found and in cases where the resource is in gemfire jar,
         //we set the log location to the file that was found
         String configFilePropertyValue = configUrl.toString();
+//        System.out.println("log config (3) is " + configFilePropertyValue);
         System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFilePropertyValue);
         configFileInformation = "Using log4j configuration file specified by " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + ": '" + configFilePropertyValue + "'";
         StatusLogger.getLogger().info(configFileInformation);
@@ -159,6 +161,7 @@ public class LogService extends LogManager {
     // If one of the default log4j config files exists in the current directory then use it.
     File log4jConfigFile = findLog4jConfigInCurrentDir();
     if (log4jConfigFile != null) {
+//      System.out.println("log config (4) is " + log4jConfigFile);
       String filePath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(log4jConfigFile);
       String value = new File(filePath).toURI().toString();
       String configFilePropertyValue = new File(filePath).toURI().toString();
@@ -170,6 +173,7 @@ public class LogService extends LogManager {
 
     // Use the log4j config file found on the classpath in the gemfire jar file.
     final URL configUrl = LogService.class.getResource(DEFAULT_CONFIG);
+//    System.out.println("using default log config " + configUrl);
     String configFilePropertyValue = configUrl.toString();
     System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFilePropertyValue);
     configFileInformation = "Setting " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + " to specify log4j configuration file: '" + configFilePropertyValue + "'";

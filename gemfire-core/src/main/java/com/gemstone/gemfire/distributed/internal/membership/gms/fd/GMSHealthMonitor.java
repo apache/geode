@@ -3,41 +3,32 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.fd;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
 
 /** Failure Detection */
 public class GMSHealthMonitor implements HealthMonitor {
 
-  private GMSMemberServices services;
+  private Services services;
   private NetView currentView;
 
   public static void loadEmergencyClasses() {
   }
 
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.membership.gms.fd.HealthMonitor#messageReceivedFrom(com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember)
-   */
   @Override
   public void contactedBy(InternalDistributedMember sender) {
     // TODO Auto-generated method stub
   }
 
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.membership.gms.fd.HealthMonitor#suspectMember(com.gemstone.gemfire.distributed.DistributedMember, java.lang.String)
-   */
   @Override
   public void suspect(InternalDistributedMember mbr, String reason) {
     // TODO Auto-generated method stub
   }
 
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.membership.gms.fd.HealthMonitor#checkSuspect(com.gemstone.gemfire.distributed.DistributedMember, java.lang.String)
-   */
   @Override
-  public void checkSuspect(DistributedMember mbr, String reason) {
+  public boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval) {
     // TODO Auto-generated method stub
-    
+    return true;
   }
 
   public void playDead(boolean b) {
@@ -53,7 +44,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public void init(GMSMemberServices s) {
+  public void init(Services s) {
     // TODO Auto-generated method stub
     
   }

@@ -6,25 +6,28 @@ import java.io.IOException;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 
-public class ViewAckMessage extends DistributionMessage {
+public class ViewAckMessage extends HighPriorityDistributionMessage {
 
   int viewId;
+  boolean preparing;
   NetView alternateView;
   
-  public ViewAckMessage(InternalDistributedMember recipient, int viewId) {
+  public ViewAckMessage(InternalDistributedMember recipient, int viewId, boolean preparing) {
     super();
     setRecipient(recipient);
     this.viewId = viewId;
+    this.preparing = preparing;
   }
   
   public ViewAckMessage(InternalDistributedMember recipient, NetView alternateView) {
     super();
     setRecipient(recipient);
     this.alternateView = alternateView;
+    this.preparing = true;
   }
   
   public ViewAckMessage() {
@@ -33,6 +36,14 @@ public class ViewAckMessage extends DistributionMessage {
   
   public int getViewId() {
     return viewId;
+  }
+  
+  public NetView getAlternateView() {
+    return this.alternateView;
+  }
+  
+  public boolean isPrepareAck() {
+    return preparing;
   }
   
   @Override
@@ -55,6 +66,7 @@ public class ViewAckMessage extends DistributionMessage {
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     out.writeInt(this.viewId);
+    out.writeBoolean(this.preparing);
     DataSerializer.writeObject(this.alternateView, out);
   }
 
@@ -62,13 +74,14 @@ public class ViewAckMessage extends DistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.viewId = in.readInt();
+    this.preparing = in.readBoolean();
     this.alternateView = DataSerializer.readObject(in);
   }
   
   @Override
   public String toString() {
     String s = getSender() == null? getRecipientsDescription() : ""+getSender();
-    return "ViewAckMessage("+s+"; "+this.viewId+"; altview="+this.alternateView+")";
+    return "ViewAckMessage("+s+"; "+this.viewId+"; preparing="+preparing+"; altview="+this.alternateView+")";
   }
 
 }

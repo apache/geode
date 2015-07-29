@@ -26,7 +26,7 @@ import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
 import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Locator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
@@ -47,7 +47,7 @@ public class GMSLocator implements Locator, NetLocator {
   private final boolean networkPartitionDetectionEnabled;
   private final String locatorString;
   private final List<InetSocketAddress> locators;
-  private GMSMemberServices services;
+  private Services services;
   
   private Set<InternalDistributedMember> registrants = new HashSet<InternalDistributedMember>();
 
@@ -80,10 +80,12 @@ public class GMSLocator implements Locator, NetLocator {
   
   @Override
   public void setMembershipManager(MembershipManager mgr) {
-    logger.info("Peer locator is connecting to local membership services");
-    services = ((GMSMembershipManager)mgr).getServices();
-    services.setLocator(this);
-    this.view = services.getJoinLeave().getView();
+    if (services == null) {
+      logger.info("Peer locator is connecting to local membership services");
+      services = ((GMSMembershipManager)mgr).getServices();
+      services.setLocator(this);
+      this.view = services.getJoinLeave().getView();
+    }
   }
   
   @Override
@@ -152,7 +154,9 @@ public class GMSLocator implements Locator, NetLocator {
             }
             for (InternalDistributedMember mbr: registrants) {
               if (mbr != coord  &&  (coord==null  ||  mbr.compareTo(coord) < 0)) {
-                coord = mbr;
+                if (mbr.getNetMember().preferredForCoordinator() || !mbr.getNetMember().splitBrainEnabled()) {
+                  coord = mbr;
+                }
               }
             }
           }

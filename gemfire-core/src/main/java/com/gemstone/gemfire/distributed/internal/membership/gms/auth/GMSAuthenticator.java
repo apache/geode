@@ -2,14 +2,14 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 public class GMSAuthenticator implements Authenticator {
 
   @Override
-  public void init(GMSMemberServices s) {
+  public void init(Services s) {
     // TODO Auto-generated method stub
 
   }

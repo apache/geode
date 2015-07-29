@@ -13,6 +13,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +64,7 @@ import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.SuspectMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
@@ -89,7 +90,7 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
 
 public class GMSMembershipManager implements MembershipManager, Manager
 {
-  private static final Logger logger = GMSMemberServices.getLogger();
+  private static final Logger logger = Services.getLogger();
   
   /** product version to use for multicast serialization */
   volatile boolean disableMulticastForRollingUpgrade;
@@ -766,7 +767,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   private SystemTimer cleanupTimer;
 
-  private GMSMemberServices services;
+  private Services services;
 
 
   @Override
@@ -828,7 +829,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   @Override
-  public void init(GMSMemberServices services) {
+  public void init(Services services) {
     this.services = services;
 
     Assert.assertTrue(services != null);
@@ -920,8 +921,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
 
-  /** this is invoked by JGroups when there is a loss of quorum in the membership system */
-  public void quorumLost(Set failures, List remaining) {
+  /** this is invoked by JoinLeave when there is a loss of quorum in the membership system */
+  public void quorumLost(Collection<InternalDistributedMember> failures, NetView view) {
     // notify of quorum loss if split-brain detection is enabled (meaning we'll shut down) or
     // if the loss is more than one member
     
@@ -931,6 +932,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
     
     if (notify) {
+      List<InternalDistributedMember> remaining = new ArrayList<InternalDistributedMember>(view.getMembers());
+      remaining.removeAll(failures);
+      
       if (inhibitForceDisconnectLogging) {
         if (logger.isDebugEnabled()) {
           logger.debug("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
@@ -1616,7 +1620,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     return address;
   }
   
-  public GMSMemberServices getServices() {
+  public Services getServices() {
     return services;
   }
 
@@ -1902,7 +1906,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   public boolean verifyMember(DistributedMember mbr, String reason) {
     if (mbr != null && memberExists((InternalDistributedMember)mbr)) {
-      this.services.getHealthMonitor().checkSuspect(mbr, reason);
+      return this.services.getHealthMonitor().checkIfAvailable(mbr, reason, true);
     }
     return false;
   }
@@ -1981,11 +1985,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       return new HashSet<InternalDistributedMember>(members);
     } // catch ConnectionExceptions
-    catch (ToDataException e) {
-      throw e; // error in user data
-    }
-    catch (CancelException e) {
-      // not interesting, we're just shutting down
+    catch (ToDataException | CancelException e) {
       throw e;
     }
     catch (IOException e) {
@@ -2947,7 +2947,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   @Override
   public void setSecurityLogWriter(InternalLogWriter writer) {
-    GMSMemberServices.setSecurityLogWriter(writer);
+    Services.setSecurityLogWriter(writer);
   }
 
 }

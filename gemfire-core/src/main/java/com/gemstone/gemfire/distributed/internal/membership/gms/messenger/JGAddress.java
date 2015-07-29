@@ -28,6 +28,10 @@ import com.gemstone.gemfire.internal.SocketCreator;
 
 public class JGAddress extends UUID {
   private static final long       serialVersionUID=-1818672332115113291L;
+
+  // whether to show UUID info in toString()
+  private final static boolean SHOW_UUIDS = Boolean.getBoolean("gemfire.show_UUIDs");
+
   private InetAddress             ip_addr;
   private int                     port;
   private int                     vmViewId;
@@ -107,6 +111,11 @@ public class JGAddress extends UUID {
       if (vmViewId >= 0) {
         sb.append("<v").append(vmViewId).append('>');
       }
+      if (SHOW_UUIDS) {
+        sb.append("(").append(toStringLong()).append(")");
+      } else if (mostSigBits == 0 && leastSigBits == 0) {
+        sb.append("(no uuid set)");
+      }
       sb.append(":").append(port);
       return sb.toString();
   }
@@ -145,6 +154,14 @@ public class JGAddress extends UUID {
       out.writeInt(vmViewId);
       out.writeLong(mostSigBits);
       out.writeLong(leastSigBits);
+  }
+  
+  public long getUUIDMsbs() {
+    return mostSigBits;
+  }
+  
+  public long getUUIDLsbs() {
+    return leastSigBits;
   }
 
   public void readFrom(DataInput in) throws Exception {

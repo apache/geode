@@ -1,12 +1,14 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
 import java.io.NotSerializableException;
+import java.util.Collection;
 import java.util.Set;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
+import com.gemstone.gemfire.distributed.internal.membership.NetView;
 
 /**
  * Manager presents the GMS services to the outside world and
@@ -29,6 +31,8 @@ public interface Manager extends Service, MessageHandler {
   Set<InternalDistributedMember> send(DistributionMessage m) throws NotSerializableException;
 
   void forceDisconnect(String reason);
+  
+  void quorumLost(Collection<InternalDistributedMember> failures, NetView view);
 
   void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
 

@@ -60,6 +60,9 @@ public final class InternalDistributedMember
 {
   private final static long serialVersionUID = -2785249969777296507L;
   
+  // whether to show NetMember components in toString()
+  private final boolean SHOW_NETMEMBER = Boolean.getBoolean("gemfire.show_netmembers");
+  
   protected NetMember netMbr; // the underlying member object, e.g. from JGroups
 
   /**
@@ -719,12 +722,6 @@ public final class InternalDistributedMember
           break;
         }
         sb.append(vmStr);
-        // for split-brain and security debugging we need to know if the
-        // member has the "can't be coordinator" bit set
-//        GMSMember jgm = (GMSMember)ipAddr;
-//        if (!jgm.getAddress().canBeCoordinator()) {
-//          sb.append("<p>");
-//        }
         sb.append(")");
       }
       if (netMbr.splitBrainEnabled()) {
@@ -758,6 +755,10 @@ public final class InternalDistributedMember
       if (this.version != Version.CURRENT.ordinal()) {
         sb.append("(version:").append(Version.toString(this.version))
             .append(')');
+      }
+
+      if (SHOW_NETMEMBER) {
+        sb.append("[[").append(this.netMbr).append("]]");
       }
 
       // leave out Roles on purpose
@@ -1075,6 +1076,10 @@ public final class InternalDistributedMember
          InternalDataSerializer.getVersionForDataStream(in).ordinal(), attr);
 
      synchPayload();
+
+     if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90)>=0) {
+       netMbr.readAdditionalData(in);
+     }
    }
 
 
@@ -1099,6 +1104,10 @@ public final class InternalDistributedMember
      }
      // write name last to fix bug 45160
      DataSerializer.writeString(this.name, out);
+
+     if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90)>=0) {
+       netMbr.writeAdditionalData(out);
+     }
    }
 
   /**

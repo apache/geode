@@ -88,6 +88,8 @@ public class TcpClient {
     } else {
       ipAddr = new InetSocketAddress(addr, port); // fix for bug 30810
     }
+    
+    logger.debug("TcpClient sending {} to {}", request, ipAddr);
 
     // Get the GemFire version of the TcpServer first, before sending any other request.
     short serverVersion = getServerVersion(ipAddr, REQUEST_TIMEOUT).shortValue();

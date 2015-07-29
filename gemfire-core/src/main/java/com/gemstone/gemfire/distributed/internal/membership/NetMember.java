@@ -22,17 +22,17 @@ import java.net.InetAddress;
 public interface NetMember
 {
 
-  public abstract void setAttributes(MemberAttributes args);
+  public void setAttributes(MemberAttributes args);
 
-  public abstract MemberAttributes getAttributes();
+  public MemberAttributes getAttributes();
 
-  public abstract InetAddress getInetAddress();
+  public InetAddress getInetAddress();
 
-  public abstract int getPort();
+  public int getPort();
   
-  public abstract void setPort(int p);
+  public void setPort(int p);
 
-  public abstract boolean isMulticastAddress();
+  public boolean isMulticastAddress();
   
   public short getVersionOrdinal();
   
@@ -40,13 +40,21 @@ public interface NetMember
    * return a flag stating whether the member has network partition detection enabled
    * @since 5.6
    */
-  public abstract boolean splitBrainEnabled();
+  public boolean splitBrainEnabled();
   
   /**
    * return a flag stating whether the member can be the membership coordinator
    * @since 5.6
    */
-  public abstract boolean preferredForCoordinator();
+  public boolean preferredForCoordinator();
+  
+  /**
+   * Set whether this member ID is preferred for coordinator.  This
+   * is mostly useful for unit tests because it does not distribute
+   * this status to other members in the distributed system. 
+   * @param preferred
+   */
+  public void setPreferredForCoordinator(boolean preferred);
   
   public byte getMemberWeight();
 
@@ -55,7 +63,7 @@ public interface NetMember
    * Excludes channel_name from comparison.
    * @return 0 for equality, value less than 0 if smaller, greater than 0 if greater.
    */
-  public abstract int compare(NetMember other);
+  public int compare(NetMember other);
 
   /**
    * implements the java.lang.Comparable interface
@@ -66,18 +74,18 @@ public interface NetMember
    * @exception java.lang.ClassCastException - if the specified object's type prevents it
    *            from being compared to this Object.
    */
-  public abstract int compareTo(Object o);
+  public int compareTo(Object o);
 
-  public abstract boolean equals(Object obj);
+  public boolean equals(Object obj);
 
-  public abstract int hashCode();
+  public int hashCode();
 
-  public abstract String toString();
+  public String toString();
   
   /** write identity information not known by DistributedMember instances */
-  public abstract void writeAdditionalData(DataOutput out) throws IOException;
+  public void writeAdditionalData(DataOutput out) throws IOException;
   
   /** read identity information not known by DistributedMember instances */
-  public abstract void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException;
+  public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException;
 
  }

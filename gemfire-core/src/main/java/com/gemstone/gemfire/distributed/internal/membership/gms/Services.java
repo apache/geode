@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 
-public class GMSMemberServices {
+public class Services {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -77,7 +77,7 @@ public class GMSMemberServices {
   
 
 
-  public GMSMemberServices(
+  public Services(
       DistributedMembershipListener listener, DistributionConfig config,
       RemoteTransportConfig transport, DMStats stats) {
     this.cancelCriterion = new Stopper();

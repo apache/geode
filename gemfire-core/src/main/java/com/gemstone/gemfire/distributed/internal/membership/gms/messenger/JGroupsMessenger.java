@@ -52,7 +52,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
@@ -71,7 +71,7 @@ import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 
 public class JGroupsMessenger implements Messenger {
 
-  private static final Logger logger = GMSMemberServices.getLogger();
+  private static final Logger logger = Services.getLogger();
 
   /**
    * The system property that specifies the name of a file from which to read
@@ -98,7 +98,7 @@ public class JGroupsMessenger implements Messenger {
   JChannel myChannel;
   InternalDistributedMember localAddress;
   JGAddress jgAddress;
-  GMSMemberServices services;
+  Services services;
 
   /** handlers that receive certain classes of messages instead of the Manager */
   Map<Class, MessageHandler> handlers = new ConcurrentHashMap<Class, MessageHandler>();
@@ -115,7 +115,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public void init(GMSMemberServices s) {
+  public void init(Services s) {
     this.services = s;
 
     RemoteTransportConfig transport = services.getConfig().getTransport();
@@ -232,8 +232,6 @@ public class JGroupsMessenger implements Messenger {
       myChannel.setReceiver(new JGroupsReceiver());
       myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
       
-    } catch (IllegalStateException e) {
-      throw new SystemConnectException("unable to create jgroups channel", e);
     } catch (Exception e) {
       throw new SystemConnectException("unable to create jgroups channel", e);
     }
@@ -297,12 +295,8 @@ public class JGroupsMessenger implements Messenger {
         getAddress.setAccessible(true);
         ipaddr = (IpAddress)getAddress.invoke(udp, new Object[0]);
         this.jgAddress = new JGAddress(logicalAddress, ipaddr);
-      } catch (NoSuchMethodException e) {
+      } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
         logger.info("Unable to find getPhysicallAddress method in UDP - parsing its address instead");
-      } catch (InvocationTargetException e) {
-        logger.info("Unable to invoke getPhysicallAddress method in UDP - parsing its address instead");
-      } catch (IllegalAccessException e) {
-        logger.info("Unable to access getPhysicallAddress method in UDP - parsing its address instead");
       }
       
       if (this.jgAddress == null) {
@@ -398,6 +392,7 @@ public class JGroupsMessenger implements Messenger {
         problem = e;
       }
       catch (Exception e) {
+        logger.info("caught unexpected exception", e);
         Throwable cause = e.getCause();
         if (cause instanceof ForcedDisconnectException) {
           problem = (Exception) cause;
@@ -543,10 +538,6 @@ public class JGroupsMessenger implements Messenger {
     msg.setDest(null);
     msg.setSrc(src);
     //log.info("Creating message with payload " + gfmsg);
-    if (gfmsg instanceof com.gemstone.gemfire.internal.cache.DistributedCacheOperation.CacheOperationMessage) {
-      com.gemstone.gemfire.internal.cache.DistributedCacheOperation.CacheOperationMessage cmsg =
-          (com.gemstone.gemfire.internal.cache.DistributedCacheOperation.CacheOperationMessage)gfmsg;
-    }
     if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
         || gfmsg instanceof HighPriorityDistributionMessage) {
       msg.setFlag(Flag.OOB);
@@ -558,7 +549,7 @@ public class JGroupsMessenger implements Messenger {
       HeapDataOutputStream out_stream =
         new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
         Version.CURRENT.writeOrdinal(out_stream, true);
-//        DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
+        DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
         DataSerializer.writeObject(gfmsg, out_stream);
         msg.setBuffer(out_stream.toByteArray());
     }
@@ -582,6 +573,10 @@ public class JGroupsMessenger implements Messenger {
     
     int messageLength = jgmsg.getLength();
     
+    if (logger.isDebugEnabled()) {
+      logger.debug("deserializing a message of length "+messageLength);
+    }
+    
     if (messageLength == 0) {
       // jgroups messages with no payload are used for protocol interchange, such
       // as STABLE_GOSSIP
@@ -604,24 +599,18 @@ public class JGroupsMessenger implements Messenger {
             ordinal, true));
       }
       
-      Address s = jgmsg.getSrc();
-      sender = getMemberFromView(s, ordinal);
+      GMSMember m = DataSerializer.readObject(dis);
+      sender = getMemberFromView(m, ordinal);
 
       result = DataSerializer.readObject(dis);
       if (result instanceof DistributionMessage) {
-        ((DistributionMessage) result).setSender(sender);
+        ((DistributionMessage)result).setSender(sender);
       }
 
       logger.debug("JGroupsReceiver deserialized {}", result);
 
     }
-    catch (ClassNotFoundException e) {
-      problem = e;
-    }
-    catch (IOException e) {
-      problem = e;
-    }
-    catch (RuntimeException e) {
+    catch (ClassNotFoundException | IOException | RuntimeException e) {
       problem = e;
     }
     if (problem != null) {
@@ -652,39 +641,17 @@ public class JGroupsMessenger implements Messenger {
   /**
    * returns the member ID for the given GMSMember object
    */
-  private InternalDistributedMember getMemberFromView(Address jgId, short version) {
+  private InternalDistributedMember getMemberFromView(GMSMember jgId, short version) {
     NetView v = services.getJoinLeave().getView();
-    GMSMember gm = null;
-    
-    if ( !(jgId instanceof JGAddress) ) {
-      // not one of our addresses - gather info from JGroups to form
-      // a GMSAddress or fish for the ID using the UUID
-      IpAddress pa = (IpAddress)myChannel.down(new Event(Event.GET_PHYSICAL_ADDRESS, jgId));
-      if (pa == null) {
-        // worst-case scenario - we only have a UUID
-        for (InternalDistributedMember m: v.getMembers()) {
-          if (((GMSMember)m.getNetMember()).getUUID().equals(jgId)) {
-            return m;
-          }
-        }
-      }
-      gm = new GMSMember(pa.getIpAddress(), pa.getPort(),
-          false/*unknown*/, false/*unknown*/, version);
-    }
-    else {
-      JGAddress addr = (JGAddress)jgId;
-      gm = new GMSMember(addr.getInetAddress(), addr.getPort(),
-          false/*unknown*/, false/*unknown*/, version);
-    }
     
     if (v != null) {
       for (InternalDistributedMember m: v.getMembers()) {
-        if (m.getNetMember().equals(jgId)) {
+        if (((GMSMember)m.getNetMember()).equals(jgId)) {
           return m;
         }
       }
     }
-    return new InternalDistributedMember(gm);
+    return new InternalDistributedMember(jgId);
   }
 
 

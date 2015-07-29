@@ -14,7 +14,7 @@ import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.internal.SocketCreator;
 
 public class GMSUtil {
-  static Logger logger = GMSMemberServices.getLogger();
+  static Logger logger = Services.getLogger();
   
   public static List<InetSocketAddress> parseLocators(String locatorsString, String bindAddress) {
     InetAddress addr = null;

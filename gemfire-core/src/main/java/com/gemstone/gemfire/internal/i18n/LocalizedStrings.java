@@ -2127,7 +2127,11 @@ public class LocalizedStrings extends ParentLocalizedStrings {
 
   public static final StringId Locator_unable_to_recover_view_0 = new StringId(6606, "Unable to recover previous membership view from  {0}");
 
+  public static final StringId Network_partition_detected = new StringId(6607, "Exiting due to possible network partition event due to loss of {0} cache processes: {1}");
+  
+  
   /** Testing strings, messageId 90000-99999 **/
+  
   /** These are simple messages for testing, translated with Babelfish. **/
   public static final StringId TESTING_THIS_IS_A_TEST_MESSAGE = new StringId(90000, "This is a test message.");
   public static final StringId TESTING_THIS_MESSAGE_HAS_0_MEMBERS = new StringId(90001, "Please ignore: This message has {0} members.");

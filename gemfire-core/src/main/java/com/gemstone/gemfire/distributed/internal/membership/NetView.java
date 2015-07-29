@@ -11,11 +11,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -194,6 +197,113 @@ public class NetView implements DataSerializableFixedID {
       }
     }
     return (firstNonPreferred == null  ||  firstNonPreferred.equals(who));
+  }
+  
+  /**
+   * returns the weight of the members in this membership view
+   */
+  public int memberWeight() {
+    int result = 0;
+    InternalDistributedMember lead = getLeadMember();
+    for (InternalDistributedMember mbr: this.members) {
+      result += mbr.getNetMember().getMemberWeight();
+      switch (mbr.getVmKind()) {
+      case DistributionManager.NORMAL_DM_TYPE:
+        result += 10;
+        if (lead != null  &&  mbr.equals(lead)) {
+          result += 5;
+        }
+        break;
+      case DistributionManager.LOCATOR_DM_TYPE:
+        result += 3;
+        break;
+      case DistributionManager.ADMIN_ONLY_DM_TYPE:
+        break;
+      default:
+        throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
+      }
+    }
+    return result;
+  }
+
+  /**
+   * returns the weight of crashed members in this membership view
+   * with respect to the given previous view
+   */
+  public int getCrashedMemberWeight(NetView oldView) {
+    int result = 0;
+    InternalDistributedMember lead = oldView.getLeadMember();
+    for (InternalDistributedMember mbr: this.crashedMembers) {
+      if ( !oldView.contains(mbr)) {
+        continue;
+      }
+      result += mbr.getNetMember().getMemberWeight();
+      switch (mbr.getVmKind()) {
+      case DistributionManager.NORMAL_DM_TYPE:
+        result += 10;
+        if (lead != null  &&  mbr.equals(lead)) {
+          result += 5;
+        }
+        break;
+      case DistributionManager.LOCATOR_DM_TYPE:
+        result += 3;
+        break;
+      case DistributionManager.ADMIN_ONLY_DM_TYPE:
+        break;
+      default:
+        throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
+      }
+    }
+    return result;
+  }
+
+  
+  /**
+   * returns the members of this views crashedMembers collection
+   * that were members of the given view.  Admin-only members are
+   * not counted
+   */
+  public List<InternalDistributedMember> getActualCrashedMembers(NetView oldView) {
+    List<InternalDistributedMember> result = new ArrayList(this.crashedMembers.size());
+    InternalDistributedMember lead = oldView.getLeadMember();
+    for (InternalDistributedMember mbr: this.crashedMembers) {
+      if ((mbr.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE)
+          && oldView.contains(mbr)) {
+        result.add(mbr);
+      }
+    }
+    return result;
+  }
+  
+  /**
+   * logs the weight of failed members wrt the given previous
+   * view
+   */
+  public void logCrashedMemberWeights(NetView oldView, Logger log) {
+    InternalDistributedMember lead = oldView.getLeadMember();
+    for (InternalDistributedMember mbr: this.crashedMembers) {
+      if ( !oldView.contains(mbr)) {
+        continue;
+      }
+      int mbrWeight = mbr.getNetMember().getMemberWeight();
+      switch (mbr.getVmKind()) {
+      case DistributionManager.NORMAL_DM_TYPE:
+        if (lead != null  &&  mbr.equals(lead)) {
+          mbrWeight += 15;
+        } else {
+          mbrWeight += 5;
+        }
+        break;
+      case DistributionManager.LOCATOR_DM_TYPE:
+        mbrWeight += 3;
+        break;
+      case DistributionManager.ADMIN_ONLY_DM_TYPE:
+        break;
+      default:
+        throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
+      }
+      log.info("  " + mbr + " had a weight of " + mbrWeight);
+    }
   }
   
   public String toString() {

@@ -51,7 +51,7 @@ public class GMSMemberFactory implements MemberServices {
    */
   public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr, short version) {
-    GMSMember result = new GMSMember(i, p, splitBrainEnabled, canBeCoordinator, version);
+    GMSMember result = new GMSMember(i, p, splitBrainEnabled, canBeCoordinator, version, 0, 0);
     result.setAttributes(attr);
     return result;
   }
@@ -80,7 +80,7 @@ public class GMSMemberFactory implements MemberServices {
    * @return the new NetMember
    */
   public NetMember newNetMember(InetAddress i, int p) {
-    GMSMember result = new GMSMember(i, p, false, true, Version.CURRENT_ORDINAL);
+    GMSMember result = new GMSMember(i, p, false, true, Version.CURRENT_ORDINAL, 0, 0);
     result.setAttributes(getDefaultAttributes());
     return result;
   }
@@ -113,7 +113,7 @@ public class GMSMemberFactory implements MemberServices {
           DistributionConfig config,
           RemoteTransportConfig transport, DMStats stats) throws DistributionException
   {
-    GMSMemberServices services = new GMSMemberServices(listener, config, transport, stats);
+    Services services = new Services(listener, config, transport, stats);
     try {
       services.init();
       services.start();
@@ -121,14 +121,11 @@ public class GMSMemberFactory implements MemberServices {
     catch (ConnectionException e) {
       throw new DistributionException(LocalizedStrings.JGroupMemberFactory_UNABLE_TO_CREATE_MEMBERSHIP_MANAGER.toLocalizedString(), e);
     }
-    catch (GemFireConfigException e) {
-      throw e;
-    }
-    catch (SystemConnectException e) {
+    catch (GemFireConfigException | SystemConnectException e) {
       throw e;
     }
     catch (RuntimeException e) {
-      GMSMemberServices.getLogger().error("Unexpected problem starting up membership services", e);
+      Services.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
     return (MembershipManager)services.getManager();
