@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 import org.quartz.CronExpression;
@@ -122,6 +123,7 @@ public class AutoBalancer implements Declarable {
   private OOBAuditor auditor = new SizeBasedOOBAuditor();
   private TimeProvider clock = new SystemClockTimeProvider();
   private CacheOperationFacade cacheFacade = new GeodeCacheFacade();
+  private AtomicBoolean isLockAcquired = new AtomicBoolean(false);
 
   private static final Logger logger = LogService.getLogger();
 
@@ -241,28 +243,32 @@ public class AutoBalancer implements Declarable {
 
     @Override
     public void execute() {
+      if (!isLockAcquired.get()) {
+        synchronized (isLockAcquired) {
+          if (!isLockAcquired.get()) {
+            boolean result = cacheFacade.acquireAutoBalanceLock();
+            if (result) {
+              isLockAcquired.set(true);
+            } else {
+              if (logger.isDebugEnabled()) {
+                logger.debug("Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
+              }
+              return;
+            }
+          }
+        }
+      }
+
       cacheFacade.incrementAttemptCounter();
-      boolean result = cacheFacade.acquireAutoBalanceLock();
+      boolean result = needsRebalancing();
       if (!result) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
+          logger.debug("Rebalancing is not needed");
         }
         return;
       }
 
-      try {
-        result = needsRebalancing();
-        if (!result) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing is not needed");
-          }
-          return;
-        }
-
-        cacheFacade.rebalance();
-      } finally {
-        cacheFacade.releaseAutoBalanceLock();
-      }
+      cacheFacade.rebalance();
     }
 
     /**
@@ -402,6 +408,7 @@ public class AutoBalancer implements Declarable {
       return cache;
     }
 
+    @Override
     public boolean acquireAutoBalanceLock() {
       DistributedLockService dls = getDLS();
 
@@ -410,14 +417,6 @@ public class AutoBalancer implements Declarable {
         logger.debug("Grabbed AutoBalancer lock? " + result);
       }
       return result;
-    }
-
-    public void releaseAutoBalanceLock() {
-      DistributedLockService dls = getDLS();
-      dls.unlock(AUTO_BALANCER_LOCK);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Successfully released auto-balance ownership");
-      }
     }
 
     @Override
@@ -458,8 +457,6 @@ public class AutoBalancer implements Declarable {
 
   interface CacheOperationFacade {
     boolean acquireAutoBalanceLock();
-
-    void releaseAutoBalanceLock();
 
     DistributedLockService getDLS();
 

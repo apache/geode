@@ -124,14 +124,6 @@ public class AutoBalancerJUnitTest {
       {
         oneOf(mockCacheFacade).acquireAutoBalanceLock();
         will(returnValue(false));
-        oneOf(mockCacheFacade).incrementAttemptCounter();
-        will(new CustomAction("increment stat") {
-          public Object invoke(Invocation invocation) throws Throwable {
-            new GeodeCacheFacade().incrementAttemptCounter();
-            return null;
-          }
-        });
-        allowing(mockCacheFacade);
       }
     });
 
@@ -139,7 +131,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
     balancer.getOOBAuditor().execute();
-    assertEquals(1, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
+    assertEquals(0, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
   }
 
   @Test
@@ -224,70 +216,21 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
-  public void testReleaseLock() throws InterruptedException {
-    cache = createBasicCache();
-
-    final AtomicBoolean success = new AtomicBoolean(false);
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        DistributedLockService dls = new GeodeCacheFacade().getDLS();
-        success.set(dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0, -1));
-      }
-    });
-    thread.start();
-    thread.join();
-
-    final DistributedLockService mockDLS = mockContext.mock(DistributedLockService.class);
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockDLS).unlock(AutoBalancer.AUTO_BALANCER_LOCK);
-        will(new CustomAction("release lock") {
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            DistributedLockService dls = new GeodeCacheFacade().getDLS();
-            dls.unlock(AutoBalancer.AUTO_BALANCER_LOCK);
-            return null;
-          }
-        });
-      }
-    });
-
-    success.set(true);
-    thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        CacheOperationFacade cacheFacade = new GeodeCacheFacade() {
-          public DistributedLockService getDLS() {
-            return mockDLS;
-          }
-        };
-        try {
-          cacheFacade.releaseAutoBalanceLock();
-        } catch (Exception e) {
-          success.set(false);
-        }
-      }
-    });
-    thread.start();
-    thread.join();
-    assertTrue(success.get());
-  }
-
-  @Test
-  public void testLockSequence() throws InterruptedException {
+  public void testLockStatExecuteInSequence() throws InterruptedException {
     cache = createBasicCache();
 
     final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
-    final Sequence lockingSequence = mockContext.sequence("lockingSequence");
+    final Sequence sequence = mockContext.sequence("sequence");
     mockContext.checking(new Expectations() {
       {
         oneOf(mockCacheFacade).acquireAutoBalanceLock();
-        inSequence(lockingSequence);
+        inSequence(sequence);
         will(returnValue(true));
-        oneOf(mockCacheFacade).releaseAutoBalanceLock();
-        inSequence(lockingSequence);
-        allowing(mockCacheFacade);
+        oneOf(mockCacheFacade).incrementAttemptCounter();
+        inSequence(sequence);
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        inSequence(sequence);
+        will(returnValue(0L));
       }
     });
 
@@ -297,6 +240,53 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
+  public void testReusePreAcquiredLock() throws InterruptedException {
+    cache = createBasicCache();
+
+    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCacheFacade).acquireAutoBalanceLock();
+        will(returnValue(true));
+        exactly(2).of(mockCacheFacade).incrementAttemptCounter();
+        exactly(2).of(mockCacheFacade).getTotalTransferSize();
+        will(returnValue(0L));
+      }
+    });
+
+    AutoBalancer balancer = new AutoBalancer();
+    balancer.setCacheOperationFacade(mockCacheFacade);
+    balancer.getOOBAuditor().execute();
+    balancer.getOOBAuditor().execute();
+  }
+
+  @Test
+  public void testAcquireLockAfterReleasedRemotely() throws InterruptedException {
+    cache = createBasicCache();
+    
+    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
+    final Sequence sequence = mockContext.sequence("sequence");
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCacheFacade).acquireAutoBalanceLock();
+        inSequence(sequence);
+        will(returnValue(false));
+        oneOf(mockCacheFacade).acquireAutoBalanceLock();
+        inSequence(sequence);
+        will(returnValue(true));
+        oneOf(mockCacheFacade).incrementAttemptCounter();
+        oneOf(mockCacheFacade).getTotalTransferSize();
+        will(returnValue(0L));
+      }
+    });
+    
+    AutoBalancer balancer = new AutoBalancer();
+    balancer.setCacheOperationFacade(mockCacheFacade);
+    balancer.getOOBAuditor().execute();
+    balancer.getOOBAuditor().execute();
+  }
+  
+  @Test
   public void testFailExecuteIfLockedElsewhere() throws InterruptedException {
     cache = createBasicCache();
 
@@ -305,7 +295,6 @@ public class AutoBalancerJUnitTest {
       {
         oneOf(mockCacheFacade).acquireAutoBalanceLock();
         will(returnValue(false));
-        oneOf(mockCacheFacade).incrementAttemptCounter();
         // no other methods, rebalance, will be called
       }
     });
@@ -333,7 +322,6 @@ public class AutoBalancerJUnitTest {
         will(returnValue(true));
         never(mockCacheFacade).rebalance();
         oneOf(mockCacheFacade).incrementAttemptCounter();
-        oneOf(mockCacheFacade).releaseAutoBalanceLock();
       }
     });
 
@@ -424,21 +412,21 @@ public class AutoBalancerJUnitTest {
   @Test
   public void testOOBWhenAboveThresholdAndMin() {
     final long totalSize = 1000L;
-    
+
     final Map<PartitionedRegion, InternalPRInfo> details = new HashMap<>();
     final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     mockContext.checking(new Expectations() {
       {
         allowing(mockCacheFacade).getRegionMemberDetails();
         will(returnValue(details));
-        
+
         // first run
         oneOf(mockCacheFacade).getTotalDataSize(details);
         will(returnValue(totalSize));
         oneOf(mockCacheFacade).getTotalTransferSize();
         // twice threshold
         will(returnValue((AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT * totalSize / 100) * 2));
-        
+
         // second run
         oneOf(mockCacheFacade).getTotalDataSize(details);
         will(returnValue(totalSize));
@@ -447,21 +435,21 @@ public class AutoBalancerJUnitTest {
         will(returnValue(2 * totalSize));
       }
     });
-    
+
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
     Properties config = getBasicConfig();
     config.put(AutoBalancer.SIZE_MINIMUM, "10");
     balancer.init(config);
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
-    
+
     // first run
     assertTrue(auditor.needsRebalancing());
-    
+
     // second run
     assertTrue(auditor.needsRebalancing());
   }
-  
+
   @Test
   public void testInitializerCacheXML() {
     String configStr = "<cache xmlns=\"http://schema.pivotal.io/gemfire/cache\"                          "
