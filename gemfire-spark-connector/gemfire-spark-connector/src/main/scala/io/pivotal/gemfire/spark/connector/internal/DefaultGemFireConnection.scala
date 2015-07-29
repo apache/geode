@@ -1,5 +1,7 @@
 package io.pivotal.gemfire.spark.connector.internal
 
+import java.net.InetAddress
+
 import com.gemstone.gemfire.cache.client.{ClientCache, ClientCacheFactory, ClientRegionShortcut}
 import com.gemstone.gemfire.cache.execute.{FunctionException, FunctionService}
 import com.gemstone.gemfire.cache.query.Query
@@ -7,7 +9,7 @@ import com.gemstone.gemfire.cache.{Region, RegionService}
 import com.gemstone.gemfire.internal.cache.execute.InternalExecution
 import io.pivotal.gemfire.spark.connector.internal.oql.QueryResultCollector
 import io.pivotal.gemfire.spark.connector.internal.rdd.GemFireRDDPartition
-import org.apache.spark.Logging
+import org.apache.spark.{SparkEnv, Logging}
 import io.pivotal.gemfire.spark.connector.GemFireConnection
 import io.pivotal.gemfire.spark.connector.internal.gemfirefunctions._
 import java.util.{Set => JSet, List => JList }
@@ -30,16 +32,34 @@ private[connector] class DefaultGemFireConnection (
 
   private def initClientCache() : ClientCache = {
     try {
-      import io.pivotal.gemfire.spark.connector.map2Properties
-      logInfo(s"""Init ClientCache: locators=${locators.mkString(",")}, props=$gemFireProps""")
-      val ccf = new ClientCacheFactory(gemFireProps)
-      locators.foreach { case (host, port)  => ccf.addPoolLocator(host, port) }
+      val ccf = getClientCacheFactory
       ccf.create()
     } catch {
       case e: Exception =>
         logError(s"""Failed to init ClientCache, locators=${locators.mkString(",")}, Error: $e""")
         throw new RuntimeException(e)
     }
+  }
+  
+  private def getClientCacheFactory: ClientCacheFactory = {
+    import io.pivotal.gemfire.spark.connector.map2Properties
+    val ccf = new ClientCacheFactory(gemFireProps)
+    ccf.setPoolReadTimeout(30000)
+    val servers = LocatorHelper.getAllGemFireServers(locators)
+    if (servers.isDefined && servers.get.size > 0) {
+      val sparkIp = System.getenv("SPARK_LOCAL_IP")
+      val hostName = if (sparkIp != null) InetAddress.getByName(sparkIp).getCanonicalHostName
+                     else InetAddress.getLocalHost.getCanonicalHostName
+      val executorId = SparkEnv.get.executorId      
+      val pickedServers = LocatorHelper.pickPreferredGemFireServers(servers.get, hostName, executorId)
+      logInfo(s"""Init ClientCache: severs=${pickedServers.mkString(",")}, host=$hostName executor=$executorId props=$gemFireProps""")
+      logDebug(s"""Init ClientCache: all-severs=${pickedServers.mkString(",")}""")
+      pickedServers.foreach{ case (host, port)  => ccf.addPoolServer(host, port) }
+    } else {
+      logInfo(s"""Init ClientCache: locators=${locators.mkString(",")}, props=$gemFireProps""")
+      locators.foreach { case (host, port)  => ccf.addPoolLocator(host, port) }
+    }
+    ccf
   }
 
   /** close the clientCache */
