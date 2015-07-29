@@ -234,6 +234,7 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
    */
   public void testEventsExpiryBug() throws Exception
   {
+    addExpectedException("Unexpected IOException");
     addExpectedException("Connection reset");
     server.invoke(Bug36853EventsExpiryDUnitTest.class, "generateEvents");
     client.invoke(Bug36853EventsExpiryDUnitTest.class,
