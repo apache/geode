@@ -121,7 +121,8 @@ public class LogService extends LogManager {
   private static final void setLog4jConfigFileProperty() {
     // fix bug #52175
     final URL configInClasspath = ConfigLocator.findConfigInClasspath();
-    if (configInClasspath != null ) {
+    if (configInClasspath != null
+        && !configInClasspath.getPath().contains("jgroups-")) { // jgroups jar contains a log4j config file!
       // Log4J 2 will find the configuration file in classpath so do nothing
       configFileInformation = "Using log4j configuration found in classpath: '" + configInClasspath.toString() + "'";
       StatusLogger.getLogger().info(configFileInformation);

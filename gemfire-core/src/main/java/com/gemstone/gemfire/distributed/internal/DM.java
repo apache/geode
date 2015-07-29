@@ -34,8 +34,6 @@ import com.gemstone.gemfire.internal.Version;
  */
 public interface DM extends ReplySender {
   
-  public void restartCommunications();
-  
   public boolean shutdownInProgress();
   
   /**

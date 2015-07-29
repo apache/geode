@@ -23,7 +23,7 @@ import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * This helper class provides access to membership manager information that
- * is not other wise public
+ * is not otherwise public
  * @author bruce
  * @since 5.5
  */
@@ -150,5 +150,5 @@ public class MembershipManagerHelper
     getMembershipManager(msys).uncleanShutdown("test is forcing disconnect", new ForcedDisconnectException("test is forcing disconnect"));
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
-    
+  
 }

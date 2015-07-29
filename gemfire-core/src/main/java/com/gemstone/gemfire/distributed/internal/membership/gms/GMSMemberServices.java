@@ -9,7 +9,9 @@ import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
+import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
@@ -28,7 +30,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 
-public class Services {
+public class GMSMemberServices {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -75,7 +77,7 @@ public class Services {
   
 
 
-  protected Services(
+  public GMSMemberServices(
       DistributedMembershipListener listener, DistributionConfig config,
       RemoteTransportConfig transport, DMStats stats) {
     this.cancelCriterion = new Stopper();
@@ -98,6 +100,11 @@ public class Services {
     this.manager.init(this);
     this.joinLeave.init(this);
     this.healthMon.init(this);
+    InternalLocator l = (InternalLocator)com.gemstone.gemfire.distributed.Locator.getLocator();
+    if (l != null) {
+      l.getLocatorHandler().setMembershipManager((MembershipManager)this.manager);
+      this.locator = (Locator)l.getLocatorHandler();
+    }
   }
   
   protected void start() {
@@ -139,6 +146,7 @@ public class Services {
   }
   
   public void stop() {
+    logger.info("Membership: stopping services");
     this.joinLeave.stop();
     this.healthMon.stop();
     this.auth.stop();

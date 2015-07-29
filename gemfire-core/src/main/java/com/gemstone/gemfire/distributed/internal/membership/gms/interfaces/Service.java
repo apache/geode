@@ -1,14 +1,14 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
 
 /**
  * Services in GMS all implement this interface
  *
  */
 public interface Service {
-  void init(Services s);
+  void init(GMSMemberServices s);
 
   /**
    * called after all services have been initialized 

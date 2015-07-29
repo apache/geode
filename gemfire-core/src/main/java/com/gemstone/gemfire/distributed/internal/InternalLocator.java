@@ -44,8 +44,9 @@ import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ConnectListener;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
+import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
@@ -163,7 +164,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   private Properties env;
   
   /** the TcpHandler used for peer location */
-  private GMSLocator locatorImpl;
+  private NetLocator locatorImpl;
   
   private DistributionConfigImpl config;
   
@@ -659,12 +660,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_FORCING_GROUP_COORDINATION_INTO_LOCATORS));
     }
     
-    // LOG: moved these into InternalDistributedSystem.initialize -- the only other code path constructs InternalLocator 1st which also sets these
-    //com.gemstone.org.jgroups.util.GemFireTracer.setLogWriter(this.logWriter);
-    //com.gemstone.org.jgroups.util.GemFireTracer
-    //    .setSecurityLogWriter(this.securityLogWriter);
-    
-    this.locatorImpl = new GMSLocator(port, this.bindAddress, this.stateFile,
+    this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, this.stateFile,
         locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled);
     this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
     peerLocator = true;
@@ -674,9 +670,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   }
 
   /**
-   * @return the gossipServer
+   * @return the TcpHandler for peer to peer discovery
    */
-  public GMSLocator getLocatorHandler() {
+  public NetLocator getLocatorHandler() {
     return this.locatorImpl;
   }
   

@@ -3,13 +3,13 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.fd;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
 
 /** Failure Detection */
 public class GMSHealthMonitor implements HealthMonitor {
 
-  private Services services;
+  private GMSMemberServices services;
   private NetView currentView;
 
   public static void loadEmergencyClasses() {
@@ -53,7 +53,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public void init(Services s) {
+  public void init(GMSMemberServices s) {
     // TODO Auto-generated method stub
     
   }

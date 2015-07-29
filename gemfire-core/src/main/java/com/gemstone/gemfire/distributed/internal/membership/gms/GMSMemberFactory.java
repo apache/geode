@@ -7,6 +7,7 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms;
 
+import java.io.File;
 import java.net.InetAddress;
 
 import com.gemstone.gemfire.CancelCriterion;
@@ -21,7 +22,9 @@ import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
@@ -110,7 +113,7 @@ public class GMSMemberFactory implements MemberServices {
           DistributionConfig config,
           RemoteTransportConfig transport, DMStats stats) throws DistributionException
   {
-    Services services = new Services(listener, config, transport, stats);
+    GMSMemberServices services = new GMSMemberServices(listener, config, transport, stats);
     try {
       services.init();
       services.start();
@@ -125,9 +128,19 @@ public class GMSMemberFactory implements MemberServices {
       throw e;
     }
     catch (RuntimeException e) {
-      Services.getLogger().error("Unexpected problem starting up membership services", e);
+      GMSMemberServices.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
     return (MembershipManager)services.getManager();
+  }
+  
+  @Override
+  public NetLocator newLocatorHandler(InetAddress bindAddress,
+      File stateFile,
+      String locatorString,
+      boolean usePreferredCoordinators,
+      boolean networkPartitionDetectionEnabled) {
+    
+    return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled);
   }
 }

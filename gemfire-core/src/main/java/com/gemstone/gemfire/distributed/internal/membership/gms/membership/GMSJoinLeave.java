@@ -14,9 +14,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -24,7 +22,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
@@ -36,7 +34,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 /**
@@ -57,10 +55,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private static final int VIEW_INSTALLATION_TIMEOUT = Integer.getInteger("geode.view-ack-timeout", 12500);
 
   /** stall time to wait for concurrent join/leave/remove requests to be received */
-  private static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("geode.member-request-collection-interval", 5000);
+  private static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("geode.member-request-collection-interval", 2000);
+
+  /** time to wait for a leave request to be transmitted by jgroups */
+  private static final long LEAVE_MESSAGE_SLEEP_TIME = Long.getLong("geode.leave-message-sleep-time", 2000);
   
   /** membership logger */
-  private static final Logger logger = Services.getLogger();
+  private static final Logger logger = GMSMemberServices.getLogger();
 
 
   /** the view ID where I entered into membership */
@@ -69,7 +70,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /** my address */
   private InternalDistributedMember localAddress;
 
-  private Services services;
+  private GMSMemberServices services;
   
   private boolean isConnected;
 
@@ -204,37 +205,25 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * @param incomingRequest
    */
   private void processJoinRequest(JoinRequestMessage incomingRequest) {
-    NetView v = currentView;
-    if (!isCoordinator && v != null) {
-      // forward the request to the coordinator
-      logger.info("forwarding join request from " + incomingRequest.getMemberID() + " to " + v.getCoordinator());
-      incomingRequest.setRecipient(v.getCoordinator());
+    Object creds = incomingRequest.getCredentials();
+    if (creds != null) {
+      String rejection = null;
       try {
-        services.getMessenger().send(incomingRequest);
-      } catch (IOException ignored) {
-        // this isn't possible since this was an incoming message
+        rejection = services.getAuthenticator().authenticate(incomingRequest.getMemberID(), creds);
+      } catch (AuthenticationFailedException e) {
+        rejection = e.getMessage();
       }
-    } else {
-      Object creds = incomingRequest.getCredentials();
-      if (creds != null) {
-        String rejection = null;
+      if (rejection != null  &&  rejection.length() > 0) {
+        JoinResponseMessage m = new JoinResponseMessage(rejection);
+        m.setRecipient(incomingRequest.getMemberID());
         try {
-           rejection = services.getAuthenticator().authenticate(incomingRequest.getMemberID(), creds);
-        } catch (AuthenticationFailedException e) {
-          rejection = e.getMessage();
-        }
-        if (rejection != null  &&  rejection.length() > 0) {
-           JoinResponseMessage m = new JoinResponseMessage(rejection);
-           m.setRecipient(incomingRequest.getMemberID());
-           try {
-             services.getMessenger().send(m);
-           } catch (IOException e2) {
-             logger.info("unable to send join response " + rejection + " to " + incomingRequest.getMemberID(), e2);
-           }
+          services.getMessenger().send(m);
+        } catch (IOException e2) {
+          logger.info("unable to send join response " + rejection + " to " + incomingRequest.getMemberID(), e2);
         }
       }
-      recordViewRequest(incomingRequest);
     }
+    recordViewRequest(incomingRequest);
   }
   
   
@@ -318,7 +307,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       viewRequests.add(request);
       viewRequests.notify();
     }
-    startCoordinatorServices();
   }
   
   
@@ -352,7 +340,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         NetView newView;
         synchronized(viewInstallationLock) {
           int viewNumber = currentView.getViewId() + 5;
-          startCoordinatorServices();
           List<InternalDistributedMember> mbrs = new ArrayList<InternalDistributedMember>(currentView.getMembers());
           mbrs.add(localAddress);
           List<InternalDistributedMember> leaving = new ArrayList<InternalDistributedMember>();
@@ -363,6 +350,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               Collections.EMPTY_LIST);
         }
         sendView(newView);
+        startCoordinatorServices();
       }
     } finally {
       stateLock.writeLock().unlock();
@@ -566,6 +554,25 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
         }
       }
+      if (!this.isCoordinator) {
+        // get rid of outdated requests
+        synchronized(viewRequests) {
+          for (Iterator<DistributionMessage> it = viewRequests.iterator(); it.hasNext(); ) {
+            DistributionMessage m = it.next();
+            if (m instanceof JoinRequestMessage) {
+              it.remove();
+            } else if (m instanceof LeaveRequestMessage) {
+              if (!currentView.contains(((LeaveRequestMessage)m).getMemberID())) {
+                it.remove();
+              }
+            } else if (m instanceof RemoveMemberMessage) {
+              if (!currentView.contains(((RemoveMemberMessage)m).getMemberID())) {
+                it.remove();
+              }
+            }
+          }
+        }
+      }
     }
   }
   
@@ -580,7 +587,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /** invoke this under the viewInstallationLock */
   private void startCoordinatorServices() {
     if (viewCreator == null || viewCreator.isShutdown()) {
-      viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
+      viewCreator = new ViewCreator(Version.CURRENT.getProductName()
+          +" Membership View Creator", GMSMemberServices.getThreadGroup());
       viewCreator.setDaemon(true);
       viewCreator.start();
     }
@@ -660,6 +668,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             m.setRecipients(newView.getMembers());
             try {
               services.getMessenger().send(m);
+              try { Thread.sleep(LEAVE_MESSAGE_SLEEP_TIME); }
+              catch (InterruptedException e) { Thread.currentThread().interrupt(); }
             } catch (IOException e) {
               logger.info("JoinLeave: unable to notify remaining members shutdown due to i/o exception", e);
             }
@@ -701,7 +711,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
   
   @Override
-  public void init(Services s) {
+  public void init(GMSMemberServices s) {
     this.services = s;
     services.getMessenger().addHandler(JoinRequestMessage.class, this);
     services.getMessenger().addHandler(JoinResponseMessage.class, this);
@@ -837,7 +847,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                 }
               } else {
                 // time to create a new membership view
-                requests = new ArrayList<DistributionMessage>(viewRequests);
+                if (requests == null) {
+                  requests = new ArrayList<DistributionMessage>(viewRequests);
+                } else {
+                  requests.addAll(viewRequests);
+                }
                 viewRequests.clear();
                 okayToCreateView = System.currentTimeMillis() + MEMBER_REQUEST_COLLECTION_INTERVAL;
               }

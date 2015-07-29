@@ -1606,10 +1606,6 @@ public class DistributionManager
     } // synchronized
   }
   
-  public void restartCommunications() {
-    membershipManager.reset();
-  }
-
   // DM method
   @Override
   public void forceUDPMessagingForCurrentThread() {

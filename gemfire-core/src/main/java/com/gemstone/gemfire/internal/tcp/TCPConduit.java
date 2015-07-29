@@ -872,6 +872,7 @@ public class TCPConduit implements Runnable {
   
   public void setLocalAddr(InternalDistributedMember addr) {
     localAddr = addr;
+    this.id.setViewID(addr.getVmViewId());
   }
   
   public InternalDistributedMember getLocalId() {

@@ -23,6 +23,7 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.SystemFailure;
@@ -105,6 +106,13 @@ public class DirectChannel {
     }
     
     /**
+     * Returns the endpoint ID for the direct channel
+     */
+    public Stub getLocalStub() {
+      return conduit.getId();
+    }
+    
+    /**
      * when the initial number of members is known, this method is invoked
      * to ensure that connections to those members can be established in a
      * reasonable amount of time.  See bug 39848 
@@ -112,6 +120,15 @@ public class DirectChannel {
      */
     public void setMembershipSize(int numberOfMembers) {
       conduit.setMaximumHandshakePoolSize(numberOfMembers);
+    }
+    
+    /**
+     * Returns the cancel criterion for the channel,
+     * which will note if the channel is abnormally
+     * closing
+     */
+    public CancelCriterion getCancelCriterion() {
+      return conduit.getCancelCriterion();
     }
 
     /**

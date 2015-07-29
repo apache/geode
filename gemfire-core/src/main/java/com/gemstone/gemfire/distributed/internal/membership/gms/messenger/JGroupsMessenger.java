@@ -52,12 +52,13 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
@@ -70,7 +71,7 @@ import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 
 public class JGroupsMessenger implements Messenger {
 
-  private static final Logger logger = Services.getLogger();
+  private static final Logger logger = GMSMemberServices.getLogger();
 
   /**
    * The system property that specifies the name of a file from which to read
@@ -97,7 +98,7 @@ public class JGroupsMessenger implements Messenger {
   JChannel myChannel;
   InternalDistributedMember localAddress;
   JGAddress jgAddress;
-  Services services;
+  GMSMemberServices services;
 
   /** handlers that receive certain classes of messages instead of the Manager */
   Map<Class, MessageHandler> handlers = new ConcurrentHashMap<Class, MessageHandler>();
@@ -114,7 +115,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public void init(Services s) {
+  public void init(GMSMemberServices s) {
     this.services = s;
 
     RemoteTransportConfig transport = services.getConfig().getTransport();
@@ -229,7 +230,7 @@ public class JGroupsMessenger implements Messenger {
     try {
       
       myChannel.setReceiver(new JGroupsReceiver());
-      myChannel.connect("Geode");
+      myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
       
     } catch (IllegalStateException e) {
       throw new SystemConnectException("unable to create jgroups channel", e);
@@ -238,16 +239,6 @@ public class JGroupsMessenger implements Messenger {
     }
     
     establishLocalAddress();
-    
-    DistributionConfig config = services.getConfig().getDistributionConfig();
-    boolean isLocator = (MemberAttributes.DEFAULT.getVmKind() == DistributionManager.LOCATOR_DM_TYPE); 
-    
-    localAddress = new InternalDistributedMember(jgAddress.getInetAddress(),
-        jgAddress.getPort(), config.getEnableNetworkPartitionDetection(),
-        isLocator, MemberAttributes.DEFAULT);
-
-    UUID uuid = this.jgAddress;
-    ((GMSMember)localAddress.getNetMember()).setUUID(uuid);
     
     try {
       logger.info("Messenger established the local identity as {} localHost is {}", localAddress, SocketCreator.getLocalHost());
@@ -299,7 +290,7 @@ public class JGroupsMessenger implements Messenger {
       this.jgAddress = new JGAddress(logicalAddress, ipaddr);
     }
     else {
-      UDP udp = (UDP)myChannel.getProtocolStack().findProtocol("UDP");
+      UDP udp = (UDP)myChannel.getProtocolStack().getTransport();
 
       try {
         Method getAddress = UDP.class.getDeclaredMethod("getPhysicalAddress");
@@ -327,9 +318,23 @@ public class JGroupsMessenger implements Messenger {
         }
       }
     }
+  
+    // install the address in the JGroups channel protocols
     myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
-  }
 
+    DistributionConfig config = services.getConfig().getDistributionConfig();
+    boolean isLocator = (MemberAttributes.DEFAULT.getVmKind() == DistributionManager.LOCATOR_DM_TYPE); 
+    
+    // establish the DistributedSystem's address
+    localAddress = new InternalDistributedMember(jgAddress.getInetAddress(),
+        jgAddress.getPort(), config.getEnableNetworkPartitionDetection(),
+        isLocator, MemberAttributes.DEFAULT);
+
+    // add the JGroups logical address to the GMSMember
+    UUID uuid = this.jgAddress;
+    ((GMSMember)localAddress.getNetMember()).setUUID(uuid);
+  }
+  
   @Override
   public void beSick() {
   }

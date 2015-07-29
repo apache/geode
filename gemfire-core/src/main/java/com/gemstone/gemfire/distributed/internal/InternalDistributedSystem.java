@@ -55,7 +55,7 @@ import com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Assert;
@@ -561,7 +561,7 @@ public final class InternalDistributedSystem
       this.securityLogWriter.fine("SecurityLogWriter is created.");
     }
     
-    Services.setSecurityLogWriter(this.securityLogWriter);
+    GMSMemberServices.setSecurityLogWriter(this.securityLogWriter);
 
     this.clock = new DSClock(this.isLoner);
     
@@ -655,9 +655,6 @@ public final class InternalDistributedSystem
             .toLocalizedString(), e);
     }
 
-    if (!this.isLoner) {
-      this.dm.restartCommunications();
-    }
     synchronized (this.isConnectedMutex) {
       this.isConnected = true;
     }

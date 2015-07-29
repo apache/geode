@@ -25,7 +25,8 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Locator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
@@ -36,19 +37,17 @@ import com.gemstone.gemfire.internal.VersionedObjectInput;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 
-public class GMSLocator implements TcpHandler, Locator {
+public class GMSLocator implements Locator, NetLocator {
 
   private static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
   
   private static final Logger logger = LogService.getLogger();
 
-  private final int port;
-  private final InetAddress bindAddress;
   private final boolean usePreferredCoordinators;
   private final boolean networkPartitionDetectionEnabled;
   private final String locatorString;
   private final List<InetSocketAddress> locators;
-  private Services services;
+  private GMSMemberServices services;
   
   private Set<InternalDistributedMember> registrants = new HashSet<InternalDistributedMember>();
 
@@ -57,22 +56,17 @@ public class GMSLocator implements TcpHandler, Locator {
   private File viewFile;
 
   /**
-   * @param mgr               the membership manager
-   * @param port              the tcp/ip server socket port number
-   * @param bindAddress      network address to bind to
+   * @param bindAddress       network address that TcpServer will bind to
    * @param stateFile         the file to persist state to/recover from
    * @param locatorString     location of other locators (bootstrapping, failover)
    * @param usePreferredCoordinators    true if the membership coordinator should be a Locator
    * @param networkPartitionDetectionEnabled true if network partition detection is enabled
    */
-  public GMSLocator(int port,
-                      InetAddress bindAddress,
+  public GMSLocator(  InetAddress bindAddress,
                       File stateFile,
                       String locatorString,
                       boolean usePreferredCoordinators,
                       boolean networkPartitionDetectionEnabled) {
-    this.port = port;
-    this.bindAddress = bindAddress;
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.locatorString = locatorString;
@@ -84,11 +78,7 @@ public class GMSLocator implements TcpHandler, Locator {
     this.viewFile = stateFile;
   }
   
-  /**
-   * This must be called after booting the membership manager so
-   * that the locator can use its services
-   * @param svc
-   */
+  @Override
   public void setMembershipManager(MembershipManager mgr) {
     logger.info("Peer locator is connecting to local membership services");
     services = ((GMSMembershipManager)mgr).getServices();
@@ -96,6 +86,7 @@ public class GMSLocator implements TcpHandler, Locator {
     this.view = services.getJoinLeave().getView();
   }
   
+  @Override
   public void init(TcpServer server) {
     recover();
   }
@@ -108,6 +99,7 @@ public class GMSLocator implements TcpHandler, Locator {
     }
   }
 
+  @Override
   public void installView(NetView view) {
     synchronized(this.registrants) {
       registrants.clear();

@@ -10,8 +10,9 @@ package com.gemstone.gemfire.distributed;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.*;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.SocketCreator;

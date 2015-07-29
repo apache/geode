@@ -61,10 +61,9 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
-import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.gms.SuspectMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
@@ -84,15 +83,13 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.shared.StringPrintWriter;
 import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
-import com.gemstone.gemfire.internal.tcp.ConnectionException;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 import com.gemstone.gemfire.internal.tcp.Stub;
-import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 
 public class GMSMembershipManager implements MembershipManager, Manager
 {
-  private static final Logger logger = Services.getLogger();
+  private static final Logger logger = GMSMemberServices.getLogger();
   
   /** product version to use for multicast serialization */
   volatile boolean disableMulticastForRollingUpgrade;
@@ -310,8 +307,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   protected DirectChannel directChannel;
 
-  protected TCPConduit conduit;
-  
   protected MyDCReceiver dcReceiver;
   
   volatile boolean isJoining;
@@ -325,7 +320,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * 
    * Accesses must be under the read or write lock of {@link #latestViewLock}.
    */
-  protected final Map memberToStubMap = new ConcurrentHashMap();
+  protected final Map<InternalDistributedMember, Stub> memberToStubMap = 
+      new ConcurrentHashMap<InternalDistributedMember, Stub>();
 
   /**
    * a map of direct channels (Stub) to InternalDistributedMember. key instanceof Stub
@@ -333,7 +329,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * 
    * Accesses must be under the read or write lock of {@link #latestViewLock}.
    */
-  protected final Map stubToMemberMap = new ConcurrentHashMap();
+  protected final Map<Stub, InternalDistributedMember> stubToMemberMap = 
+      new ConcurrentHashMap<Stub, InternalDistributedMember>();
   
   /**
    * Members of the distributed system that we believe have shut down.
@@ -442,11 +439,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   protected LinkedList<StartupEvent> startupMessages = new LinkedList<StartupEvent>();
   
-  /** the type of vm we're running in. This is also in the membership id, 
-      but is needed by some methods before the membership id has been
-      created. */
-  int vmKind;
-
   /**
    * ARB: the map of latches is used to block peer handshakes till
    * authentication is confirmed.
@@ -774,7 +766,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   private SystemTimer cleanupTimer;
 
-  private Services services;
+  private GMSMemberServices services;
 
 
   @Override
@@ -836,7 +828,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   @Override
-  public void init(Services services) {
+  public void init(GMSMemberServices services) {
     this.services = services;
 
     Assert.assertTrue(services != null);
@@ -852,6 +844,10 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (!config.getDisableTcp()) {
       dcReceiver = new MyDCReceiver(listener);
     }
+    
+    surpriseMemberTimeout = Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT,
+        20 * config.getMemberTimeout());
+    surpriseMemberTimeout = Integer.getInteger("gemfire.surprise-member-timeout", surpriseMemberTimeout).intValue();
   }
   
   @Override
@@ -874,13 +870,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
         MemberAttributes.DEFAULT.getVmViewId(),
         MemberAttributes.DEFAULT.getName(),
         MemberAttributes.DEFAULT.getGroups(), MemberAttributes.DEFAULT.getDurableClientAttributes());
-
-    this.vmKind = MemberAttributes.DEFAULT.getVmKind(); // we need this during jchannel startup
-
-    surpriseMemberTimeout = Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT,
-        20 * config.getMemberTimeout());
-    surpriseMemberTimeout = Integer.getInteger("gemfire.surprise-member-timeout", surpriseMemberTimeout).intValue();
-
   }
   
   
@@ -911,23 +900,19 @@ public class GMSMembershipManager implements MembershipManager, Manager
         MemberAttributes.DEFAULT.getGroups(), MemberAttributes.DEFAULT.getDurableClientAttributes());
     
     if (directChannel != null) {
-      directChannel.getConduit().setVmViewID(address.getVmViewId());
+      directChannel.setLocalAddr(address);
+      Stub stub = directChannel.getLocalStub();
+      memberToStubMap.put(address, stub);
+      stubToMemberMap.put(stub, address);
     }
 
-    // in order to debug startup issues it we need to announce the membership
+    this.hasConnected = true;
+
+    // in order to debug startup issues we need to announce the membership
     // ID as soon as we know it
     logger.info(LocalizedMessage.create(LocalizedStrings.GroupMembershipService_entered_into_membership_in_group_0_with_id_1,
         new Object[]{address}));
 
-    if (!services.getConfig().getDistributionConfig().getDisableTcp()) {
-      this.conduit = directChannel.getConduit();
-      directChannel.setLocalAddr(address);
-      Stub stub = conduit.getId();
-      memberToStubMap.put(address, stub);
-      stubToMemberMap.put(stub, address);
-    }
-    
-    this.hasConnected = true;
   }
   
   @Override
@@ -1523,7 +1508,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       logger.debug("Membership: waiting until the system is ready for events");
     }
     for (;;) {
-      conduit.getCancelCriterion().checkCancelInProgress(null);
+      directChannel.getCancelCriterion().checkCancelInProgress(null);
       synchronized (startupLock) {
         // Now check using a memory fence and synchronization.
         if (processingEvents)
@@ -1534,7 +1519,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         }
         catch (InterruptedException e) {
           interrupted = true;
-          conduit.getCancelCriterion().checkCancelInProgress(e);
+          directChannel.getCancelCriterion().checkCancelInProgress(e);
         }
         finally {
           if (interrupted) {
@@ -1631,7 +1616,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     return address;
   }
   
-  public Services getServices() {
+  public GMSMemberServices getServices() {
     return services;
   }
 
@@ -1707,7 +1692,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     services.getAuthenticator().emergencyClose();
 
     
-    // TODO: could we guarantee not to allocate objects?  We're using Darrel's 
+    // could we guarantee not to allocate objects?  We're using Darrel's 
     // factory, so it's possible that an unsafe implementation could be
     // introduced here.
 //    stubToMemberMap.clear();
@@ -2161,20 +2146,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
   }
   
-  /**
-   * @throws ConnectionException if the conduit has stopped
-   */
-  public void reset() throws DistributionException
-  {
-    if (conduit != null) {
-      try {
-        conduit.restart();
-      } catch (ConnectionException e) {
-        throw new DistributionException(LocalizedStrings.GroupMembershipService_UNABLE_TO_RESTART_CONDUIT.toLocalizedString(), e);
-      }
-    }
-  }
-
   // MembershipManager method
   @Override
   public void forceUDPMessagingForCurrentThread() {
@@ -2195,9 +2166,10 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (shutdownInProgress) {
       throw new DistributedSystemDisconnectedException(LocalizedStrings.GroupMembershipService_DISTRIBUTEDSYSTEM_IS_SHUTTING_DOWN.toLocalizedString(), this.shutdownCause);
     }
-    // Bogus stub object if direct channels not being used
-    if (conduit == null)
+
+    if (services.getConfig().getDistributionConfig().getDisableTcp()) {
       return new Stub(m.getInetAddress(), m.getPort(), m.getVmViewId());
+    }
     
     // Return existing one if it is already in place
     Stub result;
@@ -2975,7 +2947,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   @Override
   public void setSecurityLogWriter(InternalLogWriter writer) {
-    Services.setSecurityLogWriter(writer);
+    GMSMemberServices.setSecurityLogWriter(writer);
   }
 
 }

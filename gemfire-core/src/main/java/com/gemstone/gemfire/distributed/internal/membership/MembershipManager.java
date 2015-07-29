@@ -140,12 +140,6 @@ public interface MembershipManager {
   throws NotSerializableException;
   
   /**
-   * Force a reset of communication channels
-   *
-   */
-  public void reset();
-  
-  /**
    * Return a {@link Stub} referring to the given member.  A <em>null</em> may
    * be returned if the system is not employing stubs for communication.
    * 

@@ -7,11 +7,13 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
+import java.io.File;
 import java.net.InetAddress;
 
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 
 /**
@@ -73,4 +75,13 @@ public interface MemberServices {
   public abstract MembershipManager newMembershipManager(DistributedMembershipListener listener,
           DistributionConfig config,
           RemoteTransportConfig transport, DMStats stats);
+
+
+  /**
+   * currently this is a test method but it ought to be used by InternalLocator
+   * to create the peer location TcpHandler
+   */
+  public abstract NetLocator newLocatorHandler(InetAddress bindAddress,
+      File stateFile, String locatorString, boolean usePreferredCoordinators,
+      boolean networkPartitionDetectionEnabled);
 }
