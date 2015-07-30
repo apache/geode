@@ -2401,6 +2401,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         paf.setRedundantCopies(1);
         paf.setRecoveryDelay(-1);
         paf.setStartupRecoveryDelay(-1);
+        paf.setLocalMaxMemory(100);
         PartitionAttributes prAttr = paf.create();
         attr.setPartitionAttributes(prAttr);
         cache.createRegion("region1", attr.create());
@@ -2424,6 +2425,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     paf.setRedundantCopies(1);
     paf.setRecoveryDelay(-1);
     paf.setStartupRecoveryDelay(-1);
+    paf.setLocalMaxMemory(100);
     PartitionAttributes prAttr = paf.create();
     attr.setPartitionAttributes(prAttr);
     final Region region = cache.createRegion("region1", attr.create());
