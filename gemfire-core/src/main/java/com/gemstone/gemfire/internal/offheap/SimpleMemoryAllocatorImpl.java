@@ -348,7 +348,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
           Set<BucketRegion> brs = prs.getAllLocalBucketRegions();
           if (brs != null) {
             for (BucketRegion br : brs) {
-              if (br != null) {
+              if (br != null && !br.isDestroyed()) {
                 this.basicGetRegionLiveChunks(br, result);
               }
 
