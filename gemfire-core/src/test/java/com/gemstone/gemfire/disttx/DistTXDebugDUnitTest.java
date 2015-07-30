@@ -62,6 +62,9 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
       }
     });
     InternalResourceManager.setResourceObserver(null);
+    if (cache != null) {
+      cache.close();
+    }
   }
 
   public static void createCacheInVm() {
