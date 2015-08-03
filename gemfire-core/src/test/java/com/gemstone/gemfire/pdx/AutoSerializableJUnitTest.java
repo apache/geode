@@ -103,7 +103,7 @@ public class AutoSerializableJUnitTest {
   
   private void setupSerializer(ReflectionBasedAutoSerializer s, boolean readSerialized) {
     this.serializer = s;
-    this.manager = AutoSerializableManager.getInstance(s);
+    this.manager = (AutoSerializableManager) s.getManager();
     this.c = (GemFireCacheImpl) new CacheFactory().
     set("mcast-port", "0").
     setPdxReadSerialized(readSerialized).

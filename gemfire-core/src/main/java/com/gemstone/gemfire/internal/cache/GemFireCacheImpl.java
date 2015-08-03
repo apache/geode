@@ -5258,7 +5258,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   private void basicSetPdxSerializer(PdxSerializer v) {
     TypeRegistry.setPdxSerializer(v);
     if (v instanceof ReflectionBasedAutoSerializer) {
-      AutoSerializableManager asm = AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) v);
+      AutoSerializableManager asm = (AutoSerializableManager) ((ReflectionBasedAutoSerializer) v).getManager();
       if (asm != null) {
         asm.setRegionService(this);
       }

@@ -321,13 +321,13 @@ public class TypeRegistry {
     if (v == null) {
       PdxSerializer oldValue = pdxSerializer.getAndSet(null);
       if (oldValue instanceof ReflectionBasedAutoSerializer) {
-        asm.compareAndSet(AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) oldValue), null);
+        asm.compareAndSet((AutoSerializableManager) ((ReflectionBasedAutoSerializer) oldValue).getManager(), null);
       }
     } else {
       pdxSerializerWasSet = true;
       pdxSerializer.set(v);
       if (v instanceof ReflectionBasedAutoSerializer) {
-        asm.set(AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) v));
+        asm.set((AutoSerializableManager) ((ReflectionBasedAutoSerializer) v).getManager());
       }
     }
   }
