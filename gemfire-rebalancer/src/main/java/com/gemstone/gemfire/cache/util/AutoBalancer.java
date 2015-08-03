@@ -99,17 +99,17 @@ public class AutoBalancer implements Declarable {
    * the total number of bytes rebalance operation may move is more than this
    * number of bytes.
    * <P>
-   * Default {@value AutoBalancer#DEFAULT_SIZE_MINIMUM}
+   * Default {@value AutoBalancer#DEFAULT_MINIMUM_SIZE}
    */
-  public static final String SIZE_MINIMUM = "size-minimum";
+  public static final String MINIMUM_SIZE = "minimum-size";
 
   /**
-   * Default value of {@link AutoBalancer#SIZE_MINIMUM}. In the initial data
+   * Default value of {@link AutoBalancer#MINIMUM_SIZE}. In the initial data
    * load phases, {@link AutoBalancer#SIZE_THRESHOLD_PERCENT} based rebalance
    * invocation may be unnecessary. Do not rebalance if the data to be moved is
    * less than 100MB
    */
-  public static final int DEFAULT_SIZE_MINIMUM = 100 * 1024 * 1024;
+  public static final int DEFAULT_MINIMUM_SIZE = 100 * 1024 * 1024;
 
   /**
    * Name of the DistributedLockService that {@link AutoBalancer} will use to
@@ -217,7 +217,7 @@ public class AutoBalancer implements Declarable {
    */
   class SizeBasedOOBAuditor implements OOBAuditor {
     private int sizeThreshold = DEFAULT_SIZE_THRESHOLD_PERCENT;
-    private int sizeMinimum = DEFAULT_SIZE_MINIMUM;
+    private int sizeMinimum = DEFAULT_MINIMUM_SIZE;
 
     @Override
     public void init(Properties props) {
@@ -232,10 +232,10 @@ public class AutoBalancer implements Declarable {
             throw new GemFireConfigException(SIZE_THRESHOLD_PERCENT + " should be integer, 1 to 99");
           }
         }
-        if (props.getProperty(SIZE_MINIMUM) != null) {
-          sizeMinimum = Integer.valueOf(props.getProperty(SIZE_MINIMUM));
+        if (props.getProperty(MINIMUM_SIZE) != null) {
+          sizeMinimum = Integer.valueOf(props.getProperty(MINIMUM_SIZE));
           if (sizeMinimum <= 0) {
-            throw new GemFireConfigException(SIZE_MINIMUM + " should be greater than 0");
+            throw new GemFireConfigException(MINIMUM_SIZE + " should be greater than 0");
           }
         }
       }

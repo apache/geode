@@ -365,7 +365,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
     Properties config = getBasicConfig();
-    config.put(AutoBalancer.SIZE_MINIMUM, "10");
+    config.put(AutoBalancer.MINIMUM_SIZE, "10");
     balancer.init(config);
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
 
@@ -398,7 +398,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
     Properties config = getBasicConfig();
-    config.put(AutoBalancer.SIZE_MINIMUM, "" + (totalSize * 5));
+    config.put(AutoBalancer.MINIMUM_SIZE, "" + (totalSize * 5));
     balancer.init(config);
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
 
@@ -439,7 +439,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
     Properties config = getBasicConfig();
-    config.put(AutoBalancer.SIZE_MINIMUM, "10");
+    config.put(AutoBalancer.MINIMUM_SIZE, "10");
     balancer.init(config);
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
 
@@ -531,11 +531,11 @@ public class AutoBalancerJUnitTest {
     balancer.init(getBasicConfig());
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
     assertEquals(AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT, auditor.getSizeThreshold());
-    assertEquals(AutoBalancer.DEFAULT_SIZE_MINIMUM, auditor.getSizeMinimum());
+    assertEquals(AutoBalancer.DEFAULT_MINIMUM_SIZE, auditor.getSizeMinimum());
 
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "17");
-    props.put(AutoBalancer.SIZE_MINIMUM, "10");
+    props.put(AutoBalancer.MINIMUM_SIZE, "10");
     balancer = new AutoBalancer();
     balancer.init(props);
     auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
@@ -555,7 +555,7 @@ public class AutoBalancerJUnitTest {
   public void testConfigSizeMinNegative() {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
-    props.put(AutoBalancer.SIZE_MINIMUM, "-1");
+    props.put(AutoBalancer.MINIMUM_SIZE, "-1");
     balancer.init(props);
   }
 
