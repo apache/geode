@@ -57,7 +57,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
     return delegating;
   }
   
-  public Logger getExtendedLogger() {
+  public ExtendedLogger getExtendedLogger() {
     return super.logger;
   }
 }
