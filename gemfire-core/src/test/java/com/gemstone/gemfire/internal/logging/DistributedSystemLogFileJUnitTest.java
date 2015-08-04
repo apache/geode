@@ -487,7 +487,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(logWriter.fineEnabled());
     assertTrue(((LogWriterLogger)logWriter).isDebugEnabled());
     assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger)logWriter).isDebugAvailable());
+    assertTrue(((FastLogger)logWriter).isDelegating());
 
     DistributedTestCase.waitForCriterion(new WaitCriterion() {
       @Override
@@ -703,7 +703,7 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(logWriter.fineEnabled());
     assertTrue(((LogWriterLogger)logWriter).isDebugEnabled());
     assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger)logWriter).isDebugAvailable());
+    assertTrue(((FastLogger)logWriter).isDelegating());
 
     DistributedTestCase.waitForCriterion(new WaitCriterion() {
       @Override
@@ -942,8 +942,8 @@ public class DistributedSystemLogFileJUnitTest {
     //Because debug available is a static volatile, it is shared between the two writers
     //However we should not see any debug level logging due to the config level set in 
     //the log writer itself
-    assertTrue(((FastLogger)securityLogWriter).isDebugAvailable());
-    assertTrue(((FastLogger)logWriter).isDebugAvailable());
+    assertTrue(((FastLogger)securityLogWriter).isDelegating());
+    assertTrue(((FastLogger)logWriter).isDelegating());
 
     
     DistributedTestCase.waitForCriterion(new WaitCriterion() {
@@ -1058,8 +1058,8 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(((LogWriterLogger)logWriter).isDebugEnabled());
     assertTrue(securityLogWriter instanceof FastLogger);
     assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger)securityLogWriter).isDebugAvailable());
-    assertTrue(((FastLogger)logWriter).isDebugAvailable());
+    assertTrue(((FastLogger)securityLogWriter).isDelegating());
+    assertTrue(((FastLogger)logWriter).isDelegating());
 
     DistributedTestCase.waitForCriterion(new WaitCriterion() {
       @Override
@@ -1230,8 +1230,8 @@ public class DistributedSystemLogFileJUnitTest {
     assertTrue(((LogWriterLogger)logWriter).isDebugEnabled());
     assertTrue(securityLogWriter instanceof FastLogger);
     assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger)securityLogWriter).isDebugAvailable());
-    assertTrue(((FastLogger)logWriter).isDebugAvailable());
+    assertTrue(((FastLogger)securityLogWriter).isDelegating());
+    assertTrue(((FastLogger)logWriter).isDelegating());
 
     DistributedTestCase.waitForCriterion(new WaitCriterion() {
       @Override
@@ -1379,8 +1379,8 @@ public class DistributedSystemLogFileJUnitTest {
     assertFalse(((LogWriterLogger)logWriter).isDebugEnabled());
     assertTrue(securityLogWriter instanceof FastLogger);
     assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger)securityLogWriter).isDebugAvailable());
-    assertTrue(((FastLogger)logWriter).isDebugAvailable());
+    assertTrue(((FastLogger)securityLogWriter).isDelegating());
+    assertTrue(((FastLogger)logWriter).isDelegating());
 
     DistributedTestCase.waitForCriterion(new WaitCriterion() {
       @Override

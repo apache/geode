@@ -1,6 +1,5 @@
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.message.MessageFactory;
@@ -9,8 +8,9 @@ import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
 import org.apache.logging.log4j.status.StatusLogger;
 
 /**
- * Overrides is enabled checks for log levels below INFO to avoid performance
- * penalties when the log level is INFO or above.
+ * Overrides is-enabled checks for log levels below INFO to avoid performance
+ * penalties when the log level is INFO or above. If delegating is true
+ * then it will always delegate to ExtendedLoggerWrapper for is-enabled checks.
  * 
  * @author Kirk Lund
  * @author David Hoots
@@ -18,7 +18,7 @@ import org.apache.logging.log4j.status.StatusLogger;
 public class FastLogger extends ExtendedLoggerWrapper {
   private static final long serialVersionUID = 7084130827962463327L;
 
-  private static volatile boolean debugAvailable = true;
+  private static volatile boolean delegating = true;
   
   public FastLogger(final Logger logger) {
     this((ExtendedLogger) logger, logger.getName(), logger.getMessageFactory());
@@ -28,55 +28,33 @@ public class FastLogger extends ExtendedLoggerWrapper {
     super(logger, name, messageFactory);
   }
 
-  public static void setDebugAvailable(final boolean newValue) {
-    StatusLogger.getLogger().debug("Setting debugAvailable to {}", newValue);
-    debugAvailable = newValue;
+  public static void setDelegating(final boolean newValue) {
+    StatusLogger.getLogger().debug("Setting delegating to {}", newValue);
+    delegating = newValue;
   }
   
-  /**
-   * Checks whether this Logger is enabled for the {@link Level#DEBUG DEBUG} Level.
-   *
-   * @return boolean - {@code true} if this Logger is enabled for level DEBUG, {@code false} otherwise.
-   */
   @Override
   public boolean isDebugEnabled() {
-    return debugAvailable && super.isDebugEnabled();
+    return delegating && super.isDebugEnabled();
   }
 
-  /**
-   * Checks whether this Logger is enabled for the {@link Level#DEBUG DEBUG} Level.
-   *
-   * @param marker The marker data specific to this log statement.
-   * @return boolean - {@code true} if this Logger is enabled for level DEBUG, {@code false} otherwise.
-   */
   @Override
   public boolean isDebugEnabled(final Marker marker) {
-    return debugAvailable && super.isDebugEnabled(marker);
+    return delegating && super.isDebugEnabled(marker);
   }
 
-  /**
-   * Checks whether this Logger is enabled for the {@link Level#TRACE TRACE} level.
-   *
-   * @return boolean - {@code true} if this Logger is enabled for level TRACE, {@code false} otherwise.
-   */
   @Override
   public boolean isTraceEnabled() {
-    return debugAvailable && super.isTraceEnabled();
+    return delegating && super.isTraceEnabled();
   }
 
-  /**
-   * Checks whether this Logger is enabled for the {@link Level#TRACE TRACE} level.
-   *
-   * @param marker The marker data specific to this log statement.
-   * @return boolean - {@code true} if this Logger is enabled for level TRACE, {@code false} otherwise.
-   */
   @Override
   public boolean isTraceEnabled(final Marker marker) {
-    return debugAvailable && super.isTraceEnabled(marker);
+    return delegating && super.isTraceEnabled(marker);
   }
   
-  public boolean isDebugAvailable() {
-    return debugAvailable;
+  public boolean isDelegating() {
+    return delegating;
   }
   
   public Logger getExtendedLogger() {

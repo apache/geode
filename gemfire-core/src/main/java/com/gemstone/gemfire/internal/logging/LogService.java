@@ -12,6 +12,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -21,9 +22,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Filter.Result;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.filter.AbstractFilterable;
 import org.apache.logging.log4j.core.lookup.Interpolator;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.logging.log4j.status.StatusLogger;
@@ -78,10 +81,9 @@ public class LogService extends LogManager {
   private static void init() {
     setLog4jConfigFileProperty();
     LoggerContext context = ((org.apache.logging.log4j.core.Logger) LogManager.getLogger(BASE_LOGGER_NAME, GemFireParameterizedMessageFactory.INSTANCE)).getContext();
-    context.reconfigure();
     context.removePropertyChangeListener(propertyChangeListener);
     context.addPropertyChangeListener(propertyChangeListener);
-    setFastLoggerDebugAvailableFlag();
+    context.reconfigure(); // propertyChangeListener invokes configureFastLoggerDelegating
     configureLoggers(false, false);
   }
   
@@ -117,15 +119,17 @@ public class LogService extends LogManager {
   /**
    * Check to see if the user has specified a Log4j configuration file.  If not, attempt
    * to find a GemFire Log4j configuration file in various locations.
+   * 
+   * @return true if log4j.configurationFile property was set; false if it was unchanged
    */
-  private static final void setLog4jConfigFileProperty() {
+  private static final boolean setLog4jConfigFileProperty() {
     // fix bug #52175
     final URL configInClasspath = ConfigLocator.findConfigInClasspath();
     if (configInClasspath != null ) {
       // Log4J 2 will find the configuration file in classpath so do nothing
       configFileInformation = "Using log4j configuration found in classpath: '" + configInClasspath.toString() + "'";
       StatusLogger.getLogger().info(configFileInformation);
-      return;
+      return false;
     }
     
     // If the user set the log4j system property then there's nothing else to do.
@@ -137,16 +141,14 @@ public class LogService extends LogManager {
         //We will let log4j2 handle the null case and just log what file we are attempting to use
         configFileInformation = "Using log4j configuration file specified by " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + ": '" + configFileName + "'";
         StatusLogger.getLogger().info(configFileInformation);
-        return;
+        return false;
       }
       else {
         //If the resource can be found and in cases where the resource is in gemfire jar,
         //we set the log location to the file that was found
-        String configFilePropertyValue = configUrl.toString();
-        System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFilePropertyValue);
-        configFileInformation = "Using log4j configuration file specified by " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + ": '" + configFilePropertyValue + "'";
+        configFileInformation = "Using log4j configuration file specified by " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + ": '" + configFileName + "'";
         StatusLogger.getLogger().info(configFileInformation);
-        return;
+        return true;
       }
     }
     
@@ -164,7 +166,7 @@ public class LogService extends LogManager {
       System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFilePropertyValue);
       configFileInformation = "Setting " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + " to specify log4j configuration file in current directory: '" + configFilePropertyValue + "'";
       StatusLogger.getLogger().debug(configFileInformation);
-      return;
+      return true;
     }
 
     // Use the log4j config file found on the classpath in the gemfire jar file.
@@ -173,7 +175,7 @@ public class LogService extends LogManager {
     System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFilePropertyValue);
     configFileInformation = "Setting " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + " to specify log4j configuration file: '" + configFilePropertyValue + "'";
     StatusLogger.getLogger().info(configFileInformation);
-    return;
+    return true;
   }
   
   public static String getConfigInformation() {
@@ -244,25 +246,18 @@ public class LogService extends LogManager {
     return new Throwable().getStackTrace()[depth].getClassName();
   }
 
-  public static void setFastLoggerDebugAvailableFlag() {
+  public static void configureFastLoggerDelegating() {
     final Configuration config = ((org.apache.logging.log4j.core.Logger)
-        LogManager.getLogger(BASE_LOGGER_NAME, GemFireParameterizedMessageFactory.INSTANCE)).getContext().getConfiguration();
+        LogManager.getLogger(ROOT_LOGGER_NAME, GemFireParameterizedMessageFactory.INSTANCE)).getContext().getConfiguration();
     
-    // Check for debug/trace and filters on each logger
-    for (LoggerConfig loggerConfig : config.getLoggers().values()) {
-      if (loggerConfig.getName().startsWith(BASE_LOGGER_NAME) 
-          && ((loggerConfig.hasFilter() && !GEMFIRE_VERBOSE_FILTER.equals(loggerConfig.getFilter().toString())) 
-          || loggerConfig.getLevel().isLessSpecificThan(Level.DEBUG))){
-        FastLogger.setDebugAvailable(true);
-        return;
-      }
-    }
-    
-    // Check for context filters
-    if (config.hasFilter()) {
-      FastLogger.setDebugAvailable(true);
+    if (Configurator.hasContextWideFilter(config) || 
+        Configurator.hasAppenderFilter(config) || 
+        Configurator.hasDebugOrLower(config) || 
+        Configurator.hasLoggerFilter(config) || 
+        Configurator.hasAppenderRefFilter(config)) {
+      FastLogger.setDelegating(true);
     } else {
-      FastLogger.setDebugAvailable(false);
+      FastLogger.setDelegating(false);
     }
   }
   
@@ -274,11 +269,11 @@ public class LogService extends LogManager {
           evt.getPropertyName());
       
       if (evt.getPropertyName().equals(LoggerContext.PROPERTY_CONFIG)) {
-        setFastLoggerDebugAvailableFlag();
+        configureFastLoggerDelegating();
       }
     }
   }
-
+  
   public static void setBaseLogLevel(Level level) {
     if (isUsingGemFireDefaultConfig()) {
       Configurator.setLevel(ROOT_LOGGER_NAME, level);
