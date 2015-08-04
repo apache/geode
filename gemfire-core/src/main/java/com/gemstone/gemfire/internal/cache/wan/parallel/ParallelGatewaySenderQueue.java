@@ -633,15 +633,20 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    * Wait a while for existing tasks to terminate. If the existing tasks still don't 
    * complete, cancel them by calling shutdownNow. 
    */
-  private void cleanupConflationThreadPool() {
+  private static void cleanupConflationThreadPool(AbstractGatewaySender sender) {
     conflationExecutor.shutdown();// Disable new tasks from being submitted
     
     try {
     if (!conflationExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
       conflationExecutor.shutdownNow(); // Cancel currently executing tasks
       // Wait a while for tasks to respond to being cancelled
-      if (!conflationExecutor.awaitTermination(1, TimeUnit.SECONDS))
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ParallelGatewaySenderQueue_COULD_NOT_TERMINATE_CONFLATION_THREADPOOL, this.sender));
+        if (!conflationExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+          logger
+              .warn(LocalizedMessage
+                  .create(
+                      LocalizedStrings.ParallelGatewaySenderQueue_COULD_NOT_TERMINATE_CONFLATION_THREADPOOL,
+                      (sender == null ? "all" : sender)));
+        }
     }
     } catch (InterruptedException e) {
       // (Re-)Cancel if current thread also interrupted
@@ -1508,25 +1513,33 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    * by the queue. Note that this cleanup doesn't clean the data held by the queue.
    */
   public void cleanUp() {
-    if(buckToDispatchLock != null){
-      this.buckToDispatchLock = null;
+    cleanUpStatics(this.sender);
+  }
+
+  /**
+   * @param sender
+   *          can be null.
+   */
+  public static void cleanUpStatics(AbstractGatewaySender sender) {
+    if (buckToDispatchLock != null) {
+      buckToDispatchLock = null;
     }
-    if(regionToDispatchedKeysMapEmpty != null) {
-      this.regionToDispatchedKeysMapEmpty = null;
+    if (regionToDispatchedKeysMapEmpty != null) {
+      regionToDispatchedKeysMapEmpty = null;
     }
-    this.regionToDispatchedKeysMap.clear();
+    regionToDispatchedKeysMap.clear();
     synchronized (ParallelGatewaySenderQueue.class) {
-      if (this.removalThread != null) {
-        this.removalThread.shutdown();
-        this.removalThread = null;
+      if (removalThread != null) {
+        removalThread.shutdown();
+        removalThread = null;
       }
     }
     if (conflationExecutor != null) {
-      cleanupConflationThreadPool();
-      this.conflationExecutor = null;
+      cleanupConflationThreadPool(sender);
+      conflationExecutor = null;
     }
   }
-  
+
   @Override
   public void close() {
     // Because of bug 49060 do not close the regions of a parallel queue

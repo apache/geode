@@ -86,7 +86,7 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
       final String uniqueName, final int batchInterval,
       final boolean queuePersistent, final boolean writeonly,
       final long timeForRollover, final long maxFileSize) {
-    SerializableCallable createRegion = new SerializableCallable() {
+    SerializableCallable createRegion = new SerializableCallable("Create HDFS region") {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setDataPolicy(DataPolicy.HDFS_PARTITION);
@@ -95,8 +95,8 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
         paf.setRedundantCopies(1);
 
         af.setHDFSStoreName(uniqueName);
-
         af.setPartitionAttributes(paf.create());
+
         HDFSStoreFactory hsf = getCache().createHDFSStoreFactory();
         // Going two level up to avoid home directories getting created in
         // VM-specific directory. This avoids failures in those tests where
@@ -860,7 +860,7 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
   protected AsyncInvocation doAsyncPuts(VM vm, final String regionName,
       final int start, final int end, final String suffix, final String value)
       throws Exception {
-    return vm.invokeAsync(new SerializableCallable() {
+    return vm.invokeAsync(new SerializableCallable("doAsyncPuts") {
       public Object call() throws Exception {
         Region r = getRootRegion(regionName);
         String v = "V";
@@ -976,8 +976,8 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
   }
 
   /**
-   * create server with file rollover time as 2 secs. Insert few entries and
-   * then sleep for 2 sec. A file should be created. Do it again At th end, two
+   * Create server with file rollover time as 5 seconds. Insert few entries and
+   * then sleep for 7 seconds. A file should be created. Do it again. At the end, two
    * files with inserted entries should be created.
    * 
    * @throws Throwable
@@ -991,8 +991,8 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
     String homeDir = "./testWOTimeForRollOverParam";
     final String uniqueName = getName();
 
-    createServerRegion(vm0, 1, 1,  500, homeDir, uniqueName, 5, true, false, 4, 1);
-    createServerRegion(vm1, 1, 1,  500, homeDir, uniqueName, 5, true, false, 4, 1);
+    createServerRegion(vm0, 1, 1, 500, homeDir, uniqueName, 5, true, false, 5, 1);
+    createServerRegion(vm1, 1, 1, 500, homeDir, uniqueName, 5, true, false, 5, 1);
 
     AsyncInvocation a1 = doAsyncPuts(vm0, uniqueName, 1, 8, "vm0");
     AsyncInvocation a2 = doAsyncPuts(vm1, uniqueName, 4, 10, "vm1");
@@ -1000,7 +1000,7 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
     a1.join();
     a2.join();
 
-    Thread.sleep(8000);
+    Thread.sleep(7000);
 
     a1 = doAsyncPuts(vm0, uniqueName, 10, 18, "vm0");
     a2 = doAsyncPuts(vm1, uniqueName, 14, 20, "vm1");
@@ -1008,13 +1008,13 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
     a1.join();
     a2.join();
 
-    Thread.sleep(8000);
+    Thread.sleep(7000);
 
     cacheClose(vm0, false);
     cacheClose(vm1, false);
 
-    AsyncInvocation async1 = createServerRegionAsync(vm0, 1, 1,  500, homeDir, uniqueName, 5, true, false, 4, 1);
-    AsyncInvocation async2 = createServerRegionAsync(vm1, 1, 1,  500, homeDir, uniqueName, 5, true, false, 4, 1);
+    AsyncInvocation async1 = createServerRegionAsync(vm0, 1, 1, 500, homeDir, uniqueName, 5, true, false, 5, 1);
+    AsyncInvocation async2 = createServerRegionAsync(vm1, 1, 1, 500, homeDir, uniqueName, 5, true, false, 5, 1);
     async1.getResult();
     async2.getResult();
 

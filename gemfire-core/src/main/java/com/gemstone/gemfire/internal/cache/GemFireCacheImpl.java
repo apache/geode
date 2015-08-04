@@ -2018,6 +2018,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
               advisor.close();
             }
           }
+          ParallelGatewaySenderQueue.cleanUpStatics(null);
         } catch (CancelException ce) {
 
         }

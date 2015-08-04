@@ -85,8 +85,9 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
   }
 
   public SerializableCallable cleanUpStoresAndDisconnect() throws Exception {
-    SerializableCallable cleanUp = new SerializableCallable() {
+    SerializableCallable cleanUp = new SerializableCallable("cleanUpStoresAndDisconnect") {
       public Object call() throws Exception {
+        disconnectFromDS();
         File file;
         if (homeDir != null) {
           file = new File(homeDir);
@@ -95,7 +96,6 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
         }
         file = new File(tmpDir);
         FileUtil.delete(file);
-        disconnectFromDS();
         return 0;
       }
     };
@@ -576,7 +576,7 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
     return entriesToFileMap;
   }
  protected SerializableCallable validateEmpty(VM vm0, final int numEntries, final String uniqueName) {
-    SerializableCallable validateEmpty = new SerializableCallable("validate") {
+    SerializableCallable validateEmpty = new SerializableCallable("validateEmpty") {
       public Object call() throws Exception {
         Region r = getRootRegion(uniqueName);
         
