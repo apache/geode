@@ -596,18 +596,11 @@ public class TXRegionState {
     String regionFullPath = this.getRegion().getFullPath();
     int entryModsSize = this.entryMods.size();
     int entryEventListSize = entryEventList.size();
-    /*
-     * [DISTTX] TODO
-     * This assertion is not working for PutAll and RemoveAll operations 
-     * and thus guarding within Debug flags. May be enabled at later stage.
-     */
-    if (logger.isDebugEnabled()) {
-      if (entryModsSize != entryEventListSize) {
-        throw new UnsupportedOperationInTransactionException(
-            LocalizedStrings.DISTTX_TX_EXPECTED
-                .toLocalizedString("entry size of " + entryModsSize
-                    + " for region " + regionFullPath, entryEventListSize));
-      }
+    if (entryModsSize != entryEventListSize) {
+      throw new UnsupportedOperationInTransactionException(
+          LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString(
+              "entry size of " + entryModsSize + " for region "
+                  + regionFullPath, entryEventListSize));
     }
 
     int index = 0;

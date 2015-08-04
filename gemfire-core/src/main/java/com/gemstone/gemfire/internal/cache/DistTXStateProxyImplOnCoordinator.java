@@ -888,6 +888,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
               event, putallOp.putAllDataSize, putallOp.isBridgeOp);
           bucketToPutallMap.put(bucketId, putAllForBucket);
         } 
+        putallOp.putAllData[i].setFakeEventID();
         putAllForBucket.addEntry(putallOp.putAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);
@@ -965,6 +966,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
               event, op.removeAllDataSize, op.isBridgeOp);
           bucketToRemoveAllMap.put(bucketId, removeAllForBucket);
         } 
+        op.removeAllData[i].setFakeEventID();
         removeAllForBucket.addEntry(op.removeAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);
