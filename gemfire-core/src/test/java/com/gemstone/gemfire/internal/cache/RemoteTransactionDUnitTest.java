@@ -4006,10 +4006,15 @@ protected static class ClientListener extends CacheListenerAdapter {
     vm1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
+        System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
+        try {
         RegionFactory<String, String> rf = getCache().createRegionFactory();
         rf.setEntryTimeToLive(new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
         rf.setScope(Scope.DISTRIBUTED_ACK);
         rf.create(regionName);
+        } finally {
+          System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+        }
         return null;
       }
     });
@@ -4027,20 +4032,6 @@ protected static class ClientListener extends CacheListenerAdapter {
       @Override
       public Object call() throws Exception {
         final Region<String, String> r = getCache().getRegion(regionName);
-        r.put("key", "value");
-        r.put("nonTXkey", "nonTXvalue");
-        getCache().getCacheTransactionManager().begin();
-        r.put("key", "newvalue");
-        // wait for entry to expire
-        DistributedTestCase.pause(5000);
-        TransactionId tx = getCache().getCacheTransactionManager().suspend();
-        // A remote tx will allow expiration to happen on the side that
-        // is not hosting the tx. But it will not allow an expiration
-        // initiated on the hosting jvm.
-        assertFalse(r.containsKey("key"));
-        assertFalse(r.containsKey("nonTXkey"));
-        getCache().getCacheTransactionManager().resume(tx);
-        getCache().getCacheTransactionManager().commit();
         WaitCriterion wc2 = new WaitCriterion() {
           @Override
           public boolean done() {
@@ -4049,9 +4040,30 @@ protected static class ClientListener extends CacheListenerAdapter {
           
           @Override
           public String description() {
-            return "did not expire";
+            return "did not expire containsKey(key)=" + r.containsKey("key") + " r.containsKey(nonTXKey)=" + r.containsKey("nonTXKey");
           }
         };
+        ExpiryTask.suspendExpiration();
+        Region.Entry entry = null;
+        long tilt;
+        try {
+          r.put("key", "value");
+          r.put("nonTXkey", "nonTXvalue");
+          getCache().getCacheTransactionManager().begin();
+          r.put("key", "newvalue");
+        } 
+        finally {
+          ExpiryTask.permitExpiration();
+        }
+        TransactionId tx = getCache().getCacheTransactionManager().suspend();
+        // A remote tx will allow expiration to happen on the side that
+        // is not hosting the tx. But it will not allow an expiration
+        // initiated on the hosting jvm.
+        // tx is hosted in vm2 so expiration can happen in vm1.
+        DistributedTestCase.waitForCriterion(wc2, 30000, 5, true);
+        getCache().getCacheTransactionManager().resume(tx);
+        assertTrue(r.containsKey("key"));
+        getCache().getCacheTransactionManager().commit();
         DistributedTestCase.waitForCriterion(wc2, 30000, 5, true);
         return null;
       }
