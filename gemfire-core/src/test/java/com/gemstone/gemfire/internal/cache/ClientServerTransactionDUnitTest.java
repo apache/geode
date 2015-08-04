@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
 import javax.transaction.UserTransaction;
@@ -78,6 +79,7 @@ import com.gemstone.gemfire.internal.cache.execute.util.CommitFunction;
 import com.gemstone.gemfire.internal.cache.execute.util.RollbackFunction;
 import com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub;
 
+import dunit.DistributedTestCase;
 import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
@@ -738,7 +740,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
     
-    Thread.sleep(10000);
     datastore.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
@@ -926,14 +927,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
     
-    Thread.sleep(10000);
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
 //        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
         assertTrue(cl.invoked);
         assertEquals("it should be 1 but its:"+cl.invokeCount,1,cl.invokeCount);
         return null;
@@ -981,14 +980,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	      }
 	    });
 	    
-	    Thread.sleep(10000);
 	    client.invoke(new SerializableCallable() {
 	      public Object call() throws Exception {
 	        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
 //	        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //	        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
 	        ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-	        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
 	        assertTrue(cl.invoked);
 	        assertEquals("it should be 1 but its:"+cl.invokeCount,1,cl.invokeCount);
 	        return null;
@@ -1038,14 +1035,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	      }
 	    });
 	    
-	    Thread.sleep(10000);
 	    client.invoke(new SerializableCallable() {
 	      public Object call() throws Exception {
 	        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
 //	        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //	        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
 	        ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-	        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
 	        assertTrue(cl.invoked);
 	        assertTrue(cl.putAllOp);
 	        assertFalse(cl.isOriginRemote);
@@ -1094,7 +1089,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	      }
 	    });
 	    
-	    Thread.sleep(10000);
 	    client.invoke(new SerializableCallable() {
 	      public Object call() throws Exception {
 	        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
@@ -1150,9 +1144,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
     
-    Thread.sleep(10000);
-    
-    
     /*
      * Validate nothing came through
      */
@@ -1199,7 +1190,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     
     client.invoke(doAPutInTx);
     client.invoke(doAnInvalidateInTx);
-    Thread.sleep(10000);
     
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -1365,7 +1355,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
           Customer cust = new Customer("name"+i, "address"+i);
           pr.put(custId, cust);
           r.put(i, "value"+i);
-          Thread.sleep(100);
         }
         return null;
       }
@@ -1464,7 +1453,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
           getGemfireCache().getLogger().info("SWAP:putting:"+custId);
           pr.put(custId, cust);
           r.put(i, "value"+i);
-          Thread.sleep(100);
         }
         return mgr.getTransactionId();
       }
@@ -2960,9 +2948,21 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         Region r = getCache().getRegion(CUSTOMER);
         assertNull(r.get(new CustId(101)));
         mgr.begin();
+        final TXStateProxy txState = mgr.getTXState();
+        assertTrue(txState.isInProgress());
         r.put(new CustId(101), new Customer("name101", "address101"));
-        TransactionId txId = mgr.suspend();
-        Thread.sleep(70*1000);
+        TransactionId txId = mgr.suspend(TimeUnit.MILLISECONDS);
+        WaitCriterion waitForTxTimeout = new WaitCriterion() {
+          public boolean done() {
+            return !txState.isInProgress();
+          }
+          public String description() {
+            return "txState stayed in progress indicating that the suspend did not timeout";
+          }
+        };
+        // tx should timeout after 1 ms but to deal with loaded machines and thread
+        // scheduling latency wait for 10 seconds before reporting an error.
+        DistributedTestCase.waitForCriterion(waitForTxTimeout, 10 * 1000, 10, true);
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");

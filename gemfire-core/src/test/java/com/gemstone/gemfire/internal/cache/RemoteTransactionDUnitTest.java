@@ -92,6 +92,7 @@ import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
 import dunit.VM;
+import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * @author sbawaska
@@ -140,7 +141,6 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
   
   @Override
   public void tearDown2() throws Exception {
-//    try { Thread.sleep(5000); } catch (InterruptedException e) { } // FOR MANUAL TESTING OF STATS - DON"T KEEP THIS
     try {
       invokeInEveryVM(verifyNoTxState);
     } finally {
@@ -3600,15 +3600,21 @@ protected static class ClientListener extends CacheListenerAdapter {
       }
     });
     
-    Thread.sleep(10000);
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
-        ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
-        assertTrue(cl.invoked);
+        final ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
+        WaitCriterion waitForListenerInvocation = new WaitCriterion() {
+          public boolean done() {
+            return cl.invoked;
+          }
+          public String description() {
+            return "listener was never invoked";
+          }
+        };
+        DistributedTestCase.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
         return null;
       }
     });
@@ -3715,15 +3721,21 @@ protected static class ClientListener extends CacheListenerAdapter {
       }
     });
     
-    Thread.sleep(10000);
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
-        ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
-        assertTrue(cl.invoked);
+        final ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
+        WaitCriterion waitForListenerInvocation = new WaitCriterion() {
+          public boolean done() {
+            return cl.invoked;
+          }
+          public String description() {
+            return "listener was never invoked";
+          }
+        };
+        DistributedTestCase.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
         return null;
       }
     });
