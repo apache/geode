@@ -41,21 +41,6 @@ public class DoubleWrapper implements DataSerializable, Comparable<Object> {
     Double other;
     if (arg0 instanceof DoubleWrapper) {
       other = ((DoubleWrapper) arg0).score;
-    } else if (arg0 instanceof String) {
-      String arg = (String) arg0;
-      try {
-        other = Coder.stringToDouble(arg);
-      } catch (NumberFormatException e) {
-        return 0;
-      }
-      /*
-      if (arg.equalsIgnoreCase("INFINITY"))
-        other = Double.POSITIVE_INFINITY;
-      else if (arg.equalsIgnoreCase("-INFINITY"))
-        other = Double.NEGATIVE_INFINITY;
-      else
-        return 0;
-        */
     } else if (arg0 instanceof Double) {
       other = (Double) arg0;
     } else

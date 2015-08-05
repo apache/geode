@@ -206,16 +206,18 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @throws Exception Throws exception if exception is from within execution and not to be handled
    */
   private void executeWithoutTransaction(final Executor exec, Command command) throws Exception {
+    Exception cause = null;
     for (int i = 0; i < MAXIMUM_NUM_RETRIES; i++) {
       try {
         exec.executeCommand(command, this);
         return;
       } catch (Exception e) {
+        cause = e;
         if (e instanceof RegionDestroyedException || e.getCause() instanceof QueryInvocationTargetException)
           Thread.sleep(WAIT_REGION_DSTRYD_MILLIS);
       }
     }
-    throw new Exception("Could not execute command");
+    throw cause;
   }
 
   private void executeWithTransaction(ChannelHandlerContext ctx, final Executor exec, Command command) throws Exception {

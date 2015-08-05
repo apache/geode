@@ -103,7 +103,7 @@ public class Command {
    */
   public String getStringKey() {
     if (this.commandElems.size() > 1) {
-      if (this.key == null) {
+      if (this.bytes == null) {
         this.bytes = new ByteArrayWrapper(this.commandElems.get(1));
         this.key = this.bytes.toString();
       } else if (this.key == null)
