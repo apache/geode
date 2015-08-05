@@ -437,7 +437,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     return super.toString() + " for " + getLocalRegion()
       + ", ttl expiration time: " + expTtl
       + ", idle expiration time: " + expIdle +
-      ("[now:" + System.currentTimeMillis() + "]");
+      ("[now:" + calculateNow() + "]");
   }
 
   ////// Abstract methods ///////

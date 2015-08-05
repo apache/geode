@@ -3853,29 +3853,34 @@ public abstract class RegionTestCase extends CacheTestCase {
         // expiration time to be extended.
         // For this phase we don't worry about actually expiring but just
         // making sure the expiration time gets extended.
-        region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(9000/*ms*/, ExpirationAction.INVALIDATE));
+        final int EXPIRATION_MS = 9000;
+        region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(EXPIRATION_MS, ExpirationAction.INVALIDATE));
         
         LocalRegion lr = (LocalRegion) region;
         {
           ExpiryTask expiryTask = lr.getRegionIdleExpiryTask();
           region.put(key, value);
           long createExpiry = expiryTask.getExpirationTime();
-          waitForExpiryClockToChange(lr);
+          long changeTime = waitForExpiryClockToChange(lr, createExpiry-EXPIRATION_MS);
           region.put(key, "VALUE2");
           long putExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected putBaseExpiry=" + (putExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (putExpiry-EXPIRATION_MS - changeTime) >= 0);
           assertTrue("expected putExpiry=" + putExpiry + " to be > than createExpiry=" + createExpiry, (putExpiry - createExpiry) > 0);
-          waitForExpiryClockToChange(lr);
+          changeTime = waitForExpiryClockToChange(lr, putExpiry-EXPIRATION_MS);
           region.get(key);
           long getExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected getBaseExpiry=" + (getExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (getExpiry-EXPIRATION_MS - changeTime) >= 0);
           assertTrue("expected getExpiry=" + getExpiry + " to be > than putExpiry=" + putExpiry, (getExpiry - putExpiry) > 0);
         
-          waitForExpiryClockToChange(lr);
+          changeTime = waitForExpiryClockToChange(lr, getExpiry-EXPIRATION_MS);
           sub.put(key, value);
           long subPutExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected subPutBaseExpiry=" + (subPutExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (subPutExpiry-EXPIRATION_MS - changeTime) >= 0);
           assertTrue("expected subPutExpiry=" + subPutExpiry + " to be > than getExpiry=" + getExpiry, (subPutExpiry - getExpiry) > 0);
-          waitForExpiryClockToChange(lr);
+          changeTime = waitForExpiryClockToChange(lr, subPutExpiry-EXPIRATION_MS);
           sub.get(key);
           long subGetExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected subGetBaseExpiry=" + (subGetExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (subGetExpiry-EXPIRATION_MS - changeTime) >= 0);
           assertTrue("expected subGetExpiry=" + subGetExpiry + " to be > than subPutExpiry=" + subPutExpiry, (subGetExpiry - subPutExpiry) > 0);
         }
       }

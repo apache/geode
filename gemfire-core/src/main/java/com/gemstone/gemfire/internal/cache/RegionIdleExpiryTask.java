@@ -39,7 +39,8 @@ class RegionIdleExpiryTask extends RegionExpiryTask {
         if (!getLocalRegion().EXPIRY_UNITS_MS) {
           timeout *= 1000;
         }
-        return  timeout + System.currentTimeMillis();
+        // Expiration should always use the DSClock instead of the System clock.
+        return  timeout + getLocalRegion().cacheTimeMillis();
       }
     }
     // otherwise, expire at timeout plus last accessed time

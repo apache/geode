@@ -976,13 +976,24 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
   }
   
   /**
-   * Blocks until the clock used for expiration on the given region changes.
+   * Blocks until the clock used for expiration moves forward.
+   * @return the last time stamp observed
    */
-  public static final void waitForExpiryClockToChange(LocalRegion lr) {
-    long startTime = lr.cacheTimeMillis();
+  public static final long waitForExpiryClockToChange(LocalRegion lr) {
+    return waitForExpiryClockToChange(lr, lr.cacheTimeMillis());
+  }
+  /**
+   * Blocks until the clock used for expiration moves forward.
+   * @param baseTime the timestamp that the clock must exceed
+   * @return the last time stamp observed
+   */
+  public static final long waitForExpiryClockToChange(LocalRegion lr, final long baseTime) {
+    long nowTime;
     do {
       Thread.yield();
-    } while (startTime == lr.cacheTimeMillis());
+      nowTime = lr.cacheTimeMillis();
+    } while ((nowTime - baseTime) <= 0L);
+    return nowTime;
   }
   
   /** pause for specified ms interval
