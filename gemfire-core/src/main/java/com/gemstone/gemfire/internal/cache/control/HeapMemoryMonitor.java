@@ -554,18 +554,7 @@ public void stopMonitoring() {
    *          Number of bytes of heap memory currently used.
    */
   private void setUsageThresholdOnMXBean(final long bytesUsed) {
-    if (testDisableMemoryUpdates) {
-      return;
-    }
-    
-    final MemoryPoolMXBean memoryPoolMXBean = getTenuredMemoryPoolMXBean();
-    final MemoryThresholds saveThresholds = this.thresholds;
-
-    if (bytesUsed < saveThresholds.getEvictionThresholdBytes()) {
-      memoryPoolMXBean.setUsageThreshold(saveThresholds.getEvictionThresholdBytes());
-    } else {
-      memoryPoolMXBean.setUsageThreshold(saveThresholds.getCriticalThresholdBytes());
-    }
+	  //// this method has been made a no-op to fix bug 49064 
   }
   
   /**
