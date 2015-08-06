@@ -78,6 +78,11 @@ Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-d
 
     javac -cp /some/path/geode/gemfire-assembly/build/install/geode/lib/gemfire-core-dependencies.jar HelloWorld.java
     java -cp .:/some/path/geode/gemfire-assembly/build/install/geode/lib/gemfire-core-dependencies.jar HelloWorld
+    
+#Publish to local Maven repository
+   if you want to build latest code and make it available to Maven build application then following command will publish 
+   artifacts to local Maven repository
+    ./gradlew   publish  -Plocal=true
 
 #Application Development
 

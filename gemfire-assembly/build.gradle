@@ -256,7 +256,9 @@ afterEvaluate {
   // the ones defined in root ASF pom
   publishing {
     repositories {
-      if (project.version.endsWith('-SNAPSHOT')) {
+      if( "true".equalsIgnoreCase( local )) {
+        mavenLocal()
+      } else if (project.version.endsWith('-SNAPSHOT')) {
         // Apache Development Snapshot Repository
         maven {
           name "apache.snapshots.https"

@@ -21,3 +21,8 @@ From the gfsh shell you can start a locator and a server using
 gfsh> start locator --name=locator
 gfsh> start server --name=server
 
+
+
+To build latest code and make it available to Maven built application
+./gradlew   publish  -Plocal=true
+
