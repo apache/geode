@@ -337,6 +337,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
   
+  //for testing purposes, returns a copy of the view requests for verification
+  List<DistributionMessage> getViewRequests() {
+    synchronized(viewRequests) {
+      return new LinkedList<DistributionMessage>(viewRequests);
+    }
+  }
   
   /**
    * Yippeee - I get to be the coordinator
@@ -624,6 +630,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       preparedView = null;
       lastConflictingView = null;
       services.installView(newView);
+      
       if (!newView.getCreator().equals(this.localAddress)) {
         if (newView.shouldBeCoordinator(this.localAddress)) {
           becomeCoordinator();

@@ -78,7 +78,8 @@ dependencies {
   testRuntime 'org.apache.derby:derby:10.2.2.0'
   testCompile 'net.spy:spymemcached:2.9.0'
   testCompile 'redis.clients:jedis:2.7.2'
-
+  
+  testCompile 'org.mockito:mockito-core:1.10.19'
   jcaCompile sourceSets.main.output
 
   provided project(path: ':gemfire-junit', configuration: 'testOutput')
