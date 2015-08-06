@@ -428,8 +428,8 @@ public class CliStrings {
   public static final String CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY__HELP = "Policy for dispatching events when --dispatcher-threads is > 1. Possible values are 'THREAD', 'KEY', 'PARTITION'.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS = "dispatcher-threads";
   public static final String CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS__HELP = "Number of threads to use for sending events.";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER = "gateway-event-substitution-listener";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER__HELP = "Fully qualified class name of the GatewayEventSubstitutionListener for this queue.";
+  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER = "gateway-event-substitution-filter";
+  public static final String CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER__HELP = "Fully qualified class name of the GatewayEventSubstitutionFilter for this queue.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER = "listener";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER__HELP = "Fully qualified class name of the AsyncEventListener for this queue.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE = "listener-param";
