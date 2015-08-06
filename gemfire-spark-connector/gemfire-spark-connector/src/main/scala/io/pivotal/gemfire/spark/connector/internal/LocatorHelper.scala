@@ -65,8 +65,8 @@ object LocatorHelper extends Logging {
    * Pick up at most 3 preferred servers from all available servers based on
    * host name and Spark executor id.
    *
-   * This method is used by DefaultGemFireConnection to create LocalCache. Usually 
-   * one server is enough to initialize LocalCacheFactory, but this provides two 
+   * This method is used by DefaultGemFireConnection to create ClientCache. Usually
+   * one server is enough to initialize ClientCacheFactory, but this provides two
    * backup servers in case of the 1st server can't be connected.
    *   
    * @param servers all available servers in the form of (hostname, port) pairs
