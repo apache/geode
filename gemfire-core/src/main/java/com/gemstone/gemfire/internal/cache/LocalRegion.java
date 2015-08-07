@@ -2234,7 +2234,7 @@ public class LocalRegion extends AbstractRegion
    * author David Whitlock
    */
   public final int entryCount() {
-    return entryCount(null);
+    return getDataView().entryCount(this);
   }
 
   public int entryCount(Set<Integer> buckets) {

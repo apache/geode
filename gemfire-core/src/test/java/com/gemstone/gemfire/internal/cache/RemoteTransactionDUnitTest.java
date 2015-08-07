@@ -1721,14 +1721,24 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
     });
   }
 
-  public void testSize() {
+  public void testSizeForTXHostedOnRemoteNode() {
+    doSizeTest(false);
+  }
+
+  public void testSizeOnAccessor() {
+    doSizeTest(true);
+  }
+
+  private void doSizeTest(final boolean isAccessor) {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
     VM datastore1 = host.getVM(1);
     VM datastore2 = host.getVM(2);
     initAccessorAndDataStore(accessor, datastore1, datastore2, 0);
 
-    accessor.invoke(new SerializableCallable() {
+    VM taskVM = isAccessor ? accessor : datastore1;
+
+    taskVM.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
         TXManagerImpl mgr = getGemfireCache().getTxManager();
@@ -1741,16 +1751,31 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
     datastore1.invoke(verifyNoTxState);
     datastore2.invoke(verifyNoTxState);
     
-    accessor.invoke(new SerializableCallable() {
+    taskVM.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
         Region orderRegion = getCache().getRegion(ORDER);
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        TransactionId txId = mgr.suspend();
+        PartitionedRegion custPR = (PartitionedRegion)custRegion;
+        int remoteKey = -1;
+        for (int i=100; i<200; i++) {
+          DistributedMember myId = custPR.getMyId();
+          if (!myId.equals(custPR.getOwnerForKey(custPR.getKeyInfo(new CustId(i))))) {
+            remoteKey = i;
+            break;
+          }
+        }
+        if (remoteKey == -1) {
+          throw new IllegalStateException("expected non-negative key");
+        }
+        mgr.resume(txId);
         assertNotNull(mgr.getTXState());
-        CustId custId = new CustId(5);
-        OrderId orderId = new OrderId(5, custId);
-        custRegion.put(custId, new Customer("customer5", "address5"));
-        orderRegion.put(orderId, new Order("order5"));
+        CustId custId = new CustId(remoteKey);
+        OrderId orderId = new OrderId(remoteKey, custId);
+        custRegion.put(custId, new Customer("customer"+remoteKey, "address"+remoteKey));
+        getCache().getLogger().info("Putting "+custId+", keyInfo:"+custPR.getKeyInfo(new CustId(remoteKey)));
+        orderRegion.put(orderId, new Order("order"+remoteKey));
         assertEquals(6, custRegion.size());
         return mgr.getTransactionId();
       }
@@ -1759,7 +1784,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
     final Integer txOnDatastore2 = (Integer)datastore2.invoke(getNumberOfTXInProgress);
     assertEquals(1, txOnDatastore1+txOnDatastore2);
 
-    accessor.invoke(new SerializableCallable() {
+    taskVM.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
         mgr.commit();

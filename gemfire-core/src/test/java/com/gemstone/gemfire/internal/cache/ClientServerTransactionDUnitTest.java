@@ -2130,7 +2130,11 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   }
 
   @Override
-  public void testSize() {
+  public void testSizeForTXHostedOnRemoteNode() {
+  }
+
+  @Override
+  public void testSizeOnAccessor() {
   }
 
   @Override
