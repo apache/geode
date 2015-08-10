@@ -3,6 +3,8 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -18,6 +20,13 @@ public class RemoveMemberMessage extends HighPriorityDistributionMessage {
   public RemoveMemberMessage(InternalDistributedMember recipient, InternalDistributedMember id, String reason) {
     super();
     setRecipient(recipient);
+    this.memberID = id;
+    this.reason = reason;
+  }
+  
+  public RemoveMemberMessage(List<InternalDistributedMember> recipients, InternalDistributedMember id, String reason) {
+    super();
+    setRecipients(recipients);
     this.memberID = id;
     this.reason = reason;
   }

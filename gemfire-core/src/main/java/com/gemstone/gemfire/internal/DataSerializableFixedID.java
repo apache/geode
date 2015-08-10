@@ -74,7 +74,13 @@ public interface DataSerializableFixedID extends SerializationVersions {
       return new FOO(in);
   */
   
+  
+  public static final short SUSPECT_MEMBERS_MESSAGE = -156;
+  
+  public static final short PING_RESPONSE = -155;
+  public static final short PING_REQUEST = -154;
   public static final short REMOVE_MEMBER_REQUEST = -153;
+  
   public static final short LEAVE_REQUEST_MESSAGE = -152;
   
   public static final short VIEW_ACK_MESSAGE = -151;

@@ -864,7 +864,10 @@ logger.info("received join response {}", response);
     NetView v = this.currentView;
     
     if (v != null) {
-      RemoveMemberMessage msg = new RemoveMemberMessage(v.getCoordinator(), m,
+      Set<InternalDistributedMember> filter = new HashSet<>();
+      filter.add(m);
+      RemoveMemberMessage msg = new RemoveMemberMessage(v.getAllPreferredCoordinators(filter, getMemberID()), 
+          m,
           reason);
       services.getMessenger().send(msg);
     }
