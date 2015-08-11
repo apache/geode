@@ -319,10 +319,9 @@ public abstract class AbstractMapIndex extends AbstractIndex
   void addMapping(Object key, Object value, RegionEntry entry)
       throws IMQException
   {
-    if(key == QueryService.UNDEFINED) {
+    if(key == QueryService.UNDEFINED || !(key instanceof Map)) {
       return;
     }
-    assert key instanceof Map;
     if (this.isAllKeys) {
       Iterator<Map.Entry<?, ?>> entries = ((Map)key).entrySet().iterator();
       while (entries.hasNext()) {
@@ -346,10 +345,9 @@ public abstract class AbstractMapIndex extends AbstractIndex
   void saveMapping(Object key, Object value, RegionEntry entry)
       throws IMQException
   {
-    if(key == QueryService.UNDEFINED) {
+    if(key == QueryService.UNDEFINED || !(key instanceof Map)) {
       return;
     }
-    assert key instanceof Map;
     if (this.isAllKeys) {
       Iterator<Map.Entry<?, ?>> entries = ((Map)key).entrySet().iterator();
       while (entries.hasNext()) {
