@@ -30,7 +30,7 @@ public abstract class GoldenTestCase extends TestCase {
 
   protected final Logger logger = LogService.getLogger();
   
-  private final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+  private final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
   private final List<ProcessWrapper> processes = new ArrayList<ProcessWrapper>();
   
   static {
@@ -137,7 +137,7 @@ public abstract class GoldenTestCase extends TestCase {
 
   protected final Properties createProperties() {
     Properties properties = new Properties();
-    properties.setProperty("gemfire.mcast-port", String.valueOf(this.mcastPort));
+    properties.setProperty("gemfire.start-locator", "localhost[" + String.valueOf(this.locatorPort) + "]");
     properties.setProperty("gemfire.log-level", "warning");
     properties.setProperty("file.encoding", "UTF-8");
     return editProperties(properties);
@@ -151,7 +151,7 @@ public abstract class GoldenTestCase extends TestCase {
   }
   
   protected final int getMcastPort() {
-    return this.mcastPort;
+    return this.locatorPort;
   }
   
   // TODO: get rid of this to tighten up tests

@@ -129,7 +129,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                   help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP)
       boolean skipIfExists,
       
-      // the following should all be in alphabetical order
+      // the following should all be in alphabetical order according to
+      // their key string
       @CliOption (key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
                   help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP)
       @CliMetaData (valueSeparator = ",") 
@@ -172,6 +173,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                   help = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP)
       Boolean concurrencyChecksEnabled,
+      @CliOption (key = CliStrings.CREATE_REGION__MULTICASTENABLED,
+                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+                  help = CliStrings.CREATE_REGION__MULTICASTENABLED__HELP)
+      Boolean mcastEnabled,
       @CliOption (key = CliStrings.CREATE_REGION__STATISTICSENABLED,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
                   help = CliStrings.CREATE_REGION__STATISTICSENABLED__HELP)
@@ -319,7 +324,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
             prRedundantCopies, prStartupRecoveryDelay,
             prTotalMaxMemory, prTotalNumBuckets,
-            offHeap, hdfsStoreName , hdfsWriteOnly,  regionAttributes);
+            offHeap, hdfsStoreName , hdfsWriteOnly,  mcastEnabled, regionAttributes);
         
 
         if (regionAttributes.getPartitionAttributes() == null && regionFunctionArgs.hasPartitionAttributes()) {
@@ -339,7 +344,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
           prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
           prRedundantCopies, prStartupRecoveryDelay,
-          prTotalMaxMemory, prTotalNumBuckets, null,compressor, offHeap , hdfsStoreName , hdfsWriteOnly);
+          prTotalMaxMemory, prTotalNumBuckets, null,compressor, offHeap , hdfsStoreName , hdfsWriteOnly, mcastEnabled);
         
         if (!regionShortcut.name().startsWith("PARTITION") && regionFunctionArgs.hasPartitionAttributes()) {
           throw new IllegalArgumentException(
@@ -583,7 +588,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       RegionFunctionArgs regionFunctionArgs = null;
       regionFunctionArgs = new RegionFunctionArgs(regionPath, null, null, false, null, null, null, entryIdle, entryTTL,
         regionIdle, regionTTL, null, null, null, null, cacheListeners, cacheLoader, cacheWriter, asyncEventQueueIds,
-        gatewaySenderIds, null, cloningEnabled, null, null, null, null, null, null, null, null, evictionMax, null, null);
+        gatewaySenderIds, null, cloningEnabled, null, null, null, null, null, null, null, null, evictionMax, null, null, null);
 
       Set<String> cacheListenersSet = regionFunctionArgs.getCacheListeners();
       if (cacheListenersSet != null && !cacheListenersSet.isEmpty()) {

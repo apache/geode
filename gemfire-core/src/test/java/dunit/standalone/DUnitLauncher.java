@@ -95,6 +95,12 @@ public class DUnitLauncher {
 
   private static final String LAUNCHED_PROPERTY = "gemfire.DUnitLauncher.LAUNCHED";
 
+//  static {
+//    if (ProcessManager.IS_WINDOWS) {
+//      System.setProperty("-Djava.net.preferIPv4Stack", "true");
+//    }
+//  }
+
   private DUnitLauncher() {
   }
   
@@ -234,6 +240,10 @@ public class DUnitLauncher {
         //Disable the shared configuration on this locator.
         //Shared configuration tests create their own locator
         p.setProperty("enable-cluster-configuration", "false");
+        //Tell the locator it's the first in the system for
+        //faster boot-up
+        System.setProperty("gemfire.first-member", "true");
+        
         Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);
         return null;
       }

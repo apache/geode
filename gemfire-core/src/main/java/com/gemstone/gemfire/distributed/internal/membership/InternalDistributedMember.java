@@ -971,11 +971,11 @@ public final class InternalDistributedMember
   
   public void fromData(DataInput in)
   throws IOException, ClassNotFoundException {
-    fromDataPre_9_0_0_0(in);
+    fromDataPre_GFE_9_0_0_0(in);
     netMbr.readAdditionalData(in);
   }
   
-  public void fromDataPre_9_0_0_0(DataInput in)
+  public void fromDataPre_GFE_9_0_0_0(DataInput in)
   throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();

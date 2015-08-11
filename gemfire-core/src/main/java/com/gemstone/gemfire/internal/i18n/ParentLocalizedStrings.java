@@ -191,7 +191,7 @@ class ParentLocalizedStrings {
   public static final StringId CacheDistributionAdvisor_WAITING_FOR_CURRENT_OPERATIONS_TO_FINISH_0_ = new StringId(1178, "Waiting for current operations to finish( {0} )");
   public static final StringId CacheFactory_0_AN_OPEN_CACHE_ALREADY_EXISTS = new StringId(1179, "{0}: An open cache already exists.");
   public static final StringId InternalDistributedSystem_shutdownHook_shuttingdown = new StringId(1180, "VM is exiting - shutting down distributed system");
-  public static final StringId GroupMembershipService_entered_into_membership_in_group_0_with_id_1 = new StringId(1181, "Entered into membership with ID {0}.");
+  public static final StringId GroupMembershipService_entered_into_membership_in_group_0_with_id_1 = new StringId(1181, "Finished joining (took {}ms).");
   public static final StringId CacheServerLauncher_CACHE_SERVER_ERROR = new StringId(1182, "Cache server error");
   public static final StringId CacheXmlParser_XML_PARSER_CHARACTERS_APPENDED_CHARACTER_DATA_0 = new StringId(1183, "XML Parser characters, appended character data: {0}");
   public static final StringId CacheXmlParser_XML_PARSER_CHARACTERS_NEW_CHARACTER_DATA_0 = new StringId(1184, "XML Parser characters, new character data: {0}");

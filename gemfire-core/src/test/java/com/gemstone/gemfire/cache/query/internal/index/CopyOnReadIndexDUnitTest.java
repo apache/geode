@@ -120,11 +120,10 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   public void helpTestPRQueryOnLocalNode(final String queryString, final int numPortfolios, final int numExpectedResults, final boolean hasIndex) throws Exception {
     
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     final int numPortfoliosPerVM = numPortfolios / 2;
     
-    startCacheServer(vm0, port[0], mcastPort);
-    startCacheServer(vm1, port[1], mcastPort);
+    startCacheServer(vm0, port[0]);
+    startCacheServer(vm1, port[1]);
     
     resetInstanceCount(vm0);
     resetInstanceCount(vm1);
@@ -289,10 +288,9 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   
   public void helpTestTransactionsOnReplicatedRegion(final String queryString, final int numPortfolios, final int numExpectedResults, final boolean hasIndex) throws Exception {
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-    startCacheServer(vm0, port[0], mcastPort);
-    startCacheServer(vm1, port[1], mcastPort);
-    startCacheServer(vm2, port[2], mcastPort);
+    startCacheServer(vm0, port[0]);
+    startCacheServer(vm1, port[1]);
+    startCacheServer(vm2, port[2]);
     resetInstanceCount(vm0);
     resetInstanceCount(vm1);
     resetInstanceCount(vm2);
@@ -558,10 +556,11 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
       }
     });
   }
-  private void startCacheServer(VM server, final int port, final int mcastPort) throws Exception {
+  private void startCacheServer(VM server, final int port) throws Exception {
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getSystem(getServerProperties(mcastPort));
+        disconnectFromDS();
+        getSystem(getServerProperties());
         
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
         cache.setCopyOnRead(true);
@@ -599,10 +598,9 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
     return p;
   }
 
-  protected Properties getServerProperties(int mcastPort) {
+  protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastPort+"");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
     return p;
   }
   

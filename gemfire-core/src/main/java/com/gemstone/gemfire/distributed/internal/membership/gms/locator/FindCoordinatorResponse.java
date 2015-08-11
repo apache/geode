@@ -5,17 +5,22 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 
-public class FindCoordinatorResponse implements DataSerializableFixedID {
+public class FindCoordinatorResponse  implements DataSerializableFixedID {
+
   private InternalDistributedMember coordinator;
+  private boolean fromView;
   private boolean networkPartitionDetectionEnabled;
   private boolean usePreferredCoordinators;
   
   
   public FindCoordinatorResponse(InternalDistributedMember coordinator,
+      boolean fromView,
       boolean networkPartitionDectionEnabled, boolean usePreferredCoordinators) {
     this.coordinator = coordinator;
     this.networkPartitionDetectionEnabled = networkPartitionDectionEnabled;
@@ -38,6 +43,10 @@ public class FindCoordinatorResponse implements DataSerializableFixedID {
     return coordinator;
   }
   
+  public boolean isFromView() {
+    return fromView;
+  }
+  
   @Override
   public String toString() {
     return "FindCoordinatorResponse(coordinator="+coordinator+")";
@@ -58,6 +67,7 @@ public class FindCoordinatorResponse implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(coordinator, out);
+    out.writeBoolean(fromView);
     out.writeBoolean(networkPartitionDetectionEnabled);
     out.writeBoolean(usePreferredCoordinators);
   }
@@ -65,6 +75,7 @@ public class FindCoordinatorResponse implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     coordinator = DataSerializer.readObject(in);
+    fromView = in.readBoolean();
     networkPartitionDetectionEnabled = in.readBoolean();
     usePreferredCoordinators = in.readBoolean();
   }

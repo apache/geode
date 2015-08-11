@@ -189,10 +189,9 @@ public class Bug43684DUnitTest extends DistributedTestCase {
 
   @SuppressWarnings("rawtypes")
   private void doRegisterInterest(Object keys, String regEx, Integer numOfPuts, Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
-    int mcast = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    int port1 = (Integer)server1.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{mcast, isReplicated, isPrimaryEmpty});
-    server2.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{mcast, isReplicated, false});
-    server3.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{mcast, isReplicated, false});
+    int port1 = (Integer)server1.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, isPrimaryEmpty});
+    server2.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
+    server3.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
 
     int regexNum = 20;
     server1.invoke(Bug43684DUnitTest.class, "doPuts", new Object[]{numOfPuts, regEx, regexNum});
@@ -207,10 +206,9 @@ public class Bug43684DUnitTest extends DistributedTestCase {
 
   @SuppressWarnings("rawtypes")
   private void doRegisterInterest2(Object keys, Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
-    int mcast = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    int port1 = (Integer)server1.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{mcast, isReplicated, isPrimaryEmpty});
-    server2.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{mcast, isReplicated, false});
-    server3.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{mcast, isReplicated, false});
+    int port1 = (Integer)server1.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, isPrimaryEmpty});
+    server2.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
+    server3.invoke(Bug43684DUnitTest.class, "createServerCache", new Object[]{isReplicated, false});
 
     client1.invoke(Bug43684DUnitTest.class, "createClientCache", new Object[] {host, port1});
     createClientCache(host, port1);
@@ -220,16 +218,15 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     client1.invoke(Bug43684DUnitTest.class, "verifyResponse2");
   }
 
-  public static Integer createServerCache(Integer mcastPort) throws Exception {
-    return createServerCache(mcastPort, false, false);
+  public static Integer createServerCache() throws Exception {
+    return createServerCache(false, false);
   }
 
   @SuppressWarnings("rawtypes")
-  public static Integer createServerCache(Integer mcastPort, Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
+  public static Integer createServerCache(Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
     DistributedTestCase.disconnectFromDS();
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", String.valueOf(mcastPort));
+    props.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
     props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
     props.setProperty("log-level", "fine");
     props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()

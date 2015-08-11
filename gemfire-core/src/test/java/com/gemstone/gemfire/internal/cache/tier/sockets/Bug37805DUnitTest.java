@@ -64,11 +64,10 @@ public class Bug37805DUnitTest extends DistributedTestCase{
   
   public void testFunctionality() {
  // Step 1: Starting the servers
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
 
     PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
         "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+            })).intValue();
     final int durableClientTimeout = 600; 
     
     

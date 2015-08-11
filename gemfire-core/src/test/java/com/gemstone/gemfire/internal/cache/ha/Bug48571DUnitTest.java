@@ -96,10 +96,8 @@ public class Bug48571DUnitTest extends DistributedTestCase {
 
 
   public static int createServerCache() throws Exception {
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(mcastPort));
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
     props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
     props.setProperty("log-level", "info");
     props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()

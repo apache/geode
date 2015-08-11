@@ -121,11 +121,6 @@ public interface AdminDistributedSystem {
   public String getLocators();
 
   /** 
-   * Returns true if this system is using multicast instead of locators for discovery
-   */
-  public boolean isMcastDiscovery();
-  
-  /** 
    * Returns true if this system has enabled the use of multicast for communications
    */
   public boolean isMcastEnabled();

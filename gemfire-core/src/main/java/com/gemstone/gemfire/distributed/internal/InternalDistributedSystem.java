@@ -507,14 +507,17 @@ public final class InternalDistributedSystem
    * current configuration state.
    */
   private void initialize() {
-    if (this.originalConfig.getMcastPort() == 0 && this.originalConfig.getLocators().equals("")) {
-      // no distribution
-      this.isLoner = true;
-//       throw new IllegalArgumentException("The "
-//                                          + DistributionConfig.LOCATORS_NAME
-//                                          + " attribute can not be empty when the "
-//                                          + DistributionConfig.MCAST_PORT_NAME
-//                                          + " attribute is zero.");
+    if (this.originalConfig.getLocators().equals("")) {
+      if (this.originalConfig.getMcastPort() != 0) {
+        throw new GemFireConfigException("The "
+                                          + DistributionConfig.LOCATORS_NAME
+                                          + " attribute can not be empty when the "
+                                          + DistributionConfig.MCAST_PORT_NAME
+                                          + " attribute is non-zero.");
+      } else {
+        // no distribution
+        this.isLoner = true;
+      }
     }
 
     if (this.isLoner) {
@@ -1457,26 +1460,19 @@ public final class InternalDistributedSystem
 
     // @todo Do we need to compare SSL properties?
 
-    if (me.getMcastPort() != 0) {
-      // mcast
-      return me.getMcastPort() == other.getMcastPort() &&
-        me.getMcastAddress().equals(other.getMcastAddress());
+    // locators
+    String myLocators = me.getLocators();
+    String otherLocators = other.getLocators();
+
+    // quick check
+    if (myLocators.equals(otherLocators)) {
+      return true;
 
     } else {
-      // locators
-      String myLocators = me.getLocators();
-      String otherLocators = other.getLocators();
+      myLocators = canonicalizeLocators(myLocators);
+      otherLocators = canonicalizeLocators(otherLocators);
 
-      // quick check
-      if (myLocators.equals(otherLocators)) {
-        return true;
-
-      } else {
-        myLocators = canonicalizeLocators(myLocators);
-        otherLocators = canonicalizeLocators(otherLocators);
-
-        return myLocators.equals(otherLocators);
-      }
+      return myLocators.equals(otherLocators);
     }
   }
 
@@ -1492,19 +1488,17 @@ public final class InternalDistributedSystem
       String l = st.nextToken();
       StringBuffer canonical = new StringBuffer();
       DistributionLocatorId locId = new DistributionLocatorId(l);
-      if (!locId.isMcastId()) {
-        String addr = locId.getBindAddress();
-        if (addr != null && addr.trim().length() > 0) {
-          canonical.append(addr);
-        }
-        else {
-          canonical.append(locId.getHost().getHostAddress());
-        }
-        canonical.append("[");
-        canonical.append(String.valueOf(locId.getPort()));
-        canonical.append("]");
-        sorted.add(canonical.toString());
+      String addr = locId.getBindAddress();
+      if (addr != null && addr.trim().length() > 0) {
+        canonical.append(addr);
       }
+      else {
+        canonical.append(locId.getHost().getHostAddress());
+      }
+      canonical.append("[");
+      canonical.append(String.valueOf(locId.getPort()));
+      canonical.append("]");
+      sorted.add(canonical.toString());
     }
 
     StringBuffer sb = new StringBuffer();
@@ -2578,12 +2572,6 @@ public final class InternalDistributedSystem
     
 //    logger.info("reconnecting IDS@"+System.identityHashCode(this));
 
-    boolean mcastDiscovery = oldConfig.getLocators().isEmpty()
-        && oldConfig.getStartLocator().isEmpty()
-        && oldConfig.getMcastPort() != 0;
-    boolean mcastQuorumContacted = false;
-    
-
     if (Thread.currentThread().getName().equals("CloserThread")) {
       if (isDebugEnabled) {
         logger.debug("changing thread name to ReconnectThread"); // wha?! really?
@@ -2686,24 +2674,6 @@ public final class InternalDistributedSystem
             System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
           }
   //        log.fine("DistributedSystem@"+System.identityHashCode(this)+" reconnecting distributed system.  attempt #"+reconnectAttemptCounter);
-          if (mcastDiscovery  &&  (quorumChecker != null) && !mcastQuorumContacted) {
-            mcastQuorumContacted = quorumChecker.checkForQuorum(3*this.config.getMemberTimeout());
-            if (!mcastQuorumContacted) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("quorum check failed - skipping reconnect attempt");
-              }
-              continue;
-            }
-            if (logger.isDebugEnabled()) {
-              logger.debug(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_QUORUM_OF_MEMBERS_CONTACTED));
-            }
-            mcastQuorumContacted = true;
-            // bug #51527: become more aggressive about reconnecting since there are other 
-            // members around now
-            if (timeOut > 5000) {
-              timeOut = 5000;
-            }
-          }
           configProps.put(DistributionConfig.DS_RECONNECTING_NAME, Boolean.TRUE);
           if (quorumChecker != null) {
             configProps.put(DistributionConfig.DS_QUORUM_CHECKER_NAME, quorumChecker);

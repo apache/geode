@@ -15,7 +15,8 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private Object credentials;
 
   
-  public JoinRequestMessage(InternalDistributedMember coord, InternalDistributedMember id, Object credentials) {
+  public JoinRequestMessage(InternalDistributedMember coord,
+      InternalDistributedMember id, Object credentials) {
     super();
     setRecipient(coord);
     this.memberID = id;
@@ -58,12 +59,16 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(memberID, out);
     DataSerializer.writeObject(credentials, out);
+    // preserve the multicast setting so the receiver can tell
+    // if this is a mcast join request
+    out.writeBoolean(getMulticast());
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = DataSerializer.readObject(in);
     credentials = DataSerializer.readObject(in);
+    setMulticast(in.readBoolean());
   }
 
 }

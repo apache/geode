@@ -198,7 +198,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
 
     ServerPorts ports1 = startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 0f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -300,7 +300,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final String regionName = "rejectRemoteClientOp";
 
     ServerPorts ports1 = startCacheServer(server1, 0f, 0f, regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 0f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     startClient(client, server1, ports1.getPort(), regionName);
@@ -340,7 +340,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final String regionName = "disableThresholdPr";
 
     ServerPorts ports1 = startCacheServer(server1, 0f, 0f, regionName, true/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 0f, 0f,
+    ServerPorts ports2 = startCacheServer(server2, 0f, 0f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -393,7 +393,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final String regionName = "testEventDelivery";
 
     ServerPorts ports1 = startCacheServer(server1, 0f, 0f, regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 80f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -491,7 +491,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final String regionName = "testEventOrger";
 
     ServerPorts ports1 = startCacheServer(server1, 0f, 0f, regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 0f, 0f,
+    ServerPorts ports2 = startCacheServer(server2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     verifyProfiles(server1, 1);
@@ -506,7 +506,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
 
     verifyProfiles(server1, 0);
 
-    startCacheServer(server3, ports1.getMcastPort(), 0f, 0f,
+    startCacheServer(server3, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     verifyProfiles(server1, 1);
@@ -548,13 +548,13 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final int redundancy = 1;
 
     final ServerPorts ports1 = startCacheServer(server1, 80f, 90f, regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 80f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    ServerPorts ports3 = startCacheServer(server3, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports3 = startCacheServer(server3, 80f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getSystem(getServerProperties(ports1.getMcastPort()));
+        getSystem(getServerProperties());
         getCache();
         AttributesFactory factory = new AttributesFactory();        
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -692,9 +692,9 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
 
     final ServerPorts ports1 = startCacheServer(server1, 80f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 80f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    ServerPorts ports3 = startCacheServer(server3, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports3 = startCacheServer(server3, 80f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
     
     registerTestMemoryThresholdListener(server1);
@@ -703,7 +703,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getSystem(getServerProperties(ports1.getMcastPort()));
+        getSystem(getServerProperties());
         getCache();
         AttributesFactory factory = new AttributesFactory();        
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -794,7 +794,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final String regionName = "drFuncRej";
 
     ServerPorts ports1 = startCacheServer(server1, 80f, 90f, regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 80f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     startClient(client, server1, ports1.getPort(), regionName);
@@ -909,11 +909,11 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final String regionName = "prFuncRej";
 
     final ServerPorts ports1 = startCacheServer(server1, 80f, 90f, regionName, true/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 80f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, 0);
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getSystem(getServerProperties(ports1.getMcastPort()));
+        getSystem(getServerProperties());
         getCache();
         AttributesFactory factory = new AttributesFactory();
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -1103,7 +1103,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     final String regionName = "FuncRej";
 
     ServerPorts ports1 = startCacheServer(server1, 80f, 90f, regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
+    ServerPorts ports2 = startCacheServer(server2, 80f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     startClient(client, server1, ports1.getPort(), regionName);
@@ -1198,52 +1198,6 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
   };
 
   /**
-   * Starts up a CacheServer with an already allocated JGroups mcast port.
-   * @return a {@link ServerPorts} containing the CacheServer ports.
-   */
-  private ServerPorts startCacheServer(VM server, final int mcastPort, final float evictionThreshold, final float criticalThreshold, final String regionName,
-      final boolean createPR, final boolean notifyBySubscription, final int prRedundancy) throws Exception {
-
-    return (ServerPorts) server.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        getSystem(getServerProperties(mcastPort));
-        GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
-
-        InternalResourceManager irm = cache.getResourceManager();
-        HeapMemoryMonitor hmm = irm.getHeapMonitor();
-        hmm.setTestMaxMemoryBytes(1000);
-        HeapMemoryMonitor.setTestBytesUsedForThresholdSet(500);
-        irm.setEvictionHeapPercentage(evictionThreshold);
-        irm.setCriticalHeapPercentage(criticalThreshold);
-
-        AttributesFactory factory = new AttributesFactory();
-        if (createPR) {
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          paf.setRedundantCopies(prRedundancy);
-          paf.setTotalNumBuckets(11);
-          factory.setPartitionAttributes(paf.create());
-        } else {
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setDataPolicy(DataPolicy.REPLICATE);
-        }
-        Region region = createRegion(regionName, factory.create());
-        if (createPR) {
-          assertTrue(region instanceof PartitionedRegion);
-        } else {
-          assertTrue(region instanceof DistributedRegion);
-        }
-        CacheServer cacheServer = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPorts(1)[0];
-        cacheServer.setPort(port);
-        cacheServer.setNotifyBySubscription(notifyBySubscription);
-        cacheServer.start();
-        
-        return new ServerPorts(port, mcastPort);
-      }
-    });
-  }
-
-  /**
    * Starts up a CacheServer.
    * @return a {@link ServerPorts} containing the CacheServer ports.
    */
@@ -1252,8 +1206,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
 
     return (ServerPorts) server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getServerProperties());
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
 
         InternalResourceManager irm = cache.getResourceManager();
@@ -1285,7 +1238,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
         cacheServer.setNotifyBySubscription(notifyBySubscription);
         cacheServer.start();
         
-        return new ServerPorts(port, mcastPort);
+        return new ServerPorts(port);
       }
     });
   }
@@ -1576,10 +1529,9 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     return p;
   }
 
-  protected Properties getServerProperties(int mcastPort) {
+  protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastPort+"");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
     return p;
   }
 
@@ -2322,19 +2274,14 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
    */
   private static final class ServerPorts implements Serializable {
     private final int port;
-    private final int mcastPort;
     
-    ServerPorts(int port,int mcastPort) {
+    ServerPorts(int port) {
       this.port = port;
-      this.mcastPort = mcastPort;
     }
     
     int getPort() {
       return this.port;
     }
     
-    int getMcastPort() {
-      return this.mcastPort;
-    }
   }
 }

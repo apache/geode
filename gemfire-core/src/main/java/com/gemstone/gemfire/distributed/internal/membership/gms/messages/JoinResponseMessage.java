@@ -17,6 +17,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   private NetView currentView;
   private String rejectionMessage;
   private InternalDistributedMember memberID;
+  private Object messengerData;
   
   public JoinResponseMessage(InternalDistributedMember memberID, NetView view) {
     this.currentView = view;
@@ -42,6 +43,14 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
 
   public String getRejectionMessage() {
     return rejectionMessage;
+  }
+  
+  public Object getMessengerData() {
+    return this.messengerData;
+  }
+  
+  public void setMessengerData(Object data) {
+    this.messengerData = data;
   }
 
   @Override
@@ -72,6 +81,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     DataSerializer.writeObject(currentView, out);
     DataSerializer.writeObject(memberID, out);
     DataSerializer.writeString(rejectionMessage, out);
+    DataSerializer.writeObject(messengerData, out);
   }
 
   @Override
@@ -79,6 +89,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     currentView = DataSerializer.readObject(in);
     memberID = DataSerializer.readObject(in);
     rejectionMessage = DataSerializer.readString(in);
+    messengerData = DataSerializer.readObject(in);
   }
 
 }

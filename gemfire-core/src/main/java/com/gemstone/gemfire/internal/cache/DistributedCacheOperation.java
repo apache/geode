@@ -416,8 +416,8 @@ public abstract class DistributedCacheOperation {
           RemoteOperationMessage rmsg = entryEvent.getRemoteOperationMessage();
           if (rmsg != null) {
             recipients.remove(rmsg.getSender());
+            useMulticast = false; // bug #45106: can't mcast or the sender of the one-hop op will get it
           }
-          useMulticast = false; // bug #45106: can't mcast or the sender of the one-hop op will get it
         }
         
         if (logger.isDebugEnabled()) {

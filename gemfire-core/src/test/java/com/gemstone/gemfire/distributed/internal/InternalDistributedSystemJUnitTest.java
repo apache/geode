@@ -638,14 +638,10 @@ public class InternalDistributedSystemJUnitTest
   public void testNonDefaultConnectionName() {
     String name = "BLAH";
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    //props.setProperty("mcast-port", "0");
+    props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
     props.setProperty(DistributionConfig.NAME_NAME, name);
-    int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(unusedPort));
     createSystem(props);
   }
 

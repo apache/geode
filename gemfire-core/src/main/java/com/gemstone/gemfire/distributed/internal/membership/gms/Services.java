@@ -138,7 +138,7 @@ public class Services {
     this.joinLeave.started();
     this.healthMon.started();
     this.manager.started();
-    
+    logger.info("Membership: all services have been started");
     this.manager.joinDistributedSystem();
   }
   

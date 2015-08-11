@@ -55,10 +55,10 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *
  * When a program connects to the distributed system, a "distribution
  * manager" is started in this VM and the other members of the
- * distributed system are located.  This discovery can be performed
- * using either IP multicast (default) or by contacting "locators"
- * running on a given host and port.  All connections that are
- * configured to use the same multicast address/port and the same
+ * distributed system are located.  This discovery is performed
+ * by contacting "locators"
+ * running on a given host and port.  All DistributedSystems that are
+ * configured to use the same same
  * locators are part of the same distributed system.
  *
  * <P>
@@ -133,13 +133,10 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * <dl>
  *   <a name="mcast-port"><dt>mcast-port</dt></a>
  *   <dd><U>Description</U>: The port used for multicast networking.
- *   If zero, then multicast will be disabled and locators must be used to find the other members
- *   of the distributed system.
- *   If "mcast-port" is zero and "locators" is ""
- *   then this distributed system will be isolated from all other GemFire
- *   processes.
+ *   If zero, then multicast will be disabled and unicast messaging will
+ *   be used.
  *   </dd>
- *   <dd><U>Default</U>: "0" if locators is not ""; otherwise "10334"</dd>
+ *   <dd><U>Default</U>: "0"</dd>
  * </dl>
  *
  * <dl>

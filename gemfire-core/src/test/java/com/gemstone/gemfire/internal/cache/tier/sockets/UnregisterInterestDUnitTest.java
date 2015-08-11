@@ -301,8 +301,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
     DistributedSystem ds = new UnregisterInterestDUnitTest("UnregisterInterestDUnitTest").getSystem();
     ds.disconnect();
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", String.valueOf(AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS)));
+    props.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
     CacheFactory cf = new CacheFactory(props);
     cache = cf.create();
     RegionFactory rf = ((GemFireCacheImpl)cache).createRegionFactory(RegionShortcut.REPLICATE);

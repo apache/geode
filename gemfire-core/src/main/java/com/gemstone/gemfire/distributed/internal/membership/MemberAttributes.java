@@ -224,19 +224,6 @@ public class MemberAttributes implements DataSerializable {
 	}
 
   /**
-   * Set the VmPid to be the given value.  This may be done by JGroups UDP
-   * protocol if there is no PID available to augment its membership port number.
-   * This functionality was added by us for bug #41983
-   * @param uniqueID
-   */
-  public static void setDefaultVmPid(int uniqueID) {
-    // note: JGroupMembershipManager establishes DEFAULT before attempting to
-    // create a JGroups channel, so we know it isn't INVALID here
-    setDefaults(DEFAULT.dcPort, uniqueID, DEFAULT.vmKind, DEFAULT.vmViewId, DEFAULT.name,
-        DEFAULT.groups, DEFAULT.durableClientAttributes);
-  }
-
-  /**
    * @return the membership view number in which this member was born
    */
   public int getVmViewId() {

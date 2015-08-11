@@ -603,31 +603,6 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
   }
 
   /**
-   * Returns an mcast distributed system that is connected to other
-   * vms using a random mcast port.
-   */
-  public final InternalDistributedSystem getMcastSystem() {
-    Properties props = this.getDistributedSystemProperties();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    props.put(DistributionConfig.MCAST_PORT_NAME, ""+port);
-    props.put(DistributionConfig.MCAST_TTL_NAME, "0");
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    return getSystem(props);
-  }
-
-  /**
-   * Returns an mcast distributed system that is connected to other
-   * vms using the given mcast port.
-   */
-  public final InternalDistributedSystem getMcastSystem(int jgroupsPort) {
-    Properties props = this.getDistributedSystemProperties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, ""+jgroupsPort);
-    props.put(DistributionConfig.MCAST_TTL_NAME, "0");
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    return getSystem(props);
-  }
-
-  /**
    * Returns whether or this VM is connected to a {@link
    * DistributedSystem}.
    */
@@ -969,7 +944,8 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * returning.
    */
   public static final void pause(int ms) {
-    if (ms > 50) {
+    LogWriter log = getLogWriter();
+    if (ms >= 1000 || log.fineEnabled()) { // check for fine but log at info
       getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
     }
     final long target = System.currentTimeMillis() + ms;

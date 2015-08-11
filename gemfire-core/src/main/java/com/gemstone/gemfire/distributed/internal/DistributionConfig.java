@@ -101,7 +101,7 @@ public interface DistributionConfig extends Config, LogConfig {
   public static final String MCAST_PORT_NAME = "mcast-port";
 
   /** The default value of the "mcastPort" property */
-  public static final int DEFAULT_MCAST_PORT = 10334;
+  public static final int DEFAULT_MCAST_PORT = 0;
   /**
    * The minimum mcastPort.
    * <p> Actual value of this constant is <code>0</code>.

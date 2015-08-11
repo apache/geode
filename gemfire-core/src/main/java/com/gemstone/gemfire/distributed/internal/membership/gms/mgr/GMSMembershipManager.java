@@ -769,6 +769,10 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   private Services services;
 
+  private boolean mcastEnabled;
+
+  private boolean tcpDisabled;
+
 
   @Override
   public boolean isMulticastAllowed() {
@@ -842,13 +846,18 @@ public class GMSMembershipManager implements MembershipManager, Manager
     this.wasReconnectingSystem = transport.getIsReconnectingDS();
     this.oldDSUDPSocket = (DatagramSocket)transport.getOldDSMembershipInfo();
     
-    if (!config.getDisableTcp()) {
+    // cache these settings for use in send()
+    this.mcastEnabled = transport.isMcastEnabled();
+    this.tcpDisabled  = transport.isTcpDisabled();
+
+    if (!this.tcpDisabled) {
       dcReceiver = new MyDCReceiver(listener);
     }
     
     surpriseMemberTimeout = Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT,
         20 * config.getMemberTimeout());
     surpriseMemberTimeout = Integer.getInteger("gemfire.surprise-member-timeout", surpriseMemberTimeout).intValue();
+    
   }
   
   @Override
@@ -857,7 +866,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     RemoteTransportConfig transport = services.getConfig().getTransport();
 
     int dcPort = 0;
-    if (!config.getDisableTcp()) {
+    if (!tcpDisabled) {
       directChannel = new DirectChannel(this, dcReceiver, config, null);
       dcPort = directChannel.getPort();
     }
@@ -876,6 +885,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   @Override
   public void joinDistributedSystem() {
+    long startTime = System.currentTimeMillis();
+    
     try {
       join();
     }
@@ -912,7 +923,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     // in order to debug startup issues we need to announce the membership
     // ID as soon as we know it
     logger.info(LocalizedMessage.create(LocalizedStrings.GroupMembershipService_entered_into_membership_in_group_0_with_id_1,
-        new Object[]{address}));
+        new Object[]{""+(System.currentTimeMillis()-startTime)}));
 
   }
   
@@ -2136,8 +2147,19 @@ public class GMSMembershipManager implements MembershipManager, Manager
     
     msg.setBreadcrumbsInSender();
     Breadcrumbs.setProblem(null);
+
+    boolean useMcast = false;
+    if (mcastEnabled) {
+      useMcast = (msg.getMulticast() || allDestinations);
+    }
     
-    result = directChannelSend(destinations, msg, theStats);
+    if (useMcast || tcpDisabled) {
+      result = services.getMessenger().send(msg);
+    }
+    else {
+      result = directChannelSend(destinations, msg, theStats);
+    }
+
     // If the message was a broadcast, don't enumerate failures.
     if (allDestinations)
       return null;
@@ -2830,13 +2852,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   public static void inhibitForcedDisconnectLogging(boolean b) {
     inhibitForceDisconnectLogging = true;
-  }
-
-  /**
-   * @param uniqueID
-   */
-  public void setUniqueID(int uniqueID) {
-    MemberAttributes.setDefaultVmPid(uniqueID);
   }
 
   /** this is a fake message class that is used to flush the serial execution queue */

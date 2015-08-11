@@ -83,8 +83,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -227,8 +226,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -356,8 +354,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -483,8 +480,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -678,8 +674,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -844,8 +839,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -946,8 +940,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -1121,8 +1114,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
      vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
          public void run2() throws CacheException {
            Properties config = new Properties();
-           int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-           config.setProperty("mcast-port", String.valueOf(unusedPort));
+           config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
            system = (InternalDistributedSystem) DistributedSystem.connect(config);
            AttributesFactory factory = new AttributesFactory();
            factory.setScope(Scope.LOCAL);
@@ -1234,8 +1226,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
       vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
           public void run2() throws CacheException {
             Properties config = new Properties();
-            int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-            config.setProperty("mcast-port", String.valueOf(unusedPort));
+            config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
             system = (InternalDistributedSystem) DistributedSystem.connect(config);
             AttributesFactory factory = new AttributesFactory();
             factory.setScope(Scope.LOCAL);

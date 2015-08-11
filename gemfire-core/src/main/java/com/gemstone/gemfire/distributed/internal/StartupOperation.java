@@ -58,7 +58,6 @@ public class StartupOperation {
     msg.setEnforceUniqueZone(enforceUniqueZone);
     msg.setDirectChannel(dm.getDirectChannel());
     msg.setMcastEnabled(transport.isMcastEnabled());
-    msg.setMcastDiscovery(transport.isMcastDiscovery());
     msg.setMcastPort(dm.getSystem().getOriginalConfig().getMcastPort());
     msg.setMcastHostAddress(dm.getSystem().getOriginalConfig().getMcastAddress());
     msg.setTcpDisabled(transport.isTcpDisabled());

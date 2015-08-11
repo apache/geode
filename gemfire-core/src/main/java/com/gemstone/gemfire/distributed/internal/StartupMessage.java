@@ -41,7 +41,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   private Stub directChannel;
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
   private int replyProcessorId;
-  private boolean isMcastDiscovery;
   private boolean isMcastEnabled;
   private boolean isTcpDisabled;
   private Set interfaces;
@@ -141,14 +140,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
 //  void setHostedLocatorsWithSharedConfiguration(Collection<String> hostedLocatorsWithSharedConfiguration) {
 //    this.hostedLocatorsWithSharedConfiguration = hostedLocatorsWithSharedConfiguration;
 //  }
-  
-  /**
-   * Sets the mcastDiscovery flag for this message
-   * @since 5.0
-   */
-  void setMcastDiscovery(boolean flag) {
-    isMcastDiscovery = flag;
-  }
   
   /**
    * Sets the tcpDisabled flag for this message
@@ -333,7 +324,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     DataSerializer.writeString(this.version, out);
     out.writeInt(this.replyProcessorId);
     out.writeBoolean(this.isMcastEnabled);
-    out.writeBoolean(this.isMcastDiscovery);
     out.writeBoolean(this.isTcpDisabled);
 
     // Send a description of all of the DataSerializers and
@@ -408,7 +398,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     this.version = DataSerializer.readString(in);
     this.replyProcessorId = in.readInt();
     this.isMcastEnabled = in.readBoolean();
-    this.isMcastDiscovery = in.readBoolean();
     this.isTcpDisabled = in.readBoolean();
 
     int serializerCount = in.readInt();

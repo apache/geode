@@ -74,8 +74,7 @@ public class PutAllWithIndexPerfDUnitDisabledTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-          config.setProperty("mcast-port", String.valueOf(unusedPort));
+          config.put("locators", "localhost["+getDUnitLocatorPort()+"]");
           Cache cache = new CacheFactory(config).create();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);

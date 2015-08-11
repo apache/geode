@@ -179,7 +179,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   
   private volatile boolean isSharedConfigurationStarted = false; 
   
-  private Thread restartThread;
+  private volatile Thread restartThread;
   
   
   public boolean isSharedConfigurationEnabled() {
@@ -1039,7 +1039,23 @@ public class InternalLocator extends Locator implements ConnectListener {
       restarted = false;
       this.server.join();
       if (this.stoppedForReconnect) {
+        logger.info("waiting for distributed system to disconnect...");
+        while (this.myDs.isConnected()) {
+          Thread.sleep(5000);
+        }
+        logger.info("waiting for distributed system to reconnect...");
         restarted = this.myDs.waitUntilReconnected(-1, TimeUnit.SECONDS);
+        if (restarted) {
+          logger.info("system restarted");
+        } else {
+          logger.info("system was not restarted");
+        }
+        Thread rs = this.restartThread;
+        if (rs != null) {
+          logger.info("waiting for services to restart...");
+          rs.join();
+          this.restartThread = null;
+        }
       }
     } while (restarted);
   }
@@ -1124,6 +1140,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         restarted = true;
       }
     }
+    logger.info("restart thread exiting.  Service was "+(restarted? "" : "not ") + "restarted");
     return restarted;
   }
   

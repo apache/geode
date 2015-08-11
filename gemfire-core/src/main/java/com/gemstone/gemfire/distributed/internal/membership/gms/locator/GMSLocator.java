@@ -135,8 +135,12 @@ public class GMSLocator implements Locator, NetLocator {
         if (view == null) {
           findServices();
         }
+        
+        boolean fromView = false;
+        
         if (view != null) {
           coord = view.getCoordinator();
+          fromView = true;
         }
         
         if (coord != null) {
@@ -161,7 +165,7 @@ public class GMSLocator implements Locator, NetLocator {
             }
           }
         }
-        response = new FindCoordinatorResponse(coord,
+        response = new FindCoordinatorResponse(coord, fromView,
             this.networkPartitionDetectionEnabled, this.usePreferredCoordinators);
       }
     }

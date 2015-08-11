@@ -62,6 +62,8 @@ public class RegionFunctionArgs implements Serializable {
   private final boolean isSetConcurrencyChecksEnabled;
   private Boolean cloningEnabled;
   private final boolean isSetCloningEnabled;
+  private Boolean mcastEnabled;
+  private final boolean isSetMcastEnabled;
   private Integer concurrencyLevel;
   private final boolean isSetConcurrencyLevel;
   private final PartitionArgs partitionArgs;
@@ -92,7 +94,7 @@ public class RegionFunctionArgs implements Serializable {
 	      Integer prLocalMaxMemory, Long prRecoveryDelay,
 	      Integer prRedundantCopies, Long prStartupRecoveryDelay,
 	      Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax,
-	      String compressor, Boolean offHeap , String hdfsStoreName , Boolean hdfsWriteOnly) {	
+	      String compressor, Boolean offHeap , String hdfsStoreName , Boolean hdfsWriteOnly, Boolean mcastEnabled) {	
 		this(regionPath, regionShortcut, useAttributesFrom, skipIfExists,
 				keyConstraint, valueConstraint, statisticsEnabled,
 				entryExpirationIdleTime, entryExpirationTTL,
@@ -103,13 +105,14 @@ public class RegionFunctionArgs implements Serializable {
 				concurrencyChecksEnabled, cloningEnabled, concurrencyLevel,
 				prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
 				prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory,
-				prTotalNumBuckets, evictionMax, compressor, offHeap);	
+				prTotalNumBuckets, evictionMax, compressor, offHeap, mcastEnabled);	
 		this.isSetHdfsWriteOnly = hdfsWriteOnly != null;
 		if (isSetHdfsWriteOnly) {
 			this.hdfsWriteOnly = hdfsWriteOnly;
 		}
-		if (hdfsStoreName != null )
+		if (hdfsStoreName != null ) {
 		  this.hdfsStoreName = hdfsStoreName;
+		}
   }
   public RegionFunctionArgs(String regionPath,
       RegionShortcut regionShortcut, String useAttributesFrom,
@@ -127,7 +130,7 @@ public class RegionFunctionArgs implements Serializable {
       Integer prLocalMaxMemory, Long prRecoveryDelay,
       Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax,
-      String compressor, Boolean offHeap) {
+      String compressor, Boolean offHeap, Boolean mcastEnabled) {
     this.regionPath = regionPath;
     this.regionShortcut = regionShortcut;
     this.useAttributesFrom = useAttributesFrom;
@@ -184,6 +187,10 @@ public class RegionFunctionArgs implements Serializable {
     if (this.isSetCloningEnabled) {
       this.cloningEnabled = cloningEnabled;
     }
+    this.isSetMcastEnabled = mcastEnabled != null;
+    if (isSetMcastEnabled) {
+      this.mcastEnabled = mcastEnabled;
+    }
     this.isSetConcurrencyLevel = concurrencyLevel != null;
     if (this.isSetConcurrencyLevel) {
       this.concurrencyLevel = concurrencyLevel;
@@ -220,7 +227,7 @@ public class RegionFunctionArgs implements Serializable {
       Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, 
       Boolean offHeap, String hdfsStoreName , Boolean hdfsWriteOnly , 
-      RegionAttributes<?, ?> regionAttributes) {   
+      Boolean mcastEnabled, RegionAttributes<?, ?> regionAttributes) {   
     this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint,
         valueConstraint, statisticsEnabled, entryExpirationIdleTime,
         entryExpirationTTL, regionExpirationIdleTime, regionExpirationTTL,
@@ -230,7 +237,7 @@ public class RegionFunctionArgs implements Serializable {
         concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
         prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
         prRedundantCopies, prStartupRecoveryDelay,
-        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap , hdfsStoreName , hdfsWriteOnly);
+        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap , hdfsStoreName , hdfsWriteOnly, mcastEnabled);
     this.regionAttributes = regionAttributes;
   }
 
@@ -474,6 +481,20 @@ public class RegionFunctionArgs implements Serializable {
    */
   public Boolean isSetCloningEnabled() {
     return this.isSetCloningEnabled;
+  }
+
+  /**
+   * @return the mcastEnabled setting
+   */
+  public Boolean isMcastEnabled() {
+    return this.mcastEnabled;
+  }
+
+  /**
+   * @return the isSetCloningEnabled
+   */
+  public Boolean isSetMcastEnabled() {
+    return this.isSetMcastEnabled;
   }
 
   /**

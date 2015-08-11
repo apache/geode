@@ -16,7 +16,7 @@ public interface Messenger extends Service {
    * sends an asynchronous message.  Returns destinations that did not
    * receive the message due to no longer being in the view
    */
-  Set<InternalDistributedMember> send(DistributionMessage m) throws IOException;
+  Set<InternalDistributedMember> send(DistributionMessage m);
 
   /**
    * returns the endpoint ID for this member

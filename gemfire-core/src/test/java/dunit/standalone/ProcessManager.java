@@ -38,6 +38,7 @@ import dunit.RemoteDUnitVMIF;
  *
  */
 public class ProcessManager {
+  public static final boolean IS_WINDOWS = System.getProperty("os.name").contains("Windows");
   
   private int namingPort;
   private Map<Integer, ProcessHolder> processes = new HashMap<Integer, ProcessHolder>();
@@ -156,6 +157,9 @@ public class ProcessManager {
       "-Dgemfire.disallowMcastDefaults=true",
       "-XX:MaxPermSize=256M",
       "-ea",
+      // use IPv4 on Windows
+      // see https://github.com/belaban/JGroups/wiki/FAQ
+//      (IS_WINDOWS?"-Djava.net.preferIPv4Stack=true":""),
       agent,
       "dunit.standalone.ChildVM"
     };

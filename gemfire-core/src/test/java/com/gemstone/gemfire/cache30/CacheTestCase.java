@@ -165,53 +165,6 @@ public abstract class CacheTestCase extends DistributedTestCase {
   }
 
   /**
-   * Creates the <code>Cache</code> for this test that has its own mcast group
-   */
-  public Cache createMcastCache() {
-    synchronized(CacheTestCase.class) {
-      try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        Cache c = CacheFactory.create(getMcastSystem()); 
-        cache = c;
-      } catch (CacheExistsException e) {
-        fail("the cache already exists", e);
-
-      } catch (RuntimeException ex) {
-        throw ex;
-
-      } catch (Exception ex) {
-        fail("Checked exception while initializing cache??", ex);
-      } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-      }
-      return cache;
-    }
-  }
-
-  /**
-   * Creates the <code>Cache</code> for this test that has its own mcast group
-   */
-  public Cache createMcastCache(int jgroupsPort) {
-    synchronized(CacheTestCase.class) {
-      try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        Cache c = CacheFactory.create(getMcastSystem(jgroupsPort)); 
-        cache = c;
-      } catch (CacheExistsException e) {
-        fail("the cache already exists", e);
-
-      } catch (RuntimeException ex) {
-        throw ex;
-
-      } catch (Exception ex) {
-        fail("Checked exception while initializing cache??", ex);
-      } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-      }
-      return cache;
-    }
-  }
-  /**
    * Sets this test up with a CacheCreation as its cache.
    * Any existing cache is closed. Whoever calls this must also call finishCacheXml
    */

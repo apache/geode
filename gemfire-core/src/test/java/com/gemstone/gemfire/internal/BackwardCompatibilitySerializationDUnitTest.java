@@ -32,6 +32,8 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
+import dunit.DistributedTestCase;
+
 /**
  * Test the DSFID serialization framework added for rolling upgrades in 7.1
  * 
@@ -39,8 +41,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 
  * 
  */
-@Category(IntegrationTest.class)
-public class BackwardCompatibilitySerializationJUnitTest {
+public class BackwardCompatibilitySerializationDUnitTest extends DistributedTestCase {
 
   private transient ByteArrayOutputStream baos;
   private transient ByteArrayInputStream bais;
@@ -54,7 +55,8 @@ public class BackwardCompatibilitySerializationJUnitTest {
 
   public TestMessage msg = new TestMessage();
 
-  public BackwardCompatibilitySerializationJUnitTest() {
+  public BackwardCompatibilitySerializationDUnitTest(String name) {
+    super(name);
   }
 
   @Before
@@ -66,7 +68,7 @@ public class BackwardCompatibilitySerializationJUnitTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown2() {
     resetFlags();
     // reset the class mapped to the dsfid
     DSFIDFactory.registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST,
@@ -195,7 +197,7 @@ public class BackwardCompatibilitySerializationJUnitTest {
     }
     
     // some msgs require distributed system
-    Cache c = new CacheFactory().set("mcast-port", ""+AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS)).create();
+    Cache c = new CacheFactory().set("locators", "localhost["+getDUnitLocatorPort()+"]").create();
     for (Object o : DSFIDFactory.getDsfidmap2().values()) {
       Constructor<?> cons = (Constructor<?>) o;
       if (cons != null) {

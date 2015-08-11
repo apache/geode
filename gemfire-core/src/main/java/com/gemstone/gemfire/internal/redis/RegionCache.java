@@ -260,7 +260,7 @@ public class RegionCache implements Closeable {
    */
   private Region<?, ?> createRegionGlobally(String key) {
     Region<?, ?> r = null;
-    Result result = cliCmds.createRegion(key, GemFireRedisServer.DEFAULT_REGION_TYPE, null, null, true, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    Result result = cliCmds.createRegion(key, GemFireRedisServer.DEFAULT_REGION_TYPE, null, null, true, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     r = cache.getRegion(key);
     if (result.getStatus() == Status.ERROR && r == null) {
       String err = "";

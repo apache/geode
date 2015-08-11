@@ -22,7 +22,6 @@ public class GMSUtil {
     try {
       if (bindAddress == null || bindAddress.trim().length() == 0) {
         addr = SocketCreator.getLocalHost();
-        logger.info("Peer-to-peer bind address was null - checking for locator communications using " + addr);
       } else {
         addr = InetAddress.getByName(bindAddress);
       }
