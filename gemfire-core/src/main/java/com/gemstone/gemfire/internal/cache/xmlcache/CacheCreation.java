@@ -55,7 +55,6 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.CqExistsException;
@@ -1428,11 +1427,6 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
 
   @Override
   public CqService getCqService() {
-    return null;
-  }
-
-  @Override
-  public LuceneService getLuceneService() {
     return null;
   }
 

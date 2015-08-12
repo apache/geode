@@ -56,7 +56,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   public void testCacheExtension() {
     final CacheCreation cache = new CacheCreation();
     final MockCacheExtension extension = new MockCacheExtension("testCacheExtension");
-    cache.getExtensionPoint().addExtension(extension);
+    cache.getExtensionPoint().addExtension(MockCacheExtension.class, extension);
 
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
@@ -91,7 +91,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     Extensible<Region<?, ?>> region = (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
 
     final MockRegionExtension extension = new MockRegionExtension("test");
-    region.getExtensionPoint().addExtension(extension);
+    region.getExtensionPoint().addExtension(MockRegionExtension.class, extension);
 
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
@@ -127,7 +127,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     Extensible<Region<?, ?>> region = (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
 
     final MockRegionExtension extension = new MockRegionExtension("exception");
-    region.getExtensionPoint().addExtension(extension);
+    region.getExtensionPoint().addExtension(MockRegionExtension.class, extension);
 
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());

@@ -126,8 +126,6 @@ import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSForceCompactionFuncti
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSLastCompactionTimeFunction;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSStoreDirector;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
@@ -586,8 +584,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   private final CqService cqService;
   
-  private final LuceneService luceneService;
-
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
 
   private static int clientFunctionTimeout;
@@ -817,8 +813,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       this.rootRegions = new HashMap();
       
       this.cqService = CqServiceProvider.create(this);
-
-      this.luceneService = LuceneServiceProvider.create(this);
 
       initReliableMessageQueueFactory();
 
@@ -5427,13 +5421,5 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   public CqService getCqService() {
     return this.cqService;
-  }
-  
-  /**
-   * get reference to LuceneService singleton
-   * @return LuceneService
-   */
-  public LuceneService getLuceneService() {
-    return this.luceneService;
   }
 }

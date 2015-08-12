@@ -24,7 +24,15 @@ public interface ExtensionPoint<T> {
    *          to add.
    * @since 8.1
    */
-  void addExtension(Extension<T> extension);
+  void addExtension(Object key, Extension<T> extension);
+  
+  /**
+   * Retrieve an {@link Extension} by key
+   * 
+   * @param key key to retrieve 
+   * @since 9.0
+   */
+  Extension<T> getExtension(Object key);
 
   /**
    * Remove {@link Extension} from {@link ExtensionPoint}.
@@ -33,7 +41,7 @@ public interface ExtensionPoint<T> {
    *          to remove.
    * @since 8.1
    */
-  void removeExtension(Extension<T> extension);
+  void removeExtension(Object key);
 
   /**
    * Get {@link Iterable} of {@link Extension}s.

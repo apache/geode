@@ -20,7 +20,6 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.pdx.PdxSerializer;
@@ -254,12 +253,6 @@ public interface GemFireCache extends RegionService {
    */
   public Properties getInitializerProps();
 
-  /**
-   * Returns the LuceneService singleton instance.
-   * @since 8.5
-   */
-  public LuceneService getLuceneService();
-	
   /**
    * Returns the HDFSStore by name or <code>null</code> if no HDFSStore is
    * found.
