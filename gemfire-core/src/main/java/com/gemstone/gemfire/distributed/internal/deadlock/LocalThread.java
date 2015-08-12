@@ -57,7 +57,7 @@ public class LocalThread implements Serializable, ThreadReference {
     if(info.getLockedSynchronizers().length > 0) {
       result.append("\nLocked synchronizers:");
       for(LockInfo sync : info.getLockedSynchronizers()) {
-        result.append("\n" + sync.getClassName() + "@" + sync.getIdentityHashCode());
+        result.append("\n" + sync.getClassName() + "@" + Integer.toHexString(sync.getIdentityHashCode()));
         
       }
     }

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import java.util.Set;
  * 
  * 
  * @author dsmith
+ * @author bschuchardt
  * 
  */
 public class DependencyGraph implements Serializable {
@@ -42,22 +44,30 @@ public class DependencyGraph implements Serializable {
    */
   private Set<Dependency> edges = new LinkedHashSet<Dependency>();
  
+  /** add a collection of edges to this graph */
+  public void addEdges(Collection<Dependency> edges) {
+    for (Dependency dep: edges) {
+      addEdge(dep);
+    }
+  }
+  
   /** 
    * Add an edge to the dependency graph. 
    */
   public void addEdge(Dependency dependency) {
-    edges.add(dependency);
-    Set<Dependency> outboundEdges = vertices.get(dependency.getDepender());
-    if(outboundEdges == null) {
-      outboundEdges = new HashSet();
-      vertices.put(dependency.getDepender(), outboundEdges);
+    if (!edges.contains(dependency)) {
+      edges.add(dependency);
+      Set<Dependency> outboundEdges = vertices.get(dependency.getDepender());
+      if(outboundEdges == null) {
+        outboundEdges = new HashSet();
+        vertices.put(dependency.getDepender(), outboundEdges);
+      }
+      outboundEdges.add(dependency);
+      
+      if(vertices.get(dependency.getDependsOn()) == null) {
+        vertices.put(dependency.getDependsOn(), new HashSet());
+      }
     }
-    outboundEdges.add(dependency);
-    
-    if(vertices.get(dependency.getDependsOn()) == null) {
-      vertices.put(dependency.getDependsOn(), new HashSet());
-    }
-    
   }
   
   /**
@@ -77,7 +87,7 @@ public class DependencyGraph implements Serializable {
       Object start = unvisited.iterator().next();
       CycleHolder cycle = new CycleHolder();
       
-      boolean foundCycle = visitCycle(start, unvisited, finished, cycle);
+      boolean foundCycle = visitCycle(start, unvisited, finished, cycle, 0);
       if(foundCycle) {
         return cycle.cycle;
       }
@@ -86,6 +96,73 @@ public class DependencyGraph implements Serializable {
     return null;
   }
 
+  /**
+   * This will find the deepest call chain in the graph.  If a
+   * cycle is detected it will be returned.  Otherwise all
+   * subgraphs are traversed to find the one that has the most
+   * depth.  This usually indicates the thread that is blocking
+   * the most other threads.
+   */
+  public DependencyGraph findDeepestGraph() {
+    int depth = 0;
+    DependencyGraph deepest = null;
+    
+    for (Object dep: vertices.keySet()) {
+      int itsDepth = getDepth(dep);
+      if (itsDepth > depth) {
+        deepest = getSubGraph(dep);
+        depth = itsDepth;
+      }
+    }
+    
+    return deepest;
+  }
+  
+  
+  public DependencyGraph findDependenciesWith(String objectName) {
+    Object obj = null;
+    Dependency objDep = null;
+    for (Dependency dep: edges) {
+      if (dep.depender.toString().contains(objectName)) {
+        obj = dep.depender;
+        objDep = dep;
+        break;
+      }
+      if (dep.dependsOn.toString().contains(objectName)) {
+        obj = dep.dependsOn;
+        objDep = dep;
+        break;
+      }
+    }
+    if (obj == null) {
+      return null;
+    }
+    
+    DependencyGraph result = new DependencyGraph();
+    
+    Set<Object> dependsOnObj = new HashSet<>();
+    dependsOnObj.add(obj);
+    boolean anyAdded = true;
+    while (anyAdded) {
+      anyAdded = false;
+      for (Dependency dep: edges) {
+        if (dependsOnObj.contains(dep.dependsOn)
+            && !dependsOnObj.contains(dep.depender)) {
+          anyAdded = true;
+          dependsOnObj.add(dep.depender);
+        }
+      }
+    }
+    for (Object depender: dependsOnObj) {
+      if (!result.getVertices().contains(depender)) {
+        DependencyGraph subgraph = getSubGraph(depender);
+        result.addEdges(subgraph.getEdges());
+      }
+    }
+    return result;
+  }
+  
+  
   /**
    * Visit a vertex for the purposes of finding a cycle in the graph.
    * 
@@ -97,9 +174,10 @@ public class DependencyGraph implements Serializable {
    *          the set of vertices that have been completely analyzed
    * @param cycle
    *          an object used to record the any cycles that are detected
+   * @param depth the depth of the recursion chain up to this point
    */
   private boolean visitCycle(Object start, Set<Object> unvisited,
-      Set<Object> finished, CycleHolder cycle) {
+      Set<Object> finished, CycleHolder cycle, int depth) {
     if(finished.contains(start)) {
       return false;
     }
@@ -108,9 +186,11 @@ public class DependencyGraph implements Serializable {
       return true;
     }
     
+    cycle.processDepth(depth);
+    
     boolean foundCycle = false;
     for(Dependency dep : vertices.get(start)) {
-      foundCycle |= visitCycle(dep.getDependsOn(), unvisited, finished, cycle);
+      foundCycle |= visitCycle(dep.getDependsOn(), unvisited, finished, cycle, depth+1);
       if(foundCycle) {
         cycle.add(dep);
         break;
@@ -120,6 +200,24 @@ public class DependencyGraph implements Serializable {
     
     return foundCycle;
   }
+
+  /** return the depth of the subgraph for the given object */
+  private int getDepth(Object depender) {
+    Set<Object> unvisited = new HashSet<Object>(vertices.keySet());
+    Set<Object> finished = new HashSet<Object>(vertices.size());
+
+    Object start = depender;
+    CycleHolder cycle = new CycleHolder();
+
+    boolean foundCycle = visitCycle(start, unvisited, finished, cycle, 0);
+
+    if(foundCycle) {
+      return Integer.MAX_VALUE;
+    } else {
+      return cycle.getMaxDepth();
+    }
+  }
+  
 
   /**
    * Get the subgraph that the starting object has dependencies on.
@@ -169,6 +267,17 @@ public class DependencyGraph implements Serializable {
   private static class CycleHolder {
     private LinkedList<Dependency> cycle = new LinkedList<Dependency>();
     private boolean cycleDone;
+    private int maxDepth = 0;
+    
+    public void processDepth(int depth) {
+      if (depth > maxDepth) {
+        maxDepth = depth;
+      }
+    }
+    
+    public int getMaxDepth() {
+      return maxDepth;
+    }
     
     public void add(Dependency dep) {
       if(cycleDone) {
@@ -184,4 +293,5 @@ public class DependencyGraph implements Serializable {
       }
     }
   }
+  
 }
