@@ -129,6 +129,12 @@ public final class GetMessage extends PartitionMessageWithDirectReply
           return DistributionManager.PARTITIONED_REGION_EXECUTOR;
         }
       } catch (PRLocallyDestroyedException ignore) {
+      } catch (RuntimeException ignore) {
+        // fix for GEODE-216
+        // Most likely here would be RegionDestroyedException or CacheClosedException
+        // but the cancel criteria code can throw any RuntimeException.
+        // In all these cases it is ok to just fall through and return the
+        // old executor type.
       }
     }
     if (forceUseOfPRExecutor) {
