@@ -1,0 +1,9 @@
+dependencies {
+    provided project(':gemfire-core')
+    compile 'org.apache.lucene:lucene-analyzers-common:5.0.0'
+    compile 'org.apache.lucene:lucene-core:5.0.0'
+    compile 'org.apache.lucene:lucene-queries:5.0.0'
+    compile 'org.apache.lucene:lucene-queryparser:5.0.0'
+
+    testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
+}
