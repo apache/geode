@@ -16,8 +16,7 @@ public class FailWithTimeoutOfWaitForOutputToMatchJUnitTest extends FailOutputTe
   private ProcessWrapper process;
   
   public void subTearDown() throws Exception {
-    this.process.waitFor();
-    assertFalse(this.process.isAlive());
+    this.process.destroy();
   }
   
   @Override
