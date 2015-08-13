@@ -154,12 +154,9 @@ distributions {
       into ('config') {
         from defaultCacheConfig
         from defaultDistributionConfig
-
-        from (project(':gemfire-core').sourceSets.main.resources.files.find { 
-          it.name == 'log4j2-default.xml' 
-        }) {
-          rename 'log4j2-default.xml', 'log4j2.xml'
-        }
+        from (project(':gemfire-core').sourceSets.main.resources.files.find {
+          it.name == 'log4j2.xml' 
+        })
       }
       
       into ('lib') {

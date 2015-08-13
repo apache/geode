@@ -1,6 +1,6 @@
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.apache.logging.log4j.Logger;
@@ -41,7 +41,7 @@ public class FastLoggerWithDefaultConfigJUnitTest {
    */
   @Test
   public void configurationFilePropertyIsDefaultConfig() {
-    assertThat(System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY), containsString(LogService.DEFAULT_CONFIG));
+    assertThat(System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY), isEmptyOrNullString());
   }
   
   /**

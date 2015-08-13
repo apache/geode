@@ -47,6 +47,7 @@ public class FastLoggerIntegrationJUnitTest {
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
   
   private File configFile;
+  private String configFileLocation;
   private Logger logger;
   private LoggerContext appenderContext;
   private Marker enabledMarker;
@@ -56,6 +57,7 @@ public class FastLoggerIntegrationJUnitTest {
   public void setUp() throws Exception {
     System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
     this.configFile = new File(this.temporaryFolder.getRoot(), "log4j2-test.xml");
+    this.configFileLocation = this.configFile.toURI().toURL().toString();
     this.enabledMarker = MarkerManager.getMarker(ENABLED_MARKER_NAME);
     this.unusedMarker = MarkerManager.getMarker(UNUSED_MARKER_NAME);
     setUpLogService();
@@ -70,7 +72,7 @@ public class FastLoggerIntegrationJUnitTest {
   private void setUpLogService() throws Exception {
     // Load a base config and do some sanity checks
     writeSimpleConfigFile(this.configFile, Level.WARN);
-    System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, this.configFile.toURI().toURL().toString());
+    System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, this.configFileLocation);
 
     LogService.reconfigure();
     LogService.getLogger().getName(); // This causes the config file to be loaded
