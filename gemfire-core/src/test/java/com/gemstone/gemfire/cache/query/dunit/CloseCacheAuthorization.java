@@ -36,8 +36,6 @@ public class CloseCacheAuthorization extends TestCase implements AccessControl {
 
   @Override
   public boolean authorizeOperation(String regionName, OperationContext context) {
-    this.logger.info(" JASON Authorizing request " + context.getOperationCode() + " class:" + context.getClass().getName());
-    new Exception("JASON authz stack").printStackTrace();
     if (context instanceof ExecuteCQOperationContext) {
       cache.close();
       //return false;
