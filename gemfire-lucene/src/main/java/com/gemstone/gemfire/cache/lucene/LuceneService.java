@@ -56,19 +56,6 @@ import com.gemstone.gemfire.internal.cache.extension.Extensible;
  */
 public interface LuceneService {
   
-  public static LuceneService get(Cache cache) {
-    synchronized(LuceneService.class) {
-      Extensible<Cache> extensible = (Extensible<Cache>) cache;
-      LuceneServiceImpl service = (LuceneServiceImpl) extensible.getExtensionPoint().getExtension(LuceneService.class);
-      if(service == null) {
-        service = new LuceneServiceImpl(cache);
-        extensible.getExtensionPoint().addExtension(LuceneService.class, service);
-      }
-      
-      return service;
-    }
-    
-  }
   /**
    * Create a lucene index using default analyzer.
    * 
