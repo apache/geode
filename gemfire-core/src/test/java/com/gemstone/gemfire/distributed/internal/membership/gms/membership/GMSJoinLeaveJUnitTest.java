@@ -3,6 +3,8 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -53,6 +55,7 @@ public class GMSJoinLeaveJUnitTest {
   public void initMocks(boolean enableNetworkPartition) throws UnknownHostException {
     mockDistConfig = mock(DistributionConfig.class);
     when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
+    when(mockDistConfig.getLocators()).thenReturn("localhost[8888]");
     mockConfig = mock(ServiceConfig.class);
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
     when(mockDistConfig.getLocators()).thenReturn("localhost[12345]");
@@ -83,40 +86,34 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testProcessJoinMessageRejectOldMemberVersion() throws IOException {
     initMocks();
-    MethodExecuted messageSent = new MethodExecuted();
-    when(messenger.send(any(JoinResponseMessage.class))).thenAnswer(messageSent);
  
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockOldMember, mockOldMember, null));
     Assert.assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
-    Assert.assertTrue("Join Response should have been sent", messageSent.isMethodExecuted());
+    verify(messenger).send(any(JoinResponseMessage.class));
   }
   
   @Test
   public void testProcessJoinMessageWithBadAuthentication() throws IOException {
     initMocks();
-    MethodExecuted messageSent = new MethodExecuted();
     when(services.getAuthenticator()).thenReturn(authenticator);
     when(authenticator.authenticate(mockMembers[0], credentials)).thenThrow(new AuthenticationFailedException("we want to fail auth here"));
     when(services.getMessenger()).thenReturn(messenger);
-    when(messenger.send(any(JoinResponseMessage.class))).thenAnswer(messageSent);
          
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials));
     Assert.assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
-    Assert.assertTrue("Join Response should have been sent", messageSent.isMethodExecuted());
+    verify(messenger).send(any(JoinResponseMessage.class));
   }
   
   @Test
   public void testProcessJoinMessageWithAuthenticationButNullCredentials() throws IOException {
     initMocks();
-    MethodExecuted messageSent = new MethodExecuted();
     when(services.getAuthenticator()).thenReturn(authenticator);
     when(authenticator.authenticate(mockMembers[0], null)).thenThrow(new AuthenticationFailedException("we want to fail auth here"));
     when(services.getMessenger()).thenReturn(messenger);
-    when(messenger.send(any(JoinResponseMessage.class))).thenAnswer(messageSent);
       
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null));
     Assert.assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
-    Assert.assertTrue("Join Response should have been sent", messageSent.isMethodExecuted());
+    verify(messenger).send(any(JoinResponseMessage.class));
   }
   
   
@@ -128,14 +125,12 @@ public class GMSJoinLeaveJUnitTest {
     mbrs.add(mockMembers[0]);
     
     when(services.getMessenger()).thenReturn(messenger);
-    MethodExecuted viewAckMessageSent = new MethodExecuted();
-    when(messenger.send(any(ViewAckMessage.class))).thenAnswer(viewAckMessageSent);
     
     //prepare the view
     NetView netView = new NetView(mockMembers[0], viewId, mbrs, shutdowns, crashes);
     InstallViewMessage installViewMessage = new InstallViewMessage(netView, credentials, true);
     gmsJoinLeave.processMessage(installViewMessage);
-    Assert.assertTrue("View should have been acknowledged", viewAckMessageSent.isMethodExecuted());
+    verify(messenger).send(any(ViewAckMessage.class));
   }
   
   private void prepareAndInstallView() throws IOException {
@@ -146,14 +141,12 @@ public class GMSJoinLeaveJUnitTest {
     mbrs.add(mockMembers[0]);
     
     when(services.getMessenger()).thenReturn(messenger);
-    MethodExecuted viewAckMessageSent = new MethodExecuted();
-    when(messenger.send(any(ViewAckMessage.class))).thenAnswer(viewAckMessageSent);    
     
     //prepare the view
     NetView netView = new NetView(mockMembers[0], viewId, mbrs, shutdowns, crashes);
     InstallViewMessage installViewMessage = new InstallViewMessage(netView, credentials, true);
     gmsJoinLeave.processMessage(installViewMessage);
-    Assert.assertTrue("View should have been acknowledged", viewAckMessageSent.isMethodExecuted());
+    verify(messenger).send(any(ViewAckMessage.class));
     
     //install the view
     installViewMessage = new InstallViewMessage(netView, credentials, false);
@@ -194,8 +187,6 @@ public class GMSJoinLeaveJUnitTest {
   public void testForceDisconnectedFromNewView() throws IOException {
     initMocks(true);//enabledNetworkPartition;
     Manager mockManager = mock(Manager.class);
-    MethodExecuted forceDisconnectTriggered = new MethodExecuted();
-    Mockito.doAnswer(forceDisconnectTriggered).when(mockManager).forceDisconnect(any(String.class));
     when(services.getManager()).thenReturn(mockManager);
     prepareAndInstallView();
 
@@ -213,7 +204,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.processMessage(installViewMessage);
     
     Assert.assertNotEquals(netView, gmsJoinLeave.getView());
-    Assert.assertTrue("Expected to be forced disconnected", forceDisconnectTriggered.isMethodExecuted());
+    verify(mockManager).forceDisconnect(any(String.class));
   }
   
   public void testOlderPreparedViewBeforeFirstViewInstalled() throws IOException {
@@ -235,19 +226,5 @@ public class GMSJoinLeaveJUnitTest {
     
     Assert.assertNotEquals(netView, gmsJoinLeave.getView());
   }
-  
-  private class MethodExecuted implements Answer {
-    private boolean methodExecuted = false;
-    @Override
-    public Object answer(InvocationOnMock invocation) {
-      //do we only expect a join response on a failure?
-      methodExecuted = true;
-      return null;
-    }
-    
-    public boolean isMethodExecuted() {
-      return methodExecuted;
-    }
-  } 
 }
 
