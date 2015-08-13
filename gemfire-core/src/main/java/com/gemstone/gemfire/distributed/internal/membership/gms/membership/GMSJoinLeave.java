@@ -192,7 +192,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     // send a join request to the coordinator and wait for a response
     logger.info("Attempting to join the distributed system through coordinator " + coord + " using address " + this.localAddress);
     JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress, 
-        services.getAuthenticator().getCredentials());
+        services.getAuthenticator().getCredentials(coord));
 
     services.getMessenger().send(req);
     
@@ -432,7 +432,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   
   boolean sendView(NetView view, Collection<InternalDistributedMember> newMembers, boolean preparing, ViewReplyProcessor rp) {
     int id = view.getViewId();
-    InstallViewMessage msg = new InstallViewMessage(view, services.getAuthenticator().getCredentials(), preparing);
+    InstallViewMessage msg = new InstallViewMessage(view, services.getAuthenticator().getCredentials(this.localAddress), preparing);
     Set<InternalDistributedMember> recips = new HashSet<InternalDistributedMember>(view.getMembers());
     recips.removeAll(newMembers); // new members get the view in a JoinResponseMessage
     recips.remove(this.localAddress); // no need to send it to ourselves
@@ -765,7 +765,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             stopCoordinatorServices();
             NetView newView = new NetView(view, view.getViewId()+1);
             newView.remove(localAddress);
-            InstallViewMessage m = new InstallViewMessage(newView, services.getAuthenticator().getCredentials());
+            InstallViewMessage m = new InstallViewMessage(newView, services.getAuthenticator().getCredentials(this.localAddress));
             m.setRecipients(newView.getMembers());
             services.getMessenger().send(m);
             try { Thread.sleep(LEAVE_MESSAGE_SLEEP_TIME); }

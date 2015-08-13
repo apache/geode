@@ -7,5 +7,5 @@ public interface Authenticator extends Service {
 
   String authenticate(InternalDistributedMember m, Object credentials) throws AuthenticationFailedException;
 
-  Object getCredentials();
+  Object getCredentials(InternalDistributedMember m);
 }

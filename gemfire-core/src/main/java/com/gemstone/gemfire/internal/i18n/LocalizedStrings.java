@@ -2129,7 +2129,12 @@ public class LocalizedStrings extends ParentLocalizedStrings {
 
   public static final StringId Network_partition_detected = new StringId(6607, "Exiting due to possible network partition event due to loss of {0} cache processes: {1}");
   
-  
+  // GMSAuthenticator
+  public static final StringId AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION = new StringId(6608, "Authentication failed for [{0}] using Authenticator [{1}]. {2}");
+  public static final StringId AUTH_PEER_AUTHENTICATION_FAILED = new StringId(6609, "Authentication failed. See coordinator [{0}] logs for details.");
+  public static final StringId AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS = new StringId(6610, "Failed to find credentials from [{0}] using Authenticator [{1}]");
+  public static final StringId AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE = new StringId(6611, "AuthInitialize instance could not be obtained");
+
   /** Testing strings, messageId 90000-99999 **/
   
   /** These are simple messages for testing, translated with Babelfish. **/
@@ -2140,4 +2145,6 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId LISTENER_PREFIX = new StringId(90004, "Listener_");
   
   public static final StringId DistributedRegion_INITIALIZING_REGION_COMPLETED_0 = new StringId(90005, "Initialization of region {0} completed");
+
+
 }

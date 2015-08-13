@@ -36,6 +36,7 @@ public class Services {
 
   private static final ThreadGroup threadGroup = LoggingThreadGroup.createThreadGroup("Membership", logger); 
   
+  private static InternalLogWriter staticLogWriter;
   private static InternalLogWriter staticSecurityLogWriter;
 
   final private Manager manager;
@@ -48,6 +49,7 @@ public class Services {
   final private DMStats stats;
   final private Stopper cancelCriterion;
 
+  private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
   
   private Timer timer = new Timer("Membership Timer", true);
@@ -95,6 +97,8 @@ public class Services {
     // TODO fix this so that IDS doesn't know about Services
     securityLogWriter = staticSecurityLogWriter;
     staticSecurityLogWriter = null;
+    logWriter = staticLogWriter;
+    staticLogWriter = null;
     this.auth.init(this);
     this.messenger.init(this);
     this.manager.init(this);
@@ -154,12 +158,20 @@ public class Services {
     this.manager.stop();
     this.timer.cancel();
   }
-  
-  public static void setSecurityLogWriter(InternalLogWriter writer) {
-    staticSecurityLogWriter = writer;
+
+  public static void setLogWriter(InternalLogWriter writer) {
+    staticLogWriter = writer;
   }
-  
-  public LogWriter getSecurityLogWriter() {
+
+  public static void setSecurityLogWriter(InternalLogWriter securityWriter) {
+    staticSecurityLogWriter = securityWriter;
+  }
+
+  public InternalLogWriter getLogWriter() {
+    return this.logWriter;
+  }
+
+  public InternalLogWriter getSecurityLogWriter() {
     return this.securityLogWriter;
   }
   

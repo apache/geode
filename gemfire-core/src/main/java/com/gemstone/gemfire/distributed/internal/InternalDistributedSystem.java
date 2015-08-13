@@ -564,6 +564,7 @@ public final class InternalDistributedSystem
       this.securityLogWriter.fine("SecurityLogWriter is created.");
     }
     
+    Services.setLogWriter(this.logWriter);
     Services.setSecurityLogWriter(this.securityLogWriter);
 
     this.clock = new DSClock(this.isLoner);
