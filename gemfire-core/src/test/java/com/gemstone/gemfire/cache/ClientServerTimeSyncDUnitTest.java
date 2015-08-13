@@ -97,6 +97,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
     }
   }
 
+  @Ignore("not yet implemented")
   public void testClientTimeSlowsDown() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server

@@ -678,12 +678,8 @@ public class LonerDistributionManager implements DM {
         dac = new DurableClientAttributes(config.getDurableClientId(), config
             .getDurableClientTimeout());
       }
-      MemberAttributes.setDefaults(lonerPort,
-              com.gemstone.gemfire.internal.OSProcess.getId(),
-              DistributionManager.LONER_DM_TYPE, -1,
-              name,
-              MemberAttributes.parseGroups(config.getRoles(), config.getGroups()), dac);
-      result = new InternalDistributedMember(host, lonerPort, name, uniqueString);
+      result = new InternalDistributedMember(host, lonerPort, name, uniqueString, DistributionManager.LONER_DM_TYPE,
+          MemberAttributes.parseGroups(config.getRoles(), config.getGroups()), dac);
 
     } catch (UnknownHostException ex) {
       throw new InternalGemFireError(LocalizedStrings.LonerDistributionManager_CANNOT_RESOLVE_LOCAL_HOST_NAME_TO_AN_IP_ADDRESS.toLocalizedString());
@@ -702,12 +698,6 @@ public class LonerDistributionManager implements DM {
     this.logger.config(LocalizedStrings.LonerDistributionmanager_CHANGING_PORT_FROM_TO,
         new Object[]{this.lonerPort, newPort});
     this.lonerPort = newPort;
-    MemberAttributes.setDefaults(lonerPort,
-        MemberAttributes.DEFAULT.getVmPid(),
-        DistributionManager.LONER_DM_TYPE,
-        -1,
-        MemberAttributes.DEFAULT.getName(),
-        MemberAttributes.DEFAULT.getGroups(), MemberAttributes.DEFAULT.getDurableClientAttributes());
     this.getId().setPort(this.lonerPort);
   }
   public boolean isCurrentMember(InternalDistributedMember p_id) {

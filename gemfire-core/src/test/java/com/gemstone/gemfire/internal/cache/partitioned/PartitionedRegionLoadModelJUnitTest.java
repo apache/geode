@@ -55,12 +55,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   
   private MyBucketOperator bucketOperator;
   
-  @BeforeClass
-  public static void beforeClass() {
-    //bogus initialization to be able to create InternalDistributedMembers
-    MemberAttributes.setDefaults(1, 1, 1, -1, null, null, null);
-  }
-  
   @Before
   public void setUp() {
     this.bucketOperator = new MyBucketOperator();

@@ -33,6 +33,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
@@ -41,17 +42,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * This is the fundamental representation of a member of a GemFire distributed
  * system.
- *
- * Unfortunately, this class serves two distinct functions. First, it is the
- * fundamental element of membership in the GemFire distributed system. As such,
- * it is used in enumerations and properly responds to hashing and equals()
- * comparisons.
- *
- * Second, it is used as a cheap way of representing an address. This is
- * unfortunate, because as a NetMember, it holds two separate port numbers: the
- * "membership" descriptor as well as a direct communication channel.
- *
- * TODO fix this.
  */
 public final class InternalDistributedMember
  implements DistributedMember,
@@ -81,7 +71,7 @@ public final class InternalDistributedMember
    * This is a representation of the type of VM. The underlying NetMember must
    * be able to serialize and deliver this value.
    */
-  private int vmKind = -1;
+  private int vmKind = DistributionManager.NORMAL_DM_TYPE;
   
   /**
    * This is the view identifier where this ID was born, or zero if this is
@@ -151,14 +141,7 @@ public final class InternalDistributedMember
         Version.GFE_71, Version.GFE_90 };
 
   private void defaultToCurrentHost() {
-    int defaultDcPort = MemberAttributes.DEFAULT.getPort();
-    this.dcPort = defaultDcPort;;
-    this.vmKind = MemberAttributes.DEFAULT.getVmKind();
-    this.vmPid = MemberAttributes.DEFAULT.getVmPid();
-    this.name = MemberAttributes.DEFAULT.getName();
-    this.groups = MemberAttributes.DEFAULT.getGroups();
-    this.vmViewId = MemberAttributes.DEFAULT.getVmViewId();
-    this.durableClientAttributes = MemberAttributes.DEFAULT.getDurableClientAttributes();
+    this.vmPid = OSProcess.getId();
     try {
       if (SocketCreator.resolve_dns) {
         this.hostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
@@ -318,7 +301,7 @@ public final class InternalDistributedMember
    * WITHOUT TALKING TO ME FIRST.  IT DOES NOT PROPERLY INITIALIZE THE ID.
    * </b>
    *
-   * @param i
+   * @param host
    *          the hostname, must be for the current host
    * @param p
    *          the membership listening port
@@ -326,13 +309,29 @@ public final class InternalDistributedMember
    *          gemfire properties connection name
    * @param u
    *          unique string used make the member more unique
+   * @param vmKind the dmType
+   * @param groups the server groups / roles
+   * @param attr durable client attributes, if any
+   * 
    * @throws UnknownHostException if the given hostname cannot be resolved
    */
-  public InternalDistributedMember(String i, int p, String n, String u) throws UnknownHostException {
-    netMbr = MemberFactory.newNetMember(i, p);
+  public InternalDistributedMember(String host, int p, String n, String u,
+      int vmKind, String[] groups, DurableClientAttributes attr) throws UnknownHostException {
+    MemberAttributes mattr = new MemberAttributes(p,
+        com.gemstone.gemfire.internal.OSProcess.getId(),
+        vmKind, -1,
+        n,
+        groups, attr);
+    InetAddress addr = SocketCreator.toInetAddress(host);
+    netMbr = MemberFactory.newNetMember(addr, p, false, true, Version.CURRENT_ORDINAL, mattr);
     defaultToCurrentHost();
     this.name = n;
     this.uniqueTag = u;
+    this.vmKind = vmKind;
+    this.dcPort = p;
+    this.durableClientAttributes = attr;
+    this.hostName = host;
+    this.vmPid = OSProcess.getId();
   }
 
   /**
@@ -451,7 +450,7 @@ public final class InternalDistributedMember
       if (tmpRolesSet == null) {
         final String[] tmpRoles = this.groups;
         // convert array of string role names to array of Roles...
-        if (tmpRoles.length == 0) {
+        if (tmpRoles == null  ||  tmpRoles.length == 0) {
           tmpRolesSet = Collections.emptySet();
         }
         else {

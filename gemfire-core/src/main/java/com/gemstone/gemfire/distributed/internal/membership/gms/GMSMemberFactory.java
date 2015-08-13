@@ -9,23 +9,19 @@ package com.gemstone.gemfire.distributed.internal.membership.gms;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
-import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -51,26 +47,10 @@ public class GMSMemberFactory implements MemberServices {
    */
   public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr, short version) {
-    GMSMember result = new GMSMember(i, p, splitBrainEnabled, canBeCoordinator, version, 0, 0);
-    result.setAttributes(attr);
+    GMSMember result = new GMSMember(attr, i, p, splitBrainEnabled, canBeCoordinator, version, 0, 0);
     return result;
   }
 
-  private MemberAttributes getDefaultAttributes() {
-    // TODO can we get rid of this??
-    if (MemberAttributes.DEFAULT.getVmPid() == -1 ||
-        MemberAttributes.DEFAULT.getVmKind() == -1) {
-      MemberAttributes.setDefaults(
-          -1, 
-          OSProcess.getId(), 
-          -1,
-          DistributionManager.getDistributionManagerType(), 
-          null,
-          null, null);
-    }
-    return MemberAttributes.DEFAULT;
-  }
-  
   /**
    * Return a new NetMember representing current host.  This assumes that
    * the member does not have network partition detection enabled and can
@@ -80,9 +60,7 @@ public class GMSMemberFactory implements MemberServices {
    * @return the new NetMember
    */
   public NetMember newNetMember(InetAddress i, int p) {
-    GMSMember result = new GMSMember(i, p, false, true, Version.CURRENT_ORDINAL, 0, 0);
-    result.setAttributes(getDefaultAttributes());
-    return result;
+    return new GMSMember(MemberAttributes.INVALID, i, p, false, true, Version.CURRENT_ORDINAL, 0, 0);
   }
 
   /**
@@ -93,9 +71,13 @@ public class GMSMemberFactory implements MemberServices {
    * @return the new member
    */
   public NetMember newNetMember(String s, int p) {
-    GMSMember result = new GMSMember(s, p);
-    result.setAttributes(getDefaultAttributes());
-    return result;
+    InetAddress inetAddr = null;
+    try {
+      inetAddr=InetAddress.getByName(s);
+    } catch (UnknownHostException e) {
+      throw new RuntimeException("Unable to create an identifier for testing for " + s, e);
+    }
+    return newNetMember(inetAddr, p);
   }
   
   /**

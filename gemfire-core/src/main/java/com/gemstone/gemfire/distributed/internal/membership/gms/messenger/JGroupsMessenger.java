@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 
 import org.apache.logging.log4j.Logger;
@@ -45,6 +46,7 @@ import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -235,10 +237,17 @@ public class JGroupsMessenger implements Messenger {
     long start = System.currentTimeMillis();
     
     // start the jgroups channel and establish the membership ID
+    boolean reconnecting = false;
     try {
-      InputStream is = new ByteArrayInputStream(properties.getBytes("UTF-8"));
-      myChannel = new JChannel(is);
-      
+      Object oldChannel = services.getConfig().getTransport().getOldDSMembershipInfo();
+      if (oldChannel != null) {
+        myChannel = (JChannel)oldChannel;
+        reconnecting = true;
+      }
+      else {
+        InputStream is = new ByteArrayInputStream(properties.getBytes("UTF-8"));
+        myChannel = new JChannel(is);
+      }
     } catch (Exception e) {
       throw new GemFireConfigException("unable to create jgroups channel", e);
     }
@@ -246,8 +255,9 @@ public class JGroupsMessenger implements Messenger {
     try {
       
       myChannel.setReceiver(new JGroupsReceiver());
-      myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
-      
+      if (!reconnecting) {
+        myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
+      }
     } catch (Exception e) {
       throw new SystemConnectException("unable to create jgroups channel", e);
     }
@@ -330,12 +340,25 @@ public class JGroupsMessenger implements Messenger {
     myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
 
     DistributionConfig config = services.getConfig().getDistributionConfig();
-    boolean isLocator = (MemberAttributes.DEFAULT.getVmKind() == DistributionManager.LOCATOR_DM_TYPE); 
+    boolean isLocator = (services.getConfig().getTransport().getVmKind() == DistributionManager.LOCATOR_DM_TYPE); 
     
     // establish the DistributedSystem's address
+    DurableClientAttributes dca = null;
+    if (config.getDurableClientId() != null) {
+      dca = new DurableClientAttributes(config.getDurableClientId(), config
+          .getDurableClientTimeout());
+    }
+    MemberAttributes attr = new MemberAttributes(
+        -1/*dcPort - not known at this time*/,
+        OSProcess.getId(),
+        services.getConfig().getTransport().getVmKind(),
+        -1/*view id - not known at this time*/,
+        config.getName(),
+        MemberAttributes.parseGroups(config.getRoles(), config.getGroups()),
+        dca);
     localAddress = new InternalDistributedMember(jgAddress.getInetAddress(),
         jgAddress.getPort(), config.getEnableNetworkPartitionDetection(),
-        isLocator, MemberAttributes.DEFAULT);
+        isLocator, attr);
 
     // add the JGroups logical address to the GMSMember
     UUID uuid = this.jgAddress;
@@ -682,6 +705,13 @@ public class JGroupsMessenger implements Messenger {
   public InternalDistributedMember getMemberID() {
     return localAddress;
   }
+  
+  /**
+   * returns the JGroups configuration string
+   */
+  public String getJGroupsStackConfig() {
+    return this.jgStackConfig;
+  }
 
   /**
    * returns the member ID for the given GMSMember object
@@ -759,7 +789,7 @@ public class JGroupsMessenger implements Messenger {
       // admin-only VMs don't have caches, so we ignore cache operations
       // multicast to them, avoiding deserialization cost and classpath
       // problems
-      if ( (MemberAttributes.DEFAULT.getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE)
+      if ( (services.getConfig().getTransport().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE)
            && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
         if (logger.isTraceEnabled())
           logger.trace("Membership: admin VM discarding cache operation message {}", jgmsg.getObject());

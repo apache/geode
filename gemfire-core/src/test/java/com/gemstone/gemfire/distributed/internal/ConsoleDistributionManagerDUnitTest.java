@@ -79,7 +79,7 @@ public class ConsoleDistributionManagerDUnitTest
       {
         boolean created = !isConnectedToDS();
         InternalDistributedSystem ds = getSystem();
-        transport = new RemoteTransportConfig(ds.getConfig());
+        transport = new RemoteTransportConfig(ds.getConfig(), DistributionManager.ADMIN_ONLY_DM_TYPE);
         if (created) {
           disconnectFromDS();
         }

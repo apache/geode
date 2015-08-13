@@ -7,40 +7,58 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
+import java.io.File;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.LonerDistributionManager.DummyDMStats;
+import com.gemstone.gemfire.distributed.internal.MembershipListener;
+import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.tcp.Stub;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class MembershipJUnitTest extends TestCase {
-  Level baseLogLevel;
+  static Level baseLogLevel;
   
   public MembershipJUnitTest(String name) {
     super(name);
   }
 
-  @Before
-  protected void setUp() throws Exception {
+  @BeforeClass
+  public static void setupClass() {
     baseLogLevel = LogService.getBaseLogLevel();
-//    LogService.setBaseLogLevel(Level.DEBUG);
-    super.setUp();
+    LogService.setBaseLogLevel(Level.DEBUG);
   }
-
-  @After
+  
+  @AfterClass
   protected void tearDown() throws Exception {
-//    LogService.setBaseLogLevel(baseLogLevel);
-    super.tearDown();
+    LogService.setBaseLogLevel(baseLogLevel);
   }
   
   /**
@@ -106,4 +124,128 @@ public class MembershipJUnitTest extends TestCase {
     assertTrue(!actual.contains(members[members.length-2]));
   }
   
+  /**
+   * This test creates a locator with a colocated
+   * membership manager and then creates a second
+   * manager that joins the system of the first.
+   * 
+   * It then makes assertions about the state of
+   * the membership view, closes one of the managers
+   * and makes more assertions.
+   */
+  @Test
+  public void testJoinLeave() throws Exception {
+    
+    MembershipManager m1=null, m2=null;
+    Locator l = null;
+    
+    try {
+      
+      // boot up a locator
+      int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      InetAddress localHost = SocketCreator.getLocalHost();
+      
+      // this locator will hook itself up with the first MembershipManager
+      // to be created
+      l = Locator.startLocator(port, new File(""), localHost);
+
+      // create configuration objects
+      Properties nonDefault = new Properties();
+      nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+      nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
+      nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
+      nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+      nonDefault.put(DistributionConfig.LOCATORS_NAME, localHost.getHostName()+'['+port+']');
+      DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
+      RemoteTransportConfig transport = new RemoteTransportConfig(config,
+          DistributionManager.NORMAL_DM_TYPE);
+
+      // start the first membership manager
+      MembershipListener listener1 = new MembershipListener();
+      DMStats stats1 = new MyStats();
+      m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
+
+      // start the second membership manager
+      MembershipListener listener2 = new MembershipListener();
+      DMStats stats2 = new MyStats();
+      m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
+      
+      assert m2.getView().size() == 2;
+      assert m1.getView().size() == 2;
+      assert m1.getView().getViewId() == m2.getView().getViewId();
+      
+      m2.shutdown();
+      assert !m2.isConnected();
+      
+      assert m1.getView().size() == 1;
+    }
+    finally {
+      System.getProperties().remove(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
+      LogService.reconfigure();
+      
+      if (m2 != null) {
+        m2.shutdown();
+      }
+      if (m1 != null) {
+        m1.shutdown();
+      }
+      if (l != null) {
+        l.stop();
+      }
+    }
+    
+  }
+  
+  static class MembershipListener implements DistributedMembershipListener {
+
+    @Override
+    public void viewInstalled(NetView view) {
+    }
+
+    @Override
+    public void quorumLost(Set<InternalDistributedMember> failures,
+        List<InternalDistributedMember> remainingMembers) {
+    }
+
+    @Override
+    public void newMemberConnected(InternalDistributedMember m, Stub stub) {
+    }
+
+    @Override
+    public void memberDeparted(InternalDistributedMember id, boolean crashed,
+        String reason) {
+    }
+
+    @Override
+    public void memberSuspect(InternalDistributedMember suspect,
+        InternalDistributedMember whoSuspected) {
+    }
+
+    @Override
+    public void messageReceived(DistributionMessage o) {
+    }
+
+    @Override
+    public boolean isShutdownMsgSent() {
+      return false;
+    }
+
+    @Override
+    public void membershipFailure(String reason, Throwable t) {
+    }
+
+    @Override
+    public DistributionManager getDM() {
+      return null;
+    }
+    
+  }
+  
+  static class MyStats extends DummyDMStats {
+  }
+
+  public static class DummyPoolStatHelper implements PoolStatHelper {
+    public void startJob() {}
+    public void endJob(){}
+  }
 }

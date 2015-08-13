@@ -79,18 +79,4 @@ public class GMSUtil {
     return result;
   }
 
-  public static void insertGemFireAttributes(GMSMember addr, MemberAttributes attr) {
-    addr.setProcessId(attr.getVmPid());
-    addr.setVmKind(attr.getVmKind());
-    addr.setDirectPort(attr.getPort());
-    addr.setBirthViewId(attr.getVmViewId());
-    addr.setName(attr.getName());
-    addr.setGroups(attr.getGroups());
-    addr.setDurableClientAttributes(attr.getDurableClientAttributes());
-  }
-
-  public static void insertDefaultGemFireAttributes(GMSMember addr) {
-    MemberAttributes attr = com.gemstone.gemfire.distributed.internal.membership.MemberAttributes.DEFAULT;
-    insertGemFireAttributes(addr, attr);
-  }
 }

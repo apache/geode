@@ -1735,7 +1735,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
         isMcastEnabled(), getDisableTcp(),
         getDisableAutoReconnect(),
         getBindAddress(), buildSSLConfig(), parseLocators(), 
-        getMembershipPortRange(), getTcpPort());
+        getMembershipPortRange(), getTcpPort(), DistributionManager.ADMIN_ONLY_DM_TYPE);
     return new GfManagerAgentConfig(
         getSystemName(), conf, logWriter, this.alertLevel.getSeverity(), this, this);
   }

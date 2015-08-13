@@ -72,7 +72,8 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     InternalDistributedSystem ds = (InternalDistributedSystem)DistributedSystem.connect(p);
     try {
       // construct a member ID that will represent a departed member
-      InternalDistributedMember mbr = new InternalDistributedMember("localhost", 12345, "", "");
+      InternalDistributedMember mbr = new InternalDistributedMember("localhost", 12345, "", "",
+          DistributionManager.NORMAL_DM_TYPE, null, null);
       final DistributionManager mgr = (DistributionManager)ds.getDistributionManager();
       // schedule a message in order to create a queue for the fake member
       final FakeMessage msg = new FakeMessage(null);

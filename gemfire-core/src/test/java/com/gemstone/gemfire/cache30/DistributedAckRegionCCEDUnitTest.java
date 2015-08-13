@@ -30,6 +30,7 @@ import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
@@ -242,7 +243,8 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         NetMember nm = CCRegion.getDistributionManager().getDistributionManagerId().getNetMember();
         InternalDistributedMember mbr = null;
         try {
-          mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(), nm.getPort()-1, "fake_id", "fake_id_ustring");
+          mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(), nm.getPort()-1,
+              "fake_id", "fake_id_ustring", DistributionManager.NORMAL_DM_TYPE, null, null);
           tag.setMemberID(mbr);
         } catch (UnknownHostException e) {
           fail("could not create member id", e);

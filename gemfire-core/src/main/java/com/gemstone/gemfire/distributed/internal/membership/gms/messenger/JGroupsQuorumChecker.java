@@ -21,10 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
+import org.jgroups.Message;
 
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.logging.LogService;
 
@@ -128,6 +130,9 @@ public class JGroupsQuorumChecker implements QuorumChecker {
             logger.debug("quorum check: sending request to {}", addr);
           }
           try {
+            Message msg = new Message();
+//            msg.setDest(new JGAddress((GMSMember)addr.getNetMember()));
+//            msg.setObject(obj)
             DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, sockaddr);
             this.sock.send(packet);
           } catch (IOException io) {

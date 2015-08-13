@@ -7,13 +7,18 @@
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
-import java.util.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.admin.SSLConfig;
+import com.gemstone.gemfire.internal.admin.TransportConfig;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Tranport config for RemoteGfManagerAgent.
@@ -37,6 +42,7 @@ public class RemoteTransportConfig implements TransportConfig {
   private int tcpPort;
   private boolean isReconnectingDS;
   private Object oldDSMembershipInfo;
+  private int vmKind = -1;
 
   // -------------------------------------------------------------------------
   //   Constructor(s)
@@ -50,12 +56,13 @@ public class RemoteTransportConfig implements TransportConfig {
    *
    * @since 3.0
    */
-  public RemoteTransportConfig(DistributionConfig config) {
+  public RemoteTransportConfig(DistributionConfig config, int vmKind) {
     if (config.getBindAddress() == null) {
       this.bindAddress = DistributionConfig.DEFAULT_BIND_ADDRESS;
     } else {
       this.bindAddress = config.getBindAddress();
     }
+    this.vmKind = vmKind;
     this.tcpPort = config.getTcpPort();
     this.membershipPortRange = 
             getMembershipPortRangeString(config.getMembershipPortRange());
@@ -125,7 +132,7 @@ public class RemoteTransportConfig implements TransportConfig {
     String bindAddress, 
     SSLConfig sslConfig,
     Collection ids, String membershipPortRange,
-    int tcpPort)
+    int tcpPort, int vmKind)
   {
     DistributionLocatorId mid = null;
     
@@ -163,6 +170,7 @@ public class RemoteTransportConfig implements TransportConfig {
     }
     this.membershipPortRange = membershipPortRange;
     this.tcpPort = tcpPort;
+    this.vmKind = vmKind;
  }
   
   
@@ -199,6 +207,10 @@ public class RemoteTransportConfig implements TransportConfig {
   
   public DistributionLocatorId getMcastId() {
     return this.mcastId;
+  }
+  
+  public int getVmKind() {
+    return this.vmKind;
   }
   
   public boolean isTcpDisabled() {

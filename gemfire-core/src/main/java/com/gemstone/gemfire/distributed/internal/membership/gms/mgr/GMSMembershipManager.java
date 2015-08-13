@@ -874,12 +874,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
     
     services.getMessenger().getMemberID().setDirectChannelPort(dcPort);
 
-    MemberAttributes.setDefaults(dcPort,
-        MemberAttributes.DEFAULT.getVmPid(),
-        MemberAttributes.DEFAULT.getVmKind(),
-        MemberAttributes.DEFAULT.getVmViewId(),
-        MemberAttributes.DEFAULT.getName(),
-        MemberAttributes.DEFAULT.getGroups(), MemberAttributes.DEFAULT.getDurableClientAttributes());
   }
   
   
@@ -903,13 +897,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (directChannel != null) {
       dcPort = directChannel.getPort();
     }
-    
-    MemberAttributes.setDefaults(dcPort,
-        MemberAttributes.DEFAULT.getVmPid(),
-        MemberAttributes.DEFAULT.getVmKind(),
-        address.getVmViewId(),
-        MemberAttributes.DEFAULT.getName(),
-        MemberAttributes.DEFAULT.getGroups(), MemberAttributes.DEFAULT.getDurableClientAttributes());
     
     if (directChannel != null) {
       directChannel.setLocalAddr(address);
@@ -1744,10 +1731,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
 
   
-  public void shutdown()
-  {
-    setShutdown(); // for safety
-    services.stop();
+  public void shutdown() {
+    if (!shutdownInProgress) {
+      setShutdown();
+      services.stop();
+    }
   }
   
   @Override
@@ -1788,11 +1776,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
     // members
     services.emergencyClose();
     
-    // we have to clear the view before notifying the membership listener,
-    // so that it won't try sending disconnect messages to members that
-    // aren't there.  Otherwise, it sends the disconnect messages to other
-    // members, they ignore the "surprise" connections, and we hang.
-    //GroupMembershipService.this.clearView();
     if (e != null) {
       try {
         if (membershipTestHooks != null) {
@@ -2045,15 +2028,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   /**
-   * A quorum checker is used during reconnect to perform quorum
-   * probes.  It is made available here for the UDP protocol to
-   * hand off ping-pong responses to the checker.
-   */
-  public QuorumChecker getQuorumCheckerImpl() {
-    return this.quorumChecker;
-  }
-  
-  /**
    * During jgroups connect the UDP protocol will invoke
    * this method to find the DatagramSocket it should use instead of
    * creating a new one.
@@ -2281,7 +2255,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   public boolean shutdownInProgress() {
     // Impossible condition (bug36329): make sure that we check DM's
     // view of shutdown here
-    return shutdownInProgress || listener.getDM().shutdownInProgress();
+    DistributionManager dm = listener.getDM();
+    return shutdownInProgress || (dm != null && dm.shutdownInProgress());
   }
   
   /**

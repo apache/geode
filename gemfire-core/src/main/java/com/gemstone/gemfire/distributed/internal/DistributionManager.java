@@ -53,17 +53,15 @@ import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.admin.GemFireHealthConfig;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.locks.ElderState;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.OSProcess;
@@ -75,7 +73,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
@@ -87,7 +84,6 @@ import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
 import com.gemstone.gemfire.internal.tcp.Stub;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
-import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * The <code>DistributionManager</code> uses a {@link
@@ -345,8 +341,6 @@ public class DistributionManager
   protected boolean exceptionInThreads;
 
   static ThreadLocal isStartupThread = new ThreadLocal();
-  private static InheritableThreadLocal distributionManagerType =
-    new InheritableThreadLocal();
     
   protected volatile boolean shutdownMsgSent = false;
 
@@ -522,45 +516,6 @@ public class DistributionManager
   //////////////////////  Static Methods  //////////////////////
 
   /**
-   * Sets the distribution manager's type (using an InheritableThreadLocal).
-   *
-   * @since 3.5
-   */
-  protected static void setDistributionManagerType(int vmType) {
-    switch (vmType) {
-    case NORMAL_DM_TYPE:
-    case LONER_DM_TYPE:
-    case ADMIN_ONLY_DM_TYPE:
-    case LOCATOR_DM_TYPE:
-       distributionManagerType.set(Integer.valueOf(vmType));
-        break;
-    default:
-      throw new IllegalArgumentException(LocalizedStrings.DistributionManager_UNKNOWN_DISTRIBUTIONMANAGERTYPE_0.toLocalizedString(Integer.valueOf(vmType)));
-    }
-  }
-
-  /**
-   * Returns the DistributionManager type which should match {@link
-   * #NORMAL_DM_TYPE}, {@link #ADMIN_ONLY_DM_TYPE}, {@link #LOCATOR_DM_TYPE}
-   * or {@link #LONER_DM_TYPE}.
-   *
-   * <p>
-   * If the value is null, an Assertion error will occur.
-   * <p>
-   * This method is called from {@link 
-   * InternalDistributedMember} and {@link 
-   * com.gemstone.org.jgroups.protocols.TCPGOSSIP}, and the value is stored
-   * in an InheritableThreadLocal.
-   *
-   * @since 3.5
-   */
-  public static int getDistributionManagerType() {
-    Integer vmType = (Integer) distributionManagerType.get();
-    if (vmType == null) return 0;
-    return vmType.intValue();
-  }
-
-  /**
    * Given two DistributionManager ids, check to see if they are
    * from the same host address.
    * @param id1 a DistributionManager id
@@ -589,18 +544,20 @@ public class DistributionManager
     
     try {
 
+      int vmKind;
+      
       if (Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
         // if this DM is starting for a locator, set it to be a locator DM
-        setDistributionManagerType(LOCATOR_DM_TYPE);
+        vmKind = LOCATOR_DM_TYPE;
 
       } else if (isDedicatedAdminVM) {
-        setDistributionManagerType(ADMIN_ONLY_DM_TYPE);
+        vmKind = ADMIN_ONLY_DM_TYPE;
 
       } else {
-        setDistributionManagerType(NORMAL_DM_TYPE);
+        vmKind = NORMAL_DM_TYPE;
       }
     
-      RemoteTransportConfig transport = new RemoteTransportConfig(system.getConfig());
+      RemoteTransportConfig transport = new RemoteTransportConfig(system.getConfig(), vmKind);
       transport.setIsReconnectingDS(system.isReconnectingDS());
       transport.setOldDSMembershipInfo(system.oldDSMembershipInfo());
       
@@ -834,7 +791,7 @@ public class DistributionManager
   private DistributionManager(RemoteTransportConfig transport,
                               InternalDistributedSystem system) {
 
-    this.dmType = getDistributionManagerType();
+    this.dmType = transport.getVmKind();
     this.system = system;
     this.elderLock = new StoppableReentrantLock(stopper);
     this.transport = transport;
@@ -1186,18 +1143,6 @@ public class DistributionManager
 
     // connect to JGroups
     start = System.currentTimeMillis();
-    DistributionConfig config = system.getConfig();
-    DurableClientAttributes dac = null;
-    if (config.getDurableClientId() != null) {
-      dac = new DurableClientAttributes(config.getDurableClientId(), config
-          .getDurableClientTimeout());
-    }
-    MemberAttributes.setDefaults(-1, 
-        OSProcess.getId(), 
-        getDistributionManagerType(), -1, 
-        config.getName(),
-        MemberAttributes.parseGroups(config.getRoles(), config.getGroups()),
-        dac);
     
     MyListener l = new MyListener(this);
     membershipManager = MemberFactory.newMembershipManager(l, system.getConfig(), transport, stats);

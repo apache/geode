@@ -17,6 +17,7 @@ import org.jgroups.util.UUID;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
@@ -112,7 +113,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * @param p the membership listening port
    */
   public GMSMember(String i, int p) {
-    setAttributes(MemberAttributes.DEFAULT);
     udpPort=p;
     try {
       inetAddr=InetAddress.getByName(i);
@@ -133,10 +133,10 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * @param msbs - most significant bytes of UUID
    * @param lsbs - least significant bytes of UUID
    */
-  public GMSMember(InetAddress i, int p, boolean splitBrainEnabled, boolean preferredForCoordinator,
+  public GMSMember(MemberAttributes attr, InetAddress i, int p, boolean splitBrainEnabled, boolean preferredForCoordinator,
       short version,
       long msbs, long lsbs) {
-    setAttributes(MemberAttributes.DEFAULT);
+    setAttributes(attr);
     this.inetAddr = i;
     this.udpPort=p;
     this.splitBrainEnabled = splitBrainEnabled;
