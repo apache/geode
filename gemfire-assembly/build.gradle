@@ -113,6 +113,7 @@ def cp = {
       it.contains('snappy-java') ||
       it.contains('hbase') ||
       it.contains('jgroups')
+      it.contains('netty')
     }.join(' ') 
 }
 

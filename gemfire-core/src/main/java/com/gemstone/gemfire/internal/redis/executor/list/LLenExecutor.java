@@ -35,7 +35,7 @@ public class LLenExecutor extends ListExecutor {
       return;
     }
     
-    listSize = keyRegion.size();
+    listSize = keyRegion.size() - LIST_EMPTY_SIZE;
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), listSize));
   }

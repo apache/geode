@@ -19,7 +19,7 @@ public class SetRangeExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionCache().getStringsRegion();
+    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETRANGE));
@@ -48,7 +48,7 @@ public class SetRangeExecutor extends StringExecutor {
       int length = wrapper == null ? 0 : wrapper.toBytes().length;
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), length));
       if (wrapper == null)
-        context.getRegionCache().removeKey(key);
+        context.getRegionProvider().removeKey(key);
       return;
     }
 

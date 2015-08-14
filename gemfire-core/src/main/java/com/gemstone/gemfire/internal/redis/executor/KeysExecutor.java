@@ -11,7 +11,7 @@ import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.RedisConstants;
 import com.gemstone.gemfire.internal.redis.RedisConstants.ArityDef;
-import com.gemstone.gemfire.internal.redis.executor.org.apache.hadoop.fs.GlobPattern;
+import com.gemstone.gemfire.internal.redis.org.apache.hadoop.fs.GlobPattern;
 import com.gemstone.gemfire.redis.GemFireRedisServer;
 
 public class KeysExecutor extends AbstractExecutor {
@@ -25,7 +25,7 @@ public class KeysExecutor extends AbstractExecutor {
     }
 
     String glob = Coder.bytesToString(commandElems.get(1));
-    Set<String> allKeys = context.getRegionCache().metaKeySet();
+    Set<String> allKeys = context.getRegionProvider().metaKeySet();
     List<String> matchingKeys = new ArrayList<String>();
 
     Pattern pattern;
@@ -37,8 +37,7 @@ public class KeysExecutor extends AbstractExecutor {
     }
 
     for (String key: allKeys) {
-      if (!(key.equals(GemFireRedisServer.LISTS_META_DATA_REGION) ||
-              key.equals(GemFireRedisServer.REDIS_META_DATA_REGION) ||
+      if (!(key.equals(GemFireRedisServer.REDIS_META_DATA_REGION) ||
               key.equals(GemFireRedisServer.STRING_REGION) ||
               key.equals(GemFireRedisServer.HLL_REGION))
               && pattern.matcher(key).matches())

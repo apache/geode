@@ -499,6 +499,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
                 
                 itr.remove();
                 statistics.incEventsNotQueued();
+                continue;
               }
               
               boolean transmit = filter.beforeTransmit(event);

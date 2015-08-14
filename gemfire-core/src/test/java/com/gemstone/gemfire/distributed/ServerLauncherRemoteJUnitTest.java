@@ -122,7 +122,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
     File file = new File(this.temporaryFolder.getRoot(), ServerLauncherForkingProcess.class.getSimpleName().concat(".log"));
     //-logger.info("KIRK: log file is " + file);
     
-    final ProcessWrapper pw = new ProcessWrapper.Builder().main(ServerLauncherForkingProcess.class).build();
+    final ProcessWrapper pw = new ProcessWrapper.Builder().mainClass(ServerLauncherForkingProcess.class).build();
     pw.execute(null, this.temporaryFolder.getRoot()).waitFor(true);
     //logger.info("[testRunningServerOutlivesForkingProcess] ServerLauncherForkingProcess output is:\n\n"+pw.getOutput());
     

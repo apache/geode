@@ -22,7 +22,7 @@ public class ExistsExecutor extends AbstractExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    boolean exists = context.getRegionCache().existsKey(key);
+    boolean exists = context.getRegionProvider().existsKey(key);
 
     if (exists)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));

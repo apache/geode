@@ -8,7 +8,7 @@ public class DBSizeExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    int size = context.getRegionCache().getMetaSize();
+    int size = context.getRegionProvider().getMetaSize();
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
   }
 

@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.cache.operations.internal;
 
+import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
 import com.gemstone.gemfire.internal.offheap.Releasable;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
@@ -62,7 +63,7 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
   public byte[] getSerializedValue() {
     byte[] result = super.getSerializedValue();
     if (result == null) {
-      Object v = this.value;
+      Object v = super.getValue();
       if (v instanceof StoredObject) {
         checkForReleasedOffHeapValue(v);
         result = ((StoredObject) v).getValueAsHeapByteArray();
@@ -72,10 +73,21 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
   }
 
   @Override
+  public Object getDeserializedValue() throws SerializationException {
+    Object result = super.getDeserializedValue();
+    if (result instanceof StoredObject) {
+      checkForReleasedOffHeapValue(result);
+      result = ((StoredObject) result).getValueAsDeserializedHeapObject();
+    }
+    return result;
+  }
+
+  @Override
   public Object getValue() {
     Object result = super.getValue();
     if (result instanceof StoredObject) {
       checkForReleasedOffHeapValue(result);
+      // since they called getValue they don't care if it is serialized or deserialized so return it as serialized
       result = ((StoredObject) result).getValueAsHeapByteArray();
     }
     return result;
@@ -88,7 +100,7 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
     // our value (since this context did not retain it)
     // but we do make sure that any future attempt to access
     // the off-heap value fails.
-    if (this.value instanceof Chunk) {
+    if (super.getValue() instanceof Chunk) {
       this.released = true;
     }
   }

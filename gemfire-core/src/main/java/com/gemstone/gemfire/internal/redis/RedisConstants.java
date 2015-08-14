@@ -3,7 +3,7 @@ package com.gemstone.gemfire.internal.redis;
 
 public class RedisConstants {
 
-  public static final int NUM_DEFAULT_KEYS = 4;
+  public static final int NUM_DEFAULT_KEYS = 3;
 
   /*
    * Responses

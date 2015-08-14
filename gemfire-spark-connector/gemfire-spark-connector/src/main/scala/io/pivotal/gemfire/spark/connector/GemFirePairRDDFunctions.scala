@@ -23,7 +23,10 @@ class GemFirePairRDDFunctions[K, V](val rdd: RDD[(K, V)]) extends Serializable w
       connConf: GemFireConnectionConf = defaultConnectionConf, 
       opConf: Map[String, String] = Map.empty): Unit = {    
     connConf.getConnection.validateRegion[K, V](regionPath)
-    logInfo(s"Save RDD id=${rdd.id} to region $regionPath")
+    if (log.isDebugEnabled)
+      logDebug(s"""Save RDD id=${rdd.id} to region $regionPath, partitions:\n  ${getRddPartitionsInfo(rdd)}""")
+    else
+      logInfo(s"""Save RDD id=${rdd.id} to region $regionPath""")
     val writer = new GemFirePairRDDWriter[K, V](regionPath, connConf, opConf)
     rdd.sparkContext.runJob(rdd, writer.write _)
   }

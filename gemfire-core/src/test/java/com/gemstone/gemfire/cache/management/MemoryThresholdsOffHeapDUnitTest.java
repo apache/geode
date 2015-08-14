@@ -145,14 +145,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
     // NORMAL -> EVICTION
     setUsageAboveEvictionThreshold(server2, regionName);
     verifyListenerValue(server1, MemoryState.EVICTION, 1, true);
-    verifyListenerValue(server2, MemoryState.EVICTION, 1, false);
+    verifyListenerValue(server2, MemoryState.EVICTION, 1, true);
     
     // EVICTION -> CRITICAL
     setUsageAboveCriticalThreshold(server2, regionName);
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
-    verifyListenerValue(server2, MemoryState.CRITICAL, 1, false);
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
-    verifyListenerValue(server2, MemoryState.EVICTION, 2, false);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
     
     // CRITICAL -> CRITICAL
     server2.invoke(new SerializableCallable() {
@@ -167,9 +167,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
       }
     });
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
-    verifyListenerValue(server2, MemoryState.CRITICAL, 1, false);
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
-    verifyListenerValue(server2, MemoryState.EVICTION, 2, false);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
     
     // CRITICAL -> EVICTION
     server2.invoke(new SerializableCallable() {
@@ -184,7 +184,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
       }
     });
     verifyListenerValue(server1, MemoryState.EVICTION, 3, true);
-    verifyListenerValue(server2, MemoryState.EVICTION, 3, false);
+    verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
 
     // EVICTION -> EVICTION
     server2.invoke(new SerializableCallable() {
@@ -197,7 +197,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
       }
     });
     verifyListenerValue(server1, MemoryState.EVICTION, 3, true);
-    verifyListenerValue(server2, MemoryState.EVICTION, 3, false);
+    verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
 
     // EVICTION -> NORMAL
     server2.invoke(new SerializableCallable() {
@@ -214,9 +214,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
     verifyListenerValue(server1, MemoryState.EVICTION, 3, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 1, true);
     
-    verifyListenerValue(server2, MemoryState.CRITICAL, 1, false);
-    verifyListenerValue(server2, MemoryState.EVICTION, 3, false);
-    verifyListenerValue(server2, MemoryState.NORMAL, 1, false);
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 1, true);
   }
   
   /**
@@ -243,23 +243,23 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
     registerTestMemoryThresholdListener(server2);
     
     setUsageAboveEvictionThreshold(server1, regionName);
-    verifyListenerValue(server1, MemoryState.EVICTION, 0, false);
+    verifyListenerValue(server1, MemoryState.EVICTION, 0, true);
     verifyListenerValue(server2, MemoryState.EVICTION, 0, true);
 
     setThresholds(server1, 70f, 0f);
-    verifyListenerValue(server1, MemoryState.EVICTION, 1, false);
+    verifyListenerValue(server1, MemoryState.EVICTION, 1, true);
     verifyListenerValue(server2, MemoryState.EVICTION, 1, true);
 
     setUsageAboveCriticalThreshold(server1, regionName);
-    verifyListenerValue(server1, MemoryState.CRITICAL, 0, false);
+    verifyListenerValue(server1, MemoryState.CRITICAL, 0, true);
     verifyListenerValue(server2, MemoryState.CRITICAL, 0, true);
 
     setThresholds(server1, 0f, 0f);
-    verifyListenerValue(server1, MemoryState.EVICTION_DISABLED, 1, false);
+    verifyListenerValue(server1, MemoryState.EVICTION_DISABLED, 1, true);
     verifyListenerValue(server2, MemoryState.EVICTION_DISABLED, 1, true);
 
     setThresholds(server1, 0f, 90f);
-    verifyListenerValue(server1, MemoryState.CRITICAL, 1, false);
+    verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
 
     //verify that stats on server2 are not changed by events on server1
@@ -370,7 +370,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
     setUsageAboveCriticalThreshold(server2, regionName);
 
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
-    verifyListenerValue(server2, MemoryState.CRITICAL, 1, false);
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
 
     //make sure that client puts are rejected
     doPuts(client, regionName, true/*catchRejectedException*/,
@@ -444,7 +444,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
     setUsageAboveCriticalThreshold(server2, regionName);
 
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
-    verifyListenerValue(server2, MemoryState.CRITICAL, 1, false);
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
 
     //make sure that local server1 puts are rejected
     doPuts(server1, regionName, false/*catchRejectedException*/,
@@ -1542,7 +1542,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
 
   /**
    * Verifies that the test listener value on the given vm is what is expected
-   * Note that for remote events useWaitCriterion must be true
+   * Note that for remote events useWaitCriterion must be true.
+   * Note also that since off-heap local events are async local events must also
+   * set useWaitCriterion to true.
    * 
    * @param vm
    *          the vm where verification should take place
@@ -1552,7 +1554,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
    * @param value
    *          the expected value
    * @param useWaitCriterion
-   *          must be true for remote events
+   *          must be true for both local and remote events (see GEODE-138)
    */
   private void verifyListenerValue(VM vm, final MemoryState state, final int value, final boolean useWaitCriterion) {
     vm.invoke(new SerializableCallable() {
@@ -1662,7 +1664,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
           throw new IllegalStateException("Unknown memory state");
         }
         if (useWaitCriterion) {
-          waitForCriterion(wc, 5000, 100, true);
+          waitForCriterion(wc, 5000, 10, true);
         }
         return null;
       }

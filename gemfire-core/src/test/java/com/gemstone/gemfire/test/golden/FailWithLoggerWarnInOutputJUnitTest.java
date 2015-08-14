@@ -1,10 +1,9 @@
 package com.gemstone.gemfire.test.golden;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that test output containing an unexpected WARN message
@@ -12,12 +11,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * 
  * @author Kirk Lund
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class FailWithLoggerWarnInOutputJUnitTest extends FailWithProblemInOutputTestCase {
-  
-  public FailWithLoggerWarnInOutputJUnitTest() {
-    super(FailWithLoggerWarnInOutputJUnitTest.class.getSimpleName());
-  }
   
   @Override
   String problem() {
@@ -25,12 +20,11 @@ public class FailWithLoggerWarnInOutputJUnitTest extends FailWithProblemInOutput
   }
   
   @Override
-  void outputProblem(String message) {
-    Logger logger = LogService.getLogger();
-    logger.warn(message);
+  void outputProblemInProcess(final String message) {
+    LogService.getLogger().warn(message);
   }
   
-  public static void main(String[] args) throws Exception {
-    new FailWithLoggerWarnInOutputJUnitTest().execute();
+  public static void main(final String[] args) throws Exception {
+    new FailWithLoggerWarnInOutputJUnitTest().executeInProcess();
   }
 }

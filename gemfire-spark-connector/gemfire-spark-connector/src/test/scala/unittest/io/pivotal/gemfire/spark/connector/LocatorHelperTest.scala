@@ -1,5 +1,7 @@
 package unittest.io.pivotal.gemfire.spark.connector
 
+import java.net.InetAddress
+
 import io.pivotal.gemfire.spark.connector.internal.LocatorHelper
 import org.scalatest.FunSuite
 
@@ -70,6 +72,81 @@ class LocatorHelperTest extends FunSuite {
     // 1 good locatorStr and 1 bad locatorStr
     intercept[Exception] { LocatorHelper.parseLocatorsString("localhost:2345,local%host.1234") }
     intercept[Exception] { LocatorHelper.parseLocatorsString("local^host:2345,localhost.1234") }
+  }
+
+  test("pickPreferredGemFireServers: shared servers and one gf-server per host") {
+    val (srv1, srv2, srv3, srv4) = (("host1", 4001), ("host2", 4002), ("host3", 4003),("host4", 4004))
+    val servers = Seq(srv1, srv2, srv3, srv4)
+    verifyPickPreferredGemFireServers(servers, "host1", "<driver>", Seq(srv1, srv2, srv3))
+    verifyPickPreferredGemFireServers(servers, "host2", "0", Seq(srv2, srv3, srv4))
+    verifyPickPreferredGemFireServers(servers, "host3", "1", Seq(srv3, srv4, srv1))
+    verifyPickPreferredGemFireServers(servers, "host4", "2", Seq(srv4, srv1, srv2))
+  }
+
+  test("pickPreferredGemFireServers: shared servers, one gf-server per host, un-sorted list") {
+    val (srv1, srv2, srv3, srv4) = (("host1", 4001), ("host2", 4002), ("host3", 4003),("host4", 4004))
+    val servers = Seq(srv4, srv2, srv3, srv1)
+    verifyPickPreferredGemFireServers(servers, "host1", "<driver>", Seq(srv1, srv2, srv3))
+    verifyPickPreferredGemFireServers(servers, "host2", "0", Seq(srv2, srv3, srv4))
+    verifyPickPreferredGemFireServers(servers, "host3", "1", Seq(srv3, srv4, srv1))
+    verifyPickPreferredGemFireServers(servers, "host4", "2", Seq(srv4, srv1, srv2))
+  }
+
+  test("pickPreferredGemFireServers: shared servers and two gf-server per host") {
+    val (srv1, srv2, srv3, srv4) = (("host1", 4001), ("host1", 4002), ("host2", 4003), ("host2", 4004))
+    val servers = Seq(srv1, srv2, srv3, srv4)
+    verifyPickPreferredGemFireServers(servers, "host1", "<driver>", Seq(srv1, srv2, srv3))
+    verifyPickPreferredGemFireServers(servers, "host1", "0", Seq(srv2, srv1, srv3))
+    verifyPickPreferredGemFireServers(servers, "host2", "1", Seq(srv3, srv4, srv1))
+    verifyPickPreferredGemFireServers(servers, "host2", "2", Seq(srv4, srv3, srv1))
+  }
+
+  test("pickPreferredGemFireServers: shared servers, two gf-server per host, un-sorted server list") {
+    val (srv1, srv2, srv3, srv4) = (("host1", 4001), ("host1", 4002), ("host2", 4003), ("host2", 4004))
+    val servers = Seq(srv1, srv4, srv3, srv2)
+    verifyPickPreferredGemFireServers(servers, "host1", "<driver>", Seq(srv1, srv2, srv3))
+    verifyPickPreferredGemFireServers(servers, "host1", "0", Seq(srv2, srv1, srv3))
+    verifyPickPreferredGemFireServers(servers, "host2", "1", Seq(srv3, srv4, srv1))
+    verifyPickPreferredGemFireServers(servers, "host2", "2", Seq(srv4, srv3, srv1))
+  }
+
+  test("pickPreferredGemFireServers: no shared servers and one gf-server per host") {
+    val (srv1, srv2, srv3, srv4) = (("host1", 4001), ("host2", 4002), ("host3", 4003),("host4", 4004))
+    val servers = Seq(srv1, srv2, srv3, srv4)
+    verifyPickPreferredGemFireServers(servers, "host5", "<driver>", Seq(srv1, srv2, srv3))
+    verifyPickPreferredGemFireServers(servers, "host6", "0", Seq(srv2, srv3, srv4))
+    verifyPickPreferredGemFireServers(servers, "host7", "1", Seq(srv3, srv4, srv1))
+    verifyPickPreferredGemFireServers(servers, "host8", "2", Seq(srv4, srv1, srv2))
+  }
+
+  test("pickPreferredGemFireServers: no shared servers, one gf-server per host, and less gf-server") {
+    val (srv1, srv2) = (("host1", 4001), ("host2", 4002))
+    val servers = Seq(srv1, srv2)
+    verifyPickPreferredGemFireServers(servers, "host5", "<driver>", Seq(srv1, srv2))
+    verifyPickPreferredGemFireServers(servers, "host6", "0", Seq(srv2, srv1))
+    verifyPickPreferredGemFireServers(servers, "host7", "1", Seq(srv1, srv2))
+    verifyPickPreferredGemFireServers(servers, "host8", "2", Seq(srv2, srv1))
+
+
+    println("host name: " + InetAddress.getLocalHost.getHostName)
+    println("canonical host name: " + InetAddress.getLocalHost.getCanonicalHostName)
+    println("canonical host name 2: " + InetAddress.getByName(InetAddress.getLocalHost.getHostName).getCanonicalHostName)
+  }
+
+  test("pickPreferredGemFireServers: ad-hoc") {
+    val (srv4, srv5, srv6) = (
+      ("w2-gst-pnq-04.gemstone.com", 40411), ("w2-gst-pnq-05.gemstone.com", 40411), ("w2-gst-pnq-06.gemstone.com", 40411))
+    val servers = Seq(srv6, srv5, srv4)
+    verifyPickPreferredGemFireServers(servers, "w2-gst-pnq-03.gemstone.com", "<driver>", Seq(srv4, srv5, srv6))
+    verifyPickPreferredGemFireServers(servers, "w2-gst-pnq-04.gemstone.com", "1", Seq(srv4, srv5, srv6))
+    verifyPickPreferredGemFireServers(servers, "w2-gst-pnq-05.gemstone.com", "0", Seq(srv5, srv6, srv4))
+    verifyPickPreferredGemFireServers(servers, "w2-gst-pnq-06.gemstone.com", "2", Seq(srv6, srv4, srv5))
+  }
+  
+  def verifyPickPreferredGemFireServers(
+    servers: Seq[(String, Int)], hostName: String, executorId: String, expectation: Seq[(String, Int)]): Unit = {
+    val result = LocatorHelper.pickPreferredGemFireServers(servers, hostName, executorId)
+    assert(result == expectation, s"pick servers for $hostName:$executorId")
   }
 
 }

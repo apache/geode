@@ -1,6 +1,5 @@
 package com.gemstone.gemfire.test.golden;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -10,14 +9,13 @@ import java.util.regex.Pattern;
  */
 public class RegexGoldenComparator extends GoldenComparator {
   
-  protected RegexGoldenComparator(String[] expectedProblemLines) {
+  protected RegexGoldenComparator(final String[] expectedProblemLines) {
     super(expectedProblemLines);
   }
   
   @Override
-  protected boolean compareLines(String actualLine, String goldenLine) {
-    logger.debug(GoldenTestCase.GOLDEN_TEST, "RegexGoldenComparator:compareLines comparing \"{}\" to \"{}\"", actualLine, goldenLine);
-    Matcher matcher = Pattern.compile(goldenLine).matcher(actualLine);
-    return matcher.matches();
+  protected boolean compareLines(final String actualLine, final String goldenLine) {
+    debug("RegexGoldenComparator:compareLines comparing \" + actualLine + \" to \" + goldenLine + \"");
+    return Pattern.compile(goldenLine).matcher(actualLine).matches();
   }
 }

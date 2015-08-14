@@ -25,6 +25,8 @@ package object connector {
   final val RDDSaveBatchSizePropKey = "rdd.save.batch.size"
   final val RDDSaveBatchSizeDefault = 10000
   
+  /** implicits */
+  
   implicit def toSparkContextFunctions(sc: SparkContext): GemFireSparkContextFunctions =
     new GemFireSparkContextFunctions(sc)
 
@@ -42,5 +44,10 @@ package object connector {
   /** convert Map[String, String] to java.util.Properties */
   implicit def map2Properties(map: Map[String,String]): java.util.Properties =
     (new java.util.Properties /: map) {case (props, (k,v)) => props.put(k,v); props}
+
+  /** internal util methods */
+  
+  private[connector] def getRddPartitionsInfo(rdd: RDD[_], sep: String = "\n  "): String =
+    rdd.partitions.zipWithIndex.map{case (p,i) => s"$i: $p loc=${rdd.preferredLocations(p)}"}.mkString(sep)
 
 }

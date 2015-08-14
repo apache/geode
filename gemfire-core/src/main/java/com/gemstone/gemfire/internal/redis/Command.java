@@ -9,16 +9,6 @@ import java.util.List;
  * The command class is used in holding a received Redis command. Each sent 
  * command resides in an instance of this class. This class is designed to be
  * used strictly by getter and setter methods.
- * <p>
- * The contents include the following
- * <p>
- * <li>The channel from which the command was read and to where
- * the response will be written.</li>
- * <li>The list of elements in the command. Every command is sent as an array of BulkStrings.
- * For example if the command "SADD key member1 member2 member3" was sent, the list would contain
- * {"SADD", "key", "member1", "member2", "member3"}.
- * <li>The {@link RedisCommandType}</li>
- * <li>The response to be written back to the client</li>
  * 
  * @author Vitaliy Gavrilov
  *
@@ -113,10 +103,11 @@ public class Command {
    */
   public String getStringKey() {
     if (this.commandElems.size() > 1) {
-      if (this.key == null) {
+      if (this.bytes == null) {
         this.bytes = new ByteArrayWrapper(this.commandElems.get(1));
         this.key = this.bytes.toString();
-      }
+      } else if (this.key == null)
+        this.key = this.bytes.toString();
       return this.key;
     } else 
       return null;
@@ -129,5 +120,15 @@ public class Command {
       return this.bytes;
     } else 
       return null;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder b = new StringBuilder();
+    for (byte[] bs : this.commandElems) {
+      b.append(Coder.bytesToString(bs));
+      b.append(' ');
+    }
+    return b.toString();
   }
 }

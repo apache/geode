@@ -86,7 +86,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
   protected boolean exceptionOccuredInForceRolls = false;
 
   // if this test is to run for a longer time, make this true
-  private static final boolean longTest = true;
+  private static final boolean longTest = false;
 
   protected boolean failure = false;
 
@@ -408,7 +408,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
           region.forceRolling();
 
           try {
-            Thread.sleep(250);
+            Thread.sleep(TIME_TO_RUN/100);
           }
           catch (InterruptedException e) {
             fail("interrupted");
@@ -531,7 +531,6 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
     } finally {
       this.timeToStop.set(true);
     }
-
     for (int i = 0; i < numberOfPutsThreads; i++) {
       DistributedTestCase.join(putThreads[i], 10*1000, null);
     }
@@ -872,7 +871,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
       waitForAllStartersToBeReady();
       while (!isItTimeToStop()) {
         try {
-          Thread.sleep(100);
+          Thread.sleep(TIME_TO_RUN/100);
         }
         catch (InterruptedException e) {
           fail("interrupted");

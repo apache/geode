@@ -67,7 +67,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       final int dispatcherThreads =(Integer) args[9]; 
       final String orderPolicy= (String) args[10];
       final String[] gatewayEventFilters =(String[]) args[11];
-      final String gatewaySubstitutionListener = (String) args[12];
+      final String gatewaySubstitutionFilter = (String) args[12];
       final String listenerClassName = (String) args[13];
       final Properties listenerProperties = (Properties) args[14];
 
@@ -98,9 +98,9 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
           asyncEventQueueFactory.addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER));
         }
       }
-      if (gatewaySubstitutionListener != null) {
-        Class<?> gatewayEventSubstitutionListenerKlass = forName(gatewaySubstitutionListener, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER);
-        asyncEventQueueFactory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter<?,?>) newInstance(gatewayEventSubstitutionListenerKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER));
+      if (gatewaySubstitutionFilter != null) {
+        Class<?> gatewayEventSubstitutionFilterKlass = forName(gatewaySubstitutionFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER);
+        asyncEventQueueFactory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter<?,?>) newInstance(gatewayEventSubstitutionFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER));
       }
       
       Object listenerInstance;

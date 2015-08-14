@@ -46,7 +46,7 @@ import com.gemstone.gemfire.internal.redis.ByteToCommandDecoder;
 import com.gemstone.gemfire.internal.redis.Coder;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.RedisDataType;
-import com.gemstone.gemfire.internal.redis.RegionCache;
+import com.gemstone.gemfire.internal.redis.RegionProvider;
 import com.gemstone.gemfire.internal.redis.executor.hll.HyperLogLogPlus;
 
 /**
@@ -63,6 +63,12 @@ import com.gemstone.gemfire.internal.redis.executor.hll.HyperLogLogPlus;
  * or {@link GemFireRedisServer#STRING_REGION}. The default Region type is 
  * {@link RegionShortcut#PARTITION} although this can be changed by specifying the
  * SystemProperty {@value #DEFAULT_REGION_SYS_PROP_NAME} to a type defined by {@link RegionShortcut}.
+ * If the {@link GemFireRedisServer#NUM_THREADS_SYS_PROP_NAME} system property is set to 0,
+ * one thread per client will be created. Otherwise a worker thread pool of specified size is
+ * used or a default size of 4 * {@link Runtime#availableProcessors()} if the property is not set.
+ * <p>
+ * Setting the AUTH password requires setting the property "redis-password" just as "redis-port"
+ * would be in xml or through GFSH.
  * <p>
  * The supported commands are as follows:
  * <p>
@@ -182,7 +188,7 @@ public class GemFireRedisServer {
    */
   private LogWriter logger;
 
-  private RegionCache regionCache;
+  private RegionProvider regionCache;
 
   private final MetaCacheListener metaListener;
 
@@ -216,12 +222,6 @@ public class GemFireRedisServer {
   public static final String REDIS_META_DATA_REGION = "__ReDiS_MeTa_DaTa";
 
   /**
-   * The field that defines the name of the {@link Region} which holds all of
-   * the lists meta data. The current value of this field is {@value #LISTS_META_DATA_REGION}.
-   */
-  public static final String LISTS_META_DATA_REGION = "__LiStS_MeTa_DaTa";
-
-  /**
    * The system property name used to set the default {@link Region} creation
    * type. The property name is {@value #DEFAULT_REGION_SYS_PROP_NAME} and the
    * acceptable values are types defined by {@link RegionShortcut}, 
@@ -236,28 +236,23 @@ public class GemFireRedisServer {
   public static final String NUM_THREADS_SYS_PROP_NAME = "gemfireredis.numthreads";
 
   /**
-   * This String holds the String representation of the {@link RegionShortcut}
-   * that will be used as the default Region type for all region creation. This
-   * is set by the system property {@value #DEFAULT_REGION_SYS_PROP_NAME} and the
-   * default type is {@link RegionShortcut#PARTITION}.
-   */
-  private static final String regionType = System.getProperty(DEFAULT_REGION_SYS_PROP_NAME, "PARTITION");
-
-  /**
    * The actual {@link RegionShortcut} type specified by the system property
    * {@value #DEFAULT_REGION_SYS_PROP_NAME}.
    */
-  public static final RegionShortcut DEFAULT_REGION_TYPE = setRegion(regionType);
+  public final RegionShortcut DEFAULT_REGION_TYPE;
+
+  private boolean shutdown;
+  private boolean started;
 
   /**
    * Determine the {@link RegionShortcut} type from a String value.
    * If the String value doesn't map to a RegionShortcut type then 
    * {@link RegionShortcut#PARTITION} will be used by default.
    * 
-   * @param regionType The String representation of a {@link RegionShortcut}
    * @return {@link RegionShortcut}
    */
-  private static RegionShortcut setRegion(String regionType) {
+  private static RegionShortcut setRegionType() {
+    String regionType = System.getProperty(DEFAULT_REGION_SYS_PROP_NAME, "PARTITION");
     RegionShortcut type;
     try {
       type = RegionShortcut.valueOf(regionType);
@@ -312,9 +307,9 @@ public class GemFireRedisServer {
 
   /**
    * Constructor for {@link GemFireRedisServer} that will start the
-   * server and bind to the given address and port. Additionally the 
-   * number of threads used by the server to handle clients is specified
-   * as well as the logging level to be used by GemFire
+   * server and bind to the given address and port. Keep in mind that the
+   * log level configuration will only be set if a {@link Cache} does not already
+   * exist, if one already exists then setting that property will have no effect.
    * 
    * @param bindAddress The address to which the server will attempt to bind to
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by default if argument is less than or equal to 0
@@ -344,6 +339,9 @@ public class GemFireRedisServer {
       }
 
     });
+    this.DEFAULT_REGION_TYPE = setRegionType();
+    this.shutdown = false;
+    this.started = false;
   }
 
   /**
@@ -362,15 +360,18 @@ public class GemFireRedisServer {
    * This is function to call on a {@link GemFireRedisServer} instance
    * to start it running
    */
-  public void start() {
-    try {
-      startGemFire();
-      initializeRedis();
-      startRedisServer();
-    } catch (IOException e) {
-      throw new RuntimeException("Could not start Server", e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException("Could not start Server", e);
+  public synchronized void start() {
+    if (!started) {
+      try {
+        startGemFire();
+        initializeRedis();
+        startRedisServer();
+      } catch (IOException e) {
+        throw new RuntimeException("Could not start Server", e);
+      } catch (InterruptedException e) {
+        throw new RuntimeException("Could not start Server", e);
+      }
+      started = true;
     }
   }
 
@@ -383,20 +384,24 @@ public class GemFireRedisServer {
   private void startGemFire() {
     Cache c = GemFireCacheImpl.getInstance();
     if (c == null) {
-      CacheFactory cacheFactory = new CacheFactory();
-      if (logLevel != null)
-        cacheFactory.set("log-level", logLevel);
-      this.cache = cacheFactory.create();
-    } else
-      this.cache = c;
-    this.logger = this.cache.getLogger();
+      synchronized (GemFireRedisServer.class) {
+        c = GemFireCacheImpl.getInstance();
+        if (c == null) {
+          CacheFactory cacheFactory = new CacheFactory();
+          if (logLevel != null)
+            cacheFactory.set("log-level", logLevel);
+          c = cacheFactory.create();
+        }
+      }
+    }
+    this.cache = c;
+    this.logger = c.getLogger();
   }
 
   private void initializeRedis() {
     synchronized (this.cache) {
       RegionFactory<String, RedisDataType> rfMeta = cache.createRegionFactory(RegionShortcut.REPLICATE);
       rfMeta.addCacheListener(this.metaListener);
-      RegionFactory<String, Integer> rfList = cache.createRegionFactory(RegionShortcut.REPLICATE);
       RegionFactory<ByteArrayWrapper, ByteArrayWrapper> rfString = cache.createRegionFactory(DEFAULT_REGION_TYPE);
       RegionFactory<ByteArrayWrapper, HyperLogLogPlus> rfHLL = cache.createRegionFactory(DEFAULT_REGION_TYPE);
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
@@ -408,14 +413,10 @@ public class GemFireRedisServer {
       Region<String, RedisDataType> redisMetaData;
       if ((redisMetaData = this.cache.getRegion(REDIS_META_DATA_REGION)) == null)
         redisMetaData = rfMeta.create(REDIS_META_DATA_REGION);
-      Region<String, Integer> listsMetaData;
-      if ((listsMetaData = this.cache.getRegion(LISTS_META_DATA_REGION)) == null)
-        listsMetaData = rfList.create(LISTS_META_DATA_REGION);
-      this.regionCache = new RegionCache(stringsRegion, hLLRegion, redisMetaData, listsMetaData, expirationFutures, expirationExecutor);
+      this.regionCache = new RegionProvider(stringsRegion, hLLRegion, redisMetaData, expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(STRING_REGION, RedisDataType.REDIS_PROTECTED);
-      redisMetaData.put(LISTS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
     }
     checkForRegions();
   }
@@ -542,9 +543,9 @@ public class GemFireRedisServer {
       final String key = (String) event.getKey();
       final RedisDataType value = event.getOldValue();
       if (value != null && value != RedisDataType.REDIS_STRING && value != RedisDataType.REDIS_HLL && value != RedisDataType.REDIS_PROTECTED) {
-        Region<?, ?> r = this.regionCache.getRegion(Coder.stringToByteArrayWrapper(key));
+        ByteArrayWrapper kW = Coder.stringToByteArrayWrapper(key);
+        Region<?, ?> r = this.regionCache.getRegion(kW);
         if (r != null) { 
-          ByteArrayWrapper kW = Coder.stringToByteArrayWrapper(key);
           this.regionCache.removeRegionReferenceLocally(kW, value);
         }
       }
@@ -579,23 +580,26 @@ public class GemFireRedisServer {
    * Shutdown method for {@link GemFireRedisServer}. This closes the {@link Cache},
    * interrupts all execution and forcefully closes all connections.
    */
-  public void shutdown() {
-    if (logger.infoEnabled())
-      logger.info("GemFireRedisServer shutting down");
-    ChannelFuture closeFuture = this.serverChannel.closeFuture();
-    this.serverChannel.close();
-    Future<?> c = workerGroup.shutdownGracefully();
-    Future<?> c2 = bossGroup.shutdownGracefully();
-    c.syncUninterruptibly();
-    c2.syncUninterruptibly();
-    this.regionCache.close();
-    if (mainThread != null)
-      mainThread.interrupt();
-    for (ScheduledFuture<?> f : this.expirationFutures.values())
-      f.cancel(true);
-    this.expirationFutures.clear();
-    this.expirationExecutor.shutdownNow();
-    closeFuture.syncUninterruptibly();
+  public synchronized void shutdown() {
+    if (!shutdown) {
+      if (logger.infoEnabled())
+        logger.info("GemFireRedisServer shutting down");
+      ChannelFuture closeFuture = this.serverChannel.closeFuture();
+      Future<?> c = workerGroup.shutdownGracefully();
+      Future<?> c2 = bossGroup.shutdownGracefully();
+      this.serverChannel.close();
+      c.syncUninterruptibly();
+      c2.syncUninterruptibly();
+      this.regionCache.close();
+      if (mainThread != null)
+        mainThread.interrupt();
+      for (ScheduledFuture<?> f : this.expirationFutures.values())
+        f.cancel(true);
+      this.expirationFutures.clear();
+      this.expirationExecutor.shutdownNow();
+      closeFuture.syncUninterruptibly();
+      shutdown = true;
+    }
   }
 
   /**

@@ -79,10 +79,10 @@ public class LRemExecutor extends ListExecutor {
     Query query;
     if (count > 0) {
       query = getQuery(key, ListQuery.LREMG, context);
-      params = new Object[]{value, new Integer(count)};
+      params = new Object[]{value, Integer.valueOf(count)};
     } else if (count < 0) {
       query = getQuery(key, ListQuery.LREML, context);
-      params = new Object[]{value, new Integer(-count)};
+      params = new Object[]{value, Integer.valueOf(-count)};
     } else {
       query = getQuery(key, ListQuery.LREME, context);
       params = new Object[]{value};

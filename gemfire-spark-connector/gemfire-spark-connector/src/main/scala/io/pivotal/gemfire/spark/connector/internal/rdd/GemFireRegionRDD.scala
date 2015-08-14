@@ -82,7 +82,7 @@ class GemFireRegionRDD[K, V] private[connector]
         logInfo(s"""RDD id=${this.id} region=$regionPath conn=${connConf.locators.mkString(",")}, env=$opConf""")
         val p = if (data.isPartitioned) preferredPartitioner else defaultReplicatedRegionPartitioner
         val splits = p.partitions[K, V](conn, data, opConf)
-        logDebug(s"""RDD id=${this.id} region=$regionPath partitions=${splits.mkString(",")}""")
+        logDebug(s"""RDD id=${this.id} region=$regionPath partitions=\n  ${splits.mkString("\n  ")}""")
         splits
     }
   }

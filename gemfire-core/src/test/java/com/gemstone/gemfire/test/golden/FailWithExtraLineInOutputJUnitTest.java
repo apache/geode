@@ -1,13 +1,12 @@
 package com.gemstone.gemfire.test.golden;
 
-import java.io.IOException;
+import static org.junit.Assert.*;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.process.ProcessWrapper;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import junit.framework.AssertionFailedError;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that test output containing an unexpected extra line
@@ -15,12 +14,8 @@ import junit.framework.AssertionFailedError;
  * 
  * @author Kirk Lund
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class FailWithExtraLineInOutputJUnitTest extends FailOutputTestCase {
-  
-  public FailWithExtraLineInOutputJUnitTest() {
-    super("FailWithExtraLineInOutputJUnitTest");
-  }
   
   @Override
   String problem() {
@@ -28,32 +23,38 @@ public class FailWithExtraLineInOutputJUnitTest extends FailOutputTestCase {
   }
   
   @Override
-  void outputProblem(String message) {
+  void outputProblemInProcess(final String message) {
     System.out.println(message);
   }
   
-  public void testFailWithExtraLineInOutput() throws InterruptedException, IOException {
-    // output has an extra line and should fail
-    final ProcessWrapper process = createProcessWrapper(getClass());
+  /**
+   * Process output has an extra line and should fail
+   */
+  @Test
+  public void testFailWithExtraLineInOutput() throws Exception {
+    final String goldenString = 
+        "Begin " + name() + ".main" + "\n" +
+        "Press Enter to continue." + "\n" + 
+        "End " + name() + ".main" + "\n";
+    debug(goldenString, "GOLDEN");
+
+    final ProcessWrapper process = createProcessWrapper(new ProcessWrapper.Builder(), getClass());
     process.execute(createProperties());
     process.waitForOutputToMatch("Begin " + name() + "\\.main");
     process.waitForOutputToMatch("Press Enter to continue\\.");
     process.sendInput();
     process.waitForOutputToMatch("End " + name() + "\\.main");
     process.waitFor();
-    String goldenString = "Begin " + name() + ".main" + "\n" 
-        + "Press Enter to continue." + "\n" 
-        + "End " + name() + ".main" + "\n";
-    innerPrintOutput(goldenString, "GOLDEN");
+    
     try {
       assertOutputMatchesGoldenFile(process.getOutput(), goldenString);
       fail("assertOutputMatchesGoldenFile should have failed due to " + problem());
-    } catch (AssertionFailedError expected) {
+    } catch (AssertionError expected) {
       assertTrue(expected.getMessage().contains(problem()));
     }
   }
   
-  public static void main(String[] args) throws Exception {
-    new FailWithExtraLineInOutputJUnitTest().execute();
+  public static void main(final String[] args) throws Exception {
+    new FailWithExtraLineInOutputJUnitTest().executeInProcess();
   }
 }

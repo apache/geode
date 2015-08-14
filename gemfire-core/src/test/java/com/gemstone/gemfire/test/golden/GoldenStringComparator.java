@@ -12,11 +12,12 @@ import java.io.StringReader;
  */
 public class GoldenStringComparator extends RegexGoldenComparator {
 
-  protected GoldenStringComparator(String[] expectedProblemLines) {
+  protected GoldenStringComparator(final String[] expectedProblemLines) {
     super(expectedProblemLines);
   }
   
-  protected Reader readGoldenFile(String goldenFileName) throws IOException {
+  @Override
+  protected Reader readGoldenFile(final String goldenFileName) throws IOException {
     return new StringReader(goldenFileName);
   }
 }

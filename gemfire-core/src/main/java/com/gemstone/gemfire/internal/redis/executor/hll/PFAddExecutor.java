@@ -22,7 +22,7 @@ public class PFAddExecutor extends HllExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkAndSetDataType(key, context);
-    Region<ByteArrayWrapper, HyperLogLogPlus> keyRegion = context.getRegionCache().gethLLRegion();
+    Region<ByteArrayWrapper, HyperLogLogPlus> keyRegion = context.getRegionProvider().gethLLRegion();
 
     HyperLogLogPlus hll = keyRegion.get(key);
 

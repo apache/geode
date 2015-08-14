@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 public class CopyOnReadIndexJUnitTest {
   
   static int numObjects = 10;
-  static int objectsAndResultsMultiplier = 100;
+  static int objectsAndResultsMultiplier = 10;
   QueryTestUtils utils;
   static String regionName = "portfolios";
   static final String indexName = "testIndex";
@@ -182,7 +182,6 @@ public class CopyOnReadIndexJUnitTest {
   }
   
   //Test copy on read false
- /*
   @Test
   public void testCopyOnReadFalseWithHashIndexWithLocalRegion() throws Exception {
     utils.getCache().setCopyOnRead(false);
@@ -278,7 +277,7 @@ public class CopyOnReadIndexJUnitTest {
     utils.createIndex(indexName, "pv.secId", "/" + regionName + " p, p.positions.values pv");
     helpExecuteQueriesCopyOnReadFalse(queries, expectedResults, numObjects, objectsAndResultsMultiplier, true, true);
   }
- */ 
+
  /**
   * 
   * @param queries

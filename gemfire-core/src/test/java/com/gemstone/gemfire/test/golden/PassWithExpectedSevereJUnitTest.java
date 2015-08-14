@@ -2,10 +2,9 @@ package com.gemstone.gemfire.test.golden;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that an example test should always pass even if the output contains
@@ -13,12 +12,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * 
  * @author Kirk Lund
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class PassWithExpectedSevereJUnitTest extends PassWithExpectedProblemTestCase {
-  
-  public PassWithExpectedSevereJUnitTest() {
-    super("PassWithExpectedSevereJUnitTest");
-  }
   
   @Override
   String problem() {
@@ -26,12 +21,11 @@ public class PassWithExpectedSevereJUnitTest extends PassWithExpectedProblemTest
   }
   
   @Override
-  void outputProblem(String message) {
-    LogWriter logWriter = new LocalLogWriter(LogWriterImpl.INFO_LEVEL);
-    logWriter.severe(message);
+  void outputProblemInProcess(final String message) {
+    new LocalLogWriter(LogWriterImpl.INFO_LEVEL).severe(message);
   }
   
-  public static void main(String[] args) throws Exception {
-    new PassWithExpectedSevereJUnitTest().execute();
+  public static void main(final String[] args) throws Exception {
+    new PassWithExpectedSevereJUnitTest().executeInProcess();
   }
 }

@@ -1,202 +1,162 @@
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Field;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
-import org.junit.After;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.message.MessageFactory;
+import org.apache.logging.log4j.message.ParameterizedMessageFactory;
+import org.apache.logging.log4j.spi.ExtendedLogger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * Tests FastLogger isDebugEnabled and isTraceEnabled.
- * 
- * @author Kirk Lund
- * @author David Hoots
+ * Unit tests the FastLogger class which wraps and delegates to an actual 
+ * Logger with optimizations for isDebugEnabled and isTraceEnabled.
  */
 @Category(UnitTest.class)
 public class FastLoggerJUnitTest {
 
-  private static final String TEST_LOGGER_NAME = "com.gemstone.gemfire.cache.internal";
-  
-  private File configFile;
+  private MessageFactory messageFactory;
+  private ExtendedLogger mockedLogger;
+  private Marker mockedMarker;
   
   @Before
   public void setUp() {
-    System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-  }
-  
-  @After
-  public void tearDown() {
-    System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-    LogService.reconfigure();
-    if (this.configFile != null && this.configFile.exists()) {
-      this.configFile.delete();
-    }
+    this.messageFactory = new ParameterizedMessageFactory();
+    this.mockedLogger = mock(ExtendedLogger.class);
+    this.mockedMarker = mock(Marker.class);
+
+    when(this.mockedLogger.getMessageFactory()).thenReturn(this.messageFactory);
+    when(this.mockedMarker.getName()).thenReturn("MARKER");
   }
   
   /**
-   * Verifies that when the configuration is changed the FastLogger
-   * debugAvailable field is changed.
+   * FastLogger should return isDelegating after setDelegating
    */
   @Test
-  public final void testRespondToConfigChange() throws Exception {
-    final File configFile = new File(System.getProperty("java.io.tmpdir"), "log4j2-test.xml");
-    
-    // Load a base config and do some sanity checks
-    writeBaseConfigFile(configFile, "WARN");
-    System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFile.toURI().toURL().toString());
+  public void returnIsDelegatingAfterSetDelegating() {
+    FastLogger.setDelegating(true);
 
-    LogService.reconfigure();
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
     
-    LogService.getLogger().getName(); // This causes the config file to be loaded
-    final Logger testLogger = LogService.getLogger(TEST_LOGGER_NAME);
-    
-    final LoggerContext appenderContext = ((org.apache.logging.log4j.core.Logger) LogService.getRootLogger()).getContext();
-    assertEquals(Level.FATAL, LogService.getLogger(LogService.BASE_LOGGER_NAME).getLevel());
-    assertEquals(Level.WARN, LogService.getLogger(TEST_LOGGER_NAME).getLevel());
+    assertThat(fastLogger.isDelegating(), is(true));
 
-    // Get a reference to the debugAvailable field in FastLogger
-    Field debugAvailableField = FastLogger.class.getDeclaredField("debugAvailable");
-    debugAvailableField.setAccessible(true);
-    boolean debugAvailable = (Boolean) debugAvailableField.get(FastLogger.class);
-    assertFalse(debugAvailable);
-
-    // Modify the config and verify that the debugAvailable field has changed
-    writeBaseConfigFile(configFile, "DEBUG");
-    appenderContext.reconfigure();
-    assertEquals(Level.DEBUG, LogService.getLogger(TEST_LOGGER_NAME).getLevel());
-    debugAvailable = (Boolean) debugAvailableField.get(FastLogger.class);
-    assertTrue(testLogger.isDebugEnabled());
-    assertFalse(testLogger.isTraceEnabled());
-    assertTrue(debugAvailable);
-
-    // Modify the config and verify that the debugAvailable field has changed
-    writeBaseConfigFile(configFile, "ERROR");
-    appenderContext.reconfigure();
-    assertEquals(Level.ERROR, LogService.getLogger(TEST_LOGGER_NAME).getLevel());
-    assertFalse(testLogger.isDebugEnabled());
-    assertFalse((Boolean) debugAvailableField.get(FastLogger.class));
-
-    // Modify the config and verify that the debugAvailable field has changed
-    writeBaseConfigFile(configFile, "TRACE");
-    appenderContext.reconfigure();
-    assertEquals(Level.TRACE, LogService.getLogger(TEST_LOGGER_NAME).getLevel());
-    assertTrue(testLogger.isDebugEnabled());
-    assertTrue(testLogger.isTraceEnabled());
-    assertTrue((Boolean) debugAvailableField.get(FastLogger.class));
+    FastLogger.setDelegating(false);
     
-    // Modify the config and verify that the debugAvailable field has changed
-    writeBaseConfigFile(configFile, "INFO");
-    appenderContext.reconfigure();
-    assertEquals(Level.INFO, LogService.getLogger(TEST_LOGGER_NAME).getLevel());
-    assertFalse(testLogger.isDebugEnabled());
-    assertFalse((Boolean) debugAvailableField.get(FastLogger.class));
-    
-    // A reset before the next filter test
-    writeBaseConfigFile(configFile, "FATAL");
-    appenderContext.reconfigure();
-    assertFalse((Boolean) debugAvailableField.get(FastLogger.class));
-    
-    // Modify the config and verify that the debugAvailable field has changed
-    writeLoggerFilterConfigFile(configFile);
-    appenderContext.reconfigure();
-    assertEquals(Level.ERROR, LogService.getLogger(TEST_LOGGER_NAME).getLevel());
-    assertFalse(testLogger.isDebugEnabled());
-    assertTrue((Boolean) debugAvailableField.get(FastLogger.class));
-    
-    // A reset before the next filter test
-    writeBaseConfigFile(configFile, "FATAL");
-    appenderContext.reconfigure();
-    assertFalse((Boolean) debugAvailableField.get(FastLogger.class));
-    
-    // Modify the config and verify that the debugAvailable field has changed
-    writeContextFilterConfigFile(configFile);
-    appenderContext.reconfigure();
-    assertEquals(Level.ERROR, LogService.getLogger(TEST_LOGGER_NAME).getLevel());
-    assertFalse(testLogger.isDebugEnabled());
-    assertTrue((Boolean) debugAvailableField.get(FastLogger.class));
+    assertThat(fastLogger.isDelegating(), is(false));
   }
   
   /**
-   * Verifies that default the configuration sets the FastLogger debugAvailable to false.
+   * FastLogger should delegate getLevel
    */
   @Test
-  public final void testDefaultConfig() throws Exception {
-    LogService.reconfigure();
-    assertTrue(LogService.isUsingGemFireDefaultConfig());
+  public void delegateGetLevel() {
+    FastLogger.setDelegating(true);
+    when(this.mockedLogger.getLevel()).thenReturn(Level.DEBUG);
     
-    // Get a reference to the debugAvailable field in FastLogger
-    Field debugAvailableField = FastLogger.class.getDeclaredField("debugAvailable");
-    debugAvailableField.setAccessible(true);
-    boolean debugAvailable = (Boolean) debugAvailableField.get(FastLogger.class);
-    assertFalse("FastLogger debugAvailable should be false for default config", debugAvailable);
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
+    
+    assertThat(fastLogger.getLevel(), is(Level.DEBUG));
+    verify(this.mockedLogger, times(1)).getLevel();
   }
   
-  private static void writeBaseConfigFile(final File configFile, final String level) throws IOException {
-    final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
-    writer.write(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-          "<Configuration monitorInterval=\"5\">" +
-          "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>" +
-          "<Loggers>" +
-            "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level + "\" additivity=\"false\">" +
-              "<AppenderRef ref=\"STDOUT\"/>" +
-            "</Logger>" +
-            "<Root level=\"FATAL\"/>" +
-          "</Loggers>" +
-         "</Configuration>"
-         );
-    writer.close();
+  /**
+   * FastLogger should delegate isDebugEnabled when isDelegating
+   */
+  @Test
+  public void delegateIsDebugEnabledWhenIsDelegating() {
+    FastLogger.setDelegating(true);
+    when(this.mockedLogger.getLevel()).thenReturn(Level.DEBUG);
+    when(this.mockedLogger.isEnabled(eq(Level.DEBUG), isNull(Marker.class), isNull(String.class))).thenReturn(true);
+    when(this.mockedLogger.isEnabled(eq(Level.DEBUG), eq(this.mockedMarker), isNull(Object.class), isNull(Throwable.class))).thenReturn(true);
+
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
+    
+    assertThat(fastLogger.isDebugEnabled(), is(true));
+    assertThat(fastLogger.isDebugEnabled(this.mockedMarker), is(true));
+    verify(this.mockedLogger, times(1)).isEnabled(eq(Level.DEBUG), any(Marker.class), isNull(String.class));
+    verify(this.mockedLogger, times(1)).isEnabled(eq(Level.DEBUG), eq(this.mockedMarker), isNull(Object.class), isNull(Throwable.class));
   }
   
-  private static void writeLoggerFilterConfigFile(final File configFile) throws IOException {
-    final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
-    writer.write(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-          "<Configuration monitorInterval=\"5\">" +
-          "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>" +
-          "<Loggers>" +
-            "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"ERROR\" additivity=\"false\">" +
-              "<MarkerFilter marker=\"FLOW\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" +
-              "<AppenderRef ref=\"STDOUT\"/>" +
-            "</Logger>" +
-            "<Root level=\"FATAL\"/>" +
-          "</Loggers>" +
-         "</Configuration>"
-         );
-    writer.close();
+  /**
+   * FastLogger should delegate isTraceEnabled when isDelegating
+   */
+  @Test
+  public void delegateIsTraceEnabledWhenIsDelegating() {
+    FastLogger.setDelegating(true);
+    when(this.mockedLogger.getLevel()).thenReturn(Level.TRACE);
+    when(this.mockedLogger.isEnabled(eq(Level.TRACE), isNull(Marker.class), isNull(Object.class), isNull(Throwable.class))).thenReturn(true);
+    when(this.mockedLogger.isEnabled(eq(Level.TRACE), eq(this.mockedMarker), isNull(Object.class), isNull(Throwable.class))).thenReturn(true);
+
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
+    
+    assertThat(fastLogger.isTraceEnabled(), is(true));
+    assertThat(fastLogger.isTraceEnabled(this.mockedMarker), is(true));
+    verify(this.mockedLogger, times(1)).isEnabled(eq(Level.TRACE), isNull(Marker.class), isNull(Object.class), isNull(Throwable.class));
+    verify(this.mockedLogger, times(1)).isEnabled(eq(Level.TRACE), eq(this.mockedMarker), isNull(Object.class), isNull(Throwable.class));
   }
   
-  private static void writeContextFilterConfigFile(final File configFile) throws IOException {
-    final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
-    writer.write(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-          "<Configuration monitorInterval=\"5\">" +
-          "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>" +
-          "<Loggers>" +
-            "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"ERROR\" additivity=\"false\">" +
-              "<AppenderRef ref=\"STDOUT\"/>" +
-            "</Logger>" +
-            "<Root level=\"FATAL\"/>" +
-          "</Loggers>" +
-          "<MarkerFilter marker=\"FLOW\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" +
-         "</Configuration>"
-         );
-    writer.close();
+  /**
+   * FastLogger should not delegate isDebugEnabled when not isDelegating
+   */
+  @Test
+  public void notDelegateIsDebugEnabledWhenNotIsDelegating() {
+    FastLogger.setDelegating(false);
+    when(this.mockedLogger.getLevel()).thenReturn(Level.INFO);
+
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
+    
+    assertThat(fastLogger.getLevel(), is(Level.INFO));
+    assertThat(fastLogger.isDebugEnabled(), is(false));
+    assertThat(fastLogger.isDebugEnabled(this.mockedMarker), is(false));
+    verify(this.mockedLogger, times(0)).isEnabled(eq(Level.DEBUG), isNull(Marker.class), isNull(String.class));
+    verify(this.mockedLogger, times(0)).isEnabled(eq(Level.DEBUG), eq(this.mockedMarker), isNull(Object.class), isNull(Throwable.class));
+  }
+  
+  /**
+   * FastLogger should not delegate isTraceEnabled when not isDelegating
+   */
+  @Test
+  public void notDelegateIsTraceEnabledWhenNotIsDelegating() {
+    FastLogger.setDelegating(false);
+    when(mockedLogger.getLevel()).thenReturn(Level.INFO);
+
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
+    
+    assertThat(fastLogger.getLevel(), is(Level.INFO));
+    assertThat(fastLogger.isTraceEnabled(), is(false));
+    assertThat(fastLogger.isTraceEnabled(this.mockedMarker), is(false));
+    verify(this.mockedLogger, times(0)).isEnabled(eq(Level.TRACE), isNull(Marker.class), isNull(String.class));
+    verify(this.mockedLogger, times(0)).isEnabled(eq(Level.TRACE), eq(this.mockedMarker), isNull(Object.class), isNull(Throwable.class));
+  }
+  
+  /**
+   * FastLogger should wrap delegate and return from getExtendedLogger
+   */
+  @Test
+  public void wrapDelegateAndReturnFromGetExtendedLogger() {
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
+
+    assertThat(fastLogger.getExtendedLogger(), is(sameInstance(this.mockedLogger)));
+  }
+  
+  /**
+   * FastLogger should delegate getName
+   */
+  @Test
+  public void delegateGetName() {
+    when(this.mockedLogger.getName()).thenReturn("name");
+
+    FastLogger fastLogger = new FastLogger(this.mockedLogger);
+
+    assertThat(fastLogger.getName(), is("name"));
+    verify(this.mockedLogger, times(1)).getName();
   }
 }

@@ -133,8 +133,6 @@ public class AutoSerializableManager {
       new CopyOnWriteHashSet<String>();
 
 
-  private static final Map<ReflectionBasedAutoSerializer, AutoSerializableManager> instances = new CopyOnWriteWeakHashMap<ReflectionBasedAutoSerializer, AutoSerializableManager>();
-
   private final ReflectionBasedAutoSerializer owner;
   
   public ReflectionBasedAutoSerializer getOwner() {
@@ -144,17 +142,11 @@ public class AutoSerializableManager {
   public static AutoSerializableManager create(ReflectionBasedAutoSerializer owner, boolean checkPortability, String... patterns) {
     AutoSerializableManager result = new AutoSerializableManager(owner);
     result.reconfigure(checkPortability, patterns);
-    instances.put(owner, result);
     return result;
   }
   private AutoSerializableManager(ReflectionBasedAutoSerializer owner) {
     this.owner = owner;
   }
-
-  public static AutoSerializableManager getInstance(ReflectionBasedAutoSerializer owner) {
-    return instances.get(owner);
-  }
-
 
   public Map<Class<?>, AutoClassInfo> getClassMap() {
     return classMap;

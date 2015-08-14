@@ -2234,7 +2234,7 @@ public class LocalRegion extends AbstractRegion
    * author David Whitlock
    */
   public final int entryCount() {
-    return entryCount(null);
+    return getDataView().entryCount(this);
   }
 
   public int entryCount(Set<Integer> buckets) {
@@ -8814,6 +8814,13 @@ public class LocalRegion extends AbstractRegion
       throw new EntryNotFoundException("Entry for key " + key + " does not exist.");
     }
     return this.entryExpiryTasks.get(re);
+  }
+  /**
+   * Used by unit tests to get access to the RegionIdleExpiryTask
+   * of this region. Returns null if no task exists.
+   */
+  public RegionIdleExpiryTask getRegionIdleExpiryTask() {
+    return this.regionIdleExpiryTask;
   }
   
   private void addExpiryTask(RegionEntry re, boolean ifAbsent)

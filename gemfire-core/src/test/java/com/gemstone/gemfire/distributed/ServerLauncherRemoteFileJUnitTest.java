@@ -57,7 +57,6 @@ public class ServerLauncherRemoteFileJUnitTest extends ServerLauncherRemoteJUnit
    */
   public void testStatusUsingPid() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -135,7 +134,6 @@ public class ServerLauncherRemoteFileJUnitTest extends ServerLauncherRemoteJUnit
    */
   public void testStopUsingPid() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());

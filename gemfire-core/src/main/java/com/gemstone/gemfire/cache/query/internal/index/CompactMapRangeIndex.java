@@ -90,10 +90,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex
   void saveMapping(Object key, Object value, RegionEntry entry)
       throws IMQException
   {
-    if(key == QueryService.UNDEFINED) {
+    if(key == QueryService.UNDEFINED || !(key instanceof Map)) {
       return;
     }
-    assert key instanceof Map;
     if (this.isAllKeys) {
       Iterator<Map.Entry<?, ?>> entries = ((Map)key).entrySet().iterator();
       while (entries.hasNext()) {
@@ -107,6 +106,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex
       for (Object mapKey : mapKeys) {
         Object indexKey = ((Map)key).get(mapKey);
         if (indexKey != null) {
+          //Do not convert to IndexManager.NULL.  We are only interested in specific keys
           this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
       }
@@ -156,6 +156,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex
   protected void saveIndexAddition(Object mapKey, Object indexKey, Object value,
       RegionEntry entry) throws IMQException
   {
+    if (indexKey == null) {
+      indexKey = IndexManager.NULL;
+    }
     boolean isPr = this.region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
     CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(mapKey);

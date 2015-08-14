@@ -45,6 +45,7 @@ import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheEvent;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -84,6 +85,7 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
+import com.gemstone.gemfire.internal.cache.ExpiryTask;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -3822,7 +3824,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         return;
       
       final String name = this.getUniqueName();
-      final int timeout = 40; // ms
+      final int timeout = 22; // ms
       final Object key = "KEY";
       final Object value = "VALUE";
 
@@ -3857,81 +3859,111 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
 
 
-      SerializableRunnable create = new CacheSerializableRunnable("Populate") {
+      SerializableRunnable createRegion = new CacheSerializableRunnable("Create with Listener") {
         public void run2() throws CacheException {
           AttributesFactory fac = new AttributesFactory(getRegionAttributes());
           fac.addCacheListener(destroyListener = new DestroyListener());
-          Region region = null;
-          System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-          try {
-            region = createRegion(name, fac.create());
-          } 
-          finally {
-            System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-          }
+          createRegion(name, fac.create());
         }
       };
 
-      vm1.invoke(create);
+      vm1.invoke(createRegion);
 
       vm0.invoke(new CacheSerializableRunnable("Create with TTL") {
           public void run2() throws CacheException {
             AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-            final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null ||
-            getRegionAttributes().getDataPolicy().withPartitioning();
             factory.setStatisticsEnabled(true);
             ExpirationAttributes expire =
               new ExpirationAttributes(timeout,
                                        ExpirationAction.DESTROY);
             factory.setEntryTimeToLive(expire);
-            if (!getRegionAttributes().getDataPolicy().withReplication()&& ! partitioned) {
+            if (!getRegionAttributes().getDataPolicy().withReplication()) {
               factory.setDataPolicy(DataPolicy.NORMAL);
               factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
             }
             System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
             try {
               createRegion(name, factory.create());
+              ExpiryTask.suspendExpiration();
+              // suspend to make sure we can see that the put is distributed to this member
             } 
             finally {
               System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
             }
           }
         });
+      
+      try {
 
-      // let create finish before setting up other cache
+      // let region create finish before doing put
       //pause(10);
 
       vm1.invoke(new SerializableCallable() {
         public Object call() throws Exception {
           Region region = getRootRegion().getSubregion(name);
+          DestroyListener dl = (DestroyListener)region.getAttributes().getCacheListeners()[0];
+          dl.enableEventHistory();
           region.put(key, value);
           // reset listener after create event
-          assertTrue(((DestroyListener)region.getAttributes().
-            getCacheListeners()[0]).wasInvoked());
+          assertTrue(dl.wasInvoked());
+          List<CacheEvent> history = dl.getEventHistory();
+          CacheEvent ce = history.get(0);
+          dl.disableEventHistory();
+          assertEquals(Operation.CREATE, ce.getOperation());
           return null;
         }
       });
-
+      vm0.invoke(new CacheSerializableRunnable("Check create received from vm1") {
+        public void run2() throws CacheException {
+          final Region region = getRootRegion().getSubregion(name);
+          WaitCriterion waitForCreate = new WaitCriterion() {
+            public boolean done() {
+              return region.getEntry(key) != null;
+            }
+            public String description() {
+              return "never saw create of " + key;
+            }
+          };
+          DistributedTestCase.waitForCriterion(waitForCreate, 3000, 10, true);
+        }
+      });
+      
+      } finally {
+        vm0.invoke(new CacheSerializableRunnable("resume expiration") {
+          public void run2() throws CacheException {
+            ExpiryTask.permitExpiration();
+          }
+        });
+      }
+      
+      // now wait for it to expire
       vm0.invoke(new CacheSerializableRunnable("Check local destroy") {
           public void run2() throws CacheException {
-            Region region =
-              getRootRegion().getSubregion(name);
-            int retries = 10;
-            while (region.getEntry(key) != null && retries-- > 0) {
-              pause(timeout);
-            }
-            assertNull(region.getEntry(key));
+            final Region region = getRootRegion().getSubregion(name);
+            WaitCriterion waitForExpire = new WaitCriterion() {
+              public boolean done() {
+                return region.getEntry(key) == null;
+              }
+              public String description() {
+                return "never saw expire of " + key + " entry=" + region.getEntry(key);
+              }
+            };
+            DistributedTestCase.waitForCriterion(waitForExpire, 4000, 10, true);
           }
         });
 
       vm1.invoke(new CacheSerializableRunnable("Verify destroyed and event") {
           public void run2() throws CacheException {
-            Region region = getRootRegion().getSubregion(name);
-            int retries = 10;
-            while (region.getEntry(key) != null && retries-- > 0) {
-              pause(timeout);
-            }
-            assertNull(region.getEntry(key));
+            final Region region = getRootRegion().getSubregion(name);
+            WaitCriterion waitForExpire = new WaitCriterion() {
+              public boolean done() {
+                return region.getEntry(key) == null;
+              }
+              public String description() {
+                return "never saw expire of " + key + " entry=" + region.getEntry(key);
+              }
+            };
+            DistributedTestCase.waitForCriterion(waitForExpire, 4000, 10, true);
             assertTrue(destroyListener.waitForInvocation(555));
             assertTrue(((DestroyListener)destroyListener).eventIsExpiration);
           }

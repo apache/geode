@@ -2085,7 +2085,7 @@ public abstract class RegionTestCase extends CacheTestCase {
       if (now >= tilt)
         break;
       if (!region.isDestroyed()) {
-        pause(100);
+        pause(10);
         continue;
       }
       if (now >= tilt - SLOP) {
@@ -2107,7 +2107,7 @@ public abstract class RegionTestCase extends CacheTestCase {
         break;
       Assert.assertTrue(System.currentTimeMillis() <= tilt,
           "Region failed to destroy");
-      pause(100);
+      pause(10);
     }
   }  
 
@@ -2704,7 +2704,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     
     vm0.invoke(new CacheSerializableRunnable("testRegionTtlInvalidate") {
       public void run2() throws CacheException {
-        final int timeout = 50; // ms
+        final int timeout = 22; // ms
         final Object key = "KEY";
         final Object value = "VALUE";
         
@@ -2736,8 +2736,8 @@ public abstract class RegionTestCase extends CacheTestCase {
         finally {
           ExpiryTask.permitExpiration();
         }
-        waitForInvalidate(entry, tilt);
-        waitForInvalidate(region.getEntry("k2"), tilt);
+        waitForInvalidate(entry, tilt, 10);
+        waitForInvalidate(region.getEntry("k2"), tilt, 10);
       }
     });
   }
@@ -2753,7 +2753,7 @@ public abstract class RegionTestCase extends CacheTestCase {
       return;
     
     final String name = this.getUniqueName();
-    final int timeout = 700; // ms
+    final int timeout = 22; // ms
     final Object key = "KEY";
     final Object value = "VALUE";
     
@@ -3741,42 +3741,38 @@ public abstract class RegionTestCase extends CacheTestCase {
   throws CacheException, InterruptedException {
 
     final String name = this.getUniqueName();
-    final int timeout = 20; // ms
-    final int hugeTimeout = Integer.MAX_VALUE;
-    final ExpirationAttributes expire =
-            new ExpirationAttributes(timeout, ExpirationAction.INVALIDATE);
-    final ExpirationAttributes hugeExpire =
-            new ExpirationAttributes(hugeTimeout, ExpirationAction.INVALIDATE);
+            ;
     final Object key = "KEY";
     final Object value = "VALUE";
     
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     factory.setStatisticsEnabled(true);
     RegionAttributes attrs = factory.create();
-    Region region = null;
-    long tilt;
+    LocalRegion region = null;
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      region = createRegion(name, attrs);
+      region = (LocalRegion) createRegion(name, attrs);
 
       region.create(key, value);
-      tilt = System.currentTimeMillis() + timeout;
 
       // Now go from no timeout to a timeout
       Region.Entry entry = region.getEntry(key);
       assertEquals(value, entry.getValue());
-      region.getAttributesMutator().setRegionIdleTimeout(expire);
-      waitForInvalidate(entry, tilt);
-
-      // Now go from a big timeout to a short one
-      region.getAttributesMutator().setRegionIdleTimeout(hugeExpire);
+      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(12000/*ms*/, ExpirationAction.INVALIDATE));
       region.put(key, value);
-      tilt = System.currentTimeMillis() + timeout;
-      entry = region.getEntry(key);
-      pause(timeout * 2);
-      assertEquals(value, entry.getValue());
-      region.getAttributesMutator().setRegionIdleTimeout(expire);
-      waitForInvalidate(entry, tilt);
+      long tilt = System.currentTimeMillis();
+
+      ExpiryTask expiryTask = region.getRegionIdleExpiryTask();
+      long mediumExpiryTime = expiryTask.getExpirationTime();
+      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(999000/*ms*/, ExpirationAction.INVALIDATE));
+      expiryTask = region.getRegionIdleExpiryTask();
+      long hugeExpiryTime = expiryTask.getExpirationTime();
+      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(20/*ms*/, ExpirationAction.INVALIDATE));
+      expiryTask = region.getRegionIdleExpiryTask();
+      long shortExpiryTime = expiryTask.getExpirationTime();
+      waitForInvalidate(entry, tilt+20, 10);
+      assertTrue("expected hugeExpiryTime=" + hugeExpiryTime + " to be > than mediumExpiryTime=" + mediumExpiryTime, (hugeExpiryTime - mediumExpiryTime) > 0);
+      assertTrue("expected mediumExpiryTime=" + mediumExpiryTime + " to be > than shortExpiryTime=" + shortExpiryTime, (mediumExpiryTime - shortExpiryTime) > 0);
     }
     finally {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
@@ -3791,8 +3787,10 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testRegionIdleInvalidate()
   throws InterruptedException, CacheException {
 
-    if(getRegionAttributes().getPartitionAttributes() != null)
+    if (getRegionAttributes().getPartitionAttributes() != null) {
+      // PR does not support INVALID ExpirationAction
       return;
+    }
     
     final String name = this.getUniqueName();
     final String subname = this.getUniqueName() + "-SUB";
@@ -3840,70 +3838,51 @@ public abstract class RegionTestCase extends CacheTestCase {
           tilt = System.currentTimeMillis() + timeout;
           entry = region.getEntry(key);
           assertEquals(value, entry.getValue());
-          if(!region.getAttributes().getDataPolicy().withPartitioning()){
-            // Do not create subregionsif parent region is a Partitioned Region 
-            sub = region.createSubregion(subname, subRegAttrs);
-          }
+          sub = region.createSubregion(subname, subRegAttrs);
         } 
         finally {
           System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
           ExpiryTask.permitExpiration();
         }
-        waitForInvalidate(entry, tilt);
+        waitForInvalidate(entry, tilt, 10);
         
         assertTrue(list.waitForInvocation(333));
         
-        pause(timeout);
-        assertFalse(list.wasInvoked());
 
+        // The next phase of the test verifies that a get will cause the
+        // expiration time to be extended.
+        // For this phase we don't worry about actually expiring but just
+        // making sure the expiration time gets extended.
+        final int EXPIRATION_MS = 9000;
+        region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(EXPIRATION_MS, ExpirationAction.INVALIDATE));
+        
+        LocalRegion lr = (LocalRegion) region;
         {
-          long endTime = System.currentTimeMillis() + (timeout * 2);
+          ExpiryTask expiryTask = lr.getRegionIdleExpiryTask();
           region.put(key, value);
-          do {
-            tilt = System.currentTimeMillis() + timeout; // *earliest* time it can expire
-            region.get(key); // access *might* prevent idle expiration, if it occurs early enough.
-
-            // ...but a huge delay could cause an invalidation before we
-            // had a chance to do the get.
-            boolean wasInvoked = list.wasInvoked();
-            if (!value.equals(entry.getValue()) || wasInvoked) {
-              long now = System.currentTimeMillis(); // Did it take too long?
-              assertTrue("Entry invalidated " + (tilt - now) 
-                  + " ms prematurely (" + entry.getValue() + ")" + " value="+ value + " entryValue=" + entry.getValue() + " wasInvoked=" + wasInvoked, 
-                  now >= tilt);
-              
-              // So it invalidated due to machine latencies.  Get out.
-              break;
-            }
-          } while (System.currentTimeMillis() < endTime);
-        }
-        waitForInvalidate(entry, tilt);
-        assertTrue(list.waitForInvocation(333));
+          long createExpiry = expiryTask.getExpirationTime();
+          long changeTime = waitForExpiryClockToChange(lr, createExpiry-EXPIRATION_MS);
+          region.put(key, "VALUE2");
+          long putExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected putBaseExpiry=" + (putExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (putExpiry-EXPIRATION_MS - changeTime) >= 0);
+          assertTrue("expected putExpiry=" + putExpiry + " to be > than createExpiry=" + createExpiry, (putExpiry - createExpiry) > 0);
+          changeTime = waitForExpiryClockToChange(lr, putExpiry-EXPIRATION_MS);
+          region.get(key);
+          long getExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected getBaseExpiry=" + (getExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (getExpiry-EXPIRATION_MS - changeTime) >= 0);
+          assertTrue("expected getExpiry=" + getExpiry + " to be > than putExpiry=" + putExpiry, (getExpiry - putExpiry) > 0);
         
-        region.put(key, value);
-        assertEquals(value, entry.getValue());
-        if(!region.getAttributes().getDataPolicy().withPartitioning()){
-          long endTime = System.currentTimeMillis() + (timeout * 2);
+          changeTime = waitForExpiryClockToChange(lr, getExpiry-EXPIRATION_MS);
           sub.put(key, value);
-          do {
-            tilt = System.currentTimeMillis() + timeout;
-            sub.get(key, value); // get should prevent idle expiration
-            
-            // ...but a huge delay could cause an invalidation before we
-            // had a chance to do the get.
-            if (!value.equals(entry.getValue()) || list.wasInvoked()) {
-              long now = System.currentTimeMillis(); // Did it take too long?
-              assertTrue("Entry invalidated " + (tilt - now) 
-                  + " ms prematurely (" + entry.getValue() + ")", 
-                  now >= tilt);
-              
-              // So it invalidated due to machine latencies.  Get out.
-              break;
-            }
-          } while (System.currentTimeMillis() < endTime);
+          long subPutExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected subPutBaseExpiry=" + (subPutExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (subPutExpiry-EXPIRATION_MS - changeTime) >= 0);
+          assertTrue("expected subPutExpiry=" + subPutExpiry + " to be > than getExpiry=" + getExpiry, (subPutExpiry - getExpiry) > 0);
+          changeTime = waitForExpiryClockToChange(lr, subPutExpiry-EXPIRATION_MS);
+          sub.get(key);
+          long subGetExpiry = expiryTask.getExpirationTime();
+          assertTrue("CLOCK went back in time! Expected subGetBaseExpiry=" + (subGetExpiry-EXPIRATION_MS) + " to be >= than changeTime=" + changeTime, (subGetExpiry-EXPIRATION_MS - changeTime) >= 0);
+          assertTrue("expected subGetExpiry=" + subGetExpiry + " to be > than subPutExpiry=" + subPutExpiry, (subGetExpiry - subPutExpiry) > 0);
         }
-        waitForInvalidate(entry, tilt);
-        assertTrue(list.waitForInvocation(333));
       }
     });
   }
@@ -3920,7 +3899,7 @@ public abstract class RegionTestCase extends CacheTestCase {
       return;
     
     final String name = this.getUniqueName();
-    final int timeout = 800; // ms
+    final int timeout = 22; // ms
     final Object key = "KEY";
     final Object value = "VALUE";
     

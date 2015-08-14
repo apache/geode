@@ -72,13 +72,13 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       }
     });
     
-    this.invokeInEveryVM(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        System.setProperty("gemfire.log-level", "fine");
-        return null;
-      }
-    }); 
+//    this.invokeInEveryVM(new SerializableCallable() {
+//      @Override
+//      public Object call() throws Exception {
+//        System.setProperty("gemfire.log-level", "fine");
+//        return null;
+//      }
+//    });
 
     this.invokeInEveryVM(new SerializableCallable() {
       @Override
@@ -123,11 +123,6 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       execute(vm, c);
     }
   }
-
-  protected String reduceLogging() {
-    return "config";
-  }
-
   
   public int startServer(VM vm) {
     return (Integer) vm.invoke(new SerializableCallable() {

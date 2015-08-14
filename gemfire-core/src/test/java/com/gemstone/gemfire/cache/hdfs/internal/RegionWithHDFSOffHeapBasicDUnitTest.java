@@ -45,9 +45,13 @@ public class RegionWithHDFSOffHeapBasicDUnitTest extends
         }
       }
     };
-    checkOrphans.run();
-    invokeInEveryVM(checkOrphans);
-    super.tearDown2();
+    try {
+      checkOrphans.run();
+      invokeInEveryVM(checkOrphans);
+    } finally {
+      // proceed with tearDown2 anyway.
+      super.tearDown2();
+    }
   }
 
    public void testDelta() {

@@ -25,7 +25,7 @@ public class PersistExecutor extends AbstractExecutor {
 
     ByteArrayWrapper key = command.getKey();
     
-    boolean canceled = context.getRegionCache().cancelKeyExpiration(key);
+    boolean canceled = context.getRegionProvider().cancelKeyExpiration(key);
     
     if (canceled)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), TIMEOUT_REMOVED));

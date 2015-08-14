@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.redis.executor.org.apache.hadoop.fs;
+package com.gemstone.gemfire.internal.redis.org.apache.hadoop.fs;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
