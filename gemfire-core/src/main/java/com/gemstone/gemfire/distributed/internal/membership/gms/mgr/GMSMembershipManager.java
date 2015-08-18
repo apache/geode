@@ -1739,10 +1739,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   
   public void shutdown() {
-    if (!shutdownInProgress) {
-      setShutdown();
-      services.stop();
-    }
+    setShutdown();
+    services.stop();
   }
   
   @Override
