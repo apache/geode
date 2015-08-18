@@ -1,6 +1,5 @@
 package com.gemstone.gemfire.internal.redis.executor.hash;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ public class HGetAllExecutor extends HashExecutor {
       return;
     }
 
-    Collection<Map.Entry<ByteArrayWrapper,ByteArrayWrapper>> entries = new ArrayList(keyRegion.entrySet()); // This creates a CopyOnRead behavior
+    Collection<Map.Entry<ByteArrayWrapper,ByteArrayWrapper>> entries = getStableRegionEntriesSnapshot(keyRegion);
    
    if (entries.isEmpty()) {
      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));

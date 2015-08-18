@@ -171,24 +171,20 @@ public class Coder {
     response.writeBytes(intToBytes(items.size() * 2));
     response.writeBytes(CRLFar);
 
-    try {
-      while(it.hasNext()) {
-        Map.Entry<ByteArrayWrapper,ByteArrayWrapper> next = it.next();
-        byte[] key = next.getKey().toBytes();
-        byte[] nextByteArray = next.getValue().toBytes();
-        response.writeByte(BULK_STRING_ID); // Add key
-        response.writeBytes(intToBytes(key.length));
-        response.writeBytes(CRLFar);
-        response.writeBytes(key);
-        response.writeBytes(CRLFar);
-        response.writeByte(BULK_STRING_ID); // Add value
-        response.writeBytes(intToBytes(nextByteArray.length));
-        response.writeBytes(CRLFar);
-        response.writeBytes(nextByteArray);
-        response.writeBytes(CRLFar);
-      }
-    } catch(Exception e) {
-      return null;
+    while(it.hasNext()) {
+      Map.Entry<ByteArrayWrapper,ByteArrayWrapper> next = it.next();
+      byte[] key = next.getKey().toBytes();
+      byte[] nextByteArray = next.getValue().toBytes();
+      response.writeByte(BULK_STRING_ID); // Add key
+      response.writeBytes(intToBytes(key.length));
+      response.writeBytes(CRLFar);
+      response.writeBytes(key);
+      response.writeBytes(CRLFar);
+      response.writeByte(BULK_STRING_ID); // Add value
+      response.writeBytes(intToBytes(nextByteArray.length));
+      response.writeBytes(CRLFar);
+      response.writeBytes(nextByteArray);
+      response.writeBytes(CRLFar);
     }
 
     return response;
@@ -211,27 +207,23 @@ public class Coder {
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
 
-    try {
-      while(it.hasNext()) {
-        Object nextObject = it.next();
-        if (nextObject instanceof String) {
-          String next = (String) nextObject;
-          response.writeByte(BULK_STRING_ID);
-          response.writeBytes(intToBytes(next.length()));
-          response.writeBytes(CRLFar);
-          response.writeBytes(stringToBytes(next));
-          response.writeBytes(CRLFar);
-        } else if (nextObject instanceof ByteArrayWrapper) {
-          byte[] next = ((ByteArrayWrapper) nextObject).toBytes();
-          response.writeByte(BULK_STRING_ID);
-          response.writeBytes(intToBytes(next.length));
-          response.writeBytes(CRLFar);
-          response.writeBytes(next);
-          response.writeBytes(CRLFar);
-        }
+    while(it.hasNext()) {
+      Object nextObject = it.next();
+      if (nextObject instanceof String) {
+        String next = (String) nextObject;
+        response.writeByte(BULK_STRING_ID);
+        response.writeBytes(intToBytes(next.length()));
+        response.writeBytes(CRLFar);
+        response.writeBytes(stringToBytes(next));
+        response.writeBytes(CRLFar);
+      } else if (nextObject instanceof ByteArrayWrapper) {
+        byte[] next = ((ByteArrayWrapper) nextObject).toBytes();
+        response.writeByte(BULK_STRING_ID);
+        response.writeBytes(intToBytes(next.length));
+        response.writeBytes(CRLFar);
+        response.writeBytes(next);
+        response.writeBytes(CRLFar);
       }
-    } catch (Exception e) {
-      return null;
     }
     return response;
   }
@@ -260,7 +252,7 @@ public class Coder {
     response.writeBytes(CRLFar);
     return response;
   }
-  
+
   public static final ByteBuf getNoAuthResponse(ByteBufAllocator alloc, String error) {
     byte[] errorAr = stringToBytes(error);
     ByteBuf response = alloc.buffer(errorAr.length + 25);
@@ -341,36 +333,32 @@ public class Coder {
       buffer.writeBytes(intToBytes(2 * list.size()));
     buffer.writeBytes(Coder.CRLFar);
 
-    try {
-      for(Object entry: list) {
-        ByteArrayWrapper key;
-        DoubleWrapper score;
-        if (entry instanceof Entry) {
-          key = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
-          score = (DoubleWrapper) ((Entry<?, ?>) entry).getValue();;
-        } else {
-          Object[] fieldVals = ((Struct) entry).getFieldValues();
-          key = (ByteArrayWrapper) fieldVals[0];
-          score = (DoubleWrapper) fieldVals[1];
-        }
-        byte[] byteAr = key.toBytes();
-        buffer.writeByte(Coder.BULK_STRING_ID);
-        buffer.writeBytes(intToBytes(byteAr.length));
-        buffer.writeBytes(Coder.CRLFar);
-        buffer.writeBytes(byteAr);
-        buffer.writeBytes(Coder.CRLFar);
-        if (withScores) {
-          String scoreString = score.toString();
-          byte[] scoreAr = stringToBytes(scoreString);
-          buffer.writeByte(Coder.BULK_STRING_ID);
-          buffer.writeBytes(intToBytes(scoreString.length()));
-          buffer.writeBytes(Coder.CRLFar);
-          buffer.writeBytes(scoreAr);
-          buffer.writeBytes(Coder.CRLFar);
-        }
+    for(Object entry: list) {
+      ByteArrayWrapper key;
+      DoubleWrapper score;
+      if (entry instanceof Entry) {
+        key = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
+        score = (DoubleWrapper) ((Entry<?, ?>) entry).getValue();;
+      } else {
+        Object[] fieldVals = ((Struct) entry).getFieldValues();
+        key = (ByteArrayWrapper) fieldVals[0];
+        score = (DoubleWrapper) fieldVals[1];
       }
-    } catch(Exception e) {
-      return null;
+      byte[] byteAr = key.toBytes();
+      buffer.writeByte(Coder.BULK_STRING_ID);
+      buffer.writeBytes(intToBytes(byteAr.length));
+      buffer.writeBytes(Coder.CRLFar);
+      buffer.writeBytes(byteAr);
+      buffer.writeBytes(Coder.CRLFar);
+      if (withScores) {
+        String scoreString = score.toString();
+        byte[] scoreAr = stringToBytes(scoreString);
+        buffer.writeByte(Coder.BULK_STRING_ID);
+        buffer.writeBytes(intToBytes(scoreString.length()));
+        buffer.writeBytes(Coder.CRLFar);
+        buffer.writeBytes(scoreAr);
+        buffer.writeBytes(Coder.CRLFar);
+      }
     }
     return buffer;
   }

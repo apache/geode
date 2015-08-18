@@ -101,7 +101,7 @@ public class HScanExecutor extends AbstractScanExecutor {
       return;
     }
 
-    List<Object> returnList = getIteration(new HashSet(keyRegion.entrySet()), matchPattern, count, cursor);
+    List<Object> returnList = getIteration(getStableRegionEntriesSnapshot(keyRegion), matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
