@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -54,6 +55,8 @@ public class GMSJoinLeaveJUnitTest {
     when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
     mockConfig = mock(ServiceConfig.class);
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
+    when(mockDistConfig.getLocators()).thenReturn("localhost[12345]");
+    when(mockDistConfig.getMcastPort()).thenReturn(0);
     
     authenticator = mock(Authenticator.class);
     gmsJoinLeaveMemberId = new InternalDistributedMember("localhost", 8887);
@@ -111,7 +114,7 @@ public class GMSJoinLeaveJUnitTest {
     when(services.getMessenger()).thenReturn(messenger);
     when(messenger.send(any(JoinResponseMessage.class))).thenAnswer(messageSent);
       
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null));
     Assert.assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     Assert.assertTrue("Join Response should have been sent", messageSent.isMethodExecuted());
   }
@@ -157,6 +160,17 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.processMessage(installViewMessage);
     Assert.assertEquals(netView, gmsJoinLeave.getView());
   }
+  
+  @Test
+  public void testRemoveMember() throws Exception {
+    initMocks();
+    prepareAndInstallView();
+    MethodExecuted removeMessageSent = new MethodExecuted();
+    when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(removeMessageSent);
+    gmsJoinLeave.remove(mockMembers[1], "removing for test");
+    assert removeMessageSent.methodExecuted;
+  }
+  
   
   @Test 
   public void testRejectOlderView() throws IOException {

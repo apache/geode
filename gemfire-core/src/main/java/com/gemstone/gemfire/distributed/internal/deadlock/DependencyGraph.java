@@ -9,10 +9,12 @@ package com.gemstone.gemfire.distributed.internal.deadlock;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -102,7 +104,10 @@ public class DependencyGraph implements Serializable {
    * cycle is detected it will be returned.  Otherwise all
    * subgraphs are traversed to find the one that has the most
    * depth.  This usually indicates the thread that is blocking
-   * the most other threads.
+   * the most other threads.<p>
+   * 
+   * The findDependenciesWith method can then be used to find all
+   * top-level threads that are blocked by the culprit.
    */
   public DependencyGraph findDeepestGraph() {
     int depth = 0;
@@ -120,7 +125,18 @@ public class DependencyGraph implements Serializable {
   }
   
   
-  public DependencyGraph findDependenciesWith(String objectName) {
+  
+  /**
+   * This returns a collection of top-level threads and their
+   * path to the given object.  The object name is some
+   * substring of the toString of the object
+   *
+   * @param objectName
+   */
+  public List<DependencyGraph> findDependenciesWith(String objectName) {
+    
+    // first find a dependency containing the node.  If we can't find one
+    // we can just quit
     Object obj = null;
     Dependency objDep = null;
     for (Dependency dep: edges) {
@@ -136,14 +152,13 @@ public class DependencyGraph implements Serializable {
       }
     }
     if (obj == null) {
-      return null;
+      return Collections.emptyList();
     }
     
-    DependencyGraph result = new DependencyGraph();
-    
     // expand the dependency set to include all incoming
-    // references.  These will give us graphs of endpoints
-    // that reach to the node we're interested in
+    // references, references to those references, etc.
+    // This should give us a collection that includes all
+    // top-level nodes that have no references to them
     Set<Object> dependsOnObj = new HashSet<>();
     dependsOnObj.add(obj);
     boolean anyAdded = true;
@@ -157,18 +172,23 @@ public class DependencyGraph implements Serializable {
         }
       }
     }
-    // find all of the downward graphs for each depender
-    // and add their vertices.  These are things dependedOn
-    // by the node we're interested in.
+
+    // find all terminal nodes having no incoming
+    // dependers.
+    Set<Object> allDependants = new HashSet<>();
+    for (Dependency dep: edges) {
+      allDependants.add(dep.dependsOn);
+    }
+    
+    List<DependencyGraph> result = new LinkedList<>();
     for (Object depender: dependsOnObj) {
-      if (!result.getVertices().contains(depender)) {
-        DependencyGraph subgraph = getSubGraph(depender);
-        result.addEdges(subgraph.getEdges());
+      if (!allDependants.contains(depender)) {
+        result.add(getSubGraph(depender));
       }
     }
+    
     return result;
   }
-  
   
   /**
    * Visit a vertex for the purposes of finding a cycle in the graph.

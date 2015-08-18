@@ -470,7 +470,7 @@ public final class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private static void registerDSFIDTypes() {
-    registerDSFID(REMOVE_MEMBER_MESSAGE, RemoveMemberMessage.class);
+    registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
     registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
     registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
     registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);

@@ -158,6 +158,7 @@ public class Services {
     this.messenger.stop();
     this.manager.stop();
     this.timer.cancel();
+    this.cancelCriterion.cancel("Membership services are shut down");
   }
 
   public static void setLogWriter(InternalLogWriter writer) {

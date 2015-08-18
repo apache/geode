@@ -880,7 +880,13 @@ public final class InternalDistributedMember
 
      netMbr = MemberFactory.newNetMember(inetAddr, port, sbEnabled, elCoord, version,
          new MemberAttributes(dcPort, vmPid, vmKind, vmViewId, name, groups, durableClientAttributes));
-     netMbr.readAdditionalData(in);
+     if (this.version >= Version.GFE_90.ordinal()) {
+       try {
+         netMbr.readAdditionalData(in);
+       } catch (java.io.EOFException e) {
+         // old version quand-meme
+       }
+     }
 
      Assert.assertTrue(this.vmKind > 0);
    }
@@ -972,7 +978,11 @@ public final class InternalDistributedMember
   public void fromData(DataInput in)
   throws IOException, ClassNotFoundException {
     fromDataPre_GFE_9_0_0_0(in);
-    netMbr.readAdditionalData(in);
+    // just in case this is just a non-versioned read
+    // from a file we ought to check the version
+    if (this.version >= Version.GFE_90.ordinal()) {
+      netMbr.readAdditionalData(in);
+    }
   }
   
   public void fromDataPre_GFE_9_0_0_0(DataInput in)

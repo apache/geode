@@ -359,11 +359,21 @@ public class DeadlockDetector {
       break;
     case "findThread":
       graph = loadGraphs(2, args);
-      graph = graph.findDependenciesWith(args[1]);
-      if (graph == null) {
+      List<DependencyGraph> graphs = graph.findDependenciesWith(args[1]);
+      if (graphs.isEmpty()) {
         System.out.println("thread not found! Try using the print command to see all threads and locate the name of the one you're interested in?");
       } else {
-        System.out.println(prettyFormat(sortDependencies(graph.getEdges())));
+        int numGraphs = graphs.size();
+        int i=0;
+        System.out.println("findThread \"" + args[1]+"\n\n");
+        for (DependencyGraph g: graphs) {
+          i += 1;
+          System.out.println("graph " + i + " of " + numGraphs + ":");
+          System.out.println(prettyFormat(sortDependencies(g.getEdges())));
+          if (i < numGraphs) {
+            System.out.println("\n\n\n");
+          }
+        }
       }
       break;
     default:

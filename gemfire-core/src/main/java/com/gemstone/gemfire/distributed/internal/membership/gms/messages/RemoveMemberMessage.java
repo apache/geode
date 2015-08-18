@@ -28,7 +28,7 @@ public class RemoveMemberMessage extends HighPriorityDistributionMessage {
 
   @Override
   public int getDSFID() {
-    return JOIN_REQUEST;
+    return REMOVE_MEMBER_REQUEST;
   }
   
   @Override

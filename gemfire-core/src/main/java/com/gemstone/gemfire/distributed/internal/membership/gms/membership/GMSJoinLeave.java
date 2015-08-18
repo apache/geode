@@ -5,7 +5,7 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.INSTALL_VIEW
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.REMOVE_MEMBER_MESSAGE;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.VIEW_ACK_MESSAGE;
 
 import java.io.IOException;
@@ -257,18 +257,18 @@ logger.info("received join response {}", response);
       return;
     }
     Object creds = incomingRequest.getCredentials();
-    if (creds != null) {
-      String rejection = null;
-      try {
-        rejection = services.getAuthenticator().authenticate(incomingRequest.getMemberID(), creds);
-      } catch (Exception e) {
-        rejection = e.getMessage();
-      }
-      if (rejection != null  &&  rejection.length() > 0) {
-        JoinResponseMessage m = new JoinResponseMessage(rejection);
-        m.setRecipient(incomingRequest.getMemberID());
-        services.getMessenger().send(m);
-      }
+    String rejection = null;
+    try {
+      rejection = services.getAuthenticator().authenticate(incomingRequest.getMemberID(), creds);
+    } catch (Exception e) {
+      rejection = e.getMessage();
+      e.printStackTrace();
+    }
+    if (rejection != null  &&  rejection.length() > 0) {
+      JoinResponseMessage m = new JoinResponseMessage(rejection);
+      m.setRecipient(incomingRequest.getMemberID());
+      services.getMessenger().send(m);
+      return;
     }
     recordViewRequest(incomingRequest);
   }
@@ -875,7 +875,7 @@ logger.info("received join response {}", response);
     case LEAVE_REQUEST_MESSAGE:
       processLeaveRequest((LeaveRequestMessage)m);
       break;
-    case REMOVE_MEMBER_MESSAGE:
+    case REMOVE_MEMBER_REQUEST:
       processRemoveRequest((RemoveMemberMessage)m);
       break;
     default:
