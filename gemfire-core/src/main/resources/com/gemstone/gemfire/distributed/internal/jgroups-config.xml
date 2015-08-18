@@ -39,6 +39,7 @@
   oob_thread_pool.rejection_policy="discard"
   />
 <com.gemstone.gemfire.distributed.internal.membership.gms.messenger.AddressManager/>
+<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.StatRecorder/>
 <UNICAST3
   xmit_interval="500"
   xmit_table_num_rows="100"

@@ -251,6 +251,12 @@ public class JGroupsMessenger implements Messenger {
     } catch (Exception e) {
       throw new GemFireConfigException("unable to create jgroups channel", e);
     }
+    
+    // give the stats to the jchannel statistics recorder
+    StatRecorder sr = (StatRecorder)myChannel.getProtocolStack().findProtocol(StatRecorder.class);
+    if (sr != null) {
+      sr.setDMStats(services.getStatistics());
+    }
 
     try {
       
@@ -539,8 +545,9 @@ public class JGroupsMessenger implements Messenger {
     // The contract is that every destination enumerated in the
     // message should have received the message.  If one left
     // (i.e., left the view), we signal it here.
-    if (msg.forAll())
-      return null;
+    if (msg.forAll()) {
+      return Collections.emptySet();
+    }
     Set<InternalDistributedMember> result = new HashSet<InternalDistributedMember>();
     NetView newView = services.getJoinLeave().getView();
     if (newView != null) {
@@ -551,8 +558,6 @@ public class JGroupsMessenger implements Messenger {
         }
       }
     }
-    if (result.size() == 0)
-      return null;
     return result;
   }
 
@@ -586,12 +591,14 @@ public class JGroupsMessenger implements Messenger {
       msg.setTransientFlag(Message.TransientFlag.DONT_LOOPBACK);
     }
     try {
+      long start = services.getStatistics().startMsgSerialization();
       HeapDataOutputStream out_stream =
         new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
-        Version.CURRENT.writeOrdinal(out_stream, true);
-        DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
-        DataSerializer.writeObject(gfmsg, out_stream);
-        msg.setBuffer(out_stream.toByteArray());
+      Version.CURRENT.writeOrdinal(out_stream, true);
+      DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
+      DataSerializer.writeObject(gfmsg, out_stream);
+      msg.setBuffer(out_stream.toByteArray());
+      services.getStatistics().endMsgSerialization(start);
     }
     catch(IOException ex) {
         IllegalArgumentException ia = new
@@ -628,6 +635,8 @@ public class JGroupsMessenger implements Messenger {
 
     Exception problem = null;
     try {
+      long start = services.getStatistics().startMsgDeserialization();
+      
       byte[] buf = jgmsg.getRawBuffer();
       DataInputStream dis = new DataInputStream(new ByteArrayInputStream(buf, 
           jgmsg.getOffset(), jgmsg.getLength()));
@@ -646,6 +655,8 @@ public class JGroupsMessenger implements Messenger {
       if (result instanceof DistributionMessage) {
         ((DistributionMessage)result).setSender(sender);
       }
+      
+      services.getStatistics().endMsgDeserialization(start);
 
       logger.debug("JGroupsReceiver deserialized {}", result);
 

@@ -350,20 +350,20 @@ public class DeadlockDetector {
       break;
     case "findDeepestGraph":
       graph = loadGraphs(1, args);
-      DependencyGraph result = graph.findDeepestGraph();
-      if (result == null) {
+      graph = graph.findDeepestGraph();
+      if (graph == null) {
         System.out.println("no deepest graph could be found!");
       } else {
-        System.out.println("deepest graph: \n" + prettyFormat(result));
+        System.out.println("deepest graph: \n" + prettyFormat(graph));
       }
       break;
     case "findThread":
       graph = loadGraphs(2, args);
-      result = graph.findDependenciesWith(args[1]);
-      if (result == null) {
-        System.out.println("thread not found!");
+      graph = graph.findDependenciesWith(args[1]);
+      if (graph == null) {
+        System.out.println("thread not found! Try using the print command to see all threads and locate the name of the one you're interested in?");
       } else {
-        System.out.println(prettyFormat(sortDependencies(result.getEdges())));
+        System.out.println(prettyFormat(sortDependencies(graph.getEdges())));
       }
       break;
     default:

@@ -496,6 +496,7 @@ public final class InternalDistributedMember
   public void setVmViewId(int p) {
     this.vmViewId = p;
     synchPayload();
+    cachedToString = null;
   }
 
   /**

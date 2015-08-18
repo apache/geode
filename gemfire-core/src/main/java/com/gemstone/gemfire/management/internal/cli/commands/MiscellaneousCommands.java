@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -574,13 +575,24 @@ public class MiscellaneousCommands implements CommandMarker {
       Set<DistributedMember> allMembers = CliUtil.getAllMembers(cache);
       GemFireDeadlockDetector gfeDeadLockDetector = new GemFireDeadlockDetector(allMembers);
       DependencyGraph dependencyGraph = gfeDeadLockDetector.find();
-      LinkedList<Dependency> deadlock = dependencyGraph.findCycle();
+      Collection<Dependency> deadlock = dependencyGraph.findCycle();
+      DependencyGraph deepest = null;
+      if (deadlock == null) {
+        deepest = dependencyGraph.findDeepestGraph();
+        if (deepest != null) {
+          deadlock = deepest.getEdges();
+        }
+      }
       Set<Dependency> dependencies = (Set<Dependency>) dependencyGraph.getEdges();
 
       InfoResultData resultData = ResultBuilder.createInfoResultData();
 
       if (deadlock != null) {
-        resultData.addLine(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
+        if (deepest != null) {
+          resultData.addLine(CliStrings.SHOW_DEADLOCK__DEEPEST_FOUND);
+        } else {
+          resultData.addLine(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
+        }
         resultData.addLine(DeadlockDetector.prettyFormat(deadlock));
       } else {
         resultData.addLine(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK);

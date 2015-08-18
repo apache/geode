@@ -31,7 +31,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -209,6 +211,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       response = joinResponse[0];
     }
     if (response != null) {
+// DEBUGGING - REMOVE
+logger.info("received join response {}", response);
       joinResponse[0] = null;
       String failReason = response.getRejectionMessage();
       if (failReason != null) {
@@ -223,10 +227,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         this.localAddress.setVmViewId(this.birthViewId);
         GMSMember me = (GMSMember)this.localAddress.getNetMember();
         GMSMember o = (GMSMember)response.getMemberID().getNetMember();
+        me.setBirthViewId(birthViewId);
         me.setSplitBrainEnabled(o.isSplitBrainEnabled());
         me.setPreferredForCoordinator(o.preferredForCoordinator());
         installView(response.getCurrentView());
         return true;
+      } else {
+        logger.info("received join response with no membership view: {}", response);
       }
     }
     return false;
@@ -793,6 +800,15 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       services.getMessenger().send(msg);
     }
   }
+
+  @Override
+  public void memberShutdown(DistributedMember mbr, String reason) {
+    if (this.isCoordinator) {
+      LeaveRequestMessage msg = new LeaveRequestMessage(this.localAddress, (InternalDistributedMember)mbr);
+      recordViewRequest(msg);
+    }
+  }
+
   
   @Override
   public void disableDisconnectOnQuorumLossForTesting() {
@@ -802,6 +818,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   @Override
   public void init(Services s) {
     this.services = s;
+    
+    DistributionConfig dc = services.getConfig().getDistributionConfig();
+    if (dc.getMcastPort() != 0
+        && dc.getLocators().trim().isEmpty()
+        && dc.getStartLocator().trim().isEmpty()) {
+      throw new GemFireConfigException("Multicast cannot be configured for a non-distributed cache."
+          + "  Please configure the locator services for this cache using "+DistributionConfig.LOCATORS_NAME
+          + " or " + DistributionConfig.START_LOCATOR_NAME+".");
+    }
+  
     services.getMessenger().addHandler(JoinRequestMessage.class, this);
     services.getMessenger().addHandler(JoinResponseMessage.class, this);
     services.getMessenger().addHandler(InstallViewMessage.class, this);
@@ -811,7 +837,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     services.getMessenger().addHandler(JoinRequestMessage.class, this);
     services.getMessenger().addHandler(JoinResponseMessage.class, this);
 
-    DistributionConfig dc = services.getConfig().getDistributionConfig();
     int ackCollectionTimeout = dc.getMemberTimeout() * 2 * 12437 / 10000;
     if (ackCollectionTimeout < 1500) {
       ackCollectionTimeout = 1500;
@@ -1021,18 +1046,37 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       List<InternalDistributedMember> removalReqs = new ArrayList<InternalDistributedMember>();
       List<String> removalReasons = new ArrayList<String>();
       
+      NetView oldView = currentView;
+      List<InternalDistributedMember> oldMembers;
+      if (oldView != null) {
+        oldMembers = oldView.getMembers();
+      } else {
+        oldMembers = Collections.emptyList();
+      }
+      
       for (DistributionMessage msg: requests) {
         logger.debug("processing request {}", msg);
+
+        InternalDistributedMember mbr = null;
+        
         if (msg instanceof JoinRequestMessage) {
-          InternalDistributedMember mbr = ((JoinRequestMessage)msg).getMemberID();
-          joinReqs.add(mbr);
+          mbr = ((JoinRequestMessage)msg).getMemberID();
+          if (!oldMembers.contains(mbr)) {
+            joinReqs.add(mbr);
+          }
         }
         else if (msg instanceof LeaveRequestMessage) {
-          leaveReqs.add(((LeaveRequestMessage) msg).getMemberID());
+          mbr = ((LeaveRequestMessage) msg).getMemberID();
+          if (oldMembers.contains(mbr)) {
+            leaveReqs.add(mbr);
+          }
         }
         else if (msg instanceof RemoveMemberMessage) {
-          removalReqs.add(((RemoveMemberMessage) msg).getMemberID());
-          removalReasons.add(((RemoveMemberMessage) msg).getReason());
+          mbr = ((RemoveMemberMessage) msg).getMemberID();
+          if (oldMembers.contains(mbr)) {
+            removalReqs.add(mbr);
+            removalReasons.add(((RemoveMemberMessage) msg).getReason());
+          }
         }
         else {
           // TODO: handle removals

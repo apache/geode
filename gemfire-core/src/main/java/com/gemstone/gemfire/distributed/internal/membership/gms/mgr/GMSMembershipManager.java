@@ -1361,6 +1361,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
   }
   
+  @Override
+  public void memberSuspected(SuspectMember suspect) {
+    handleOrDeferSuspect(suspect);
+  }
+
   /**
    * Process a new view object, or place on the startup queue
    * @param suspectInfo the suspectee and suspector
@@ -1717,6 +1722,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
     synchronized(this.shutdownMembers) { 
       this.shutdownMembers.put(id, id);
+      services.getHealthMonitor().memberShutdown(id, reason);
+      services.getJoinLeave().memberShutdown(id, reason);
     }
   }
   
@@ -2939,5 +2946,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
   public void setSecurityLogWriter(InternalLogWriter writer) {
     Services.setSecurityLogWriter(writer);
   }
+
 
 }

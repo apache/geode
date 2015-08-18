@@ -1491,6 +1491,7 @@ public class CliStrings {
   public static final String SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP = "Name of the file to which dependencies between members will be written.";
   public static final String SHOW_DEADLOCK__NO__DEADLOCK = "No dead lock detected.";
   public static final String SHOW_DEADLOCK__DEADLOCK__DETECTED = "Dead lock detected.";
+  public static final String SHOW_DEADLOCK__DEEPEST_FOUND = "No deadlock was detected.  Here is the deepest call chain that could be found";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__REVIEW = "Please view the dependencies between the members in file : {0}";
   public static final String SHOW_DEADLOCK__ERROR = "Error";
 

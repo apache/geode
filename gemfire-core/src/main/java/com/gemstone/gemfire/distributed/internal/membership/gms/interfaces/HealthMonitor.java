@@ -28,5 +28,10 @@ public interface HealthMonitor extends Service {
    * @return 
    */
   public boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval);
-
+  
+  /**
+   * Invoked by the Manager, this notifies the HealthMonitor that a
+   * ShutdownMessage has been received from the given member
+   */
+  public void memberShutdown(DistributedMember mbr, String reason);
 }

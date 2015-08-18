@@ -48,6 +48,7 @@
   oob_thread_pool.rejection_policy="discard"/>
 
 <com.gemstone.gemfire.distributed.internal.membership.gms.messenger.AddressManager/>
+<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.StatRecorder/>
 
 <pbcast.NAKACK2
   xmit_interval="MCAST_RETRANSMIT_INTERVAL"

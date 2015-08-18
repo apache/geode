@@ -13,9 +13,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.gemstone.gemfire.internal.util.PluckStacks;
 
 /**
  * This class holds a graph of dependencies between objects
@@ -140,6 +141,9 @@ public class DependencyGraph implements Serializable {
     
     DependencyGraph result = new DependencyGraph();
     
+    // expand the dependency set to include all incoming
+    // references.  These will give us graphs of endpoints
+    // that reach to the node we're interested in
     Set<Object> dependsOnObj = new HashSet<>();
     dependsOnObj.add(obj);
     boolean anyAdded = true;
@@ -153,6 +157,9 @@ public class DependencyGraph implements Serializable {
         }
       }
     }
+    // find all of the downward graphs for each depender
+    // and add their vertices.  These are things dependedOn
+    // by the node we're interested in.
     for (Object depender: dependsOnObj) {
       if (!result.getVertices().contains(depender)) {
         DependencyGraph subgraph = getSubGraph(depender);

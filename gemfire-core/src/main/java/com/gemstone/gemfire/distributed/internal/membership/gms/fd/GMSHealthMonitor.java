@@ -91,4 +91,8 @@ public class GMSHealthMonitor implements HealthMonitor {
     
   }
 
+  @Override
+  public void memberShutdown(DistributedMember mbr, String reason) {
+  }
+
 }

@@ -429,8 +429,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     DataSerializer.writeStringArray(groups, out);
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
-//    InternalDataSerializer.writeSignedVL(uuidLSBs, out);
-//    InternalDataSerializer.writeSignedVL(uuidMSBs, out);
   }
 
   @Override
@@ -450,18 +448,14 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.vmKind = in.readInt();
     this.name = DataSerializer.readString(in);
     this.groups = DataSerializer.readStringArray(in);
-    this.uuidLSBs = in.readLong();
     this.uuidMSBs = in.readLong();
-//    this.uuidLSBs = InternalDataSerializer.readUnsignedVL(in);
-//    this.uuidMSBs = InternalDataSerializer.readUnsignedVL(in);
+    this.uuidLSBs = in.readLong();
   }
 
   @Override
   public void writeAdditionalData(DataOutput out) throws IOException {
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
-//    InternalDataSerializer.writeSignedVL(uuidLSBs, out);
-//    InternalDataSerializer.writeSignedVL(uuidMSBs, out);
   }
 
   @Override
@@ -469,7 +463,5 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
       IOException {
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
-//    this.uuidLSBs = InternalDataSerializer.readUnsignedVL(in);
-//    this.uuidMSBs = InternalDataSerializer.readUnsignedVL(in);
   }
 }
