@@ -97,7 +97,7 @@ public class ZScanExecutor extends AbstractScanExecutor {
       return;
     }
 
-    List<ByteArrayWrapper> returnList = (List<ByteArrayWrapper>) getIteration(new HashSet(keyRegion.entrySet()), matchPattern, count, cursor);
+    List<ByteArrayWrapper> returnList = (List<ByteArrayWrapper>) getIteration(getStableRegionEntriesSnapshot(keyRegion), matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }

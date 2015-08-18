@@ -35,6 +35,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
@@ -429,7 +430,7 @@ public class GemFireRedisServer {
       Region<?, ?> newRegion = cache.getRegion(regionName);
       if (newRegion == null && type != RedisDataType.REDIS_STRING && type != RedisDataType.REDIS_HLL && type != RedisDataType.REDIS_PROTECTED) {
         try {
-          this.regionCache.createRemoteRegionLocally(Coder.stringToByteArrayWrapper(regionName), type);
+          this.regionCache.createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(regionName), type);
         } catch (Exception e) {
           if (logger.errorEnabled())
             logger.error(e);
@@ -528,8 +529,12 @@ public class GemFireRedisServer {
     if (event.isOriginRemote()) {
       final String key = (String) event.getKey();
       final RedisDataType value = event.getNewValue();
-      if (value != RedisDataType.REDIS_STRING && value != RedisDataType.REDIS_HLL && value != RedisDataType.REDIS_PROTECTED)
-        this.regionCache.createRemoteRegionLocally(Coder.stringToByteArrayWrapper(key), value);
+      if (value != RedisDataType.REDIS_STRING && value != RedisDataType.REDIS_HLL && value != RedisDataType.REDIS_PROTECTED) {
+        try {
+          this.regionCache.createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(key), value);
+        } catch (RegionDestroyedException ignore) { // Region already destroyed, ignore
+        }
+      }
     }
   }
 

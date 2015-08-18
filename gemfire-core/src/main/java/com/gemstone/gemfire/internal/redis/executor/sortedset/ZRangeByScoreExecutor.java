@@ -136,7 +136,7 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
     if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY || start > stop || (start == stop && (!startInclusive || !stopInclusive)))
       return null;
     if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY)
-      return new HashSet(keyRegion.entrySet());
+      return getStableRegionEntriesSnapshot(keyRegion);
 
     Query query;
     Object[] params;

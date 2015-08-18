@@ -1,5 +1,11 @@
 package com.gemstone.gemfire.internal.redis.executor;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+
+import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.internal.redis.ByteArrayWrapper;
@@ -40,13 +46,13 @@ public abstract class AbstractExecutor implements Executor {
    * a Region, a check is first done to make sure the desired key doesn't already
    * exist with a different {@link RedisDataType}. If there is a data type mismatch
    * this method will throw a {@link RuntimeException}.
-   * 
-   * ********************** IMPORTANT NOTE **********************************************
+   * <p>
+   * ********************** IMPORTANT NOTE **********************************************<p>
    * This method will not fail in returning a Region unless an internal error occurs, so
    * if a Region is destroyed right after it is created, it will attempt to retry until a 
-   * reference to that Region is obtained
+   * reference to that Region is obtained<p>
    * *************************************************************************************
-   * 
+   * <p>
    * @param context Client client
    * @param key String key of desired key
    * @param type Type of data type desired
@@ -127,5 +133,17 @@ public abstract class AbstractExecutor implements Executor {
       return Math.min(index, size);
     else
       return Math.max(index + size, -1);
+  }
+
+  protected <K, V> List<Entry<K, V>> getStableRegionEntriesSnapshot(Region<K, V> r) {
+    List<Entry<K, V>> snapshot = new ArrayList<Entry<K, V>>();
+    for (Entry<K, V> e : r.entrySet()) {
+      try {
+        Entry<K, V> stable = new AbstractMap.SimpleImmutableEntry<K, V>(e.getKey(), e.getValue());
+        snapshot.add(stable);
+      } catch (EntryDestroyedException ignore) { // Stale entry, ignore it
+      }
+    }
+    return snapshot;
   }
 }
