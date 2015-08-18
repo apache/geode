@@ -26,6 +26,8 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
   private int server1Port;
   private int server2Port;
+  
+  private static final int JEDIS_TIMEOUT = 20 * 1000;
 
   private abstract class ClientTestBase extends SerializableCallable {
 
@@ -81,8 +83,8 @@ public class RedisDistDUnitTest extends CacheTestCase {
   }
 
   public void testConcListOps() throws Throwable {
-    final Jedis jedis1 = new Jedis("localhost", server1Port, 10000);
-    final Jedis jedis2 = new Jedis("localhost", server2Port, 10000);
+    final Jedis jedis1 = new Jedis("localhost", server1Port, JEDIS_TIMEOUT);
+    final Jedis jedis2 = new Jedis("localhost", server2Port, JEDIS_TIMEOUT);
     final int pushes = 20;
     class ConcListOps extends ClientTestBase {
       protected ConcListOps(int port) {
@@ -91,7 +93,7 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
       @Override
       public Object call() throws Exception {
-        Jedis jedis = new Jedis("localhost", port, 10000);
+        Jedis jedis = new Jedis("localhost", port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < pushes; i++) {
           if (r.nextBoolean()) {
@@ -114,8 +116,9 @@ public class RedisDistDUnitTest extends CacheTestCase {
     assertEquals(result1, result2);
   }
 
-
   public void testConcCreateDestroy() throws Throwable {
+    addExpectedException("RegionDestroyedException");
+    addExpectedException("IndexInvalidException");
     final int ops = 40;
     final String hKey = TEST_KEY+"hash";
     final String lKey = TEST_KEY+"list";
@@ -129,7 +132,7 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
       @Override
       public Object call() throws Exception {
-        Jedis jedis = new Jedis("localhost", port, 10000);
+        Jedis jedis = new Jedis("localhost", port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
           int n = r.nextInt(4);
@@ -189,7 +192,7 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
       @Override
       public Object call() throws Exception {
-        Jedis jedis = new Jedis("localhost", port, 10000);
+        Jedis jedis = new Jedis("localhost", port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
           int n = r.nextInt(4);
