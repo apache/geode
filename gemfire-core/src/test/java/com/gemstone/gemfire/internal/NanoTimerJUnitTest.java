@@ -12,125 +12,114 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.internal.NanoTimer.TimeService;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * Unit tests for NanoTimer. This is in addition to NanoTimer2JUnitTest which is
- * an older a JUnit test case for NanoTimer.
+ * Unit tests for NanoTimer.
  *
  * @author Kirk Lund
  * @since 7.0
- * @see NanoTimer2JUnitTest
  */
 @Category(UnitTest.class)
 public class NanoTimerJUnitTest {
+  
+  /**
+   * Simple deterministic clock. Any time you want
+   * your clock to tick call incTime.
+   */
+  private class TestTimeService implements TimeService {
+    private long now;
+    public void incTime() {
+      this.now++;
+    }
+    @Override
+    public long getTime() {
+      return this.now;
+    }
+  }
 
   @Test
-  public void testGetTimeIsPositive() {
-    long lastTime = 0;
-    for (int i = 0; i < 1000; i++) {
-      final long time = NanoTimer.getTime();
-      assertTrue(time >= 0);
-      assertTrue(time >= lastTime);
-      lastTime = time;
-    }
+  public void testMillisToNanos() {
+    assertEquals(0, NanoTimer.millisToNanos(0));
+    assertEquals(1000000, NanoTimer.millisToNanos(1));
+  }
+
+  @Test
+  public void testNanosToMillis() {
+    assertEquals(0, NanoTimer.nanosToMillis(1));
+    assertEquals(1, NanoTimer.nanosToMillis(1000000));
   }
   
   @Test
-  public void testGetTimeIncreases() {
-    final long startNanos = NanoTimer.getTime();
-    final long startMillis = System.currentTimeMillis();
-
-    waitMillis(10);
-
-    final long endMillis = System.currentTimeMillis();
-    final long endNanos = NanoTimer.getTime();
-    
-    long elapsedMillis = endMillis - startMillis;
-    long elapsedNanos = endNanos - startNanos;
-    
-    assertTrue(elapsedMillis > 10);
-    assertTrue(endNanos > NanoTimer.NANOS_PER_MILLISECOND * 10);
-    assertTrue(elapsedNanos * NanoTimer.NANOS_PER_MILLISECOND >= elapsedMillis);
+  public void testDefaultNanoTimer() {
+    // All the other unit test methods of NanoTimer
+    // inject TestTimeService into the NanoTimer.
+    // This method verifies that the default constructor
+    // works.
+    final NanoTimer timer = new NanoTimer();
+    timer.getConstructionTime();
+    timer.getLastResetTime();
+    timer.getTimeSinceConstruction();
+    timer.getTimeSinceReset();
+    timer.reset();
   }
 
   @Test
   public void testInitialTimes() {
-    final long nanoTime = NanoTimer.getTime();
-    final NanoTimer timer = new NanoTimer();
+    TestTimeService ts = new TestTimeService();
+    final long nanoTime = ts.getTime();
+    final NanoTimer timer = new NanoTimer(ts);
 
     assertEquals(timer.getConstructionTime(), timer.getLastResetTime());
     assertTrue(timer.getTimeSinceConstruction() <= timer.getTimeSinceReset());
     assertTrue(timer.getLastResetTime() >= nanoTime);
     assertTrue(timer.getConstructionTime() >= nanoTime);
-    assertTrue(NanoTimer.getTime() >= nanoTime);
+    assertTrue(ts.getTime() >= nanoTime);
 
-    final long nanosOne = NanoTimer.getTime();
+    final long nanosOne = ts.getTime();
     
-    waitMillis(10);
+    ts.incTime();
     
-    assertTrue(timer.getTimeSinceConstruction() > NanoTimer.NANOS_PER_MILLISECOND * 10);
-    assertTrue(timer.getTimeSinceConstruction() <= NanoTimer.getTime());
-    
-    final long nanosTwo = NanoTimer.getTime();
-    
-    assertTrue(timer.getTimeSinceConstruction() >= nanosTwo - nanosOne);
+    assertEquals(1, timer.getTimeSinceConstruction());
   }
   
   @Test
   public void testReset() {
-    final NanoTimer timer = new NanoTimer();
-    final long nanosOne = NanoTimer.getTime();
+    TestTimeService ts = new TestTimeService();
+    final NanoTimer timer = new NanoTimer(ts);
+    final long nanosOne = ts.getTime();
     
-    waitMillis(10);
+    ts.incTime();
 
     assertEquals(timer.getConstructionTime(), timer.getLastResetTime());
     assertTrue(timer.getTimeSinceConstruction() <= timer.getTimeSinceReset());
     
-    final long nanosTwo = NanoTimer.getTime();
+    final long nanosTwo = ts.getTime();
     final long resetOne = timer.reset();
     
     assertTrue(resetOne >= nanosTwo - nanosOne);
     assertFalse(timer.getConstructionTime() == timer.getLastResetTime());
     
-    final long nanosThree = NanoTimer.getTime();
+    final long nanosThree = ts.getTime();
 
-    waitMillis(10);
+    ts.incTime();
     
     assertTrue(timer.getLastResetTime() >= nanosTwo);
     assertTrue(timer.getTimeSinceReset() < timer.getTimeSinceConstruction());
     assertTrue(timer.getLastResetTime() <= nanosThree);
-    assertTrue(timer.getTimeSinceReset() < NanoTimer.getTime());
-    assertTrue(timer.getTimeSinceReset() <= NanoTimer.getTime() - timer.getLastResetTime());
+    assertTrue(timer.getTimeSinceReset() <= ts.getTime() - timer.getLastResetTime());
         
-    final long nanosFour = NanoTimer.getTime();
+    final long nanosFour = ts.getTime();
     final long resetTwo = timer.reset();
     
     assertTrue(resetTwo >= nanosFour - nanosThree);
     
-    waitMillis(10);
+    ts.incTime();
 
     assertTrue(timer.getLastResetTime() >= nanosFour);
     assertTrue(timer.getTimeSinceReset() < timer.getTimeSinceConstruction());
-    assertTrue(timer.getLastResetTime() <= NanoTimer.getTime());
-    assertTrue(timer.getTimeSinceReset() <= NanoTimer.getTime() - timer.getLastResetTime());
-  }
-  
-  /**
-   * Waits for the specified milliseconds to pass as measured by
-   * {@link java.lang.System#currentTimeMillis()}.
-   */
-  private void waitMillis(final long millis) {
-    long began = System.currentTimeMillis();
-    boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < millis; done = (System.currentTimeMillis() - began > millis)) {
-        Thread.sleep(1000);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    assertTrue("waiting " + millis + " millis", done);
+    assertTrue(timer.getTimeSinceReset() <= ts.getTime() - timer.getLastResetTime());
   }
 }

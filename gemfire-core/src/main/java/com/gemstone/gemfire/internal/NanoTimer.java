@@ -48,11 +48,30 @@ public final class NanoTimer {
    */
   private long lastResetTime;
   
+  private final TimeService timeService;
+  
+  private final static TimeService systemTimeService = new TimeService() {
+    @Override
+    public long getTime() {
+      return java.lang.System.nanoTime();
+    }
+  };
+  
   /**
    * Create a NanoTimer.
    */
   public NanoTimer() {
-    this.lastResetTime = getTime();
+    this.timeService = systemTimeService;
+    this.lastResetTime = systemTimeService.getTime();
+    this.constructionTime = this.lastResetTime;
+  }
+  
+  /**
+   * For unit testing
+   */
+  NanoTimer(TimeService ts) {
+    this.timeService = ts;
+    this.lastResetTime = ts.getTime();
     this.constructionTime = this.lastResetTime;
   }
 
@@ -121,7 +140,7 @@ public final class NanoTimer {
    */
   public long reset() {
     long save = this.lastResetTime;
-    this.lastResetTime = getTime();
+    this.lastResetTime = this.timeService.getTime();
     return this.lastResetTime - save;
   }
 
@@ -132,7 +151,7 @@ public final class NanoTimer {
    * @return time in nanoseconds since construction or last reset.
    */
   public long getTimeSinceReset() {
-    return getTime() - this.lastResetTime;
+    return this.timeService.getTime() - this.lastResetTime;
   }
 
   /**
@@ -142,7 +161,17 @@ public final class NanoTimer {
    * @return time in nanoseconds since construction.
    */
   public long getTimeSinceConstruction() {
-    return getTime() - this.constructionTime;
+    return this.timeService.getTime() - this.constructionTime;
+  }
+  
+  /**
+   * Allows unit tests to insert a deterministic clock for testing.
+   */
+  interface TimeService {
+    /**
+     * Returns the current time.
+     */
+    public long getTime();
   }
 }
 
