@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.gemstone.gemfire.distributed.internal.deadlock.MessageDependencyMonitor.MessageKey;
 import com.gemstone.gemfire.internal.util.PluckStacks;
 
 /**
@@ -100,7 +101,7 @@ public class DependencyGraph implements Serializable {
   }
 
   /**
-   * This will find the deepest call chain in the graph.  If a
+   * This will find the longest call chain in the graph.  If a
    * cycle is detected it will be returned.  Otherwise all
    * subgraphs are traversed to find the one that has the most
    * depth.  This usually indicates the thread that is blocking
@@ -109,7 +110,7 @@ public class DependencyGraph implements Serializable {
    * The findDependenciesWith method can then be used to find all
    * top-level threads that are blocked by the culprit.
    */
-  public DependencyGraph findDeepestGraph() {
+  public DependencyGraph findLongestCallChain() {
     int depth = 0;
     DependencyGraph deepest = null;
     
@@ -177,7 +178,13 @@ public class DependencyGraph implements Serializable {
     // dependers.
     Set<Object> allDependants = new HashSet<>();
     for (Dependency dep: edges) {
-      allDependants.add(dep.dependsOn);
+      if ( (dep.dependsOn instanceof LocalThread) ) {
+        if (dep.depender instanceof MessageKey) {
+          allDependants.add(dep.dependsOn);
+        }
+      } else {
+        allDependants.add(dep.dependsOn);
+      }
     }
     
     List<DependencyGraph> result = new LinkedList<>();

@@ -578,7 +578,7 @@ public class MiscellaneousCommands implements CommandMarker {
       Collection<Dependency> deadlock = dependencyGraph.findCycle();
       DependencyGraph deepest = null;
       if (deadlock == null) {
-        deepest = dependencyGraph.findDeepestGraph();
+        deepest = dependencyGraph.findLongestCallChain();
         if (deepest != null) {
           deadlock = deepest.getEdges();
         }

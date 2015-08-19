@@ -12,8 +12,9 @@ import com.gemstone.gemfire.internal.Version;
 
 public class LeaveRequestMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
+  private String reason;
   
-  public LeaveRequestMessage(InternalDistributedMember coord, InternalDistributedMember id) {
+  public LeaveRequestMessage(InternalDistributedMember coord, InternalDistributedMember id, String reason) {
     super();
     setRecipient(coord);
     this.memberID = id;
@@ -36,6 +37,10 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage {
   public InternalDistributedMember getMemberID() {
     return memberID;
   }
+  
+  public String getReason() {
+    return reason;
+  }
 
   @Override
   public Version[] getSerializationVersions() {
@@ -45,11 +50,13 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(memberID, out);
+    DataSerializer.writeString(reason, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = DataSerializer.readObject(in);
+    reason = DataSerializer.readString(in);
   }
 
 }

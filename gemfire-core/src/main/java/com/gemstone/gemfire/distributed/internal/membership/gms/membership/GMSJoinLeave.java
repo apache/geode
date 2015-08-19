@@ -248,6 +248,9 @@ logger.info("received join response {}", response);
    * @param incomingRequest
    */
   private void processJoinRequest(JoinRequestMessage incomingRequest) {
+
+    logger.info("received join request from {}", incomingRequest.getMemberID());
+    
     if (incomingRequest.getMemberID().getVersionObject().compareTo(Version.CURRENT) < 0) {
       logger.warn("detected an attempt to start a peer using an older version of the product {}",
           incomingRequest.getMemberID());
@@ -282,10 +285,18 @@ logger.info("received join response {}", response);
    * @param incomingRequest
    */
   private void processLeaveRequest(LeaveRequestMessage incomingRequest) {
+
+    logger.info("received leave request from {} for {}", incomingRequest.getSender(), incomingRequest.getMemberID());
+
     NetView v = currentView;
     if (logger.isDebugEnabled()) {
       logger.debug("JoinLeave.processLeaveRequest invoked.  isCoordinator="+isCoordinator+ "; isStopping="+isStopping
           +"; cancelInProgress="+services.getCancelCriterion().isCancelInProgress());
+    }
+    
+    if (incomingRequest.getMemberID().equals(this.localAddress)) {
+      logger.info("I am being told to leave the distributed system");
+      services.getManager().forceDisconnect(incomingRequest.getReason());
     }
     if (!isCoordinator && !isStopping && !services.getCancelCriterion().isCancelInProgress()) {
       logger.debug("JoinLeave is checking to see if I should become coordinator");
@@ -780,7 +791,7 @@ logger.info("received join response {}", response);
           }
           else {
             logger.debug("JoinLeave sending a leave request to {}", view.getCoordinator());
-            LeaveRequestMessage m = new LeaveRequestMessage(view.getCoordinator(), this.localAddress);
+            LeaveRequestMessage m = new LeaveRequestMessage(view.getCoordinator(), this.localAddress, "this member is shutting down");
             services.getMessenger().send(m);
           }
         } // view.size
@@ -804,7 +815,7 @@ logger.info("received join response {}", response);
   @Override
   public void memberShutdown(DistributedMember mbr, String reason) {
     if (this.isCoordinator) {
-      LeaveRequestMessage msg = new LeaveRequestMessage(this.localAddress, (InternalDistributedMember)mbr);
+      LeaveRequestMessage msg = new LeaveRequestMessage(this.localAddress, (InternalDistributedMember)mbr, reason);
       recordViewRequest(msg);
     }
   }

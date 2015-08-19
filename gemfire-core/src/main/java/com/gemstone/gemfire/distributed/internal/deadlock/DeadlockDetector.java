@@ -318,12 +318,12 @@ public class DeadlockDetector {
     System.out.println("system created by collectDependencies.");
     System.out.println();
     System.out.println("usage: ");
-    System.out.println("[print | findDeepestGraph | findDeadlockOnly | findThread threadName ] file1 ...");
+    System.out.println("[print | findImpasse | findCycle | findObject objectName ] file1 ...");
     System.out.println();
     System.out.println("print - prints all dependencies and threads in the graph");
-    System.out.println("findDeepestGraph - looks for either a deadlock or the longest call chain in the graph");
-    System.out.println("findDeadlockOnly - looks for a deadlock in the distributed system");
-    System.out.println("findThread - finds the given thread by name/partial name and builds a dependency graph around it");
+    System.out.println("findImpasse - looks for either a deadlock or the longest call chain in the graph");
+    System.out.println("findCycle - looks for a deadlock");
+    System.out.println("findObject - finds the given object (thread, lock, message) by name/partial name and finds all call chains leading to that object");
   }
 
   public static void main(String... args) throws Exception {
@@ -339,7 +339,7 @@ public class DeadlockDetector {
       graph = loadGraphs(1, args);
       System.out.println(prettyFormat(graph));
       break;
-    case "findDeadlockOnly":
+    case "findCycle":
       graph = loadGraphs(1, args);
       List<Dependency> cycle = graph.findCycle();
       if (cycle == null) {
@@ -348,16 +348,16 @@ public class DeadlockDetector {
         System.out.println("deadlocked threads: \n" + cycle);
       }
       break;
-    case "findDeepestGraph":
+    case "findImpasse":
       graph = loadGraphs(1, args);
-      graph = graph.findDeepestGraph();
+      graph = graph.findLongestCallChain();
       if (graph == null) {
-        System.out.println("no deepest graph could be found!");
+        System.out.println("no long call chain could be found!");
       } else {
-        System.out.println("deepest graph: \n" + prettyFormat(graph));
+        System.out.println("longest call chain: \n" + prettyFormat(graph));
       }
       break;
-    case "findThread":
+    case "findObject":
       graph = loadGraphs(2, args);
       List<DependencyGraph> graphs = graph.findDependenciesWith(args[1]);
       if (graphs.isEmpty()) {
@@ -365,7 +365,7 @@ public class DeadlockDetector {
       } else {
         int numGraphs = graphs.size();
         int i=0;
-        System.out.println("findThread \"" + args[1]+"\n\n");
+        System.out.println("findObject \"" + args[1]+"\"\n\n");
         for (DependencyGraph g: graphs) {
           i += 1;
           System.out.println("graph " + i + " of " + numGraphs + ":");

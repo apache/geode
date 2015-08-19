@@ -89,8 +89,10 @@ public class MessageDependencyMonitor implements DependencyMonitor {
     return heldResources;
   }
   
-  private static class MessageKey implements Serializable {
+  public static class MessageKey implements Serializable {
 
+    private static final long serialVersionUID = 414781046295505260L;
+    
     private final InternalDistributedMember myId;
     private final int processorId;
     
