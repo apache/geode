@@ -2125,7 +2125,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId MinimumSystemRequirements_NOT_MET = new StringId(6604, "Minimum system requirements not met. Unexpected behavior may result in additional errors.");
   public static final StringId MinimumSystemRequirements_JAVA_VERSION = new StringId(6605, "Java version older than {0}.");
 
-  public static final StringId Locator_unable_to_recover_view_0 = new StringId(6606, "Unable to recover previous membership view from  {0}");
+  public static final StringId LOCATOR_UNABLE_TO_RECOVER_VIEW = new StringId(6606, "Unable to recover previous membership view from {0}");
 
   public static final StringId Network_partition_detected = new StringId(6607, "Exiting due to possible network partition event due to loss of {0} cache processes: {1}");
   

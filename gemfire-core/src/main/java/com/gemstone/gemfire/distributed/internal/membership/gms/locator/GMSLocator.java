@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.gemstone.gemfire.InternalGemFireException;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -30,16 +31,16 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Locator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedObjectInput;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+
+import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.LOCATOR_UNABLE_TO_RECOVER_VIEW;
 
 public class GMSLocator implements Locator, NetLocator {
 
-  private static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
+  /* package */ static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
   
   private static final Logger logger = LogService.getLogger();
 
@@ -89,7 +90,7 @@ public class GMSLocator implements Locator, NetLocator {
   }
   
   @Override
-  public void init(TcpServer server) {
+  public void init(TcpServer server) throws InternalGemFireException {
     recover();
   }
   
@@ -236,7 +237,7 @@ public class GMSLocator implements Locator, NetLocator {
     setMembershipManager(((InternalDistributedSystem)ds).getDM().getMembershipManager());
   }
 
-  public void recover() {
+  public void recover() throws InternalGemFireException {
     if (!recoverFromOthers()) {
       recoverFromFile(viewFile);
     }
@@ -265,61 +266,40 @@ public class GMSLocator implements Locator, NetLocator {
         logger.info("Peer locator recovered initial membership of {}", view);
         return true;
       }
-    } catch (IOException e) {
-      // ignore
-    } catch (ClassNotFoundException e) {
-      // hmm - odd response?
-    }
+    } catch (IOException | ClassNotFoundException ignore) {}
     return false;
   }
-  
-  private boolean recoverFromFile(File file) {
+
+  /* package */ boolean recoverFromFile(File file) throws InternalGemFireException {
     if (!file.exists()) {
       return false;
     }
+
     logger.info("Peer locator recovering from " + file.getAbsolutePath());
-    FileInputStream fis = null;
-    try {
-      fis = new FileInputStream(file);
-      ObjectInput ois = new ObjectInputStream(fis);
-      
-      int magic = ois.readInt();
-      if (magic != LOCATOR_FILE_STAMP) {
+    try (ObjectInput ois = new ObjectInputStream(new FileInputStream(file))) {
+      if (ois.readInt() != LOCATOR_FILE_STAMP) {
         return false;
       }
-      
+
       int version = ois.readInt();
       Version geodeVersion = Version.fromOrdinalNoThrow((short)version, false);
-      if (geodeVersion != null  &&  version != Version.CURRENT_ORDINAL) {
+      if (geodeVersion != null  &&  version == Version.CURRENT_ORDINAL) {
         logger.info("Peer locator found that persistent view was written with {}", geodeVersion);
-        ois = new VersionedObjectInput(ois, geodeVersion);
-      } else {
-        return false;
+        ObjectInput ois2 = new VersionedObjectInput(ois, geodeVersion);
+        this.view = DataSerializer.readObject(ois2);
+        logger.info("Initial membership is " + view);
+        return true;
       }
-
-      this.view = DataSerializer.readObject(ois);
-
-      logger.info("Initial membership is " + view);
-      return true;
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      logger.warn(LocalizedStrings.Locator_unable_to_recover_view_0
-          .toLocalizedString(file), e);
-      try {
-        fis.close();
-      } catch (IOException ex) {
-        // ignore
-      }
+      return false;
+    } catch (Exception e) {
+      String msg = LOCATOR_UNABLE_TO_RECOVER_VIEW.toLocalizedString(file.toString());
+      logger.warn(msg, e);
       if (!file.delete() && file.exists()) {
         logger.warn("Peer locator was unable to recover from or delete " + file);
         this.viewFile = null;
       }
+      throw new InternalGemFireException(msg, e);
     }
-    finally {
-      try { fis.close(); } catch (IOException e) { }
-    }
-    return false;
   }
 
 }

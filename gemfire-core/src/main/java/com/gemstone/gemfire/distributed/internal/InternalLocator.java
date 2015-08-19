@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.gemstone.gemfire.InternalGemFireException;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -1066,7 +1067,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Locator restart thread group");
     this.restartThread = new Thread(group, "Location services restart thread") {
       public void run() {
-        boolean restarted;
+        boolean restarted = false;
         try {
           restarted = attemptReconnect();
           logger.info("attemptReconnect returned {}", restarted);
@@ -1074,6 +1075,10 @@ public class InternalLocator extends Locator implements ConnectListener {
           logger.info("attempt to restart location services was interrupted", e);
         } catch (IOException e) {
           logger.info("attempt to restart location services terminated", e);
+        } finally {
+          if (! restarted) {
+            stoppedForReconnect = false;
+          }
         }
         InternalLocator.this.restartThread = null;
       }
