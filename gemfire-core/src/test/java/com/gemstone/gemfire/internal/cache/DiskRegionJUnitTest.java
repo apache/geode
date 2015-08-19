@@ -2993,6 +2993,36 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
     boolean compacted = ((LocalRegion)region).getDiskStore().forceCompaction();
     assertEquals(true, compacted);
   }
+  
+  /**
+   * Confirm that forceCompaction waits for the compaction to finish
+   */
+  @Test
+  public void testNonDefaultCompaction() {
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setRegionName("testForceCompactionDoesRoll");
+    props.setRolling(false);
+    props.setDiskDirs(dirs);
+    props.setAllowForceCompaction(true);
+    props.setPersistBackup(true);
+    props.setCompactionThreshold(90);
+    region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
+    DiskRegion dr = ((LocalRegion)region).getDiskRegion();
+    logWriter.info("putting key1");
+    region.put("key1", "value1");
+    logWriter.info("putting key2");
+    region.put("key2", "value2");
+    //Only remove 1 of the entries. This wouldn't trigger compaction with
+    //the default threshold, since there are two entries.
+    logWriter.info("removing key1");
+    region.remove("key1");
+    // now that it is compactable the following forceCompaction should
+    // go ahead and do a roll and compact it.
+    Oplog oplog = dr.testHook_getChild();
+    boolean compacted = ((LocalRegion)region).getDiskStore().forceCompaction();
+    assertEquals(true, oplog.testConfirmCompacted());
+    assertEquals(true, compacted);
+  }
 
   /**
    * Confirm that forceCompaction waits for the compaction to finish
