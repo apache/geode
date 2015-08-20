@@ -1,16 +1,19 @@
-package com.gemstone.gemfire.cache.lucene.internal;
+package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-final public class File implements Serializable {
+/**
+ * A file that is stored in a gemfire region.
+ */
+public class File implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private transient FileSystem fileSystem;
   private transient int chunkSize;
 
-  String name;
+  private String name;
   long length = 0;
   int chunks = 0;
   long created = System.currentTimeMillis();
@@ -50,11 +53,20 @@ final public class File implements Serializable {
     return modified;
   }
 
+  /**
+   * Get an input stream that reads from the beginning the file
+   * 
+   * The input stream is not threadsafe
+   */
   public InputStream getInputStream() {
     // TODO get read lock?
     return new FileInputStream(this);
   }
 
+  /**
+   * Get an output stream that appends to the end
+   * of the file.
+   */
   public OutputStream getOutputStream() {
     return new FileOutputStream(this);
   }

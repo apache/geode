@@ -1,8 +1,14 @@
-package com.gemstone.gemfire.cache.lucene.internal;
+package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * An input stream that reads chunks from
+ * a File saved in the region. This input stream
+ * will keep going back to the region to look for
+ * chunks until nothing is found.
+ */
 final class FileInputStream extends InputStream {
 
   private final File file;

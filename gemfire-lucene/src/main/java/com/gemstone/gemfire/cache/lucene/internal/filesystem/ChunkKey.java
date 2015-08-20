@@ -1,7 +1,10 @@
-package com.gemstone.gemfire.cache.lucene.internal;
+package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import java.io.Serializable;
 
+/**
+ * The key for a single chunk on a file stored within a region.
+ */
 public class ChunkKey implements Serializable {
 
   private static final long serialVersionUID = 1L;

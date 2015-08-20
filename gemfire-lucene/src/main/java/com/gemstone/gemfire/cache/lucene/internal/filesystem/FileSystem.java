@@ -1,20 +1,28 @@
-package com.gemstone.gemfire.cache.lucene.internal;
+package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.ConcurrentMap;
 
-
-import com.gemstone.gemfire.cache.Region;
-
+/**
+ * A Filesystem like interface that stores file data in gemfire regions.
+ * 
+ * This filesystem is safe for use with multiple threads if the threads are not
+ * modifying the same files. A single file is not safe to modify by multiple
+ * threads, even between different members of the distributed system.
+ * 
+ * Changes to a file may not be visible to other members of the system until the
+ * FileOutputStream is closed.
+ */
 public class FileSystem {
   // private final Cache cache;
-  private final Region<String, File> fileRegion;
-  private final Region<ChunkKey, byte[]> chunkRegion;
+  private final ConcurrentMap<String, File> fileRegion;
+  private final ConcurrentMap<ChunkKey, byte[]> chunkRegion;
   
   final int chunkSize = 1_000_000;
 
-  public FileSystem(Region<String, File> fileRegion, Region<ChunkKey, byte[]> chunkRegion) {
+  public FileSystem(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
     super();
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
@@ -48,6 +56,11 @@ public class FileSystem {
   public void deleteFile(final String name) {
     // TODO locks?
 
+    // TODO - What is the state of the system if 
+    // things crash in the middle of removing this file?
+    // Seems like a file will be left with some 
+    // dangling chunks at the end of the file
+    
     // TODO consider removeAll with all ChunkKeys listed.
     final ChunkKey key = new ChunkKey(name, 0);
     while (true) {
@@ -65,7 +78,12 @@ public class FileSystem {
   public void renameFile(String source, String dest) throws IOException {
     final File destFile = createFile(dest);
     
-    final File sourceFile = fileRegion.remove(source);
+    // TODO - What is the state of the system if 
+    // things crash in the middle of moving this file?
+    // Seems like a file will be left with some 
+    // dangling chunks at the end of the file
+    
+    final File sourceFile = fileRegion.get(source);
     if (null == sourceFile) {
       throw new FileNotFoundException(source);
     }
@@ -88,6 +106,7 @@ public class FileSystem {
     }
     
     updateFile(destFile);
+    fileRegion.remove(source);
   }
   
   byte[] getChunk(final File file, final int id) {

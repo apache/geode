@@ -1,4 +1,4 @@
-package com.gemstone.gemfire.cache.lucene.internal;
+package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,6 +31,10 @@ final class FileOutputStream extends OutputStream {
   @Override
   public void write(final byte[] b, int off, int len) throws IOException {
     assertOpen();
+    
+    // TODO - What is the state of the system if 
+    // things crash without close?
+    // Seems like a file metadata will be out of sync
     
     while (len > 0) {
       if (buffer.remaining() == 0) {
