@@ -1,6 +1,7 @@
 package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * The key for a single chunk on a file stored within a region.
@@ -9,19 +10,19 @@ public class ChunkKey implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  String fileName;
+  UUID fileId;
   int chunkId;
 
-  ChunkKey(String fileName, int chunkId) {
-    this.fileName = fileName;
+  ChunkKey(UUID fileName, int chunkId) {
+    this.fileId = fileName;
     this.chunkId = chunkId;
   }
 
   /**
    * @return the fileName
    */
-  public String getFileName() {
-    return fileName;
+  public UUID getFileId() {
+    return fileId;
   }
 
   /**
@@ -35,7 +36,7 @@ public class ChunkKey implements Serializable {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + fileName.hashCode();
+    result = prime * result + fileId.hashCode();
     result = prime * result + chunkId;
     return result;
   }
@@ -55,11 +56,11 @@ public class ChunkKey implements Serializable {
     if (chunkId != other.chunkId) {
       return false;
     }
-    if (fileName == null) {
-      if (other.fileName != null) {
+    if (fileId == null) {
+      if (other.fileId != null) {
         return false;
       }
-    } else if (!fileName.equals(other.fileName)) {
+    } else if (!fileId.equals(other.fileId)) {
       return false;
     }
     return true;

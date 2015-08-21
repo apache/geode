@@ -3,6 +3,7 @@ package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * A file that is stored in a gemfire region.
@@ -18,6 +19,7 @@ public class File implements Serializable {
   int chunks = 0;
   long created = System.currentTimeMillis();
   long modified = created;
+  UUID id = UUID.randomUUID();
 
   File(final FileSystem fileSystem, final String name) {
     setFileSystem(fileSystem);

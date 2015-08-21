@@ -53,16 +53,20 @@ public class FileSystem {
     return file;
   }
 
-  public void deleteFile(final String name) {
+  public void deleteFile(final String name) throws FileNotFoundException {
     // TODO locks?
 
     // TODO - What is the state of the system if 
     // things crash in the middle of removing this file?
     // Seems like a file will be left with some 
     // dangling chunks at the end of the file
+    File file = fileRegion.remove(name);
+    if(file == null) {
+      throw new FileNotFoundException(name);
+    }
     
     // TODO consider removeAll with all ChunkKeys listed.
-    final ChunkKey key = new ChunkKey(name, 0);
+    final ChunkKey key = new ChunkKey(file.id, 0);
     while (true) {
       // TODO consider mutable ChunkKey
       if (null == chunkRegion.remove(key)) {
@@ -71,46 +75,32 @@ public class FileSystem {
       }
       key.chunkId++;
     }
-    
-    fileRegion.remove(name);
   }
-
+  
   public void renameFile(String source, String dest) throws IOException {
-    final File destFile = createFile(dest);
-    
-    // TODO - What is the state of the system if 
-    // things crash in the middle of moving this file?
-    // Seems like a file will be left with some 
-    // dangling chunks at the end of the file
-    
     final File sourceFile = fileRegion.get(source);
     if (null == sourceFile) {
       throw new FileNotFoundException(source);
     }
-
+    
+    final File destFile = createFile(dest);
+    
     destFile.chunks = sourceFile.chunks;
     destFile.created = sourceFile.created;
     destFile.length = sourceFile.length;
     destFile.modified = sourceFile.modified;
-
-    // TODO copy on write?
-    final ChunkKey sourceKey = new ChunkKey(source, 0);
-    while (true) {
-      byte[] chunk = chunkRegion.remove(sourceKey);
-      if (null == chunk) {
-        // no more chunks
-        break;
-      }
-      putChunk(destFile, sourceKey.chunkId, chunk);
-      sourceKey.chunkId++;
-    }
+    destFile.id = sourceFile.id;
     
-    updateFile(destFile);
+    // TODO - What is the state of the system if 
+    // things crash in the middle of moving this file?
+    // Seems like we will have two files pointing
+    // at the same data
+
     fileRegion.remove(source);
   }
   
   byte[] getChunk(final File file, final int id) {
-    final ChunkKey key = new ChunkKey(file.getName(), id);
+    final ChunkKey key = new ChunkKey(file.id, id);
     
     //The file's metadata indicates that this chunk shouldn't
     //exist. Purge all of the chunks that are larger than the file metadata
@@ -128,7 +118,7 @@ public class FileSystem {
   }
 
   public void putChunk(final File file, final int id, final byte[] chunk) {
-    final ChunkKey key = new ChunkKey(file.getName(), id);
+    final ChunkKey key = new ChunkKey(file.id, id);
     chunkRegion.put(key, chunk);
   }
 

@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -219,6 +220,141 @@ public class FileSystemJUnitTest {
       assertArrayEquals(bytes, results);
     }
   }
+  
+  /**
+   * Test what happens a file rename is aborted in the middle
+   * due to the a cache closed exception. The next member
+   * that uses those files should be able to clean up after
+   * the partial rename.
+   */
+  @Test
+  public void testPartialRename() throws IOException {
+
+    final CountOperations countOperations = new CountOperations();
+    //Create a couple of mock regions where we count the operations
+    //that happen to them. We will then use this to abort the rename
+    //in the middle.
+    ConcurrentHashMap<String, File> spyFileRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
+    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
+    
+    system = new FileSystem(spyFileRegion, spyChunkRegion);
+    
+    String name = "file";
+    File file = system.createFile(name);
+    
+    ByteArrayOutputStream expected = new ByteArrayOutputStream();
+
+    //Make sure the file has a lot of chunks
+    for(int i=0; i < 10; i++) {
+      expected.write(writeRandomBytes(file));
+    }
+    
+    String name2 = "file2";
+    countOperations.reset();
+    
+    system.renameFile(name, name2);
+    
+    assertTrue(2 <= countOperations.count);
+    
+    countOperations.after((int) Math.ceil(countOperations.count / 2.0), new Runnable() {
+
+      @Override
+      public void run() {
+        throw new CacheClosedException();
+      }
+    });
+    countOperations.reset();
+    
+    String name3 = "file3";
+    try {
+      system.renameFile(name2, name3);
+      fail("should have seen an error");
+    } catch(CacheClosedException e) {
+      
+    }
+    
+    system = new FileSystem(fileRegion, chunkRegion);
+    
+    //This is not the ideal behavior. We are left
+    //with two duplicate files. However, we will still
+    //verify that neither file is corrupted.
+    assertEquals(2, system.listFileNames().size());
+    File sourceFile = system.getFile(name2);
+    File destFile = system.getFile(name3);
+    
+    byte[] expectedBytes = expected.toByteArray();
+    
+    assertContents(expectedBytes, sourceFile);
+    assertContents(expectedBytes, destFile);
+  }
+  
+  /**
+   * Test what happens a file delete is aborted in the middle
+   * due to the a cache closed exception. The next member
+   * that uses those files should be able to clean up after
+   * the partial rename.
+   */
+  @Test
+  public void testPartialDelete() throws IOException {
+
+    final CountOperations countOperations = new CountOperations();
+    //Create a couple of mock regions where we count the operations
+    //that happen to them. We will then use this to abort the rename
+    //in the middle.
+    ConcurrentHashMap<String, File> spyFileRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
+    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
+    
+    system = new FileSystem(spyFileRegion, spyChunkRegion);
+    
+    String name1 = "file1";
+    String name2 = "file2";
+    File file1 = system.createFile(name1);
+    File file2 = system.createFile(name2);
+    
+    ByteArrayOutputStream expected = new ByteArrayOutputStream();
+
+    //Make sure the file has a lot of chunks
+    for(int i=0; i < 10; i++) {
+      byte[] bytes = writeRandomBytes(file1);
+      writeBytes(file2, bytes);
+      expected.write(bytes);
+    }
+    
+    countOperations.reset();
+    
+    system.deleteFile(name1);
+    
+    assertTrue(2 <= countOperations.count);
+    
+    countOperations.after(countOperations.count / 2, new Runnable() {
+
+      @Override
+      public void run() {
+        throw new CacheClosedException();
+      }
+    });
+    countOperations.reset();
+    
+    try {
+      system.deleteFile(name2);
+      fail("should have seen an error");
+    } catch(CacheClosedException e) {
+      
+    }
+    
+    system = new FileSystem(fileRegion, chunkRegion);
+    
+    if(system.listFileNames().size() == 0) {
+      //File was deleted, but shouldn't have any dangling chunks at this point
+      assertEquals(Collections.EMPTY_SET, fileRegion.keySet());
+      //TODO - need to purge chunks of deleted files somehow.
+//      assertEquals(Collections.EMPTY_SET, chunkRegion.keySet());
+    } else {
+      file2 = system.getFile(name2);
+      assertContents(expected.toByteArray(), file2);
+    }
+    
+  }
 
   private File getOrCreateFile(String name) throws IOException {
     try {
@@ -304,7 +440,7 @@ public class FileSystemJUnitTest {
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
       count++;
-      if(count >= limit) {
+      if(count > limit) {
         limitAction.run();
       }
       return null;
