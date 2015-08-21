@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+  LogServiceJUnitTest.class,
   LogWriterImplJUnitTest.class,
   SortLogFileJUnitTest.class
 })

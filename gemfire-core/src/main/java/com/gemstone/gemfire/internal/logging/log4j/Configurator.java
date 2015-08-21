@@ -28,6 +28,14 @@ public class Configurator {
     //context.reconfigure();
   }*/
   
+  public static void shutdown() {
+    //LoggerContext context = (LoggerContext)LogManager.getContext(false);
+    final LoggerContext context = ((org.apache.logging.log4j.core.Logger)LogManager.getRootLogger()).getContext();
+    context.stop();
+    org.apache.logging.log4j.core.config.Configurator.shutdown(context);
+  }
+
+  
   public static void setLevel(String name, Level level) {
     LoggerContext context = (LoggerContext)LogManager.getContext(false);
     LoggerConfig logConfig = getLoggerConfig(name);
