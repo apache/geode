@@ -331,6 +331,9 @@ public class InternalLocator extends Locator implements ConnectListener {
    * Creates a distribution locator that runs in this VM on the given
    * port and bind address.
    * 
+   * This is for internal use only as it does not create a distributed
+   * system unless told to do so.
+   * 
    * @param port
    *    the tcp/ip port to listen on
    * @param logFile
@@ -351,7 +354,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    *    the name to give to clients for connecting to this locator
    * @param loadSharedConfigFromDir TODO:CONFIG
    * @throws IOException 
-   * @deprecated as of 7.0 use startLocator(int, File, File, InternalLogWriter, InternalLogWriter, InetAddress, java.util.Properties, boolean, boolean, String) instead.
    */
   public static InternalLocator startLocator(
     int port,

@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,6 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.BoundedLinkedHashMap;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
@@ -59,7 +59,6 @@ import com.gemstone.gemfire.distributed.internal.ThrottlingMemLinkedQueueWithDMS
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -122,16 +121,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   static class EventProcessingLock  {
     public EventProcessingLock() {
-    }
-  }
-  
-  /**
-   * Trick class to make the view lock more visible
-   * in stack traces
-   * 
-   */
-  static class ViewLock extends ReentrantReadWriteLock {
-    public ViewLock() {
     }
   }
   
@@ -289,7 +278,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * 
    * @see #latestView
    */
-  protected ViewLock latestViewLock = new ViewLock();
+  protected ReadWriteLock latestViewLock = new ReentrantReadWriteLock();
   
   /**
    * This is the listener that accepts our membership events
@@ -565,7 +554,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
 //     }
     // We perform the update under a global lock so that other
     // incoming events will not be lost in terms of our global view.
-    synchronized (latestViewLock) {
+    latestViewLock.writeLock().lock();
+    try {
       // first determine the version for multicast message serialization
       Version version = Version.CURRENT;
       for (Iterator<Map.Entry<InternalDistributedMember, Long>> it=surpriseMembers.entrySet().iterator(); it.hasNext(); ) {
@@ -753,7 +743,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       catch (DistributedSystemDisconnectedException se) {
       }
-    } // synchronized
+    } finally {
+      latestViewLock.writeLock().unlock();
+    }
     logger.info(LogMarker.DM_VIEWS, LocalizedMessage.create(
         LocalizedStrings.GroupMembershipService_MEMBERSHIP_FINISHED_VIEW_PROCESSING_VIEWID___0, Long.valueOf(newViewId)));
   }
@@ -1013,7 +1005,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   /**
    * Automatic removal of a member (for internal
-   * use only).  Synchronizes on {@link #latestViewLock} and then deletes
+   * use only).  Write-locks {@link #latestViewLock} and then deletes
    * the member.
    * 
    * @param dm
@@ -2265,8 +2257,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   /**
-   * Add a mapping from the given member to the given stub. Must be
-   * synchronized on {@link #latestViewLock} by caller.
+   * Add a mapping from the given member to the given stub. Must
+   * be called with {@link #latestViewLock} held.
    * 
    * @param member
    * @param theChannel
@@ -2945,5 +2937,68 @@ public class GMSMembershipManager implements MembershipManager, Manager
     Services.setSecurityLogWriter(writer);
   }
 
+
+  /**
+   * Class <code>BoundedLinkedHashMap</code> is a bounded
+   * <code>LinkedHashMap</code>. The bound is the maximum
+   * number of entries the <code>BoundedLinkedHashMap</code>
+   * can contain.
+   */
+  static class BoundedLinkedHashMap extends LinkedHashMap
+  {
+    private static final long serialVersionUID = -3419897166186852692L;
+
+    /**
+     * The maximum number of entries allowed in this
+     * <code>BoundedLinkedHashMap</code>
+     */
+    protected int _maximumNumberOfEntries;
+
+    /**
+     * Constructor.
+     *
+     * @param initialCapacity The initial capacity.
+     * @param loadFactor The load factor
+     * @param maximumNumberOfEntries The maximum number of allowed entries
+     */
+    public BoundedLinkedHashMap(int initialCapacity, float loadFactor, int maximumNumberOfEntries) {
+      super(initialCapacity, loadFactor);
+      this._maximumNumberOfEntries = maximumNumberOfEntries;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param initialCapacity The initial capacity.
+     * @param maximumNumberOfEntries The maximum number of allowed entries
+     */
+    public BoundedLinkedHashMap(int initialCapacity, int maximumNumberOfEntries) {
+      super(initialCapacity);
+      this._maximumNumberOfEntries = maximumNumberOfEntries;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param maximumNumberOfEntries The maximum number of allowed entries
+     */
+    public BoundedLinkedHashMap(int maximumNumberOfEntries) {
+      super();
+      this._maximumNumberOfEntries = maximumNumberOfEntries;
+    }
+
+    /**
+     * Returns the maximum number of entries.
+     * @return the maximum number of entries
+     */
+    public int getMaximumNumberOfEntries(){
+      return this._maximumNumberOfEntries;
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry entry) {
+      return size() > this._maximumNumberOfEntries;
+    }
+  }
 
 }

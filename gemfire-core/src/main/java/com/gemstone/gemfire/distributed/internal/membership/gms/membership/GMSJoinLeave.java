@@ -287,17 +287,26 @@ logger.info("received join response {}", response);
   private void processLeaveRequest(LeaveRequestMessage incomingRequest) {
 
     logger.info("received leave request from {} for {}", incomingRequest.getSender(), incomingRequest.getMemberID());
-
+    
+    
     NetView v = currentView;
+    InternalDistributedMember mbr = incomingRequest.getMemberID();
+    
     if (logger.isDebugEnabled()) {
       logger.debug("JoinLeave.processLeaveRequest invoked.  isCoordinator="+isCoordinator+ "; isStopping="+isStopping
           +"; cancelInProgress="+services.getCancelCriterion().isCancelInProgress());
     }
+
+    if (!v.contains(mbr) && mbr.getVmViewId() < v.getViewId()) {
+      logger.debug("ignoring leave request from old member");
+      return;
+    }
     
     if (incomingRequest.getMemberID().equals(this.localAddress)) {
       logger.info("I am being told to leave the distributed system");
-      services.getManager().forceDisconnect(incomingRequest.getReason());
+      forceDisconnect(incomingRequest.getReason());
     }
+    
     if (!isCoordinator && !isStopping && !services.getCancelCriterion().isCancelInProgress()) {
       logger.debug("JoinLeave is checking to see if I should become coordinator");
       NetView check = new NetView(v, v.getViewId()+1);
@@ -339,7 +348,7 @@ logger.info("received join response {}", response);
 
     if (mbr.equals(this.localAddress)) {
       // oops - I've been kicked out
-      services.getManager().forceDisconnect(incomingRequest.getReason());
+      forceDisconnect(incomingRequest.getReason());
       return;
     }
     
@@ -367,17 +376,22 @@ logger.info("received join response {}", response);
     }
   }
   
-  //for testing purposes, returns a copy of the view requests for verification
+  // for testing purposes, returns a copy of the view requests for verification
   List<DistributionMessage> getViewRequests() {
     synchronized(viewRequests) {
       return new LinkedList<DistributionMessage>(viewRequests);
     }
   }
   
+  // for testing purposes, returns the view-creation thread
+  ViewCreator getViewCreator() {
+    return viewCreator;
+  }
+  
   /**
    * Yippeee - I get to be the coordinator
    */
-  private void becomeCoordinator() {
+  void becomeCoordinator() { // package access for unit testing
     becomeCoordinator(null);
   }
   
@@ -405,7 +419,9 @@ logger.info("received join response {}", response);
         synchronized(viewInstallationLock) {
           int viewNumber = currentView.getViewId() + 5;
           List<InternalDistributedMember> mbrs = new ArrayList<InternalDistributedMember>(currentView.getMembers());
-          mbrs.add(localAddress);
+          if (!mbrs.contains(localAddress)) {
+            mbrs.add(localAddress);
+          }
           List<InternalDistributedMember> leaving = new ArrayList<InternalDistributedMember>();
           if (oldCoordinator != null) {
             leaving.add(oldCoordinator);
@@ -452,17 +468,26 @@ logger.info("received join response {}", response);
     int id = view.getViewId();
     InstallViewMessage msg = new InstallViewMessage(view, services.getAuthenticator().getCredentials(this.localAddress), preparing);
     Set<InternalDistributedMember> recips = new HashSet<InternalDistributedMember>(view.getMembers());
+
     recips.removeAll(newMembers); // new members get the view in a JoinResponseMessage
     recips.remove(this.localAddress); // no need to send it to ourselves
-    installView(view);
+
     recips.addAll(view.getCrashedMembers());
+
+    logger.info((preparing? "preparing" : "sending") + " new view " + view);
+
+    if (preparing) {
+      this.preparedView = view;
+    } else {
+      installView(view);
+    }
+    
     if (recips.isEmpty()) {
       return true;
     }
+    
     msg.setRecipients(recips);
     rp.initialize(id, recips);
-
-    logger.info((preparing? "preparing" : "sending") + " new view " + view);
     services.getMessenger().send(msg);
 
     // only wait for responses during preparation
@@ -512,7 +537,7 @@ logger.info("received join response {}", response);
     else { // !preparing
       if (currentView != null  &&  !view.contains(this.localAddress)) {
         if (quorumRequired) {
-          services.getManager().forceDisconnect("This node is no longer in the membership view");
+          forceDisconnect("This node is no longer in the membership view");
         }
       }
       else {
@@ -520,6 +545,11 @@ logger.info("received join response {}", response);
         installView(view);
       }
     }
+  }
+  
+  private void forceDisconnect(String reason) {
+    this.isStopping = true;
+    services.getManager().forceDisconnect(reason);
   }
   
 
@@ -622,13 +652,16 @@ logger.info("received join response {}", response);
   }
   
   public void installView(NetView newView) {
+    
+    logger.info("received new view: {}", newView);
+    
     synchronized(viewInstallationLock) {
       if (currentView != null && currentView.getViewId() >= newView.getViewId()) {
         // old view - ignore it
         return;
       }
       
-      if (checkForPartition(newView)) {
+      if (isNetworkPartition(newView)) {
         if (quorumRequired) {
           List<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
           services.getManager().forceDisconnect(
@@ -680,11 +713,33 @@ logger.info("received join response {}", response);
     }
   }
   
+  /**
+   * returns true if this member thinks it is the membership coordinator
+   * for the distributed system
+   */
+  public boolean isCoordinator() {
+    return this.isCoordinator;
+  }
+  
+  /**
+   * return true if we're stopping or are stopped
+   */
+  public boolean isStopping() {
+    return this.isStopping;
+  }
+  
+  /**
+   * returns the currently prepared view, if any
+   */
+  public NetView getPreparedView() {
+    return this.preparedView;
+  }
+  
 
   /**
    * check to see if the new view shows a drop of 51% or more
    */
-  private boolean checkForPartition(NetView newView) {
+  private boolean isNetworkPartition(NetView newView) {
     if (currentView == null) {
       return false;
     }
@@ -696,6 +751,8 @@ logger.info("received join response {}", response);
       }
       int failurePoint = (int)(Math.round(51 * oldWeight) / 100.0);
       if (failedWeight > failurePoint) {
+        logger.warn("total weight lost in this view change is {} of {}.  Quorum has been lost!",
+            failedWeight, oldWeight);
         services.getManager().quorumLost(newView.getActualCrashedMembers(currentView), currentView);
         return true;
       }
@@ -805,6 +862,7 @@ logger.info("received join response {}", response);
   @Override
   public void remove(InternalDistributedMember m, String reason) {
     NetView v = this.currentView;
+    
     if (v != null) {
       RemoveMemberMessage msg = new RemoveMemberMessage(v.getCoordinator(), m,
           reason);
@@ -980,6 +1038,7 @@ logger.info("received join response {}", response);
 
   class ViewCreator extends Thread {
     boolean shutdown = false;
+    volatile boolean waiting = false;
     
     ViewCreator(String name, ThreadGroup tg) {
       super(tg, name);
@@ -996,6 +1055,10 @@ logger.info("received join response {}", response);
     boolean isShutdown() {
       return shutdown;
     }
+    
+    boolean isWaiting() {
+      return waiting;
+    }
 
     @Override
     public void run() {
@@ -1011,9 +1074,12 @@ logger.info("received join response {}", response);
             if (viewRequests.isEmpty()) {
               try {
                 logger.debug("View Creator is waiting for requests");
+                waiting = true;
                 viewRequests.wait();
               } catch (InterruptedException e) {
                 return;
+              } finally {
+                waiting = false;
               }
             } else {
               if (System.currentTimeMillis() < okayToCreateView) {
@@ -1072,25 +1138,24 @@ logger.info("received join response {}", response);
         
         if (msg instanceof JoinRequestMessage) {
           mbr = ((JoinRequestMessage)msg).getMemberID();
-          if (!oldMembers.contains(mbr)) {
+          if (!oldMembers.contains(mbr) && !joinReqs.contains(mbr)) {
             joinReqs.add(mbr);
           }
         }
         else if (msg instanceof LeaveRequestMessage) {
           mbr = ((LeaveRequestMessage) msg).getMemberID();
-          if (oldMembers.contains(mbr)) {
+          if (oldMembers.contains(mbr) && !leaveReqs.contains(mbr)) {
             leaveReqs.add(mbr);
           }
         }
         else if (msg instanceof RemoveMemberMessage) {
           mbr = ((RemoveMemberMessage) msg).getMemberID();
-          if (oldMembers.contains(mbr)) {
+          if (oldMembers.contains(mbr) && !leaveReqs.contains(mbr) && !removalReqs.contains(mbr)) {
             removalReqs.add(mbr);
             removalReasons.add(((RemoveMemberMessage) msg).getReason());
           }
         }
         else {
-          // TODO: handle removals
           logger.warn("Unknown membership request encountered: {}", msg);
         }
       }
@@ -1119,9 +1184,16 @@ logger.info("received join response {}", response);
       // getting messages from members that have been kicked out
       sendRemoveMessages(removalReqs, removalReasons, newView);
       
+      // if there are no membership changes then abort creation of
+      // the new view
+      if (newView.getMembers().equals(currentView.getMembers())) {
+        logger.info("membership hasn't changed - aborting new view {}", newView);
+        return true;
+      }
+      
       // we want to always check for quorum loss but don't act on it
       // unless network-partition-detection is enabled
-      if ( !(checkForPartition(newView) && quorumRequired) ) {
+      if ( !(isNetworkPartition(newView) && quorumRequired) ) {
         sendJoinResponses(joinReqs, newView);
       }
 

@@ -17,6 +17,9 @@ import java.util.Map;
  * can contain.
  *
  * @since 4.2
+ * @deprecated as of 5.7 create your own class that extends {@link LinkedHashMap}
+ * and implement {@link LinkedHashMap#removeEldestEntry}
+ * to enforce a maximum number of entries.
  */
 public class BoundedLinkedHashMap extends LinkedHashMap
 {

@@ -18,6 +18,7 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage {
     super();
     setRecipient(coord);
     this.memberID = id;
+    this.reason = reason;
   }
   
   public LeaveRequestMessage() {
@@ -57,6 +58,12 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = DataSerializer.readObject(in);
     reason = DataSerializer.readString(in);
+  }
+
+  @Override
+  public String toString() {
+    return getShortClassName() + "(" + memberID
+        + "; reason=" + reason + ")";
   }
 
 }

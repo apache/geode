@@ -147,7 +147,7 @@ public class MembershipManagerHelper
   public static void crashDistributedSystem(final DistributedSystem msys) {
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.playDead(msys);
-    getMembershipManager(msys).uncleanShutdown("test is forcing disconnect", new ForcedDisconnectException("test is forcing disconnect"));
+    ((GMSMembershipManager)getMembershipManager(msys)).forceDisconnect("for testing");
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
   

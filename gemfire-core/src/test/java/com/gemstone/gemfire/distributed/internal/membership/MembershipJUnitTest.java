@@ -7,42 +7,42 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.LonerDistributionManager.DummyDMStats;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.Stub;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class MembershipJUnitTest extends TestCase {
   static Level baseLogLevel;
   
@@ -52,13 +52,13 @@ public class MembershipJUnitTest extends TestCase {
 
   @BeforeClass
   public static void setupClass() {
-    baseLogLevel = LogService.getBaseLogLevel();
-    LogService.setBaseLogLevel(Level.DEBUG);
+//    baseLogLevel = LogService.getBaseLogLevel();
+//    LogService.setBaseLogLevel(Level.DEBUG);
   }
   
   @AfterClass
   protected void tearDown() throws Exception {
-    LogService.setBaseLogLevel(baseLogLevel);
+//    LogService.setBaseLogLevel(baseLogLevel);
   }
   
   /**
@@ -92,11 +92,12 @@ public class MembershipJUnitTest extends TestCase {
     members[i].setVmKind(DistributionManager.NORMAL_DM_TYPE);
     members[i++].getNetMember().setPreferredForCoordinator(false);
     
-    List<InternalDistributedMember> vmbrs = new ArrayList(members.length);
+    List<InternalDistributedMember> vmbrs = new ArrayList<>(members.length);
     for (i=0; i<members.length; i++) {
       vmbrs.add(members[i]);
     }
-    NetView lastView = new NetView(members[0], 4, vmbrs, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+    List<InternalDistributedMember> empty = Collections.emptyList();
+    NetView lastView = new NetView(members[0], 4, vmbrs, empty, empty);
     InternalDistributedMember leader = members[2];
     assertTrue(!leader.getNetMember().preferredForCoordinator());
     
@@ -113,7 +114,7 @@ public class MembershipJUnitTest extends TestCase {
     failedMembers.add(members[members.length-2]); // admin
     List<InternalDistributedMember> newMbrs = new ArrayList<InternalDistributedMember>(lastView.getMembers());
     newMbrs.removeAll(failedMembers);
-    NetView newView = new NetView(members[0], 5, newMbrs, Collections.EMPTY_LIST, failedMembers);
+    NetView newView = new NetView(members[0], 5, newMbrs, empty, failedMembers);
     
     int failedWeight = newView.getCrashedMemberWeight(lastView);
 //    System.out.println("last view = " + lastView);
@@ -134,7 +135,7 @@ public class MembershipJUnitTest extends TestCase {
    * and makes more assertions.
    */
   @Test
-  public void testJoinLeave() throws Exception {
+  public void testMultipleManagersInSameProcess() throws Exception {
     
     MembershipManager m1=null, m2=null;
     Locator l = null;
@@ -147,7 +148,10 @@ public class MembershipJUnitTest extends TestCase {
       
       // this locator will hook itself up with the first MembershipManager
       // to be created
-      l = Locator.startLocator(port, new File(""), localHost);
+//      l = Locator.startLocator(port, new File(""), localHost);
+      l = InternalLocator.startLocator(port, new File(""), null,
+          null, null, localHost, false, new Properties(), true, false, null,
+          false);
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -161,13 +165,13 @@ public class MembershipJUnitTest extends TestCase {
           DistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
-      MembershipListener listener1 = new MembershipListener();
-      DMStats stats1 = new MyStats();
+      DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
+      DMStats stats1 = mock(DMStats.class);
       m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
 
       // start the second membership manager
-      MembershipListener listener2 = new MembershipListener();
-      DMStats stats2 = new MyStats();
+      DistributedMembershipListener listener2 = mock(DistributedMembershipListener.class);
+      DMStats stats2 = mock(DMStats.class);
       m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
       
       assert m2.getView().size() == 2;
@@ -180,8 +184,6 @@ public class MembershipJUnitTest extends TestCase {
       assert m1.getView().size() == 1;
     }
     finally {
-      System.getProperties().remove(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-      LogService.reconfigure();
       
       if (m2 != null) {
         m2.shutdown();
@@ -193,59 +195,35 @@ public class MembershipJUnitTest extends TestCase {
         l.stop();
       }
     }
+  }
+
+  @Test
+  public void testMulticastDiscoveryNotAllowed() {
+    Properties nonDefault = new Properties();
+    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "12345");
+    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
+    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    nonDefault.put(DistributionConfig.LOCATORS_NAME, "");
+    DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
+    RemoteTransportConfig transport = new RemoteTransportConfig(config,
+        DistributionManager.NORMAL_DM_TYPE);
+
+    ServiceConfig serviceConfig = mock(ServiceConfig.class);
+    when(serviceConfig.getDistributionConfig()).thenReturn(config);
+    when(serviceConfig.getTransport()).thenReturn(transport);
     
+    Services services = mock(Services.class);
+    when(services.getConfig()).thenReturn(serviceConfig);
+    
+    GMSJoinLeave joinLeave = new GMSJoinLeave();
+    try {
+      joinLeave.init(services);
+      fail("expected a GemFireConfigException to be thrown because no locators are configured");
+    } catch (GemFireConfigException e) {
+      // expected
+    }
   }
   
-  static class MembershipListener implements DistributedMembershipListener {
-
-    @Override
-    public void viewInstalled(NetView view) {
-    }
-
-    @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remainingMembers) {
-    }
-
-    @Override
-    public void newMemberConnected(InternalDistributedMember m, Stub stub) {
-    }
-
-    @Override
-    public void memberDeparted(InternalDistributedMember id, boolean crashed,
-        String reason) {
-    }
-
-    @Override
-    public void memberSuspect(InternalDistributedMember suspect,
-        InternalDistributedMember whoSuspected) {
-    }
-
-    @Override
-    public void messageReceived(DistributionMessage o) {
-    }
-
-    @Override
-    public boolean isShutdownMsgSent() {
-      return false;
-    }
-
-    @Override
-    public void membershipFailure(String reason, Throwable t) {
-    }
-
-    @Override
-    public DistributionManager getDM() {
-      return null;
-    }
-    
-  }
   
-  static class MyStats extends DummyDMStats {
-  }
-
-  public static class DummyPoolStatHelper implements PoolStatHelper {
-    public void startJob() {}
-    public void endJob(){}
-  }
 }

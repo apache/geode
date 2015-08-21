@@ -79,4 +79,25 @@ public class GMSUtil {
     return result;
   }
 
+  /**
+   * replaces all occurrences of a given string in the properties argument with the
+   * given value
+   */
+  public static String replaceStrings(String properties, String property, String value) {
+    StringBuffer sb = new StringBuffer();
+    int start = 0;
+    int index = properties.indexOf(property);
+    while (index != -1) {
+      sb.append(properties.substring(start, index));
+      sb.append(value);
+
+      start = index + property.length();
+      index = properties.indexOf(property, start);
+    }
+    sb.append(properties.substring(start));
+    return sb.toString();
+  }
+
+  
+
 }

@@ -49,6 +49,7 @@ public class Services {
   final private ServiceConfig config;
   final private DMStats stats;
   final private Stopper cancelCriterion;
+  private volatile boolean stopping;
 
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
@@ -152,6 +153,10 @@ public class Services {
   
   public void stop() {
     logger.info("Membership: stopping services");
+    if (stopping) {
+      return;
+    }
+    stopping = true;
     this.joinLeave.stop();
     this.healthMon.stop();
     this.auth.stop();

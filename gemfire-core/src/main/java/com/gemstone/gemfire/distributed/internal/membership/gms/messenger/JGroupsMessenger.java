@@ -1,5 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
+import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.io.BufferedReader;
@@ -571,7 +573,7 @@ public class JGroupsMessenger implements Messenger {
    * @param version the version of the recipient
    * @return the new message
    */
-  private Message createJGMessage(DistributionMessage gfmsg, JGAddress src, short version) {
+  Message createJGMessage(DistributionMessage gfmsg, JGAddress src, short version) {
     if(gfmsg instanceof DirectReplyMessage) {
       ((DirectReplyMessage) gfmsg).registerProcessor();
     }
@@ -723,6 +725,13 @@ public class JGroupsMessenger implements Messenger {
   public String getJGroupsStackConfig() {
     return this.jgStackConfig;
   }
+  
+  /**
+   * for unit testing we need to replace UDP with a fake UDP protocol 
+   */
+  public void setJGroupsStackConfigForTesting(String config) {
+    this.jgStackConfig = config;
+  }
 
   /**
    * returns the member ID for the given GMSMember object
@@ -750,34 +759,15 @@ public class JGroupsMessenger implements Messenger {
   }
   
   /**
-   * replaces all occurrences of a given string in the properties argument with the
-   * given value
-   */
-  private String replaceStrings(String properties, String property, String value) {
-    StringBuffer sb = new StringBuffer();
-    int start = 0;
-    int index = properties.indexOf(property);
-    while (index != -1) {
-      sb.append(properties.substring(start, index));
-      sb.append(value);
-
-      start = index + property.length();
-      index = properties.indexOf(property, start);
-    }
-    sb.append(properties.substring(start));
-    return sb.toString();
-  }
-
-  
-  /**
    * Puller receives incoming JGroups messages and passes them to a handler
    */
   class JGroupsReceiver implements Receiver  {
   
     @Override
     public void receive(Message jgmsg) {
-      if (services.getManager().shutdownInProgress())
+      if (services.getManager().shutdownInProgress()) {
         return;
+      }
 
       if (logger.isDebugEnabled()) {
         logger.debug("JGroupsMessenger received {} headers: {}", jgmsg, jgmsg.getHeaders());
