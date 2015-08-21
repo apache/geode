@@ -33,28 +33,6 @@ public class WanCommandsControllerJUnitTest {
     this.wanCommandsController = new TestableWanCommandsController();
   }
   
-  private static final Object[] getParametersWithGroups() {
-    return $(
-        new Object[] { "sender1", new String[] { "group1" }, new String[] { }, true, false },
-        new Object[] { "sender2", new String[] { "group1, group2" }, new String[] { }, true, false }
-    );
-  }
-
-  private static final Object[] getParametersWithMembers() {
-    return $(
-        new Object[] { "sender3", new String[] { }, new String[] { "member1" }, false, true },
-        new Object[] { "sender4", new String[] { }, new String[] { "member1, member2" }, false, true }
-    );
-  }
-  
-  private static final Object[] getParametersWithGroupsAndMembers() {
-    return $(
-        new Object[] { "sender5", new String[] { "group1" }, new String[] { "member1" }, true, true },
-        new Object[] { "sender6", new String[] { "group1,group2" }, new String[] { "member1,member2" }, true, true },
-        new Object[] { "sender7", new String[] { "group1, group2" }, new String[] { "member1, member2" }, true, true }
-    );
-  }
-  
   @Test
   public void shouldDefineStartGatewayReceiverCommandWithNulls() {
     this.wanCommandsController.startGatewaySender(null, null, null);
@@ -66,48 +44,20 @@ public class WanCommandsControllerJUnitTest {
   }
   
   @Test
-  @Parameters(method = "getParametersWithGroups")
-  public void shouldDefineStartGatewayReceiverCommandWithGroups(final String gatewaySenderId, final String[] groups, final String[] members, final boolean containsGroups, final boolean containsMembers) {
-    this.wanCommandsController.startGatewaySender(gatewaySenderId, groups, members);
-    
-    assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYSENDER);
-    assertThat(this.wanCommandsController.testableCommand).contains("--"+START_GATEWAYSENDER__ID+"="+gatewaySenderId);
-    assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYRECEIVER__GROUP);
-    assertThat(this.wanCommandsController.testableCommand).doesNotContain(START_GATEWAYRECEIVER__MEMBER);
-  }
-  
-  @Test
-  @Parameters(method = "getParametersWithMembers")
-  public void shouldDefineStartGatewayReceiverCommandWithMembers(final String gatewaySenderId, final String[] groups, final String[] members, final boolean containsGroups, final boolean containsMembers) {
-    this.wanCommandsController.startGatewaySender(gatewaySenderId, groups, members);
-    
-    assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYSENDER);
-    assertThat(this.wanCommandsController.testableCommand).contains("--"+START_GATEWAYSENDER__ID+"="+gatewaySenderId);
-    assertThat(this.wanCommandsController.testableCommand).doesNotContain(START_GATEWAYRECEIVER__GROUP);
-    assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYRECEIVER__MEMBER);
-  }
-  
-  @Test
   @Parameters(method = "getParametersWithGroupsAndMembers")
   public void shouldDefineStartGatewayReceiverCommandWithGroupsAndMembers(final String gatewaySenderId, final String[] groups, final String[] members, final boolean containsGroups, final boolean containsMembers) {
     this.wanCommandsController.startGatewaySender(gatewaySenderId, groups, members);
     
     assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYSENDER);
     assertThat(this.wanCommandsController.testableCommand).contains("--"+START_GATEWAYSENDER__ID+"="+gatewaySenderId);
-    assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYRECEIVER__GROUP);
-    assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYRECEIVER__MEMBER);
-  }
-  
-  @Test
-  public void shouldDefineStartGatewayReceiverCommandWithOutGroupsOrMembers() {
-    final String gatewaySenderId = "senderA";
-        
-    this.wanCommandsController.startGatewaySender("senderA", new String[] {}, new String[] {});
-    
-    assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYSENDER);
-    assertThat(this.wanCommandsController.testableCommand).contains("--"+START_GATEWAYSENDER__ID+"="+gatewaySenderId);
-    assertThat(this.wanCommandsController.testableCommand).doesNotContain(START_GATEWAYRECEIVER__GROUP);
-    assertThat(this.wanCommandsController.testableCommand).doesNotContain(START_GATEWAYRECEIVER__MEMBER);
+    assertThat(this.wanCommandsController.testableCommand.contains(START_GATEWAYRECEIVER__GROUP)).isEqualTo(containsGroups);
+    assertThat(this.wanCommandsController.testableCommand.contains(START_GATEWAYRECEIVER__MEMBER)).isEqualTo(containsMembers);
+    if (containsGroups) {
+      assertThat(this.wanCommandsController.testableCommand).contains("--"+START_GATEWAYRECEIVER__GROUP+"="+groups[0]);
+    }
+    if (containsMembers) {
+      assertThat(this.wanCommandsController.testableCommand).contains("--"+START_GATEWAYRECEIVER__MEMBER+"="+members[0]);
+    }
   }
   
   /**
@@ -142,6 +92,18 @@ public class WanCommandsControllerJUnitTest {
     
     assertThat(this.wanCommandsController.testableCommand).contains(START_GATEWAYSENDER);
     assertThat(this.wanCommandsController.testableCommand).contains("--"+START_GATEWAYSENDER__ID+"="+"");
+  }
+  
+  private static final Object[] getParametersWithGroupsAndMembers() {
+    return $(
+        new Object[] { "sender1", new String[] { }, new String[] { }, false, false },
+        new Object[] { "sender2", new String[] { "group1" }, new String[] { }, true, false },
+        new Object[] { "sender3", new String[] { "group1", "group2" }, new String[] { }, true, false },
+        new Object[] { "sender4", new String[] { }, new String[] { "member1" }, false, true },
+        new Object[] { "sender5", new String[] { }, new String[] { "member1", "member2" }, false, true },
+        new Object[] { "sender6", new String[] { "group1" }, new String[] { "member1" }, true, true },
+        new Object[] { "sender7", new String[] { "group1", "group2" }, new String[] { "member1", "member2" }, true, true }
+    );
   }
   
   /**
