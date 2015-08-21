@@ -10,10 +10,14 @@ final class FileOutputStream extends OutputStream {
   private final File file;
   private ByteBuffer buffer;
   private boolean open = true;
+  private long length;
+  private int chunks;
 
   public FileOutputStream(final File file) {
     this.file = file;
     buffer = ByteBuffer.allocate(file.getChunkSize());
+    this.length = file.length;
+    this.chunks = file.chunks;
   }
 
   @Override
@@ -25,16 +29,12 @@ final class FileOutputStream extends OutputStream {
     }
 
     buffer.put((byte) b);
-    file.length++;
+    length++;
   }
   
   @Override
   public void write(final byte[] b, int off, int len) throws IOException {
     assertOpen();
-    
-    // TODO - What is the state of the system if 
-    // things crash without close?
-    // Seems like a file metadata will be out of sync
     
     while (len > 0) {
       if (buffer.remaining() == 0) {
@@ -45,7 +45,7 @@ final class FileOutputStream extends OutputStream {
       buffer.put(b, off, min);
       off += min;
       len -= min;
-      file.length += min;
+      length += min;
     }
   }
 
@@ -54,6 +54,8 @@ final class FileOutputStream extends OutputStream {
     if (open) {
       flushBuffer();
       file.modified = System.currentTimeMillis();
+      file.length = length;
+      file.chunks = chunks;
       file.getFileSystem().updateFile(file);
       open = false;
       buffer = null;
@@ -62,7 +64,7 @@ final class FileOutputStream extends OutputStream {
 
   private void flushBuffer() {
     byte[] chunk = Arrays.copyOfRange(buffer.array(), buffer.arrayOffset(), buffer.position());
-    file.getFileSystem().putChunk(file, file.chunks++, chunk);
+    file.getFileSystem().putChunk(file, chunks++, chunk);
     buffer.rewind();
   }
 

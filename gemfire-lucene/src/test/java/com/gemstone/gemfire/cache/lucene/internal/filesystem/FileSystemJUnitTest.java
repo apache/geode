@@ -5,9 +5,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
@@ -16,24 +19,33 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class FileSystemJUnitTest {
 
   private static final int SMALL_CHUNK = 523;
-  private static final int LARGE_CHUNK = 1024 * 1024 * 5;
+  private static final int LARGE_CHUNK = 1024 * 1024 * 5 + 33;
   private FileSystem system;
   private Random rand = new Random();
+  private ConcurrentHashMap<String, File> fileRegion;
+  private ConcurrentHashMap<ChunkKey, byte[]> chunkRegion;
 
   @Before
   public void setUp() {
-    ConcurrentHashMap<String, File> fileRegion = new ConcurrentHashMap<String, File>();
-    ConcurrentHashMap<ChunkKey, byte[]> chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
+    fileRegion = new ConcurrentHashMap<String, File>();
+    chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
     system = new FileSystem(fileRegion, chunkRegion);
   }
   
+  /**
+   * A test of reading and writing to a file.
+   */
   @Test
   public void testReadWriteBytes() throws IOException {
     long start = System.currentTimeMillis();
@@ -43,7 +55,8 @@ public class FileSystemJUnitTest {
     assertEquals(0, file1.getLength());
     
     OutputStream outputStream1 = file1.getOutputStream();
-    
+
+    //Write some random data. Make sure it fills several chunks
     outputStream1.write(2);
     byte[] data = new byte[LARGE_CHUNK];
     rand.nextBytes(data);
@@ -54,8 +67,8 @@ public class FileSystemJUnitTest {
     assertEquals(2 + LARGE_CHUNK, file1.getLength());
     assertTrue(file1.getModified() >= start);
     
+    //Append to the file with a new outputstream
     OutputStream outputStream2 = file1.getOutputStream();
-    
     outputStream2.write(123);
     byte[] data2 = new byte[SMALL_CHUNK];
     rand.nextBytes(data2);
@@ -63,7 +76,8 @@ public class FileSystemJUnitTest {
     outputStream2.close();
     
     assertEquals(3 + LARGE_CHUNK + SMALL_CHUNK, file1.getLength());
-    
+
+    //Make sure we can read all fo the data back and it matches
     InputStream is = file1.getInputStream();
     
     assertEquals(2, is.read());
@@ -103,6 +117,10 @@ public class FileSystemJUnitTest {
     assertEquals(-1, is.read());
   }
   
+  /**
+   * Test basic file operations - rename, delete, listFiles.
+   * @throws IOException
+   */
   @Test
   public void testFileOperations() throws IOException {
     String name1 = "testFile1";
@@ -152,10 +170,74 @@ public class FileSystemJUnitTest {
     file2 = system.getFile(name2);
     assertContents(file1Data, file2);
   }
+  
+  /**
+   * Test what happens if you have an unclosed stream and you create a new file.
+   * @throws IOException
+   */
+  @Test
+  public void testUnclosedStreamSmallFile() throws IOException {
+    doUnclosedStream(SMALL_CHUNK);
+  }
+  
+  /**
+   * Test what happens if you have an unclosed stream and you create a new file.
+   * @throws IOException
+   */
+  @Test
+  public void testUnclosedStreamLargeFile() throws IOException {
+    doUnclosedStream(LARGE_CHUNK);
+  }
+  
+  private void doUnclosedStream(int size) throws IOException {
+    String name1 = "testFile1";
+    File file1= system.createFile(name1);
+    byte[] bytes = getRandomBytes(size );
+    file1.getOutputStream().write(bytes);
+    
+    FileSystem system2 = new FileSystem(fileRegion, chunkRegion);
+    File file = system2.getFile(name1);
+    
+    assertTrue(file.getLength() <= bytes.length);
+    
+    long length = file.getLength();
+    
+    
+    byte[] results = new byte[bytes.length];
+    
+    if(length == 0) {
+      assertEquals(-1, file.getInputStream().read(results));
+      assertTrue(chunkRegion.isEmpty());
+    } else {
+      //Make sure the amount of data we can read matches the length
+      assertEquals(length, file.getInputStream().read(results));
 
+      if(length != bytes.length) {
+        Arrays.fill(bytes, (int) length, bytes.length, (byte) 0);
+      }
+      
+      assertArrayEquals(bytes, results);
+    }
+  }
+
+  private File getOrCreateFile(String name) throws IOException {
+    try {
+      return system.getFile(name);
+    } catch(FileNotFoundException e) {
+      return system.createFile(name);
+    }
+  }
+  
   private void assertContents(byte[] data, File file) throws IOException {
     assertEquals(data.length, file.getLength());
+    
     InputStream is = file.getInputStream();
+    
+    if(data.length == 0) {
+      assertEquals(-1, is.read());
+      return;
+    }
+    
     byte[] results = new byte[data.length];
     assertEquals(file.getLength(), is.read(results));
     assertEquals(-1, is.read());
@@ -166,17 +248,77 @@ public class FileSystemJUnitTest {
 
   private byte[] writeRandomBytes(File file) throws IOException {
     byte[] file1Data = getRandomBytes();
-    OutputStream outputStream = file.getOutputStream();
-    outputStream.write(file1Data);
-    outputStream.close();
+    writeBytes(file, file1Data);
     return file1Data;
+  }
+
+  private void writeBytes(File file, byte[] data) throws IOException {
+    OutputStream outputStream = file.getOutputStream();
+    outputStream.write(data);
+    outputStream.close();
   }
   
   public byte[] getRandomBytes() {
-    byte[] data = new byte[rand.nextInt(LARGE_CHUNK) + SMALL_CHUNK];
+    return getRandomBytes(rand.nextInt(LARGE_CHUNK) + SMALL_CHUNK);
+  }
+  
+  public byte[] getRandomBytes(int length) {
+    byte[] data = new byte[length];
     rand.nextBytes(data);
     
     return data;
+  }
+  
+  /**
+   * A wrapper around an object that will also invoke
+   * a callback before applying an operation. 
+   *
+   * This is essentially like Mockito.spy(), except that it
+   * allows the implementation of a default answer for all operations.
+   * 
+   * To use, do this
+   * Mockito.mock(Interface, new SpyWrapper(Answer, o)
+   */
+  private static final class SpyWrapper implements Answer<Object> {
+    private final CountOperations countOperations;
+    private Object region;
+
+    private SpyWrapper(CountOperations countOperations, Object region) {
+      this.countOperations = countOperations;
+      this.region = region;
+    }
+
+    @Override
+    public Object answer(InvocationOnMock invocation) throws Throwable {
+      countOperations.answer(invocation);
+      Method m = invocation.getMethod();
+      return m.invoke(region, invocation.getArguments());
+    }
+  }
+
+  private static final class CountOperations implements Answer {
+    public int count;
+    private int limit = Integer.MAX_VALUE;
+    private Runnable limitAction;
+
+    @Override
+    public Object answer(InvocationOnMock invocation) throws Throwable {
+      count++;
+      if(count >= limit) {
+        limitAction.run();
+      }
+      return null;
+    }
+
+    public void reset() {
+      count = 0;
+    }
+
+    public void after(int i, Runnable runnable) {
+      limit = i;
+      limitAction = runnable;
+      
+    }
   }
 
 }

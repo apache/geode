@@ -9,7 +9,7 @@ import java.io.Serializable;
  */
 public class File implements Serializable {
   private static final long serialVersionUID = 1L;
-
+  
   private transient FileSystem fileSystem;
   private transient int chunkSize;
 
@@ -73,7 +73,7 @@ public class File implements Serializable {
 
   void setFileSystem(final FileSystem fileSystem) {
     this.fileSystem = fileSystem;
-    this.chunkSize = fileSystem.chunkSize;
+    this.chunkSize = FileSystem.CHUNK_SIZE;
   }
 
   int getChunkSize() {

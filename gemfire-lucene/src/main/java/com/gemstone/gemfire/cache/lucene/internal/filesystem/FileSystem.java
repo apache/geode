@@ -20,7 +20,7 @@ public class FileSystem {
   private final ConcurrentMap<String, File> fileRegion;
   private final ConcurrentMap<ChunkKey, byte[]> chunkRegion;
   
-  final int chunkSize = 1_000_000;
+  static final int CHUNK_SIZE = 1024 * 1024; //1 MB
 
   public FileSystem(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
     super();
@@ -111,6 +111,18 @@ public class FileSystem {
   
   byte[] getChunk(final File file, final int id) {
     final ChunkKey key = new ChunkKey(file.getName(), id);
+    
+    //The file's metadata indicates that this chunk shouldn't
+    //exist. Purge all of the chunks that are larger than the file metadata
+    if(id >= file.chunks) {
+      while(chunkRegion.containsKey(key)) {
+        chunkRegion.remove(key);
+        key.chunkId++;
+      }
+      
+      return null;
+    }
+    
     final byte[] chunk = chunkRegion.get(key);
     return chunk;
   }
