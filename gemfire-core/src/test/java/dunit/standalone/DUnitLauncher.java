@@ -31,9 +31,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -46,12 +43,9 @@ import org.junit.Assert;
 import batterytest.greplogs.ExpectedStrings;
 import batterytest.greplogs.LogConsumer;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 
 import dunit.BounceResult;
 import dunit.DUnitEnv;
@@ -104,7 +98,7 @@ public class DUnitLauncher {
       //if there is registered test configuration object.
       Class<?> clazz = Class.forName("hydra.TestConfig");
       Method getInstance = clazz.getMethod("getInstance", new Class[0]);
-      getInstance.invoke(null, null);
+      getInstance.invoke(null);
       return true;
     } catch (Exception e) {
       return false;
