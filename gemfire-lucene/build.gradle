@@ -6,4 +6,13 @@ dependencies {
     compile 'org.apache.lucene:lucene-queryparser:5.0.0'
 
     provided project(path: ':gemfire-junit', configuration: 'testOutput')
+
+    //Lucene test framework.
+    testCompile 'org.apache.lucene:lucene-test-framework:5.0.0'
+    testCompile 'org.apache.lucene:lucene-codecs:5.0.0'
+    //Dependency ot lucene-test-framework. Can we turn on transitive depencies for
+    //the test framework somehow? We've disabled them globally in the parent
+    //build.gadle.
+    testCompile 'com.carrotsearch.randomizedtesting:randomizedtesting-runner:2.1.6'
+    
 }

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.store.BaseDirectory;
@@ -63,11 +63,9 @@ public class RegionDirectory extends BaseDirectory {
     }
   }
 
-  static private final AtomicInteger cacheCount = new AtomicInteger();
   static private final boolean CREATE_CACHE = Boolean.getBoolean("lucene.createCache");
   private static final Logger logger = LogService.getLogger();
   
-  private Cache cache;
   private final FileSystem fs;
   
   /**
@@ -93,9 +91,6 @@ public class RegionDirectory extends BaseDirectory {
     } else {
       logger.info("Found cache in RegionDirectory");
     }
-    this.cache = cache;
-    assert this.cache != null;
-    cacheCount.incrementAndGet();
     
     Region dataRegion = cache.getRegion(dataRegionName);
     assert dataRegion != null;
@@ -147,23 +142,36 @@ public class RegionDirectory extends BaseDirectory {
     fs = new FileSystem(fileRegion, chunkRegion);
   }
   
+  /**
+   * Create a region directory with a given file and chunk region. These regions
+   * may be bucket regions or they may be replicated regions.
+   */
+  public RegionDirectory(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
+    super(new SingleInstanceLockFactory());
+    fs = new FileSystem(fileRegion, chunkRegion);
+  }
+  
   @Override
   public String[] listAll() throws IOException {
+    ensureOpen();
     return fs.listFileNames().toArray(new String[] {});
   }
 
   @Override
   public void deleteFile(String name) throws IOException {
+    ensureOpen();
     fs.deleteFile(name);
   }
 
   @Override
   public long fileLength(String name) throws IOException {
+    ensureOpen();
     return fs.getFile(name).getLength();
   }
 
   @Override
   public IndexOutput createOutput(final String name, final IOContext context) throws IOException {
+    ensureOpen();
     final File file = fs.createFile(name);
     final OutputStream out = file.getOutputStream();
 
@@ -172,16 +180,19 @@ public class RegionDirectory extends BaseDirectory {
 
   @Override
   public void sync(Collection<String> names) throws IOException {
+    ensureOpen();
     // Region does not need to sync to disk
   }
 
   @Override
   public void renameFile(String source, String dest) throws IOException {
+    ensureOpen();
     fs.renameFile(source, dest);
   }
 
   @Override
   public IndexInput openInput(String name, IOContext context) throws IOException {
+    ensureOpen();
     final File file = fs.getFile(name);
 
     return new FileIndexInput(name, file);
@@ -189,9 +200,6 @@ public class RegionDirectory extends BaseDirectory {
 
   @Override
   public void close() throws IOException {
-    if (0 == cacheCount.decrementAndGet()) {
-      cache.close();
-    }
     isOpen = false;
   }
 
