@@ -34,7 +34,7 @@ public class LuceneQueryImpl implements LuceneQuery {
   }
 
   @Override
-  public LuceneQueryResults<?> search() {
+  public LuceneQueryResults search() {
     // TODO Auto-generated method stub
     return null;
   }

@@ -1,6 +1,5 @@
 package com.gemstone.gemfire.cache.lucene;
 
-import java.util.LinkedList;
 
 /**
  * <p>
@@ -41,7 +40,7 @@ public interface LuceneResultStruct {
    * @return score
    * @throws IllegalArgumentException If this struct does not contain score
    */
-  public Double getScore();
+  public float getScore();
   
   /**
    * Get the types of values ordered list

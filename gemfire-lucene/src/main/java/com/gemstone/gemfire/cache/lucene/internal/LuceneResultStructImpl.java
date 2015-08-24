@@ -1,10 +1,15 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import java.util.LinkedList;
-
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 
 public class LuceneResultStructImpl implements LuceneResultStruct {
+  Object key;
+  float score;
+
+  public LuceneResultStructImpl(Object key, float score) {
+    this.key = key;
+    this.score = score;
+  }
 
   @Override
   public Object getProjectedField(String fieldName) {
@@ -14,8 +19,7 @@ public class LuceneResultStructImpl implements LuceneResultStruct {
 
   @Override
   public Object getKey() {
-    // TODO Auto-generated method stub
-    return null;
+    return key;
   }
 
   @Override
@@ -25,9 +29,8 @@ public class LuceneResultStructImpl implements LuceneResultStruct {
   }
 
   @Override
-  public Double getScore() {
-    // TODO Auto-generated method stub
-    return null;
+  public float getScore() {
+    return score;
   }
 
   @Override
@@ -41,5 +44,4 @@ public class LuceneResultStructImpl implements LuceneResultStruct {
     // TODO Auto-generated method stub
     return null;
   }
-
 }

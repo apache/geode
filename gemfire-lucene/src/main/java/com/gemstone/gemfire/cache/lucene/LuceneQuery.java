@@ -1,6 +1,5 @@
 package com.gemstone.gemfire.cache.lucene;
 
-import java.util.Set;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory.ResultType;
 
 /**
@@ -13,7 +12,7 @@ public interface LuceneQuery {
   /**
    * Execute the search and get results. 
    */
-  public LuceneQueryResults<?> search();
+  public LuceneQueryResults search();
   
   /**
    * Get page size setting of current query. 
