@@ -13,8 +13,8 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
-/** MsgOutputStream is deprecated. MsgStreamer should be used instead.
- * The one non-deprecated use is in Connection for the handshake.
+/** MsgOutputStream should no longer be used except in Connection
+ * to do the handshake. Otherwise MsgStreamer should always be used.
 
  @author Darrel
  @since 3.0
