@@ -1,4 +1,4 @@
-package com.gemstone.gemfire.cache.lucene.internal;
+package com.gemstone.gemfire.cache.lucene.internal.directory;
 
 import java.io.EOFException;
 import java.io.IOException;
