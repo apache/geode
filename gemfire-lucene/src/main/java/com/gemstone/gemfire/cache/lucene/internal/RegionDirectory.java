@@ -1,7 +1,6 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
@@ -28,40 +27,14 @@ import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystem;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 
+/**
+ * An implementation of Directory that stores data in geode regions.
+ * 
+ * Directory is an interface to file/RAM storage for lucene. This class uses
+ * the {@link FileSystem} class to store the data in the provided geode
+ * regions.
+ */
 public class RegionDirectory extends BaseDirectory {
-
-  private static final class FileIndexInput extends BufferedIndexInput {
-    private final File file;
-    InputStream in;
-
-    private FileIndexInput(String resourceDesc, File file) {
-      super(resourceDesc);
-      this.file = file;
-      in = file.getInputStream();
-    }
-
-    @Override
-    public long length() {
-      return file.getLength();
-    }
-
-    @Override
-    public void close() throws IOException {
-      in.close();
-    }
-
-    @Override
-    protected void seekInternal(long pos) throws IOException {
-      in.close();
-      in = file.getInputStream();
-      in.skip(pos);
-    }
-
-    @Override
-    protected void readInternal(byte[] b, int offset, int length) throws IOException {
-      in.read(b, offset, length);
-    }
-  }
 
   static private final boolean CREATE_CACHE = Boolean.getBoolean("lucene.createCache");
   private static final Logger logger = LogService.getLogger();

@@ -60,7 +60,7 @@ public class File implements Serializable {
    * 
    * The input stream is not threadsafe
    */
-  public InputStream getInputStream() {
+  public SeekableInputStream getInputStream() {
     // TODO get read lock?
     return new FileInputStream(this);
   }

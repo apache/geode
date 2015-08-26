@@ -78,7 +78,7 @@ public class FileSystemJUnitTest {
     
     assertEquals(3 + LARGE_CHUNK + SMALL_CHUNK, file1.getLength());
 
-    //Make sure we can read all fo the data back and it matches
+    //Make sure we can read all of the data back and it matches
     InputStream is = file1.getInputStream();
     
     assertEquals(2, is.read());
@@ -118,6 +118,105 @@ public class FileSystemJUnitTest {
     assertEquals(-1, is.read());
   }
   
+  /**
+   * A test of cloning a a FileInputStream. The
+   * clone should start from where the original was positioned,
+   * but they should not hurt each other.
+   */
+  @Test
+  public void testCloneReader() throws IOException {
+    File file1= system.createFile("testFile1");
+    
+    byte[] data = writeRandomBytes(file1);
+    
+    SeekableInputStream in = file1.getInputStream();
+    
+    //Read to partway through the file
+    byte[] results1 = new byte[data.length];
+    in.read(results1, 0, SMALL_CHUNK);
+    
+    
+    //Clone the input stream. Both copies should
+    //now be positioned partway through the file.
+    SeekableInputStream in2 = in.clone();
+    
+    byte[] results2 = new byte[data.length];
+    
+    //Fill in the beginning of results2 with the data that it missed
+    //to make testing easier.
+    System.arraycopy(data, 0, results2, 0, SMALL_CHUNK);
+    
+    
+    //Read the rest of the file with both copies
+    in2.read(results2, SMALL_CHUNK, data.length);
+    in.read(results1, SMALL_CHUNK, data.length);
+    
+    //Both readers should have started from the same place
+    //and copied the rest of the data from the file
+    assertArrayEquals(data,results1);
+    assertArrayEquals(data,results2);
+  }
+  
+  /**
+   * A test that skip can jump to the correct position in the stream
+   */
+  @Test
+  public void testSeek() throws IOException {
+    File file= system.createFile("testFile1");
+
+    ByteArrayOutputStream expected = new ByteArrayOutputStream();
+    byte[] data = new byte[SMALL_CHUNK];
+    
+    //Write multiple times to the file with a lot of small chunks
+    while(expected.size() < FileSystem.CHUNK_SIZE + 1) {
+      rand.nextBytes(data);
+
+      expected.write(data);
+      writeBytes(file, data);
+    }
+    
+    byte[] expectedBytes = expected.toByteArray();
+    assertContents(expectedBytes, file);
+    
+    //Assert that there are only 2 chunks in the system, since we wrote just
+    //past the end of the first chunk.
+    assertEquals(2, chunkRegion.size());
+    
+    SeekableInputStream in = file.getInputStream();
+    
+    //Seek to several positions in the first chunk
+    checkByte(5, in, expectedBytes);
+    checkByte(50, in, expectedBytes);
+    checkByte(103, in, expectedBytes);
+    checkByte(1, in, expectedBytes);
+    
+    //Seek back and forth between chunks
+    checkByte(FileSystem.CHUNK_SIZE + 2, in, expectedBytes);
+    checkByte(23, in, expectedBytes);
+    checkByte(FileSystem.CHUNK_SIZE + 10, in, expectedBytes);
+    checkByte(1023, in, expectedBytes);
+    
+    //Read the remaining data after a seek
+    
+    in.seek(10);
+    byte[] results = new byte[expectedBytes.length];
+    
+    //Fill in the initial 10 bytes with the expected value
+    System.arraycopy(expectedBytes, 0, results, 0, 10);
+    
+    assertEquals(results.length - 10, in.read(results, 10, results.length-10));
+    assertEquals(-1, in.read());
+    
+    assertArrayEquals(expectedBytes, results);
+  }
+  
+  private void checkByte(int i, SeekableInputStream in, byte[] expectedBytes) throws IOException {
+    in.seek(i);
+    byte result = (byte) in.read();
+    
+    assertEquals(expectedBytes[i], result);
+  }
+
   /**
    * Test basic file operations - rename, delete, listFiles.
    * @throws IOException

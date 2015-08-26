@@ -34,11 +34,4 @@ public class RegionDirectoryJUnitTest extends BaseDirectoryTestCase {
   protected Directory getDirectory(Path path) throws IOException {
     return new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>());
   }
-
-  @Override
-  public void testCopyBytesWithThreads() throws Exception {
-    //TODO - this method is currently failing
-  }
-  
-  
 }

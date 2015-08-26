@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -9,7 +10,7 @@ import java.io.InputStream;
  * will keep going back to the region to look for
  * chunks until nothing is found.
  */
-final class FileInputStream extends InputStream {
+final class FileInputStream extends SeekableInputStream {
 
   private final File file;
   private byte[] chunk = null;
@@ -20,6 +21,14 @@ final class FileInputStream extends InputStream {
   public FileInputStream(File file) {
     this.file = file;
     nextChunk();
+  }
+
+  public FileInputStream(FileInputStream other) {
+    this.file = other.file;
+    this.chunk = other.chunk;
+    this.chunkId = other.chunkId;
+    this.chunkPosition = other.chunkPosition;
+    this.open = other.open;
   }
 
   @Override
@@ -33,6 +42,37 @@ final class FileInputStream extends InputStream {
     }
 
     return chunk[chunkPosition++] & 0xff;
+  }
+  
+  @Override
+  public void seek(long position) throws IOException {
+    if(position > file.length) {
+      throw new EOFException();
+    }
+    int targetChunk = (int) (position / file.getChunkSize());
+    int targetPosition = (int) (position % file.getChunkSize());
+    
+    if(targetChunk != (this.chunkId - 1)) {
+      chunk = file.getFileSystem().getChunk(this.file, targetChunk);
+      chunkId = targetChunk + 1;
+      chunkPosition = targetPosition;
+    } else {
+      chunkPosition = targetPosition;
+    }
+  }
+  
+  
+
+  @Override
+  public long skip(long n) throws IOException {
+    int currentPosition = (chunkId - 1) * file.getChunkSize() + chunkPosition;
+    seek(currentPosition + n);
+    return n;
+  }
+  
+  @Override
+  public void reset() throws IOException {
+    seek(0);
   }
 
   @Override
@@ -99,5 +139,10 @@ final class FileInputStream extends InputStream {
     if (!open) {
       throw new IOException("Closed");
     }
+  }
+  
+  @Override
+  public FileInputStream clone() {
+    return new FileInputStream(this);
   }
 }
