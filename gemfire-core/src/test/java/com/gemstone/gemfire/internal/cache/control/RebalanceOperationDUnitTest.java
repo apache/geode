@@ -753,6 +753,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     checkBucketCount(vm1, "region2", 3);
     checkBucketCount(vm2, "region2", 6);
     } finally {
+      disconnectFromDS();
       invokeInEveryVM(new SerializableRunnable() {
         public void run() {
           //clear the redundancy zone setting
