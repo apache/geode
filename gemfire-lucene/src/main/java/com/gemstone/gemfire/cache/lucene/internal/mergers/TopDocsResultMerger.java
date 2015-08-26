@@ -49,7 +49,7 @@ public class TopDocsResultMerger extends ResultMerger<LuceneResultStruct> {
     };
 
     // The queue contains iterators for all shard results. The iterator with the highest score doc is put at the head of the queue using score comparator
-    PriorityQueue<List<LuceneResultStruct>> queue = new PriorityQueue<List<LuceneResultStruct>>(comparator);
+    PriorityQueue<List<LuceneResultStruct>> queue = new PriorityQueue<List<LuceneResultStruct>>(11, comparator);
 
     LuceneQueryResultsImpl mergedResult = new LuceneQueryResultsImpl();
     for (LuceneQueryResults result : results) {
