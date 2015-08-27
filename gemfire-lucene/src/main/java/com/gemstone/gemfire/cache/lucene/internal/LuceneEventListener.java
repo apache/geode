@@ -13,7 +13,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
-import com.gemstone.gemfire.cache.lucene.internal.repository.SingleIndexRepository;
+import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.internal.logging.LogService;
 
@@ -39,14 +39,14 @@ public class LuceneEventListener implements AsyncEventListener {
     // Try to get a PDX instance if possible, rather than a deserialized object
     DefaultQuery.setPdxReadSerialized(true);
 
-    Set<SingleIndexRepository> affectedRepos = new HashSet<SingleIndexRepository>();
+    Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
     
     try {
       for (AsyncEvent event : events) {
         Region region = event.getRegion();
         Object key = event.getKey();
         
-        SingleIndexRepository repository = repositoryManager.getRepository(region, key);
+        IndexRepository repository = repositoryManager.getRepository(region, key);
 
         Operation op = event.getOperation();
 
@@ -64,7 +64,7 @@ public class LuceneEventListener implements AsyncEventListener {
         affectedRepos.add(repository);
       }
       
-      for(SingleIndexRepository repo : affectedRepos) {
+      for(IndexRepository repo : affectedRepos) {
         repo.commit();
       }
       return true;

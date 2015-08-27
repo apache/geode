@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  * An Repository interface for the writing data to lucene.
  */
-public interface SingleIndexRepository {
+public interface IndexRepository {
 
   /**
    * Create a new entry in the lucene index

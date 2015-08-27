@@ -20,7 +20,7 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
-import com.gemstone.gemfire.cache.lucene.internal.repository.SingleIndexRepository;
+import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -33,8 +33,8 @@ public class LuceneEventListenerJUnitTest {
   @Test
   public void testProcessBatch() throws IOException {
     RepositoryManager manager = Mockito.mock(RepositoryManager.class);
-    SingleIndexRepository repo1 = Mockito.mock(SingleIndexRepository.class);
-    SingleIndexRepository repo2 = Mockito.mock(SingleIndexRepository.class);
+    IndexRepository repo1 = Mockito.mock(IndexRepository.class);
+    IndexRepository repo2 = Mockito.mock(IndexRepository.class);
     Region region1 = Mockito.mock(Region.class);
     Region region2 = Mockito.mock(Region.class);
 
