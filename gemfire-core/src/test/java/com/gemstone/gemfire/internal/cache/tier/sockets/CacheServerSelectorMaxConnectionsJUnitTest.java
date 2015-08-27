@@ -11,7 +11,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 
  */
 @Category(IntegrationTest.class)
-public class BridgeServerSelectorMaxConnectionsJUnitTest extends BridgeServerMaxConnectionsJUnitTest
+public class CacheServerSelectorMaxConnectionsJUnitTest extends CacheServerMaxConnectionsJUnitTest
 {
   protected int getMaxThreads() {
     return 2; 

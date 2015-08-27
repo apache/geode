@@ -12,8 +12,8 @@ import java.io.IOException;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
@@ -61,7 +61,7 @@ public class RegisterDataSerializersOp {
       getMessage().addBytesPart(eventId.calcBytes());
       // // CALLBACK FOR TESTING PURPOSE ONLY ////
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.beforeSendingToServer(eventId);
       }
    }
@@ -85,7 +85,7 @@ public class RegisterDataSerializersOp {
       getMessage().addBytesPart(eventId.calcBytes());
       // // CALLBACK FOR TESTING PURPOSE ONLY ////
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.beforeSendingToServer(eventId);
       }
     }

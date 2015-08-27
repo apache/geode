@@ -18,7 +18,7 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 import dunit.DistributedTestCase;
 import dunit.Host;

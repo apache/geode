@@ -376,7 +376,6 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertEquals(false, DynamicRegionFactory.get().getConfig().getPersistBackup());
     assertEquals(true, DynamicRegionFactory.get().isOpen());
     assertEquals(null, DynamicRegionFactory.get().getConfig().getDiskDir());
-    assertEquals(null, DynamicRegionFactory.get().getConfig().getBridgeWriter());
     assertEquals("connectionPool", DynamicRegionFactory.get().getConfig().getPoolName());
     Region dr = getCache().getRegion("__DynamicRegions");    
     if(dr != null) {

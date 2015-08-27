@@ -66,8 +66,8 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisee;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import com.gemstone.gemfire.internal.cache.Conflatable;
@@ -2796,7 +2796,7 @@ public class CacheClientProxy implements ClientSession {
             latestValue);
         
         if (AFTER_MESSAGE_CREATION_FLAG) {
-          BridgeObserver bo = BridgeObserverHolder.getInstance();
+          ClientServerObserver bo = ClientServerObserverHolder.getInstance();
           bo.afterMessageCreation(message);
         }
      }

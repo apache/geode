@@ -5457,9 +5457,6 @@ public class PartitionedRegion extends LocalRegion implements
   protected void cacheWriterChanged(CacheWriter p_oldWriter) {
     CacheWriter oldWriter = p_oldWriter;
     super.cacheWriterChanged(oldWriter);
-    if (isBridgeWriter(oldWriter)) {
-      oldWriter = null;
-    }
     if (oldWriter == null ^ basicGetWriter() == null) {
       new UpdateAttributesProcessor(this).distribute();
     }
@@ -5469,9 +5466,6 @@ public class PartitionedRegion extends LocalRegion implements
   @Override
   protected void cacheLoaderChanged(CacheLoader oldLoader) {
     CacheLoader myOldLoader = oldLoader;
-    if (isBridgeLoader(oldLoader)) {
-      myOldLoader = null;
-    }
     this.dataStore.cacheLoaderChanged(basicGetLoader(), myOldLoader);
     super.cacheLoaderChanged(oldLoader);
     if (myOldLoader == null ^ basicGetLoader() == null) {
@@ -5902,7 +5896,7 @@ public class PartitionedRegion extends LocalRegion implements
     Collections.addAll(localServerGroups, MemberAttributes.parseGroups(null, c.getSystem().getConfig().getGroups()));
     
     for (Object object : servers) {
-      BridgeServerImpl server = (BridgeServerImpl)object;
+      CacheServerImpl server = (CacheServerImpl)object;
       if (server.isRunning() && (server.getExternalAddress() != null)) {
         Collections.addAll(localServerGroups, server.getGroups());
       }

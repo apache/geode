@@ -32,18 +32,18 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.util.BridgeMembership;
-import com.gemstone.gemfire.cache.util.BridgeMembershipEvent;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListener;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.management.membership.ClientMembership;
+import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
+import com.gemstone.gemfire.management.membership.ClientMembershipListener;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -52,12 +52,12 @@ import dunit.VM;
 import dunit.DistributedTestCase.WaitCriterion;
 
 /**
- * Tests the BridgeMembership API including BridgeMembershipListener.
+ * Tests the ClientMembership API including ClientMembershipListener.
  *
  * @author Kirk Lund
  * @since 4.2.1
  */
-public class BridgeMembershipDUnitTest extends BridgeTestCase {
+public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   protected static final boolean CLIENT = true;
   protected static final boolean SERVER = false;
@@ -66,7 +66,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
   protected static final int LEFT = 1;
   protected static final int CRASHED = 2;
     
-  public BridgeMembershipDUnitTest(String name) {
+  public ClientMembershipDUnitTest(String name) {
     super(name);
   }
 
@@ -77,7 +77,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
   
   public void tearDown2() throws Exception {
     super.tearDown2();
-    InternalBridgeMembership.unregisterAllListeners();
+    InternalClientMembership.unregisterAllListeners();
   }
 
   private void waitForAcceptsInProgressToBe(final int target)
@@ -217,17 +217,17 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
   }
 
   public void testSynchronousEvents() throws Exception {
-    InternalBridgeMembership.setForceSynchronous(true);
+    InternalClientMembership.setForceSynchronous(true);
     try {
       doTestBasicEvents();
     }
     finally {
-      InternalBridgeMembership.setForceSynchronous(false);
+      InternalClientMembership.setForceSynchronous(false);
     }
   }
   
   /**
-   * Tests event notification methods on BridgeMembership.
+   * Tests event notification methods on ClientMembership.
    */
   public void testBasicEvents() throws Exception {
     doTestBasicEvents();
@@ -239,22 +239,22 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     final String[] memberId = new String[3];
     final boolean[] isClient = new boolean[3];
     
-    BridgeMembershipListener listener = new BridgeMembershipListener() {
-      public synchronized void memberJoined(BridgeMembershipEvent event) {
+    ClientMembershipListener listener = new ClientMembershipListener() {
+      public synchronized void memberJoined(ClientMembershipEvent event) {
         fired[JOINED] = true;
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
         isClient[JOINED] = event.isClient();
         notify();
       }
-      public synchronized void memberLeft(BridgeMembershipEvent event) {
+      public synchronized void memberLeft(ClientMembershipEvent event) {
         fired[LEFT] = true;
         member[LEFT] = event.getMember();
         memberId[LEFT] = event.getMemberId();
         isClient[LEFT] = event.isClient();
         notify();
       }
-      public synchronized void memberCrashed(BridgeMembershipEvent event) {
+      public synchronized void memberCrashed(ClientMembershipEvent event) {
         fired[CRASHED] = true;
         member[CRASHED] = event.getMember();
         memberId[CRASHED] = event.getMemberId();
@@ -262,11 +262,11 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         notify();
       }
     };
-    BridgeMembership.registerBridgeMembershipListener(listener);
+    ClientMembership.registerClientMembershipListener(listener);
     
     // test JOIN for server
     DistributedMember serverJoined = new TestDistributedMember("serverJoined");
-    InternalBridgeMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyJoined(serverJoined, SERVER);
     synchronized(listener) {
       if (!fired[JOINED]) {
         listener.wait(2000);
@@ -286,7 +286,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     // test JOIN for client
     DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalBridgeMembership.notifyJoined(clientJoined, CLIENT);
+    InternalClientMembership.notifyJoined(clientJoined, CLIENT);
     synchronized(listener) {
       if (!fired[JOINED]) {
         listener.wait(2000);
@@ -306,7 +306,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     // test LEFT for server
     DistributedMember serverLeft = new TestDistributedMember("serverLeft");
-    InternalBridgeMembership.notifyLeft(serverLeft, SERVER);
+    InternalClientMembership.notifyLeft(serverLeft, SERVER);
     synchronized(listener) {
       if (!fired[LEFT]) {
         listener.wait(2000);
@@ -326,7 +326,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     // test LEFT for client
     DistributedMember clientLeft = new TestDistributedMember("clientLeft");
-    InternalBridgeMembership.notifyLeft(clientLeft, CLIENT);
+    InternalClientMembership.notifyLeft(clientLeft, CLIENT);
     synchronized(listener) {
       if (!fired[LEFT]) {
         listener.wait(2000);
@@ -346,7 +346,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     // test CRASHED for server
     DistributedMember serverCrashed = new TestDistributedMember("serverCrashed");
-    InternalBridgeMembership.notifyCrashed(serverCrashed, SERVER);
+    InternalClientMembership.notifyCrashed(serverCrashed, SERVER);
     synchronized(listener) {
       if (!fired[CRASHED]) {
         listener.wait(2000);
@@ -366,7 +366,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     // test CRASHED for client
     DistributedMember clientCrashed = new TestDistributedMember("clientCrashed");
-    InternalBridgeMembership.notifyCrashed(clientCrashed, CLIENT);
+    InternalClientMembership.notifyCrashed(clientCrashed, CLIENT);
     synchronized(listener) {
       if (!fired[CRASHED]) {
         listener.wait(2000);
@@ -402,33 +402,33 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
   }
   
   /**
-   * Tests unregisterBridgeMembershipListener to ensure that no further events
+   * Tests unregisterClientMembershipListener to ensure that no further events
    * are delivered to unregistered listeners.
    */
-  public void testUnregisterBridgeMembershipListener() throws Exception {
+  public void testUnregisterClientMembershipListener() throws Exception {
     final boolean[] fired = new boolean[1];
     final DistributedMember[] member = new DistributedMember[1];
     final String[] memberId = new String[1];
     final boolean[] isClient = new boolean[1];
     
-    BridgeMembershipListener listener = new BridgeMembershipListener() {
-      public synchronized void memberJoined(BridgeMembershipEvent event) {
+    ClientMembershipListener listener = new ClientMembershipListener() {
+      public synchronized void memberJoined(ClientMembershipEvent event) {
         fired[0] = true;
         member[0] = event.getMember();
         memberId[0] = event.getMemberId();
         isClient[0] = event.isClient();
         notify();
       }
-      public void memberLeft(BridgeMembershipEvent event) {
+      public void memberLeft(ClientMembershipEvent event) {
       }
-      public void memberCrashed(BridgeMembershipEvent event) {
+      public void memberCrashed(ClientMembershipEvent event) {
       }
     };
-    BridgeMembership.registerBridgeMembershipListener(listener);
+    ClientMembership.registerClientMembershipListener(listener);
     
     // fire event to make sure listener is registered
     DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listener) {
       if (!fired[0]) {
         listener.wait(2000);
@@ -445,8 +445,8 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     assertFalse(isClient[0]);
 
     // unregister and verify listener is not notified
-    BridgeMembership.unregisterBridgeMembershipListener(listener);
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    ClientMembership.unregisterClientMembershipListener(listener);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listener) {
       listener.wait(20);
     }
@@ -463,11 +463,11 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     final String[] memberId = new String[NUM_LISTENERS];
     final boolean[] isClient = new boolean[NUM_LISTENERS];
     
-    final BridgeMembershipListener[] listeners = new BridgeMembershipListener[NUM_LISTENERS];
+    final ClientMembershipListener[] listeners = new ClientMembershipListener[NUM_LISTENERS];
     for (int i = 0; i < NUM_LISTENERS; i++) {
       final int whichListener = i;
-      listeners[i] = new BridgeMembershipListener() {
-        public synchronized void memberJoined(BridgeMembershipEvent event) {
+      listeners[i] = new ClientMembershipListener() {
+        public synchronized void memberJoined(ClientMembershipEvent event) {
           assertFalse(fired[whichListener]);
           assertNull(member[whichListener]);
           assertNull(memberId[whichListener]);
@@ -478,15 +478,15 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
           isClient[whichListener] = event.isClient();
           notify();
         }
-        public void memberLeft(BridgeMembershipEvent event) {
+        public void memberLeft(ClientMembershipEvent event) {
         }
-        public void memberCrashed(BridgeMembershipEvent event) {
+        public void memberCrashed(ClientMembershipEvent event) {
         }
       };
     }
     
     final DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     for (int i = 0; i < NUM_LISTENERS; i++) {
       synchronized(listeners[i]) {
         listeners[i].wait(20);
@@ -499,21 +499,21 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     
     // attempt to register same listener twice... 2nd reg should be ignored
     // failure would cause an assertion failure in memberJoined impl
-    BridgeMembership.registerBridgeMembershipListener(listeners[0]);
-    BridgeMembership.registerBridgeMembershipListener(listeners[0]);
+    ClientMembership.registerClientMembershipListener(listeners[0]);
+    ClientMembership.registerClientMembershipListener(listeners[0]);
     
-    BridgeMembershipListener[] registeredListeners = 
-      BridgeMembership.getBridgeMembershipListeners();
+    ClientMembershipListener[] registeredListeners = 
+      ClientMembership.getClientMembershipListeners();
     assertEquals(1, registeredListeners.length);
     assertEquals(listeners[0], registeredListeners[0]);
     
-    BridgeMembership.registerBridgeMembershipListener(listeners[1]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.registerClientMembershipListener(listeners[1]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(2, registeredListeners.length);
     assertEquals(listeners[0], registeredListeners[0]);
     assertEquals(listeners[1], registeredListeners[1]);
 
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -534,12 +534,12 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     resetArraysForTesting(fired, member, memberId, isClient);
         
-    BridgeMembership.unregisterBridgeMembershipListener(listeners[0]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.unregisterClientMembershipListener(listeners[0]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(1, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
     
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -560,15 +560,15 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     resetArraysForTesting(fired, member, memberId, isClient);
 
-    BridgeMembership.registerBridgeMembershipListener(listeners[2]);
-    BridgeMembership.registerBridgeMembershipListener(listeners[3]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.registerClientMembershipListener(listeners[2]);
+    ClientMembership.registerClientMembershipListener(listeners[3]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(3, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
     assertEquals(listeners[2], registeredListeners[1]);
     assertEquals(listeners[3], registeredListeners[2]);
 
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listeners[3]) {
       if (!fired[3]) {
         listeners[3].wait(2000);
@@ -589,15 +589,15 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     resetArraysForTesting(fired, member, memberId, isClient);
     
-    BridgeMembership.registerBridgeMembershipListener(listeners[0]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.registerClientMembershipListener(listeners[0]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(4, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
     assertEquals(listeners[2], registeredListeners[1]);
     assertEquals(listeners[3], registeredListeners[2]);
     assertEquals(listeners[0], registeredListeners[3]);
 
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -611,14 +611,14 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     resetArraysForTesting(fired, member, memberId, isClient);
     
-    BridgeMembership.unregisterBridgeMembershipListener(listeners[3]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.unregisterClientMembershipListener(listeners[3]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(3, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
     assertEquals(listeners[2], registeredListeners[1]);
     assertEquals(listeners[0], registeredListeners[2]);
     
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -639,13 +639,13 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     resetArraysForTesting(fired, member, memberId, isClient);
 
-    BridgeMembership.unregisterBridgeMembershipListener(listeners[2]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.unregisterClientMembershipListener(listeners[2]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(2, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
     assertEquals(listeners[0], registeredListeners[1]);
     
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -666,12 +666,12 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     resetArraysForTesting(fired, member, memberId, isClient);
 
-    BridgeMembership.unregisterBridgeMembershipListener(listeners[1]);
-    BridgeMembership.unregisterBridgeMembershipListener(listeners[0]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.unregisterClientMembershipListener(listeners[1]);
+    ClientMembership.unregisterClientMembershipListener(listeners[0]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(0, registeredListeners.length);
     
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     for (int i = 0; i < NUM_LISTENERS; i++) {
       synchronized(listeners[i]) {
         listeners[i].wait(20);
@@ -683,12 +683,12 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
     resetArraysForTesting(fired, member, memberId, isClient);
     
-    BridgeMembership.registerBridgeMembershipListener(listeners[1]);
-    registeredListeners = BridgeMembership.getBridgeMembershipListeners();
+    ClientMembership.registerClientMembershipListener(listeners[1]);
+    registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(1, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
     
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -709,38 +709,38 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     }
   }
  
-  protected static int testBridgeMembershipEventsInClient_port;
-  private static int getTestBridgeMembershipEventsInClient_port() {
-    return testBridgeMembershipEventsInClient_port;
+  protected static int testClientMembershipEventsInClient_port;
+  private static int getTestClientMembershipEventsInClient_port() {
+    return testClientMembershipEventsInClient_port;
   }
   /**
    * Tests notification of events in client process. Bridge clients detect
    * server joins when the client connects to the server. If the server
    * crashes or departs gracefully, the client will detect this as a crash.
    */
-  public void testBridgeMembershipEventsInClient() throws Exception {
+  public void testClientMembershipEventsInClient() throws Exception {
     addExpectedException("IOException");
     final boolean[] fired = new boolean[3];
     final DistributedMember[] member = new DistributedMember[3];
     final String[] memberId = new String[3];
     final boolean[] isClient = new boolean[3];
     
-    // create and register BridgeMembershipListener in controller vm...
-    BridgeMembershipListener listener = new BridgeMembershipListener() {
-      public synchronized void memberJoined(BridgeMembershipEvent event) {
-        getLogWriter().info("[testBridgeMembershipEventsInClient] memberJoined: " + event);
+    // create and register ClientMembershipListener in controller vm...
+    ClientMembershipListener listener = new ClientMembershipListener() {
+      public synchronized void memberJoined(ClientMembershipEvent event) {
+        getLogWriter().info("[testClientMembershipEventsInClient] memberJoined: " + event);
         fired[JOINED] = true;
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
         isClient[JOINED] = event.isClient();
         notifyAll();
       }
-      public synchronized void memberLeft(BridgeMembershipEvent event) {
-        getLogWriter().info("[testBridgeMembershipEventsInClient] memberLeft: " + event);
-//        fail("Please update testBridgeMembershipEventsInClient to handle memberLeft for BridgeServer.");
+      public synchronized void memberLeft(ClientMembershipEvent event) {
+        getLogWriter().info("[testClientMembershipEventsInClient] memberLeft: " + event);
+//        fail("Please update testClientMembershipEventsInClient to handle memberLeft for BridgeServer.");
       }
-      public synchronized void memberCrashed(BridgeMembershipEvent event) {
-        getLogWriter().info("[testBridgeMembershipEventsInClient] memberCrashed: " + event);
+      public synchronized void memberCrashed(ClientMembershipEvent event) {
+        getLogWriter().info("[testClientMembershipEventsInClient] memberCrashed: " + event);
         fired[CRASHED] = true;
         member[CRASHED] = event.getMember();
         memberId[CRASHED] = event.getMemberId();
@@ -748,7 +748,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         notifyAll();
       }
     };
-    BridgeMembership.registerBridgeMembershipListener(listener);
+    ClientMembership.registerClientMembershipListener(listener);
 
     final VM vm0 = Host.getHost(0).getVM(0);
     final String name = this.getUniqueName();
@@ -758,14 +758,14 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create BridgeServer") {
       public void run2() throws CacheException {
         try {
-          getLogWriter().info("[testBridgeMembershipEventsInClient] Create BridgeServer");
+          getLogWriter().info("[testClientMembershipEventsInClient] Create BridgeServer");
           getSystem();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           Region region = createRegion(name, factory.create());
           assertNotNull(region);
           assertNotNull(getRootRegion().getSubregion(name));
-          testBridgeMembershipEventsInClient_port = startBridgeServer(0);
+          testClientMembershipEventsInClient_port = startBridgeServer(0);
         }
         catch(IOException e) {
           getSystem().getLogWriter().fine(new Exception(e));
@@ -775,19 +775,19 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     });
     
     // gather details for later creation of ConnectionPool...
-    ports[0] = vm0.invokeInt(BridgeMembershipDUnitTest.class, 
-                             "getTestBridgeMembershipEventsInClient_port");
+    ports[0] = vm0.invokeInt(ClientMembershipDUnitTest.class, 
+                             "getTestClientMembershipEventsInClient_port");
     assertTrue(ports[0] != 0);
 
-    DistributedMember serverMember = (DistributedMember) vm0.invoke(BridgeMembershipDUnitTest.class,
+    DistributedMember serverMember = (DistributedMember) vm0.invoke(ClientMembershipDUnitTest.class,
     "getDistributedMember");
 
-    String serverMemberId = (String) vm0.invoke(BridgeMembershipDUnitTest.class,
+    String serverMemberId = (String) vm0.invoke(ClientMembershipDUnitTest.class,
                                                 "getMemberId");
 
-    getLogWriter().info("[testBridgeMembershipEventsInClient] ports[0]=" + ports[0]);
-    getLogWriter().info("[testBridgeMembershipEventsInClient] serverMember=" + serverMember);
-    getLogWriter().info("[testBridgeMembershipEventsInClient] serverMemberId=" + serverMemberId);
+    getLogWriter().info("[testClientMembershipEventsInClient] ports[0]=" + ports[0]);
+    getLogWriter().info("[testClientMembershipEventsInClient] serverMember=" + serverMember);
+    getLogWriter().info("[testClientMembershipEventsInClient] serverMemberId=" + serverMemberId);
 
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
@@ -803,9 +803,9 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     assertFalse(isClient[CRASHED]);
     
     // sanity check...
-    getLogWriter().info("[testBridgeMembershipEventsInClient] sanity check");
+    getLogWriter().info("[testClientMembershipEventsInClient] sanity check");
     DistributedMember test = new TestDistributedMember("test");
-    InternalBridgeMembership.notifyJoined(test, SERVER);
+    InternalClientMembership.notifyJoined(test, SERVER);
     synchronized(listener) {
       if (!fired[JOINED] && !fired[CRASHED]) {
         listener.wait(2000);
@@ -827,7 +827,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
     
     // create bridge client in controller vm...
-    getLogWriter().info("[testBridgeMembershipEventsInClient] create bridge client");
+    getLogWriter().info("[testClientMembershipEventsInClient] create bridge client");
     Properties config = new Properties();
     config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     config.setProperty(DistributionConfig.LOCATORS_NAME, "");
@@ -837,7 +837,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       getCache();
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.LOCAL);
-      BridgeTestCase.configureConnectionPool(factory, getServerHostName(Host.getHost(0)), ports, true, -1, -1, null);
+      ClientServerTestCase.configureConnectionPool(factory, getServerHostName(Host.getHost(0)), ports, true, -1, -1, null);
       createRegion(name, factory.create());
       assertNotNull(getRootRegion().getSubregion(name));
     }
@@ -850,7 +850,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       }
     }
     
-    getLogWriter().info("[testBridgeMembershipEventsInClient] assert client detected server join");
+    getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server join");
     
     // first check the getCurrentServers() result
     ClientCache clientCache = (ClientCache)getCache();
@@ -879,7 +879,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     vm0.invoke(new SerializableRunnable("Stop BridgeServer") {
       public void run() {
-        getLogWriter().info("[testBridgeMembershipEventsInClient] Stop BridgeServer");
+        getLogWriter().info("[testClientMembershipEventsInClient] Stop BridgeServer");
         stopBridgeServers(getCache());
       }
     });
@@ -889,7 +889,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       }
     }
     
-    getLogWriter().info("[testBridgeMembershipEventsInClient] assert client detected server departure");
+    getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server departure");
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
     assertNull(memberId[JOINED]);
@@ -910,7 +910,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     vm0.invoke(new CacheSerializableRunnable("Recreate BridgeServer") {
       public void run2() throws CacheException {
         try {
-          getLogWriter().info("[testBridgeMembershipEventsInClient] restarting BridgeServer");
+          getLogWriter().info("[testClientMembershipEventsInClient] restarting BridgeServer");
           startBridgeServer(ports[0]);
         }
         catch(IOException e) {
@@ -925,7 +925,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       }
     }
     
-    getLogWriter().info("[testBridgeMembershipEventsInClient] assert client detected server recovery");
+    getLogWriter().info("[testClientMembershipEventsInClient] assert client detected server recovery");
     assertTrue(fired[JOINED]);
     assertNotNull(member[JOINED]);
     assertNotNull(memberId[JOINED]);
@@ -945,16 +945,16 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
    * Tests notification of events in server process. Bridge servers detect
    * client joins when the client connects to the server.
    */
-  public void testBridgeMembershipEventsInServer() throws Exception {
+  public void testClientMembershipEventsInServer() throws Exception {
     final boolean[] fired = new boolean[3];
     final DistributedMember[] member = new DistributedMember[3];
     final String[] memberId = new String[3];
     final boolean[] isClient = new boolean[3];
     
-    // create and register BridgeMembershipListener in controller vm...
-    BridgeMembershipListener listener = new BridgeMembershipListener() {
-      public synchronized void memberJoined(BridgeMembershipEvent event) {
-        getLogWriter().info("[testBridgeMembershipEventsInServer] memberJoined: " + event);
+    // create and register ClientMembershipListener in controller vm...
+    ClientMembershipListener listener = new ClientMembershipListener() {
+      public synchronized void memberJoined(ClientMembershipEvent event) {
+        getLogWriter().info("[testClientMembershipEventsInServer] memberJoined: " + event);
         fired[JOINED] = true;
         member[JOINED] = event.getMember();
         memberId[JOINED] = event.getMemberId();
@@ -962,8 +962,8 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         notifyAll();
         assertFalse(fired[LEFT] || fired[CRASHED]);
       }
-      public synchronized void memberLeft(BridgeMembershipEvent event) {
-        getLogWriter().info("[testBridgeMembershipEventsInServer] memberLeft: " + event);
+      public synchronized void memberLeft(ClientMembershipEvent event) {
+        getLogWriter().info("[testClientMembershipEventsInServer] memberLeft: " + event);
         fired[LEFT] = true;
         member[LEFT] = event.getMember();
         memberId[LEFT] = event.getMemberId();
@@ -971,8 +971,8 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         notifyAll();
         assertFalse(fired[JOINED] || fired[CRASHED]);
       }
-      public synchronized void memberCrashed(BridgeMembershipEvent event) {
-        getLogWriter().info("[testBridgeMembershipEventsInServer] memberCrashed: " + event);
+      public synchronized void memberCrashed(ClientMembershipEvent event) {
+        getLogWriter().info("[testClientMembershipEventsInServer] memberCrashed: " + event);
         fired[CRASHED] = true;
         member[CRASHED] = event.getMember();
         memberId[CRASHED] = event.getMemberId();
@@ -981,14 +981,14 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         assertFalse(fired[JOINED] || fired[LEFT]);
       }
     };
-    BridgeMembership.registerBridgeMembershipListener(listener);
+    ClientMembership.registerClientMembershipListener(listener);
 
     final VM vm0 = Host.getHost(0).getVM(0);
     final String name = this.getUniqueName();
     final int[] ports = new int[1];
 
     // create BridgeServer in controller vm...
-    getLogWriter().info("[testBridgeMembershipEventsInServer] Create BridgeServer");
+    getLogWriter().info("[testClientMembershipEventsInServer] Create BridgeServer");
     getSystem();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -1001,9 +1001,9 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     String serverMemberId = getMemberId();
     DistributedMember serverMember = getDistributedMember();
 
-    getLogWriter().info("[testBridgeMembershipEventsInServer] ports[0]=" + ports[0]);
-    getLogWriter().info("[testBridgeMembershipEventsInServer] serverMemberId=" + serverMemberId);
-    getLogWriter().info("[testBridgeMembershipEventsInServer] serverMember=" + serverMember);
+    getLogWriter().info("[testClientMembershipEventsInServer] ports[0]=" + ports[0]);
+    getLogWriter().info("[testClientMembershipEventsInServer] serverMemberId=" + serverMemberId);
+    getLogWriter().info("[testClientMembershipEventsInServer] serverMember=" + serverMember);
 
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
@@ -1019,9 +1019,9 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     assertFalse(isClient[CRASHED]);
     
     // sanity check...
-    getLogWriter().info("[testBridgeMembershipEventsInServer] sanity check");
+    getLogWriter().info("[testClientMembershipEventsInServer] sanity check");
     DistributedMember test = new TestDistributedMember("test");
-    InternalBridgeMembership.notifyJoined(test, CLIENT);
+    InternalClientMembership.notifyJoined(test, CLIENT);
     synchronized(listener) {
       if (!fired[JOINED] && !fired[LEFT] && !fired[CRASHED]) {
         listener.wait(2000);
@@ -1045,14 +1045,14 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     SerializableRunnable createConnectionPool =
     new CacheSerializableRunnable("Create connectionPool") {
       public void run2() throws CacheException {
-        getLogWriter().info("[testBridgeMembershipEventsInServer] create bridge client");
+        getLogWriter().info("[testClientMembershipEventsInServer] create bridge client");
         Properties config = new Properties();
         config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
         config.setProperty(DistributionConfig.LOCATORS_NAME, "");
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, 2, null);
+        ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, 2, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
       }
@@ -1060,9 +1060,9 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     // create bridge client in vm0...
     vm0.invoke(createConnectionPool);
-    String clientMemberId = (String) vm0.invoke(BridgeMembershipDUnitTest.class,
+    String clientMemberId = (String) vm0.invoke(ClientMembershipDUnitTest.class,
                                                 "getMemberId");
-    DistributedMember clientMember = (DistributedMember) vm0.invoke(BridgeMembershipDUnitTest.class,
+    DistributedMember clientMember = (DistributedMember) vm0.invoke(ClientMembershipDUnitTest.class,
                                                 "getDistributedMember");
                                                 
     synchronized(listener) {
@@ -1071,7 +1071,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       }
     }
     
-    getLogWriter().info("[testBridgeMembershipEventsInServer] assert server detected client join");
+    getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client join");
     assertTrue(fired[JOINED]);
     assertEquals(member[JOINED] + " should equal " + clientMember,
       clientMember, member[JOINED]);
@@ -1092,7 +1092,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     
     vm0.invoke(new SerializableRunnable("Stop bridge client") {
       public void run() {
-        getLogWriter().info("[testBridgeMembershipEventsInServer] Stop bridge client");
+        getLogWriter().info("[testClientMembershipEventsInServer] Stop bridge client");
         getRootRegion().getSubregion(name).close();
         Map m = PoolManager.getAll();
         Iterator mit = m.values().iterator();
@@ -1109,7 +1109,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       }
     }
     
-    getLogWriter().info("[testBridgeMembershipEventsInServer] assert server detected client left");
+    getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client left");
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
     assertNull(memberId[JOINED]);
@@ -1126,7 +1126,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
     // reconnect bridge client to test for crashed event
     vm0.invoke(createConnectionPool);
-    clientMemberId = (String) vm0.invoke(BridgeMembershipDUnitTest.class,
+    clientMemberId = (String) vm0.invoke(ClientMembershipDUnitTest.class,
                                          "getMemberId");
                                                 
     synchronized(listener) {
@@ -1135,7 +1135,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       }
     }
     
-    getLogWriter().info("[testBridgeMembershipEventsInServer] assert server detected client re-join");
+    getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client re-join");
     assertTrue(fired[JOINED]);
     assertEquals(clientMember, member[JOINED]);
     assertEquals(clientMemberId, memberId[JOINED]);
@@ -1156,7 +1156,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     try {
       vm0.invoke(new SerializableRunnable("Stop bridge client") {
         public void run() {
-          getLogWriter().info("[testBridgeMembershipEventsInServer] Stop bridge client");
+          getLogWriter().info("[testClientMembershipEventsInServer] Stop bridge client");
           getRootRegion().getSubregion(name).close();
           Map m = PoolManager.getAll();
           Iterator mit = m.values().iterator();
@@ -1173,7 +1173,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         }
       }
       
-      getLogWriter().info("[testBridgeMembershipEventsInServer] assert server detected client crashed");
+      getLogWriter().info("[testClientMembershipEventsInServer] assert server detected client crashed");
       assertFalse(fired[JOINED]);
       assertNull(member[JOINED]);
       assertNull(memberId[JOINED]);
@@ -1198,7 +1198,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
    * complete handshaking before making the client leave. Without doing this
    * subsequent socket handshakes that are processed could fire join events
    * after departure events and then a departure event again. If you see
-   * failures in testBridgeMembershipEventsInServer, try increasing this
+   * failures in testClientMembershipEventsInServer, try increasing this
    * timeout.
    */
   private void pauseForClientToJoin() {
@@ -1215,9 +1215,9 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     final String[] memberId = new String[3];
     final boolean[] isClient = new boolean[3];
     
-    // create and register BridgeMembershipListener in controller vm...
-    BridgeMembershipListener listener = new BridgeMembershipListener() {
-      public synchronized void memberJoined(BridgeMembershipEvent event) {
+    // create and register ClientMembershipListener in controller vm...
+    ClientMembershipListener listener = new ClientMembershipListener() {
+      public synchronized void memberJoined(ClientMembershipEvent event) {
         assertFalse(fired[JOINED]);
         assertNull(member[JOINED]);
         assertNull(memberId[JOINED]);
@@ -1228,12 +1228,12 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         isClient[JOINED] = event.isClient();
         notifyAll();
       }
-      public synchronized void memberLeft(BridgeMembershipEvent event) {
+      public synchronized void memberLeft(ClientMembershipEvent event) {
       }
-      public synchronized void memberCrashed(BridgeMembershipEvent event) {
+      public synchronized void memberCrashed(ClientMembershipEvent event) {
       }
     };
-    BridgeMembership.registerBridgeMembershipListener(listener);
+    ClientMembership.registerClientMembershipListener(listener);
     
     // create loner in controller vm...
     Properties config = new Properties();
@@ -1243,7 +1243,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     
     // assert that event is fired while connected
     DistributedMember serverJoined = new TestDistributedMember("serverJoined");
-    InternalBridgeMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyJoined(serverJoined, SERVER);
     synchronized(listener) {
       if (!fired[JOINED]) {
         listener.wait(2000);
@@ -1259,7 +1259,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     disconnectFromDS();
     
 
-    InternalBridgeMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyJoined(serverJoined, SERVER);
     synchronized(listener) {
       listener.wait(20);
     }
@@ -1273,7 +1273,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     InternalDistributedSystem sys = getSystem(config);
     assertTrue(sys.isConnected());
 
-    InternalBridgeMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyJoined(serverJoined, SERVER);
     synchronized(listener) {
       if (!fired[JOINED]) {
         listener.wait(2000);
@@ -1287,7 +1287,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
   
   /**
    * Starts up server in controller vm and 4 clients, then calls and tests
-   * BridgeMembership.getConnectedClients(). 
+   * ClientMembership.getConnectedClients(). 
    */
   public void testGetConnectedClients() throws Exception {
     final String name = this.getUniqueName();
@@ -1320,7 +1320,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
       }
@@ -1333,7 +1333,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       final VM vm = Host.getHost(0).getVM(i);
       vm.invoke(createPool);
       clientMemberIdArray[i] =  String.valueOf(vm.invoke(
-        BridgeMembershipDUnitTest.class, "getMemberId"));
+        ClientMembershipDUnitTest.class, "getMemberId"));
     }
     Collection clientMemberIds = Arrays.asList(clientMemberIdArray);
                                                 
@@ -1344,7 +1344,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
           return "wait for clients";
         }
         public boolean done() {
-          Map connectedClients = InternalBridgeMembership.getConnectedClients(false);
+          Map connectedClients = InternalClientMembership.getConnectedClients(false);
           if (connectedClients == null) {
             return false;
           }
@@ -1357,7 +1357,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       waitForCriterion(wc, 10000, 100, false);
     }
     
-    Map connectedClients = InternalBridgeMembership.getConnectedClients(false);
+    Map connectedClients = InternalClientMembership.getConnectedClients(false);
     assertNotNull(connectedClients);
     assertEquals(clientMemberIds.size(), connectedClients.size());
     for (Iterator iter = connectedClients.keySet().iterator(); iter.hasNext();) {
@@ -1371,7 +1371,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
 
   /**
    * Starts up 4 server and the controller vm as a client, then calls and tests
-   * BridgeMembership.getConnectedServers(). 
+   * ClientMembership.getConnectedServers(). 
    */
   public void testGetConnectedServers() throws Exception {
     final Host host = Host.getHost(0);
@@ -1409,7 +1409,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
             getDistributedMember());
         }
       });
-      ports[whichVM] = vm.invokeInt(BridgeMembershipDUnitTest.class, 
+      ports[whichVM] = vm.invokeInt(ClientMembershipDUnitTest.class, 
                                     "getTestGetConnectedServers_port");
       assertTrue(ports[whichVM] != 0);
     }
@@ -1428,7 +1428,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       getLogWriter().info("[testGetConnectedServers] creating connectionpool for " + 
         getServerHostName(host) + " " + ports[i]);
       int[] thisServerPorts = new int[] { ports[i] };
-      BridgeTestCase.configureConnectionPoolWithName(factory, getServerHostName(host), thisServerPorts, false, -1, -1, null,"pooly"+i);
+      ClientServerTestCase.configureConnectionPoolWithName(factory, getServerHostName(host), thisServerPorts, false, -1, -1, null,"pooly"+i);
       Region region = createRegion(name+"_"+i, factory.create());
       assertNotNull(getRootRegion().getSubregion(name+"_"+i));
       region.get("KEY-1");
@@ -1444,7 +1444,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
           if (PoolManager.getAll().size() != expectedVMCount) {
             return false;
           }
-          Map connectedServers = InternalBridgeMembership.getConnectedServers();
+          Map connectedServers = InternalClientMembership.getConnectedServers();
           if (connectedServers == null) {
             return false;
           }
@@ -1462,7 +1462,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       
     }
     
-    Map connectedServers = InternalBridgeMembership.getConnectedServers();
+    Map connectedServers = InternalClientMembership.getConnectedServers();
     assertNotNull(connectedServers);
     assertEquals(host.getVMCount(), connectedServers.size());
     for (Iterator iter = connectedServers.keySet().iterator(); iter.hasNext();) {
@@ -1516,7 +1516,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
             getMemberId());
         }
       });
-      ports[whichVM] = vm.invokeInt(BridgeMembershipDUnitTest.class, 
+      ports[whichVM] = vm.invokeInt(ClientMembershipDUnitTest.class, 
                                     "getTestGetNotifiedClients_port");
       assertTrue(ports[whichVM] != 0);
     }
@@ -1532,7 +1532,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     factory.setScope(Scope.LOCAL);
 
     getLogWriter().info("[testGetNotifiedClients] creating connection pool");
-    BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
+    ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
     Region region = createRegion(name, factory.create());
     assertNotNull(getRootRegion().getSubregion(name));
     region.registerInterest("KEY-1");
@@ -1551,7 +1551,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
       final VM vm = Host.getHost(0).getVM(i);
       vm.invoke(new CacheSerializableRunnable("Create bridge server") {
         public void run2() throws CacheException {
-          Map clients = InternalBridgeMembership.getConnectedClients(true);
+          Map clients = InternalClientMembership.getConnectedClients(true);
           assertNotNull(clients);
           testGetNotifiedClients_clientCount = clients.size();
           if (testGetNotifiedClients_clientCount > 0) {
@@ -1560,7 +1560,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
           }
         }
       });
-      clientCounts[whichVM] = vm.invokeInt(BridgeMembershipDUnitTest.class, 
+      clientCounts[whichVM] = vm.invokeInt(ClientMembershipDUnitTest.class, 
                               "getTestGetNotifiedClients_clientCount");
     }
     

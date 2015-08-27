@@ -17,7 +17,7 @@ import com.gemstone.gemfire.cache.InterestRegistrationListener;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.AbstractBridgeServer;
+import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -27,10 +27,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @author David Whitlock
  * @since 4.0
  */
-public class BridgeServerCreation extends AbstractBridgeServer {
+public class CacheServerCreation extends AbstractCacheServer {
 
-  // moved to AbstractBridgeServer
-  
   //////////////////////  Constructors  //////////////////////
 
   /**
@@ -40,11 +38,11 @@ public class BridgeServerCreation extends AbstractBridgeServer {
    * @param cache
    *        The cache being served
    */
-  BridgeServerCreation(InternalCache cache) {
+  CacheServerCreation(InternalCache cache) {
     super(cache);
   }
 
-  BridgeServerCreation(InternalCache cache, boolean attachListener) {
+  CacheServerCreation(InternalCache cache, boolean attachListener) {
     super(cache, attachListener);
   }
   
@@ -53,7 +51,7 @@ public class BridgeServerCreation extends AbstractBridgeServer {
    * @param cache
    * @param other
    */
-  public BridgeServerCreation(InternalCache cache, CacheServer other) {
+  public CacheServerCreation(InternalCache cache, CacheServer other) {
     super(cache);
     setPort(other.getPort());
     setBindAddress(other.getBindAddress());
@@ -225,23 +223,14 @@ public class BridgeServerCreation extends AbstractBridgeServer {
     //TODO Yogesh : implement me
   }
 
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.util.BridgeServer#getAllClientSessions()
-   */
   public Set getAllClientSessions() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.util.BridgeServer#getClientSession(com.gemstone.gemfire.distributed.DistributedMember)
-   */
   public ClientSession getClientSession(DistributedMember member) {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.util.BridgeServer#getClientSession(java.lang.String)
-   */
   public ClientSession getClientSession(String durableClientId) {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }

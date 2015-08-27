@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
-
 import junit.framework.TestCase;
 
 import com.gemstone.gemfire.Statistics;
@@ -28,7 +27,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -37,13 +36,13 @@ import dunit.DistributedTestCase;
 import dunit.DistributedTestCase.WaitCriterion;
 
 /**
- * Make sure max-connections on bridge server is enforced
+ * Make sure max-connections on cache server is enforced
  *
  * @author darrel
  *
  */
 @Category(IntegrationTest.class)
-public class BridgeServerMaxConnectionsJUnitTest
+public class CacheServerMaxConnectionsJUnitTest
 
 {
 
@@ -118,7 +117,7 @@ public class BridgeServerMaxConnectionsJUnitTest
    */
   private int createServer()
   {
-    BridgeServer server = null;
+    CacheServer server = null;
     try {
       Properties p = new Properties();
       // make it a loner
@@ -126,7 +125,7 @@ public class BridgeServerMaxConnectionsJUnitTest
       p.put("locators", "");
       this.system = DistributedSystem.connect(p);
       this.cache = CacheFactory.create(system);
-      server = this.cache.addBridgeServer();
+      server = this.cache.addCacheServer();
       int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       server.setMaxConnections(MAX_CNXS);
       server.setMaxThreads(getMaxThreads());

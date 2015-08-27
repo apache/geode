@@ -41,8 +41,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.cache.server.internal.LoadMonitor;
-import com.gemstone.gemfire.cache.util.BridgeMembership;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListener;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
@@ -56,7 +54,7 @@ import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.admin.ClientHealthMonitoringRegion;
-import com.gemstone.gemfire.internal.cache.BridgeServerAdvisor.BridgeServerProfile;
+import com.gemstone.gemfire.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
@@ -65,6 +63,8 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.management.membership.ClientMembership;
+import com.gemstone.gemfire.management.membership.ClientMembershipListener;
 
 /**
  * An implementation of the <code>CacheServer</code> interface that delegates
@@ -74,8 +74,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * @since 4.0
  */
 @SuppressWarnings("deprecation")
-public class BridgeServerImpl
-  extends AbstractBridgeServer
+public class CacheServerImpl
+  extends AbstractCacheServer
   implements DistributionAdvisee {
 
   private static final Logger logger = LogService.getLogger();
@@ -85,15 +85,11 @@ public class BridgeServerImpl
   /** The acceptor that does the actual serving */
   private volatile AcceptorImpl acceptor;
 
-  // moved to AbstractBridgeServer
-
-
-
   /**
-   * The advisor used by this bridge sever.
+   * The advisor used by this cache server.
    * @since 5.7
    */
-  private volatile BridgeServerAdvisor advisor;
+  private volatile CacheServerAdvisor advisor;
 
   /**
    * The monitor used to monitor load on this
@@ -125,7 +121,7 @@ public class BridgeServerImpl
    * Creates a new <code>BridgeServerImpl</code> that serves the contents of
    * the give <code>Cache</code>. It has the default configuration.
    */
-  public BridgeServerImpl(GemFireCacheImpl cache, boolean isGatewayReceiver) {
+  public CacheServerImpl(GemFireCacheImpl cache, boolean isGatewayReceiver) {
     super(cache);
     this.isGatewayReceiver = isGatewayReceiver;
   }
@@ -142,7 +138,7 @@ public class BridgeServerImpl
    */
   private void checkRunning() {
     if (this.isRunning()) {
-      throw new IllegalStateException(LocalizedStrings.BridgeServerImpl_A_BRIDGE_SERVERS_CONFIGURATION_CANNOT_BE_CHANGED_ONCE_IT_IS_RUNNING.toLocalizedString());
+      throw new IllegalStateException(LocalizedStrings.CacheServerImpl_A_CACHE_SERVERS_CONFIGURATION_CANNOT_BE_CHANGED_ONCE_IT_IS_RUNNING.toLocalizedString());
     }
   }
 
@@ -192,7 +188,7 @@ public class BridgeServerImpl
   @Override
   public void setNotifyBySubscription(boolean b) {
     checkRunning();
-    if (BridgeServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
+    if (CacheServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
       this.notifyBySubscription = b;
     }
   }
@@ -299,11 +295,11 @@ public class BridgeServerImpl
       // force notifyBySubscription to be true so that meta info is pushed
       // from servers to clients instead of invalidates.
       if (!this.notifyBySubscription) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.BridgeServerImpl_FORCING_NOTIFYBYSUBSCRIPTION_TO_SUPPORT_DYNAMIC_REGIONS));
+        logger.info(LocalizedMessage.create(LocalizedStrings.CacheServerImpl_FORCING_NOTIFYBYSUBSCRIPTION_TO_SUPPORT_DYNAMIC_REGIONS));
         this.notifyBySubscription = true;
       }
     }
-    this.advisor = BridgeServerAdvisor.createBridgeServerAdvisor(this);
+    this.advisor = CacheServerAdvisor.createCacheServerAdvisor(this);
     this.loadMonitor = new LoadMonitor(loadProbe, maxConnections,
         loadPollInterval, FORCE_LOAD_UPDATE_FREQUENCY, 
         advisor);
@@ -349,7 +345,7 @@ public class BridgeServerImpl
     if(cache instanceof GemFireCacheImpl) {
       ClientHealthMonitoringRegion.getInstance((GemFireCacheImpl)cache);
     }
-    this.cache.getLoggerI18n().config(LocalizedStrings.BridgeServerImpl_CACHESERVER_CONFIGURATION___0, getConfig());
+    this.cache.getLoggerI18n().config(LocalizedStrings.CacheServerImpl_CACHESERVER_CONFIGURATION___0, getConfig());
     
     /* 
      * If the stopped bridge server is restarted, we'll need to re-register the 
@@ -357,11 +353,11 @@ public class BridgeServerImpl
      * won't be registered as would the case when start() is invoked for the 
      * first time.  
      */
-    BridgeMembershipListener[] membershipListeners = 
-                                BridgeMembership.getBridgeMembershipListeners();
+    ClientMembershipListener[] membershipListeners = 
+                                ClientMembership.getClientMembershipListeners();
     
     boolean membershipListenerRegistered = false;
-    for (BridgeMembershipListener membershipListener : membershipListeners) {
+    for (ClientMembershipListener membershipListener : membershipListeners) {
       //just checking by reference as the listener instance is final
       if (listener == membershipListener) {
         membershipListenerRegistered = true;
@@ -370,7 +366,7 @@ public class BridgeServerImpl
     }
     
     if (!membershipListenerRegistered) {
-      BridgeMembership.registerBridgeMembershipListener(listener);
+      ClientMembership.registerClientMembershipListener(listener);
     }
     
     if (!isGatewayReceiver) {
@@ -428,7 +424,7 @@ public class BridgeServerImpl
         this.loadMonitor.stop();
       }
     } catch(RuntimeException e) {
-      cache.getLoggerI18n().warning(LocalizedStrings.BridgeServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR, e);
+      cache.getLoggerI18n().warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR, e);
       firstException = e;
     }
     
@@ -437,7 +433,7 @@ public class BridgeServerImpl
         this.advisor.close();
       }
     } catch(RuntimeException e) {
-      cache.getLoggerI18n().warning(LocalizedStrings.BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR, e);
+      cache.getLoggerI18n().warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR, e);
       firstException = e;
     } 
     
@@ -446,7 +442,7 @@ public class BridgeServerImpl
         this.acceptor.close();
       }
     } catch(RuntimeException e) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR), e);
+      logger.warn(LocalizedMessage.create(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR), e);
       if (firstException != null) {
         firstException = e;
       }
@@ -464,7 +460,7 @@ public class BridgeServerImpl
     // cache.removeBridgeServer(this);
 
     /* Assuming start won't be called after stop */
-    BridgeMembership.unregisterBridgeMembershipListener(this.listener);
+    ClientMembership.unregisterClientMembershipListener(listener);
     
     TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     txMgr.removeHostedTXStatesForClients();
@@ -620,7 +616,7 @@ public class BridgeServerImpl
     else {
       // throw invalid eviction policy exception
       throw new InvalidValueException(
-        LocalizedStrings.BridgeServerImpl__0_INVALID_EVICTION_POLICY.toLocalizedString(ePolicy));
+        LocalizedStrings.CacheServerImpl__0_INVALID_EVICTION_POLICY.toLocalizedString(ePolicy));
     }
     return factory;
   }
@@ -692,7 +688,7 @@ public class BridgeServerImpl
   /**
    * Returns the BridgeServerAdvisor for this server
    */
-  public BridgeServerAdvisor getCacheServerAdvisor() {
+  public CacheServerAdvisor getCacheServerAdvisor() {
     return this.advisor;
   }
   
@@ -748,8 +744,8 @@ public class BridgeServerImpl
   }
   
   public /*synchronized causes deadlock*/ void fillInProfile(Profile profile) {
-    assert profile instanceof BridgeServerProfile;
-    BridgeServerProfile bp = (BridgeServerProfile)profile;
+    assert profile instanceof CacheServerProfile;
+    CacheServerProfile bp = (CacheServerProfile)profile;
     bp.setHost(getExternalAddress(false));
     bp.setPort(getPort());
     bp.setGroups(getCombinedGroups());
@@ -781,7 +777,7 @@ public class BridgeServerImpl
   public void registerInterestRegistrationListener(
       InterestRegistrationListener listener) {
     if (!this.isRunning()) {
-      throw new IllegalStateException(LocalizedStrings.BridgeServerImpl_MUST_BE_RUNNING.toLocalizedString());
+      throw new IllegalStateException(LocalizedStrings.CacheServerImpl_MUST_BE_RUNNING.toLocalizedString());
     }
     getCacheClientNotifier().registerInterestRegistrationListener(listener); 
   }

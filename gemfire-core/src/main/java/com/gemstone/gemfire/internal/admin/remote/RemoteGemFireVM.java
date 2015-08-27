@@ -672,7 +672,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return setCacheConfigValue(c, SEARCH_TIMEOUT_CODE, v);
   }
 
-  public AdminBridgeServer addBridgeServer(CacheInfo cache) 
+  public AdminBridgeServer addCacheServer(CacheInfo cache) 
     throws AdminException {
 
     BridgeServerRequest request =

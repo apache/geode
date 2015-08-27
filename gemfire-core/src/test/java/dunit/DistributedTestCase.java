@@ -63,7 +63,7 @@ import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
@@ -799,7 +799,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     LogWrapper.close();
     ClientProxyMembershipID.system = null;
     MultiVMRegionTestCase.CCRegion = null;
-    InternalBridgeMembership.unregisterAllListeners();
+    InternalClientMembership.unregisterAllListeners();
     ClientStatsManager.cleanupForTests();
     unregisterInstantiatorsInThisVM();
     GemFireTracer.DEBUG = Boolean.getBoolean("DistributionManager.DEBUG_JAVAGROUPS");

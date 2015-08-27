@@ -19,15 +19,15 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 //import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
- * Class <code>BridgeRegionEventImpl</code> is an implementation of a bridge
- * region event, which is just an <code>RegionEvent</code> with the client's
+ * Class <code>ClientRegionEventImpl</code> is a
+ * region event with the client's
  * host and port for notification purposes.
  * 
  * @author Girish Thombare
  * 
  * @since 5.1
  */
-public final class BridgeRegionEventImpl extends RegionEventImpl
+public final class ClientRegionEventImpl extends RegionEventImpl
   {
 
   /**
@@ -35,7 +35,7 @@ public final class BridgeRegionEventImpl extends RegionEventImpl
    */
   private  ClientProxyMembershipID context;
 
-  public BridgeRegionEventImpl() {
+  public ClientRegionEventImpl() {
   }
   
   /**
@@ -46,12 +46,12 @@ public final class BridgeRegionEventImpl extends RegionEventImpl
    * @param originRemote
    * @param distributedMember
    */
-  public BridgeRegionEventImpl(LocalRegion region, Operation op, Object callbackArgument,boolean originRemote, DistributedMember distributedMember,ClientProxyMembershipID contx) {
+  public ClientRegionEventImpl(LocalRegion region, Operation op, Object callbackArgument,boolean originRemote, DistributedMember distributedMember,ClientProxyMembershipID contx) {
     super(region, op,callbackArgument, originRemote,distributedMember);
     setContext(contx);
   }
 
-  public BridgeRegionEventImpl(LocalRegion region, Operation op, Object callbackArgument,boolean originRemote, DistributedMember distributedMember,ClientProxyMembershipID contx,EventID eventId) {
+  public ClientRegionEventImpl(LocalRegion region, Operation op, Object callbackArgument,boolean originRemote, DistributedMember distributedMember,ClientProxyMembershipID contx,EventID eventId) {
       super(region, op,callbackArgument, originRemote,distributedMember, eventId);
       setContext(contx);
   }
@@ -89,7 +89,7 @@ public final class BridgeRegionEventImpl extends RegionEventImpl
 
   @Override
   public int getDSFID() {
-    return BRIDGE_REGION_EVENT;
+    return CLIENT_REGION_EVENT;
   }
 
   @Override

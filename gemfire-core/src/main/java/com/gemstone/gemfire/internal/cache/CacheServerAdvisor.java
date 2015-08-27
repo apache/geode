@@ -23,54 +23,53 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 
 
 /**
- * Used to give advise to a bridge server.
- * Bridge server currently need to know about controller's
+ * Used to give advice to a cache server.
+ * Cache server currently need to know about controller's
  * @author darrel
  *
  */
-public class BridgeServerAdvisor extends GridAdvisor {
+public class CacheServerAdvisor extends GridAdvisor {
   
-  /** Creates a new instance of BridgeServerAdvisor */
-  private BridgeServerAdvisor(DistributionAdvisee server) {
+  private CacheServerAdvisor(DistributionAdvisee server) {
     super(server);
   }
 
-  public static BridgeServerAdvisor createBridgeServerAdvisor(DistributionAdvisee server) {
-    BridgeServerAdvisor advisor = new BridgeServerAdvisor(server);
+  public static CacheServerAdvisor createCacheServerAdvisor(DistributionAdvisee server) {
+    CacheServerAdvisor advisor = new CacheServerAdvisor(server);
     advisor.initialize();
     return advisor;
   }
 
   @Override
   public String toString() {
-    return "BridgeServerAdvisor for " + getAdvisee().getFullPath();
+    return "CacheServerAdvisor for " + getAdvisee().getFullPath();
   }
 
   /** Instantiate new distribution profile for this member */
   @Override
   protected Profile instantiateProfile(
       InternalDistributedMember memberId, int version) {
-    return new BridgeServerProfile(memberId, version);
+    return new CacheServerProfile(memberId, version);
   }
   
   /**
-   * Describes a bridge server for distribution purposes.
+   * Describes a cache server for distribution purposes.
    */
-  public static class BridgeServerProfile extends GridAdvisor.GridProfile {
+  public static class CacheServerProfile extends GridAdvisor.GridProfile {
     private String[] groups;
     private int maxConnections;
     private ServerLoad initialLoad;
     private long loadPollInterval;
 
     /** for internal use, required for DataSerializer.readObject */
-    public BridgeServerProfile() {
+    public CacheServerProfile() {
     }
 
-    public BridgeServerProfile(InternalDistributedMember memberId, int version) {
+    public CacheServerProfile(InternalDistributedMember memberId, int version) {
       super(memberId, version);
     }
 
-    public BridgeServerProfile(BridgeServerProfile toCopy) {
+    public CacheServerProfile(CacheServerProfile toCopy) {
       super(toCopy);
       this.groups = toCopy.groups;
     }
@@ -106,8 +105,8 @@ public class BridgeServerAdvisor extends GridAdvisor {
     }
 
     /**
-     * Used to process an incoming bridge server profile. Any controller in this
-     * vm needs to be told about this incoming new bridge server. The reply
+     * Used to process an incoming cache server profile. Any controller in this
+     * vm needs to be told about this incoming new cache server. The reply
      * needs to contain any controller(s) that exist in this vm.
      * 
      * @since 5.7
@@ -116,15 +115,15 @@ public class BridgeServerAdvisor extends GridAdvisor {
     public void processIncoming(DistributionManager dm, String adviseePath,
         boolean removeProfile, boolean exchangeProfiles,
         final List<Profile> replyProfiles) {
-      // tell local controllers about this bridge server
+      // tell local controllers about this cache server
       tellLocalControllers(removeProfile, exchangeProfiles, replyProfiles);
-      // for QRM messaging we need bridge servers to know about each other
+      // for QRM messaging we need cache servers to know about each other
       tellLocalBridgeServers(removeProfile, exchangeProfiles, replyProfiles);
     }
 
     @Override
     public int getDSFID() {
-      return BRIDGE_SERVER_PROFILE;
+      return CACHE_SERVER_PROFILE;
     }
 
     @Override

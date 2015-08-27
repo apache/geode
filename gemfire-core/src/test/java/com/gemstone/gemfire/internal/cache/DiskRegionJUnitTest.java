@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
-
 import junit.framework.Assert;
 
 import com.gemstone.gemfire.SystemFailure;
@@ -34,7 +33,7 @@ import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
@@ -2341,7 +2340,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       props.setPersistBackup(true);
   
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
-      BridgeServer bs1 = cache.addBridgeServer();
+      CacheServer bs1 = cache.addCacheServer();
       bs1.setPort(5555);
       bs1.start();
 
@@ -2459,7 +2458,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       props.setMaxOplogSize(100000); // just needs to be bigger than 65550
 
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
-      BridgeServer bs1 = cache.addBridgeServer();
+      CacheServer bs1 = cache.addCacheServer();
       bs1.setPort(5555);
       bs1.start();      
 
@@ -2488,7 +2487,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       }
       assertTrue(region.isDestroyed());        
       region = null;
-      List bsRunning = cache.getBridgeServers();
+      List bsRunning = cache.getCacheServers();
       assertTrue(!bsRunning.isEmpty());
   }
 

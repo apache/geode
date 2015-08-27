@@ -12,7 +12,7 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.internal.admin.*;
 //import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -79,11 +79,11 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
 
       // Note that since this is only a snapshot, so no synchronization
       // on allBridgeServersLock is needed.
-      Collection bridges = c.getBridgeServers();
+      Collection bridges = c.getCacheServers();
       this.bridgeServerIds = new int[bridges.size()];
       Iterator iter = bridges.iterator();
       for (int i = 0; iter.hasNext(); i++) {
-        BridgeServer bridge = (BridgeServer) iter.next();
+        CacheServer bridge = (CacheServer) iter.next();
         this.bridgeServerIds[i] = System.identityHashCode(bridge);
       }
 

@@ -27,8 +27,6 @@ import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl.LBPolicy;
 import com.gemstone.gemfire.cache.client.internal.LocatorDiscoveryCallback;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.QueryService;
@@ -286,141 +284,14 @@ public class PoolFactoryImpl implements PoolFactory {
     this.attributes.servers.addAll(cp.getServers());
   }
 
-  public void init(Properties properties, boolean usedByBridgeWriter,
-      boolean usedByGateway, GatewaySender sender) {
+  public void init(GatewaySender sender) {
+    this.attributes.setGateway(true);
     this.attributes.setGatewaySender(sender);
-    init(properties, usedByBridgeWriter, usedByGateway);
-  }
-  /**
-   * Used to create a pool given the old Bridge properties
-   * @param properties from a BridgeWriter or BridgeLoader
-   * @param usedByBridgeWriter true  if props from BridgeWriter;
-   *                           false if props from BridgeLoader.
-   * *param usedByGateway true if props from GatewayImpl.
-   * @since 5.7
-   */
-  public void init(Properties properties, boolean usedByBridgeWriter,
-                   boolean usedByGateway) {
-    this.attributes.setBridge(usedByBridgeWriter || !usedByGateway);
-    this.attributes.setBridgeWriter(usedByBridgeWriter);
-    this.attributes.setGateway(usedByGateway);
     setIdleTimeout(-1); // never time out
     setLoadConditioningInterval(-1); // never time out
     setMaxConnections(-1);
-    int endpointCount = 0;
-    boolean useLocators = false;
-    boolean useEndPoints = false;
-    IllegalArgumentException exception = null;
-    if (properties.containsKey(DistributionConfig.LOCATORS_NAME)) {
-      String locatorObject = properties
-          .getProperty(DistributionConfig.LOCATORS_NAME);
-      if (locatorObject != null && !locatorObject.equals("")) {
-        StringTokenizer locatorsOnThisVM = new StringTokenizer(locatorObject, ",");
-        while (locatorsOnThisVM.hasMoreTokens()) {
-          String localLocator = locatorsOnThisVM.nextToken();
-          DistributionLocatorId locatorId = new DistributionLocatorId(
-              localLocator);
-          addLocator(locatorId.getHost().getHostName(), locatorId.getPort());
-        }
-        useLocators = true;
-      }
-    }
-    if (!useLocators && properties.containsKey("endpoints")) {
-      useEndPoints = true;
-      String pv = properties.getProperty("endpoints");
-      StringTokenizer tokenizer = new StringTokenizer(pv, ",");
-      while (tokenizer.hasMoreTokens()) {
-        String serverdetail = tokenizer.nextToken();
-        int cIndex = serverdetail.indexOf("=");
-        // note we throw the name away
-//         String name = serverdetail.substring(0, cIndex);
-//         if (name != null) {
-//           name = name.trim();
-//         }
-        String remainder = serverdetail.substring(cIndex + 1);
-        cIndex = remainder.lastIndexOf(":");
-        String host = remainder.substring(0, cIndex);
-        if (host != null) {
-          host = host.trim();
-        }
-        String port = remainder.substring(cIndex + 1);
-        if (port != null) {
-          port = port.trim();
-        }
-        try {
-          addServer(host, Integer.parseInt(port));
-          endpointCount++;
-        } catch (IllegalArgumentException e) {
-          if (!(e.getCause() instanceof UnknownHostException)) {
-            throw e;
-          } else {
-            exception = e;
-          }
-        }
-      }
-      if ((endpointCount == 0) && (exception != null)) {
-        IllegalArgumentException ex = new IllegalArgumentException("Couldn't find any Endpoint. " + exception.getMessage());
-        ex.initCause(exception.getCause());
-        throw ex;
-      }
-    }
-    if(!useLocators && !useEndPoints) {
-      throw new IllegalArgumentException(
-          "Property 'locators ' or 'endpoints' must be specified");
-    }
-    // @todo grid: handshakeTimeout ignored
-    {
-      // @todo grid: roundRobin and appAssisted ignored
-      LBPolicy policy = new LBPolicy(properties.getProperty("LBPolicy",
-          LBPolicy.STICKY_PROPERTY_NAME));
-      setThreadLocalConnections(policy.isSticky());
-    }
-    
-    if (properties.containsKey("retryAttempts")) {
-      String strRetryAttempts = properties.getProperty("retryAttempts");
-      setRetryAttempts(Integer.parseInt(strRetryAttempts));
-    }
-    if (properties.containsKey("retryInterval")) {
-      String strRetryAttempts = properties.getProperty("retryInterval");
-      setPingInterval(Integer.parseInt(strRetryAttempts));
-    }
-    if (properties.containsKey("establishCallbackConnection")) {
-      String str = properties.getProperty("establishCallbackConnection");
-      setSubscriptionEnabled(Boolean.valueOf(str).booleanValue());
-    }
-    if (properties.containsKey("enablePRSingleHop")) {
-      String str = properties.getProperty("enablePRSingleHop");
-      setPRSingleHopEnabled(Boolean.valueOf(str).booleanValue());
-    }
-    if (properties.containsKey("connectionsPerServer")) {
-      String str = properties.getProperty("connectionsPerServer");
-      setMinConnections(Integer.parseInt(str)*endpointCount);
-    } else {
-      setMinConnections(1*endpointCount);
-    }
-    if (properties.containsKey("redundancyLevel")) {
-      String str = properties.getProperty("redundancyLevel");
-      setSubscriptionRedundancy(Integer.parseInt(str));
-    }
-    if (properties.containsKey("readTimeout")) {
-      String strReadTimeout = properties.getProperty("readTimeout");
-      setReadTimeout(Integer.parseInt(strReadTimeout));
-    }
-    if (properties.containsKey("socketBufferSize")) {
-      String strSocketBufferSize = properties.getProperty("socketBufferSize");
-      setSocketBufferSize(Integer.parseInt(strSocketBufferSize));
-    }
-    if (properties.containsKey("messageTrackingTimeout")) {
-      String pv = properties.getProperty("messageTrackingTimeout");
-      setSubscriptionMessageTrackingTimeout(Integer.parseInt(pv));
-    }
-    if(properties.containsKey("clientAckInterval") ) {
-      String pv = properties.getProperty("clientAckInterval");
-      setSubscriptionAckInterval(Integer.parseInt(pv));
-    }
-    if(usedByGateway && exception!= null) {
-      throw exception;
-    }
+    setMinConnections(0);
+    setThreadLocalConnections(true);
   }
   
   /**
@@ -441,11 +312,7 @@ public class PoolFactoryImpl implements PoolFactory {
         registry.creatingPool();
       }
     }
-    if (this.attributes.isBridge()) {
-      return new BridgePoolImpl(this.pm, name, this.attributes);
-    } else {
-      return PoolImpl.create(this.pm, name, this.attributes);
-    }
+    return PoolImpl.create(this.pm, name, this.attributes);
   }
 
   /**
@@ -487,19 +354,7 @@ public class PoolFactoryImpl implements PoolFactory {
     public transient LocatorDiscoveryCallback locatorCallback = null; //only used by tests
     public GatewaySender gatewaySender = null;
     /**
-     * True if this factory needs to produce a pool for use by BridgeWriter
-     * or BridgeLoader.
-     */
-    public boolean bridge = false;
-    /**
-     * True if bridge is true and the pool is used by a BridgeWriter.
-     * False if bridge is true and the pool is used by a BridgeLoader.
-     * Ignore this attribute if bridge is false.
-     */
-    public boolean bridgeWriter = false;
-    /**
-     * True if bridge is true and the pool is used by a Gateway.
-     * Ignore this attribute if bridge is false.
+     * True if the pool is used by a Gateway.
      */
     public boolean gateway = false;
 
@@ -553,18 +408,6 @@ public class PoolFactoryImpl implements PoolFactory {
     }
     public String getServerGroup() {
       return this.serverGroup;
-    }
-    public boolean isBridge() {
-      return this.bridge;
-    }
-    public void setBridge(boolean v) {
-      this.bridge = v;
-    }
-    public boolean isBridgeWriter() {
-      return this.bridgeWriter;
-    }
-    public void setBridgeWriter(boolean v) {
-      this.bridgeWriter = v;
     }
     public boolean isGateway() {
       return this.gateway;
@@ -648,7 +491,6 @@ public class PoolFactoryImpl implements PoolFactory {
       DataSerializer.writeString(this.serverGroup, out);
       DataSerializer.writeArrayList(this.locators, out);
       DataSerializer.writeArrayList(this.servers, out);
-      DataSerializer.writePrimitiveBoolean(this.bridge, out);
       DataSerializer.writePrimitiveInt(this.statisticInterval, out);
       DataSerializer.writePrimitiveBoolean(this.multiuserSecureModeEnabled,out);
     }
@@ -671,7 +513,6 @@ public class PoolFactoryImpl implements PoolFactory {
       this.serverGroup = DataSerializer.readString(in);
       this.locators = DataSerializer.readArrayList(in);
       this.servers = DataSerializer.readArrayList(in);
-      this.bridge = DataSerializer.readPrimitiveBoolean(in);
       this.statisticInterval= DataSerializer.readPrimitiveInt(in);
       this.multiuserSecureModeEnabled = DataSerializer.readPrimitiveBoolean(in);
     }

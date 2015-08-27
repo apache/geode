@@ -10,11 +10,10 @@ package com.gemstone.gemfire.admin;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
- * Administrative interface that represents a {@link
- * com.gemstone.gemfire.cache.util.BridgeServer BridgeServer} that
+ * Administrative interface that represents a CacheServer that
  * serves the contents of a system member's cache. 
  *
- * @see SystemMemberCache#addBridgeServer
+ * @see SystemMemberCache#addCacheServer
  *
  * @author David Whitlock
  * @since 4.0

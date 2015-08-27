@@ -12,16 +12,14 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeMembership;
-import com.gemstone.gemfire.cache.util.BridgeMembershipEvent;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListener;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListenerAdapter;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
+import com.gemstone.gemfire.management.membership.ClientMembership;
+import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
+import com.gemstone.gemfire.management.membership.ClientMembershipListener;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,7 +32,7 @@ import java.util.Set;
  * @author darrel
  * @since 5.7
  */
-public abstract class AbstractBridgeServer implements CacheServer, BridgeServer {
+public abstract class AbstractCacheServer implements CacheServer {
 
   public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY = "gemfire.test.CacheServer.OVERRIDE_DEFAULT_PORT";
 
@@ -107,10 +105,10 @@ public abstract class AbstractBridgeServer implements CacheServer, BridgeServer 
   protected ClientSubscriptionConfig clientSubscriptionConfig;
   
   /**
-   * Listener that would listen to bridge membership and notify the admin 
-   * members(if any exist) as clients of this server leave/crash. 
+   * Listens to client membership events and notifies any admin 
+   * members as clients of this server leave/crash. 
    */
-  protected final BridgeMembershipListener listener;
+  protected final ClientMembershipListener listener;
 
   /**
    * The number of seconds to keep transaction states for disconnected clients.
@@ -128,11 +126,11 @@ public abstract class AbstractBridgeServer implements CacheServer, BridgeServer 
    * @param cache
    *        The cache being served
    */
-  public AbstractBridgeServer(InternalCache cache) {
+  public AbstractCacheServer(InternalCache cache) {
     this(cache, true);
   }
 
-  public AbstractBridgeServer(InternalCache cache, boolean attachListener) {
+  public AbstractCacheServer(InternalCache cache, boolean attachListener) {
     this.cache = cache;
     this.port = Integer.getInteger(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, CacheServer.DEFAULT_PORT);
     this.maxConnections = CacheServer.DEFAULT_MAX_CONNECTIONS;
@@ -155,68 +153,43 @@ public abstract class AbstractBridgeServer implements CacheServer, BridgeServer 
       this.listener = null;
       return;
     }
-    listener = new BridgeMembershipListenerAdapter() {
-      /**
-       * Invoked when a client connected to this process or when this process 
-       * has got connected with a BridgeServer.
-       * 
-       * @param event
-       *          BridgeMembershipEvent associated with client getting connected
-       */
+    listener = new ClientMembershipListener() {
+
       @Override
-      public void memberJoined(BridgeMembershipEvent event) {
-        /* process events for clients only */
+      public void memberJoined(ClientMembershipEvent event) {
         if (event.isClient()) {
           createAndSendMessage(event, ClientMembershipMessage.JOINED);
         }
       }
-      
-      /**
-       * Invoked when a client has gracefully disconnected from this process
-       * or when this process has gracefully disconnected from a BridgeServer.
-       * 
-       * @param event
-       *          BridgeMembershipEvent associated with client leaving gracefully
-       */
+
       @Override
-      public void memberLeft(BridgeMembershipEvent event) {
-        /* process events for clients only */
+      public void memberLeft(ClientMembershipEvent event) {
         if (event.isClient()) {
           createAndSendMessage(event, ClientMembershipMessage.LEFT);
         }
       }
 
-      /**
-       * Invoked when a client has unexpectedly disconnected from this process
-       * or when this process has unexpectedly disconnected from a BridgeServer.
-       * 
-       * @param event
-       *          BridgeMembershipEvent associated with client getting
-       *          disconnected unexpectedly
-       */
       @Override
-      public void memberCrashed(BridgeMembershipEvent event) {
-        /* process events for clients only */
+      public void memberCrashed(ClientMembershipEvent event) {
         if (event.isClient()) {
           createAndSendMessage(event, ClientMembershipMessage.CRASHED);
         }
       }
-
+      
       /**
        * Method to create & send the ClientMembershipMessage to admin members.
        * The message is sent only if there are any admin members in the
        * distribution system.
        * 
        * @param event
-       *          BridgeMembershipEvent associated for a change in client
-       *          membership
+       *          describes a change in client membership
        * @param type
        *          type of event - one of ClientMembershipMessage.JOINED,
        *          ClientMembershipMessage.LEFT, ClientMembershipMessage.CRASHED
        */
-      private void createAndSendMessage(BridgeMembershipEvent event, int type) {
+      private void createAndSendMessage(ClientMembershipEvent event, int type) {
         InternalDistributedSystem ds = null;
-        Cache cacheInstance = AbstractBridgeServer.this.cache;
+        Cache cacheInstance = AbstractCacheServer.this.cache;
         if (cacheInstance != null && !(cacheInstance instanceof CacheCreation)) {
           ds = (InternalDistributedSystem)cacheInstance.getDistributedSystem();
         } else {
@@ -244,7 +217,7 @@ public abstract class AbstractBridgeServer implements CacheServer, BridgeServer 
       }
     };
 
-    BridgeMembership.registerBridgeMembershipListener(listener);
+    ClientMembership.registerClientMembershipListener(listener);
   }
 
   /////////////////////  Instance Methods  /////////////////////

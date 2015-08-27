@@ -131,7 +131,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId EndpointImpl_0_CAN_NOT_REGISTER_INSTANTIATORS_1_BECAUSE_THE_SERVER_IS_NOT_AVAILABLE = new StringIdImpl(3505, "{0} : Can not register instantiators   {1}  because the server is not available.");
   public static final StringId EndpointImpl_0_CANNOT_UNREGISTER_INTEREST_IN_REGION_1_KEY_2_BECAUSE_THE_SERVER_IS_NOT_AVAILABLE = new StringIdImpl(3506, "{0} : Cannot unregister interest in region  {1}  key  {2}  because the server is not available.");
   public static final StringId EndpointImpl_0_CAN_NOT_NOTIFY_SERVER_THAT_THIS_CLIENT_IS_READY_BECAUSE_THE_SERVER_IS_NOT_AVAILABLE = new StringIdImpl(3507, "{0} : Can not notify server that this client is ready because the server is not available.");
-  public static final StringId CacheCreation_WHILE_STARTING_BRIDGE_SERVER_0 = new StringIdImpl(3508, "While starting bridge server  {0}");
+  public static final StringId CacheCreation_WHILE_STARTING_CACHE_SERVER_0 = new StringIdImpl(3508, "While starting cache server  {0}");
   public static final StringId CacheCreation_WHILE_STARTING_GATEWAY_HUB_0 = new StringIdImpl(3509, "While starting gateway hub  {0}");
   public static final StringId CacheXml_ERROR_WHILE_PARSING_XML = new StringIdImpl(3510, "Error while parsing XML");
   public static final StringId CacheXml_FATAL_ERROR_WHILE_PARSING_XML = new StringIdImpl(3511, "Fatal error while parsing XML");
@@ -654,9 +654,9 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AdminWaiters_REQUEST_WAIT_WAS_INTERRUPTED = new StringIdImpl(4029, "Request wait was interrupted.");
   public static final StringId AlertLevelChangeMessage_CHANGING_ALERT_LEVEL_TO_0 = new StringIdImpl(4030, "Changing alert level to {0}");
   public static final StringId BridgeServerRequest_ADD_BRIDGE_SERVER = new StringIdImpl(4031, "Add bridge server");
-  public static final StringId BridgeServerRequest_GET_INFO_ABOUT_BRIDGE_SERVER_0 = new StringIdImpl(4032, "Get info about bridge server {0}");
-  public static final StringId BridgeServerRequest_START_BRIDGE_SERVER_0 = new StringIdImpl(4033, "Start bridge server {0}");
-  public static final StringId BridgeServerRequest_STOP_BRIDGE_SERVER_0 = new StringIdImpl(4034, "Stop bridge server {0}");
+  public static final StringId BridgeServerRequest_GET_INFO_ABOUT_BRIDGE_SERVER_0 = new StringIdImpl(4032, "Get info about cache server {0}");
+  public static final StringId BridgeServerRequest_START_BRIDGE_SERVER_0 = new StringIdImpl(4033, "Start cache server {0}");
+  public static final StringId BridgeServerRequest_STOP_BRIDGE_SERVER_0 = new StringIdImpl(4034, "Stop cache server {0}");
   public static final StringId BridgeServerRequest_UNKNOWN_OPERATION_0 = new StringIdImpl(4035, "Unknown operation {0}");
   public static final StringId CacheConfigRequest_SET_A_SINGLE_CACHE_CONFIGURATION_ATTRIBUTE = new StringIdImpl(4036, "Set a single cache configuration attribute");
   public static final StringId CancellationMessage_CANCELLATIONMESSAGE_FROM_0_FOR_MESSAGE_ID_1 = new StringIdImpl(4037, "CancellationMessage from {0} for message id {1}");
@@ -982,7 +982,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId StatAlertsManager_STATALERTMANAGER_EVALUATEALERTDEFNSTASK_GENERAL_EXCEPTION_0 = new StringIdImpl(4357, "StatAlertManager.EvaluateAlertDefnsTask :General Exception: {0}");
   public static final StringId CqQueryImpl_CQ_NOT_REGISTERED_ON_PRIMARY = new StringIdImpl(4358, "Cq not registered on primary");
   public static final StringId HACacheServer_INITIALIZED = new StringIdImpl(4359, "Initialized");
-  public static final StringId BridgeServerImpl_CLIENT_MESSAGES_REGION_IS_GETTING_CREATED = new StringIdImpl(4360, "client messages Region is getting created");
+  // ok to reuse 4360
   public static final StringId HARegionQueue_TASK_TO_DECREMENT_THE_REF_COUNT_MAY_NOT_HAVE_BEEN_STARTED = new StringIdImpl(4361, "Exception in HARegionQueue.updateHAContainer(). The task to decrement the ref count by one for all the HAEventWrapper instances of this queue present in the haContainer may not have been started");
   public static final StringId CacheClientNotifier_HACONTAINER_0_IS_NOW_CLEANED_UP = new StringIdImpl(4362, "haContainer ({0}) is now cleaned up.");
   public static final StringId CacheClientNotifier_HACONTAINER_0_HAS_BEEN_CREATED = new StringIdImpl(4363, "haContainer ({0}) has been created.");
@@ -1006,7 +1006,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId RegionAttributesCreation_CUSTOMENTRYTIMETOLIVE_IS_NOT_THE_SAME = new StringIdImpl(4381, "CustomEntryTimeToLive is not the same");
   public static final StringId AbstractRegion_CANNOT_SET_CUSTOM_TIME_TO_LIVE_WHEN_STATISTICS_ARE_DISABLED = new StringIdImpl(4382, "Cannot set custom time to live when statistics are disabled");
   public static final StringId PutMessage_UNKNOWN_DESERIALIZATION_POLICY = new StringIdImpl(4383, "unknown deserialization policy");
-  public static final StringId BridgeServerImpl__0_INVALID_EVICTION_POLICY = new StringIdImpl(4384, "{0} Invalid eviction policy");
+  public static final StringId CacheServerImpl__0_INVALID_EVICTION_POLICY = new StringIdImpl(4384, "{0} Invalid eviction policy");
   public static final StringId MergeLogFiles_IF_A_DIRECTORY_IS_SPECIFIED_ALL_LOG_FILES_IN_THAT_DIRECTORY_ARE_MERGED = new StringIdImpl(4385, "If a directory is specified, all .log files in that directory are merged.");
   public static final StringId MergeLogFiles_FILE_0_IS_NEITHER_A_FILE_NOR_A_DIRECTORY = new StringIdImpl(4386, "File ''{0}'' is neither a file nor a directory.");
   public static final StringId AvailablePort_NETWORK_IS_UNREACHABLE = new StringIdImpl(4387, "Network is unreachable");
@@ -1146,9 +1146,9 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId Oplog_OPLOG_SHUTDOWN_INTERRUPTED_ACQUIRING_READ_LOCK = new StringIdImpl(4524, "Oplog#shutdown: interrupted acquiring read lock.");
   public static final StringId InternalDistributedSystem_UNABLE_TO_START_THE_MONITOR_SERVICE = new StringIdImpl(4525, "Unable to start the monitor service");
   public static final StringId AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1 = new StringIdImpl(4526, "The redis-bind-address \"{0}\" is not a valid address for this machine.  These are the valid addresses for this machine: {1}");
-  public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR = new StringIdImpl(4527, "CacheServer - Error closing load monitor");
-  public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR = new StringIdImpl(4528, "CacheServer - Error closing advisor");
-  public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR = new StringIdImpl(4529, "CacheServer - Error closing acceptor monitor");
+  public static final StringId CacheServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR = new StringIdImpl(4527, "CacheServer - Error closing load monitor");
+  public static final StringId CacheServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR = new StringIdImpl(4528, "CacheServer - Error closing advisor");
+  public static final StringId CacheServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR = new StringIdImpl(4529, "CacheServer - Error closing acceptor monitor");
   public static final StringId DiskRegion_COMPLEXDISKREGION_CLOSE_EXCEPTION_IN_STOPPING_COMPACTOR = new StringIdImpl(4530, "DiskRegion::close: Exception in stopping compactor");
   public static final StringId CacheClientNotifier_CACHECLIENTNOTIFIER_CAUGHT_EXCEPTION_ATTEMPTING_TO_CLIENT = new StringIdImpl(4531, "CacheClientNotifier: Caught exception attempting to client: ");
   public static final StringId CqQueryImpl_EXCEPTION_WHILE_EXECUTING_CQ_EXCEPTION_0 = new StringIdImpl(4532, "Exception while executing cq Exception: {0}");
@@ -1296,7 +1296,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId GatewayImpl_PAUSED__0 = new StringIdImpl(4674, "Paused {0}");
   public static final StringId GatewayImpl_RESUMED__0 = new StringIdImpl(4675, "Resumed {0}");
   public static final StringId CacheClientProxy_NOT_PRIMARY = new StringIdImpl(4676, "This process is not the primary server for the given client");
-  public static final StringId BridgeServerImpl_MUST_BE_RUNNING = new StringIdImpl(4677, "The bridge server must be running to use this operation");
+  public static final StringId CacheServerImpl_MUST_BE_RUNNING = new StringIdImpl(4677, "The cache server must be running to use this operation");
   public static final StringId InitialImageOperation_0_UNABLE_TO_FLUSH_STATE_TO_1 = new StringIdImpl(4678, "{0}: Unable to flush state to {1} for concurrent gii union");
   public static final StringId InstantiatorRecoveryListener_INSTANTIATORRECOVERYTASK_ERROR_CLASSNOTFOUNDEXCEPTION = new StringIdImpl(4679, "InstantiatorRecoveryTask - Error ClassNotFoundException: {0}");
   public static final StringId AbstractRegion_NO_CUSTOM_EVICTION_SET = new StringIdImpl(4680, "Custom eviction not enabled for region {0}");  public static final StringId ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE = new StringIdImpl(4682, "This member caught exception processing profile {0} {1}");

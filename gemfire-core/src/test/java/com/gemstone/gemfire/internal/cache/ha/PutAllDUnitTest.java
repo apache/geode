@@ -26,11 +26,11 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.QueueStateImpl.SequenceIdAndExpirationObject;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 
@@ -73,7 +73,7 @@ public class PutAllDUnitTest extends DistributedTestCase
   /** cache **/
   private static Cache cache = null;
   /** server **/
-  static BridgeServerImpl server = null;
+  static CacheServerImpl server = null;
 
   /** test constructor **/
   public PutAllDUnitTest(String name) {
@@ -148,7 +148,7 @@ public class PutAllDUnitTest extends DistributedTestCase
     factory.setCacheListener(clientListener);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    server = (BridgeServerImpl)cache.addBridgeServer();
+    server = (CacheServerImpl)cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
@@ -189,7 +189,7 @@ public class PutAllDUnitTest extends DistributedTestCase
     props.setProperty("connectionsPerServer", "2");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    PoolImpl p  = (PoolImpl)BridgeTestCase.configureConnectionPool(factory, host, PORT1,-1, true, -1, 2, null);
+    PoolImpl p  = (PoolImpl)ClientServerTestCase.configureConnectionPool(factory, host, PORT1,-1, true, -1, 2, null);
     CacheListener clientListener = new HAEventIdPropagationListenerForClient2();
     factory.setCacheListener(clientListener);
     RegionAttributes attrs = factory.create();
@@ -220,7 +220,7 @@ public class PutAllDUnitTest extends DistributedTestCase
     props.setProperty("connectionsPerServer", "2");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    PoolImpl p = (PoolImpl)BridgeTestCase.configureConnectionPool(factory, host, PORT1,-1, true, -1, 2, null);
+    PoolImpl p = (PoolImpl)ClientServerTestCase.configureConnectionPool(factory, host, PORT1,-1, true, -1, 2, null);
     CacheListener clientListener = new HAEventIdPropagationListenerForClient1();
     factory.setCacheListener(clientListener);
     RegionAttributes attrs = factory.create();

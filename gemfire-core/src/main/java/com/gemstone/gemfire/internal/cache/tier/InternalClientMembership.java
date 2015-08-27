@@ -27,13 +27,11 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.util.BridgeMembershipEvent;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListener;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientHealthMonitor;
@@ -46,25 +44,22 @@ import com.gemstone.gemfire.management.membership.ClientMembershipListener;
 
 /**
  * Handles registration and event notification duties for
- * <code>BridgeMembershipListener</code>s. The public counterpart for this
- * class is {@link com.gemstone.gemfire.cache.util.BridgeMembership}.
+ * <code>ClientMembershipListener</code>s. The public counterpart for this
+ * class is {@link com.gemstone.gemfire.management.membership.ClientMembership}.
  *
  * @author Kirk Lund
  * @since 4.2.1
  */
-public final class InternalBridgeMembership  {
+public final class InternalClientMembership  {
 
   private static final Logger logger = LogService.getLogger();
   
   /** 
-   * The membership listeners registered on this InternalBridgeMembership
+   * The membership listeners registered on this InternalClientMembership
    * 
    * This list is never modified in place, and a new list is installed
    * only under the control of (@link #membershipLock}.
    */
-  private static volatile List<BridgeMembershipListener> membershipListeners = Collections.emptyList();
-  
-  
   private static volatile List<ClientMembershipListener> clientMembershipListeners = Collections.emptyList();
   
   /**
@@ -74,7 +69,7 @@ public final class InternalBridgeMembership  {
   private static final Object membershipLock = new Object();
 
   /** 
-   * QueuedExecutor for firing BridgeMembershipEvents 
+   * QueuedExecutor for firing ClientMembershipEvents 
    *
    * Access synchronized via {@link #systems}
    */
@@ -82,7 +77,7 @@ public final class InternalBridgeMembership  {
 
   private static final ThreadGroup threadGroup =
       LoggingThreadGroup.createThreadGroup(
-          "BridgeMembership Event Invoker Group", logger);
+          "ClientMembership Event Invoker Group", logger);
 
   /** List of connected <code>DistributedSystem</code>s */
   private static final List systems = new ArrayList(1);
@@ -90,7 +85,7 @@ public final class InternalBridgeMembership  {
   /**
    * True if class is monitoring systems
    * 
-   * @guarded.By InternalBridgeMembership.class
+   * @guarded.By InternalClientMembership.class
    */
   private static boolean isMonitoring = false;
   
@@ -133,26 +128,8 @@ public final class InternalBridgeMembership  {
     } // synchronized
   }
   
-  private InternalBridgeMembership() {}
+  private InternalClientMembership() {}
 
-  /**
-   * Registers a {@link BridgeMembershipListener} for notification of
-   * connection changes for BridgeServers and bridge clients.
-   * @param listener a BridgeMembershipListener to be registered
-   * @deprecated use newer registerClientMembershipListener instead
-   */
-  public static void registerBridgeMembershipListener(BridgeMembershipListener listener) {
-    startMonitoring();
-    synchronized (membershipLock) {
-      List<BridgeMembershipListener> oldListeners = membershipListeners;
-      if (!oldListeners.contains(listener)) {
-        List<BridgeMembershipListener> newListeners = new ArrayList<BridgeMembershipListener>(oldListeners);
-        newListeners.add(listener);
-        membershipListeners = newListeners;
-      }
-    }
-  }
-  
   /**
    * Registers a {@link ClientMembershipListener} for notification of connection
    * changes for CacheServer and clients.
@@ -168,25 +145,6 @@ public final class InternalBridgeMembership  {
         List<ClientMembershipListener> newListeners = new ArrayList<ClientMembershipListener>(oldListeners);
         newListeners.add(listener);
         clientMembershipListeners = newListeners;
-      }
-    }
-  }
-  
-  /**
-   * Removes registration of a previously registered {@link
-   * BridgeMembershipListener}.
-   * @param listener a BridgeMembershipListener to be unregistered
-   * @deprecated
-   */
-  public static void unregisterBridgeMembershipListener(BridgeMembershipListener listener) {
-    startMonitoring();
-    synchronized (membershipLock) {
-      List<BridgeMembershipListener> oldListeners = membershipListeners;
-      if (oldListeners.contains(listener)) {
-        List<BridgeMembershipListener> newListeners = new ArrayList<BridgeMembershipListener>(oldListeners);
-        if (newListeners.remove(listener)) {
-          membershipListeners = newListeners;
-        }
       }
     }
   }
@@ -213,26 +171,6 @@ public final class InternalBridgeMembership  {
 
   /**
    * Returns an array of all the currently registered
-   * <code>BridgeMembershipListener</code>s. Modifications to the returned
-   * array will not effect the registration of these listeners.
-   * @return the registered <code>BridgeMembershipListener</code>s; an empty
-   * array if no listeners
-   * @deprecated
-   */
-  public static BridgeMembershipListener[] getBridgeMembershipListeners() {
-    startMonitoring();
-    // Synchronization is not needed because we never modify this list
-    // in place.
-    
-    List<BridgeMembershipListener> l = membershipListeners; // volatile fetch
-    // convert to an array
-    BridgeMembershipListener[] listeners = (BridgeMembershipListener[]) 
-        l.toArray(new BridgeMembershipListener[l.size()]);
-    return listeners;
-  }
-  
-  /**
-   * Returns an array of all the currently registered
    * <code>ClientMembershipListener</code>s. Modifications to the returned array
    * will not effect the registration of these listeners.
    * 
@@ -253,12 +191,11 @@ public final class InternalBridgeMembership  {
 
   /**
    * Removes registration of all currently registered
-   * <code>BridgeMembershipListener<code>s. and <code>ClientMembershipListener<code>s.
+   * <code>ClientMembershipListener<code>s. and <code>ClientMembershipListener<code>s.
    */
   public static void unregisterAllListeners() {
     startMonitoring();
     synchronized (membershipLock) {
-      membershipListeners = new ArrayList<BridgeMembershipListener>();
       clientMembershipListeners = new ArrayList<ClientMembershipListener>();
     }
   }
@@ -281,10 +218,10 @@ public final class InternalBridgeMembership  {
     ClientHealthMonitor chMon = ClientHealthMonitor.getInstance();
     Set filterProxyIDs = null;
     if(onlyClientsNotifiedByThisServer) {
-      // Note it is not necessary to synchronize on the list of bridge servers here, 
+      // Note it is not necessary to synchronize on the list of Client servers here, 
       // since this is only a status (snapshot) of the system.
-      for (Iterator bsii = CacheFactory.getAnyInstance().getBridgeServers().iterator(); bsii.hasNext(); ) {
-        BridgeServerImpl bsi = (BridgeServerImpl) bsii.next();
+      for (Iterator bsii = CacheFactory.getAnyInstance().getCacheServers().iterator(); bsii.hasNext(); ) {
+        CacheServerImpl bsi = (CacheServerImpl) bsii.next();
         AcceptorImpl ai = bsi.getAcceptor();
         if (ai != null && ai.getCacheClientNotifier() != null) {
           if (filterProxyIDs != null) {
@@ -331,15 +268,15 @@ public final class InternalBridgeMembership  {
   }  
 
   /**
-   * Caller must synchronize on cache.allBridgeServersLock
+   * Caller must synchronize on cache.allClientServersLock
    * @return all the clients
    */
   public static Map getConnectedClients() {
 
     // Get all clients
     Map allClients = new HashMap();
-    for (Iterator bsii = CacheFactory.getAnyInstance().getBridgeServers().iterator(); bsii.hasNext(); ) {
-      BridgeServerImpl bsi = (BridgeServerImpl) bsii.next();
+    for (Iterator bsii = CacheFactory.getAnyInstance().getCacheServers().iterator(); bsii.hasNext(); ) {
+      CacheServerImpl bsi = (CacheServerImpl) bsii.next();
       AcceptorImpl ai = bsi.getAcceptor();
       if (ai != null && ai.getCacheClientNotifier() != null) {
         allClients.putAll(ai.getCacheClientNotifier().getAllClients());
@@ -359,8 +296,8 @@ public final class InternalBridgeMembership  {
     if (c==null) // Add a NULL Check
       return clientQueueSizes;
 
-    for (Iterator bsii = c.getBridgeServers().iterator(); bsii.hasNext(); ) {
-      BridgeServerImpl bsi = (BridgeServerImpl) bsii.next();
+    for (Iterator bsii = c.getCacheServers().iterator(); bsii.hasNext(); ) {
+      CacheServerImpl bsi = (CacheServerImpl) bsii.next();
       AcceptorImpl ai = bsi.getAcceptor();
       if (ai != null && ai.getCacheClientNotifier() != null) {
         clientQueueSizes.putAll(ai.getCacheClientNotifier().getClientQueueSizes());
@@ -413,12 +350,12 @@ public final class InternalBridgeMembership  {
   
 
   /**
-   * Notifies registered listeners that a bridge member has joined. The new
-   * member may be a bridge client connecting to this process or a bridge
+   * Notifies registered listeners that a Client member has joined. The new
+   * member may be a client connecting to this process or a
    * server that this process has just connected to.
    *
    * @param member the <code>DistributedMember</code>
-   * @param client true if the member is a bridge client; false if bridge server
+   * @param client true if the member is a client; false if server
    */
   public static void notifyJoined(final DistributedMember member, final boolean client) {
     startMonitoring();
@@ -427,18 +364,16 @@ public final class InternalBridgeMembership  {
       return;
     }
 
-    final BridgeMembershipEvent event =
-        new InternalBridgeMembershipEvent(member, client);
+    final ClientMembershipEvent event =
+        new InternalClientMembershipEvent(member, client);
     if (forceSynchronous) {
       doNotifyClientMembershipListener(member, client, event,EventType.CLIENT_JOINED);
-      doNotifyBridgeMembershipListener(member, client, event,EventType.CLIENT_JOINED);
     }
     else {
       try {
           queuedExecutor.execute(new Runnable() {
               public void run() {
                 doNotifyClientMembershipListener(member, client, event,EventType.CLIENT_JOINED);
-                doNotifyBridgeMembershipListener(member, client, event,EventType.CLIENT_JOINED);
               }
             });
       }
@@ -451,12 +386,12 @@ public final class InternalBridgeMembership  {
 
 
   /**
-   * Notifies registered listeners that a bridge member has left. The departed
-   * member may be a bridge client previously connected to this process or a
-   * bridge server that this process was connected to.
+   * Notifies registered listeners that a member has left. The departed
+   * member may be a client previously connected to this process or a
+   * server that this process was connected to.
    *
    * @param member the <code>DistributedMember</code>
-   * @param client true if the member is a bridge client; false if bridge server
+   * @param client true if the member is a client; false if server
    */
   public static void notifyLeft(final DistributedMember member, final boolean client) {
     startMonitoring();
@@ -466,18 +401,16 @@ public final class InternalBridgeMembership  {
     }
 
     
-    final BridgeMembershipEvent event =
-        new InternalBridgeMembershipEvent(member, client);
+    final ClientMembershipEvent event =
+        new InternalClientMembershipEvent(member, client);
     if (forceSynchronous) {
       doNotifyClientMembershipListener(member, client, event,EventType.CLIENT_LEFT);
-      doNotifyBridgeMembershipListener(member, client, event,EventType.CLIENT_LEFT);
     }
     else {
       try {
           queuedExecutor.execute(new Runnable() {
               public void run() {
                 doNotifyClientMembershipListener(member, client, event,EventType.CLIENT_LEFT);
-                doNotifyBridgeMembershipListener(member, client, event,EventType.CLIENT_LEFT);
               }
             });
       }
@@ -489,12 +422,12 @@ public final class InternalBridgeMembership  {
 
 
   /**
-   * Notifies registered listeners that a bridge member has crashed. The
-   * departed member may be a bridge client previously connected to this
-   * process or a bridge server that this process was connected to.
+   * Notifies registered listeners that a member has crashed. The
+   * departed member may be a client previously connected to this
+   * process or a server that this process was connected to.
    *
    * @param member the <code>DistributedMember</code>
-   * @param client true if the member is a bridge client; false if bridge server
+   * @param client true if the member is a client; false if server
    */
   public static void notifyCrashed(final DistributedMember member, final boolean client) {
     ThreadPoolExecutor queuedExecutor = executor;
@@ -502,11 +435,10 @@ public final class InternalBridgeMembership  {
       return;
     }
 
-    final BridgeMembershipEvent event =
-        new InternalBridgeMembershipEvent(member, client);
+    final ClientMembershipEvent event =
+        new InternalClientMembershipEvent(member, client);
     if (forceSynchronous) {
       doNotifyClientMembershipListener(member, client, event,EventType.CLIENT_CRASHED);
-      doNotifyBridgeMembershipListener(member, client, event,EventType.CLIENT_CRASHED);
     }
     else {
 
@@ -514,7 +446,6 @@ public final class InternalBridgeMembership  {
           queuedExecutor.execute(new Runnable() {
             public void run() {
               doNotifyClientMembershipListener(member, client, event,EventType.CLIENT_CRASHED);
-              doNotifyBridgeMembershipListener(member, client, event,EventType.CLIENT_CRASHED);
             }
           });
       }
@@ -539,7 +470,7 @@ public final class InternalBridgeMembership  {
           listener.memberCrashed(clientMembershipEvent);
         }
       } catch (CancelException e) {
-        // this can be thrown by a bridge server when the system is shutting
+        // this can be thrown by a server when the system is shutting
         // down
         return;
       } catch (VirtualMachineError e) {
@@ -552,40 +483,11 @@ public final class InternalBridgeMembership  {
     }
   }
   
-  private static void doNotifyBridgeMembershipListener(DistributedMember member, boolean client,
-      BridgeMembershipEvent bridgeMembershipEvent, EventType eventType) {
-
-    for (Iterator<BridgeMembershipListener> iter = membershipListeners.iterator(); iter.hasNext();) {
-
-      BridgeMembershipListener listener = iter.next();
-      try {
-        if (eventType.equals(EventType.CLIENT_JOINED)) {
-          listener.memberJoined(bridgeMembershipEvent);
-        } else if (eventType.equals(EventType.CLIENT_LEFT)) {
-          listener.memberLeft(bridgeMembershipEvent);
-        } else {
-          listener.memberCrashed(bridgeMembershipEvent);
-        }
-      } catch (CancelException e) {
-        // this can be thrown by a bridge server when the system is shutting
-        // down
-        return;
-      } catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      } catch (Throwable t) {
-        SystemFailure.checkFailure();
-        logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION), t);
-      }
-    }
-  }
-  
-
 //  /**
 //   * Returns true if there are any registered
-//   * <code>BridgeMembershipListener</code>s.
+//   * <code>ClientMembershipListener</code>s.
 //   */
-//  private static boolean hasBridgeMembershipListeners() {
+//  private static boolean hasClientMembershipListeners() {
 //    synchronized (membershipLock) {
 //      return !membershipListeners.isEmpty();
 //    }
@@ -597,7 +499,7 @@ public final class InternalBridgeMembership  {
         new InternalDistributedSystem.DisconnectListener() {
           @Override
           public String toString() {
-            return "Disconnect listener for InternalBridgeMembership";
+            return "Disconnect listener for InternalClientMembership";
           }
           
           public void onDisconnect(InternalDistributedSystem ss) {
@@ -651,7 +553,7 @@ for (int i=0; i<queueElementsAfter.length; i++) {
       ThreadFactory tf = new ThreadFactory() {
           public Thread newThread(Runnable command) {
             Thread thread =
-                new Thread(group, command, "BridgeMembership Event Invoker");
+                new Thread(group, command, "ClientMembership Event Invoker");
             thread.setDaemon(true);
             return thread;
           }
@@ -663,16 +565,16 @@ for (int i=0; i<queueElementsAfter.length; i++) {
   }
 
   /**
-   * Internal implementation of BridgeMembershipEvent.
+   * Internal implementation of ClientMembershipEvent.
    */
-  protected static class InternalBridgeMembershipEvent
-  implements BridgeMembershipEvent,ClientMembershipEvent {
+  protected static class InternalClientMembershipEvent
+  implements ClientMembershipEvent {
 
     private final DistributedMember member;
     private final boolean client;
 
     /** Constructs new instance of event */
-    protected InternalBridgeMembershipEvent(DistributedMember member, boolean client) {
+    protected InternalClientMembershipEvent(DistributedMember member, boolean client) {
       this.member = member;
       this.client = client;
     }
@@ -691,7 +593,7 @@ for (int i=0; i<queueElementsAfter.length; i++) {
 
     @Override // GemStoneAddition
     public String toString() {
-      final StringBuffer sb = new StringBuffer("[BridgeMembershipEvent: ");
+      final StringBuffer sb = new StringBuffer("[ClientMembershipEvent: ");
       sb.append("member=").append(this.member);
       sb.append(", isClient=").append(this.client);
       sb.append("]");

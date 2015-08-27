@@ -22,7 +22,6 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -100,7 +99,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * <p>
  * Notes:
  * <ul>
- * <li>DynamicRegionFactories in non-client VMs must not be configured with a BridgeWriter.
+ * <li>DynamicRegionFactories in non-client VMs must not be configured with a pool.
  * <li>If {@link #open()} is called before cache creation and the cache.xml has a dynamic-region-factory
  * element then the cache.xml will override the open call's configuration.
  * 
@@ -110,7 +109,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * are shared by the parent and all its dynamic children
  * so make sure the callback is thread-safe and that its
  * {@link CacheCallback#close} implementation does not stop it from functioning.
- * However the products BridgeLoader, BridgeWriter, and all LRUAlgorithm instances will
+ * However the products LRUAlgorithm instances will
  * be cloned so that each dynamic Region has its own callback.
  * 
  * <li>The root Region name "DynamicRegions" is reserved. The factory creates a root Region of
@@ -223,7 +222,7 @@ public abstract class DynamicRegionFactory  {
     try {
       this.c = theCache;
       this.dynamicRegionList = theCache.getRegion(dynamicRegionListName);
-      final boolean isClient = this.config.getBridgeWriter() != null || this.config.getPoolName()!=null;
+      final boolean isClient = this.config.getPoolName()!=null;
       if (this.dynamicRegionList == null) {
         InternalRegionArguments ira = new InternalRegionArguments()
         .setDestroyLockFlag(true)
@@ -239,7 +238,6 @@ public abstract class DynamicRegionFactory  {
         }
 
         if (isClient) {
-          // BRIDGE CLIENT
           af.setScope(Scope.LOCAL);
           af.setDataPolicy(DataPolicy.NORMAL); //MirrorType(MirrorType.NONE);
           af.setStatisticsEnabled(true);
@@ -254,12 +252,6 @@ public abstract class DynamicRegionFactory  {
               }
               af.setPoolName(cpName);
             }
-          } else {
-            BridgeWriter bw = this.config.getBridgeWriter();
-            if (!bw.hasEstablishCallbackConnection()) {
-              throw new IllegalStateException(LocalizedStrings.DynamicRegionFactory_THE_CLIENT_POOL_OF_A_DYNAMICREGIONFACTORY_MUST_BE_CONFIGURED_WITH_ESTABLISHCALLBACKCONNECTION_SET_TO_TRUE.toLocalizedString());
-            }
-            af.setCacheWriter(bw);
           }
           ira.setInternalMetaRegion(new LocalMetaRegion(af.create(), ira));
         } else {
@@ -667,7 +659,7 @@ public abstract class DynamicRegionFactory  {
    * The default attributes are:
    * <ul>
    * <li>diskDir: <code>null</code>
-   * <li>bridgeWriter: <code>null</code>
+   * <li>poolName: <code>null</code>
    * <li>persistBackup: <code>true</code>
    * <li>registerInterest: <code>true</code>
    * </ul>
@@ -683,16 +675,10 @@ public abstract class DynamicRegionFactory  {
     public final File diskDir;
     /** Causes regions created by the factory to register interest in all keys in a corresponding server cache region */
     public final boolean registerInterest;
-    /** The {@link BridgeWriter} to be used by the factory to communicate with
-     * the factory in its server.
-     * Client factories must configure a BridgeWriter for their factory
-     * and it must be configured to establish a callback connection.
-     */
-    public final BridgeWriter bridgeWriter;
     
     /**
-     * The ${link Pool} to be used by the factory to communicate with 
-     * the server-side factory. Client factories may use this instead of a BridgeWriter 
+     * The ${link Pool} to be used by a client factory to communicate with 
+     * the server-side factory.
      */
     public final String poolName;
 
@@ -700,47 +686,15 @@ public abstract class DynamicRegionFactory  {
      * Creates a configuration with the default attributes.
      */
     public Config() {
-      this(null, null, !DISABLE_PERSIST_BACKUP);
+      this(null, null, !DISABLE_PERSIST_BACKUP, !DISABLE_REGISTER_INTEREST);
     }
-    /**
-     * Creates a configuration with the given attributes and defaults for other attributes.
-     * @deprecated use a pool name instead of a bridge writer
-     */
-    @Deprecated
-    public Config(File diskDir, BridgeWriter bridgeWriter) {
-      this(diskDir, bridgeWriter, !DISABLE_PERSIST_BACKUP);
-    }
-    
-    /**
-     * Creates a configuration with the given attributes and defaults for other attributes.
-     * @deprecated use a pool name instead of a bridge writer
-     */
-    @Deprecated
-    public Config(File diskDir, BridgeWriter bridgeWriter, boolean persistBackup) {
-      this(diskDir, bridgeWriter, persistBackup, !DISABLE_REGISTER_INTEREST);
-    }
-    
-    
-    
-    /**
-     * Creates a configuration with the given attributes
-     * @deprecated use a pool name instead of a bridge writer
-     */
-    @Deprecated
-    public Config(
-      File diskDir,
-      BridgeWriter bridgeWriter,
-      boolean persistBackup,
-      boolean registerInterest)
-    {
-      this.registerInterest = registerInterest;
-      this.persistBackup = persistBackup;
-      this.diskDir = diskDir;
-      this.bridgeWriter = bridgeWriter;
-      this.poolName = null;
-    }
-    
 
+    /**
+     * Creates a configuration with defaults and the given diskDir and poolName.
+     */
+    public Config(File diskDir, String poolName) {
+      this(diskDir, poolName, !DISABLE_PERSIST_BACKUP, !DISABLE_REGISTER_INTEREST);
+    }
     /**
      * Creates a configuration with the given attributes
      */
@@ -754,7 +708,43 @@ public abstract class DynamicRegionFactory  {
       this.persistBackup = persistBackup;
       this.diskDir = diskDir;
       this.poolName = poolName;
-      this.bridgeWriter = null;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((diskDir == null) ? 0 : diskDir.hashCode());
+      result = prime * result + (persistBackup ? 1231 : 1237);
+      result = prime * result + ((poolName == null) ? 0 : poolName.hashCode());
+      result = prime * result + (registerInterest ? 1231 : 1237);
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      Config other = (Config) obj;
+      if (diskDir == null) {
+        if (other.diskDir != null)
+          return false;
+      } else if (!diskDir.equals(other.diskDir))
+        return false;
+      if (persistBackup != other.persistBackup)
+        return false;
+      if (poolName == null) {
+        if (other.poolName != null)
+          return false;
+      } else if (!poolName.equals(other.poolName))
+        return false;
+      if (registerInterest != other.registerInterest)
+        return false;
+      return true;
     }
 
     /**
@@ -782,14 +772,6 @@ public abstract class DynamicRegionFactory  {
       return this.diskDir;
     }
     
-    /**
-     * Returns the {@link BridgeWriter} associated with the dynamic region factory.
-     * Returns null if there is no cache writer for dynamic regions.
-     * A cache writer will only exist if this is a client and the cache writer connects to a server.
-     */
-    public BridgeWriter getBridgeWriter() {
-      return this.bridgeWriter;
-    }
     
     /**
      * Returns the name of the {@link Pool} associated with the dynamic region factory.
@@ -803,7 +785,6 @@ public abstract class DynamicRegionFactory  {
     Config(Config conf) {
       this.diskDir = conf.diskDir;
       this.persistBackup = conf.persistBackup;
-      this.bridgeWriter = conf.bridgeWriter;
       this.registerInterest = conf.registerInterest;
       this.poolName = conf.poolName;
     }
@@ -814,7 +795,7 @@ public abstract class DynamicRegionFactory  {
       return;
     
     // Ignore the callback if it originated in this process (because the region
-    // will already have been created) and the event is not a bridge event
+    // will already have been created) and the event is not a client event
     if ( !event.isOriginRemote() && !event.isBridgeEvent() ) return;
     //
     DynamicRegionAttributes dra = (DynamicRegionAttributes)event.getNewValue();
@@ -913,7 +894,7 @@ public abstract class DynamicRegionFactory  {
     @Override
     protected boolean shouldNotifyBridgeClients()
     {
-      return getCache().getBridgeServers().size() > 0;
+      return getCache().getCacheServers().size() > 0;
     }
 
     // Over-ride the super behavior to perform the destruction of the dynamic region
@@ -1024,7 +1005,7 @@ public abstract class DynamicRegionFactory  {
     @Override
     final public boolean shouldNotifyBridgeClients()
     {
-      return getCache().getBridgeServers().size() > 0;
+      return getCache().getCacheServers().size() > 0;
     }    
    
     // Over-ride the super behavior to perform the destruction of the dynamic region

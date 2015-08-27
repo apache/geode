@@ -463,7 +463,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
       numOfDeltasSent = region.getCachePerfStats().getDeltasSent();
       deltaTime = region.getCachePerfStats().getDeltasPreparedTime();
     } else if (path == SERVER_TO_CLIENT) {
-      CacheClientNotifier ccn = ((BridgeServerImpl)cache.getCacheServers()
+      CacheClientNotifier ccn = ((CacheServerImpl)cache.getCacheServers()
           .toArray()[0]).getAcceptor().getCacheClientNotifier();
 
       numOfDeltasSent = ((CacheClientProxy)ccn.getClientProxies().toArray()[0])

@@ -24,8 +24,8 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.util.BridgeServer;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -272,7 +272,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
     new HABug36773DUnitTest("temp").createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    BridgeTestCase.configureConnectionPool(factory, DistributedTestCase.getIPLiteral(), new int[] {PORT1,PORT2}, true, -1, 2, null);
+    ClientServerTestCase.configureConnectionPool(factory, DistributedTestCase.getIPLiteral(), new int[] {PORT1,PORT2}, true, -1, 2, null);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
   }
@@ -287,7 +287,7 @@ public class HABug36773DUnitTest extends DistributedTestCase
     factory.setEarlyAck(true);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);

@@ -23,14 +23,14 @@ import dunit.Host;
 import dunit.VM;
 
 /**
- * Tests the BridgeWriter API, including interaction with Region.
+ * Tests the client register interest
  *
  * @author Kirk Lund
  * @since 4.2.3
  */
-public class BridgeWriterDUnitTest extends BridgeTestCase {
+public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
 
-  public BridgeWriterDUnitTest(String name) {
+  public ClientRegisterInterestDUnitTest(String name) {
     super(name);
   }
   
@@ -75,7 +75,7 @@ public class BridgeWriterDUnitTest extends BridgeTestCase {
         getLogWriter().info("[testBug35381] serverMemberId=" + getMemberId());
       }
     });
-    ports[whichVM] = vm.invokeInt(BridgeWriterDUnitTest.class, 
+    ports[whichVM] = vm.invokeInt(ClientRegisterInterestDUnitTest.class, 
                                   "getBridgeServerPort");
     assertTrue(ports[whichVM] != 0);
     
@@ -91,12 +91,12 @@ public class BridgeWriterDUnitTest extends BridgeTestCase {
 
     getLogWriter().info("[testBug35381] creating connection pool");
     boolean establishCallbackConnection = false; // SOURCE OF BUG 35381
-    BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, establishCallbackConnection, -1, -1, null);
+    ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, establishCallbackConnection, -1, -1, null);
     Region region = createRegion(name, factory.create());
     assertNotNull(getRootRegion().getSubregion(name));
     try {
       region.registerInterest("KEY-1");
-      fail("registerInterest failed to throw BridgeWriterException with establishCallbackConnection set to false"); 
+      fail("registerInterest failed to throw SubscriptionNotEnabledException with establishCallbackConnection set to false"); 
     }
     catch (SubscriptionNotEnabledException expected) {
     }
@@ -198,10 +198,10 @@ public class BridgeWriterDUnitTest extends BridgeTestCase {
 
     // get the bridge server ports...
     ports[firstServerIdx] = firstServerVM.invokeInt(
-      BridgeWriterDUnitTest.class, "getBridgeServerPort");
+      ClientRegisterInterestDUnitTest.class, "getBridgeServerPort");
     assertTrue(ports[firstServerIdx] != 0);
     ports[secondServerIdx] = secondServerVM.invokeInt(
-      BridgeWriterDUnitTest.class, "getBridgeServerPort");
+      ClientRegisterInterestDUnitTest.class, "getBridgeServerPort");
     assertTrue(ports[secondServerIdx] != 0);
     assertTrue(ports[firstServerIdx] != ports[secondServerIdx]);
     
@@ -225,7 +225,7 @@ public class BridgeWriterDUnitTest extends BridgeTestCase {
 
     getLogWriter().info("[testRegisterInterestFailover] creating connection pool");
     boolean establishCallbackConnection = true;
-    final PoolImpl p = (PoolImpl)BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, establishCallbackConnection, -1, -1, null);
+    final PoolImpl p = (PoolImpl)ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, establishCallbackConnection, -1, -1, null);
 
     final Region region1 = createRootRegion(regionName1, factory.create());
     final Region region2 = createRootRegion(regionName2, factory.create());

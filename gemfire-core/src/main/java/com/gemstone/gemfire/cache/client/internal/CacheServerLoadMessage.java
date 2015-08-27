@@ -24,24 +24,24 @@ import com.gemstone.gemfire.distributed.internal.ServerLocator;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 
 /**
- * A message from bridge server to locator to update the locator
- * with new load information from the bridge server.
+ * A message from a server to a locator to update the locator
+ * with new load information from the server.
  * Also includes the id of any clients whose estimate is no
  * longer needed on the server-locator.
  * @author dsmith
  * @since 5.7
  *
  */
-public class BridgeServerLoadMessage extends SerialDistributionMessage {
+public class CacheServerLoadMessage extends SerialDistributionMessage {
   protected ServerLoad load;
   protected ServerLocation location;
   protected ArrayList clientIds;
 
-  public BridgeServerLoadMessage() {
+  public CacheServerLoadMessage() {
     super();
   }
   
-  public BridgeServerLoadMessage(ServerLoad load, ServerLocation location,
+  public CacheServerLoadMessage(ServerLoad load, ServerLocation location,
                                  ArrayList clientIds) {
     super();
     this.load = load;
@@ -68,7 +68,7 @@ public class BridgeServerLoadMessage extends SerialDistributionMessage {
   
 
   public int getDSFID() {
-   return BRIDGE_SERVER_LOAD_MESSAGE;
+   return CACHE_SERVER_LOAD_MESSAGE;
   }
 
   @Override

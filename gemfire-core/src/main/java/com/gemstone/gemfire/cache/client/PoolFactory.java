@@ -17,7 +17,7 @@ import com.gemstone.gemfire.cache.query.*; // for javadocs
  * {@link Pool}.
  * <p>Every pool needs to have at least one {@link #addLocator locator} or {@link #addServer server} added
  * to it. Locators should be added unless direct connections to
- * bridge servers are desired.
+ * cache servers are desired.
  * <p>The setter methods are used to specify
  * non-default values for the other pool properties.
  * <p>Once it is configured {@link #create}
@@ -290,7 +290,7 @@ public interface PoolFactory {
    * 
    * These pings are used by the server to monitor the health of
    * the client. Make sure that the pingInterval is less than the 
-   * maximum time between pings allowed by the bridge server.
+   * maximum time between pings allowed by the cache server.
    * @param pingInterval The amount of time in milliseconds between
    * pings.
    * @return a reference to <code>this</code>
@@ -325,7 +325,7 @@ public interface PoolFactory {
   /**
    * Add a locator, given its host and port, to this factory.
    * The locator must be a server locator and will be used to discover other running
-   * bridge servers and locators.
+   * cache servers and locators.
    * Note that if the host is unknown at the time of this call
    * the locator will still be added. When the pool is used for
    * an operation if the host is still unknown an exception will
@@ -341,7 +341,7 @@ public interface PoolFactory {
 
   /**
    * Add a server, given its host and port, to this factory.
-   * The server must be a bridge server and this client will
+   * The server must be a cache server and this client will
    * directly connect to without consulting a server locator.
    * Note that if the host is unknown at the time of this call
    * the server will still be added. When the pool is used for
@@ -392,7 +392,7 @@ public interface PoolFactory {
   
   /**
    * Sets the interval in milliseconds
-   * to wait before sending acknowledgements to the bridge server for
+   * to wait before sending acknowledgements to the cache server for
    * events received from the server subscriptions.
    * 
    * @param ackInterval number of milliseconds to wait before sending event

@@ -8,7 +8,7 @@
 package com.gemstone.gemfire.management.internal.beans;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
 import com.gemstone.gemfire.management.internal.ManagementStrings;
@@ -38,7 +38,7 @@ public class ServerBridge {
   public ServerBridge(CacheServer cacheServer){
     this.monitor = new MBeanStatsMonitor(ManagementStrings.SERVER_MONITOR
         .toLocalizedString());
-    this.acceptor =  ((BridgeServerImpl) cacheServer).getAcceptor();
+    this.acceptor =  ((CacheServerImpl) cacheServer).getAcceptor();
     initializeStats();
     startMonitor();
   }
@@ -48,7 +48,7 @@ public class ServerBridge {
   }
   
   protected void addServer(CacheServer cacheServer){
-    this.acceptor =  ((BridgeServerImpl) cacheServer).getAcceptor();
+    this.acceptor =  ((CacheServerImpl) cacheServer).getAcceptor();
     startMonitor();
   }
   

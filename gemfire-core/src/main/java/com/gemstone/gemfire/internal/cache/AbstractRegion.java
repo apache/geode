@@ -74,9 +74,6 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeClient;
-import com.gemstone.gemfire.cache.util.BridgeLoader;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -486,9 +483,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    */
   public CacheLoader basicGetLoader() {
     CacheLoader result = this.cacheLoader;
-    if (isBridgeLoader(result)) {
-      result = null;
-    }
     return result;
   }
   /**
@@ -498,9 +492,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    */
   public CacheWriter basicGetWriter() {
     CacheWriter result = this.cacheWriter;
-    if (isBridgeWriter(result)) {
-      result = null;
-    }
     return result;
   }
   
@@ -1200,11 +1191,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   // synchronized so not reentrant
   public synchronized CacheLoader setCacheLoader(CacheLoader cl) {
     checkReadiness();
-    if (cl != null && isBridgeLoader(cl)) {
-      if (getPoolName() != null) {
-        throw new IllegalStateException("A region with a connection pool can not have a BridgeLoader.");
-      }
-    }
     CacheLoader oldLoader = this.cacheLoader;
     assignCacheLoader(cl);
     cacheLoaderChanged(oldLoader);
@@ -1213,24 +1199,12 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   private synchronized void assignCacheLoader(CacheLoader cl) {
     this.cacheLoader = cl;
-    if (cl instanceof BridgeLoader) {
-      BridgeLoader bl = (BridgeLoader) cl;
-      bl.attach(this);
-    } else if (cl instanceof BridgeClient) {
-      BridgeClient bc = (BridgeClient)cl;
-      bc.attach(this);
-    }
   }
 
   // synchronized so not reentrant
   public synchronized CacheWriter setCacheWriter(CacheWriter cacheWriter)
   {
     checkReadiness();
-    if (cacheWriter != null && isBridgeWriter(cacheWriter)) {
-      if (getPoolName() != null) {
-        throw new IllegalStateException("A region with a connection pool can not have a BridgeWriter.");
-      }
-    }
     CacheWriter oldWriter = this.cacheWriter;
     assignCacheWriter(cacheWriter);
     cacheWriterChanged(oldWriter);
@@ -1240,10 +1214,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   private synchronized void assignCacheWriter(CacheWriter cacheWriter)
   {
     this.cacheWriter = cacheWriter;
-    if (cacheWriter instanceof BridgeWriter) {
-      BridgeWriter bw = (BridgeWriter)cacheWriter;
-      bw.attach(this);
-    }
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
@@ -1572,15 +1542,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   protected void closeCacheCallback(CacheCallback cb)
   {
     if (cb != null) {
-      if (cb instanceof BridgeWriter) {
-        BridgeWriter bw = (BridgeWriter)cb;
-        bw.detach(this);
-      }
-      else if (cb instanceof BridgeLoader) {
-        BridgeLoader bl = (BridgeLoader)cb;
-        bl.detach(this);
-      }
-
       try {
         cb.close();
       }
@@ -1608,19 +1569,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   protected void cacheListenersChanged(boolean nowHasListener)
   {
     // nothing needed by default
-  }
-
-  /**
-   * @since 5.7
-   */
-  public static boolean isBridgeLoader(CacheLoader cl) {
-    return cl instanceof BridgeLoader || cl instanceof BridgeClient;
-  }
-  /**
-   * @since 5.7
-   */
-  public static boolean isBridgeWriter(CacheWriter cw) {
-    return cw instanceof BridgeWriter;
   }
 
   protected void cacheWriterChanged(CacheWriter oldWriter)

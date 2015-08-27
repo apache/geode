@@ -285,19 +285,6 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
   }
 
   /**
-   * Creates a new bridge server MBean and returns its
-   * <code>ObjectName</code>.
-   *
-   * @since 4.0
-   * @deprecated as of 5.7
-   */
-  @Deprecated
-  public ObjectName manageBridgeServer()
-    throws AdminException, MalformedObjectNameException {
-    return manageCacheServer();
-  }
-  
-  /**
    * Returns the MBean <code>ObjectName</code>s for all cache servers
    * that serve this cache to clients.
    *

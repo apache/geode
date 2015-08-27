@@ -15,7 +15,6 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.client.AllConnectionsInUseException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.cache.util.BridgeWriterException;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
@@ -79,10 +78,6 @@ public class DestroyOp {
             throw e; // fixed 44656
           }
           cms.removeBucketServerLocation(server);
-        }
-        catch (BridgeWriterException e) {
-          if (e.getCause() instanceof ServerConnectivityException)
-            cms.removeBucketServerLocation(server);
         }
       }
     }

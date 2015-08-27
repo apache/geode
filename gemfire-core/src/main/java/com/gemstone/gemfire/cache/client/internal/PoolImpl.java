@@ -1204,36 +1204,36 @@ public class PoolImpl implements InternalPool {
   
   ///////////////////// start test hooks ///////////////////////
   /**
-   * A debug flag used for testing used in BridgeObserver
+   * A debug flag used for testing used in ClientServerObserver
    */
   public static volatile boolean AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
 
   /**
-   * A debug flag used for testing used in BridgeObserver
+   * A debug flag used for testing used in ClientServerObserver
    */
   public static volatile boolean BEFORE_REGISTER_CALLBACK_FLAG = false;
 
   /**
-   * A debug flag used for testing used in BridgeObserver
+   * A debug flag used for testing used in ClientServerObserver
    */
   public static volatile boolean BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = false;
 
   /**
-   * A debug flag used for testing used in BridgeObserver
+   * A debug flag used for testing used in ClientServerObserver
    */
   public static volatile boolean AFTER_REGISTER_CALLBACK_FLAG = false;
 
   /**
-   * A debug flag used for testing used in BridgeObserver
+   * A debug flag used for testing used in ClientServerObserver
    */
   public static volatile boolean BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
 
   /**
-   * A debug flag used for testing used in BridgeObserver
+   * A debug flag used for testing used in ClientServerObserver
    */
   public static volatile boolean BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG = false;
   /**
-   * A debug flag used for testing used in BridgeObserver
+   * A debug flag used for testing used in ClientServerObserver
    */  
   public static volatile boolean AFTER_QUEUE_DESTROY_MESSAGE_FLAG = false;
   

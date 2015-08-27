@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -30,14 +30,14 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import dunit.VM;
 
 /**
- * Provides helper methods for testing BridgeServers and bridge clients. This
- * test case was created by refactoring methods from BridgeLoaderTest into
+ * Provides helper methods for testing clients and servers. This
+ * test case was created by refactoring methods from ConnectionPoolDUnitTest into
  * this class.
  *
  * @author Kirk Lund
  * @since 4.2.1
  */
-public class BridgeTestCase extends CacheTestCase {
+public class ClientServerTestCase extends CacheTestCase {
   
   public static String NON_EXISTENT_KEY = "NON_EXISTENT_KEY";
   
@@ -56,7 +56,7 @@ public class BridgeTestCase extends CacheTestCase {
     disconnectAllFromDS();
   }
 
-  public BridgeTestCase(String name) {
+  public ClientServerTestCase(String name) {
     super(name);
   }
 
@@ -69,7 +69,7 @@ public class BridgeTestCase extends CacheTestCase {
     throws IOException {
 
     Cache cache = getCache();
-    BridgeServer bridge = cache.addBridgeServer();
+    CacheServer bridge = cache.addCacheServer();
     bridge.setPort(port);
     bridge.setMaxThreads(getMaxThreads());
     bridge.start();
@@ -90,9 +90,9 @@ public class BridgeTestCase extends CacheTestCase {
    * @since 4.0
    */
   public void stopBridgeServers(Cache cache) {
-    BridgeServer bridge = null;
-    for (Iterator bsI = cache.getBridgeServers().iterator();bsI.hasNext(); ) {
-      bridge = (BridgeServer) bsI.next();
+    CacheServer bridge = null;
+    for (Iterator bsI = cache.getCacheServers().iterator();bsI.hasNext(); ) {
+      bridge = (CacheServer) bsI.next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }
@@ -305,20 +305,9 @@ public class BridgeTestCase extends CacheTestCase {
     return system.getProperties();
   }
 
-  /**
-   * Create a bridgeserver that has a value for every key queried and a unique
-   * key/value in the specified Region that uniquely identifies each instance.
-   *
-   * @param vm
-   *          the VM on which to create the BridgeServer
-   * @param rName
-   *          the name of the Region to create on the BridgeServerf
-   * @param port
-   *          the TCP port on which the BridgeServer should listen
-   */
-  public static class BridgeServerCacheLoader extends TestCacheLoader implements Declarable {
+  public static class CacheServerCacheLoader extends TestCacheLoader implements Declarable {
 
-    public BridgeServerCacheLoader() {}
+    public CacheServerCacheLoader() {}
 
     @Override
     public Object load2(LoaderHelper helper) {
@@ -343,6 +332,17 @@ public class BridgeTestCase extends CacheTestCase {
   }
 
   public final static String BridgeServerKey = "BridgeServerKey";
+  /**
+   * Create a server that has a value for every key queried and a unique
+   * key/value in the specified Region that uniquely identifies each instance.
+   *
+   * @param vm
+   *          the VM on which to create the server
+   * @param rName
+   *          the name of the Region to create on the server
+   * @param port
+   *          the TCP port on which the server should listen
+   */
   public void createBridgeServer(VM vm, final String rName, final int port) {
     vm.invoke(new CacheSerializableRunnable("Create Region on Server") {
     @Override
@@ -350,7 +350,7 @@ public class BridgeTestCase extends CacheTestCase {
       try {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK); // can't be local since used with registerInterest
-        factory.setCacheLoader(new BridgeServerCacheLoader());
+        factory.setCacheLoader(new CacheServerCacheLoader());
         beginCacheXml();
         createRootRegion(rName, factory.create());
         startBridgeServer(port);

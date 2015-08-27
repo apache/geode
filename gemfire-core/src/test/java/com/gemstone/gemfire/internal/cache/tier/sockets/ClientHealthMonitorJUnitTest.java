@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EventID;
@@ -115,7 +115,7 @@ public class ClientHealthMonitorJUnitTest
    */
   private int createServer()
   {
-    BridgeServer server = null;
+    CacheServer server = null;
     try {
       Properties p = new Properties();
       // make it a loner
@@ -124,7 +124,7 @@ public class ClientHealthMonitorJUnitTest
       
       this.system = DistributedSystem.connect(p);
       this.cache = CacheFactory.create(system);
-      server = this.cache.addBridgeServer();
+      server = this.cache.addCacheServer();
       int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       server.setMaximumTimeBetweenPings(TIME_BETWEEN_PINGS);
       server.setMaxThreads(getMaxThreads());

@@ -18,8 +18,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.util.BridgeServer;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 
@@ -209,7 +209,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
 
     cache.createRegion(REGION_NAME, attrs);
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     server.setNotifyBySubscription(false);
@@ -236,7 +236,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    pool = (PoolImpl)BridgeTestCase.configureConnectionPool(factory, host, new int[] {port1.intValue(),port2.intValue()}, true, -1, 3, null);
+    pool = (PoolImpl)ClientServerTestCase.configureConnectionPool(factory, host, new int[] {port1.intValue(),port2.intValue()}, true, -1, 3, null);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS");
@@ -260,7 +260,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    pool = (PoolImpl)BridgeTestCase.configureConnectionPool(factory, host, new int[] {port1.intValue(),port2.intValue()}, true, -1, 3, null);
+    pool = (PoolImpl)ClientServerTestCase.configureConnectionPool(factory, host, new int[] {port1.intValue(),port2.intValue()}, true, -1, 3, null);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS", false, false);
@@ -295,9 +295,9 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
   public static void stopServer()
   {
     try {
-      Iterator iter = cache.getBridgeServers().iterator();
+      Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        BridgeServer server = (BridgeServer)iter.next();
+        CacheServer server = (CacheServer)iter.next();
         server.stop();
       }
     }

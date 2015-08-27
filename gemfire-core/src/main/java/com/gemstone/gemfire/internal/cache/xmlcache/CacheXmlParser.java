@@ -85,7 +85,6 @@ import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
@@ -874,25 +873,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String poolName = (String)stack.pop();
     String disableRegisterInterest = (String)stack.pop();
     String disablePersistBackup = (String)stack.pop();
-    CacheWriter cw = attrs.getCacheWriter();
-    if(poolName !=null && cw != null) {
-      throw new CacheXmlException("You cannot specify both a poolName and a cacheWriter for a dynamic-region-factory.");
-    }
-    if (cw != null && !(cw instanceof BridgeWriter)) {
-      throw new CacheXmlException(LocalizedStrings.CacheXmlParser_THE_DYNAMICREGIONFACTORY_CACHEWRITER_MUST_BE_AN_INSTANCE_OF_BRIDGEWRITER.toLocalizedString());
-    }
     DynamicRegionFactory.Config cfg;
-    if(poolName != null) {
-      cfg =
-        new DynamicRegionFactory.Config(dir, poolName,
+    cfg = new DynamicRegionFactory.Config(dir, poolName,
             !Boolean.valueOf(disablePersistBackup).booleanValue(),
             !Boolean.valueOf(disableRegisterInterest).booleanValue());
-    } else {
-      cfg =
-        new DynamicRegionFactory.Config(dir, (BridgeWriter)cw,
-          !Boolean.valueOf(disablePersistBackup).booleanValue(),
-          !Boolean.valueOf(disableRegisterInterest).booleanValue());
-    }
     CacheCreation cache = (CacheCreation)stack.peek();
     cache.setDynamicRegionFactoryConfig(cfg);
   }

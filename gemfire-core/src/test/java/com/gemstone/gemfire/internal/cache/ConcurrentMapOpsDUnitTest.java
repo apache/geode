@@ -48,7 +48,7 @@ import dunit.SerializableRunnable;
 import dunit.VM;
 
 /**
- * tests for the concurrentMapOperations. there are more tests in BridgeWriterMiscDUnitTest
+ * tests for the concurrentMapOperations. there are more tests in ClientServerMiscDUnitTest
  * @author sbawaska
  *
  */
@@ -1067,7 +1067,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
             r.destroy("key0");
           }
           // force client to use server1 for now
-//          getCache().getBridgeServers().get(0).stop();
+//          getCache().getCacheServers().get(0).stop();
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {
@@ -1104,7 +1104,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
         public Object call() throws Exception {
           Region r = getCache().getRegion(regionName);
           // force client to use server1 for now
-//          getCache().getBridgeServers().get(0).stop();
+//          getCache().getCacheServers().get(0).stop();
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {

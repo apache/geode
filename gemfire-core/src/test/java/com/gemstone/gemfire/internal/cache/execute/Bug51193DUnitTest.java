@@ -20,7 +20,7 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
@@ -206,7 +206,7 @@ public class Bug51193DUnitTest extends DistributedTestCase {
     public void execute(FunctionContext context) {
       boolean timeoutMatches = false;
       int expected = (Integer)context.getArguments();
-      AcceptorImpl acceptor = ((BridgeServerImpl) cache.getCacheServers()
+      AcceptorImpl acceptor = ((CacheServerImpl) cache.getCacheServers()
           .get(0)).getAcceptor();
       ServerConnection[] scs = acceptor.getAllServerConnectionList();
       for (int i = 0; i < scs.length; ++i) {

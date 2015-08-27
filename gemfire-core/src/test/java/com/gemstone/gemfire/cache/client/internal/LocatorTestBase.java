@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -135,13 +135,13 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
     return startBridgeServerInVM(vm, groups, locators, new String[] {REGION_NAME});
   }
   
-  protected int addBridgeServerInVM(VM vm, final String[] groups) {
+  protected int addCacheServerInVM(VM vm, final String[] groups) {
     SerializableCallable connect =
       new SerializableCallable("Add Bridge server") {
 
       public Object call() throws Exception {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
-        BridgeServer server = cache.addBridgeServer();
+        CacheServer server = cache.addCacheServer();
         final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(serverPort);
         server.setGroups(groups);
@@ -154,7 +154,7 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
   }
   
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators, final String[] regions) {
-    return startBridgeServerInVM(vm, groups, locators, regions, BridgeServer.DEFAULT_LOAD_PROBE);
+    return startBridgeServerInVM(vm, groups, locators, regions, CacheServer.DEFAULT_LOAD_PROBE);
   }
   
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators, final String[] regions, final ServerLoadProbe probe) {
@@ -174,7 +174,7 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
             for(int i = 0; i < regions.length; i++) {
               cache.createRegion(regions[i], attrs);
             }
-            BridgeServer server = cache.addBridgeServer();
+            CacheServer server = cache.addCacheServer();
             final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
             server.setPort(serverPort);
             server.setGroups(groups);
@@ -208,7 +208,7 @@ public abstract class LocatorTestBase  extends DistributedTestCase {
             for(int i = 0; i < regions.length; i++) {
               cache.createRegion(regions[i], attrs);
             }
-            BridgeServer server = cache.addBridgeServer();
+            CacheServer server = cache.addCacheServer();
             server.setGroups(groups);
             server.setLoadProbe(probe);
             final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();

@@ -27,8 +27,8 @@ import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
-import com.gemstone.gemfire.internal.cache.AbstractBridgeServer;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
@@ -40,7 +40,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @since 4.0
  */
 public class RemoteBridgeServer
-  extends AbstractBridgeServer
+  extends AbstractCacheServer
   implements AdminBridgeServer, DataSerializable {
 
   private static final long serialVersionUID = 8417391824652384959L;
@@ -64,12 +64,12 @@ public class RemoteBridgeServer
    * <code>RemoteBridgeServer</code> from the contents of the given
    * <code>BridgeServerImpl</code>.
    */
-  RemoteBridgeServer(BridgeServerImpl impl) {
+  RemoteBridgeServer(CacheServerImpl impl) {
     super(null);
     this.port = impl.getPort();
     this.bindAddress = impl.getBindAddress();
     this.hostnameForClients = impl.getHostnameForClients();
-    if (BridgeServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
+    if (CacheServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
       this.notifyBySubscription = impl.getNotifyBySubscription();
     }
     this.socketBufferSize = impl.getSocketBufferSize();

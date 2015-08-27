@@ -120,8 +120,7 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("No admin on"));
       expected.add(Pattern.compile("nonExistentMethod"));
       expected.add(Pattern.compile("Expected exception"));
-      expected.add(Pattern.compile("BridgeLoaderTestNonSerializable"));
-      expected.add(Pattern.compile("BridgeLoaderTestSerializableImpl"));
+      expected.add(Pattern.compile("ConnectionPoolTestNonSerializable"));
       expected.add(Pattern.compile("One or more DUnit tests failed"));
       expected.add(Pattern.compile("ReplyException"));
       expected.add(Pattern.compile("fine 2"));

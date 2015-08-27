@@ -52,7 +52,6 @@ import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
@@ -74,7 +73,6 @@ import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
@@ -91,7 +89,7 @@ import com.gemstone.gemfire.cache.hdfs.internal.HDFSIntegrationUtil;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
@@ -580,14 +578,14 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
       }
       
       if (!existingCacheServer) {
-        this.getCacheServers().add(new BridgeServerCreation(cache, false));
+        this.getCacheServers().add(new CacheServerCreation(cache, false));
       }
     }
     
     for (Iterator iter = this.getCacheServers().iterator(); iter.hasNext();) {
-      BridgeServerCreation bridge = (BridgeServerCreation)iter.next();
+      CacheServerCreation bridge = (CacheServerCreation)iter.next();
       
-      BridgeServerImpl impl = (BridgeServerImpl)cache.addCacheServer();
+      CacheServerImpl impl = (CacheServerImpl)cache.addCacheServer();
       impl.configureFrom(bridge);
 
       if (serverPort != null && serverPort != CacheServer.DEFAULT_PORT) {
@@ -604,7 +602,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
       }
       catch (IOException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.CacheCreation_WHILE_STARTING_BRIDGE_SERVER_0
+            LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0
                 .toLocalizedString(impl), ex);
       }
     }
@@ -680,10 +678,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
         if (drc2 == null) {
           return false;
         }
-        if (!RegionAttributesCreation.equal(drc1.getDiskDir(), drc2.getDiskDir())) {
-          return false;
-        }
-        if (!RegionAttributesCreation.equal(drc1.getBridgeWriter(), drc2.getBridgeWriter())) {
+        if (!drc1.equals(drc2)) {
           return false;
         }
       } else {
@@ -703,12 +698,12 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
       Collection myBridges = this.getCacheServers();
       Collection otherBridges = other.getCacheServers();
       if (myBridges.size() != otherBridges.size()) {
-        throw new RuntimeException(LocalizedStrings.CacheCreation_BRIDGESERVERS_SIZE.toLocalizedString());
+        throw new RuntimeException(LocalizedStrings.CacheCreation_CACHESERVERS_SIZE.toLocalizedString());
       }
 
       for (Iterator myIter = myBridges.iterator(); myIter.hasNext(); ) {
-        BridgeServerCreation myBridge =
-          (BridgeServerCreation) myIter.next();
+        CacheServerCreation myBridge =
+          (CacheServerCreation) myIter.next();
         boolean found = false;
         for (Iterator otherIter = otherBridges.iterator();
              otherIter.hasNext(); ) {
@@ -720,7 +715,7 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
         }
 
         if (!found) {
-          throw new RuntimeException(LocalizedStrings.CacheCreation_BRIDGE_0_NOT_FOUND.toLocalizedString(myBridge));
+          throw new RuntimeException(LocalizedStrings.CacheCreation_CACHE_SERVER_0_NOT_FOUND.toLocalizedString(myBridge));
         }
       }
 
@@ -731,22 +726,22 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
           : PoolManager.getAll();
         int m1Size = m1.size();
         {
-          // ignore any BridgePool instances
+          // ignore any gateway instances
           Iterator it1 = m1.values().iterator();
           while (it1.hasNext()) {
             Pool cp = (Pool)it1.next();
-            if (cp instanceof BridgePoolImpl || ((PoolImpl)cp).isUsedByGateway()) {
+            if (((PoolImpl)cp).isUsedByGateway()) {
               m1Size--;
             }
           }
         }
         int m2Size = m2.size();
         {
-          // ignore any BridgePool instances
+          // ignore any gateway instances
           Iterator it2 = m2.values().iterator();
           while (it2.hasNext()) {
             Pool cp = (Pool)it2.next();
-            if (cp instanceof BridgePoolImpl || ((PoolImpl)cp).isUsedByGateway()) {
+            if (((PoolImpl)cp).isUsedByGateway()) {
               m2Size--;
             }
           }
@@ -770,8 +765,8 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
           Iterator it1 = m1.values().iterator();
           while (it1.hasNext()) {
             PoolImpl cp = (PoolImpl)it1.next();
-            // ignore any BridgePool instances
-            if (!(cp instanceof BridgePoolImpl) && !(cp).isUsedByGateway()) {
+            // ignore any gateway instances
+            if (!(cp).isUsedByGateway()) {
               cp.sameAs(m2.get(cp.getName()));
             }
           }
@@ -985,17 +980,12 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     return (Region)this.roots.get(path);
   }
 
-  @SuppressWarnings("deprecation")
-  public BridgeServer addBridgeServer() {
-    return (BridgeServer)addCacheServer();
-  }
-  
   public CacheServer addCacheServer() {
     return addCacheServer(false);
   }
   
   public CacheServer addCacheServer(boolean isGatewayReceiver) {
-    CacheServer bridge = new BridgeServerCreation(this, false);
+    CacheServer bridge = new CacheServerCreation(this, false);
     this.bridgeServers.add(bridge);
     return bridge;
   }
@@ -1004,9 +994,6 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     this.declarablePropertiesMap.put(declarable, properties);
   }
   
-  public List getBridgeServers() {
-    return getCacheServers();
-  }
   public List getCacheServers() {
     return this.bridgeServers;
   }

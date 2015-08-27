@@ -9,7 +9,7 @@ package com.gemstone.gemfire.internal.cache;
 
 import java.util.List;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.BridgeServerCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
@@ -40,7 +40,7 @@ public class CacheConfig {
   /**
    * list of cache servers to create after auto-reconnect if cluster configuration is being used
    */
-  private List<BridgeServerCreation> cacheServerCreation;
+  private List<CacheServerCreation> cacheServerCreation;
   
   /**
    * This indicates if the pdxReadSerialized value is set by user. This is used 
@@ -137,12 +137,12 @@ public class CacheConfig {
   }
 
   
-  public List<BridgeServerCreation> getCacheServerCreation() {
+  public List<CacheServerCreation> getCacheServerCreation() {
     return this.cacheServerCreation;
   }
   
   
-  public void setCacheServerCreation(List<BridgeServerCreation> servers) {
+  public void setCacheServerCreation(List<CacheServerCreation> servers) {
     this.cacheServerCreation = servers;
   }
 

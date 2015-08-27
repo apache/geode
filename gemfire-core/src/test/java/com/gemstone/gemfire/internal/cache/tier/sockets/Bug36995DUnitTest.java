@@ -14,7 +14,7 @@ import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -121,7 +121,7 @@ public class Bug36995DUnitTest extends DistributedTestCase
     new Bug36995DUnitTest("temp").createCache(new Properties());
     // no region is created on server 
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.start();
     return new Integer(server1.getPort());
@@ -180,9 +180,6 @@ public class Bug36995DUnitTest extends DistributedTestCase
 
   /**
    * BugTest for 36526 : 
-   * getActiveServers() and getDeadServers() on BridgeLoader and BridgeWriter returns a Set of endpoint names.  
-   * Endpoints are stored internally as a list and allow duplicate logical names.  
-   * If any duplicates, getActiveServers() will omit them.
    */
   public void testBug36526()
   {
@@ -202,9 +199,9 @@ public class Bug36995DUnitTest extends DistributedTestCase
   public static void stopServer()
   {
     try {
-      Iterator iter = cache.getBridgeServers().iterator();
+      Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        BridgeServer server = (BridgeServer)iter.next();
+        CacheServer server = (CacheServer)iter.next();
         server.stop();
       }
     }

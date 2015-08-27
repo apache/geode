@@ -85,7 +85,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -95,9 +94,6 @@ import com.gemstone.gemfire.cache.query.internal.index.HashIndex;
 import com.gemstone.gemfire.cache.query.internal.index.PrimaryKeyIndex;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeClient;
-import com.gemstone.gemfire.cache.util.BridgeLoader;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
@@ -1223,8 +1219,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (this.version.compareTo(CacheXmlVersion.VERSION_5_7) < 0) {
       return;
     }
-    if (cp instanceof BridgePoolImpl || ((PoolImpl)cp).isUsedByGateway()) {
-      // no need to generate xml for bridge pools
+    if (((PoolImpl)cp).isUsedByGateway()) {
+      // no need to generate xml for gateway pools
       return;
     }
     AttributesImpl atts = new AttributesImpl();
@@ -1387,12 +1383,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         String name = generateDefaults() ? dir.getAbsolutePath() : dir.getPath();
         handler.characters(name.toCharArray(), 0, name.length());
         handler.endElement("", DISK_DIR, DISK_DIR);
-      }
-    }
-    {
-      BridgeWriter bw = cfg.getBridgeWriter();
-      if (bw != null) {
-        generate(CACHE_WRITER, bw);
       }
     }
     handler.endElement("", DYNAMIC_REGION_FACTORY, DYNAMIC_REGION_FACTORY);
@@ -2194,22 +2184,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    if (attrs.getCacheWriter() == attrs.getCacheLoader()
-        && attrs.getCacheWriter() instanceof BridgeClient) {
-      // just do the writer; the single instance will be made both loader and writer
-      if ((!(attrs instanceof RegionAttributesCreation) ||
-           ((RegionAttributesCreation) attrs).hasCacheWriter())) {
-        generate(CACHE_WRITER, attrs.getCacheWriter());
-      }
-    } else {
-      if ((!(attrs instanceof RegionAttributesCreation)
-           || ((RegionAttributesCreation) attrs).hasCacheLoader())) {
-        generate(CACHE_LOADER, attrs.getCacheLoader());
-      }
-      if ((!(attrs instanceof RegionAttributesCreation) ||
-           ((RegionAttributesCreation) attrs).hasCacheWriter())) {
-        generate(CACHE_WRITER, attrs.getCacheWriter());
-      }
+    if ((!(attrs instanceof RegionAttributesCreation)
+        || ((RegionAttributesCreation) attrs).hasCacheLoader())) {
+      generate(CACHE_LOADER, attrs.getCacheLoader());
+    }
+    if ((!(attrs instanceof RegionAttributesCreation) ||
+        ((RegionAttributesCreation) attrs).hasCacheWriter())) {
+      generate(CACHE_WRITER, attrs.getCacheWriter());
     }
     if ((!(attrs instanceof RegionAttributesCreation) ||
          ((RegionAttributesCreation) attrs).hasCacheListeners())) {
@@ -2254,10 +2235,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     Properties props = null;
     if (callback instanceof Declarable2) {
       props = ((Declarable2) callback).getConfig();
-    } else if (callback instanceof BridgeWriter) {
-      props = ((BridgeWriter) callback).getProperties();
-    } else if (callback instanceof BridgeLoader) {
-      props = ((BridgeLoader) callback).getProperties();
     } else if (callback instanceof ReflectionBasedAutoSerializer) {
       props = ((ReflectionBasedAutoSerializer) callback).getConfig();
     } else if (callback instanceof Declarable  && cache instanceof GemFireCacheImpl) {

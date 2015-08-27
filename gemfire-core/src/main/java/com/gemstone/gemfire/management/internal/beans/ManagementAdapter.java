@@ -31,10 +31,6 @@ import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.BridgeMembership;
-import com.gemstone.gemfire.cache.util.BridgeMembershipEvent;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListener;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListenerAdapter;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.Locator;
@@ -66,6 +62,10 @@ import com.gemstone.gemfire.management.internal.FederationComponent;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
+import com.gemstone.gemfire.management.membership.ClientMembership;
+import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
+import com.gemstone.gemfire.management.membership.ClientMembershipListener;
+import com.gemstone.gemfire.management.membership.ClientMembershipListenerAdapter;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -691,11 +691,11 @@ public class ManagementAdapter {
     ObjectName changedMBeanName = service.registerInternalMBean(
         (CacheServerMXBean) cacheServerMBean, cacheServerMBeanName);
     
-    BridgeMembershipListener managementBridgeListener = new CacheServerMembershipListenerAdapter(cacheServerMBean,
+    ClientMembershipListener managementClientListener = new CacheServerMembershipListenerAdapter(cacheServerMBean,
         memberLevelNotifEmitter, changedMBeanName);
-    BridgeMembership.registerBridgeMembershipListener(managementBridgeListener);
+    ClientMembership.registerClientMembershipListener(managementClientListener);
     
-    cacheServerBridge.setBridgeMembershipListener(managementBridgeListener);
+    cacheServerBridge.setClientMembershipListener(managementClientListener);
     
     service.federate(changedMBeanName, CacheServerMXBean.class, true);
     
@@ -725,11 +725,11 @@ public class ManagementAdapter {
     CacheServerMBean mbean = (CacheServerMBean) service
         .getLocalCacheServerMXBean(server.getPort());
     
-    BridgeMembershipListener listener = mbean.getBridge()
-        .getBridgeMembershipListener();
+    ClientMembershipListener listener = mbean.getBridge()
+        .getClientMembershipListener();
     
     if(listener != null){
-      BridgeMembership.unregisterBridgeMembershipListener(listener);
+      ClientMembership.unregisterClientMembershipListener(listener);
     }
    
 
@@ -824,11 +824,11 @@ public class ManagementAdapter {
             .getLocalCacheServerMXBean(server.getPort());
 
         if (mbean != null) {
-          BridgeMembershipListener listener = mbean.getBridge()
-            .getBridgeMembershipListener();
+          ClientMembershipListener listener = mbean.getBridge()
+            .getClientMembershipListener();
 
           if (listener != null) {
-            BridgeMembership.unregisterBridgeMembershipListener(listener);
+            ClientMembership.unregisterClientMembershipListener(listener);
           }
         }
 
@@ -1057,12 +1057,12 @@ public class ManagementAdapter {
 
   
   /**
-   * Private class which acts as a BridgeMembershipListener to propagate client
+   * Private class which acts as a ClientMembershipListener to propagate client
    * joined/left notifications
    */
 
   private static class CacheServerMembershipListenerAdapter extends
-      BridgeMembershipListenerAdapter {
+      ClientMembershipListenerAdapter {
     
     private NotificationBroadcasterSupport serverLevelNotifEmitter;
     private NotificationBroadcasterSupport memberLevelNotifEmitter;
@@ -1078,9 +1078,9 @@ public class ManagementAdapter {
 
     /**
      * Invoked when a client has connected to this process or when this process
-     * has connected to a BridgeServer.
+     * has connected to a CacheServer.
      */
-    public void memberJoined(BridgeMembershipEvent event) {
+    public void memberJoined(ClientMembershipEvent event) {
       Notification notification = new Notification(JMXNotificationType.CLIENT_JOINED, serverSource, SequenceNumber
           .next(), System.currentTimeMillis(), ManagementConstants.CLIENT_JOINED_PREFIX + event.getMemberId());
       serverLevelNotifEmitter.sendNotification(notification);
@@ -1090,9 +1090,9 @@ public class ManagementAdapter {
 
     /**
      * Invoked when a client has gracefully disconnected from this process or
-     * when this process has gracefully disconnected from a BridgeServer.
+     * when this process has gracefully disconnected from a CacheServer.
      */
-    public void memberLeft(BridgeMembershipEvent event) {
+    public void memberLeft(ClientMembershipEvent event) {
       Notification notification = new Notification(JMXNotificationType.CLIENT_LEFT, serverSource, SequenceNumber
           .next(), System.currentTimeMillis(), ManagementConstants.CLIENT_LEFT_PREFIX + event.getMemberId());
       serverLevelNotifEmitter.sendNotification(notification);
@@ -1101,9 +1101,9 @@ public class ManagementAdapter {
 
     /**
      * Invoked when a client has unexpectedly disconnected from this process or
-     * when this process has unexpectedly disconnected from a BridgeServer.
+     * when this process has unexpectedly disconnected from a CacheServer.
      */
-    public void memberCrashed(BridgeMembershipEvent event) {
+    public void memberCrashed(ClientMembershipEvent event) {
       Notification notification = new Notification(JMXNotificationType.CLIENT_CRASHED, serverSource, SequenceNumber
           .next(), System.currentTimeMillis(), ManagementConstants.CLIENT_CRASHED_PREFIX + event.getMemberId());
       serverLevelNotifEmitter.sendNotification(notification);

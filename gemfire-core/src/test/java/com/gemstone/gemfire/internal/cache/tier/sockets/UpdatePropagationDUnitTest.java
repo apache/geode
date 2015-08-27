@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -402,9 +402,9 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
   public static void killServer(Integer port )
   {
     try {
-      Iterator iter = cache.getBridgeServers().iterator();
+      Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        BridgeServer server = (BridgeServer)iter.next();
+        CacheServer server = (CacheServer)iter.next();
         if(server.getPort() == port.intValue()){
           server.stop();
         }
@@ -419,7 +419,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
   public static void startServer(Integer port)
   {
     try {
-      BridgeServer server1 = cache.addBridgeServer();
+      CacheServer server1 = cache.addCacheServer();
       server1.setPort(port.intValue());
       server1.setNotifyBySubscription(true);
       server1.start();
@@ -498,7 +498,7 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     new UpdatePropagationDUnitTest("temp").createCache(new Properties());
     RegionAttributes attrs = impl.createCacheServerAttributes(); 
     cache.createRegion(REGION_NAME, attrs);
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);

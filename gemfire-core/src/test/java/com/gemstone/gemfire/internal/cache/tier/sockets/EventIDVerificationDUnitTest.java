@@ -21,10 +21,10 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -174,10 +174,10 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.NONE);
     
-    BridgeTestCase.configureConnectionPool(factory, host, new int[] {PORT1,PORT2}, true, -1, 2, null, -1, -1, false, -2);
+    ClientServerTestCase.configureConnectionPool(factory, host, new int[] {PORT1,PORT2}, true, -1, 2, null, -1, -1, false, -2);
 
     
-    CacheWriter writer = new CacheWriterAdapter() { // couldn't port this test to pool because it subclasses BridgeWriter
+    CacheWriter writer = new CacheWriterAdapter() {
       public void beforeCreate(EntryEvent event)
       {
         vm0.invoke(EventIDVerificationDUnitTest.class, "setEventIDData",
@@ -360,7 +360,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();

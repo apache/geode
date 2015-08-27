@@ -19,7 +19,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.util.BridgeWriterException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
@@ -87,12 +86,6 @@ public class ClientStatsManager {
     }
     catch (DistributedSystemDisconnectedException e) {
       throw e;
-    }
-    catch (BridgeWriterException bgx) {
-      pool.getCancelCriterion().checkCancelInProgress(bgx);
-      currentCache.getCancelCriterion().checkCancelInProgress(bgx);
-      //TODO: Need to analyze these exception scenarios.
-      logger.warning(LocalizedStrings.ClientStatsManager_FAILED_TO_SEND_CLIENT_HEALTH_STATS_TO_CACHESERVER, bgx);
     }
     catch (CacheWriterException cwx) {
       pool.getCancelCriterion().checkCancelInProgress(cwx);

@@ -90,9 +90,7 @@ public class InternalFunctionService {
    */
   private static boolean isClientRegion(Region region) {
     LocalRegion localRegion = (LocalRegion)region;
-    return (localRegion.hasServerProxy()
-        || AbstractRegion.isBridgeLoader(localRegion.getCacheLoader()) || AbstractRegion
-        .isBridgeWriter(localRegion.getCacheWriter()));
+    return localRegion.hasServerProxy();
   }
 
   private static final FunctionServiceManager funcServiceManager = new FunctionServiceManager();

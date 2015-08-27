@@ -9,15 +9,15 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 
 /**
- * Just like BridgeWriterMiscDUnitTest but enables bridge thread pool
+ * Just like parent but enables server thread pool
  * (ie. selector)
  *
  * @author darrel
  *
  */
-public class BridgeWriterMiscSelectorDUnitTest extends BridgeWriterMiscDUnitTest
+public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest
 {
-  public BridgeWriterMiscSelectorDUnitTest(String name) {
+  public ClientServerMiscSelectorDUnitTest(String name) {
     super(name);
   }
 

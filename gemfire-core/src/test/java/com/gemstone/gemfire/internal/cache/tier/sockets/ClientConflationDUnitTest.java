@@ -22,15 +22,15 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeObserverAdapter;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -123,7 +123,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     createClientCacheFeeder(getServerHostName(Host.getHost(0)), new Integer(PORT));
     vm1.invoke(ClientConflationDUnitTest.class, "createClientCache", new Object[] { getServerHostName(vm1.getHost()), new Integer(PORT),
       conflation});
-    vm1.invoke(ClientConflationDUnitTest.class, "setBridgeObserverForBeforeInterestRecovery");
+    vm1.invoke(ClientConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
     vm1.invoke(ClientConflationDUnitTest.class, "setAllCountersZero");
     vm1.invoke(ClientConflationDUnitTest.class, "assertAllCountersZero");
     vm1.invoke(ClientConflationDUnitTest.class, "registerInterest");
@@ -267,10 +267,10 @@ public class ClientConflationDUnitTest extends DistributedTestCase
    * reset all counters to zero before interest recovery
    *
    */
-  public static void setBridgeObserverForBeforeInterestRecovery()
+  public static void setClientServerObserverForBeforeInterestRecovery()
   {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
-    BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRecovery()
       {
         setAllCountersZero();
@@ -282,9 +282,9 @@ public class ClientConflationDUnitTest extends DistributedTestCase
    * Assert all queues are empty to aid later assertion for listener event counts.
    */
   public static void assertAllQueuesEmpty() {
-    Iterator servers = cacheServer.getBridgeServers().iterator();
+    Iterator servers = cacheServer.getCacheServers().iterator();
     while (servers.hasNext()) {
-      Iterator proxies = ((BridgeServerImpl)servers.next()).getAcceptor().
+      Iterator proxies = ((CacheServerImpl)servers.next()).getAcceptor().
         getCacheClientNotifier().getClientProxies().iterator();
       while (proxies.hasNext()) {
         int qsize = ((CacheClientProxy)proxies.next()).getQueueSize();
@@ -402,7 +402,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     RegionAttributes attrs2 = factory.create();
     cacheServer.createRegion(REGION_NAME1, attrs1);
     cacheServer.createRegion(REGION_NAME2, attrs2);
-    BridgeServer server = cacheServer.addBridgeServer();
+    CacheServer server = cacheServer.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
     server.setPort(port);
     server.setNotifyBySubscription(true);

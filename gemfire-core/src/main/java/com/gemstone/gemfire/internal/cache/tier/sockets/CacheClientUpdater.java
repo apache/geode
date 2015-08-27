@@ -65,8 +65,8 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -1273,7 +1273,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       
       // // CALLBACK TESTING PURPOSE ONLY ////
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterReceivingFromServer(eventId);
       }
       // /////////////////////////////////////
@@ -1323,7 +1323,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       
       // // CALLBACK TESTING PURPOSE ONLY ////
       if (PoolImpl.IS_INSTANTIATOR_CALLBACK) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterReceivingFromServer(eventId);
       }
      ///////////////////////////////////////
@@ -1794,7 +1794,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
             if (errMessage == null) {
               errMessage = "";
             }
-            BridgeObserver bo = BridgeObserverHolder.getInstance();
+            ClientServerObserver bo = ClientServerObserverHolder.getInstance();
             bo.beforeFailoverByCacheClientUpdater(this.location);
             eManager.serverCrashed(this.endpoint);
             if (isDebugEnabled) {
@@ -1811,7 +1811,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
         catch (Exception e) {
           if (!quitting()) {
             this.endPointDied = true;
-            BridgeObserver bo = BridgeObserverHolder.getInstance();
+            ClientServerObserver bo = ClientServerObserverHolder.getInstance();
             bo.beforeFailoverByCacheClientUpdater(this.location);
             eManager.serverCrashed(this.endpoint);
             String message = ": Caught the following exception and will exit: ";

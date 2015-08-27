@@ -19,14 +19,14 @@ import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeObserverAdapter;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.ha.HAHelper;
@@ -131,7 +131,7 @@ public class ConflationDUnitTest extends DistributedTestCase
       createClientCache1UniqueWriter ( getServerHostName(Host.getHost(0)), new Integer(PORT));
       vm2.invoke(ConflationDUnitTest.class, "createClientCache2UniqueWriter",
           new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT)});
-      vm2.invoke(ConflationDUnitTest.class, "setBridgeObserverForBeforeInterestRecovery");
+      vm2.invoke(ConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
       vm2.invoke(ConflationDUnitTest.class, "setAllCountersZero");
       vm2.invoke(ConflationDUnitTest.class, "assertAllCountersZero");
       vm2.invoke(ConflationDUnitTest.class, "registerInterest");
@@ -162,7 +162,7 @@ public class ConflationDUnitTest extends DistributedTestCase
       createClientCache1CommonWriter( getServerHostName(Host.getHost(0)), new Integer(PORT));
       vm2.invoke(ConflationDUnitTest.class, "createClientCache2CommonWriter",
           new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT)});
-      vm2.invoke(ConflationDUnitTest.class, "setBridgeObserverForBeforeInterestRecovery");
+      vm2.invoke(ConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
       vm2.invoke(ConflationDUnitTest.class, "setAllCountersZero");
       vm2.invoke(ConflationDUnitTest.class, "assertAllCountersZero");
       vm2.invoke(ConflationDUnitTest.class, "registerInterest");
@@ -195,7 +195,7 @@ public class ConflationDUnitTest extends DistributedTestCase
       vm2.invoke(ConflationDUnitTest.class,
           "createClientCache2CommonWriterTest3", new Object[] {
         getServerHostName(Host.getHost(0)), new Integer(PORT) });
-      vm2.invoke(ConflationDUnitTest.class, "setBridgeObserverForBeforeInterestRecovery");
+      vm2.invoke(ConflationDUnitTest.class, "setClientServerObserverForBeforeInterestRecovery");
       vm2.invoke(ConflationDUnitTest.class, "setAllCountersZero");
       vm2.invoke(ConflationDUnitTest.class, "assertAllCountersZero");
       vm2.invoke(ConflationDUnitTest.class, "registerInterest");
@@ -484,10 +484,10 @@ public class ConflationDUnitTest extends DistributedTestCase
    * reset all counters to zero before interest recovery
    *
    */
-  public static void setBridgeObserverForBeforeInterestRecovery()
+  public static void setClientServerObserverForBeforeInterestRecovery()
   {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
-    BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRecovery()
       {
         setAllCountersZero();
@@ -648,7 +648,7 @@ public class ConflationDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME1, attrs);
     cache.createRegion(REGION_NAME2, attrs);
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
     server.setPort(port);
     server.setNotifyBySubscription(true);
@@ -793,8 +793,8 @@ public class ConflationDUnitTest extends DistributedTestCase
   public static void getStatsOnServer()
   {
     Cache cache = GemFireCacheImpl.getInstance();
-    Iterator itr = cache.getBridgeServers().iterator();
-    BridgeServerImpl server = (BridgeServerImpl)itr.next();
+    Iterator itr = cache.getCacheServers().iterator();
+    CacheServerImpl server = (CacheServerImpl)itr.next();
     Iterator iter_prox = server.getAcceptor().getCacheClientNotifier()
         .getClientProxies().iterator();
     int ccpCount=0;

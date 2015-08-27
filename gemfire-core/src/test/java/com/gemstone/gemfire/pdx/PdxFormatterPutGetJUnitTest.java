@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -47,7 +47,7 @@ public class PdxFormatterPutGetJUnitTest {
     this.c = (GemFireCacheImpl) new CacheFactory().set("mcast-port", "0").setPdxReadSerialized(true).create();
     
     //start cache-server
-    BridgeServer server = c.addBridgeServer();
+    CacheServer server = c.addCacheServer();
     final int serverPort = 40405;
     server.setPort(serverPort);
     server.start();

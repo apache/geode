@@ -14,7 +14,7 @@ import junit.framework.Assert;
 
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -394,7 +394,7 @@ public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {
   throws IOException {
 
   Cache cache = getCache();
-  BridgeServer bridge = cache.addBridgeServer();
+  CacheServer bridge = cache.addCacheServer();
   bridge.setPort(port);
   bridge.setNotifyBySubscription(notifyBySubscription);
   bridge.start();
