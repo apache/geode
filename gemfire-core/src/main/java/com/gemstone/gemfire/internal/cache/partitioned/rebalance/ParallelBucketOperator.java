@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 
 /**
@@ -78,6 +80,10 @@ public class ParallelBucketOperator implements BucketOperator {
               pendingFailure.add(completion);
             }
           });
+        } catch(CancelException e) {
+          //ignore 
+        } catch(RegionDestroyedException e) {
+          //ignore
         } finally {
           operationSemaphore.release();
         }
