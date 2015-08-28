@@ -225,7 +225,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       public void run() {
         boolean pinged = GMSHealthMonitor.this.doCheckMember(pingMember);
         if (!pinged) {
-          String reason = String.format("Member isn't responding to check message: {}", pingMember);
+          String reason = String.format("Member isn't responding to check message: %s", pingMember);
           GMSHealthMonitor.this.sendSuspectMessage(pingMember, reason);
         } else {
           logger.debug("Setting next neighbour as member {} not responded.", pingMember);
@@ -510,7 +510,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void processPingRequest(PingRequestMessage m) {
-    PingResponseMessage prm = new PingResponseMessage();
+    PingResponseMessage prm = new PingResponseMessage(m.getRequestId());
     prm.setRecipient(m.getSender());
     Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(prm);
     // TODO: send is throwing exception right now
@@ -573,7 +573,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         }
       }
 
-      if (check.getCoordinator().equals(localAddress)) {
+      InternalDistributedMember coordinator = check.getCoordinator();
+      if (coordinator != null && coordinator.equals(localAddress)) {
         // new coordinator
         doFinalCheck(smbr, cv, localAddress);
       } else {
