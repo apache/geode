@@ -1,40 +1,38 @@
 package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoubleField;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FloatField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.util.BytesRef;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
  * Static utility functions for mapping objects to lucene documents
  */
 public class SerializerUtil {
-  private static final String KEY_FIELD = "_STORED_KEY";
-  private static final String KEY_SEARCH_FIELD = "_SEARCH_KEY";
+  private static final String KEY_FIELD = "_KEY";
   
   /**
    * A small buffer for converting keys to byte[] arrays.
    */
-  private static ThreadLocal<HeapDataOutputStream> buffer = new ThreadLocal<HeapDataOutputStream>() {
+  private static ThreadLocal<ByteArrayOutputStream> LOCAL_BUFFER = new ThreadLocal<ByteArrayOutputStream>() {
     @Override
-    protected HeapDataOutputStream initialValue() {
-      return new HeapDataOutputStream(Version.CURRENT);
+    protected ByteArrayOutputStream initialValue() {
+      return new ByteArrayOutputStream();
     }
   };
 
@@ -45,9 +43,11 @@ public class SerializerUtil {
    * Add a gemfire key to a document
    */
   public static void addKey(Object key, Document doc) {
-    BytesRef keyBytes = keyToBytes(key);
-    doc.add(new BinaryDocValuesField(KEY_SEARCH_FIELD, keyBytes));
-    doc.add(new StoredField(KEY_FIELD, keyBytes));
+    if(key instanceof String) {
+      doc.add(new StringField(KEY_FIELD, (String) key, Store.YES));
+    } else {
+      doc.add(new StringField(KEY_FIELD, keyToBytes(key), Store.YES));
+    }
   }
 
   /**
@@ -88,10 +88,11 @@ public class SerializerUtil {
    * Extract the gemfire key from a lucene document
    */
   public static Object getKey(Document doc) {
-    try {
-      return BlobHelper.deserializeBlob(doc.getField(KEY_FIELD).binaryValue().bytes);
-    } catch (ClassNotFoundException | IOException e) {
-      throw new InternalGemFireError("Unable to deserialize key", e);
+    IndexableField field = doc.getField(KEY_FIELD);
+    if(field.stringValue() != null) {
+      return field.stringValue();
+    } else {
+      return  keyFromBytes(field.binaryValue());
     }
   }
  
@@ -99,7 +100,12 @@ public class SerializerUtil {
    * Extract the gemfire key term from a lucene document
    */
   public static Term getKeyTerm(Document doc) {
-    return new Term(KEY_SEARCH_FIELD, doc.getField(KEY_FIELD).binaryValue());
+    IndexableField field = doc.getField(KEY_FIELD);
+    if(field.stringValue() != null) {
+      return new Term(KEY_FIELD, field.stringValue());
+    } else {
+      return new Term(KEY_FIELD, field.binaryValue());
+    }
   }
   
   /**
@@ -107,20 +113,37 @@ public class SerializerUtil {
    * update or delete the document associated with this key.
    */
   public static Term toKeyTerm(Object key) {
-    return new Term(KEY_SEARCH_FIELD, keyToBytes(key));
+    if(key instanceof String) {
+      return new Term(KEY_FIELD, (String) key);
+    } else {
+      return new Term(KEY_FIELD, keyToBytes(key));
+    }
+  }
+  
+  private static Object keyFromBytes(BytesRef bytes) {
+    try {
+      return BlobHelper.deserializeBlob(bytes.bytes);
+    } catch (ClassNotFoundException | IOException e) {
+      throw new InternalGemFireError(e);
+    }
   }
   
   /**
    * Convert a key to a byte array.
    */
   private static BytesRef keyToBytes(Object key)  {
-    buffer.get().reset();
+    ByteArrayOutputStream buffer = LOCAL_BUFFER.get();
+    
     try {
-      DataSerializer.writeObject(key, buffer.get());
+      DataOutputStream out = new DataOutputStream(buffer);
+      DataSerializer.writeObject(key, out);
+      out.flush();
+      BytesRef result = new BytesRef(buffer.toByteArray());
+      buffer.reset();
+      return result;
     } catch (IOException e) {
       throw new InternalGemFireError("Unable to serialize key", e);
     }
-    return new BytesRef(buffer.get().toByteArray());
   }
 
 }
