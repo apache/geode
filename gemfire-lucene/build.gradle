@@ -1,15 +1,15 @@
 dependencies {
     provided project(':gemfire-core')
-    compile 'org.apache.lucene:lucene-analyzers-common:5.0.0'
-    compile 'org.apache.lucene:lucene-core:5.0.0'
-    compile 'org.apache.lucene:lucene-queries:5.0.0'
-    compile 'org.apache.lucene:lucene-queryparser:5.0.0'
+    compile 'org.apache.lucene:lucene-analyzers-common:5.3.0'
+    compile 'org.apache.lucene:lucene-core:5.3.0'
+    compile 'org.apache.lucene:lucene-queries:5.3.0'
+    compile 'org.apache.lucene:lucene-queryparser:5.3.0'
 
     provided project(path: ':gemfire-junit', configuration: 'testOutput')
 
     //Lucene test framework.
-    testCompile 'org.apache.lucene:lucene-test-framework:5.0.0'
-    testCompile 'org.apache.lucene:lucene-codecs:5.0.0'
+    testCompile 'org.apache.lucene:lucene-test-framework:5.3.0'
+    testCompile 'org.apache.lucene:lucene-codecs:5.3.0'
     //Dependency ot lucene-test-framework. Can we turn on transitive depencies for
     //the test framework somehow? We've disabled them globally in the parent
     //build.gadle.
