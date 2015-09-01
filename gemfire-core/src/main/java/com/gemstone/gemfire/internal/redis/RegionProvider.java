@@ -194,7 +194,7 @@ public class RegionProvider implements Closeable {
     return getOrCreateRegion0(key, type, context, true);
   }
 
-  public void createRemoteRegionLocally(ByteArrayWrapper key, RedisDataType type) {
+  public void createRemoteRegionReferenceLocally(ByteArrayWrapper key, RedisDataType type) {
     if (type == null || type == RedisDataType.REDIS_STRING || type == RedisDataType.REDIS_HLL)
       return;
     Region<?, ?> r = this.regions.get(key);
@@ -210,11 +210,16 @@ public class RegionProvider implements Closeable {
       boolean locked = false;
       try {
         locked = lock.tryLock();
-        // If we cannot get the lock then this remote even may have been initialized
+        // If we cannot get the lock then this remote event may have been initialized
         // independently on this machine, so if we wait on the lock it is more than
-        // likely we will deadlock just to do the same task, this even can be ignored
+        // likely we will deadlock just to do the same task. This event can be ignored
         if (locked) {
           r = cache.getRegion(key.toString());
+          // If r is null, this implies that we are after a create/destroy
+          // simply ignore. Calls to getRegion or getOrCreate will work correctly
+          if (r == null)
+            return;
+          
           if (type == RedisDataType.REDIS_LIST)
             doInitializeList(key, r);
           else if (type == RedisDataType.REDIS_SORTEDSET)

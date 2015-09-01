@@ -7,7 +7,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
   DistributedSystemLogFileJUnitTest.class,
   LocatorLogFileJUnitTest.class,
-  LogServiceJUnitTest.class,
+  LogServiceIntegrationJUnitTest.class,
+  LogServiceUserDirIntegrationJUnitTest.class,
   MergeLogFilesJUnitTest.class,
 })
 public class LoggingIntegrationTestSuite {

@@ -3767,9 +3767,16 @@ public abstract class RegionTestCase extends CacheTestCase {
       region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(999000/*ms*/, ExpirationAction.INVALIDATE));
       expiryTask = region.getRegionIdleExpiryTask();
       long hugeExpiryTime = expiryTask.getExpirationTime();
-      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(20/*ms*/, ExpirationAction.INVALIDATE));
-      expiryTask = region.getRegionIdleExpiryTask();
-      long shortExpiryTime = expiryTask.getExpirationTime();
+      ExpiryTask.suspendExpiration();
+      long shortExpiryTime;
+      try {
+        region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(20/*ms*/, ExpirationAction.INVALIDATE));
+        expiryTask = region.getRegionIdleExpiryTask();
+        shortExpiryTime = expiryTask.getExpirationTime();
+        } 
+      finally {
+        ExpiryTask.permitExpiration();
+      }
       waitForInvalidate(entry, tilt+20, 10);
       assertTrue("expected hugeExpiryTime=" + hugeExpiryTime + " to be > than mediumExpiryTime=" + mediumExpiryTime, (hugeExpiryTime - mediumExpiryTime) > 0);
       assertTrue("expected mediumExpiryTime=" + mediumExpiryTime + " to be > than shortExpiryTime=" + shortExpiryTime, (mediumExpiryTime - shortExpiryTime) > 0);

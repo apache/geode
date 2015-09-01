@@ -146,7 +146,15 @@ public class LogService extends LogManager {
       else {
         //If the resource can be found and in cases where the resource is in gemfire jar,
         //we set the log location to the file that was found
-        configFileInformation = "Using log4j configuration file specified by " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + ": '" + configFileName + "'";
+
+        // must change from Java resource syntax to Java URL syntax (GEODE-232)
+        // jar:file:/export/latvia1/users/klund/dev/asf-geode/gemfire-assembly/build/install/apache-geode/lib/gemfire-core-1.0.0-incubating-SNAPSHOT.jar!/com/gemstone/gemfire/internal/logging/log4j/log4j2-cli.xml
+        
+        String configFilePropertyValue = configUrl.toString();
+        // configFileName is Java resource syntax, configFilePropertyValue is URL syntax as required by log4j2
+        
+        System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFilePropertyValue);
+        configFileInformation = "Using log4j configuration file specified by " + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + ": '" + configFilePropertyValue + "'";
         StatusLogger.getLogger().info(configFileInformation);
         return true;
       }
@@ -218,6 +226,7 @@ public class LogService extends LogManager {
   public static LogWriterLogger createLogWriterLogger(final String name, final String connectionName, final boolean isSecure) {
     return LogWriterLogger.create(name, connectionName, isSecure);
   }
+  
   /**
    * Return the Log4j Level associated with the int level.
    * 

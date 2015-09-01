@@ -4244,4 +4244,72 @@ protected static class ClientListener extends CacheListenerAdapter {
     Object value = entry._getValue();
     return value;
   }
+
+  /**
+   * Install Listeners and verify that they are invoked after all tx events have been applied to the cache
+   * see GEODE-278
+   */
+  public void testNonInlineRemoteEvents() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String key1 = "nonInline-1";
+    final String key2 = "nonInline-2";
+
+    class NonInlineListener extends CacheListenerAdapter {
+      boolean assertException = false;
+
+      @Override
+      public void afterCreate(EntryEvent event) {
+        if (event.getKey().equals(key1)) {
+          if (getCache().getRegion(D_REFERENCE).get(key2) == null) {
+            assertException = true;
+          }
+        }
+      }
+    }
+
+    SerializableCallable createRegionWithListener = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        createRegion(false, 0, null);
+        getCache().getRegion(D_REFERENCE).getAttributesMutator().addCacheListener(new NonInlineListener());
+        return null;
+      }
+    };
+
+    vm0.invoke(createRegionWithListener);
+    vm1.invoke(createRegionWithListener);
+
+    vm0.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region region = getCache().getRegion(D_REFERENCE);
+        CacheTransactionManager mgr = getCache().getCacheTransactionManager();
+        mgr.begin();
+        region.put(key1, "nonInlineValue-1");
+        region.put(key2, "nonInlineValue-2");
+        mgr.commit();
+        return null;
+      }
+    });
+
+    SerializableCallable verifyAssert = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        CacheListener[] listeners = getCache().getRegion(D_REFERENCE).getAttributes().getCacheListeners();
+        for (CacheListener listener : listeners) {
+          if (listener instanceof NonInlineListener) {
+            NonInlineListener l = (NonInlineListener) listener;
+            assertFalse(l.assertException);
+          }
+        }
+        return null;
+      }
+    };
+
+    vm0.invoke(verifyAssert);
+    vm1.invoke(verifyAssert);
+
+  }
 }
