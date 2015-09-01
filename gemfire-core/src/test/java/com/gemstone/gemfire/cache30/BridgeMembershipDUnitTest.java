@@ -719,6 +719,7 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
    * crashes or departs gracefully, the client will detect this as a crash.
    */
   public void testBridgeMembershipEventsInClient() throws Exception {
+    addExpectedException("IOException");
     final boolean[] fired = new boolean[3];
     final DistributedMember[] member = new DistributedMember[3];
     final String[] memberId = new String[3];
@@ -876,35 +877,16 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
     assertFalse(isClient[CRASHED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
-//    String expected = "dead server list" +
-//                      "||live server list" +
-//                      "||java.io.IOException";
-    String expected = "java.io.IOException";
-    String addExpected = 
-      "<ExpectedException action=add>" + expected + "</ExpectedException>";
-    String removeExpected = 
-      "<ExpectedException action=remove>" + expected + "</ExpectedException>";
-      
-    LogWriter bgexecLogger =
-          new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
-    bgexecLogger.info(addExpected);
-    getLogWriter().info(addExpected);
-    try {
-      vm0.invoke(new SerializableRunnable("Stop BridgeServer") {
-        public void run() {
-          getLogWriter().info("[testBridgeMembershipEventsInClient] Stop BridgeServer");
-          stopBridgeServers(getCache());
-        }
-      });
-      synchronized(listener) {
-        if (!fired[JOINED] && !fired[CRASHED]) {
-          listener.wait(60 * 1000);
-        }
+    vm0.invoke(new SerializableRunnable("Stop BridgeServer") {
+      public void run() {
+        getLogWriter().info("[testBridgeMembershipEventsInClient] Stop BridgeServer");
+        stopBridgeServers(getCache());
       }
-    }
-    finally {
-      bgexecLogger.info(removeExpected);
-      getLogWriter().info(removeExpected);
+    });
+    synchronized(listener) {
+      if (!fired[JOINED] && !fired[CRASHED]) {
+        listener.wait(60 * 1000);
+      }
     }
     
     getLogWriter().info("[testBridgeMembershipEventsInClient] assert client detected server departure");
