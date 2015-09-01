@@ -3,12 +3,12 @@ package com.gemstone.gemfire.cache.lucene.internal.repository;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TopDocs;
 
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
@@ -25,12 +25,11 @@ public class IndexRepositoryImpl implements IndexRepository {
   
   private final IndexWriter writer;
   private final LuceneSerializer serializer;
-  private volatile DirectoryReader reader;
-  private volatile IndexSearcher searcher;
+  private final SearcherManager searcherManager;
   
   public IndexRepositoryImpl(IndexWriter writer, LuceneSerializer serializer) throws IOException {
     this.writer = writer;
-    reader = DirectoryReader.open(writer, APPLY_ALL_DELETES);
+    searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, null);
     this.serializer = serializer;
   }
 
@@ -58,22 +57,22 @@ public class IndexRepositoryImpl implements IndexRepository {
 
   @Override
   public void query(Query query, int limit, IndexResultCollector collector) throws IOException {
-    IndexSearcher searcherSnapshot = searcher;
-    TopDocs docs = searcherSnapshot.search(query, limit);
-    for(ScoreDoc scoreDoc : docs.scoreDocs) {
-      Document doc = searcher.doc(scoreDoc.doc);
-      Object key = SerializerUtil.getKey(doc);
-      collector.collect(key, scoreDoc.score);
+    IndexSearcher searcher = searcherManager.acquire();
+    try {
+      TopDocs docs = searcher.search(query, limit);
+      for(ScoreDoc scoreDoc : docs.scoreDocs) {
+        Document doc = searcher.doc(scoreDoc.doc);
+        Object key = SerializerUtil.getKey(doc);
+        collector.collect(key, scoreDoc.score);
+      }
+    } finally {
+      searcherManager.release(searcher);
     }
   }
 
   @Override
   public synchronized void commit() throws IOException {
     writer.commit();
-    DirectoryReader newReader = DirectoryReader.openIfChanged(reader);
-    if(newReader != null) {
-      reader = newReader;
-      searcher = new IndexSearcher(reader);
-    }
+    searcherManager.maybeRefresh();
   }
 }
