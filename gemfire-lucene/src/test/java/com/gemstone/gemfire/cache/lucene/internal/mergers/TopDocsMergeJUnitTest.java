@@ -170,7 +170,7 @@ public class TopDocsMergeJUnitTest {
     verifyResultOrder(merged, r1_1, r2_1, r1_2, r1_3, r2_2);
   }
 
-  private void verifyResultOrder(LuceneQueryResults merged, LuceneResultStruct... results) {
+  public static void verifyResultOrder(LuceneQueryResults merged, LuceneResultStruct... results) {
     int i = 0;
     for (LuceneResultStruct result : results) {
       LuceneResultStruct doc = merged.getHits().get(i++);

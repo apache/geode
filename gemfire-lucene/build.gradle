@@ -14,7 +14,12 @@ dependencies {
     //the test framework somehow? We've disabled them globally in the parent
     //build.gadle.
     testCompile 'com.carrotsearch.randomizedtesting:randomizedtesting-runner:2.1.6'
-    
+
+    // the following test dependencies are needed for mocking cache instance
+    testRuntime 'org.apache.hadoop:hadoop-common:2.4.1'
+    testRuntime 'org.apache.hadoop:hadoop-hdfs:2.4.1'
+    testRuntime 'com.google.guava:guava:11.0.2'
+    testRuntime 'commons-collections:commons-collections:3.2.1'
 }
 
 //The lucene integration tests don't have any issues that requiring forking

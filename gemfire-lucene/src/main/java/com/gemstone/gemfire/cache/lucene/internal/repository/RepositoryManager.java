@@ -1,6 +1,7 @@
 package com.gemstone.gemfire.cache.lucene.internal.repository;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
@@ -18,10 +19,10 @@ public interface RepositoryManager {
    * bucket needs to be present on this member.
    * 
    * @param region
-   * @param bucketIds buckets of a Partitioned region for which {@link IndexRepository}s needs to be discovered. null
+   * @param buckets buckets of a Partitioned region for which {@link IndexRepository}s needs to be discovered. null
    *          for all primary buckets on this member or if the region is Replicated.
    * @return a collection of {@link IndexRepository} instances
    * @throws BucketNotFoundException if any of the requested buckets is not found on this member
    */
-  Collection<IndexRepository> getRepositories(Region region, int[] bucketIds) throws BucketNotFoundException;
+  Collection<IndexRepository> getRepositories(Region region, Set<Integer> buckets) throws BucketNotFoundException;
 }
