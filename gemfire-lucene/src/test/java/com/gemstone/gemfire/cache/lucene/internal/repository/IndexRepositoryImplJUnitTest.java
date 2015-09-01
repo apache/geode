@@ -42,7 +42,6 @@ public class IndexRepositoryImplJUnitTest {
 
   private IndexRepositoryImpl repo;
   private HeterogenousLuceneSerializer mapper;
-  private DirectoryReader reader;
   private StandardAnalyzer analyzer = new StandardAnalyzer();
   private IndexWriter writer;
 
@@ -53,7 +52,6 @@ public class IndexRepositoryImplJUnitTest {
     RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion);
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     writer = new IndexWriter(dir, config);
-    reader = DirectoryReader.open(writer, true);
     String[] indexedFields= new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
     mapper = new HeterogenousLuceneSerializer(indexedFields);
     repo = new IndexRepositoryImpl(writer, mapper);
@@ -118,22 +116,24 @@ public class IndexRepositoryImplJUnitTest {
 
   private void checkQuery(String queryTerm, String queryField, Object ... expectedKeys)
       throws IOException, ParseException {
-    QueryParser parser = new QueryParser(queryField, analyzer);
-    
-    DirectoryReader result = DirectoryReader.openIfChanged(reader);
-    reader = result == null ? reader : result;
-    IndexSearcher searcher = new IndexSearcher(reader);
-    TopDocs results = searcher.search(parser.parse(queryTerm), 100);
-    
     Set<Object> expectedSet = new HashSet<Object>();
     expectedSet.addAll(Arrays.asList(expectedKeys));
-    Set<Object> actualKeys = new HashSet<Object>();
-    for(ScoreDoc scoreDoc: results.scoreDocs) {
-      Document doc = searcher.doc(scoreDoc.doc);
-      assertEquals(1, doc.getFields().size());
-      actualKeys.add(SerializerUtil.getKey(doc));
+    
+    QueryParser parser = new QueryParser(queryField, analyzer);
+    
+    KeyCollector collector = new KeyCollector();
+    repo.query(parser.parse(queryTerm), 100, collector);
+    
+    assertEquals(expectedSet, collector.results);
+  }
+  
+  private static class KeyCollector implements IndexResultCollector {
+
+    Set<Object> results = new HashSet<Object>();
+    @Override
+    public void collect(Object key, float score) {
+      results.add(key);
     }
-    assertEquals(expectedSet, actualKeys);
   }
 
   /**
