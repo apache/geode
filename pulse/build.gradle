@@ -1,0 +1,149 @@
+apply plugin: 'war'
+
+sourceSets {// Force new dependencies only - do no inherit from parent project
+  main {
+    resources {
+      exclude('**/*.txt')
+      exclude('**/gemfire*.properties')
+      exclude('**/sqlfire.properties')
+    }
+  }
+  test {
+    output.resourcesDir = output.classesDir
+    resources {
+      include('**/pulse.properties')
+    }
+  }
+}
+
+dependencies {
+  compile 'org.apache.commons:com.springsource.org.apache.commons.beanutils:1.8.0'
+  compile 'org.apache.commons:com.springsource.org.apache.commons.collections:3.2.0'
+  compile 'org.apache.commons:com.springsource.org.apache.commons.digester:1.8.1'
+  compile 'org.apache.commons:com.springsource.org.apache.commons.logging:1.1.1'
+  compile 'commons-lang:commons-lang:2.6'
+  compile 'org.springframework.ldap:spring-ldap-core:1.3.2.RELEASE'
+  compile 'org.springframework.security:spring-security-config:3.1.7.RELEASE'
+  compile 'org.springframework.security:spring-security-core:3.1.7.RELEASE'
+  compile 'org.springframework.security:spring-security-ldap:3.1.7.RELEASE'
+  compile 'org.springframework.security:spring-security-web:3.1.7.RELEASE'
+  compile 'org.springframework:spring-tx:3.2.12.RELEASE'
+
+  providedCompile 'commons-logging:commons-logging:1.1.3'
+  providedCompile 'commons-codec:commons-codec:1.6'
+  providedCompile 'org.apache.httpcomponents:fluent-hc:4.3.3'
+  providedCompile 'org.apache.httpcomponents:httpclient:4.3.3'
+  providedCompile 'org.apache.httpcomponents:httpclient-cache:4.3.3'
+  providedCompile 'org.apache.httpcomponents:httpcore:4.3.2'
+  providedCompile 'org.apache.httpcomponents:httpmime:4.3.3'
+
+  provided 'org.mortbay.jetty:servlet-api:2.5-20081211'
+
+  testCompile 'junit:junit:4.10'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-core:7.0.30'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.30'
+  testCompile 'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.30'
+  testCompile 'org.seleniumhq.selenium:selenium-server-standalone:2.41.0'
+//  testCompile 'org.seleniumhq.selenium:selenium-server:2.47.1'
+
+  // Required only for creating test categories
+//  testPulseCompile project(path: ':gemfire-junit', configuration: 'testOutput')
+
+}
+
+jar {
+  from sourceSets.main.output
+}
+
+artifacts {
+  archives jar
+}
+
+def pulseWarFile = "pulse.war"
+
+war {
+  // TODO include the jar but exclude the classes from the war file?
+//  classpath jar
+//  rootSpec.exclude("**/*.class")
+//  includeEmptyDirs = false
+
+//  from('release/3rdparty_licenses') {
+//    include 'open_source_licenses-Pivotal_GemFire_Pulse_8.1.0.txt'
+//    into '.'
+//    rename { String fileName ->
+//      fileName.replace("open_source_licenses-Pivotal_GemFire_Pulse_8.1.0.txt", "oslicenses.txt")
+//    }
+//  }
+
+  archiveName pulseWarFile
+}
+
+test {
+
+  include '**/junit/*.class'
+  exclude '**/AllTests.class'
+  exclude '**/Base*.class'
+
+  systemProperty 'pulse.propfile', "$projectDir/src/test/resources/test.properties"
+  systemProperty 'pulse.war', "$buildDir/libs/$pulseWarFile"
+
+  useJUnit {
+    // TODO: Classify and add categories to different Pulse tests
+//    includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
+  }
+
+  // show standard out and standard error of the test JVM(s) on the console
+  testLogging.showStandardStreams = true
+
+}
+
+integrationTest {
+
+// Run tests individually
+//  include '**/PulseUITest.class'
+//  include '**/PulseTests.class'
+//  include '**/PulseAutomatedTests.class'
+
+  include '**/*Tests.class'
+  include '**/*Test.class'
+  exclude '**/AllTests.class'
+  exclude '**/junit/*.class'
+  exclude '**/Base*.class'
+
+  systemProperty 'pulse.propfile', "$projectDir/src/test/resources/test.properties"
+  systemProperty 'pulse.war', "$buildDir/libs/$pulseWarFile"
+
+  useJUnit() {
+
+    // TODO: Classify and add categories to different Pulse tests
+//    includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
+
+  }
+  // show standard out and standard error of the test JVM(s) on the console
+  testLogging.showStandardStreams = true
+
+}
+
+// TODO: Implement checkMissedTests & classify/ add categories to different Pulse tests
+//This target does not run any tests. Rather, it validates that there are no
+//tests that are missing a category annotation
+//checkMissedTests {
+//  include '**/*Tests.class'
+//  include '**/*Test.class'
+//  exclude '**/AllTests.class'
+//  exclude '**/Base*.class'
+//
+//  useJUnit {
+//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+//  }
+//
+//  beforeTest { descriptor ->
+//    throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
+//  }
+//
+//}

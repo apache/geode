@@ -55,7 +55,6 @@ public class AgentUtilJUnitTest {
     assertNotNull("GemFire REST API WAR File was not found", gemFireWarLocation);
   }
 
-  @Ignore("This test should be activated when pulse gets added to Geode")
   @Test
   public void testPulseWarExists() {
     String gemFireWarLocation = agentUtil.findWarLocation("gemfire-pulse");
