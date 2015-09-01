@@ -7,6 +7,7 @@ include 'gemfire-junit'
 include 'gemfire-core'
 include 'gemfire-web'
 include 'gemfire-web-api'
+include 'pulse'
 include 'gemfire-assembly'
 
 def minimumGradleVersion = '2.3'

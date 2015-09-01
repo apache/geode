@@ -27,6 +27,7 @@ dependencies {
   archives project(':gemfire-core')  
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
+  archives project(':pulse')
 
   testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
   testCompile project(path: ':gemfire-core', configuration: 'testOutput')
@@ -183,7 +184,7 @@ distributions {
 
         // include this jar        
         from project(":gemfire-web-api").jar.outputs.files.getFiles()
-        
+
         // dependency jars
         from depsJar
         from gfshDepsJar
@@ -194,6 +195,12 @@ distributions {
           exclude '*.jar'
         }
         from (project(":gemfire-web-api").configurations.archives.allArtifacts.files) {
+          exclude '*.jar'
+        }
+      }
+
+      into ('tools/Pulse') {
+        from (project(":pulse").configurations.archives.allArtifacts.files) {
           exclude '*.jar'
         }
       }

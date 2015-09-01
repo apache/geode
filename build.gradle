@@ -367,11 +367,9 @@ subprojects {
         maxHeapSize '768m'
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-XX:MaxPermSize=256M', '-ea']
 
-        systemProperties = [
-          'gemfire.DEFAULT_MAX_OPLOG_SIZE' : '10',
-          'gemfire.disallowMcastDefaults'  : 'true',
-          'jline.terminal'                 : 'jline.UnsupportedTerminal',
-        ]
+        systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
+        systemProperty 'gemfire.disallowMcastDefaults', 'true'
+        systemProperty 'jline.terminal', 'jline.UnsupportedTerminal'
 
         def eol = System.getProperty('line.separator')
         def progress = new File(resultsDir, "$test.name-progress.txt")
