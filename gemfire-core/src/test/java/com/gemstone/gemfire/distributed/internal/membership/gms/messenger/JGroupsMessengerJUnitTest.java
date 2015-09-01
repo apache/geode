@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.jgroups.Event;
@@ -21,7 +22,9 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.SerialAckedMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
@@ -31,6 +34,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manag
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -48,11 +52,11 @@ public class JGroupsMessengerJUnitTest {
   /**
    * Create stub and mock objects
    */
-  @Before
-  public void initMocks() throws Exception {
+  private void initMocks(boolean enableMcast) throws Exception {
     Properties nonDefault = new Properties();
     nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, enableMcast? ""+AvailablePortHelper.getRandomAvailableUDPPort() : "0");
+    nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
     nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
     nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
     nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
@@ -106,9 +110,23 @@ public class JGroupsMessengerJUnitTest {
   
   @Test
   public void testMessageDeliveredToHandler() throws Exception {
+    doTestMessageDeliveredToHandler(false);
+  }
+  
+  @Test
+  public void testMessageDeliveredToHandlerMcast() throws Exception {
+    doTestMessageDeliveredToHandler(true);
+  }
+  
+  private void doTestMessageDeliveredToHandler(boolean mcast) throws Exception {
+    initMocks(mcast);
     MessageHandler mh = mock(MessageHandler.class);
     messenger.addHandler(JoinRequestMessage.class, mh);
     
+    InternalDistributedMember addr = messenger.getMemberID();
+    NetView v = new NetView(addr);
+    when(joinLeave.getView()).thenReturn(v);
+
     InternalDistributedMember sender = createAddress(8888);
     JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null);
     
@@ -128,15 +146,38 @@ public class JGroupsMessengerJUnitTest {
   
   @Test
   public void testBigMessageIsFragmented() throws Exception {
+    doTestBigMessageIsFragmented(false, false);
+  }
+
+  @Test
+  public void testBigMessageIsFragmentedMcast() throws Exception {
+    doTestBigMessageIsFragmented(true, true);
+  }
+  
+  @Test
+  public void testBroadcastUDPMessage() throws Exception {
+    doTestBigMessageIsFragmented(false, true);
+  }
+
+  public void doTestBigMessageIsFragmented(boolean mcastEnabled, boolean mcastMsg) throws Exception {
+    initMocks(mcastEnabled);
     MessageHandler mh = mock(MessageHandler.class);
     messenger.addHandler(JoinRequestMessage.class, mh);
     
-    InternalDistributedMember sender = createAddress(8888);
+    InternalDistributedMember sender = messenger.getMemberID();
+    NetView v = new NetView(sender);
+    when(joinLeave.getView()).thenReturn(v);
+    messenger.installView(v);
     JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null);
+    if (mcastMsg) {
+      msg.setMulticast(true);
+    }
 
     messenger.send(msg);
-    assertTrue("expected 1 message to be sent but found "+ interceptor.unicastSentDataMessages,
-        interceptor.unicastSentDataMessages == 1);
+    int sentMessages = (mcastEnabled && mcastMsg) ? interceptor.mcastSentDataMessages
+        : interceptor.unicastSentDataMessages;
+    assertTrue("expected 1 message to be sent but found "+ sentMessages,
+        sentMessages == 1);
 
     // send a big message and expect fragmentation
     msg = new JoinRequestMessage(messenger.localAddress, sender, new byte[(int)(services.getConfig().getDistributionConfig().getUdpFragmentSize()*(1.5))]);
@@ -146,6 +187,28 @@ public class JGroupsMessengerJUnitTest {
     assertTrue("expected 2 messages to be sent but found "+ interceptor.unicastSentDataMessages,
         interceptor.unicastSentDataMessages == 2);
     
+  }
+  
+  
+  @Test
+  public void testSendToMultipleMembers() throws Exception {
+    initMocks(false);
+    InternalDistributedMember sender = messenger.getMemberID();
+    InternalDistributedMember other = new InternalDistributedMember("localhost", 8888);
+
+    NetView v = new NetView(sender);
+    v.add(other);
+    when(joinLeave.getView()).thenReturn(v);
+    messenger.installView(v);
+
+    List<InternalDistributedMember> recipients = v.getMembers();
+    SerialAckedMessage msg = new SerialAckedMessage();
+    msg.setRecipients(recipients);
+
+    messenger.send(msg);
+    int sentMessages = interceptor.unicastSentDataMessages;
+    assertTrue("expected 2 message to be sent but found "+ sentMessages,
+        sentMessages == 2);
   }
   
   

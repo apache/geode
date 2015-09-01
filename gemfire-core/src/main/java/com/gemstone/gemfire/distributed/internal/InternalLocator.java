@@ -664,7 +664,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     
     this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, this.stateFile,
-        locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled);
+        locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled, stats);
     this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
     peerLocator = true;
     if(!server.isAlive()) {

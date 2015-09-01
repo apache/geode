@@ -104,7 +104,6 @@ public class LocatorJUnitTest {
 
   @Test
   public void testServerOnly() throws Exception {
-    fail("testServerOnly must be fixed for the jgroups replacement");
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
@@ -112,15 +111,6 @@ public class LocatorJUnitTest {
     Assert.assertFalse(locator.isPeerLocator());
     Assert.assertTrue(locator.isServerLocator());
     Thread.sleep(1000);
-    try {
-      // TODO fix this part of the test
-//      GossipData request = new GossipData(GossipData.REGISTER_REQ, "group", new IpAddress(InetAddress.getLocalHost(), 55), null, null);
-//      TcpClient.requestToServer(InetAddress.getLocalHost(), port, request, REQUEST_TIMEOUT);
-      Assert.fail("Should have got an exception");
-    } catch (Exception expected) {
-//      expected.printStackTrace();
-    }
-
     doServerLocation();
   }
 
@@ -136,7 +126,6 @@ public class LocatorJUnitTest {
     Assert.assertTrue(locator.isServerLocator());
     Thread.sleep(1000);
     doServerLocation();
-    doGossip();
     locator.stop();
   }
 
@@ -151,37 +140,6 @@ public class LocatorJUnitTest {
     if (sl1.equals(sl2)) {
       fail("ServerLocation instances on different hosts should not test equal");
     }
-  }
-
-  //TODO - test durable queue discovery, excluded servers, server groups.
-
-  private void doGossip()  throws Exception {
-    fail("doGossip must be fixed for the jgroups replacement");
-    // TODO
-//    final GossipClient client = new GossipClient(new IpAddress(InetAddress.getLocalHost(), port),  500);
-//    client.register("mygroup1", new IpAddress(InetAddress.getLocalHost(), 55),5000, false);
-    WaitCriterion ev = new WaitCriterion() {
-      public boolean done() {
-        try {
-          // TODO
-//          Vector members = client.getMembers("mygroup1",
-//              new IpAddress(InetAddress.getLocalHost(), 55), true,5000);
-//          return members.size() == 1;
-        }
-        catch (Exception e) {
-          e.printStackTrace();
-          fail("unexpected exception");
-        }
-        return false; // NOTREACHED
-      }
-      public String description() {
-        return null;
-      }
-    };
-    DistributedTestCase.waitForCriterion(ev, 1 * 1000, 200, true);
-    // TODO
-//    Vector members = client.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), 55), true,5000);
-//    Assert.assertEquals(new IpAddress(InetAddress.getLocalHost(), 55), members.get(0));
   }
 
   private void doServerLocation() throws Exception {

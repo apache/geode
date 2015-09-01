@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -391,6 +392,55 @@ public class GMSJoinLeaveJUnitTest {
     msg.setSender(creator);
     gmsJoinLeave.processMessage(msg);
     Assert.assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
+  }
+
+  @Test
+  public void testBecomeCoordinatorThroughRemove() throws Exception {
+    String reason = "testing";
+    initMocks();
+    prepareAndInstallView();
+    NetView view = gmsJoinLeave.getView();
+    view.add(gmsJoinLeaveMemberId);
+    InternalDistributedMember creator = view.getCreator();
+    RemoveMemberMessage msg = new RemoveMemberMessage(creator, creator, reason);
+    msg.setSender(creator);
+    gmsJoinLeave.processMessage(msg);
+    Assert.assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
+  }
+
+  @Test
+  public void testBecomeCoordinatorThroughViewChange() throws Exception {
+    String reason = "testing";
+    initMocks();
+    prepareAndInstallView();
+    NetView oldView = gmsJoinLeave.getView();
+    oldView.add(gmsJoinLeaveMemberId);
+    NetView view = new NetView(oldView, oldView.getViewId()+1);
+    InternalDistributedMember creator = view.getCreator();
+    view.remove(creator);
+    InstallViewMessage msg = new InstallViewMessage(view, creator);
+    msg.setSender(creator);
+    gmsJoinLeave.processMessage(msg);
+    Assert.assertTrue("Expected it to become coordinator", gmsJoinLeave.isCoordinator());
+  }
+
+  @Test
+  public void testBecomeParticipantThroughViewChange() throws Exception {
+    String reason = "testing";
+    initMocks();
+    prepareAndInstallView();
+    NetView oldView = gmsJoinLeave.getView();
+    oldView.add(gmsJoinLeaveMemberId);
+    InternalDistributedMember creator = oldView.getCreator();
+    gmsJoinLeave.becomeCoordinator();
+    NetView view = new NetView(2, gmsJoinLeave.getView().getViewId()+1);
+    view.setCreator(creator);
+    view.add(creator);
+    view.add(gmsJoinLeaveMemberId);
+    InstallViewMessage msg = new InstallViewMessage(view, creator);
+    msg.setSender(creator);
+    gmsJoinLeave.processMessage(msg);
+    Assert.assertTrue("Expected it to stop being coordinator", !gmsJoinLeave.isCoordinator());
   }
 
   @Test 

@@ -57,6 +57,7 @@ public class StatRecorder extends Protocol {
       Message msg = (Message)evt.getArg();
       processForMulticast(msg, INCOMING);
       processForUnicast(msg, INCOMING);
+      break;
     }
     return down_prot.down(evt);
   }

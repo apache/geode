@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,10 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
@@ -180,6 +176,29 @@ public class NetView implements DataSerializableFixedID {
       }
       if (members.size() > 0) {
         return members.get(0);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the coordinator of this view, rejecting any in the
+   * given collection of IDs
+   */
+  public InternalDistributedMember getCoordinator(Collection<InternalDistributedMember> rejections) {
+    if (rejections == null) {
+      return getCoordinator();
+    }
+    synchronized (members) {
+      for (InternalDistributedMember addr : members) {
+        if (addr.getNetMember().preferredForCoordinator() && !rejections.contains(addr)) {
+          return addr;
+        }
+      }
+      for (InternalDistributedMember addr: members) {
+        if (!rejections.contains(addr)) {
+          return addr;
+        }
       }
     }
     return null;

@@ -299,7 +299,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   instead of a colon to separate the host name and bind address.
  *   For example, "server1@fdf0:76cf:a0ed:9449::5[12233]" specifies a locator
  *   running on "server1" and bound to fdf0:76cf:a0ed:9449::5 on port 12233.<p>
- *   If "mcast-port" is zero and "locators" is ""
+ *   If "locators" is empty
  *   then this distributed system will be isolated from all other GemFire
  *   processes.<p>
  *   </dd>

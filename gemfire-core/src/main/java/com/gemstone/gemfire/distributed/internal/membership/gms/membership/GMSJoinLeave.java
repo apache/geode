@@ -64,6 +64,8 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
  * 
  */
 public class GMSJoinLeave implements JoinLeave, MessageHandler {
+  
+  public static String BYPASS_DISCOVERY = "gemfire.bypass-discovery";
 
   /** number of times to try joining before giving up */
   private static final int JOIN_ATTEMPTS = Integer.getInteger("gemfire.join-attempts", 4);
@@ -153,15 +155,15 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * @return true if successful, false if not
    */
   public boolean join() {
-
-    if (this.localAddress.getVmKind() == LOCATOR_DM_TYPE
-        && Boolean.getBoolean("gemfire.first-member")) {
+    Set<InternalDistributedMember> alreadyTried = new HashSet<>();
+    
+    if (Boolean.getBoolean(BYPASS_DISCOVERY)) {
       becomeCoordinator();
       return true;
     }
 
     for (int tries=0; tries<JOIN_ATTEMPTS; tries++) {
-      InternalDistributedMember coord = findCoordinator();
+      InternalDistributedMember coord = findCoordinator(alreadyTried);
       logger.debug("found possible coordinator {}", coord);
       if (coord != null) {
         if (coord.equals(this.localAddress)) {
@@ -172,7 +174,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         } else {
           if (attemptToJoin(coord)) {
             return true;
-          } 
+          }
+          alreadyTried.add(coord);
         }
       }
       try {
@@ -211,8 +214,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       response = joinResponse[0];
     }
     if (response != null) {
-// DEBUGGING - REMOVE
-logger.info("received join response {}", response);
+      logger.debug("received join response {}", response);
       joinResponse[0] = null;
       String failReason = response.getRejectionMessage();
       if (failReason != null) {
@@ -221,6 +223,12 @@ logger.info("received join response {}", response);
           throw new SystemConnectException(failReason);
         }
         throw new AuthenticationFailedException(failReason);
+      }
+      if (response.getBecomeCoordinator()) {
+        logger.info("I am being told to become the membership coordinator by {}", coord);
+        this.currentView = response.getCurrentView();
+        becomeCoordinator(response.getCurrentView().getCoordinator());
+        return true;
       }
       if (response.getCurrentView() != null) {
         this.birthViewId = response.getMemberID().getVmViewId();
@@ -250,6 +258,12 @@ logger.info("received join response {}", response);
   private void processJoinRequest(JoinRequestMessage incomingRequest) {
 
     logger.info("received join request from {}", incomingRequest.getMemberID());
+
+    if (!this.localAddress.getNetMember().preferredForCoordinator() &&
+        incomingRequest.getMemberID().getNetMember().preferredForCoordinator()) {
+      // tell the new guy to become the coordinator
+      
+    }
     
     if (incomingRequest.getMemberID().getVersionObject().compareTo(Version.CURRENT) < 0) {
       logger.warn("detected an attempt to start a peer using an older version of the product {}",
@@ -574,13 +588,15 @@ logger.info("received join response {}", response);
    * coordinator and return it.
    * @return
    */
-  private InternalDistributedMember findCoordinator() {
+  private InternalDistributedMember findCoordinator(Set<InternalDistributedMember> alreadyTried) {
     assert this.localAddress != null;
     
-    FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress);
+    FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, alreadyTried);
     Set<InternalDistributedMember> coordinators = new HashSet<InternalDistributedMember>();
     long giveUpTime = System.currentTimeMillis() + (services.getConfig().getLocatorWaitTime() * 1000L);
     boolean anyResponses = false;
+    
+    logger.debug("sending {} to {}", request, locators);
     
     do {
       for (InetSocketAddress addr: locators) { 

@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.LocatorStats;
 import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 
@@ -83,5 +84,5 @@ public interface MemberServices {
    */
   public abstract NetLocator newLocatorHandler(InetAddress bindAddress,
       File stateFile, String locatorString, boolean usePreferredCoordinators,
-      boolean networkPartitionDetectionEnabled);
+      boolean networkPartitionDetectionEnabled, LocatorStats stats);
 }

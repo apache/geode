@@ -10,12 +10,13 @@ import org.jgroups.Message;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.pbcast.NAKACK2;
+import org.jgroups.protocols.pbcast.NakAckHeader2;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.UUID;
 
 /**
- * FakeUDP replaces the regular UDP JGroups messaging protocol
+ * InterceptUDP replaces the regular UDP JGroups messaging protocol
  * for unit testing.  It does not create a datagram socket
  * and is only set up to record message counts and respond
  * to Unicast to keep it from retransmitting
@@ -31,6 +32,7 @@ public class InterceptUDP extends Protocol {
 //  IpAddress addr;
 //  Map<UUID, IpAddress> addressMap;
   int unicastSentDataMessages;
+  int mcastSentDataMessages;
   
   public InterceptUDP() {
 //    uuid = new UUID();
@@ -63,16 +65,20 @@ public class InterceptUDP extends Protocol {
   
   private void handleMessage(Message msg) {
     Object o = msg.getHeader(nakackHeaderId);
-    o = msg.getHeader(unicastHeaderId);
     if (o != null) {
-      UNICAST3.Header hdr = (UNICAST3.Header)o;
-      switch (hdr.type()) {
-      case UNICAST3.Header.DATA:
-        unicastSentDataMessages++;
-        Message response = new Message(uuid, msg.getDest(), null);
-        response.putHeader(unicastHeaderId, UNICAST3.Header.createAckHeader(hdr.seqno(), hdr.connId(), System.currentTimeMillis()));
-        up_prot.up(new Event(Event.MSG, response));
-        break;
+      mcastSentDataMessages++;
+    } else {
+      o = msg.getHeader(unicastHeaderId);
+      if (o != null) {
+        UNICAST3.Header hdr = (UNICAST3.Header)o;
+        switch (hdr.type()) {
+        case UNICAST3.Header.DATA:
+          unicastSentDataMessages++;
+          Message response = new Message(uuid, msg.getDest(), null);
+          response.putHeader(unicastHeaderId, UNICAST3.Header.createAckHeader(hdr.seqno(), hdr.connId(), System.currentTimeMillis()));
+          up_prot.up(new Event(Event.MSG, response));
+          break;
+        }
       }
     }
   }

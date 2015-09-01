@@ -2920,9 +2920,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
       // information.  This has caused client failures in bridge/wan
       // network-down testing
       InternalLocator loc = (InternalLocator)Locator.getLocator();
-      loc.stop(!services.getConfig().getDistributionConfig()
+      if (loc != null) {
+        loc.stop(!services.getConfig().getDistributionConfig()
                      .getDisableAutoReconnect(), false);
-
+      }
+      
       uncleanShutdown(reason, shutdownCause);
     }
   }

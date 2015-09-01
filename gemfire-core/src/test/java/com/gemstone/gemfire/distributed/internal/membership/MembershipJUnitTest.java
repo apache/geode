@@ -165,10 +165,15 @@ public class MembershipJUnitTest extends TestCase {
           DistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
-      DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
-      DMStats stats1 = mock(DMStats.class);
-      m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
-
+      try {
+        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY, "true");
+        DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
+        DMStats stats1 = mock(DMStats.class);
+        m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
+      } finally {
+        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY);
+      }
+      
       // start the second membership manager
       DistributedMembershipListener listener2 = mock(DistributedMembershipListener.class);
       DMStats stats2 = mock(DMStats.class);

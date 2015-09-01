@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.AvailablePort;
 //import com.gemstone.org.jgroups.stack.GossipClient;
 //import com.gemstone.org.jgroups.stack.IpAddress;
 
-public class TcpServerJUnitDisabledTest extends TestCase {
+public class TcpServerJUnitTest extends TestCase {
   
   protected/*GemStoneAddition*/ InetAddress localhost;
   protected/*GemStoneAddition*/ int port;
@@ -66,8 +66,8 @@ public class TcpServerJUnitDisabledTest extends TestCase {
     Assert.assertFalse(server.isAlive());
     Assert.assertTrue(handler.shutdown);
     
-    Assert.assertEquals(3, stats.started.get());
-    Assert.assertEquals(3, stats.ended.get());
+    Assert.assertEquals(4, stats.started.get());
+    Assert.assertEquals(4, stats.ended.get());
     
   }
   

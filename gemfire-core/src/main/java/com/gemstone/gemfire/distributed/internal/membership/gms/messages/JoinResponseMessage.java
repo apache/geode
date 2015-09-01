@@ -18,11 +18,19 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   private String rejectionMessage;
   private InternalDistributedMember memberID;
   private Object messengerData;
+  private boolean becomeCoordinator;
   
   public JoinResponseMessage(InternalDistributedMember memberID, NetView view) {
     this.currentView = view;
     this.memberID = memberID;
     setRecipient(memberID);
+  }
+  
+  public JoinResponseMessage(InternalDistributedMember memberID, NetView view, boolean becomeCoordinator) {
+    this.currentView = view;
+    this.memberID = memberID;
+    setRecipient(memberID);
+    this.becomeCoordinator = becomeCoordinator;
   }
   
   public JoinResponseMessage(String rejectionMessage) {
@@ -39,6 +47,10 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   
   public InternalDistributedMember getMemberID() {
     return memberID;
+  }
+  
+  public boolean getBecomeCoordinator() {
+    return becomeCoordinator;
   }
 
   public String getRejectionMessage() {
@@ -62,7 +74,8 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   public String toString() {
     return getShortClassName() + "("+memberID + "; "
         + (currentView==null? "" : currentView.toString())
-        + (rejectionMessage==null? "" : rejectionMessage)
+        + (rejectionMessage==null? "" : ("; "+rejectionMessage))
+        + (becomeCoordinator? "; becomeCoordinator" : "")
         + ")";
   }
   
@@ -80,6 +93,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(currentView, out);
     DataSerializer.writeObject(memberID, out);
+    out.writeBoolean(becomeCoordinator);
     DataSerializer.writeString(rejectionMessage, out);
     DataSerializer.writeObject(messengerData, out);
   }
@@ -88,6 +102,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     currentView = DataSerializer.readObject(in);
     memberID = DataSerializer.readObject(in);
+    becomeCoordinator = in.readBoolean();
     rejectionMessage = DataSerializer.readString(in);
     messengerData = DataSerializer.readObject(in);
   }

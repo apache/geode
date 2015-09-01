@@ -7,6 +7,7 @@ import redis.clients.jedis.Jedis;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.SocketCreator;
 
 import dunit.AsyncInvocation;
 import dunit.Host;
@@ -51,18 +52,24 @@ public class RedisDistDUnitTest extends CacheTestCase {
     server2 = host.getVM(1);
     client1 = host.getVM(2);
     client2 = host.getVM(3);  
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     final SerializableCallable<Object> startRedisAdapter = new SerializableCallable<Object>() {
 
       private static final long serialVersionUID = 1978017907725504294L;
 
       @Override
       public Object call() throws Exception {
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = ports[VM.getCurrentVMNum()+1];
         CacheFactory cF = new CacheFactory();
+        String locator = SocketCreator.getLocalHost() + "[" + ports[2] + "]";
         cF.set("log-level", "info");
         cF.set("redis-bind-address", "localhost");
         cF.set("redis-port", ""+port);
-        cF.set("mcast-port", "40404");
+        cF.set("mcast-port", "");
+        cF.set("locators", locator);
+        if (VM.getCurrentVMNum() == 0) {
+          cF.set("start-locator", locator);
+        }
         cF.create();
         return Integer.valueOf(port);
       }

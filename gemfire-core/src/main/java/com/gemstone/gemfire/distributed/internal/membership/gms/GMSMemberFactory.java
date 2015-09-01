@@ -16,6 +16,7 @@ import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionException;
+import com.gemstone.gemfire.distributed.internal.LocatorStats;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MemberServices;
@@ -118,8 +119,8 @@ public class GMSMemberFactory implements MemberServices {
       File stateFile,
       String locatorString,
       boolean usePreferredCoordinators,
-      boolean networkPartitionDetectionEnabled) {
+      boolean networkPartitionDetectionEnabled, LocatorStats stats) {
     
-    return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled);
+    return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled, stats);
   }
 }

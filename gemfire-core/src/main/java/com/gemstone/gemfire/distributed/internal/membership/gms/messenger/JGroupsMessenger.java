@@ -348,7 +348,8 @@ public class JGroupsMessenger implements Messenger {
     myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
 
     DistributionConfig config = services.getConfig().getDistributionConfig();
-    boolean isLocator = (services.getConfig().getTransport().getVmKind() == DistributionManager.LOCATOR_DM_TYPE); 
+    boolean isLocator = (services.getConfig().getTransport().getVmKind() == DistributionManager.LOCATOR_DM_TYPE)
+        || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
     
     // establish the DistributedSystem's address
     DurableClientAttributes dca = null;
@@ -423,8 +424,7 @@ public class JGroupsMessenger implements Messenger {
     JGAddress local = this.jgAddress;
     
     if (useMcast) {
-      if (logger.isTraceEnabled())
-        logger.trace("This message is being multicast");
+      logger.trace("This message is being multicast");
 
       Exception problem = null;
       try {
