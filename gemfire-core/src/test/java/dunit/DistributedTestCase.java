@@ -52,6 +52,7 @@ import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
+import com.gemstone.gemfire.internal.cache.DiskStoreObserver;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -784,6 +785,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     Protocol.trace = GemFireTracer.DEBUG;
     DistributionMessageObserver.setInstance(null);
     QueryObserverHolder.reset();
+    DiskStoreObserver.setInstance(null);
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {
       InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
     }
