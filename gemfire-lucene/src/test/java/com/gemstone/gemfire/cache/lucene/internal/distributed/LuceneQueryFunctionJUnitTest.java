@@ -46,7 +46,7 @@ public class LuceneQueryFunctionJUnitTest {
 
     final AtomicReference<LuceneQueryResults> result = new AtomicReference<>();
 
-    QueryMocks m = new QueryMocks();
+    final QueryMocks m = new QueryMocks();
     mocker.checking(new Expectations() {
       {
         oneOf(m.mockContext).getDataSet();
@@ -105,7 +105,7 @@ public class LuceneQueryFunctionJUnitTest {
 
   @Test
   public void testIndexRepoQueryFails() throws Exception {
-    QueryMocks m = new QueryMocks();
+    final QueryMocks m = new QueryMocks();
     mocker.checking(new Expectations() {
       {
         oneOf(m.mockContext).getDataSet();
@@ -133,7 +133,7 @@ public class LuceneQueryFunctionJUnitTest {
 
   @Test
   public void testBucketNotFound() throws Exception {
-    QueryMocks m = new QueryMocks();
+    final QueryMocks m = new QueryMocks();
     mocker.checking(new Expectations() {
       {
         oneOf(m.mockContext).getDataSet();
