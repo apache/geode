@@ -332,6 +332,7 @@ public final class InternalDistributedMember
     this.durableClientAttributes = attr;
     this.hostName = host;
     this.vmPid = OSProcess.getId();
+    this.groups = groups;
   }
 
   /**
