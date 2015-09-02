@@ -629,8 +629,6 @@ public class DistributionManager
         logger.info(LogMarker.DM, LocalizedMessage.create(
             LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGER_0_STARTED_ON_1_THERE_WERE_2_OTHER_DMS_3_4_5, logArgs));
 
-logger.info("My ID is {}", Integer.toHexString(System.identityHashCode(dm.getDistributionManagerId())));
-        
         MembershipLogger.logStartup(dm.getDistributionManagerId());
       }
       return dm;

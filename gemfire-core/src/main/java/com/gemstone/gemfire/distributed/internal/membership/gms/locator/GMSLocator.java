@@ -127,8 +127,8 @@ public class GMSLocator implements Locator, NetLocator {
   public Object processRequest(Object request) throws IOException {
     Object response = null;
     
-    if (logger.isInfoEnabled()) {
-      logger.info("Peer locator processing {}", request);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Peer locator processing {}", request);
     }
     
     if (request instanceof GetViewRequest) {
@@ -151,7 +151,7 @@ public class GMSLocator implements Locator, NetLocator {
         
         if (view != null) {
           coord = view.getCoordinator(findRequest.getRejectedCoordinators());
-          logger.info("Peer locator: coordinator from view is {}", coord);
+          logger.debug("Peer locator: coordinator from view is {}", coord);
           fromView = true;
         }
         
@@ -180,7 +180,7 @@ public class GMSLocator implements Locator, NetLocator {
                 }
               }
             }
-            logger.info("Peer locator: coordinator from registrations is {}", coord);
+            logger.debug("Peer locator: coordinator from registrations is {}", coord);
           }
         }
         response = new FindCoordinatorResponse(coord, fromView,

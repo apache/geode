@@ -30,6 +30,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.PingRes
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
+import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -83,9 +84,11 @@ public class GMSHealthMonitorJUnitTest {
   public void testHMServiceStarted() throws IOException {
 
     MethodExecuted messageSent = new MethodExecuted();
+    InternalDistributedMember mbr = new InternalDistributedMember(SocketCreator.getLocalHost(), 12345);
+    when(messenger.getMemberID()).thenReturn(mbr);
     when(messenger.send(any(PingResponseMessage.class))).thenAnswer(messageSent);
 
-    gmsHealthMonitor.processMessage(new PingRequestMessage(1));
+    gmsHealthMonitor.processMessage(new PingRequestMessage(mbr, 1));
     Assert.assertTrue("Ping Response should have been sent", messageSent.isMethodExecuted());
   }
 

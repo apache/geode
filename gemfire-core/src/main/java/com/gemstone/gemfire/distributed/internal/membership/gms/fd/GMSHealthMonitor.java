@@ -6,7 +6,6 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.SUSPECT_MEMB
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,22 +24,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.PingRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.PingResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
 
 /**
  * Failure Detection
@@ -173,10 +167,20 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       GMSHealthMonitor.this.currentTimeStamp = currentTime;
 
       if (neighbour != null) {
-        CustomTimeStamp nextNeigbourTS = GMSHealthMonitor.this.memberVsLastMsgTS.get(neighbour);
+        CustomTimeStamp nextNeighbourTS;
+        synchronized(GMSHealthMonitor.this) {
+          nextNeighbourTS = GMSHealthMonitor.this.memberVsLastMsgTS.get(neighbour);
+        }
 
+        if (nextNeighbourTS == null) {
+          CustomTimeStamp customTS = new CustomTimeStamp();
+          customTS.setTimeStamp(System.currentTimeMillis());
+          memberVsLastMsgTS.put(neighbour, customTS);
+          return;
+        }
+        
         long interval = memberTimeoutInMillis / GMSHealthMonitor.LOGICAL_INTERVAL;
-        long lastTS = currentTime - nextNeigbourTS.getTimeStamp();
+        long lastTS = currentTime - nextNeighbourTS.getTimeStamp();
         if (lastTS + interval >= memberTimeoutInMillis) {
           logger.debug("Checking member {} ", neighbour);
           // now do check request for this member;
@@ -206,7 +210,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private PingRequestMessage constructPingRequestMessage(final InternalDistributedMember pingMember) {
     final int reqId = requestId.getAndIncrement();
-    final PingRequestMessage prm = new PingRequestMessage(reqId);
+    final PingRequestMessage prm = new PingRequestMessage(pingMember, reqId);
     prm.setRecipient(pingMember);
 
     return prm;
@@ -228,7 +232,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           String reason = String.format("Member isn't responding to check message: %s", pingMember);
           GMSHealthMonitor.this.sendSuspectMessage(pingMember, reason);
         } else {
-          logger.debug("Setting next neighbour as member {} not responded.", pingMember);
+          logger.debug("Setting next neighbour as member {} has not responded.", pingMember);
           // back to previous one
           setNextNeighbour(GMSHealthMonitor.this.currentView, null);
         }
@@ -238,7 +242,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void sendSuspectMessage(InternalDistributedMember mbr, String reason) {
-    logger.debug(reason);
+    logger.debug("Suspecting {} reason=\"{}\"", mbr, reason);
     SuspectRequest sr = new SuspectRequest(mbr, reason);
     List<SuspectRequest> sl = new ArrayList<SuspectRequest>();
     sl.add(sr);
@@ -253,7 +257,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private boolean doCheckMember(InternalDistributedMember pingMember) {
     //TODO: need to some tcp check
-    logger.debug("Checking the member: {}", pingMember);
+    logger.debug("Checking member {}", pingMember);
     final PingRequestMessage prm = constructPingRequestMessage(pingMember);
     final Response pingResp = new Response();
     requestIdVsResponse.put(prm.getRequestId(), pingResp);
@@ -294,7 +298,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     synchronized (suspectRequests) {
       SuspectRequest sr = new SuspectRequest((InternalDistributedMember) mbr, reason);
       if (!suspectRequests.contains(sr)) {
-        logger.debug("Adding member {} to suspect for reason {}.", mbr, reason);
+        logger.info("Suspecting member {}. Reason= {}.", mbr, reason);
         suspectRequests.add(sr);
         suspectRequests.notify();
       }
@@ -362,8 +366,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     synchronized (viewVsSuspectedMembers) {
       viewVsSuspectedMembers.clear();
     }
+    setNextNeighbour(newView, null);
     currentView = newView;
-    setNextNeighbour(currentView, null);
   }
 
   /***
@@ -381,11 +385,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
     boolean sameView = false;
 
-    if (newView.equals(currentView)) {
+    if (currentView != null &&
+        newView.getCreator().equals(currentView.getCreator()) &&
+        newView.getViewId() == currentView.getViewId()) {
       sameView = true;
     }
 
-    List<InternalDistributedMember> allMembers = currentView.getMembers();
+    List<InternalDistributedMember> allMembers = newView.getMembers();
     int index = allMembers.indexOf(nextTo);
     if (index != -1) {
       int nextNeighbourIndex = (index + 1) % allMembers.size();
@@ -394,15 +400,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     if (!sameView || memberVsLastMsgTS.size() == 0) {
+      
       if (memberVsLastMsgTS.size() > 0) {
         memberVsLastMsgTS.clear();
       }
 
       long cts = System.currentTimeMillis();
-      for (int i = 0; i < allMembers.size(); i++) {
+      for (InternalDistributedMember mbr: allMembers) {
         CustomTimeStamp customTS = new CustomTimeStamp();
         customTS.setTimeStamp(cts);
-        memberVsLastMsgTS.put(allMembers.get(i), customTS);
+        memberVsLastMsgTS.put(mbr, customTS);
       }
     }
   }
@@ -510,12 +517,18 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void processPingRequest(PingRequestMessage m) {
-    PingResponseMessage prm = new PingResponseMessage(m.getRequestId());
-    prm.setRecipient(m.getSender());
-    Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(prm);
-    // TODO: send is throwing exception right now
-    if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(m.getSender())) {
-      logger.debug("Unable to send check response to member: {}", m.getSender());
+    // only respond if the intended recipient is this member
+    InternalDistributedMember me = services.getMessenger().getMemberID();
+    if (me.getVmViewId() < 0 || m.getTarget().equals(me)) {
+      PingResponseMessage prm = new PingResponseMessage(m.getRequestId());
+      prm.setRecipient(m.getSender());
+      Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(prm);
+      // TODO: send is throwing exception right now
+      if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(m.getSender())) {
+        logger.debug("Unable to send check response to member: {}", m.getSender());
+      }
+    } else {
+      logger.debug("Ignoring ping request intended for {}.  My ID is {}", m.getTarget(), me);
     }
   }
 
@@ -540,7 +553,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private void processSuspectMembersRequest(SuspectMembersMessage incomingRequest) {
     NetView cv = currentView;
-    logger.debug("GMSHealthMonitor.processSuspectMembersRequest invoked for members {}", incomingRequest);
 
     if (cv == null) {
       return;
@@ -638,6 +650,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               if (!pinged) {
                 GMSHealthMonitor.this.services.getJoinLeave().remove(mbr, reason);
               }
+            } catch (DistributedSystemDisconnectedException e) {
+              return;
             } catch (Exception e) {
               logger.info("Unexpected exception while verifying member", e);
             } finally {
@@ -759,10 +773,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     for (int i = 0; i < requests.size(); i++) {
       filter.add(requests.get(i).getSuspectMember());
     }
-    List<InternalDistributedMember> recipients = currentView.getAllPreferredCoordinators(filter, services.getJoinLeave().getMemberID());
+    List<InternalDistributedMember> recipients = currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 5);
 
     SuspectMembersMessage rmm = new SuspectMembersMessage(recipients, requests);
-    Set<InternalDistributedMember> failedRecipients = services.getMessenger().send(rmm);
+    Set<InternalDistributedMember> failedRecipients;
+    try {
+      failedRecipients = services.getMessenger().send(rmm);
+    } catch (DistributedSystemDisconnectedException e) {
+      return;
+    }
 
     if (failedRecipients != null && failedRecipients.size() > 0) {
       logger.info("Unable to send suspect message to {}", recipients);

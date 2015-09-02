@@ -425,7 +425,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     if (!p.contains(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME)) {
       p.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
     }
-        
+
     for (Iterator iter = props.entrySet().iterator();
     iter.hasNext(); ) {
       Map.Entry entry = (Map.Entry) iter.next();
@@ -1349,7 +1349,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    */
   public void deleteLocatorStateFile(int... ports) {
     for (int i=0; i<ports.length; i++) {
-      File stateFile = new File("locator"+ports[i]+"state.dat");
+      File stateFile = new File("locator"+ports[i]+"view.dat");
       if (stateFile.exists()) {
         stateFile.delete();
       }

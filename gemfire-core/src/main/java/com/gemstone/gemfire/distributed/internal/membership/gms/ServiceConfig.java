@@ -135,6 +135,8 @@ public class ServiceConfig {
     
     memberWeight = Integer.getInteger("gemfire.member-weight", 0);
     locatorWaitTime = theConfig.getLocatorWaitTime();
+    
+    networkPartitionDetectionEnabled = theConfig.getEnableNetworkPartitionDetection();
   }
 
 }

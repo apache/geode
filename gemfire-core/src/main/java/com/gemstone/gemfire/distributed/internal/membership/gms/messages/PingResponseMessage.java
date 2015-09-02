@@ -34,7 +34,7 @@ public class PingResponseMessage extends HighPriorityDistributionMessage {
  
   @Override
   public String toString() {
-    return "PingResponseMessage [requestId=" + requestId + "]";
+    return "PingResponseMessage [requestId=" + requestId + "] from " + getSender();
   }
 
   @Override

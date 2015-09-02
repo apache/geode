@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
@@ -149,6 +150,18 @@ public class Services {
   }
   
   public void emergencyClose() {
+    logger.info("Membership: stopping services");
+    if (stopping) {
+      return;
+    }
+    stopping = true;
+    this.joinLeave.emergencyClose();
+    this.healthMon.emergencyClose();
+    this.auth.emergencyClose();
+    this.messenger.emergencyClose();
+    this.manager.emergencyClose();
+    this.timer.cancel();
+    this.cancelCriterion.cancel("Membership services are shut down");
   }
   
   public void stop() {
@@ -262,18 +275,14 @@ public class Services {
         return null;
       }
       else {
-        return new ServicesStoppedException(reasonForStopping, e);
+        if (e == null) {
+          return new DistributedSystemDisconnectedException(reasonForStopping);
+        } else {
+          return new DistributedSystemDisconnectedException(reasonForStopping, e);
+        }
       }
     }
     
   }
   
-  public static class ServicesStoppedException extends CancelException {
-    private static final long serialVersionUID = 2134474966059876801L;
-
-    public ServicesStoppedException(String message, Throwable cause) {
-      super(message, cause);
-    }
-  }
-
 }

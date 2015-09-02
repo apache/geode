@@ -1685,12 +1685,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
       directChannel.emergencyClose();
     }
     
-    services.getJoinLeave().emergencyClose();
-    services.getMessenger().emergencyClose();
-    services.getHealthMonitor().emergencyClose();
-    services.getAuthenticator().emergencyClose();
-
-    
     // could we guarantee not to allocate objects?  We're using Darrel's 
     // factory, so it's possible that an unsafe implementation could be
     // introduced here.
@@ -1764,6 +1758,10 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   public void uncleanShutdown(String reason, final Exception e) {
     inhibitForcedDisconnectLogging(false);
+    
+    if (this.shutdownCause == null) {
+      this.shutdownCause = e;
+    }
     
     if (this.directChannel != null) {
       this.directChannel.disconnect(e);
@@ -2916,6 +2914,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
         logger.fatal(LocalizedMessage.create(
             LocalizedStrings.GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0, reason), shutdownCause);
       }
+      
+      services.emergencyClose();
+
       // stop server locators immediately since they may not have correct
       // information.  This has caused client failures in bridge/wan
       // network-down testing

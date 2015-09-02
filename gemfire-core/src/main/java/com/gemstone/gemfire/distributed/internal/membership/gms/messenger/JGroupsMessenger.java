@@ -403,13 +403,14 @@ public class JGroupsMessenger implements Messenger {
     DMStats theStats = services.getStatistics();
 
     if (!myChannel.isConnected()) {
+      logger.info("JGroupsMessenger channel is closed - messaging is not possible");
       throw new DistributedSystemDisconnectedException("Distributed System is shutting down");
     }
     
     filterOutgoingMessage(msg);
     
-    if (logger.isDebugEnabled()) {
-      logger.debug("JGroupsMessenger sending [{}] recipients: {}", msg, msg.getRecipientsDescription());
+    if (logger.isTraceEnabled()) {
+      logger.trace("JGroupsMessenger sending [{}] recipients: {}", msg, msg.getRecipientsDescription());
     }
     
     InternalDistributedMember[] destinations = msg.getRecipients();
@@ -660,7 +661,7 @@ public class JGroupsMessenger implements Messenger {
       
       services.getStatistics().endMsgDeserialization(start);
 
-      logger.debug("JGroupsReceiver deserialized {}", result);
+      logger.trace("JGroupsReceiver deserialized {}", result);
 
     }
     catch (ClassNotFoundException | IOException | RuntimeException e) {
@@ -769,8 +770,8 @@ public class JGroupsMessenger implements Messenger {
         return;
       }
 
-      if (logger.isDebugEnabled()) {
-        logger.debug("JGroupsMessenger received {} headers: {}", jgmsg, jgmsg.getHeaders());
+      if (logger.isTraceEnabled()) {
+        logger.trace("JGroupsMessenger received {} headers: {}", jgmsg, jgmsg.getHeaders());
       }
       
       Object o = readJGMessage(jgmsg);

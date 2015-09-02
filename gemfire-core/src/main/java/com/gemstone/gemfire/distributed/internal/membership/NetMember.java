@@ -42,6 +42,8 @@ public interface NetMember
    */
   public boolean splitBrainEnabled();
   
+  public void setSplitBrainEnabled(boolean enabled);
+  
   /**
    * return a flag stating whether the member can be the membership coordinator
    * @since 5.6

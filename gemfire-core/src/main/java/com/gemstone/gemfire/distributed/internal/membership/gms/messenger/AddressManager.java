@@ -45,13 +45,13 @@ public class AddressManager extends Protocol {
 
     case Event.FIND_MBRS:
       List<Address> missing = (List<Address>)evt.getArg();
-      logger.debug("AddressManager.FIND_MBRS processing {}", missing);
+//      logger.debug("AddressManager.FIND_MBRS processing {}", missing);
       Responses responses = new Responses(false);
       for (Address laddr: missing) {
         try {
           if (laddr instanceof JGAddress) {
             PingData pd = new PingData(laddr, true, laddr.toString(), newIpAddress(laddr));
-            logger.debug("AddressManager.FIND_MBRS adding response {}", pd);
+//            logger.debug("AddressManager.FIND_MBRS adding response {}", pd);
             responses.addResponse(pd, false);
             updateUDPCache(pd);
           }

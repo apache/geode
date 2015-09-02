@@ -205,16 +205,17 @@ public class NetView implements DataSerializableFixedID {
   }
 
   /***
-   * This functions returns the list of all preferred coordinators.
+   * This functions returns the list of preferred coordinators.
    * One random member from list of non-preferred member list. It make
    * sure that random member is not in suspected Set.
    * And local member.
    * 
    * @param filter Suspect member set.
    * @param localAddress
+   * @param maxNumberDesired number of preferred coordinators to return
    * @return list of preferred coordinators
    */
-  public List<InternalDistributedMember> getAllPreferredCoordinators(Set<InternalDistributedMember> filter, InternalDistributedMember localAddress) {
+  public List<InternalDistributedMember> getPreferredCoordinators(Set<InternalDistributedMember> filter, InternalDistributedMember localAddress, int maxNumberDesired) {
     List<InternalDistributedMember> results = new ArrayList<InternalDistributedMember>();
     List<InternalDistributedMember> notPreferredCoordinatorList = new ArrayList<InternalDistributedMember>();
 
@@ -224,7 +225,10 @@ public class NetView implements DataSerializableFixedID {
           continue;// this is must to add
         }
         if (addr.getNetMember().preferredForCoordinator()) {
-          results.add(addr);// add all preferred coordinator
+          results.add(addr);
+          if (results.size() >= maxNumberDesired) {
+            break;
+          }
         } else if (!filter.contains(addr)) {
           notPreferredCoordinatorList.add(addr);
         }

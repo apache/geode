@@ -13,12 +13,18 @@ import com.gemstone.gemfire.internal.Version;
 public class PingRequestMessage extends HighPriorityDistributionMessage{
 
   int requestId;
+  InternalDistributedMember target;
   
-  public PingRequestMessage(int id) {
+  public PingRequestMessage(InternalDistributedMember neighbour, int id) {
     requestId = id;
+    this.target = neighbour;
   }
   
   public PingRequestMessage(){}
+  
+  public InternalDistributedMember getTarget() {
+    return target;
+  }
   
   @Override
   public int getDSFID() {
@@ -32,7 +38,7 @@ public class PingRequestMessage extends HighPriorityDistributionMessage{
 
   @Override
   public String toString() {
-    return "PingRequestMessage [requestId=" + requestId + "]";
+    return "PingRequestMessage [requestId=" + requestId + "] from " + getSender();
   }
 
   public int getRequestId() {
@@ -47,10 +53,12 @@ public class PingRequestMessage extends HighPriorityDistributionMessage{
   @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(requestId);
+    DataSerializer.writeObject(target, out);
   }
   
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     requestId = in.readInt();
+    target = DataSerializer.readObject(in);
   }
 }
