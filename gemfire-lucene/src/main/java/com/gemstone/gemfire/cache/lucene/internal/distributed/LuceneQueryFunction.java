@@ -3,7 +3,6 @@ package com.gemstone.gemfire.cache.lucene.internal.distributed;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -13,10 +12,6 @@ import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneQueryResultsImpl;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneResultStructImpl;
-import com.gemstone.gemfire.cache.lucene.internal.mergers.TopDocsResultMerger;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
@@ -39,7 +34,7 @@ public class LuceneQueryFunction extends FunctionAdapter {
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext ctx = (RegionFunctionContext) context;
-    ResultSender<LuceneQueryResults> resultSender = ctx.getResultSender();
+    ResultSender<TopEntries> resultSender = ctx.getResultSender();
 
     Region region = ctx.getDataSet();
     if (logger.isDebugEnabled()) {
@@ -47,16 +42,18 @@ public class LuceneQueryFunction extends FunctionAdapter {
     }
 
     LuceneSearchFunctionArgs args = (LuceneSearchFunctionArgs) ctx.getArguments();
-    Set<Integer> buckets = args == null ? null : args.getBuckets();
+    Set<Integer> buckets = (args == null ? null : args.getBuckets());
 
-    List<LuceneQueryResults> results = new ArrayList<>();
+    CollectorManager<TopEntries, TopEntriesCollector> manager = new TopEntriesCollectorManager();
+
+    Collection<IndexResultCollector> results = new ArrayList<>();
     try {
       Collection<IndexRepository> repositories = repoManager.getRepositories(region, buckets);
       for (IndexRepository repo : repositories) {
-        ShardResultCollector collector = new ShardResultCollector();
-        logger.debug("Executing search on repo: " + repo);
+        TopEntriesCollector collector = manager.newCollector(repo.toString());
+        logger.debug("Executing search on repo: " + repo.toString());
         repo.query(null, 0, collector);
-        results.add(collector.getResult());
+        results.add(collector);
       }
     } catch (IOException e) {
       logger.warn("", e);
@@ -68,24 +65,14 @@ public class LuceneQueryFunction extends FunctionAdapter {
       return;
     }
 
-    TopDocsResultMerger merger = new TopDocsResultMerger();
-    LuceneQueryResults merged = merger.mergeResults(results);
-    resultSender.lastResult(merged);
-  }
-
-  /**
-   * Collects and merges results from {@link IndexRepository}s
-   */
-  class ShardResultCollector implements IndexResultCollector {
-    LuceneQueryResultsImpl result = new LuceneQueryResultsImpl();
-    
-    @Override
-    public void collect(Object key, float score) {
-      result.addHit(new LuceneResultStructImpl(key, score));
-    }
-
-    public LuceneQueryResults getResult() {
-      return result;
+    TopEntries mergedResult;
+    try {
+      mergedResult = manager.reduce(results);
+      resultSender.lastResult(mergedResult);
+    } catch (IOException e) {
+      logger.warn("", e);
+      resultSender.sendException(e);
+      return;
     }
   }
 
