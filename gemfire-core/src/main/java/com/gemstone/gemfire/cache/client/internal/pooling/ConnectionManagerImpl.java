@@ -801,7 +801,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         getPoolStats().incPrefillConnect();
       }
       catch (ServerConnectivityException ex) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.ConnectionManagerImpl_UNABLE_TO_PREFILL_POOL_TO_MINIMUM_BECAUSE_0, ex), null);
+        logger.info(LocalizedMessage.create(LocalizedStrings.ConnectionManagerImpl_UNABLE_TO_PREFILL_POOL_TO_MINIMUM_BECAUSE_0, (Object)ex));
         return false;
       }
       finally {
