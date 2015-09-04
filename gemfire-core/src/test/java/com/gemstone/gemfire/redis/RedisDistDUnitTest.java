@@ -61,11 +61,11 @@ public class RedisDistDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         int port = ports[VM.getCurrentVMNum()+1];
         CacheFactory cF = new CacheFactory();
-        String locator = SocketCreator.getLocalHost() + "[" + ports[2] + "]";
+        String locator = SocketCreator.getLocalHost().getHostName() + "[" + ports[2] + "]";
         cF.set("log-level", "info");
         cF.set("redis-bind-address", "localhost");
         cF.set("redis-port", ""+port);
-        cF.set("mcast-port", "");
+        cF.set("mcast-port", "0");
         cF.set("locators", locator);
         if (VM.getCurrentVMNum() == 0) {
           cF.set("start-locator", locator);
