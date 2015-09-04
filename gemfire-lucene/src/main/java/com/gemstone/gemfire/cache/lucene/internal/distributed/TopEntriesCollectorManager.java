@@ -21,9 +21,19 @@ import com.gemstone.gemfire.internal.logging.LogService;
 public class TopEntriesCollectorManager implements CollectorManager<TopEntries, TopEntriesCollector> {
   private static final Logger logger = LogService.getLogger();
 
+  final int limit;
+  
+  public TopEntriesCollectorManager() {
+    this(LuceneQueryFactory.DEFAULT_LIMIT);
+  }
+  
+  public TopEntriesCollectorManager(int resultLimit) {
+    this.limit = resultLimit;
+  }
+
   @Override
   public TopEntriesCollector newCollector(String name) {
-    return new TopEntriesCollector(name);
+    return new TopEntriesCollector(name, limit);
   }
 
   @Override
@@ -56,9 +66,8 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntries, 
       }
     }
 
-    int limit = LuceneQueryFactory.DEFAULT_LIMIT;
     logger.debug("Only {} count of entries will be reduced. Other entries will be ignored", limit);
-    while (entryListsPriorityQueue.size() > 0 && limit-- > 0) {
+    while (entryListsPriorityQueue.size() > 0 && limit > mergedResult.size()) {
 
       List<EntryScore> list = entryListsPriorityQueue.remove();
       EntryScore entry = list.remove(0);

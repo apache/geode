@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataSerializable;
 
@@ -32,7 +33,17 @@ public class LuceneSearchFunctionArgs implements VersionedDataSerializable {
     return null;
   }
 
+  /**
+   * @return List of bucket IDs on which the query is to be executed
+   */
   public Set<Integer> getBuckets() {
     return null;
+  }
+
+  /**
+   * @return The maximum count of result objects to be produced by the function
+   */
+  public int getLimit() {
+    return LuceneQueryFactory.DEFAULT_LIMIT;
   }
 }

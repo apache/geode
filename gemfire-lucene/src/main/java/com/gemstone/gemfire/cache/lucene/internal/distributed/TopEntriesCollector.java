@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
+import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 
 /**
@@ -7,12 +8,17 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollecto
  * be ordered by score of the entry.
  */
 public class TopEntriesCollector implements IndexResultCollector {
-  private final String name;
+  final String name;
+
   private final TopEntries entries;
 
   public TopEntriesCollector(String name) {
+    this(name, LuceneQueryFactory.DEFAULT_LIMIT);
+  }
+
+  public TopEntriesCollector(String name, int limit) {
     this.name = name;
-    this.entries = new TopEntries();
+    this.entries = new TopEntries(limit);
   }
 
   @Override

@@ -12,6 +12,7 @@ import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
@@ -43,8 +44,9 @@ public class LuceneQueryFunction extends FunctionAdapter {
 
     LuceneSearchFunctionArgs args = (LuceneSearchFunctionArgs) ctx.getArguments();
     Set<Integer> buckets = (args == null ? null : args.getBuckets());
+    int resultLimit = (args == null ? LuceneQueryFactory.DEFAULT_LIMIT : args.getLimit());
 
-    CollectorManager<TopEntries, TopEntriesCollector> manager = new TopEntriesCollectorManager();
+    CollectorManager<TopEntries, TopEntriesCollector> manager = new TopEntriesCollectorManager(resultLimit);
 
     Collection<IndexResultCollector> results = new ArrayList<>();
     try {
