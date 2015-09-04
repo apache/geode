@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.gemstone.gemfire.management.internal;
 
 import com.gemstone.gemfire.management.internal.AgentUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,10 +29,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -52,14 +51,12 @@ public class AgentUtilJUnitTest {
     assertNotNull(gemFireWarLocation, "GemFire REST API WAR File was not found");
   }
 
-  /*
-   * This test should be activated when pulse gets added to Geode
-   */
-  // @Test
-  // public void testPulseWarExists() {
-  // String gemFireWarLocation = agentUtil.getPulseWarLocation();
-  // assertNotNull(gemFireWarLocation, "Pulse WAR File was not found");
-  // }
+  @Ignore("This test should be activated when pulse gets added to Geode")
+  @Test
+  public void testPulseWarExists() {
+    String gemFireWarLocation = agentUtil.getPulseWarLocation();
+    assertNotNull(gemFireWarLocation, "Pulse WAR File was not found");
+  }
 
   private String getGemfireVersion() {
     String version = null;
