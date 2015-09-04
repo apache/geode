@@ -17,6 +17,7 @@ import junit.framework.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
 import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -384,8 +385,8 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         System.err.println("Attempt: " + (i++));
         putInVM(vm, regionName, key, value);
         break;
-      } catch (NoAvailableServersException | dunit.RMIException e) {
-        if( !(e instanceof NoAvailableServersException)
+      } catch (NoAvailableLocatorsException | dunit.RMIException e) {
+        if( !(e instanceof NoAvailableLocatorsException)
             && !(e.getCause() instanceof NoAvailableServersException)) {
           throw e;
         }
