@@ -24,7 +24,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  @Ignore("BUg 52327")
+  @Ignore("Bug 52327")
   public void DISABLED_testClientTimeAdvances() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server
@@ -96,9 +96,13 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
       vm1.invoke(CacheTestCase.class, "disconnectFromDS");
     }
   }
+  
+  public void testNothing() {
+    // place-holder to keep dunit runner from barfing
+  }
 
   @Ignore("not yet implemented")
-  public void testClientTimeSlowsDown() {
+  public void DISABLED_testClientTimeSlowsDown() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server
     VM vm1 = host.getVM(1); // Client
