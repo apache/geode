@@ -4,14 +4,13 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.search.Query;
-import org.hamcrest.Description;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.jmock.api.Expectation;
 import org.jmock.api.Invocation;
 import org.jmock.lib.action.CustomAction;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -40,7 +39,7 @@ public class LuceneQueryFunctionJUnitTest {
   final EntryScore r1_3 = new EntryScore("key-1-3", .3f);
   final EntryScore r2_1 = new EntryScore("key-2-1", .45f);
   final EntryScore r2_2 = new EntryScore("key-2-2", .35f);
-  
+
   @Test
   public void testRepoQueryAndMerge() throws Exception {
     final AtomicReference<TopEntries> result = new AtomicReference<>();
@@ -70,7 +69,7 @@ public class LuceneQueryFunctionJUnitTest {
             return null;
           }
         });
-        
+
         oneOf(m.mockRepository2).query(with(aNull(Query.class)), with(equal(0)), with(any(IndexResultCollector.class)));
         will(new CustomAction("streamSearchResults") {
           @Override
@@ -101,11 +100,11 @@ public class LuceneQueryFunctionJUnitTest {
     assertEquals(5, hits.size());
     TopEntriesJUnitTest.verifyResultOrder(result.get().getHits(), r1_1, r2_1, r1_2, r2_2, r1_3);
   }
-  
+
   @Test
   public void testResultLimitClause() throws Exception {
     final AtomicReference<TopEntries> result = new AtomicReference<>();
-    
+
     final QueryMocks m = new QueryMocks();
     mocker.checking(new Expectations() {
       {
@@ -113,18 +112,20 @@ public class LuceneQueryFunctionJUnitTest {
         will(returnValue(m.mockRegion));
         oneOf(m.mockContext).getArguments();
         will(returnValue(m.mockFuncArgs));
-        
+
         oneOf(m.mockContext).getResultSender();
         will(returnValue(m.mockResultSender));
-        
+
         oneOf(m.mockFuncArgs).getBuckets();
         will(returnValue(null));
         oneOf(m.mockFuncArgs).getLimit();
         will(returnValue(3));
-        
+        oneOf(m.mockFuncArgs).getCollectorManager();
+        will(returnValue(null));
+
         oneOf(m.mockRepoManager).getRepositories(m.mockRegion, null);
         will(returnValue(m.repos));
-        
+
         oneOf(m.mockRepository1).query(with(aNull(Query.class)), with(equal(0)), with(any(IndexResultCollector.class)));
         will(new CustomAction("streamSearchResults") {
           @Override
@@ -136,7 +137,7 @@ public class LuceneQueryFunctionJUnitTest {
             return null;
           }
         });
-        
+
         oneOf(m.mockRepository2).query(with(aNull(Query.class)), with(equal(0)), with(any(IndexResultCollector.class)));
         will(new CustomAction("streamSearchResults") {
           @Override
@@ -147,7 +148,7 @@ public class LuceneQueryFunctionJUnitTest {
             return null;
           }
         });
-        
+
         oneOf(m.mockResultSender).lastResult(with(any(TopEntries.class)));
         will(new CustomAction("collectResult") {
           @Override
@@ -158,14 +159,74 @@ public class LuceneQueryFunctionJUnitTest {
         });
       }
     });
-    
+
     LuceneQueryFunction function = new LuceneQueryFunction();
     function.setRepositoryManager(m.mockRepoManager);
-    
+
     function.execute(m.mockContext);
     List<EntryScore> hits = result.get().getHits();
     assertEquals(3, hits.size());
     TopEntriesJUnitTest.verifyResultOrder(result.get().getHits(), r1_1, r2_1, r1_2);
+  }
+
+  @Test
+  public void injectCustomCollectorManager() throws Exception {
+    final QueryMocks m = new QueryMocks();
+    final CollectorManager mockManager = mocker.mock(CollectorManager.class);
+    final IndexResultCollector mockCollector = mocker.mock(IndexResultCollector.class);
+
+    mocker.checking(new Expectations() {
+      {
+        oneOf(m.mockContext).getDataSet();
+        will(returnValue(m.mockRegion));
+        oneOf(m.mockContext).getArguments();
+        will(returnValue(m.mockFuncArgs));
+
+        oneOf(m.mockContext).getResultSender();
+        will(returnValue(m.mockResultSender));
+
+        oneOf(m.mockFuncArgs).getBuckets();
+        will(returnValue(null));
+        oneOf(m.mockFuncArgs).getCollectorManager();
+        will(returnValue(mockManager));
+
+        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, null);
+        m.repos.remove(0);
+        will(returnValue(m.repos));
+
+        oneOf(mockManager).newCollector("repo2");
+        will(returnValue(mockCollector));
+        oneOf(mockManager).reduce(with(any(Collection.class)));
+        will(new CustomAction("reduce") {
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            Collection<IndexResultCollector> collectors = (Collection<IndexResultCollector>) invocation.getParameter(0);
+            assertEquals(1, collectors.size());
+            assertEquals(mockCollector, collectors.iterator().next());
+            return new TopEntries();
+          }
+        });
+
+        oneOf(mockCollector).collect("key-2-1", .45f);
+
+        oneOf(m.mockRepository2).query(with(aNull(Query.class)), with(equal(0)), with(any(IndexResultCollector.class)));
+        will(new CustomAction("streamSearchResults") {
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            IndexResultCollector collector = (IndexResultCollector) invocation.getParameter(2);
+            collector.collect(r2_1.key, r2_1.score);
+            return null;
+          }
+        });
+
+        oneOf(m.mockResultSender).lastResult(with(any(TopEntries.class)));
+      }
+    });
+
+    LuceneQueryFunction function = new LuceneQueryFunction();
+    function.setRepositoryManager(m.mockRepoManager);
+
+    function.execute(m.mockContext);
   }
 
   @Test
@@ -243,7 +304,7 @@ public class LuceneQueryFunctionJUnitTest {
       repos.add(mockRepository2);
     }
   }
-  
+
   @Test
   public void testLuceneFunctionArgsDefaults() {
     LuceneSearchFunctionArgs args = new LuceneSearchFunctionArgs();

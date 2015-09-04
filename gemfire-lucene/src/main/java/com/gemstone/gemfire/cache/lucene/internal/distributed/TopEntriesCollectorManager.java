@@ -29,6 +29,7 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntries, 
   
   public TopEntriesCollectorManager(int resultLimit) {
     this.limit = resultLimit;
+    logger.debug("Max count of entries to be returned: " + limit);
   }
 
   @Override

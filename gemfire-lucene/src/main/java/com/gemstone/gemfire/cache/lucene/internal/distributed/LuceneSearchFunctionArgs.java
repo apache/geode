@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
+import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
+import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataSerializable;
 
@@ -45,5 +47,15 @@ public class LuceneSearchFunctionArgs implements VersionedDataSerializable {
    */
   public int getLimit() {
     return LuceneQueryFactory.DEFAULT_LIMIT;
+  }
+
+  /**
+   * On each member, search query is executed on one or more {@link IndexRepository}s. A {@link CollectorManager} could
+   * be provided to customize the way results from these repositories is collected and merged.
+   * 
+   * @return {@link CollectorManager} instance to be used by function
+   */
+  public <T, C extends IndexResultCollector> CollectorManager<T, C> getCollectorManager() {
+    return null;
   }
 }

@@ -44,15 +44,18 @@ public class LuceneQueryFunction extends FunctionAdapter {
 
     LuceneSearchFunctionArgs args = (LuceneSearchFunctionArgs) ctx.getArguments();
     Set<Integer> buckets = (args == null ? null : args.getBuckets());
-    int resultLimit = (args == null ? LuceneQueryFactory.DEFAULT_LIMIT : args.getLimit());
 
-    CollectorManager<TopEntries, TopEntriesCollector> manager = new TopEntriesCollectorManager(resultLimit);
+    CollectorManager manager = (args == null) ? null : args.getCollectorManager();
+    if (manager == null) {
+      int resultLimit = (args == null ? LuceneQueryFactory.DEFAULT_LIMIT : args.getLimit());
+      manager = new TopEntriesCollectorManager(resultLimit);
+    }
 
     Collection<IndexResultCollector> results = new ArrayList<>();
     try {
       Collection<IndexRepository> repositories = repoManager.getRepositories(region, buckets);
       for (IndexRepository repo : repositories) {
-        TopEntriesCollector collector = manager.newCollector(repo.toString());
+        IndexResultCollector collector = manager.newCollector(repo.toString());
         logger.debug("Executing search on repo: " + repo.toString());
         repo.query(null, 0, collector);
         results.add(collector);
@@ -69,7 +72,7 @@ public class LuceneQueryFunction extends FunctionAdapter {
 
     TopEntries mergedResult;
     try {
-      mergedResult = manager.reduce(results);
+      mergedResult = (TopEntries) manager.reduce(results);
       resultSender.lastResult(mergedResult);
     } catch (IOException e) {
       logger.warn("", e);
