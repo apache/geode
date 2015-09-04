@@ -13,21 +13,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
 import com.gemstone.gemfire.internal.AvailablePort;
 //import com.gemstone.org.jgroups.stack.GossipClient;
 //import com.gemstone.org.jgroups.stack.IpAddress;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-public class TcpServerJUnitTest extends TestCase {
+@Category(UnitTest.class)
+public class TcpServerJUnitTest {
   
   protected/*GemStoneAddition*/ InetAddress localhost;
   protected/*GemStoneAddition*/ int port;
@@ -43,7 +44,7 @@ public class TcpServerJUnitTest extends TestCase {
     server.start();
   }
   
-  
+  @Test
   public void test() throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException {
     EchoHandler handler = new EchoHandler();
     start(handler);
@@ -71,6 +72,7 @@ public class TcpServerJUnitTest extends TestCase {
     
   }
   
+  @Test
   public void testConcurrency() throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException {
     CountDownLatch latch = new CountDownLatch(1);
     DelayHandler handler = new DelayHandler(latch);
