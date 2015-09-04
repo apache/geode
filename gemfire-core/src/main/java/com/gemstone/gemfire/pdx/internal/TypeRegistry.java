@@ -122,6 +122,9 @@ public class TypeRegistry {
       if(pdxType != null) {
         this.idToType.put(typeId, pdxType);
         this.typeToId.put(pdxType, typeId);
+        if (logger.isInfoEnabled()) {
+          logger.info("Adding: {}", pdxType.toFormattedString());
+        }
         if (logger.isDebugEnabled()) {
           logger.debug("Adding entry into pdx type registry, typeId: {}  {}", typeId, pdxType);
         }
@@ -186,8 +189,8 @@ public class TypeRegistry {
     if(oldType == null) {
       this.idToType.put(id, newType);
       this.typeToId.put(newType, id);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Defining: {}", newType.toFormattedString());
+      if (logger.isInfoEnabled()) {
+        logger.info("Defining: {}", newType.toFormattedString());
       }
     } else {
       //TODO - this might be overkill, but type definition should be rare enough.
@@ -205,8 +208,8 @@ public class TypeRegistry {
       this.distributedTypeRegistry.addRemoteType(typeId, newType);
       this.idToType.put(typeId, newType);
       this.typeToId.put(newType, typeId);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Adding, from remote WAN: {}", newType.toFormattedString());
+      if (logger.isInfoEnabled()) {
+        logger.info("Adding, from remote WAN: {}", newType.toFormattedString());
       }
     } else {
     //TODO - this might be overkill, but type definition should be rare enough.
@@ -483,8 +486,8 @@ public class TypeRegistry {
     this.distributedTypeRegistry.addImportedType(typeId, importedType);
     this.idToType.put(typeId, importedType);
     this.typeToId.put(importedType, typeId);
-    if (logger.isDebugEnabled()) {
-      logger.debug("Importing type: {}", importedType.toFormattedString());
+    if (logger.isInfoEnabled()) {
+      logger.info("Importing type: {}", importedType.toFormattedString());
     }
   }
 
