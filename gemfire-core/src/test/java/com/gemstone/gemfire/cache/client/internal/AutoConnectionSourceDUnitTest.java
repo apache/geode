@@ -384,8 +384,9 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         System.err.println("Attempt: " + (i++));
         putInVM(vm, regionName, key, value);
         break;
-      } catch(dunit.RMIException e) {
-        if(!(e.getCause() instanceof NoAvailableServersException)) {
+      } catch (NoAvailableServersException | dunit.RMIException e) {
+        if( !(e instanceof NoAvailableServersException)
+            && !(e.getCause() instanceof NoAvailableServersException)) {
           throw e;
         }
         if(remaining <= 0) {
