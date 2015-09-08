@@ -182,7 +182,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         long interval = memberTimeoutInMillis / GMSHealthMonitor.LOGICAL_INTERVAL;
         long lastTS = currentTime - nextNeighbourTS.getTimeStamp();
         if (lastTS + interval >= memberTimeoutInMillis) {
-          logger.debug("Checking member {} ", neighbour);
+          logger.trace("Checking member {} ", neighbour);
           // now do check request for this member;
           checkMember(neighbour);
         }
@@ -232,7 +232,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           String reason = String.format("Member isn't responding to check message: %s", pingMember);
           GMSHealthMonitor.this.sendSuspectMessage(pingMember, reason);
         } else {
-          logger.debug("Setting next neighbour as member {} has not responded.", pingMember);
+          logger.trace("Setting next neighbour as member {} has not responded.", pingMember);
           // back to previous one
           setNextNeighbour(GMSHealthMonitor.this.currentView, null);
         }
@@ -257,7 +257,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private boolean doCheckMember(InternalDistributedMember pingMember) {
     //TODO: need to some tcp check
-    logger.debug("Checking member {}", pingMember);
+    logger.trace("Checking member {}", pingMember);
     final PingRequestMessage prm = constructPingRequestMessage(pingMember);
     final Response pingResp = new Response();
     requestIdVsResponse.put(prm.getRequestId(), pingResp);
@@ -266,7 +266,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       // TODO: send is throwing exception
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(pingMember)) {
         // member is not part of current view.
-        logger.debug("Member {} is not part of current view.", pingMember);
+        logger.trace("Member {} is not part of current view.", pingMember);
       } else {
         synchronized (pingResp) {
           if (pingResp.getResponseMsg() == null) {
@@ -396,7 +396,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     if (index != -1) {
       int nextNeighbourIndex = (index + 1) % allMembers.size();
       nextNeighbour = allMembers.get(nextNeighbourIndex);
-      logger.debug("Next neighbour to check is {}", nextNeighbour);
+      logger.trace("Next neighbour to check is {}", nextNeighbour);
     }
 
     if (!sameView || memberVsLastMsgTS.size() == 0) {
