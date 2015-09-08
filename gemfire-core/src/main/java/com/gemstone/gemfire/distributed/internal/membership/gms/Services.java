@@ -108,7 +108,7 @@ public class Services {
     this.joinLeave.init(this);
     this.healthMon.init(this);
     InternalLocator l = (InternalLocator)com.gemstone.gemfire.distributed.Locator.getLocator();
-    if (l != null) {
+    if (l != null && l.getLocatorHandler() != null) {
       l.getLocatorHandler().setMembershipManager((MembershipManager)this.manager);
       this.locator = (Locator)l.getLocatorHandler();
     }
