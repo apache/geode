@@ -674,7 +674,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   
   public void installView(NetView newView) {
     
-    logger.info("received new view: {}", newView);
+    logger.info("received new view: {}\nold view is: {}", newView, currentView);
     
     synchronized(viewInstallationLock) {
       if (currentView != null && currentView.getViewId() >= newView.getViewId()) {
@@ -687,8 +687,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           List<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
           services.getManager().forceDisconnect(
               LocalizedStrings.Network_partition_detected.toLocalizedString(crashes.size(), crashes));
+          return;
         }
-        return;
       }
       
       currentView = newView;
