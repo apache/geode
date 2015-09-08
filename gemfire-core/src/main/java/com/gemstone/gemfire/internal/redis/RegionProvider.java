@@ -13,12 +13,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.TransactionId;
+import com.gemstone.gemfire.cache.query.IndexExistsException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
@@ -75,7 +76,6 @@ public class RegionProvider implements Closeable {
   private final RegionShortcut defaultRegionType;
   private static final CreateAlterDestroyRegionCommands cliCmds = new CreateAlterDestroyRegionCommands();
   private final ConcurrentHashMap<String, Lock> locks;
-  private final LogWriter logger;
 
   public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion, Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion, Region<String, RedisDataType> redisMetaRegion, ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap, ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null)
@@ -90,7 +90,6 @@ public class RegionProvider implements Closeable {
     this.expirationExecutor = expirationExecutor;
     this.defaultRegionType = defaultShortcut;
     this.locks = new ConcurrentHashMap<String, Lock>();
-    this.logger = this.cache.getLogger();
   }
 
   public boolean existsKey(ByteArrayWrapper key) {
@@ -219,11 +218,16 @@ public class RegionProvider implements Closeable {
           // simply ignore. Calls to getRegion or getOrCreate will work correctly
           if (r == null)
             return;
-          
-          if (type == RedisDataType.REDIS_LIST)
+
+          if (type == RedisDataType.REDIS_LIST) {
             doInitializeList(key, r);
-          else if (type == RedisDataType.REDIS_SORTEDSET)
-            doInitializeSortedSet(key, r);
+          } else if (type == RedisDataType.REDIS_SORTEDSET) {
+            try {
+              doInitializeSortedSet(key, r);
+            } catch (RegionNotFoundException | IndexInvalidException e) {
+              //ignore
+            }
+          }
           this.regions.put(key, r);
         }
       } finally {
@@ -266,10 +270,15 @@ public class RegionProvider implements Closeable {
               concurrentCreateDestroyException = null;
               r = createRegionGlobally(stringKey);
               try {
-                if (type == RedisDataType.REDIS_LIST)
+                if (type == RedisDataType.REDIS_LIST) {
                   doInitializeList(key, r);
-                else if (type == RedisDataType.REDIS_SORTEDSET)
-                  doInitializeSortedSet(key, r);
+                } else if (type == RedisDataType.REDIS_SORTEDSET) {
+                  try {
+                    doInitializeSortedSet(key, r);
+                  } catch (RegionNotFoundException | IndexInvalidException e) {
+                    concurrentCreateDestroyException = e;
+                  }
+                }
               } catch (QueryInvalidException e) {
                 if (e.getCause() instanceof RegionNotFoundException) {
                   concurrentCreateDestroyException = e;
@@ -326,17 +335,13 @@ public class RegionProvider implements Closeable {
     this.regions.remove(key);
   }
 
-  private void doInitializeSortedSet(ByteArrayWrapper key, Region<?, ?> r) {
+  private void doInitializeSortedSet(ByteArrayWrapper key, Region<?, ?> r) throws RegionNotFoundException, IndexInvalidException {
     String fullpath = r.getFullPath();
     try {
       queryService.createIndex("scoreIndex", "entry.value.score", r.getFullPath() + ".entrySet entry");
       queryService.createIndex("scoreIndex2", "value.score", r.getFullPath() + ".values value");
-    } catch (Exception e) {
-      if (!(e instanceof IndexNameConflictException)) {
-        if (logger.errorEnabled()) {
-          logger.error(e);
-        }
-      }
+    } catch (IndexNameConflictException | IndexExistsException | UnsupportedOperationException e) {
+      // ignore, these indexes already exist or unsupported but make sure prepared queries are made
     }
     HashMap<Enum<?>, Query> queryList = new HashMap<Enum<?>, Query>();
     for (SortedSetQuery lq: SortedSetQuery.values()) {
@@ -379,9 +384,6 @@ public class RegionProvider implements Closeable {
         String err = "";
         while(result.hasNextLine())
           err += result.nextLine();
-        if (this.logger.errorEnabled()) {
-          this.logger.error("Region creation failure- "+ err);
-        }
         throw new RegionCreationException(err);
       }
     } while(r == null); // The region can be null in the case that it is concurrently destroyed by
@@ -397,7 +399,7 @@ public class RegionProvider implements Closeable {
     } else {
       return this.queryService.newQuery(((SortedSetQuery)query).getQueryString(this.regions.get(key).getFullPath()));
     }
-    */
+     */
   }
 
   /**
