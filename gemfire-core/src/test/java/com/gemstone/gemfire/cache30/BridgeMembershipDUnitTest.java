@@ -1310,6 +1310,8 @@ public class BridgeMembershipDUnitTest extends BridgeTestCase {
   public void testGetConnectedClients() throws Exception {
     final String name = this.getUniqueName();
     final int[] ports = new int[1];
+    
+    addExpectedException("ConnectException");
 
     // create BridgeServer in controller vm...
     getLogWriter().info("[testGetConnectedClients] Create BridgeServer");
