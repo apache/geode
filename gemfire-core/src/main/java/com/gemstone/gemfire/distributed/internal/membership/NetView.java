@@ -358,7 +358,7 @@ public class NetView implements DataSerializableFixedID {
         if (lead != null && mbr.equals(lead)) {
           mbrWeight += 15;
         } else {
-          mbrWeight += 5;
+          mbrWeight += 10;
         }
         break;
       case DistributionManager.LOCATOR_DM_TYPE:
