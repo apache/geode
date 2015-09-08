@@ -19,7 +19,7 @@ import java.net.InetAddress;
  * @author jpenney
  *
  */
-public interface NetMember
+public interface NetMember extends Comparable<NetMember>
 {
 
   public void setAttributes(MemberAttributes args);
@@ -60,30 +60,6 @@ public interface NetMember
   
   public byte getMemberWeight();
 
-  /**
-   * Establishes an order between 2 addresses. Assumes other contains non-null IpAddress.
-   * Excludes channel_name from comparison.
-   * @return 0 for equality, value less than 0 if smaller, greater than 0 if greater.
-   */
-  public int compare(NetMember other);
-
-  /**
-   * implements the java.lang.Comparable interface
-   * @see java.lang.Comparable
-   * @param o - the Object to be compared
-   * @return a negative integer, zero, or a positive integer as this object is less than,
-   *         equal to, or greater than the specified object.
-   * @exception java.lang.ClassCastException - if the specified object's type prevents it
-   *            from being compared to this Object.
-   */
-  public int compareTo(Object o);
-
-  public boolean equals(Object obj);
-
-  public int hashCode();
-
-  public String toString();
-  
   /** write identity information not known by DistributedMember instances */
   public void writeAdditionalData(DataOutput out) throws IOException;
   

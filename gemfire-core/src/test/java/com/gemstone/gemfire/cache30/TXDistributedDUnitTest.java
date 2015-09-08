@@ -508,7 +508,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
   }
 
   public void testHighAvailabilityFeatures() throws Exception {
-    addExpectedException("killing members ds");
+    addExpectedException("DistributedSystemDisconnectedException");
 //    final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
 //    final TXManagerImpl txMgrImpl = (TXManagerImpl) txMgr;
     final String rgnName = getUniqueName();

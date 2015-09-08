@@ -202,16 +202,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return this.uuidLSBs;
   }
 
-  /**
-   * Establishes an order between 2 addresses. Assumes other contains non-null IpAddress.
-   * Excludes channel_name from comparison.
-   * @return 0 for equality, value less than 0 if smaller, greater than 0 if greater.
-   */
-  public int compare(NetMember other) {
-    return compareTo(other);
-  }
-
-  /**
+  /*
    * implements the java.lang.Comparable interface
    * @see java.lang.Comparable
    * @param o - the Object to be compared
@@ -220,12 +211,12 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * @exception java.lang.ClassCastException - if the specified object's type prevents it
    *            from being compared to this Object.
    */
-  public int compareTo(Object o) {
+  public int compareTo(NetMember o) {
     if (o == this) {
       return 0;
     }
     // obligatory type check
-    if ((o == null) || !(o instanceof GMSMember)) {
+    if (o == null || !(o instanceof GMSMember) ) {
       throw new ClassCastException(LocalizedStrings.JGroupMember_JGROUPMEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES.toLocalizedString());
     }
     byte[] myAddr = inetAddr.getAddress();
@@ -269,6 +260,17 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
         }
       }
     }
+    if (result == 0 && this.uuidMSBs != 0 && his.uuidMSBs != 0) {
+      if (this.uuidMSBs < his.uuidMSBs) {
+        result = -1;
+      } else if (his.uuidMSBs < this.uuidMSBs) {
+        result = 1;
+      } else if (this.uuidLSBs < his.uuidLSBs) {
+        result = -1;
+      } else if (his.uuidLSBs < this.uuidLSBs) {
+        result = 1;
+      }
+    }
     return result;
   }
 
@@ -278,7 +280,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     if ((obj == null) || !(obj instanceof GMSMember)) {
       return false;
     }
-    return compareTo(obj) == 0;
+    return compareTo((GMSMember)obj) == 0;
   }
 
   @Override

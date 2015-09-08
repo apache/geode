@@ -791,7 +791,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         boolean ok = services.getJoinLeave().join();
         
         if (!ok) {
-          throw new GemFireConfigException("Unable to contact a Locator service.  " +
+          throw new GemFireConfigException("Unable to join the distributed system.  " +
               "Operation either timed out, was stopped or Locator does not exist.");
         }
 

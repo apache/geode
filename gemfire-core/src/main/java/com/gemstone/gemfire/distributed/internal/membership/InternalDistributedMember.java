@@ -652,10 +652,11 @@ public final class InternalDistributedMember
         return i;
       }
     }
+    
+    return this.netMbr.compareTo(other.netMbr);
 
     // purposely avoid comparing roles
     // @todo Add durableClientAttributes to compare
-    return 0;
   }
 
   @Override
