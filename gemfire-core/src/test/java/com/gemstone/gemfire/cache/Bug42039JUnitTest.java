@@ -19,6 +19,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
@@ -43,7 +44,8 @@ public class Bug42039JUnitTest {
   public void testBug42039() throws Exception {
     Properties p = new Properties();
     p.setProperty("mcast-port", "0");
-    p.setProperty("locators", "localhost[6666]");
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    p.setProperty("locators", "localhost["+port+"]");
     p.setProperty(DistributionConfig.MEMBER_TIMEOUT_NAME, "1000");
     ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 

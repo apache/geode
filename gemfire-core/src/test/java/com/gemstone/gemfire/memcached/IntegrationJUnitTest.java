@@ -42,6 +42,7 @@ public class IntegrationJUnitTest {
     Properties props = new Properties();
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
     props.setProperty("memcached-port", port+"");
+    props.setProperty("mcast-port", "0");
     CacheFactory cf = new CacheFactory(props);
     Cache cache = cf.create();
     

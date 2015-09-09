@@ -172,6 +172,7 @@ public class InternalDistributedSystemJUnitTest
     Properties props = new Properties();
     int memberTimeout = 100;
     props.put("member-timeout", String.valueOf(memberTimeout));
+    props.put("mcast-port", "0");
 
     DistributionConfig config = createSystem(props).getOriginalConfig();
     assertEquals(memberTimeout, config.getMemberTimeout());
