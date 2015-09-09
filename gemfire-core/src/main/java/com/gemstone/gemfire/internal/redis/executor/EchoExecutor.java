@@ -2,8 +2,8 @@ package com.gemstone.gemfire.internal.redis.executor;
 
 import java.util.List;
 
-import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.Coder;
+import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.RedisConstants.ArityDef;
 

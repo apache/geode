@@ -42,7 +42,7 @@ public class ZRemExecutor extends SortedSetExecutor {
         numDeletedMembers++;
     }
     if (keyRegion.isEmpty())
-      context.getRegionCache().removeKey(key);
+      context.getRegionProvider().removeKey(key);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeletedMembers));
   }
 }

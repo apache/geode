@@ -15,7 +15,7 @@ public interface Executor {
    * a response
    * 
    * @param command The command to be executed
-   * @param context The client data associated with the client
+   * @param context The execution context by which this command is to be executed
    */
   public void executeCommand(Command command, ExecutionHandlerContext context);
   

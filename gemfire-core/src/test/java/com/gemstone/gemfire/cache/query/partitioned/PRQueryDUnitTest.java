@@ -398,7 +398,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
       final DefaultQuery query = (DefaultQuery)getCache().getQueryService()
           .newQuery("select distinct * from " + pr.getFullPath());
       final SelectResults results = query.getSimpleSelect().getEmptyResultSet(
-          params, getCache());
+          params, getCache(), query);
 
       // TODO assert this is the correct set of bucket Ids,
       final HashSet<Integer> buckets = new HashSet<Integer>();
@@ -477,7 +477,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
       for (int q=0; q < queries.length; q++) {
         Object[] params = new Object[0];
         final DefaultQuery query = (DefaultQuery)getCache().getQueryService().newQuery(queries[q]);
-        final SelectResults results = query.getSimpleSelect().getEmptyResultSet(params, getCache());
+        final SelectResults results = query.getSimpleSelect().getEmptyResultSet(params, getCache(), query);
 
         // TODO assert this is the correct set of bucket Ids,
         final HashSet<Integer> buckets = new HashSet<Integer>();
@@ -583,7 +583,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
       for (int q=0; q < queries.length; q++) {
         Object[] params = new Object[0];
         final DefaultQuery query = (DefaultQuery)getCache().getQueryService().newQuery(queries[q]);
-        final SelectResults results = query.getSimpleSelect().getEmptyResultSet(params, getCache());
+        final SelectResults results = query.getSimpleSelect().getEmptyResultSet(params, getCache(), query);
 
         // TODO assert this is the correct set of bucket Ids,
         final HashSet<Integer> buckets = new HashSet<Integer>();
@@ -688,7 +688,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
         final DefaultQuery query = (DefaultQuery)getCache().getQueryService()
             .newQuery("select distinct * from " + pr.getFullPath());
         final SelectResults results = query.getSimpleSelect()
-            .getEmptyResultSet(params, getCache());
+            .getEmptyResultSet(params, getCache(), query);
 
         // Fake data loss
         final HashSet<Integer> buckets = new HashSet<Integer>();

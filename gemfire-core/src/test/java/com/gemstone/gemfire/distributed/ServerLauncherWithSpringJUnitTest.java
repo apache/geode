@@ -9,12 +9,15 @@ import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.process.ProcessType;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Extracted from ServerLauncherLocalJUnitTest.
@@ -22,6 +25,7 @@ import com.gemstone.gemfire.internal.process.ProcessType;
  * @author John Blum
  * @author Kirk Lund
  */
+@Category(IntegrationTest.class)
 public class ServerLauncherWithSpringJUnitTest extends AbstractServerLauncherJUnitTestCase {
 
   @Before
@@ -44,6 +48,7 @@ public class ServerLauncherWithSpringJUnitTest extends AbstractServerLauncherJUn
       .setForce(true)
       .setMemberName(getUniqueName())
       .setSpringXmlLocation("spring/spring-gemfire-context.xml")
+      .set(DistributionConfig.MCAST_PORT_NAME, "0")
       .build();
 
     assertNotNull(this.launcher);

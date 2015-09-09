@@ -27,7 +27,7 @@ class RegionIdleExpiryTask extends RegionExpiryTask {
    * will occur first), or 0 if neither are used.
    */
   @Override
-  long getExpirationTime() throws EntryNotFoundException {
+  public long getExpirationTime() throws EntryNotFoundException {
     // if this is an invalidate action and region has already been invalidated,
     // then don't expire again until the full timeout from now.
     ExpirationAction action = getAction();
@@ -39,7 +39,8 @@ class RegionIdleExpiryTask extends RegionExpiryTask {
         if (!getLocalRegion().EXPIRY_UNITS_MS) {
           timeout *= 1000;
         }
-        return  timeout + System.currentTimeMillis();
+        // Expiration should always use the DSClock instead of the System clock.
+        return  timeout + getLocalRegion().cacheTimeMillis();
       }
     }
     // otherwise, expire at timeout plus last accessed time

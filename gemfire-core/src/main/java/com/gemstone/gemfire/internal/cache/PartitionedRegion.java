@@ -764,6 +764,7 @@ public class PartitionedRegion extends LocalRegion implements
     // this.scope = Scope.LOCAL;
     this.redundantCopies = ra.getPartitionAttributes().getRedundantCopies();
     this.prStats.setConfiguredRedundantCopies(ra.getPartitionAttributes().getRedundantCopies());
+    this.prStats.setLocalMaxMemory(ra.getPartitionAttributes().getLocalMaxMemory() * 1024L * 1024);
     
     // No redundancy required for writes
     this.minimumWriteRedundancy = Integer.getInteger(
@@ -1978,7 +1979,7 @@ public class PartitionedRegion extends LocalRegion implements
     // this can return a BAG even if it's a DISTINCT select expression,
     // since the expectation is that the duplicates will be removed at the end
     SelectResults results = selectExpr
-        .getEmptyResultSet(parameters, getCache());
+        .getEmptyResultSet(parameters, getCache(), query);
 
     PartitionedRegionQueryEvaluator prqe = new PartitionedRegionQueryEvaluator(this.getSystem(), this, query,
         parameters, results, allBuckets);
@@ -11449,5 +11450,13 @@ public class PartitionedRegion extends LocalRegion implements
     return this.getLocalMaxMemory() != 0;
   }
   
+  @Override
+  public EntryExpiryTask getEntryExpiryTask(Object key) {
+    BucketRegion br = this.getDataStore().getLocalBucketByKey(key);
+    if (br == null) {
+      throw new EntryNotFoundException("Bucket for key " + key + " does not exist.");
+    }
+    return br.getEntryExpiryTask(key);
+  }
 }
 

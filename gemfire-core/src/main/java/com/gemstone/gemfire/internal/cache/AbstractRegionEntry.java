@@ -1647,7 +1647,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       event.setVersionTag(tag);
       if (logger.isDebugEnabled()) {
         logger.debug("generated tag {}; key={}; oldvalue={} newvalue={} client={} region={}; rvv={}", tag,
-            event.getKey(), event.getOldValue(), event.getNewValue(),
+            event.getKey(), event.getOldValueStringForm(), event.getNewValueStringForm(),
             (event.getContext() == null? "none" : event.getContext().getDistributedMember().getName()),
             region.getFullPath(), region.getVersionVector());
       }

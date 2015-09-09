@@ -37,7 +37,6 @@ import com.gemstone.gemfire.cache.SerializedCacheValue;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory.HDFSCompactionConfigFactory;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
@@ -110,10 +109,8 @@ public abstract class BaseHoplogTestCase extends TestCase {
   protected void configureHdfsStoreFactory() throws Exception {
     hsf = this.cache.createHDFSStoreFactory();
     hsf.setHomeDir(testDataDir.toString());
-    HDFSCompactionConfigFactory cc = hsf.createCompactionConfigFactory(null);
     hsf.setMinorCompaction(false);
-    cc.setAutoMajorCompaction(false);
-    hsf.setHDFSCompactionConfig(cc.create());
+    hsf.setMajorCompaction(false);
   }
 
   protected Cache createCache() {
@@ -219,7 +216,7 @@ public abstract class BaseHoplogTestCase extends TestCase {
   
   public static void alterMajorCompaction(HDFSStoreImpl store, boolean enable) {
     HDFSStoreMutator mutator = store.createHdfsStoreMutator();
-    mutator.getCompactionConfigMutator().setAutoMajorCompaction(enable);
+    mutator.setMajorCompaction(enable);
     store.alter(mutator);
   }
   

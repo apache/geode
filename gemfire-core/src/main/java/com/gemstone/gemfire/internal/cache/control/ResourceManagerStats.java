@@ -27,6 +27,7 @@ public class ResourceManagerStats {
   
   private static final int rebalancesInProgressId;
   private static final int rebalancesCompletedId;
+  private static final int autoRebalanceAttemptsId;
   private static final int rebalanceTimeId;
   private static final int rebalanceBucketCreatesInProgressId;
   private static final int rebalanceBucketCreatesCompletedId;
@@ -81,6 +82,10 @@ public class ResourceManagerStats {
               "rebalancesCompleted",
               "Total number of cache rebalance operations directed by this process.",
               "operations"),
+            f.createIntCounter(
+                "autoRebalanceAttempts",
+                "Total number of cache auto-rebalance attempts.",
+                "operations"),
             f.createLongCounter(
               "rebalanceTime",
               "Total time spent directing cache rebalance operations.",
@@ -239,6 +244,7 @@ public class ResourceManagerStats {
     
     rebalancesInProgressId = type.nameToId("rebalancesInProgress");
     rebalancesCompletedId = type.nameToId("rebalancesCompleted");
+    autoRebalanceAttemptsId = type.nameToId("autoRebalanceAttempts");
     rebalanceTimeId = type.nameToId("rebalanceTime");
     rebalanceBucketCreatesInProgressId = type.nameToId("rebalanceBucketCreatesInProgress");
     rebalanceBucketCreatesCompletedId = type.nameToId("rebalanceBucketCreatesCompleted");
@@ -291,6 +297,10 @@ public class ResourceManagerStats {
   public long startRebalance() {
     this.stats.incInt(rebalancesInProgressId, 1);
     return System.nanoTime();
+  }
+  
+  public void incAutoRebalanceAttempts() {
+    this.stats.incInt(autoRebalanceAttemptsId, 1);
   }
   
   public void endRebalance(long start) {
@@ -372,6 +382,9 @@ public class ResourceManagerStats {
   }
   public int getRebalancesCompleted() {
     return this.stats.getInt(rebalancesCompletedId);
+  }
+  public int getAutoRebalanceAttempts() {
+    return this.stats.getInt(autoRebalanceAttemptsId);
   }
   public long getRebalanceTime() {
     return this.stats.getLong(rebalanceTimeId);

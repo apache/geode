@@ -837,6 +837,12 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   <dd><U>Default</U>: ""</dd>
  * </dl>
  * 
+ * <dl>
+ *   <a name="redis-password"><dt>redis-password</dt></a>
+ *   <dd><U>Description</U>: Specifies the password to authenticate a client of {@link GemFireRedisServer}</dd>
+ *   <dd><U>Default</U>: ""</dd>
+ * </dl>
+ * 
  * <B>Asynchronous Message Properties</B>
  *
  * <dl>

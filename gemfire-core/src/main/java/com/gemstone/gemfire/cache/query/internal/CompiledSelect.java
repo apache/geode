@@ -23,6 +23,7 @@ import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.NameNotFoundException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
@@ -360,9 +361,9 @@ public class CompiledSelect extends AbstractCompiledValue {
    * @param cache the cache the query will be executed in the context of
    * @return the empty result set of the appropriate type
    */
-  public SelectResults getEmptyResultSet(Object[] parameters, Cache cache)
+  public SelectResults getEmptyResultSet(Object[] parameters, Cache cache, Query query)
   throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    ExecutionContext context = new QueryExecutionContext(parameters, cache);
+    ExecutionContext context = new QueryExecutionContext(parameters, cache, query);
     computeDependencies(context);
     context.newScope(this.scopeID);
     context.pushExecCache(scopeID);

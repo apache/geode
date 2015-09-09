@@ -153,9 +153,9 @@ public abstract class CacheLoaderTestCase
 ////        factory.setCacheLoader(remoteloader);
 //        Region rgn = createRegion(name);
 //        rgn.put(key, value);
+//        flushIfNecessary(rgn);
 //      }
 //    });
-//    pauseIfNecessary();
 //
 //
 //    assertEquals(value, region.get(key));

@@ -8,192 +8,181 @@
 
 package com.gemstone.gemfire.cache.hdfs;
 
-import com.gemstone.gemfire.cache.hdfs.HDFSStore.HDFSCompactionConfig;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory.HDFSCompactionConfigFactory;
-
+/**
+ * HDFSStoreMutator provides a means to dynamically alter {@link HDFSStore}'s
+ * behavior. Instances of this interface are created using
+ * {@link HDFSStore#createHdfsStoreMutator} and applied using
+ * {@link HDFSStore#alter}
+ * 
+ * @author ashvina
+ */
 public interface HDFSStoreMutator {
   /**
-   * {@link HDFSStoreFactory#setMaxFileSize(int)}
+   * {@link HDFSStoreFactory#setWriteOnlyFileRolloverSize(int)}
    */
-  public HDFSStoreMutator setMaxFileSize(int maxFileSize);
+  public HDFSStoreMutator setWriteOnlyFileRolloverSize(int maxFileSize);
 
   /**
-   * {@link HDFSStore#getMaxFileSize()}
+   * {@link HDFSStore#getWriteOnlyFileRolloverSize()}
    * 
    * @return value to be used when mutator is executed on hdfsStore. -1 if not
    *         set
    */
-  public int getMaxFileSize();
-  
+  public int getWriteOnlyFileRolloverSize();
+
   /**
-   * {@link HDFSStoreFactory#setFileRolloverInterval(int)}
+   * {@link HDFSStoreFactory#setWriteOnlyFileRolloverInterval(int)}
    */
-  public HDFSStoreMutator setFileRolloverInterval(int rolloverIntervalInSecs);
-  
+  public HDFSStoreMutator setWriteOnlyFileRolloverInterval(int interval);
+
   /**
-   * {@link HDFSStore#getFileRolloverInterval()}
+   * {@link HDFSStore#getWriteOnlyFileRolloverInterval()}
    * 
    * @return value to be used when mutator is executed on hdfsStore. -1 if not
    *         set
    */
-  public int getFileRolloverInterval();
-  
+  public int getWriteOnlyFileRolloverInterval();
+
   /**
    * {@link HDFSStore#getMinorCompaction()}
    * 
-   * @return value to be used when mutator is executed on hdfsStore. null if
-   *         not set
+   * @return value to be used when mutator is executed on hdfsStore. null if not
+   *         set
    */
   public Boolean getMinorCompaction();
 
   /**
    * {@link HDFSStoreFactory#setMinorCompaction(boolean)}
    */
-  public HDFSCompactionConfigMutator setMinorCompaction(boolean auto);
-  
-  /**
-   * Reuturns mutator for compaction configuration of hdfs store
-   * @return instance of {@link HDFSCompactionConfigMutator}
-   */
-  public HDFSCompactionConfigMutator getCompactionConfigMutator();
+  public HDFSStoreMutator setMinorCompaction(boolean auto);
 
   /**
-   * Reuturns mutator for hdfs event queue of hdfs store
-   * @return instance of {@link HDFSEventQueueAttributesMutator}
+   * {@link HDFSStoreFactory#setMinorCompactionThreads(int)}
    */
-  public HDFSEventQueueAttributesMutator getHDFSEventQueueAttributesMutator();
-  
-  public static interface HDFSEventQueueAttributesMutator {
-    /**
-     * {@link HDFSEventQueueAttributesFactory#setBatchSizeMB(int)}
-     */
-    public HDFSEventQueueAttributesMutator setBatchSizeMB(int size);
-    
-    /**
-     * {@link HDFSEventQueueAttributes#getBatchSizeMB()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if not
-     *         set
-     */
-    public int getBatchSizeMB();
-    
-    /**
-     * {@link HDFSEventQueueAttributesFactory#setBatchTimeInterval(int)}
-     */
-    public HDFSEventQueueAttributesMutator setBatchTimeInterval(int interval);
-    
-    /**
-     * {@link HDFSEventQueueAttributes#getBatchTimeInterval()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if not
-     *         set
-     */
-    public int getBatchTimeInterval();
-  }
-  
-  public static interface HDFSCompactionConfigMutator {
-    /**
-     * {@link HDFSCompactionConfigFactory#setMaxInputFileSizeMB(int)}
-     */
-    public HDFSCompactionConfigMutator setMaxInputFileSizeMB(int size);
-    
-    /**
-     * {@link HDFSCompactionConfig#getMaxInputFileSizeMB()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if
-     *         not set
-     */
-    public int getMaxInputFileSizeMB();
+  public HDFSStoreMutator setMinorCompactionThreads(int count);
 
-    /**
-     * {@link HDFSCompactionConfigFactory#setMinInputFileCount(int)}
-     */
-    public HDFSCompactionConfigMutator setMinInputFileCount(int count);
-    
-    /**
-     * {@link HDFSCompactionConfig#getMinInputFileCount()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if
-     *         not set
-     */
-    public int getMinInputFileCount();
+  /**
+   * {@link HDFSStore#getMinorCompactionThreads()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getMinorCompactionThreads();
 
-    /**
-     * {@link HDFSCompactionConfigFactory#setMaxInputFileCount(int)}
-     */
-    public HDFSCompactionConfigMutator setMaxInputFileCount(int count);
-    
-    /**
-     * {@link HDFSCompactionConfig#getMaxInputFileCount()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if
-     *         not set
-     */
-    public int getMaxInputFileCount();
+  /**
+   * {@link HDFSStoreFactory#setMajorCompaction(boolean)}
+   */
+  public HDFSStoreMutator setMajorCompaction(boolean auto);
 
-    /**
-     * {@link HDFSCompactionConfigFactory#setMaxThreads(int)}
-     */
-    public HDFSCompactionConfigMutator setMaxThreads(int count);
-    
-    /**
-     * {@link HDFSCompactionConfig#getMaxThreads()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if
-     *         not set
-     */
-    public int getMaxThreads();
+  /**
+   * {@link HDFSStore#getMajorCompaction()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. null if not
+   *         set
+   */
+  public Boolean getMajorCompaction();
 
-    /**
-     * {@link HDFSCompactionConfigFactory#setAutoMajorCompaction(boolean)}
-     */
-    public HDFSCompactionConfigMutator setAutoMajorCompaction(boolean auto);
-    
-    /**
-     * {@link HDFSCompactionConfig#getAutoMajorCompaction()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. null if
-     *         not set
-     */
-    public Boolean getAutoMajorCompaction();
+  /**
+   * {@link HDFSStoreFactory#setMajorCompactionInterval(int)}
+   */
+  public HDFSStoreMutator setMajorCompactionInterval(int interval);
 
-    /**
-     * {@link HDFSCompactionConfigFactory#setMajorCompactionIntervalMins(int)}
-     */
-    public HDFSCompactionConfigMutator setMajorCompactionIntervalMins(int interval);
-    
-    /**
-     * {@link HDFSCompactionConfig#getMajorCompactionIntervalMins()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if
-     *         not set
-     */
-    public int getMajorCompactionIntervalMins();
+  /**
+   * {@link HDFSStore#getMajorCompactionInterval()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getMajorCompactionInterval();
 
-    /**
-     * {@link HDFSCompactionConfigFactory#setMajorCompactionMaxThreads(int)}
-     */
-    public HDFSCompactionConfigMutator setMajorCompactionMaxThreads(int count);
-    
-    /**
-     * {@link HDFSCompactionConfig#getMajorCompactionMaxThreads()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if
-     *         not set
-     */
-    public int getMajorCompactionMaxThreads();
-    
-    /**
-     * {@link HDFSCompactionConfigFactory#setOldFilesCleanupIntervalMins(int)}
-     */
-    public HDFSCompactionConfigMutator setOldFilesCleanupIntervalMins(int interval);
-    
-    /**
-     * {@link HDFSCompactionConfig#getOldFilesCleanupIntervalMins()}
-     * 
-     * @return value to be used when mutator is executed on hdfsStore. -1 if
-     *         not set
-     */
-    public int getOldFilesCleanupIntervalMins();
-  }
+  /**
+   * {@link HDFSStoreFactory#setMajorCompactionThreads(int)}
+   */
+  public HDFSStoreMutator setMajorCompactionThreads(int count);
+
+  /**
+   * {@link HDFSStore#getMajorCompactionThreads()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getMajorCompactionThreads();
+
+  /**
+   * {@link HDFSStoreFactory#setInputFileSizeMax(int)}
+   */
+  public HDFSStoreMutator setInputFileSizeMax(int size);
+
+  /**
+   * {@link HDFSStore#getInputFileSizeMax()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getInputFileSizeMax();
+
+  /**
+   * {@link HDFSStoreFactory#setInputFileCountMin(int)}
+   */
+  public HDFSStoreMutator setInputFileCountMin(int count);
+
+  /**
+   * {@link HDFSStore#getInputFileCountMin()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getInputFileCountMin();
+
+  /**
+   * {@link HDFSStoreFactory#setInputFileCountMax(int)}
+   */
+  public HDFSStoreMutator setInputFileCountMax(int count);
+
+  /**
+   * {@link HDFSStore#getInputFileCountMax()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getInputFileCountMax();
+
+  /**
+   * {@link HDFSStoreFactory#setPurgeInterval(int)}
+   */
+  public HDFSStoreMutator setPurgeInterval(int interval);
+
+  /**
+   * {@link HDFSStore#getPurgeInterval()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getPurgeInterval();
+
+  /**
+   * {@link HDFSStore#getBatchSize()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getBatchSize();
+
+  /**
+   * {@link HDFSStoreFactory#setBatchSize(int)}
+   */
+  public HDFSStoreMutator setBatchSize(int size);
+
+  /**
+   * {@link HDFSStore#getBatchInterval()}
+   * 
+   * @return value to be used when mutator is executed on hdfsStore. -1 if not
+   *         set
+   */
+  public int getBatchInterval();
+
+  /**
+   * {@link HDFSStoreFactory#setBatchInterval(int)}
+   */
+  public HDFSStoreMutator setBatchInterval(int interval);
 }

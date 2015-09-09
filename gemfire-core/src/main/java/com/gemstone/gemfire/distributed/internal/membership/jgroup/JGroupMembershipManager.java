@@ -1066,7 +1066,7 @@ public class JGroupMembershipManager implements MembershipManager
       if ( (vmKind == DistributionManager.ADMIN_ONLY_DM_TYPE)
            && jgmsg.getIsDistributedCacheOperation()) {
         if (logger.isTraceEnabled(LogMarker.DM))
-          logger.trace(LogMarker.DM, "Membership: admin VM discarding cache operation message {}", jgmsg.getObject());
+          logger.trace(LogMarker.DM, "Membership: admin VM discarding cache operation message {}", (Object)jgmsg.getObject());
         return;
       }
 

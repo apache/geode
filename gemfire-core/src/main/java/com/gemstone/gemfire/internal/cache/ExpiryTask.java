@@ -92,7 +92,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * region expires, due to either time-to-live or idle-timeout (whichever
    * will occur first), or 0 if neither are used.
    */
-  long getExpirationTime() throws EntryNotFoundException {
+  public long getExpirationTime() throws EntryNotFoundException {
     long ttl = getTTLExpirationTime();
     long idle = getIdleExpirationTime();
     if (ttl == 0) {
@@ -104,7 +104,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Return the absolute time when TTL expiration occurs, or 0 if not used */
-  protected final long getTTLExpirationTime() throws EntryNotFoundException {
+  public final long getTTLExpirationTime() throws EntryNotFoundException {
     long ttl = getTTLAttributes().getTimeout();
     long tilt = 0;
     if (ttl > 0) {
@@ -117,7 +117,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Return the absolute time when idle expiration occurs, or 0 if not used */
-  protected final long getIdleExpirationTime() throws EntryNotFoundException {
+  public final long getIdleExpirationTime() throws EntryNotFoundException {
     long idle = getIdleAttributes().getTimeout();
     long tilt = 0;
     if (idle > 0) {
@@ -437,7 +437,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     return super.toString() + " for " + getLocalRegion()
       + ", ttl expiration time: " + expTtl
       + ", idle expiration time: " + expIdle +
-      ("[now:" + System.currentTimeMillis() + "]");
+      ("[now:" + calculateNow() + "]");
   }
 
   ////// Abstract methods ///////

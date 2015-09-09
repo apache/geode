@@ -54,7 +54,7 @@ public class QueueCommandsController extends AbstractCommandsController {
                                       @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS, defaultValue = "1") final Integer dispatcherThreads,
                                       @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY, defaultValue = "KEY") final String orderPolicy,
                                       @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER, required = false) final String[] gatewayEventFilters,
-                                      @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER, required = false) final String gatewaySubstitutionListener)
+                                      @RequestParam(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER, required = false) final String gatewaySubstitutionFilter)
 
   {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
@@ -108,8 +108,8 @@ public class QueueCommandsController extends AbstractCommandsController {
           gatewayEventFilters, StringUtils.COMMA_DELIMITER));
     }
 
-    if (hasValue(gatewaySubstitutionListener)) {
-      command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER, gatewaySubstitutionListener);
+    if (hasValue(gatewaySubstitutionFilter)) {
+      command.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER, gatewaySubstitutionFilter);
     }
 
     return processCommand(command.toString());

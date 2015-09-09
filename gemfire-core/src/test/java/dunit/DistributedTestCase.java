@@ -52,8 +52,10 @@ import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
+import com.gemstone.gemfire.internal.cache.DiskStoreObserver;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -783,6 +785,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     Protocol.trace = GemFireTracer.DEBUG;
     DistributionMessageObserver.setInstance(null);
     QueryObserverHolder.reset();
+    DiskStoreObserver.setInstance(null);
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {
       InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
     }
@@ -974,12 +977,35 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     
   }
   
+  /**
+   * Blocks until the clock used for expiration moves forward.
+   * @return the last time stamp observed
+   */
+  public static final long waitForExpiryClockToChange(LocalRegion lr) {
+    return waitForExpiryClockToChange(lr, lr.cacheTimeMillis());
+  }
+  /**
+   * Blocks until the clock used for expiration moves forward.
+   * @param baseTime the timestamp that the clock must exceed
+   * @return the last time stamp observed
+   */
+  public static final long waitForExpiryClockToChange(LocalRegion lr, final long baseTime) {
+    long nowTime;
+    do {
+      Thread.yield();
+      nowTime = lr.cacheTimeMillis();
+    } while ((nowTime - baseTime) <= 0L);
+    return nowTime;
+  }
+  
   /** pause for specified ms interval
    * Make sure system clock has advanced by the specified number of millis before
    * returning.
    */
   public static final void pause(int ms) {
-    getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
+    if (ms > 50) {
+      getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
+    }
     final long target = System.currentTimeMillis() + ms;
     try {
       for (;;) {

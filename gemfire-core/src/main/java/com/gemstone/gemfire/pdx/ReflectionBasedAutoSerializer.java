@@ -540,4 +540,13 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
   public final RegionService getRegionService() {
     return this.manager.getRegionService();
   }
+  /**
+   * For internal use only.
+   * @since 8.2
+   */
+  public final Object getManager() {
+    // The result is not AutoSerializableManager because
+    // that class is not part of our public APIs.
+    return this.manager;
+  }
 }

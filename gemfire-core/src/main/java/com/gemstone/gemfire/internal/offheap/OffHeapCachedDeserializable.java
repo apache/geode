@@ -55,12 +55,7 @@ public abstract class OffHeapCachedDeserializable implements MemoryChunkWithRefC
   @Override
   public String getStringForm() {
     try {
-      Object o = getDeserializedForReading();
-      if (o instanceof byte[]) {
-        return Arrays.toString((byte[]) o);
-      } else {
-        return StringUtils.forceToString(o);
-      }
+      return StringUtils.forceToString(getDeserializedForReading());
     } catch (RuntimeException ex) {
       return "Could not convert object to string because " + ex;
     }

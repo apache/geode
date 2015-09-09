@@ -1531,7 +1531,7 @@ public abstract class DistributedCacheOperation {
           return false;
         }
         return lr.notifiesMultipleSerialGateways();
-      } catch (CancelException ignore) {
+      } catch (RuntimeException ignore) {
         return false;
       } finally {
         LocalRegion.setThreadInitLevelRequirement(oldLevel);

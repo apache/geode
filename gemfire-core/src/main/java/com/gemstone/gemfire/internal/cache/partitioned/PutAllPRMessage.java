@@ -710,7 +710,44 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
+  
+  @Override
+  public String toString()
+  {
+    StringBuffer buff = new StringBuffer();
+    String className = getClass().getName();
+//    className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1);  // partition.<foo> more generic version 
+    buff.append(className.substring(className.indexOf(PN_TOKEN) + PN_TOKEN.length())); // partition.<foo>
+    buff.append("(prid="); // make sure this is the first one
+    buff.append(this.regionId);
+    
+    // Append name, if we have it
+    String name = null;
+    try {
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
+      if (pr != null) {
+        name = pr.getFullPath();
+      }
+    }
+    catch (Exception e) {
+      /* ignored */
+      name = null;
+    }
+    if (name != null) {
+      buff.append(" (name = \"").append(name).append("\")");
+    }
 
+    appendFields(buff);
+    buff.append(" ,distTx=");
+    buff.append(this.isTransactionDistributed);
+    buff.append(" ,putAlldatasize=");
+    buff.append(this.putAllPRDataSize);
+    // [DISTTX] TODO Disable this
+    buff.append(" ,putAlldata=");
+    buff.append(Arrays.toString(this.putAllPRData));
+    buff.append(")");
+    return buff.toString();
+  }
 
   public static final class PutAllReplyMessage extends ReplyMessage {
     /** Result of the PutAll operation */

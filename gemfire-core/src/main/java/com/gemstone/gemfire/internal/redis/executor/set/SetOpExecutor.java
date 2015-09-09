@@ -14,7 +14,7 @@ import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.Extendable;
 import com.gemstone.gemfire.internal.redis.RedisDataType;
-import com.gemstone.gemfire.internal.redis.RegionCache;
+import com.gemstone.gemfire.internal.redis.RegionProvider;
 
 public abstract class SetOpExecutor extends SetExecutor implements Extendable {
 
@@ -27,11 +27,10 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
       return;
     }
-    RegionCache rC = context.getRegionCache();
+    RegionProvider rC = context.getRegionProvider();
     ByteArrayWrapper destination = null;
     if (isStorage())
       destination = command.getKey();
-
 
     ByteArrayWrapper firstSetKey = new ByteArrayWrapper(commandElems.get(setsStartIndex++));
     if (!isStorage())
@@ -53,10 +52,8 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
     }
     if (setList.isEmpty()) {
       if (isStorage()) {
-        if (firstSet == null) {
           command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-          context.getRegionCache().removeKey(destination);
-        }
+          context.getRegionProvider().removeKey(destination);
       } else {
         if (firstSet == null)
           command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));

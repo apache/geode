@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import org.junit.experimental.categories.Category;
+import java.util.concurrent.CountDownLatch;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.CommitConflictException;
+import com.gemstone.gemfire.cache.CommitIncompleteException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.InterestPolicy;
@@ -20,21 +21,26 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
+import com.gemstone.gemfire.internal.cache.DistTXState;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
+import com.gemstone.gemfire.internal.cache.TXState;
+import com.gemstone.gemfire.internal.cache.TXStateInterface;
+import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
 import com.gemstone.gemfire.internal.cache.execute.CustomerIDPartitionResolver;
 import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
-import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import dunit.Host;
 import dunit.SerializableCallable;
@@ -47,7 +53,6 @@ import dunit.VM;
  *
  */
 @SuppressWarnings("deprecation")
-@Category(DistributedTransactionsTest.class)
 public class DistributedTransactionDUnitTest extends CacheTestCase {
   final protected String CUSTOMER_PR = "customerPRRegion";
   final protected String ORDER_PR = "orderPRRegion";
@@ -67,13 +72,13 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       }
     });
     
-    this.invokeInEveryVM(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        //System.setProperty("gemfire.log-level", "fine");
-        return null;
-      }
-    }); 
+//    this.invokeInEveryVM(new SerializableCallable() {
+//      @Override
+//      public Object call() throws Exception {
+//        System.setProperty("gemfire.log-level", "fine");
+//        return null;
+//      }
+//    });
 
     this.invokeInEveryVM(new SerializableCallable() {
       @Override
@@ -109,8 +114,8 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  public void execute(VM vm, SerializableCallable c) {
-    vm.invoke(c);
+  public Object execute(VM vm, SerializableCallable c) {
+    return vm.invoke(c);
   }
   
   public void execute(VM[] vms, SerializableCallable c) {
@@ -118,11 +123,6 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       execute(vm, c);
     }
   }
-
-  protected String reduceLogging() {
-    return "config";
-  }
-
   
   public int startServer(VM vm) {
     return (Integer) vm.invoke(new SerializableCallable() {
@@ -141,10 +141,14 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
     return true;
   }
 
-  void createRR() {
+  void createRR(boolean isEmpty) {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.DISTRIBUTED_ACK);
-    af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+    if (!isEmpty) {
+      af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+    } else {
+      af.setDataPolicy(DataPolicy.EMPTY); //for accessor
+    }
     af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
     getCache().createRegion(CUSTOMER_RR, af.create());
   }
@@ -168,6 +172,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
     //props.put("distributed-transactions", "true");
+//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
     return props;
   }
 
@@ -228,11 +233,21 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       vm.invoke(new SerializableCallable() {
         @Override
         public Object call() throws Exception {
-          createRR();
+          createRR(false);
           return null;
         }
       });
     }
+  }
+  
+  public void createRRonAccessor(VM accessor) {
+    accessor.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        createRR(true);
+        return null;
+      }
+    });
   }
 
   public void createPR(VM[] vms) {
@@ -245,6 +260,28 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
         }
       });
     }
+  }
+  
+  public void createPRwithRedundanyCopies(VM[] vms, final int redundency) {
+    for (VM vm : vms) {
+      vm.invoke(new SerializableCallable() {
+        @Override
+        public Object call() throws Exception {
+          createPR(false, redundency, null);
+          return null;
+        }
+      });
+    }
+  }
+  
+  public void createPRonAccessor(VM accessor, final int redundency) {
+    accessor.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        createPR(true, redundency, null);
+        return null;
+      }
+    });
   }
   
   public void createPersistentPR(VM[] vms) {
@@ -329,57 +366,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
   }
   
   
-  private class TxOps_Conflicts extends SerializableCallable {
-    private boolean gotConflict = false;
-    @Override
-    public Object call() throws Exception {
-      CacheTransactionManager mgr = getGemfireCache().getTxManager();
-      mgr.setDistributed(true);
-      mgr.begin();
 
-      // Perform a put
-      Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER_PR);
-      
-      CustId custIdOne = new CustId(1);
-      Customer customerOne = new Customer("name1", "addr1");
-      CustId custIdTwo = new CustId(2);
-      Customer customerTwo = new Customer("name2", "addr2");
-      CustId custIdThree = new CustId(3);
-      Customer customerThree = new Customer("name3", "addr3");
-      custRegion.put(custIdOne, customerOne);
-      custRegion.put(custIdTwo, customerTwo);
-      custRegion.put(custIdThree, customerThree);
-      
-      final class TxThread extends Thread {
-        public boolean gotConflict = false;
-        public void run() {
-          CacheTransactionManager mgr = getGemfireCache().getTxManager();
-          mgr.setDistributed(true);
-          mgr.begin();
-          CustId custIdOne = new CustId(1);
-          Customer customerOne = new Customer("name1", "addr1");
-          Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER_PR);
-          
-          // This should give a commit conflict/
-          // [sjigyasu] Not sure at this point what the exception will be.
-          // TODO: Check for the correct exception when the merge is over.
-          try {
-            custRegion.put(custIdOne, customerOne);
-          } catch (Exception e) {
-            // Assuming there is conflict exception.
-            gotConflict = true;
-            mgr.rollback();
-          }
-        }
-      }
-      
-      TxThread txThread = new TxThread();
-      txThread.start();
-      txThread.join();
-      assertTrue(txThread.gotConflict);
-      return null;
-    }
-  }
   
   /**
    * From GemFireXD: testTransactionalInsertOnReplicatedTable
@@ -454,9 +441,6 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       
     });
   }
-  
-  
-  
   
   public void testTransactionalPutOnPartitionedRegion() throws Exception {
     Host host = Host.getHost(0);
@@ -968,9 +952,8 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       
     });
   }
-  
-  // [DISTTX] TODO
-  public void DISABLED_testPutAllWithTransactions() throws Exception {
+
+  public void testPutAllWithTransactions() throws Exception {
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0); 
     VM server2 = host.getVM(1); 
@@ -1087,6 +1070,75 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
     });
   }
   
+  public void testRemoveAllWithTransactions() throws Exception {
+    Host host = Host.getHost(0);
+    VM server1 = host.getVM(0); 
+    VM server2 = host.getVM(1); 
+    VM server3 = host.getVM(2);
+    
+    createRegions(new VM[]{server1, server2, server3});
+    
+    execute(server1, new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region custRegion = getCache().getRegion(CUSTOMER_PR);
+        Region orderRegion = getCache().getRegion(ORDER_PR);
+        
+        Map custMap = new HashMap();
+        Map orderMap = new HashMap();
+        for (int i = 0; i < 15; i++) {
+          CustId custId = new CustId(i);
+          Customer customer = new Customer("customer" + i, "address" + i);
+          OrderId orderId = new OrderId(i, custId);
+          Order order = new Order("order" + i);
+          custMap.put(custId, customer);
+          orderMap.put(orderId, order);
+        }
+  
+        CacheTransactionManager mgr = getGemfireCache().getTxManager();
+        mgr.setDistributed(true);
+        mgr.begin();
+        custRegion.putAll(custMap);
+        orderRegion.putAll(orderMap);
+        mgr.commit();
+        
+        mgr.begin(); 
+        assertEquals(15, custRegion.size());
+        assertEquals(15, orderRegion.size());
+  
+        custMap = new HashMap();
+        orderMap = new HashMap();
+        for (int i = 5; i < 10; i++) {
+          CustId custId = new CustId(i);
+          Customer customer = new Customer("customer" + i, "address" + i);
+          OrderId orderId = new OrderId(i, custId);
+          Order order = new Order("order" + i);
+          custMap.put(custId, customer);
+          orderMap.put(orderId, order);
+        }
+        custRegion.removeAll(custMap.keySet());
+        orderRegion.removeAll(orderMap.keySet());
+        mgr.rollback();
+  
+        mgr.begin();        
+        assertEquals(15, custRegion.size());
+        assertEquals(15, orderRegion.size());
+  
+        custRegion.removeAll(custMap.keySet());
+        orderRegion.removeAll(orderMap.keySet());
+  
+        assertEquals(10, custRegion.size());
+        assertEquals(10, orderRegion.size());
+        mgr.commit();
+        
+        assertEquals(10, custRegion.size());
+        assertEquals(10, orderRegion.size());
+        
+        return null;
+      }
+    });
+  }
+
   public void testTxWithSingleDataStore() throws Exception {
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0); // datastore
@@ -1233,6 +1285,234 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
   }
   
 
+  /*
+   * Test to reproduce a scenario where:
+   * 1. On primary, the tx op is applied first followed by non-tx
+   * 2. On secondary, non-tx op is applied first followed by tx.
+   */
+  public void DISABLED_testConcurrentTXAndNonTXOperations() throws Exception {
+    Host host = Host.getHost(0);
+    final VM server1 = host.getVM(0);
+    final VM server2 = host.getVM(1);
+    
+    createPersistentPR(new VM[]{server1});
+
+    execute(server1, new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region<CustId, Customer> prRegion = getCache().getRegion(
+            PERSISTENT_CUSTOMER_PR);
+
+        CustId custIdOne = new CustId(1);
+        Customer customerOne = new Customer("name1", "addr1");
+        prRegion.put(custIdOne, customerOne);
+        
+        BucketRegion br = ((PartitionedRegion) prRegion)
+            .getBucketRegion(custIdOne);
+        
+        String primaryMember = br.getBucketAdvisor().getPrimary().toString();
+        getGemfireCache().getLoggerI18n().fine("TEST:PRIMARY:" + primaryMember);
+        
+        String memberId = getGemfireCache().getDistributedSystem().getMemberId();
+        getGemfireCache().getLoggerI18n().fine("TEST:MEMBERID:"+memberId);
+        
+        return null;
+      }
+    });    
+    
+    createPersistentPR(new VM[]{server2});
+    
+    Boolean isPrimary = (Boolean)execute(server1, new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region<CustId, Customer> prRegion = getCache().getRegion(
+            PERSISTENT_CUSTOMER_PR);
+        CustId custIdOne = new CustId(1);
+        BucketRegion br = ((PartitionedRegion) prRegion)
+            .getBucketRegion(custIdOne);
+        
+        String primaryMember = br.getBucketAdvisor().getPrimary().toString();
+        getGemfireCache().getLoggerI18n().fine("TEST:PRIMARY:" + primaryMember);
+        
+        String memberId = getGemfireCache().getDistributedSystem().getMemberId();
+        getGemfireCache().getLoggerI18n().fine("TEST:MEMBERID:"+memberId);
+
+        return memberId.equals(primaryMember);
+      }
+    });
+    
+    final VM primary = isPrimary.booleanValue() ? server1 : server2;
+    final VM secondary = !isPrimary.booleanValue() ? server1 : server2;
+    
+    System.out.println("TEST:SERVER-1:VM-"+server1.getPid());
+    System.out.println("TEST:SERVER-2:VM-"+server2.getPid());
+    System.out.println("TEST:PRIMARY=VM-"+primary.getPid());
+    System.out.println("TEST:SECONDARY=VM-"+secondary.getPid());
+    
+    class WaitRelease implements Runnable {
+      CountDownLatch cdl;
+      String op;
+      public WaitRelease(CountDownLatch cdl, String member) {
+        this.cdl = cdl;
+      }
+      @Override
+      public void run() {
+        try {
+          GemFireCacheImpl.getExisting().getLoggerI18n().fine("TEST:TX WAITING - " + op);
+          cdl.await();  
+          GemFireCacheImpl.getExisting().getLoggerI18n().fine("TEST:TX END WAITING");
+        } catch (InterruptedException e) {
+        }
+      }
+      public void release() {
+        GemFireCacheImpl.getExisting().getLoggerI18n().fine("TEST:TX COUNTDOWN - " + op);
+        cdl.countDown();
+      }
+    }
+
+    // Install TX hook
+    SerializableCallable txHook = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        CountDownLatch cdl = new CountDownLatch(1);
+        GemFireCacheImpl.internalBeforeApplyChanges = new WaitRelease(cdl, "TX OP");
+        return null;
+      }
+    };
+    
+    execute(secondary, txHook);
+
+
+    // Install non-TX hook
+    SerializableCallable nontxHook = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        CountDownLatch cdl = new CountDownLatch(1);
+        GemFireCacheImpl.internalBeforeNonTXBasicPut = new WaitRelease(cdl, "NON TX OP");
+        return null;
+      }
+    };
+    
+    // Install the wait-release hook on the secondary
+    execute(secondary, nontxHook);
+
+    
+    // Start a tx operation on primary
+        
+    execute(primary, new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        // The reason this is run in a separate thread instead of controller thread
+        // is that this is going to block because the secondary is going to wait.
+        new Thread() {
+          public void run() {
+            CacheTransactionManager mgr = getGemfireCache().getTxManager();
+            mgr.setDistributed(true);
+            getGemfireCache().getLoggerI18n().fine(
+                "TEST:DISTTX=" + mgr.isDistributed());
+            mgr.begin();
+            Region<CustId, Customer> prRegion = getCache().getRegion(
+                PERSISTENT_CUSTOMER_PR);
+
+            CustId custIdOne = new CustId(1);
+            Customer customerOne = new Customer("name1_tx", "addr1");
+            getGemfireCache().getLoggerI18n().fine("TEST:TX UPDATE");
+            prRegion.put(custIdOne, customerOne);
+            getGemfireCache().getLoggerI18n().fine("TEST:TX COMMIT");
+            mgr.commit();
+          }
+        }.start();
+        return null;
+      }
+    });    
+    
+    // Let the TX op be applied on primary first
+    Thread.currentThread().sleep(200);
+    
+    // Perform a non-tx op on the same key on primary
+    execute(primary, new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region<CustId, Customer> prRegion = getCache().getRegion(PERSISTENT_CUSTOMER_PR);
+
+        CustId custIdOne = new CustId(1);
+        Customer customerOne = new Customer("name1_nontx", "addr1");
+        getGemfireCache().getLoggerI18n().fine("TEST:TX NONTXUPDATE");
+        prRegion.put(custIdOne, customerOne);
+        return null;
+      }
+    });
+   
+    
+    // Wait for a few milliseconds
+    Thread.currentThread().sleep(200);
+    
+    // Release the waiting non-tx op first, on secondary 
+    execute(secondary, new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Runnable r = GemFireCacheImpl.internalBeforeNonTXBasicPut;
+        assert(r != null && r instanceof WaitRelease);
+        WaitRelease e = (WaitRelease)r;
+        e.release();
+        return null;
+      }
+    });
+    
+    // Now release the waiting commit on secondary
+    execute(secondary, new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Runnable r = GemFireCacheImpl.internalBeforeApplyChanges;
+        assert(r != null && r instanceof WaitRelease);
+        WaitRelease e = (WaitRelease)r;
+        e.release();
+        return null;
+      }
+    });
+    
+    // Verify region and entry versions on primary and secondary
+    SerializableCallable verifyPrimary = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region<CustId, Customer> prRegion = getCache().getRegion(PERSISTENT_CUSTOMER_PR);
+        
+        CustId custId = new CustId(1);
+        Customer customer = prRegion.get(custId);
+        
+        BucketRegion br = ((PartitionedRegion)prRegion).getBucketRegion(custId);
+        RegionEntry re = br.getRegionEntry(custId);
+        
+        getGemfireCache().getLoggerI18n().fine("TEST:TX PRIMARY CUSTOMER="+customer);
+        
+        getGemfireCache().getLoggerI18n().fine("TEST:TX PRIMARY REGION VERSION="+re.getVersionStamp().getRegionVersion());
+        getGemfireCache().getLoggerI18n().fine("TEST:TX PRIMARY ENTRY VERSION="+re.getVersionStamp().getEntryVersion());
+        return null;
+      }
+    };
+    execute(primary, verifyPrimary);
+    SerializableCallable verifySecondary = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region<CustId, Customer> prRegion = getCache().getRegion(PERSISTENT_CUSTOMER_PR);
+        
+        CustId custId = new CustId(1);
+        Customer customer = prRegion.get(custId);
+        
+        BucketRegion br = ((PartitionedRegion)prRegion).getBucketRegion(custId);
+        RegionEntry re = br.getRegionEntry(custId);
+        
+        getGemfireCache().getLoggerI18n().fine("TEST:TX SECONDARY CUSTOMER="+customer);
+        
+        getGemfireCache().getLoggerI18n().fine("TEST:TX SECONDARY REGION VERSION="+re.getVersionStamp().getRegionVersion());
+        getGemfireCache().getLoggerI18n().fine("TEST:TX SECONDARY ENTRY VERSION="+re.getVersionStamp().getEntryVersion());
+        return null;
+      }
+    };
+    
+    execute(secondary, verifySecondary);
+  }
+  
   public void testBasicDistributedTX() throws Exception {
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1527,5 +1807,379 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
       return flag;
     }
   }
+  
+  
+  private class TxOps_Conflicts extends SerializableCallable {
+    
+    final String regionName;
+    public TxOps_Conflicts(String regionName) {
+      this.regionName = regionName;
+    }
+    
+    @Override
+    public Object call() throws Exception {
+      CacheTransactionManager mgr = getGemfireCache().getTxManager();
+      mgr.setDistributed(true);
+      mgr.begin();
+
+      // Perform a put
+      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      
+      CustId custIdOne = new CustId(1);
+      Customer customerOne = new Customer("name1", "addr1");
+      CustId custIdTwo = new CustId(2);
+      Customer customerTwo = new Customer("name2", "addr2");
+      CustId custIdThree = new CustId(3);
+      Customer customerThree = new Customer("name3", "addr3");
+      custRegion.put(custIdOne, customerOne);
+      custRegion.put(custIdTwo, customerTwo);
+      custRegion.put(custIdThree, customerThree);
+      
+      // spawn a new thread modify and custIdOne in another tx
+      // so that outer thread fails
+      final class TxThread extends Thread {
+        public void run() {
+          CacheTransactionManager mgr = getGemfireCache().getTxManager();
+          mgr.setDistributed(true);
+          mgr.begin();
+          CustId custIdOne = new CustId(1);
+          Customer customerOne = new Customer("name1", "addr11");
+          Region<CustId, Customer> custRegion = getCache().getRegion(regionName);
+          custRegion.put(custIdOne, customerOne);
+          mgr.commit();
+        }
+      }
+      
+      TxThread txThread = new TxThread(); 
+      txThread.start();
+      txThread.join(); //let the tx commit
+      
+      try {
+        mgr.commit();
+        fail("this test should have failed with CommitConflictException");
+        // [DISTTX] TODO after conflict detection either  
+        // CommitIncompleteException or CommitConflictException is thrown. 
+        // Should it always be CommitConflictException?
+      } catch (CommitIncompleteException cie) {
+      } 
+      catch (CommitConflictException ce) {
+      }
+      
+      //verify data
+      assertEquals(new Customer("name1", "addr11"), custRegion.get(custIdOne));
+      assertEquals(null, custRegion.get(custIdTwo));
+      assertEquals(null, custRegion.get(custIdThree));
+      
+      //clearing the region
+      custRegion.remove(custIdOne);
+      return null;
+    }
+  }
+  
+  
+  /*
+   * Start two concurrent transactions that put same entries. Make sure that
+   * conflict is detected at the commit time.
+   */
+  public void testCommitConflicts_PR() throws Exception {
+    Host host = Host.getHost(0);
+    VM server1 = host.getVM(0);
+    VM server2 = host.getVM(1);
+    VM server3 = host.getVM(2);
+    VM accessor = host.getVM(3);
+
+    createPRwithRedundanyCopies(new VM[] { server1, server2, server3 }, 1);
+    createPRonAccessor(accessor, 1);
+    
+    server1.invoke(new TxOps_Conflicts(CUSTOMER_PR));
+    
+    //test thru accessor as well
+    accessor.invoke(new TxOps_Conflicts(CUSTOMER_PR));
+  }
+  
+  /*
+   * Start two concurrent transactions that put same entries. Make sure that
+   * conflict is detected at the commit time.
+   */
+  public void testCommitConflicts_RR() throws Exception {
+    Host host = Host.getHost(0);
+    VM server1 = host.getVM(0);
+    VM server2 = host.getVM(1);
+    VM server3 = host.getVM(2);
+    VM accessor = host.getVM(3);
+
+    createRR(new VM[] { server1, server2, server3 });
+    createRRonAccessor(accessor);
+    
+    server1.invoke(new TxOps_Conflicts(CUSTOMER_RR));
+    
+    //test thru accessor as well
+    accessor.invoke(new TxOps_Conflicts(CUSTOMER_RR));
+  }
+  
+  
+  final class TxConflictRunnable implements Runnable {
+    final String regionName;
+
+    public TxConflictRunnable(String regionName) {
+      this.regionName = regionName;
+    }
+
+    @Override
+    public void run() {
+      // spawn a new thread modify and custIdOne in another tx
+      // so that outer thread fails
+      final class TxThread extends Thread {
+        public boolean gotConflict = false;
+        public boolean gotOtherException = false;
+        public Exception ex = new Exception();
+        
+        public void run() {
+          getLogWriter().info("Inside TxConflictRunnable.TxThread after aquiring locks");
+          CacheTransactionManager mgr = getGemfireCache().getTxManager();
+          mgr.setDistributed(true);
+          mgr.begin();
+          CustId custIdOne = new CustId(1);
+          Customer customerOne = new Customer("name1", "addr11");
+          Region<CustId, Customer> custRegion = getCache()
+              .getRegion(regionName);
+          custRegion.put(custIdOne, customerOne);
+          try {
+            mgr.commit();
+          } catch (CommitConflictException ce) {
+            gotConflict = true;
+            getLogWriter().info("Received exception ", ce);
+          } catch (Exception e) {
+            gotOtherException = true;
+            getLogWriter().info("Received exception ", e);
+            ex.initCause(e);
+          }
+        }
+      }
+
+      TxThread txThread = new TxThread();
+      txThread.start();
+      try {
+        txThread.join(); // let the tx commit
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } 
+      
+      assertTrue("This test should fail with CommitConflictException",
+          txThread.gotConflict);
+      if (txThread.gotOtherException) {
+        fail("Received unexpected exception ", txThread.ex);
+      }
+    }
+  }
+  
+  private class TxOps_conflicts_after_locks_acquired extends SerializableCallable {
+    
+    final String regionName;
+    public TxOps_conflicts_after_locks_acquired(String regionName) {
+      this.regionName = regionName;
+    }
+    
+    @Override
+    public Object call() throws Exception {
+      CacheTransactionManager mgr = getGemfireCache().getTxManager();
+      mgr.setDistributed(true);
+      mgr.begin();
+      
+      //set up a callback to be invoked after locks are acquired at commit time
+      ((TXStateProxyImpl)((TXManagerImpl)mgr).getTXState()).forceLocalBootstrap();
+      TXStateInterface txp = ((TXManagerImpl)mgr).getTXState();
+      DistTXState tx = (DistTXState)((TXStateProxyImpl)txp).getRealDeal(null, null);
+      tx.setAfterReservation(new TxConflictRunnable(this.regionName)); //callback
+
+      // Perform a put
+      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      
+      CustId custIdOne = new CustId(1);
+      Customer customerOne = new Customer("name1", "addr1");
+      CustId custIdTwo = new CustId(2);
+      Customer customerTwo = new Customer("name2", "addr2");
+      CustId custIdThree = new CustId(3);
+      Customer customerThree = new Customer("name3", "addr3");
+      CustId custIdFour = new CustId(4);
+      Customer customerFour = new Customer("name4", "addr4");
+      custRegion.put(custIdOne, customerOne);
+      custRegion.put(custIdTwo, customerTwo);
+      custRegion.put(custIdThree, customerThree);
+      custRegion.put(custIdFour, customerFour);
+      
+      // will invoke the callback that spawns a new thread and another
+      // transaction
+      mgr.commit(); 
+
+      //verify data
+      assertEquals(new Customer("name1", "addr1"), custRegion.get(custIdOne));
+      assertEquals(new Customer("name2", "addr2"), custRegion.get(custIdTwo));
+      assertEquals(new Customer("name3", "addr3"), custRegion.get(custIdThree));
+      assertEquals(new Customer("name4", "addr4"), custRegion.get(custIdFour));
+
+      return null;
+    }
+  }
+  
+  /*
+   * Start a transaction, at commit time after acquiring locks, start another
+   * transaction in a new thread that modifies same entries as in the earlier
+   * transaction. Make sure that conflict is detected
+   */
+  public void testCommitConflicts_PR_after_locks_acquired() throws Exception {
+    Host host = Host.getHost(0);
+    VM server1 = host.getVM(0);
+    VM server2 = host.getVM(1);
+
+//    createPRwithRedundanyCopies(new VM[] { server1, server2 }, 1);
+    
+    createPRwithRedundanyCopies(new VM[] { server1 }, 0);
+
+    server1.invoke(new TxOps_conflicts_after_locks_acquired(CUSTOMER_PR));
+  }
+  
+  /*
+   * Start a transaction, at commit time after acquiring locks, start another
+   * transaction in a new thread that modifies same entries as in the earlier
+   * transaction. Make sure that conflict is detected
+   */
+  public void testCommitConflicts_RR_after_locks_acquired() throws Exception {
+    Host host = Host.getHost(0);
+    VM server1 = host.getVM(0);
+    VM server2 = host.getVM(1);
+
+    createRR(new VM[] { server1, server2 });
+
+    server1.invoke(new TxOps_conflicts_after_locks_acquired(CUSTOMER_RR));
+  }
+  
+  
+  final class TxRunnable implements Runnable {
+    final String regionName;
+
+    public TxRunnable(String regionName) {
+      this.regionName = regionName;
+    }
+
+    @Override
+    public void run() {
+      final class TxThread extends Thread {
+        public boolean gotException = false;
+        public Exception ex = new Exception();
+
+        public void run() {
+          getLogWriter()
+              .info("Inside TxRunnable.TxThread after aquiring locks");
+          CacheTransactionManager mgr = getGemfireCache().getTxManager();
+          mgr.setDistributed(true);
+          mgr.begin();
+          Region<CustId, Customer> custRegion = getCache()
+              .getRegion(regionName);
+          for (int i=11; i<=20; i++) {
+            custRegion.put(new CustId(i), new Customer("name" + i, "addr" + i));
+          }
+          try {
+            mgr.commit();
+          } catch (Exception e) {
+            gotException = true;
+            getLogWriter().info("Received exception ", e);
+            ex.initCause(e);
+          }
+        }
+      }
+
+      TxThread txThread = new TxThread();
+      txThread.start();
+      try {
+        txThread.join(); // let the tx commit
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      if (txThread.gotException) {
+        fail("Received exception ", txThread.ex);
+      }
+    }
+  }
+  
+private class TxOps_no_conflicts extends SerializableCallable {
+    
+    final String regionName;
+    public TxOps_no_conflicts(String regionName) {
+      this.regionName = regionName;
+    }
+    
+    @Override
+    public Object call() throws Exception {
+      CacheTransactionManager mgr = getGemfireCache().getTxManager();
+      mgr.setDistributed(true);
+      mgr.begin();
+      
+      //set up a callback to be invoked after locks are acquired at commit time
+      ((TXStateProxyImpl)((TXManagerImpl)mgr).getTXState()).forceLocalBootstrap();
+      TXStateInterface txp = ((TXManagerImpl)mgr).getTXState();
+      DistTXState tx = (DistTXState)((TXStateProxyImpl)txp).getRealDeal(null, null);
+      tx.setAfterReservation(new TxRunnable(this.regionName)); //callback
+
+      // Perform a put
+      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      
+      CustId custIdOne = new CustId(1);
+      Customer customerOne = new Customer("name1", "addr1");
+      CustId custIdTwo = new CustId(2);
+      Customer customerTwo = new Customer("name2", "addr2");
+      CustId custIdThree = new CustId(3);
+      Customer customerThree = new Customer("name3", "addr3");
+      CustId custIdFour = new CustId(4);
+      Customer customerFour = new Customer("name4", "addr4");
+      custRegion.put(custIdOne, customerOne);
+      custRegion.put(custIdTwo, customerTwo);
+      custRegion.put(custIdThree, customerThree);
+      custRegion.put(custIdFour, customerFour);
+      
+      // will invoke the callback that spawns a new thread and another
+      // transaction that does puts of 10 entries
+      mgr.commit(); 
+
+      //verify data
+      assertEquals(14, custRegion.size());
+
+      return null;
+    }
+  }
+
+  /*
+   * Start a transaction, at commit time after acquiring locks, start another
+   * transaction in a new thread that modifies different entries Make sure that
+   * there is no conflict or exception.
+   */
+public void testCommitNoConflicts_PR() throws Exception {
+  Host host = Host.getHost(0);
+  VM server1 = host.getVM(0);
+  VM server2 = host.getVM(1);
+
+  createPRwithRedundanyCopies(new VM[] { server1, server2 }, 1);
+
+  server1.invoke(new TxOps_no_conflicts(CUSTOMER_PR));
+}
+
+/*
+ * Start a transaction, at commit time after acquiring locks, start another
+ * transaction in a new thread that modifies different entries Make sure that
+ * there is no conflict or exception.
+ */
+public void testCommitNoConflicts_RR() throws Exception {
+  Host host = Host.getHost(0);
+  VM server1 = host.getVM(0);
+  VM server2 = host.getVM(1);
+
+  createRR(new VM[] { server1, server2 });
+
+  server1.invoke(new TxOps_no_conflicts(CUSTOMER_RR));
+}
+
+  
   
 }

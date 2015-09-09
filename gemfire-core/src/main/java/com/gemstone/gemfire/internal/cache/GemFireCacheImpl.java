@@ -563,6 +563,10 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   protected static boolean xmlParameterizationEnabled = !Boolean.getBoolean("gemfire.xml.parameterization.disabled");
 
+  public static Runnable internalBeforeApplyChanges;
+
+  public static Runnable internalBeforeNonTXBasicPut;
+
   /**
    * the memcachedServer instance that is started when {@link DistributionConfig#getMemcachedPort()}
    * is specified
@@ -2014,6 +2018,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
               advisor.close();
             }
           }
+          ParallelGatewaySenderQueue.cleanUpStatics(null);
         } catch (CancelException ce) {
 
         }
@@ -3195,7 +3200,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         }
         // if there is no disk store, use the one configured for hdfs queue
         if (attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && diskStoreName == null) {
-          diskStoreName = hdfsStore.getHDFSEventQueueAttributes().getDiskStoreName();
+          diskStoreName = hdfsStore.getDiskStoreName();
         }
       }
       // set LRU heap eviction with overflow to disk for HDFS stores with
@@ -5253,7 +5258,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   private void basicSetPdxSerializer(PdxSerializer v) {
     TypeRegistry.setPdxSerializer(v);
     if (v instanceof ReflectionBasedAutoSerializer) {
-      AutoSerializableManager asm = AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) v);
+      AutoSerializableManager asm = (AutoSerializableManager) ((ReflectionBasedAutoSerializer) v).getManager();
       if (asm != null) {
         asm.setRegionService(this);
       }

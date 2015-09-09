@@ -175,8 +175,8 @@ public class CacheConfig {
     Object o2 = s2;
     if (s1 instanceof ReflectionBasedAutoSerializer && s2 instanceof ReflectionBasedAutoSerializer) {
       // Fix for bug 44907.
-      o1 = AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) s1);
-      o2 = AutoSerializableManager.getInstance((ReflectionBasedAutoSerializer) s2);
+      o1 = ((ReflectionBasedAutoSerializer) s1).getManager();
+      o2 = ((ReflectionBasedAutoSerializer) s2).getManager();
     }
     return equals(o1, o2);
   }

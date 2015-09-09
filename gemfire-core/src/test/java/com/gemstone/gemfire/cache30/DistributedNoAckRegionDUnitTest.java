@@ -8,7 +8,11 @@
 package com.gemstone.gemfire.cache30;
 
 import java.util.*;
+
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.cache.DistributedRegion;
+import com.gemstone.gemfire.internal.cache.StateFlushOperation;
 
 import dunit.*;
 
@@ -254,12 +258,21 @@ public class DistributedNoAckRegionDUnitTest
    }
   }
 
+  @Override
   protected void pauseIfNecessary(int ms) {
     pause(ms);
   }
   
+  @Override
   protected void pauseIfNecessary() {
     pause();
+  }
+
+  @Override
+  protected void flushIfNecessary(Region r) {
+    DistributedRegion dr = (DistributedRegion)r;
+    Set<InternalDistributedMember> targets = dr.getDistributionAdvisor().adviseCacheOp();
+    StateFlushOperation.flushTo(targets, dr);
   }
 
   /**
@@ -268,6 +281,7 @@ public class DistributedNoAckRegionDUnitTest
    * scopes, a repeat timeout is used to account for the fact that a
    * previous operation may have not yet completed.
    */
+  @Override
   protected long getRepeatTimeoutMs() {
     return 5000;
   }

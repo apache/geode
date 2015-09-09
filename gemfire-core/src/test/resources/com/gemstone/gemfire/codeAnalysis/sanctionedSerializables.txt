@@ -130,10 +130,7 @@ com/gemstone/gemfire/cache/execute/FunctionException,true,4893171227542647452
 com/gemstone/gemfire/cache/execute/FunctionInvocationTargetException,true,1,id:com/gemstone/gemfire/distributed/DistributedMember
 com/gemstone/gemfire/cache/hdfs/HDFSIOException,false
 com/gemstone/gemfire/cache/hdfs/StoreExistsException,true,1
-com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder,false,blockCacheSize:float,clientConfigFile:java/lang/String,compactionConfig:com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder$AbstractHDFSCompactionConfigHolder,fileRolloverInterval:int,hdfsEventQueueAttrs:com/gemstone/gemfire/cache/hdfs/HDFSEventQueueAttributes,homeDir:java/lang/String,isAutoCompact:boolean,logPrefix:java/lang/String,maxFileSize:int,name:java/lang/String,namenodeURL:java/lang/String
-com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder$AbstractHDFSCompactionConfigHolder,false,autoMajorCompact:boolean,majorCompactionConcurrency:int,majorCompactionIntervalMins:int,maxConcurrency:int,maxInputFileCount:int,maxInputFileSizeMB:int,minInputFileCount:int,oldFileCleanupIntervalMins:int
-com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder$InvalidCompactionConfigHolder,false
-com/gemstone/gemfire/cache/hdfs/internal/SizeTieredHdfsCompactionConfigHolder,false
+com/gemstone/gemfire/cache/hdfs/internal/HDFSStoreConfigHolder,false,autoMajorCompact:boolean,batchIntervalMillis:int,batchSize:int,blockCacheSize:float,clientConfigFile:java/lang/String,diskStoreName:java/lang/String,diskSynchronous:boolean,dispatcherThreads:int,fileRolloverInterval:int,homeDir:java/lang/String,isAutoCompact:boolean,isPersistenceEnabled:boolean,logPrefix:java/lang/String,majorCompactionConcurrency:int,majorCompactionIntervalMins:int,maxConcurrency:int,maxFileSize:int,maxInputFileCount:int,maxInputFileSizeMB:int,maximumQueueMemory:int,minInputFileCount:int,name:java/lang/String,namenodeURL:java/lang/String,oldFileCleanupIntervalMins:int
 com/gemstone/gemfire/cache/hdfs/internal/cardinality/CardinalityMergeException,false
 com/gemstone/gemfire/cache/hdfs/internal/cardinality/HyperLogLog$Builder,false,rsd:double
 com/gemstone/gemfire/cache/hdfs/internal/cardinality/HyperLogLog$HyperLogLogMergeException,false
@@ -231,6 +228,7 @@ com/gemstone/gemfire/cache/util/ServerRefusedConnectionException,true,-499632702
 com/gemstone/gemfire/cache/util/UnknownVersionException,true,7379530185697556990
 com/gemstone/gemfire/cache/util/VersionException,false
 com/gemstone/gemfire/cache/wan/GatewaySender$OrderPolicy,false
+com/gemstone/gemfire/cache/util/Gateway$OrderPolicy,false
 com/gemstone/gemfire/compression/CompressionException,true,4118639654597191235
 com/gemstone/gemfire/compression/SnappyCompressor,true,496609875302446099
 com/gemstone/gemfire/distributed/AbstractLauncher$Status,false,description:java/lang/String
@@ -605,6 +603,7 @@ com/gemstone/gemfire/internal/redis/RedisCommandType$96,false,dataType:com/gemst
 com/gemstone/gemfire/internal/redis/RedisCommandType$97,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$98,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$99,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
+com/gemstone/gemfire/internal/redis/RedisCommandType$113,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisDataType,false
 com/gemstone/gemfire/internal/redis/RedisDataType$1,false
 com/gemstone/gemfire/internal/redis/RedisDataType$2,false

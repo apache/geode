@@ -335,7 +335,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @since 5.0
    */
-  final boolean EXPIRY_UNITS_MS = Boolean.getBoolean(EXPIRY_MS_PROPERTY);
+  final boolean EXPIRY_UNITS_MS;
 
   // Indicates that the entries are in fact initialized. It turns out
   // you can't trust the assignment of a volatile (as indicated above)
@@ -590,6 +590,9 @@ public class LocalRegion extends AbstractRegion
       LocalRegion parentRegion, GemFireCacheImpl cache,
       InternalRegionArguments internalRegionArgs) throws DiskAccessException {
     super(cache, attrs,regionName, internalRegionArgs);
+    // Initialized here (and defers to parent) to fix GEODE-128
+    this.EXPIRY_UNITS_MS = parentRegion != null ? parentRegion.EXPIRY_UNITS_MS : Boolean.getBoolean(EXPIRY_MS_PROPERTY);
+
     Assert.assertTrue(regionName != null, "regionName must not be null");
     this.sharedDataView = buildDataView();
     this.regionName = regionName;
@@ -2231,7 +2234,7 @@ public class LocalRegion extends AbstractRegion
    * author David Whitlock
    */
   public final int entryCount() {
-    return entryCount(null);
+    return getDataView().entryCount(this);
   }
 
   public int entryCount(Set<Integer> buckets) {
@@ -6238,6 +6241,10 @@ public class LocalRegion extends AbstractRegion
       return null;
     }
     else {
+      if (GemFireCacheImpl.internalBeforeNonTXBasicPut != null) {
+        GemFireCacheImpl.internalBeforeNonTXBasicPut.run();
+      }
+      
       RegionEntry oldEntry = this.entries.basicPut(event,
                                    lastModified,
                                    ifNew,
@@ -8795,6 +8802,27 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
+  /**
+   * Used by unit tests to get access to the EntryExpiryTask
+   * of the given key. Returns null if the entry exists but
+   * does not have an expiry task.
+   * @throws EntryNotFoundException if no entry exists key.
+   */
+  public EntryExpiryTask getEntryExpiryTask(Object key) {
+    RegionEntry re = this.getRegionEntry(key);
+    if (re == null) {
+      throw new EntryNotFoundException("Entry for key " + key + " does not exist.");
+    }
+    return this.entryExpiryTasks.get(re);
+  }
+  /**
+   * Used by unit tests to get access to the RegionIdleExpiryTask
+   * of this region. Returns null if no task exists.
+   */
+  public RegionIdleExpiryTask getRegionIdleExpiryTask() {
+    return this.regionIdleExpiryTask;
+  }
+  
   private void addExpiryTask(RegionEntry re, boolean ifAbsent)
   {
     if (isProxy()) {

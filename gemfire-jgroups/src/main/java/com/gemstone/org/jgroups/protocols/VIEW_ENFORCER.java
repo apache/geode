@@ -68,7 +68,7 @@ public class VIEW_ENFORCER extends Protocol  {
 
             case Event.MSG:
                 if(!is_member) {    // drop message if we are not yet member of the group
-                    if(log.isInfoEnabled()) log.info(ExternalStrings.VIEW_ENFORCER_DROPPING_MESSAGE__0, evt.getArg());
+                    if(log.isInfoEnabled()) log.info(ExternalStrings.VIEW_ENFORCER_DROPPING_MESSAGE__0, (Object)evt.getArg());
                     return;
                 }
                 break;

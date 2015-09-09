@@ -10,10 +10,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.query.Struct;
 
+/**
+ * This is a safe encoder and decoder for all redis matching needs
+ * 
+ * @author Vitaliy Gavrilov
+ *
+ */
 public class Coder {
 
   /*
@@ -65,7 +71,7 @@ public class Coder {
   public static final byte[] bEMPTY_ARRAY = stringToBytes("*0\r\n"); // {'*', '0', '\r', '\n'};
 
   public static final byte[] err = stringToBytes("ERR ");
-
+  public static final byte[] noAuth = stringToBytes("NOAUTH ");
   public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
 
   /**
@@ -121,23 +127,6 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, Set<String> items) {
-    Iterator<String> it = items.iterator();
-    ByteBuf response = alloc.buffer();
-    response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
-    response.writeBytes(CRLFar);
-    while(it.hasNext()) {
-      String next = it.next();
-      response.writeByte(BULK_STRING_ID);
-      response.writeBytes(intToBytes(next.length()));
-      response.writeBytes(CRLFar);
-      response.writeBytes(stringToBytes(next));
-      response.writeBytes(CRLFar);
-    }
-    return response;
-  }
-
   public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, List<String> items) {
     Iterator<String> it = items.iterator();
     ByteBuf response = alloc.buffer();
@@ -180,28 +169,37 @@ public class Coder {
     Iterator<Map.Entry<ByteArrayWrapper,ByteArrayWrapper>> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size() * 2));
-    response.writeBytes(CRLFar);
 
-    try {
-      while(it.hasNext()) {
-        Map.Entry<ByteArrayWrapper,ByteArrayWrapper> next = it.next();
-        byte[] key = next.getKey().toBytes();
-        byte[] nextByteArray = next.getValue().toBytes();
-        response.writeByte(BULK_STRING_ID); // Add key
-        response.writeBytes(intToBytes(key.length));
-        response.writeBytes(CRLFar);
-        response.writeBytes(key);
-        response.writeBytes(CRLFar);
-        response.writeByte(BULK_STRING_ID); // Add value
-        response.writeBytes(intToBytes(nextByteArray.length));
-        response.writeBytes(CRLFar);
-        response.writeBytes(nextByteArray);
-        response.writeBytes(CRLFar);
+    int size = 0;
+    ByteBuf tmp = alloc.buffer();
+    while(it.hasNext()) {
+      Map.Entry<ByteArrayWrapper,ByteArrayWrapper> next = it.next();
+      byte[] key;
+      byte[] nextByteArray;
+      try {
+        key = next.getKey().toBytes();
+        nextByteArray = next.getValue().toBytes();
+      } catch (EntryDestroyedException e) {
+        continue;
       }
-    } catch(Exception e) {
-      return null;
+      tmp.writeByte(BULK_STRING_ID); // Add key
+      tmp.writeBytes(intToBytes(key.length));
+      tmp.writeBytes(CRLFar);
+      tmp.writeBytes(key);
+      tmp.writeBytes(CRLFar);
+      tmp.writeByte(BULK_STRING_ID); // Add value
+      tmp.writeBytes(intToBytes(nextByteArray.length));
+      tmp.writeBytes(CRLFar);
+      tmp.writeBytes(nextByteArray);
+      tmp.writeBytes(CRLFar);
+      size++;
     }
+
+    response.writeBytes(intToBytes(size*2));
+    response.writeBytes(CRLFar);
+    response.writeBytes(tmp);
+
+    tmp.release();
 
     return response;
   }
@@ -223,27 +221,23 @@ public class Coder {
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
 
-    try {
-      while(it.hasNext()) {
-        Object nextObject = it.next();
-        if (nextObject instanceof String) {
-          String next = (String) nextObject;
-          response.writeByte(BULK_STRING_ID);
-          response.writeBytes(intToBytes(next.length()));
-          response.writeBytes(CRLFar);
-          response.writeBytes(stringToBytes(next));
-          response.writeBytes(CRLFar);
-        } else if (nextObject instanceof ByteArrayWrapper) {
-          byte[] next = ((ByteArrayWrapper) nextObject).toBytes();
-          response.writeByte(BULK_STRING_ID);
-          response.writeBytes(intToBytes(next.length));
-          response.writeBytes(CRLFar);
-          response.writeBytes(next);
-          response.writeBytes(CRLFar);
-        }
+    while(it.hasNext()) {
+      Object nextObject = it.next();
+      if (nextObject instanceof String) {
+        String next = (String) nextObject;
+        response.writeByte(BULK_STRING_ID);
+        response.writeBytes(intToBytes(next.length()));
+        response.writeBytes(CRLFar);
+        response.writeBytes(stringToBytes(next));
+        response.writeBytes(CRLFar);
+      } else if (nextObject instanceof ByteArrayWrapper) {
+        byte[] next = ((ByteArrayWrapper) nextObject).toBytes();
+        response.writeByte(BULK_STRING_ID);
+        response.writeBytes(intToBytes(next.length));
+        response.writeBytes(CRLFar);
+        response.writeBytes(next);
+        response.writeBytes(CRLFar);
       }
-    } catch (Exception e) {
-      return null;
     }
     return response;
   }
@@ -268,6 +262,16 @@ public class Coder {
     ByteBuf response = alloc.buffer(errorAr.length + 25);
     response.writeByte(ERROR_ID);
     response.writeBytes(err);
+    response.writeBytes(errorAr);
+    response.writeBytes(CRLFar);
+    return response;
+  }
+
+  public static final ByteBuf getNoAuthResponse(ByteBufAllocator alloc, String error) {
+    byte[] errorAr = stringToBytes(error);
+    ByteBuf response = alloc.buffer(errorAr.length + 25);
+    response.writeByte(ERROR_ID);
+    response.writeBytes(noAuth);
     response.writeBytes(errorAr);
     response.writeBytes(CRLFar);
     return response;
@@ -308,26 +312,38 @@ public class Coder {
     Iterator<?> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(Coder.ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
-    response.writeBytes(Coder.CRLFar);
-
+    ByteBuf tmp = alloc.buffer();
+    int size = 0;
     while(it.hasNext()) {
       Object next = it.next();
       ByteArrayWrapper nextWrapper = null;
-      if (next instanceof Entry)
-        nextWrapper = (ByteArrayWrapper) ((Entry<?, ?>) next).getValue();
-      else if (next instanceof Struct)
+      if (next instanceof Entry) {
+        try {
+          nextWrapper = (ByteArrayWrapper) ((Entry<?, ?>) next).getValue();
+        } catch (EntryDestroyedException e) {
+          continue;
+        }
+      } else if (next instanceof Struct) {
         nextWrapper = (ByteArrayWrapper) ((Struct) next).getFieldValues()[1];
-      if (nextWrapper != null) {
-        response.writeByte(Coder.BULK_STRING_ID);
-        response.writeBytes(intToBytes(nextWrapper.length()));
-        response.writeBytes(Coder.CRLFar);
-        response.writeBytes(nextWrapper.toBytes());
-        response.writeBytes(Coder.CRLFar);
-      } else {
-        response.writeBytes(Coder.bNIL);
       }
+      if (nextWrapper != null) {
+        tmp.writeByte(Coder.BULK_STRING_ID);
+        tmp.writeBytes(intToBytes(nextWrapper.length()));
+        tmp.writeBytes(Coder.CRLFar);
+        tmp.writeBytes(nextWrapper.toBytes());
+        tmp.writeBytes(Coder.CRLFar);
+      } else {
+        tmp.writeBytes(Coder.bNIL);
+      }
+      size++;
     }
+
+    response.writeBytes(intToBytes(size));
+    response.writeBytes(Coder.CRLFar);
+    response.writeBytes(tmp);
+
+    tmp.release();
+
     return response;
   }
 
@@ -337,43 +353,49 @@ public class Coder {
 
     ByteBuf buffer = alloc.buffer();
     buffer.writeByte(Coder.ARRAY_ID);
-    if (!withScores)
-      buffer.writeBytes(intToBytes(list.size()));
-    else
-      buffer.writeBytes(intToBytes(2 * list.size()));
-    buffer.writeBytes(Coder.CRLFar);
+    ByteBuf tmp = alloc.buffer();
+    int size = 0;
 
-    try {
-      for(Object entry: list) {
-        ByteArrayWrapper key;
-        DoubleWrapper score;
-        if (entry instanceof Entry) {
+    for(Object entry: list) {
+      ByteArrayWrapper key;
+      DoubleWrapper score;
+      if (entry instanceof Entry) {
+        try {
           key = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
-          score = (DoubleWrapper) ((Entry<?, ?>) entry).getValue();;
-        } else {
-          Object[] fieldVals = ((Struct) entry).getFieldValues();
-          key = (ByteArrayWrapper) fieldVals[0];
-          score = (DoubleWrapper) fieldVals[1];
+          score = (DoubleWrapper) ((Entry<?, ?>) entry).getValue();
+        } catch (EntryDestroyedException e) {
+          continue;
         }
-        byte[] byteAr = key.toBytes();
-        buffer.writeByte(Coder.BULK_STRING_ID);
-        buffer.writeBytes(intToBytes(byteAr.length));
-        buffer.writeBytes(Coder.CRLFar);
-        buffer.writeBytes(byteAr);
-        buffer.writeBytes(Coder.CRLFar);
-        if (withScores) {
-          String scoreString = score.toString();
-          byte[] scoreAr = stringToBytes(scoreString);
-          buffer.writeByte(Coder.BULK_STRING_ID);
-          buffer.writeBytes(intToBytes(scoreString.length()));
-          buffer.writeBytes(Coder.CRLFar);
-          buffer.writeBytes(scoreAr);
-          buffer.writeBytes(Coder.CRLFar);
-        }
+      } else {
+        Object[] fieldVals = ((Struct) entry).getFieldValues();
+        key = (ByteArrayWrapper) fieldVals[0];
+        score = (DoubleWrapper) fieldVals[1];
       }
-    } catch(Exception e) {
-      return null;
+      byte[] byteAr = key.toBytes();
+      tmp.writeByte(Coder.BULK_STRING_ID);
+      tmp.writeBytes(intToBytes(byteAr.length));
+      tmp.writeBytes(Coder.CRLFar);
+      tmp.writeBytes(byteAr);
+      tmp.writeBytes(Coder.CRLFar);
+      size++;
+      if (withScores) {
+        String scoreString = score.toString();
+        byte[] scoreAr = stringToBytes(scoreString);
+        tmp.writeByte(Coder.BULK_STRING_ID);
+        tmp.writeBytes(intToBytes(scoreString.length()));
+        tmp.writeBytes(Coder.CRLFar);
+        tmp.writeBytes(scoreAr);
+        tmp.writeBytes(Coder.CRLFar);
+        size++;
+      }
     }
+
+    buffer.writeBytes(intToBytes(size));
+    buffer.writeBytes(Coder.CRLFar);
+    buffer.writeBytes(tmp);
+
+    tmp.release();
+
     return buffer;
   }
 

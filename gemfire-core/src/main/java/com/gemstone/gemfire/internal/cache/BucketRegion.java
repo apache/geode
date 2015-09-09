@@ -2247,6 +2247,16 @@ implements Bucket
     result += getNumOverflowBytesOnDisk();
     return result;
   }
+  
+  public long getBytesInMemory() {
+    long result = this.bytesInMemory.get();
+    if(result == BUCKET_DESTROYED) {
+      return 0;
+    }
+    
+    return result;
+  }
+  
 
   public void preDestroyBucket(int bucketId) {
     final IndexUpdater indexUpdater = getIndexUpdater();
