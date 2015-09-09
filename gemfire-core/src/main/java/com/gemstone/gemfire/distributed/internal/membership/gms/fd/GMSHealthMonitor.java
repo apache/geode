@@ -81,13 +81,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /** stall time to wait for members leaving concurrently */
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL = Long.getLong("geode.suspect-member-collection-interval", 200);
 
-  /**
-   * If member don't see any activity from particular member then it sends check request
-   * to that member. And then it waits for "geode.member-check-timeout" time for response
-   * from it. If that member doesn't respond then it issues suspect request for it. 
-   */
-  private static final long MEMBER_CHECK_TIMEOUT = Long.getLong("geode.member-check-timeout", 100);
-
   volatile long currentTimeStamp;
 
   final private Map<InternalDistributedMember, CustomTimeStamp> memberVsLastMsgTS = new ConcurrentHashMap<>();
@@ -270,9 +263,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       } else {
         synchronized (pingResp) {
           if (pingResp.getResponseMsg() == null) {
-            pingResp.wait(MEMBER_CHECK_TIMEOUT);
+            pingResp.wait(services.getConfig().getMemberTimeout());
           }
           if (pingResp.getResponseMsg() == null) {
+            // double check the activity log
+            CustomTimeStamp ts = memberVsLastMsgTS.get(pingMember);
+            if (ts != null &&
+                ts.getTimeStamp()
+                  > (System.currentTimeMillis() - services.getConfig().getMemberTimeout())) {
+              return true;
+            }
             return false;
           } else {
             return true;
