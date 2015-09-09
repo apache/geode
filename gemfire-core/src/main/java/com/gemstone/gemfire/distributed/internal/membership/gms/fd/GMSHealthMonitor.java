@@ -79,7 +79,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       "geode.logical-message-received-interval", 10) : 10;
 
   /** stall time to wait for members leaving concurrently */
-  private static final long MEMBER_SUSPECT_COLLECTION_INTERVAL = Long.getLong("geode.suspect-member-collection-interval", 200);
+  public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL = Long.getLong("geode.suspect-member-collection-interval", 200);
 
   /**
    * If member don't see any activity from particular member then it sends check request

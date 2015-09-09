@@ -305,7 +305,11 @@ public class GMSLocator implements Locator, NetLocator {
         ois2 = new VersionedObjectInput(ois2, geodeVersion);
       }
     
-      this.view = DataSerializer.readObject(ois2);
+      Object o = DataSerializer.readObject(ois2);
+      if (!(o instanceof NetView)) {
+        return false;
+      }
+      this.view = (NetView)o;
       logger.info("Peer locator initial membership is " + view);
       return true;
 

@@ -14,6 +14,7 @@ import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
@@ -42,7 +43,18 @@ public class GMSLocatorJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    tempStateFile = File.createTempFile("tempLocator-", ".dat", new File(""));
+    String directory = "";
+    boolean isWindows = false;
+    String os = System.getProperty("os.name");
+    if (os != null) {
+      if (os.indexOf("Windows") != -1) {
+        isWindows = true;
+      }
+    }
+    if (!isWindows) {
+      directory = "/etc/";
+    }
+    tempStateFile = File.createTempFile(directory+"tempLocator-", ".dat", new File(""));
     locator = new GMSLocator(null, tempStateFile, null, false, false, new LocatorStats());
     // System.out.println("temp state file: " + tempStateFile);
   }

@@ -225,7 +225,7 @@ public class GMSHealthMonitorJUnitTest {
    * Checks whether suspect thread sends suspectMembers message
    */
   @Test
-  public void testSuspectMembersCalledThroughSuspectThread() {
+  public void testSuspectMembersCalledThroughSuspectThread() throws Exception {
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
     
     MethodExecuted messageSent = new MethodExecuted();
@@ -238,11 +238,8 @@ public class GMSHealthMonitorJUnitTest {
 
     when(messenger.send(any(SuspectMembersMessage.class))).thenAnswer(messageSent);
 
-    try {
-      // suspect thread timeout is 200 ms
-      Thread.sleep(300l);
-    } catch (InterruptedException e) {
-    }
+    Thread.sleep(GMSHealthMonitor.MEMBER_SUSPECT_COLLECTION_INTERVAL + 1000);
+
     Assert.assertTrue("SuspectMembersMessage should have sent", messageSent.isMethodExecuted());
   }
 

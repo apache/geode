@@ -78,7 +78,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private static final int VIEW_INSTALLATION_TIMEOUT = Integer.getInteger("gemfire.view-ack-timeout", 12500);
 
   /** stall time to wait for concurrent join/leave/remove requests to be received */
-  private static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("gemfire.member-request-collection-interval", 2000);
+  public static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("gemfire.member-request-collection-interval", 2000);
 
   /** time to wait for a leave request to be transmitted by jgroups */
   private static final long LEAVE_MESSAGE_SLEEP_TIME = Long.getLong("gemfire.leave-message-sleep-time", 4000);

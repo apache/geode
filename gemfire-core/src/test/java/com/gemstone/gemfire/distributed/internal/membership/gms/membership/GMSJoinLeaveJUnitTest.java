@@ -177,6 +177,7 @@ public class GMSJoinLeaveJUnitTest {
     MethodExecuted removeMessageSent = new MethodExecuted();
     when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(removeMessageSent);
     gmsJoinLeave.remove(mockMembers[1], "removing for test");
+    Thread.sleep(GMSJoinLeave.MEMBER_REQUEST_COLLECTION_INTERVAL*2);
     assert removeMessageSent.methodExecuted;
   }
   
