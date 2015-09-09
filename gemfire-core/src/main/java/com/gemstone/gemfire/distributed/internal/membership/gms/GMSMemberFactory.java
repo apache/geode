@@ -23,6 +23,7 @@ import com.gemstone.gemfire.distributed.internal.membership.MemberServices;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
+import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -65,18 +66,20 @@ public class GMSMemberFactory implements MemberServices {
   }
 
   /**
-   * Return a new NetMember representing current host
+   * Return a new NetMember representing current host.  This
+   * is used for testing, so we ignore host-name lookup
+   * localhost inetAddress
    * 
-   * @param s a String referring to the current host
+   * @param s a String referring to a host - ignored
    * @param p the membership port being used
    * @return the new member
    */
   public NetMember newNetMember(String s, int p) {
     InetAddress inetAddr = null;
     try {
-      inetAddr=InetAddress.getByName(s);
-    } catch (UnknownHostException e) {
-      throw new RuntimeException("Unable to create an identifier for testing for " + s, e);
+      inetAddr=SocketCreator.getLocalHost();
+    } catch (UnknownHostException e2) {
+      throw new RuntimeException("Unable to create an identifier for testing for " + s, e2);
     }
     return newNetMember(inetAddr, p);
   }
