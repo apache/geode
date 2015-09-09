@@ -18,6 +18,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -42,8 +44,11 @@ public class Bug42039JUnitTest {
     Properties p = new Properties();
     p.setProperty("mcast-port", "0");
     p.setProperty("locators", "localhost[6666]");
+    p.setProperty(DistributionConfig.MEMBER_TIMEOUT_NAME, "1000");
     ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
+    Exception reason = null;
+    
     for (int i=0; i < 2; i++) {
       try {
         DistributedSystem.connect(p);
@@ -57,11 +62,23 @@ public class Bug42039JUnitTest {
         DistributedSystem.connect(p);
         fail("expected connect to fail");
       } catch (Exception expected) {
+        reason = expected;
       }
     }
-    Thread.sleep(1000); // give chance for thread to exit
+    long endTime = System.currentTimeMillis() + 5000;
+    while (System.currentTimeMillis() < endTime) {
+      int endThreadCount = threadBean.getThreadCount();
+      if (endThreadCount <= initialThreadCount) {
+        break;
+      }
+    }
     int endThreadCount = threadBean.getThreadCount();
     if (endThreadCount > initialThreadCount) {
+      OSProcess.printStacks(0);
+      if (reason != null) {
+        System.err.println("\n\nStack trace from last failed attempt:");
+        reason.printStackTrace();
+      }
       assertEquals(initialThreadCount, endThreadCount);
     }
   }

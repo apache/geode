@@ -81,7 +81,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("gemfire.member-request-collection-interval", 2000);
 
   /** time to wait for a leave request to be transmitted by jgroups */
-  private static final long LEAVE_MESSAGE_SLEEP_TIME = Long.getLong("gemfire.leave-message-sleep-time", 2000);
+  private static final long LEAVE_MESSAGE_SLEEP_TIME = Long.getLong("gemfire.leave-message-sleep-time", 4000);
   
   /** membership logger */
   private static final Logger logger = Services.getLogger();

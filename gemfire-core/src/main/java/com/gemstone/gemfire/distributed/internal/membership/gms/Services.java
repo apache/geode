@@ -5,8 +5,6 @@ import java.util.Timer;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -14,9 +12,6 @@ import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.auth.GMSAuthenticator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
@@ -25,11 +20,13 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinL
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Locator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.FastLogger;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 public class Services {
@@ -146,7 +143,12 @@ public class Services {
     this.healthMon.started();
     this.manager.started();
     logger.info("Membership: all services have been started");
-    this.manager.joinDistributedSystem();
+    try {
+      this.manager.joinDistributedSystem();
+    } catch (Throwable e) {
+      stop();
+      throw e;
+    }
   }
   
   public void emergencyClose() {
@@ -155,12 +157,12 @@ public class Services {
       return;
     }
     stopping = true;
+    this.timer.cancel();
     this.joinLeave.emergencyClose();
     this.healthMon.emergencyClose();
     this.auth.emergencyClose();
     this.messenger.emergencyClose();
     this.manager.emergencyClose();
-    this.timer.cancel();
     this.cancelCriterion.cancel("Membership services are shut down");
   }
   
@@ -170,12 +172,12 @@ public class Services {
       return;
     }
     stopping = true;
+    this.timer.cancel();
     this.joinLeave.stop();
     this.healthMon.stop();
     this.auth.stop();
     this.messenger.stop();
     this.manager.stop();
-    this.timer.cancel();
     this.cancelCriterion.cancel("Membership services are shut down");
   }
 
