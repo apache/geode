@@ -494,8 +494,8 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     ServerPorts ports2 = startCacheServer(server2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
-    verifyProfiles(server1, 1);
-    verifyProfiles(server2, 1);
+    verifyProfiles(server1, 2);
+    verifyProfiles(server2, 2);
 
     server2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -504,13 +504,13 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
       }
     });
 
-    verifyProfiles(server1, 0);
+    verifyProfiles(server1, 1);
 
     startCacheServer(server3, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
-    verifyProfiles(server1, 1);
-    verifyProfiles(server3, 1);
+    verifyProfiles(server1, 2);
+    verifyProfiles(server3, 2);
   }
 
   public void testPR_RemotePutRejectionLocalDestroy() throws Exception {
