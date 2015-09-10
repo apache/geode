@@ -65,7 +65,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.OffHeapReference;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 
@@ -117,9 +117,9 @@ public abstract class DistributedCacheOperation {
         DataSerializer.writeObject(vObj, out);
       } else if (deserializationPolicy == DESERIALIZATION_POLICY_NONE) {
         // We only have NONE with a vObj when vObj is off-heap and not serialized.
-        OffHeapReference ohref = (OffHeapReference) vObj;
-        assert !ohref.isSerialized();
-        DataSerializer.writeByteArray(ohref.getValueAsHeapByteArray(), out);
+        StoredObject so = (StoredObject) vObj;
+        assert !so.isSerialized();
+        so.sendAsByteArray(out);
       } else { // LAZY
         // TODO OFFHEAP MERGE: cache the oldValue that is serialized here
         // into the event

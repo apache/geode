@@ -1361,16 +1361,30 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   ///////////////// START DataSerializer Implementation Methods ///////////
 
+  // Writes just the header of a DataSerializableFixedID to out.
+  public static final void writeDSFIDHeader(int dsfid, DataOutput out) throws IOException {
+    if (dsfid == DataSerializableFixedID.ILLEGAL) {
+      throw new IllegalStateException(LocalizedStrings.InternalDataSerializer_ATTEMPTED_TO_SERIALIZE_ILLEGAL_DSFID.toLocalizedString());
+    }
+   if (dsfid <= Byte.MAX_VALUE && dsfid >= Byte.MIN_VALUE) {
+      out.writeByte(DS_FIXED_ID_BYTE);
+      out.writeByte(dsfid);
+    } else if (dsfid <= Short.MAX_VALUE && dsfid >= Short.MIN_VALUE) {
+      out.writeByte(DS_FIXED_ID_SHORT);
+      out.writeShort(dsfid);
+    } else {
+      out.writeByte(DS_FIXED_ID_INT);
+      out.writeInt(dsfid);
+    }
+  }
+  
   public static final void writeDSFID(DataSerializableFixedID o, DataOutput out)
     throws IOException
   {
     int dsfid = o.getDSFID();
-    if (dsfid == DataSerializableFixedID.ILLEGAL) {
-      throw new IllegalStateException(LocalizedStrings.InternalDataSerializer_ATTEMPTED_TO_SERIALIZE_ILLEGAL_DSFID.toLocalizedString());
-    }
     if (dsfidToClassMap != null && logger.isTraceEnabled(LogMarker.DEBUG_DSFID)) {
       logger.trace(LogMarker.DEBUG_DSFID, "writeDSFID {} class={}", dsfid, o.getClass());
-      if (dsfid != DataSerializableFixedID.NO_FIXED_ID) {
+      if (dsfid != DataSerializableFixedID.NO_FIXED_ID && dsfid != DataSerializableFixedID.ILLEGAL) {
         // consistency check to make sure that the same DSFID is not used
         // for two different classes
         String newClassName = o.getClass().getName();
@@ -1380,18 +1394,11 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         }
       }
     }
-    if (dsfid <= Byte.MAX_VALUE && dsfid >= Byte.MIN_VALUE) {
-      out.writeByte(DS_FIXED_ID_BYTE);
-      out.writeByte(dsfid);
-    } else if (dsfid <= Short.MAX_VALUE && dsfid >= Short.MIN_VALUE) {
-      out.writeByte(DS_FIXED_ID_SHORT);
-      out.writeShort(dsfid);
-    } else if (dsfid == DataSerializableFixedID.NO_FIXED_ID) {
+    if (dsfid == DataSerializableFixedID.NO_FIXED_ID) {
       out.writeByte(DS_NO_FIXED_ID);
       DataSerializer.writeClass(o.getClass(), out);
     } else {
-      out.writeByte(DS_FIXED_ID_INT);
-      out.writeInt(dsfid);
+      writeDSFIDHeader(dsfid, out);
     }
     try {
       invokeToData(o, out);
