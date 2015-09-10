@@ -3,7 +3,6 @@ package com.gemstone.gemfire.cache.lucene.internal.distributed;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
