@@ -52,7 +52,7 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockContext).getArguments();
         will(returnValue(null));
 
-        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, null);
+        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
         will(returnValue(m.repos));
 
         oneOf(m.mockContext).getResultSender();
@@ -116,14 +116,12 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockContext).getResultSender();
         will(returnValue(m.mockResultSender));
 
-        oneOf(m.mockFuncArgs).getBuckets();
-        will(returnValue(null));
         oneOf(m.mockFuncArgs).getLimit();
         will(returnValue(3));
         oneOf(m.mockFuncArgs).getCollectorManager();
         will(returnValue(null));
 
-        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, null);
+        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
         will(returnValue(m.repos));
 
         oneOf(m.mockRepository1).query(with(aNull(Query.class)), with(equal(0)), with(any(IndexResultCollector.class)));
@@ -185,12 +183,10 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockContext).getResultSender();
         will(returnValue(m.mockResultSender));
 
-        oneOf(m.mockFuncArgs).getBuckets();
-        will(returnValue(null));
         oneOf(m.mockFuncArgs).getCollectorManager();
         will(returnValue(mockManager));
 
-        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, null);
+        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
         m.repos.remove(0);
         will(returnValue(m.repos));
 
@@ -239,7 +235,7 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockContext).getArguments();
         will(returnValue(null));
 
-        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, null);
+        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
         will(returnValue(m.repos));
 
         oneOf(m.mockContext).getResultSender();
@@ -267,7 +263,7 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockContext).getArguments();
         will(returnValue(null));
 
-        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, null);
+        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
         will(throwException(new BucketNotFoundException("")));
 
         oneOf(m.mockContext).getResultSender();

@@ -43,7 +43,6 @@ public class LuceneQueryFunction extends FunctionAdapter {
     }
 
     LuceneSearchFunctionArgs args = (LuceneSearchFunctionArgs) ctx.getArguments();
-    Set<Integer> buckets = (args == null ? null : args.getBuckets());
 
     CollectorManager manager = (args == null) ? null : args.getCollectorManager();
     if (manager == null) {
@@ -53,7 +52,7 @@ public class LuceneQueryFunction extends FunctionAdapter {
 
     Collection<IndexResultCollector> results = new ArrayList<>();
     try {
-      Collection<IndexRepository> repositories = repoManager.getRepositories(region, buckets);
+      Collection<IndexRepository> repositories = repoManager.getRepositories(region, ctx);
       for (IndexRepository repo : repositories) {
         IndexResultCollector collector = manager.newCollector(repo.toString());
         logger.debug("Executing search on repo: " + repo.toString());

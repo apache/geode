@@ -36,13 +36,6 @@ public class LuceneSearchFunctionArgs implements VersionedDataSerializable {
   }
 
   /**
-   * @return List of bucket IDs on which the query is to be executed
-   */
-  public Set<Integer> getBuckets() {
-    return null;
-  }
-
-  /**
    * @return The maximum count of result objects to be produced by the function
    */
   public int getLimit() {
