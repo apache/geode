@@ -170,8 +170,6 @@ public class LuceneQueryFunctionJUnitTest {
   @Test
   public void injectCustomCollectorManager() throws Exception {
     final QueryMocks m = new QueryMocks();
-    final CollectorManager mockManager = mocker.mock(CollectorManager.class);
-    final IndexResultCollector mockCollector = mocker.mock(IndexResultCollector.class);
 
     mocker.checking(new Expectations() {
       {
@@ -184,26 +182,26 @@ public class LuceneQueryFunctionJUnitTest {
         will(returnValue(m.mockResultSender));
 
         oneOf(m.mockFuncArgs).getCollectorManager();
-        will(returnValue(mockManager));
+        will(returnValue(m.mockManager));
 
         oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
         m.repos.remove(0);
         will(returnValue(m.repos));
 
-        oneOf(mockManager).newCollector("repo2");
-        will(returnValue(mockCollector));
-        oneOf(mockManager).reduce(with(any(Collection.class)));
+        oneOf(m.mockManager).newCollector("repo2");
+        will(returnValue(m.mockCollector));
+        oneOf(m.mockManager).reduce(with(any(Collection.class)));
         will(new CustomAction("reduce") {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
             Collection<IndexResultCollector> collectors = (Collection<IndexResultCollector>) invocation.getParameter(0);
             assertEquals(1, collectors.size());
-            assertEquals(mockCollector, collectors.iterator().next());
+            assertEquals(m.mockCollector, collectors.iterator().next());
             return new TopEntries();
           }
         });
 
-        oneOf(mockCollector).collect("key-2-1", .45f);
+        oneOf(m.mockCollector).collect("key-2-1", .45f);
 
         oneOf(m.mockRepository2).query(with(aNull(Query.class)), with(equal(0)), with(any(IndexResultCollector.class)));
         will(new CustomAction("streamSearchResults") {
@@ -279,6 +277,40 @@ public class LuceneQueryFunctionJUnitTest {
   }
 
   @Test
+  public void testReduceError() throws Exception {
+    final QueryMocks m = new QueryMocks();
+    mocker.checking(new Expectations() {
+      {
+        oneOf(m.mockContext).getDataSet();
+        will(returnValue(m.mockRegion));
+        oneOf(m.mockContext).getResultSender();
+        will(returnValue(m.mockResultSender));
+
+        oneOf(m.mockContext).getArguments();
+        will(returnValue(m.mockFuncArgs));
+        oneOf(m.mockFuncArgs).getCollectorManager();
+        will(returnValue(m.mockManager));
+        oneOf(m.mockManager).newCollector("repo1");
+        will(returnValue(m.mockCollector));
+        oneOf(m.mockManager).reduce(with(any(Collection.class)));
+        will(throwException(new IOException()));
+        
+        oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
+        m.repos.remove(1);
+        will(returnValue(m.repos));
+
+        oneOf(m.mockRepository1).query(null, 0, m.mockCollector);
+        oneOf(m.mockResultSender).sendException(with(any(IOException.class)));
+      }
+    });
+    
+    LuceneQueryFunction function = new LuceneQueryFunction();
+    function.setRepositoryManager(m.mockRepoManager);
+    
+    function.execute(m.mockContext);
+  }
+  
+  @Test
   public void testQueryFunctionId() {
     String id = new LuceneQueryFunction().getId();
     assertEquals(LuceneQueryFunction.class.getName(), id);
@@ -294,6 +326,9 @@ public class LuceneQueryFunctionJUnitTest {
     IndexRepository mockRepository1 = mocker.mock(IndexRepository.class, "repo1");
     IndexRepository mockRepository2 = mocker.mock(IndexRepository.class, "repo2");
     LuceneSearchFunctionArgs mockFuncArgs = mocker.mock(LuceneSearchFunctionArgs.class);
+    CollectorManager mockManager = mocker.mock(CollectorManager.class);
+    IndexResultCollector mockCollector = mocker.mock(IndexResultCollector.class);
+
 
     QueryMocks() {
       repos.add(mockRepository1);
