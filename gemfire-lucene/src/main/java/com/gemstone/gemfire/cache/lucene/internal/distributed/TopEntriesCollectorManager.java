@@ -33,7 +33,7 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
   }
 
   public TopEntriesCollectorManager(String id, int resultLimit) {
-    this.limit = resultLimit < 0 ? LuceneQueryFactory.DEFAULT_LIMIT : resultLimit;
+    this.limit = resultLimit <= 0 ? LuceneQueryFactory.DEFAULT_LIMIT : resultLimit;
     this.id = id == null ? String.valueOf(this.hashCode()) : id;
     logger.debug("Max count of entries to be produced by {} is {}", id, limit);
   }
