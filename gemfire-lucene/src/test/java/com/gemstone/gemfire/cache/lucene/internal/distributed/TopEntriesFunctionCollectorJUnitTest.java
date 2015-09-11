@@ -183,6 +183,21 @@ public class TopEntriesFunctionCollectorJUnitTest {
   }
 
   @Test
+  public void mergeShardAndLimitResults() throws Exception {
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(3);
+    
+    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
+    collector.addResult(null, result1);
+    collector.addResult(null, result2);
+    collector.endResults();
+
+    TopEntries merged = collector.getResult();
+    Assert.assertNotNull(merged);
+    assertEquals(3, merged.size());
+    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2);
+  }
+  
+  @Test
   public void mergeResultsDefaultCollectorManager() throws Exception {
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
     collector.addResult(null, result1);

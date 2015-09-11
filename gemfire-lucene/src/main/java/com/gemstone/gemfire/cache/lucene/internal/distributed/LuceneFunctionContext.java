@@ -16,9 +16,16 @@ import com.gemstone.gemfire.internal.VersionedDataSerializable;
 public class LuceneFunctionContext<C extends IndexResultCollector> implements VersionedDataSerializable {
   private static final long serialVersionUID = 1L;
   private final CollectorManager<C> manager;
+  private final int limit;
 
   public LuceneFunctionContext(CollectorManager<C> manager) {
     this.manager = manager;
+    this.limit = LuceneQueryFactory.DEFAULT_LIMIT;
+  }
+  
+  public LuceneFunctionContext(int limit) {
+    this.limit = limit;
+    this.manager = null;
   }
 
   @Override
@@ -43,7 +50,7 @@ public class LuceneFunctionContext<C extends IndexResultCollector> implements Ve
    * @return The maximum count of result objects to be produced by the function
    */
   public int getLimit() {
-    return LuceneQueryFactory.DEFAULT_LIMIT;
+    return limit;
   }
 
   /**

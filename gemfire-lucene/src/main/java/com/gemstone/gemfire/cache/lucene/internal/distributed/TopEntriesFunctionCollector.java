@@ -45,18 +45,20 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
     this(null, null);
   }
 
-  public TopEntriesFunctionCollector(LuceneFunctionContext context) {
+  public TopEntriesFunctionCollector(LuceneFunctionContext<TopEntriesCollector> context) {
     this(context, null);
   }
 
-  public TopEntriesFunctionCollector(LuceneFunctionContext context, GemFireCacheImpl cache) {
+  public TopEntriesFunctionCollector(LuceneFunctionContext<TopEntriesCollector> context, GemFireCacheImpl cache) {
     this.cache = cache;
     id = cache == null ? String.valueOf(this.hashCode()) : cache.getName();
 
+    int limit = context == null ? 0 : context.getLimit();
+    
     if (context != null && context.getCollectorManager() != null) {
       this.manager = context.getCollectorManager();
     } else {
-      this.manager = new TopEntriesCollectorManager(id);
+      this.manager = new TopEntriesCollectorManager(id, limit);
     }
   }
 
