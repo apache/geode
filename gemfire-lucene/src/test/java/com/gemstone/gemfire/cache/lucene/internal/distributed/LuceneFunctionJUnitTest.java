@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class LuceneQueryFunctionJUnitTest {
+public class LuceneFunctionJUnitTest {
   Mockery mocker;
 
   final EntryScore r1_1 = new EntryScore("key-1-1", .5f);
@@ -92,7 +92,7 @@ public class LuceneQueryFunctionJUnitTest {
       }
     });
 
-    LuceneQueryFunction function = new LuceneQueryFunction();
+    LuceneFunction function = new LuceneFunction();
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
@@ -111,14 +111,14 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockContext).getDataSet();
         will(returnValue(m.mockRegion));
         oneOf(m.mockContext).getArguments();
-        will(returnValue(m.mockFuncArgs));
+        will(returnValue(m.mockSearchContext));
 
         oneOf(m.mockContext).getResultSender();
         will(returnValue(m.mockResultSender));
 
-        oneOf(m.mockFuncArgs).getLimit();
+        oneOf(m.mockSearchContext).getLimit();
         will(returnValue(3));
-        oneOf(m.mockFuncArgs).getCollectorManager();
+        oneOf(m.mockSearchContext).getCollectorManager();
         will(returnValue(null));
 
         oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
@@ -158,7 +158,7 @@ public class LuceneQueryFunctionJUnitTest {
       }
     });
 
-    LuceneQueryFunction function = new LuceneQueryFunction();
+    LuceneFunction function = new LuceneFunction();
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
@@ -176,12 +176,12 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockContext).getDataSet();
         will(returnValue(m.mockRegion));
         oneOf(m.mockContext).getArguments();
-        will(returnValue(m.mockFuncArgs));
+        will(returnValue(m.mockSearchContext));
 
         oneOf(m.mockContext).getResultSender();
         will(returnValue(m.mockResultSender));
 
-        oneOf(m.mockFuncArgs).getCollectorManager();
+        oneOf(m.mockSearchContext).getCollectorManager();
         will(returnValue(m.mockManager));
 
         oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
@@ -217,7 +217,7 @@ public class LuceneQueryFunctionJUnitTest {
       }
     });
 
-    LuceneQueryFunction function = new LuceneQueryFunction();
+    LuceneFunction function = new LuceneFunction();
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
@@ -245,7 +245,7 @@ public class LuceneQueryFunctionJUnitTest {
       }
     });
 
-    LuceneQueryFunction function = new LuceneQueryFunction();
+    LuceneFunction function = new LuceneFunction();
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
@@ -270,7 +270,7 @@ public class LuceneQueryFunctionJUnitTest {
       }
     });
 
-    LuceneQueryFunction function = new LuceneQueryFunction();
+    LuceneFunction function = new LuceneFunction();
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
@@ -287,8 +287,8 @@ public class LuceneQueryFunctionJUnitTest {
         will(returnValue(m.mockResultSender));
 
         oneOf(m.mockContext).getArguments();
-        will(returnValue(m.mockFuncArgs));
-        oneOf(m.mockFuncArgs).getCollectorManager();
+        will(returnValue(m.mockSearchContext));
+        oneOf(m.mockSearchContext).getCollectorManager();
         will(returnValue(m.mockManager));
         oneOf(m.mockManager).newCollector("repo1");
         will(returnValue(m.mockCollector));
@@ -304,7 +304,7 @@ public class LuceneQueryFunctionJUnitTest {
       }
     });
 
-    LuceneQueryFunction function = new LuceneQueryFunction();
+    LuceneFunction function = new LuceneFunction();
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
@@ -312,8 +312,8 @@ public class LuceneQueryFunctionJUnitTest {
 
   @Test
   public void testQueryFunctionId() {
-    String id = new LuceneQueryFunction().getId();
-    assertEquals(LuceneQueryFunction.class.getName(), id);
+    String id = new LuceneFunction().getId();
+    assertEquals(LuceneFunction.class.getName(), id);
   }
 
   class QueryMocks {
@@ -325,7 +325,7 @@ public class LuceneQueryFunctionJUnitTest {
     ArrayList<IndexRepository> repos = new ArrayList<IndexRepository>();
     IndexRepository mockRepository1 = mocker.mock(IndexRepository.class, "repo1");
     IndexRepository mockRepository2 = mocker.mock(IndexRepository.class, "repo2");
-    LuceneSearchFunctionArgs mockFuncArgs = mocker.mock(LuceneSearchFunctionArgs.class);
+    LuceneFunctionContext mockSearchContext = mocker.mock(LuceneFunctionContext.class);
     CollectorManager mockManager = mocker.mock(CollectorManager.class);
     IndexResultCollector mockCollector = mocker.mock(IndexResultCollector.class);
 
@@ -337,8 +337,8 @@ public class LuceneQueryFunctionJUnitTest {
 
   @Test
   public void testLuceneFunctionArgsDefaults() {
-    LuceneSearchFunctionArgs args = new LuceneSearchFunctionArgs();
-    assertEquals(LuceneQueryFactory.DEFAULT_LIMIT, args.getLimit());
+    LuceneFunctionContext context = new LuceneFunctionContext(null);
+    assertEquals(LuceneQueryFactory.DEFAULT_LIMIT, context.getLimit());
   }
 
   @Before

@@ -11,7 +11,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneQueryFunction;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
 import com.gemstone.gemfire.internal.cache.extension.Extension;
@@ -39,7 +39,7 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
 
     this.cache = gfc;
 
-    FunctionService.registerFunction(new LuceneQueryFunction());
+    FunctionService.registerFunction(new LuceneFunction());
 
     // Initialize the Map which maintains indexes
     this.indexMap = new HashMap<String, LuceneIndex>();

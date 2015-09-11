@@ -11,7 +11,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneQueryFunction;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -22,13 +22,13 @@ public class LuceneServiceImplJUnitTest {
   // lucene service will register query execution function on initialization
   @Test
   public void shouldRegisterQueryFunction() {
-    Function function = FunctionService.getFunction(LuceneQueryFunction.ID);
+    Function function = FunctionService.getFunction(LuceneFunction.ID);
     assertNull(function);
 
     cache = createBasicCache();
     new LuceneServiceImpl(cache);
 
-    function = FunctionService.getFunction(LuceneQueryFunction.ID);
+    function = FunctionService.getFunction(LuceneFunction.ID);
     assertNotNull(function);
   }
 

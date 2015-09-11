@@ -13,8 +13,13 @@ import com.gemstone.gemfire.internal.VersionedDataSerializable;
 /**
  * Contains function arguments for text / lucene search
  */
-public class LuceneSearchFunctionArgs implements VersionedDataSerializable {
+public class LuceneFunctionContext<C extends IndexResultCollector> implements VersionedDataSerializable {
   private static final long serialVersionUID = 1L;
+  private final CollectorManager<C> manager;
+
+  public LuceneFunctionContext(CollectorManager<C> manager) {
+    this.manager = manager;
+  }
 
   @Override
   public void toData(DataOutput out) throws IOException {
@@ -47,7 +52,7 @@ public class LuceneSearchFunctionArgs implements VersionedDataSerializable {
    * 
    * @return {@link CollectorManager} instance to be used by function
    */
-  public <C extends IndexResultCollector> CollectorManager<C> getCollectorManager() {
-    return null;
+  public CollectorManager<C> getCollectorManager() {
+    return this.manager;
   }
 }

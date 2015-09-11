@@ -45,14 +45,19 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
     this(null, null);
   }
 
-  public TopEntriesFunctionCollector(CollectorManager<TopEntriesCollector> manager) {
-    this(manager, null);
+  public TopEntriesFunctionCollector(LuceneFunctionContext context) {
+    this(context, null);
   }
 
-  public TopEntriesFunctionCollector(CollectorManager<TopEntriesCollector> manager, GemFireCacheImpl cache) {
+  public TopEntriesFunctionCollector(LuceneFunctionContext context, GemFireCacheImpl cache) {
     this.cache = cache;
     id = cache == null ? String.valueOf(this.hashCode()) : cache.getName();
-    this.manager = manager == null ? new TopEntriesCollectorManager(id) : manager;
+
+    if (context != null && context.getCollectorManager() != null) {
+      this.manager = context.getCollectorManager();
+    } else {
+      this.manager = new TopEntriesCollectorManager(id);
+    }
   }
 
   @Override
@@ -86,7 +91,7 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
       }
       throw new FunctionException(e);
     }
-    
+
     return aggregateResults();
   }
 
@@ -101,7 +106,7 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
       }
     }
   }
-  
+
   @Override
   public void endResults() {
     synchronized (subResults) {
@@ -115,7 +120,7 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
       if (waitForResults.getCount() == 0) {
         throw new IllegalStateException("This collector is closed and cannot accept anymore results");
       }
-      
+
       subResults.clear();
     }
   }

@@ -19,13 +19,13 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * {@link LuceneQueryFunction} coordinates text search on a member. It receives text search query from the coordinator
+ * {@link LuceneFunction} coordinates text search on a member. It receives text search query from the coordinator
  * and arguments like region and buckets. It invokes search on the local index and provides a result collector. The
  * locally collected results are sent to the search coordinator.
  */
-public class LuceneQueryFunction extends FunctionAdapter {
+public class LuceneFunction extends FunctionAdapter {
   private static final long serialVersionUID = 1L;
-  public static final String ID = LuceneQueryFunction.class.getName();
+  public static final String ID = LuceneFunction.class.getName();
 
   private static final Logger logger = LogService.getLogger();
 
@@ -41,11 +41,11 @@ public class LuceneQueryFunction extends FunctionAdapter {
       logger.debug("Executing lucene query on region:" + region.getFullPath());
     }
 
-    LuceneSearchFunctionArgs args = (LuceneSearchFunctionArgs) ctx.getArguments();
+    LuceneFunctionContext searchContext = (LuceneFunctionContext) ctx.getArguments();
 
-    CollectorManager manager = (args == null) ? null : args.getCollectorManager();
+    CollectorManager manager = (searchContext == null) ? null : searchContext.getCollectorManager();
     if (manager == null) {
-      int resultLimit = (args == null ? LuceneQueryFactory.DEFAULT_LIMIT : args.getLimit());
+      int resultLimit = (searchContext == null ? LuceneQueryFactory.DEFAULT_LIMIT : searchContext.getLimit());
       manager = new TopEntriesCollectorManager(null, resultLimit);
     }
 

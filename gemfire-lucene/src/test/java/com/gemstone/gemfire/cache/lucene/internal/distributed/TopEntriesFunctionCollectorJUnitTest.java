@@ -184,7 +184,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
 
   @Test
   public void mergeResultsDefaultCollectorManager() throws Exception {
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(null);
+    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
     collector.addResult(null, result1);
     collector.addResult(null, result2);
     collector.endResults();
@@ -211,7 +211,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
           }
         }));
 
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(mockManager);
+    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.addResult(null, result1);
     collector.addResult(null, result2);
     collector.endResults();
@@ -222,7 +223,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
 
   @Test
   public void mergeAfterClearResults() throws Exception {
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(null);
+    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
     collector.addResult(null, result1);
     collector.clearResults();
     collector.addResult(null, result2);
@@ -239,7 +240,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesCollectorManager mockManager = mock(TopEntriesCollectorManager.class);
     Mockito.doThrow(new IOException()).when(mockManager).reduce(any(Collection.class));
 
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(mockManager);
+    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.endResults();
     collector.getResult();
   }
@@ -266,5 +268,4 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesFunctionCollector function = new TopEntriesFunctionCollector(null, mockCache);
     assertEquals("server", function.id);
   }
-
 }
