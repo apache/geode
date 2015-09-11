@@ -3,7 +3,6 @@ package com.gemstone.gemfire.cache.lucene.internal.distributed;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Set;
 
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
@@ -48,7 +47,7 @@ public class LuceneSearchFunctionArgs implements VersionedDataSerializable {
    * 
    * @return {@link CollectorManager} instance to be used by function
    */
-  public <T, C extends IndexResultCollector> CollectorManager<T, C> getCollectorManager() {
+  public <C extends IndexResultCollector> CollectorManager<C> getCollectorManager() {
     return null;
   }
 }

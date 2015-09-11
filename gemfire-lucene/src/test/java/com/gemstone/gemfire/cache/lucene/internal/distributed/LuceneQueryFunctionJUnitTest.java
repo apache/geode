@@ -42,7 +42,7 @@ public class LuceneQueryFunctionJUnitTest {
 
   @Test
   public void testRepoQueryAndMerge() throws Exception {
-    final AtomicReference<TopEntries> result = new AtomicReference<>();
+    final AtomicReference<TopEntriesCollector> result = new AtomicReference<>();
 
     final QueryMocks m = new QueryMocks();
     mocker.checking(new Expectations() {
@@ -81,11 +81,11 @@ public class LuceneQueryFunctionJUnitTest {
           }
         });
 
-        oneOf(m.mockResultSender).lastResult(with(any(TopEntries.class)));
+        oneOf(m.mockResultSender).lastResult(with(any(TopEntriesCollector.class)));
         will(new CustomAction("collectResult") {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
-            result.set((TopEntries) invocation.getParameter(0));
+            result.set((TopEntriesCollector) invocation.getParameter(0));
             return null;
           }
         });
@@ -96,14 +96,14 @@ public class LuceneQueryFunctionJUnitTest {
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
-    List<EntryScore> hits = result.get().getHits();
+    List<EntryScore> hits = result.get().getEntries().getHits();
     assertEquals(5, hits.size());
-    TopEntriesJUnitTest.verifyResultOrder(result.get().getHits(), r1_1, r2_1, r1_2, r2_2, r1_3);
+    TopEntriesJUnitTest.verifyResultOrder(result.get().getEntries().getHits(), r1_1, r2_1, r1_2, r2_2, r1_3);
   }
 
   @Test
   public void testResultLimitClause() throws Exception {
-    final AtomicReference<TopEntries> result = new AtomicReference<>();
+    final AtomicReference<TopEntriesCollector> result = new AtomicReference<>();
 
     final QueryMocks m = new QueryMocks();
     mocker.checking(new Expectations() {
@@ -147,11 +147,11 @@ public class LuceneQueryFunctionJUnitTest {
           }
         });
 
-        oneOf(m.mockResultSender).lastResult(with(any(TopEntries.class)));
+        oneOf(m.mockResultSender).lastResult(with(any(TopEntriesCollector.class)));
         will(new CustomAction("collectResult") {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
-            result.set((TopEntries) invocation.getParameter(0));
+            result.set((TopEntriesCollector) invocation.getParameter(0));
             return null;
           }
         });
@@ -162,9 +162,9 @@ public class LuceneQueryFunctionJUnitTest {
     function.setRepositoryManager(m.mockRepoManager);
 
     function.execute(m.mockContext);
-    List<EntryScore> hits = result.get().getHits();
+    List<EntryScore> hits = result.get().getEntries().getHits();
     assertEquals(3, hits.size());
-    TopEntriesJUnitTest.verifyResultOrder(result.get().getHits(), r1_1, r2_1, r1_2);
+    TopEntriesJUnitTest.verifyResultOrder(result.get().getEntries().getHits(), r1_1, r2_1, r1_2);
   }
 
   @Test
@@ -197,7 +197,7 @@ public class LuceneQueryFunctionJUnitTest {
             Collection<IndexResultCollector> collectors = (Collection<IndexResultCollector>) invocation.getParameter(0);
             assertEquals(1, collectors.size());
             assertEquals(m.mockCollector, collectors.iterator().next());
-            return new TopEntries();
+            return new TopEntriesCollector(null);
           }
         });
 
@@ -213,7 +213,7 @@ public class LuceneQueryFunctionJUnitTest {
           }
         });
 
-        oneOf(m.mockResultSender).lastResult(with(any(TopEntries.class)));
+        oneOf(m.mockResultSender).lastResult(with(any(TopEntriesCollector.class)));
       }
     });
 
@@ -294,7 +294,7 @@ public class LuceneQueryFunctionJUnitTest {
         will(returnValue(m.mockCollector));
         oneOf(m.mockManager).reduce(with(any(Collection.class)));
         will(throwException(new IOException()));
-        
+
         oneOf(m.mockRepoManager).getRepositories(m.mockRegion, m.mockContext);
         m.repos.remove(1);
         will(returnValue(m.repos));
@@ -303,13 +303,13 @@ public class LuceneQueryFunctionJUnitTest {
         oneOf(m.mockResultSender).sendException(with(any(IOException.class)));
       }
     });
-    
+
     LuceneQueryFunction function = new LuceneQueryFunction();
     function.setRepositoryManager(m.mockRepoManager);
-    
+
     function.execute(m.mockContext);
   }
-  
+
   @Test
   public void testQueryFunctionId() {
     String id = new LuceneQueryFunction().getId();
@@ -318,7 +318,7 @@ public class LuceneQueryFunctionJUnitTest {
 
   class QueryMocks {
     RegionFunctionContext mockContext = mocker.mock(RegionFunctionContext.class);
-    ResultSender<TopEntries> mockResultSender = mocker.mock(ResultSender.class);
+    ResultSender<TopEntriesCollector> mockResultSender = mocker.mock(ResultSender.class);
     Region<Object, Object> mockRegion = mocker.mock(Region.class);
 
     RepositoryManager mockRepoManager = mocker.mock(RepositoryManager.class);
@@ -328,7 +328,6 @@ public class LuceneQueryFunctionJUnitTest {
     LuceneSearchFunctionArgs mockFuncArgs = mocker.mock(LuceneSearchFunctionArgs.class);
     CollectorManager mockManager = mocker.mock(CollectorManager.class);
     IndexResultCollector mockCollector = mocker.mock(IndexResultCollector.class);
-
 
     QueryMocks() {
       repos.add(mockRepository1);

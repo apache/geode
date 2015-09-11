@@ -8,7 +8,6 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -43,14 +42,14 @@ public class TopEntriesCollectorJUnitTest {
     c3.collect(r3_2.key, r3_2.score);
     c3.collect(r3_3.key, r3_3.score);
 
-    List<IndexResultCollector> collectors = new ArrayList<>();
+    List<TopEntriesCollector> collectors = new ArrayList<>();
     collectors.add(c1);
     collectors.add(c2);
     collectors.add(c3);
 
-    TopEntries entries = manager.reduce(collectors);
-    assertEquals(8, entries.getHits().size());
-    TopEntriesJUnitTest.verifyResultOrder(entries.getHits(), r1_1, r2_1, r3_1, r1_2, r2_2, r3_2, r1_3, r3_3);
+    TopEntriesCollector entries = manager.reduce(collectors);
+    assertEquals(8, entries.getEntries().getHits().size());
+    TopEntriesJUnitTest.verifyResultOrder(entries.getEntries().getHits(), r1_1, r2_1, r3_1, r1_2, r2_2, r3_2, r1_3, r3_3);
   }
   
   @Test

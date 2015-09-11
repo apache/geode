@@ -23,7 +23,11 @@ public class TopEntriesCollector implements IndexResultCollector {
 
   @Override
   public void collect(Object key, float score) {
-    entries.addHit(new EntryScore(key, score));
+    collect(new EntryScore(key, score));
+  }
+  
+  public void collect(EntryScore entry) {
+    entries.addHit(entry);
   }
 
   @Override

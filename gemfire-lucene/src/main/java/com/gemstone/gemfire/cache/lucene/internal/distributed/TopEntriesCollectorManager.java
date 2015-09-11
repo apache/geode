@@ -18,18 +18,24 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * An implementation of {@link CollectorManager} for managing {@link TopEntriesCollector}. This is used by a member to
  * collect top matching entries from local buckets
  */
-public class TopEntriesCollectorManager implements CollectorManager<TopEntries, TopEntriesCollector> {
+public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCollector> {
   private static final Logger logger = LogService.getLogger();
 
   final int limit;
-  
+  final String id;
+
   public TopEntriesCollectorManager() {
-    this(LuceneQueryFactory.DEFAULT_LIMIT);
+    this(null, 0);
   }
-  
-  public TopEntriesCollectorManager(int resultLimit) {
-    this.limit = resultLimit;
-    logger.debug("Max count of entries to be returned: " + limit);
+
+  public TopEntriesCollectorManager(String id) {
+    this(id, 0);
+  }
+
+  public TopEntriesCollectorManager(String id, int resultLimit) {
+    this.limit = resultLimit < 0 ? LuceneQueryFactory.DEFAULT_LIMIT : resultLimit;
+    this.id = id == null ? String.valueOf(this.hashCode()) : id;
+    logger.debug("Max count of entries to be produced by {} is {}", id, limit);
   }
 
   @Override
@@ -38,7 +44,7 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntries, 
   }
 
   @Override
-  public TopEntries reduce(Collection<IndexResultCollector> collectors) throws IOException {
+  public TopEntriesCollector reduce(Collection<TopEntriesCollector> collectors) throws IOException {
     final EntryScoreComparator scoreComparator = new TopEntries().new EntryScoreComparator();
 
     // orders a entry with higher score above a doc with lower score
@@ -55,15 +61,13 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntries, 
     // using score comparator.
     PriorityQueue<List<EntryScore>> entryListsPriorityQueue;
     entryListsPriorityQueue = new PriorityQueue<List<EntryScore>>(Collections.reverseOrder(entryListComparator));
-    TopEntries mergedResult = new TopEntries();
+    TopEntriesCollector mergedResult = new TopEntriesCollector(id, limit);
 
     for (IndexResultCollector collector : collectors) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Number of entries found in bucket {} is {}", collector.getName(), collector.size());
-      }
+      logger.debug("Number of entries found in collector {} is {}", collector.getName(), collector.size());
 
       if (collector.size() > 0) {
-        entryListsPriorityQueue.add(((TopEntriesCollector)collector).getEntries().getHits());
+        entryListsPriorityQueue.add(((TopEntriesCollector) collector).getEntries().getHits());
       }
     }
 
@@ -72,13 +76,14 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntries, 
 
       List<EntryScore> list = entryListsPriorityQueue.remove();
       EntryScore entry = list.remove(0);
-      mergedResult.addHit(entry);
+      mergedResult.collect(entry);
 
       if (list.size() > 0) {
         entryListsPriorityQueue.add(list);
       }
     }
 
+    logger.debug("Reduced size of {} is {}", mergedResult.name, mergedResult.size());
     return mergedResult;
   }
 }

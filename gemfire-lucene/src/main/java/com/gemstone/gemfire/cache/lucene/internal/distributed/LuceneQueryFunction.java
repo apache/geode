@@ -34,7 +34,7 @@ public class LuceneQueryFunction extends FunctionAdapter {
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext ctx = (RegionFunctionContext) context;
-    ResultSender<TopEntries> resultSender = ctx.getResultSender();
+    ResultSender<TopEntriesCollector> resultSender = ctx.getResultSender();
 
     Region region = ctx.getDataSet();
     if (logger.isDebugEnabled()) {
@@ -46,7 +46,7 @@ public class LuceneQueryFunction extends FunctionAdapter {
     CollectorManager manager = (args == null) ? null : args.getCollectorManager();
     if (manager == null) {
       int resultLimit = (args == null ? LuceneQueryFactory.DEFAULT_LIMIT : args.getLimit());
-      manager = new TopEntriesCollectorManager(resultLimit);
+      manager = new TopEntriesCollectorManager(null, resultLimit);
     }
 
     Collection<IndexResultCollector> results = new ArrayList<>();
@@ -68,9 +68,9 @@ public class LuceneQueryFunction extends FunctionAdapter {
       return;
     }
 
-    TopEntries mergedResult;
+    TopEntriesCollector mergedResult;
     try {
-      mergedResult = (TopEntries) manager.reduce(results);
+      mergedResult = (TopEntriesCollector) manager.reduce(results);
       resultSender.lastResult(mergedResult);
     } catch (IOException e) {
       logger.warn("", e);
