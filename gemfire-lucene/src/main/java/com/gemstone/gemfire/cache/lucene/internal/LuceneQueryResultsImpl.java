@@ -68,11 +68,6 @@ public class LuceneQueryResultsImpl implements LuceneQueryResults,
   }
 
   @Override
-  public List<LuceneResultStruct> getHits() {
-    return hits;
-  }
-
-  @Override
   public float getMaxScore() {
     return maxScore;
   }

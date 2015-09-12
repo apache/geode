@@ -22,11 +22,6 @@ public interface LuceneQueryResults {
   public int size();
 
   /**
-   * Returns the list of the top hits for the query.
-   */
-  public List<LuceneResultStruct> getHits();
-
-  /**
    * Returns the maximum score value encountered. Note that in case scores are not tracked, this returns {@link Float#NaN}.
    */
   public float getMaxScore();
