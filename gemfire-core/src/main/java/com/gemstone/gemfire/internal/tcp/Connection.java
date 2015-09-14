@@ -1869,6 +1869,7 @@ public class Connection implements Runnable {
               }
             }
           }
+          initiateSuspicionIfShared();
           this.readerShuttingDown = true;
           try { 
             requestClose(LocalizedStrings.Connection_IOEXCEPTION_IN_CHANNEL_READ_0.toLocalizedString(e));
@@ -1896,6 +1897,16 @@ public class Connection implements Runnable {
       }
       if (logger.isDebugEnabled()) {
         logger.debug("{} runNioReader terminated id={} from {}", p2pReaderName(), conduitIdStr, remoteAddr);
+      }
+    }
+  }
+
+  /** initiate suspect processing if a shared/ordered connection is lost and we're not shutting down */
+  private void initiateSuspicionIfShared() {
+    if (this.isReceiver && this.handshakeRead && this.preserveOrder && this.sharedResource) {
+      if (this.owner.getConduit().getCancelCriterion().cancelInProgress() == null) {
+            this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
+            "member shut down shared/ordered connection");
       }
     }
   }
@@ -2397,6 +2408,7 @@ public class Connection implements Runnable {
             logger.debug("{} io exception for {}", p2pReaderName(), this, io);
           }
         }
+        initiateSuspicionIfShared();
         this.readerShuttingDown = true;
         try { 
           requestClose(LocalizedStrings.Connection_IOEXCEPTION_RECEIVED_0.toLocalizedString(io));

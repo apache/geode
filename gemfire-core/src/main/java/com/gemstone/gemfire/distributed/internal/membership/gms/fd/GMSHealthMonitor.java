@@ -99,6 +99,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * to stop check scheduler
    */
   private ScheduledFuture monitorFuture;
+  
+  /** test hook */
+  boolean playingDead = false;
+
+  /** test hook */
+  boolean beingSick = false;
 
   public GMSHealthMonitor() {
 
@@ -167,7 +173,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
         if (nextNeighbourTS == null) {
           CustomTimeStamp customTS = new CustomTimeStamp();
-          customTS.setTimeStamp(System.currentTimeMillis());
+          customTS.setTimeStamp(currentTime);
           memberVsLastMsgTS.put(neighbour, customTS);
           return;
         }
@@ -265,9 +271,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           if (pingResp.getResponseMsg() == null) {
             pingResp.wait(services.getConfig().getMemberTimeout());
           }
+          CustomTimeStamp ts = memberVsLastMsgTS.get(pingMember);
           if (pingResp.getResponseMsg() == null) {
-            // double check the activity log
-            CustomTimeStamp ts = memberVsLastMsgTS.get(pingMember);
+            // double check the activity map
             if (ts != null &&
                 ts.getTimeStamp()
                   > (System.currentTimeMillis() - services.getConfig().getMemberTimeout())) {
@@ -275,6 +281,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             }
             return false;
           } else {
+            if (ts != null) {
+              ts.setTimeStamp(System.currentTimeMillis());
+            }
             return true;
           }
         }
@@ -312,10 +321,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       suspect((InternalDistributedMember) mbr, reason);
     }
     return pinged;
-  }
-
-  public void playDead(boolean b) {
-
   }
 
   public void start() {
@@ -475,17 +480,18 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   @Override
   public void beSick() {
-
+    this.beingSick = true;
   }
 
   @Override
   public void playDead() {
-
+    this.playingDead = true;
   }
 
   @Override
   public void beHealthy() {
-
+    this.beingSick = false;
+    this.playingDead = false;
   }
 
   @Override
@@ -517,6 +523,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void processPingRequest(PingRequestMessage m) {
+    
+    if (beingSick || playingDead) {
+      return;
+    }
+    
     // only respond if the intended recipient is this member
     InternalDistributedMember me = services.getMessenger().getMemberID();
     if (me.getVmViewId() < 0 || m.getTarget().equals(me)) {
@@ -645,7 +656,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           @Override
           public void run() {
             try {
-              logger.debug("Doing final check for member {}", mbr);
+              logger.info("Membership: Doing final check for suspect member {}", mbr);
               boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr);
               if (!pinged) {
                 GMSHealthMonitor.this.services.getJoinLeave().remove(mbr, reason);

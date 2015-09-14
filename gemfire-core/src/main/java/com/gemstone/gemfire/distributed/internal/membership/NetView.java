@@ -37,24 +37,21 @@ import com.gemstone.gemfire.internal.Version;
  */
 public class NetView implements DataSerializableFixedID {
   private static final long serialVersionUID = -8888347937416039434L;
+
   private int viewId;
   private List<InternalDistributedMember> members;
-  private List<InternalDistributedMember> shutdownMembers;
-  private List<InternalDistributedMember> crashedMembers;
+  private Set<InternalDistributedMember> shutdownMembers;
+  private Set<InternalDistributedMember> crashedMembers;
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
   static final private Random rd = new Random();
 
-  // TODO:need to clear this
-  /** membership logger */
-  private static final Logger logger = Services.getLogger();
-
   public NetView() {
     viewId = 0;
     members = new ArrayList<InternalDistributedMember>(4);
-    this.hashedMembers = new HashSet<InternalDistributedMember>(members);
-    shutdownMembers = Collections.EMPTY_LIST;
-    crashedMembers = Collections.EMPTY_LIST;
+    this.hashedMembers = new HashSet<>(members);
+    shutdownMembers = Collections.emptySet();
+    crashedMembers = new HashSet<>();
     creator = null;
   }
 
@@ -62,9 +59,9 @@ public class NetView implements DataSerializableFixedID {
     viewId = 0;
     members = new ArrayList<InternalDistributedMember>(4);
     members.add(creator);
-    this.hashedMembers = new HashSet<InternalDistributedMember>(members);
-    shutdownMembers = Collections.EMPTY_LIST;
-    crashedMembers = Collections.EMPTY_LIST;
+    this.hashedMembers = new HashSet<>(members);
+    shutdownMembers = new HashSet<>();
+    crashedMembers = Collections.emptySet();
     this.creator = creator;
     int seed = creator.hashCode() + (int) System.currentTimeMillis();
   }
@@ -74,8 +71,8 @@ public class NetView implements DataSerializableFixedID {
     this.viewId = (int) viewId;
     members = new ArrayList<InternalDistributedMember>(size);
     this.hashedMembers = new HashSet<InternalDistributedMember>(members);
-    shutdownMembers = Collections.EMPTY_LIST;
-    crashedMembers = Collections.EMPTY_LIST;
+    shutdownMembers = new HashSet<>();
+    crashedMembers = Collections.emptySet();
     creator = null;
   }
 
@@ -84,12 +81,12 @@ public class NetView implements DataSerializableFixedID {
     this.viewId = viewId;
     this.members = new ArrayList<InternalDistributedMember>(other.members);
     this.hashedMembers = new HashSet<InternalDistributedMember>(other.members);
-    this.shutdownMembers = new ArrayList<InternalDistributedMember>(other.shutdownMembers);
-    this.crashedMembers = new ArrayList<InternalDistributedMember>(other.crashedMembers);
+    this.shutdownMembers = new HashSet<InternalDistributedMember>(other.shutdownMembers);
+    this.crashedMembers = new HashSet<InternalDistributedMember>(other.crashedMembers);
   }
 
-  public NetView(InternalDistributedMember creator, int viewId, List<InternalDistributedMember> mbrs, List<InternalDistributedMember> shutdowns,
-      List<InternalDistributedMember> crashes) {
+  public NetView(InternalDistributedMember creator, int viewId, List<InternalDistributedMember> mbrs, Set<InternalDistributedMember> shutdowns,
+      Set<InternalDistributedMember> crashes) {
     this.creator = creator;
     this.viewId = viewId;
     this.members = mbrs;
@@ -144,10 +141,18 @@ public class NetView implements DataSerializableFixedID {
     this.hashedMembers.add(mbr);
     this.members.add(mbr);
   }
+  
+  public void addCrashedMembers(Set<InternalDistributedMember> mbr) {
+    this.crashedMembers.addAll(mbr);
+  }
 
   public boolean remove(InternalDistributedMember mbr) {
     this.hashedMembers.remove(mbr);
     return this.members.remove(mbr);
+  }
+  
+  public void removeAll(Collection<InternalDistributedMember> ids) {
+    this.members.removeAll(ids);
   }
 
   public boolean contains(InternalDistributedMember mbr) {
@@ -245,11 +250,11 @@ public class NetView implements DataSerializableFixedID {
     return results;
   }
 
-  public List<InternalDistributedMember> getShutdownMembers() {
+  public Set<InternalDistributedMember> getShutdownMembers() {
     return this.shutdownMembers;
   }
 
-  public List<InternalDistributedMember> getCrashedMembers() {
+  public Set<InternalDistributedMember> getCrashedMembers() {
     return this.crashedMembers;
   }
 
@@ -332,8 +337,7 @@ public class NetView implements DataSerializableFixedID {
    * not counted
    */
   public List<InternalDistributedMember> getActualCrashedMembers(NetView oldView) {
-    List<InternalDistributedMember> result = new ArrayList(this.crashedMembers.size());
-    InternalDistributedMember lead = oldView.getLeadMember();
+    List<InternalDistributedMember> result = new ArrayList<>(this.crashedMembers.size());
     for (InternalDistributedMember mbr : this.crashedMembers) {
       if ((mbr.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE) && oldView.contains(mbr)) {
         result.add(mbr);
@@ -433,8 +437,8 @@ public class NetView implements DataSerializableFixedID {
     DataSerializer.writeObject(creator, out);
     out.writeInt(viewId);
     writeAsArrayList(members, out);
-    writeAsArrayList(shutdownMembers, out);
-    writeAsArrayList(crashedMembers, out);
+    InternalDataSerializer.writeSet(shutdownMembers, out);
+    InternalDataSerializer.writeSet(crashedMembers, out);
   }
 
   @Override
@@ -443,8 +447,8 @@ public class NetView implements DataSerializableFixedID {
     viewId = in.readInt();
     members = DataSerializer.readArrayList(in);
     this.hashedMembers = new HashSet<InternalDistributedMember>(members);
-    shutdownMembers = DataSerializer.readArrayList(in);
-    crashedMembers = DataSerializer.readArrayList(in);
+    shutdownMembers = InternalDataSerializer.readHashSet(in);
+    crashedMembers = InternalDataSerializer.readHashSet(in);
   }
 
   /** this will deserialize as an ArrayList */

@@ -1880,7 +1880,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   public void suspectMember(DistributedMember mbr, String reason) {
-    if (mbr != null) {
+    if (mbr != null && !this.shutdownMembers.containsKey(mbr)) {
       this.services.getHealthMonitor().suspect((InternalDistributedMember)mbr, reason);
     }
   }

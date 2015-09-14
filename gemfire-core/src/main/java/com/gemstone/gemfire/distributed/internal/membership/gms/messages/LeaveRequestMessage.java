@@ -3,6 +3,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -13,6 +14,13 @@ import com.gemstone.gemfire.internal.Version;
 public class LeaveRequestMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
   private String reason;
+  
+  public LeaveRequestMessage(Collection<InternalDistributedMember> coords, InternalDistributedMember id, String reason) {
+    super();
+    setRecipients(coords);
+    this.memberID = id;
+    this.reason = reason;
+  }
   
   public LeaveRequestMessage(InternalDistributedMember coord, InternalDistributedMember id, String reason) {
     super();

@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -98,7 +99,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testHMNextNeighbour() throws IOException {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     when(services.getJoinLeave().getMemberID()).thenAnswer(messageSent);
@@ -114,7 +115,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testHMNextNeighbourVerify() throws IOException {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
 
@@ -131,7 +132,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testHMNextNeighbourAfterTimeout() throws IOException {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     // 3rd is current member
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
@@ -154,7 +155,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testHMNextNeighbourBeforeTimeout() throws IOException {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     // 3rd is current member
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
@@ -175,7 +176,7 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testSuspectMembersCalledThroughMemberCheckThread() {
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
@@ -201,7 +202,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testSuspectMembersNotCalledThroughPingThreadBeforeTimeout() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
@@ -226,7 +227,7 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testSuspectMembersCalledThroughSuspectThread() throws Exception {
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
     
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
@@ -249,7 +250,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testSuspectMembersNotCalledThroughSuspectThreadBeforeTimeout() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
@@ -276,7 +277,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testRemoveMemberCalled() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
@@ -311,7 +312,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testRemoveMemberNotCalledBeforeTimeout() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
@@ -347,7 +348,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testRemoveMemberCalledAfterDoingFinalCheckOnCoordinator() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     // preferred coordinators are 0 and 1
@@ -383,7 +384,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testCheckIfAvailable() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     // 3rd is current member
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
@@ -403,7 +404,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testShutdown() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new ArrayList<InternalDistributedMember>(), new ArrayList<InternalDistributedMember>());
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member

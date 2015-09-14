@@ -3395,8 +3395,8 @@ public class DistributionManager
 
  //   message.setRecipient(DistributionManager.this.getId());
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "Received message '{}' from <{}>", message, message.getSender());
+    if (logger.isTraceEnabled()) {
+      logger.trace("Received message '{}' from <{}>", message, message.getSender());
     }
     scheduleIncomingMessage(message);
   }
@@ -3585,8 +3585,8 @@ public class DistributionManager
     m.setRecipients(allOthers);
 
     //Address recipient = (Address) m.getRecipient();
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "{} Sending {} to {}", this.getDistributionManagerId(), m, m.getRecipientsDescription());
+    if (logger.isTraceEnabled()) {
+      logger.trace("{} Sending {} to {}", this.getDistributionManagerId(), m, m.getRecipientsDescription());
     }
 
     try {

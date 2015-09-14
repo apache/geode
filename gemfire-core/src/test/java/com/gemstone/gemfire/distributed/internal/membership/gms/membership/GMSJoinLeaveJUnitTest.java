@@ -5,19 +5,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -135,9 +133,9 @@ public class GMSJoinLeaveJUnitTest {
   
   private void prepareView() throws IOException {
     int viewId = 1;
-    List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> shutdowns = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> crashes = new LinkedList<InternalDistributedMember>();
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
     mbrs.add(mockMembers[0]);
     
     when(services.getMessenger()).thenReturn(messenger);
@@ -151,9 +149,9 @@ public class GMSJoinLeaveJUnitTest {
   
   private void prepareAndInstallView() throws IOException {
     int viewId = 1;
-    List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> shutdowns = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> crashes = new LinkedList<InternalDistributedMember>();
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
     mbrs.add(mockMembers[0]);
     
     when(services.getMessenger()).thenReturn(messenger);
@@ -187,9 +185,9 @@ public class GMSJoinLeaveJUnitTest {
     initMocks();
     prepareAndInstallView();
     
-    List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> shutdowns = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> crashes = new LinkedList<InternalDistributedMember>();
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
     mbrs.add(mockMembers[0]);
     mbrs.add(mockMembers[1]);
   
@@ -208,9 +206,9 @@ public class GMSJoinLeaveJUnitTest {
     prepareAndInstallView();
 
     int viewId = 2;
-    List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> shutdowns = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> crashes = new LinkedList<InternalDistributedMember>();
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
     mbrs.add(mockMembers[1]);
     mbrs.add(mockMembers[2]);
     mbrs.add(mockMembers[3]);
@@ -452,9 +450,9 @@ public class GMSJoinLeaveJUnitTest {
     // set up a view with sufficient members, then create a new view
     // where enough weight is lost to cause a network partition
     
-    List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> shutdowns = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> crashes = new LinkedList<InternalDistributedMember>();
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
     mbrs.add(mockMembers[0]);
     mbrs.add(mockMembers[1]);
     mbrs.add(mockMembers[2]);
@@ -466,7 +464,7 @@ public class GMSJoinLeaveJUnitTest {
     InstallViewMessage installViewMessage = new InstallViewMessage(newView, credentials, false);
     gmsJoinLeave.processMessage(installViewMessage);
     
-    crashes = new LinkedList<>(crashes);
+    crashes = new HashSet<>(crashes);
     crashes.add(mockMembers[1]);
     crashes.add(mockMembers[2]);
     mbrs = new LinkedList<>(mbrs);
@@ -488,9 +486,9 @@ public class GMSJoinLeaveJUnitTest {
     // set up a view with sufficient members, then create a new view
     // where enough weight is lost to cause a network partition
     
-    List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> shutdowns = new LinkedList<InternalDistributedMember>();
-    List<InternalDistributedMember> crashes = new LinkedList<InternalDistributedMember>();
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
     mbrs.add(mockMembers[0]);
     mbrs.add(mockMembers[1]);
     mbrs.add(mockMembers[2]);
@@ -502,7 +500,7 @@ public class GMSJoinLeaveJUnitTest {
     InstallViewMessage installViewMessage = new InstallViewMessage(newView, credentials, false);
     gmsJoinLeave.processMessage(installViewMessage);
     
-    crashes = new LinkedList<>(crashes);
+    crashes = new HashSet<>(crashes);
     crashes.add(mockMembers[1]);
     crashes.add(mockMembers[2]);
     mbrs = new LinkedList<>(mbrs);

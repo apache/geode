@@ -14,13 +14,14 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,7 +40,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJo
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -96,7 +96,7 @@ public class MembershipJUnitTest extends TestCase {
     for (i=0; i<members.length; i++) {
       vmbrs.add(members[i]);
     }
-    List<InternalDistributedMember> empty = Collections.emptyList();
+    Set<InternalDistributedMember> empty = Collections.emptySet();
     NetView lastView = new NetView(members[0], 4, vmbrs, empty, empty);
     InternalDistributedMember leader = members[2];
     assertTrue(!leader.getNetMember().preferredForCoordinator());
@@ -108,7 +108,7 @@ public class MembershipJUnitTest extends TestCase {
     // have the joining member and another cache process (weight 10) in the failed members
     // collection and check to make sure that the joining member is not included in failed
     // weight calcs.
-    List<InternalDistributedMember> failedMembers = new ArrayList<InternalDistributedMember>(3);
+    Set<InternalDistributedMember> failedMembers = new HashSet<>(3);
     failedMembers.add(joiningMember);
     failedMembers.add(members[members.length-1]); // cache
     failedMembers.add(members[members.length-2]); // admin
