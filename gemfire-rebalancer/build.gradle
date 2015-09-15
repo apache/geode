@@ -1,4 +1,5 @@
 dependencies {
+    provided project(':gemfire-common')
     provided project(':gemfire-core')
     provided project(path: ':gemfire-junit', configuration: 'testOutput')
 
