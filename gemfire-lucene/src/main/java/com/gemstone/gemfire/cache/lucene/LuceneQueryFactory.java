@@ -2,10 +2,6 @@ package com.gemstone.gemfire.cache.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.Query;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DiskStore;
 
 /**
  * Factory for creating instances of {@link LuceneQuery}.
@@ -107,15 +103,16 @@ public interface LuceneQueryFactory {
    */
   public LuceneQuery create(String indexName, String regionName, String queryString) 
       throws ParseException;
-  
+
   /**
-   * Create wrapper object for lucene's Query object.
-   * Advanced lucene users can customized their own Query object and directly use in this API.  
+   * Creates a wrapper object for Lucene's Query object. This {@link LuceneQuery} builder method could be used in
+   * advanced cases, such as cases where Lucene's Query object construction needs Lucene's API over query string. The
+   * {@link QueryDeserializer} will be used to re-construct the Lucene Query object on remote hosts.
    * 
-   * @param regionName region name
    * @param indexName index name
-   * @param query lucene Query object
+   * @param regionName region name
+   * @param provider constructs and provides a Lucene Query object
    * @return LuceneQuery object
    */
-  public LuceneQuery create(String indexName, String regionName, Query query);
+  public LuceneQuery create(String indexName, String regionName, LuceneQueryProvider provider);
 }

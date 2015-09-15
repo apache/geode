@@ -12,6 +12,7 @@ import org.apache.lucene.search.Query;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 
 public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   private int limit_attr = DEFAULT_LIMIT;
@@ -63,13 +64,14 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
     return create(indexName, regionName, queryString, analyzer);
   }
   
-  @Override
-  public LuceneQuery create(String indexName, String regionName,
-      Query query) {
-    LuceneQueryImpl luceneQuery = new LuceneQueryImpl(indexName, regionName, limit_attr, pageSize_attr, 
-        resultType_attr, projection_fields_attr, query);
-    return luceneQuery;
+  public LuceneQuery create(String indexName, String regionName, LuceneQueryProvider provider) {
+//    LuceneQueryImpl luceneQuery = new LuceneQueryImpl(indexName, regionName, limit_attr, pageSize_attr, 
+//        resultType_attr, projection_fields_attr, query);
+//    return luceneQuery;
+    // TODO Auto-generated method stub
+    return null;
   }
+  
 
   public LuceneIndex getRelatedIndex() {
     return this.relatedIndex;
