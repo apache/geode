@@ -92,7 +92,12 @@ public class GMSLocatorJUnitTest {
   public void testRecoverFromFileWithWrongOrdinal() throws Exception {
     // add 1 to ordinal to make it wrong
     populateStateFile(tempStateFile, GMSLocator.LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL + 1, 1);
-    assertFalse(locator.recoverFromFile(tempStateFile));
+    try {
+      locator.recoverFromFile(tempStateFile);
+      fail("expected an InternalGemFireException to be thrown");
+    } catch (InternalGemFireException e) {
+      // success
+    }
   }
 
   @Test

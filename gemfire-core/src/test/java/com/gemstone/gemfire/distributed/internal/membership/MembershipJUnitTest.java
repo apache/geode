@@ -169,6 +169,7 @@ public class MembershipJUnitTest extends TestCase {
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY, "true");
         DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
         DMStats stats1 = mock(DMStats.class);
+        System.out.println("creating 1st membership manager");
         m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
       } finally {
         System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY);
@@ -177,6 +178,7 @@ public class MembershipJUnitTest extends TestCase {
       // start the second membership manager
       DistributedMembershipListener listener2 = mock(DistributedMembershipListener.class);
       DMStats stats2 = mock(DMStats.class);
+      System.out.println("creating 2nd membership manager");
       m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
       
       assert m2.getView().size() == 2 : "view = " + m2.getView();

@@ -48,6 +48,7 @@ public class Services {
   final private DMStats stats;
   final private Stopper cancelCriterion;
   private volatile boolean stopping;
+  private volatile boolean stopped;
 
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
@@ -75,6 +76,10 @@ public class Services {
    */
   public Timer getTimer() {
     return this.timer;
+  }
+  
+  public boolean isStopped() {
+    return this.stopped;
   }
   
 
@@ -106,8 +111,9 @@ public class Services {
     this.healthMon.init(this);
     InternalLocator l = (InternalLocator)com.gemstone.gemfire.distributed.Locator.getLocator();
     if (l != null && l.getLocatorHandler() != null) {
-      l.getLocatorHandler().setMembershipManager((MembershipManager)this.manager);
-      this.locator = (Locator)l.getLocatorHandler();
+      if (l.getLocatorHandler().setMembershipManager((MembershipManager)this.manager)) {
+        this.locator = (Locator)l.getLocatorHandler();
+      }
     }
   }
   
@@ -179,6 +185,7 @@ public class Services {
     this.messenger.stop();
     this.manager.stop();
     this.cancelCriterion.cancel("Membership services are shut down");
+    stopped = true;
   }
 
   public static void setLogWriter(InternalLogWriter writer) {

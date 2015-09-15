@@ -87,8 +87,8 @@ public class GMSLocator implements Locator, NetLocator {
   }
   
   @Override
-  public void setMembershipManager(MembershipManager mgr) {
-    if (services == null) {
+  public boolean setMembershipManager(MembershipManager mgr) {
+    if (services == null || services.isStopped()) {
       logger.info("Peer locator is connecting to local membership services");
       services = ((GMSMembershipManager)mgr).getServices();
       services.setLocator(this);
@@ -96,7 +96,9 @@ public class GMSLocator implements Locator, NetLocator {
       if (newView != null) {
         this.view = newView;
       }
+      return true;
     }
+    return false;
   }
   
   @Override

@@ -9,7 +9,8 @@ public interface NetLocator extends TcpHandler {
    * This must be called after booting the membership manager so
    * that the locator can use its services
    * @param mgr
+   * @return true if the membership manager was accepted
    */
-  public void setMembershipManager(MembershipManager mgr);
+  public boolean setMembershipManager(MembershipManager mgr);
 
 }
