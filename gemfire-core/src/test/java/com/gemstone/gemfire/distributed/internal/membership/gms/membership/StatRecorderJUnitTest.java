@@ -59,9 +59,11 @@ public class StatRecorderJUnitTest {
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
     assert stats.ucastMessagesReceived == 1 : "stats.ucastMessagesReceived =" + stats.ucastMessagesReceived;
+    assert stats.ucastMessageBytesReceived == 150;
     
     recorder.down(evt);
     assert stats.ucastMessagesSent == 1 : "stats.ucastMessagesSent =" + stats.ucastMessagesSent;
+    assert stats.ucastMessageBytesSent == 150;
     
     when(msg.getHeader(any(Short.class))).thenReturn(Header.createXmitReqHeader());
     recorder.up(evt);
@@ -80,9 +82,11 @@ public class StatRecorderJUnitTest {
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
     assert stats.mcastMessagesReceived == 1 : "mcastMessagesReceived = " + stats.mcastMessagesReceived;
+    assert stats.mcastMessageBytesReceived == 150;
     
     recorder.down(evt);
     assert stats.mcastMessagesSent == 1 : "mcastMessagesSent = " + stats.mcastMessagesSent;
+    assert stats.mcastMessageBytesSent == 150;
     
     when(msg.getHeader(any(Short.class))).thenReturn(NakAckHeader2.createXmitRequestHeader(null));
     recorder.up(evt);
@@ -134,22 +138,28 @@ public class StatRecorderJUnitTest {
 
   static class MyStats extends DummyDMStats {
     public int ucastMessagesReceived;
+    public int ucastMessageBytesReceived;
     public int ucastMessagesSent;
+    public int ucastMessageBytesSent;
     public int ucastRetransmits;
     
     public int mcastMessagesReceived;
+    public int mcastMessageBytesReceived;
     public int mcastMessagesSent;
+    public int mcastMessageBytesSent;
     public int mcastRetransmits;
     public int mcastRetransmitRequests;
     
     @Override
     public void incUcastReadBytes(int i) {
-      ucastMessagesReceived += i;
+      ucastMessagesReceived++;
+      ucastMessageBytesReceived += i;
     }
     
     @Override
     public void incUcastWriteBytes(int i) {
-      ucastMessagesSent += i;
+      ucastMessagesSent++;
+      ucastMessageBytesSent += i;
     }
     
     @Override
@@ -159,12 +169,14 @@ public class StatRecorderJUnitTest {
 
     @Override
     public void incMcastReadBytes(int i) {
-      mcastMessagesReceived += i;
+      mcastMessagesReceived++;
+      mcastMessageBytesReceived += i;
     }
     
     @Override
     public void incMcastWriteBytes(int i) {
-      mcastMessagesSent += i;
+      mcastMessagesSent++;
+      mcastMessageBytesSent += i;
     }
     
     @Override
