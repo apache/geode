@@ -124,10 +124,6 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 //    }
 //  }
 
-  public void testRegionVersionVectors() throws Exception {
-    versionTestRegionVersionVectors();
-  }
-  
 
   @Override
   public void testEntryTtlLocalDestroy() throws InterruptedException {

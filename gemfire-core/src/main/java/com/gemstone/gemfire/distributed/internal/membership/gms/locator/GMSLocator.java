@@ -148,9 +148,16 @@ public class GMSLocator implements Locator, NetLocator {
         }
         
         boolean fromView = false;
+        int viewId = -1;
         
         if (view != null) {
-          coord = view.getCoordinator(findRequest.getRejectedCoordinators());
+          viewId = view.getViewId();
+          if (viewId > findRequest.getLastViewId()) {
+            // ignore the requests rejectedCoordinators if the view has changed
+            coord = view.getCoordinator(Collections.<InternalDistributedMember>emptyList());
+          } else {
+            coord = view.getCoordinator(findRequest.getRejectedCoordinators());
+          }
           logger.debug("Peer locator: coordinator from view is {}", coord);
           fromView = true;
         }
@@ -183,7 +190,7 @@ public class GMSLocator implements Locator, NetLocator {
             logger.debug("Peer locator: coordinator from registrations is {}", coord);
           }
         }
-        response = new FindCoordinatorResponse(coord, fromView,
+        response = new FindCoordinatorResponse(coord, fromView, viewId,
             this.networkPartitionDetectionEnabled, this.usePreferredCoordinators);
       }
     }
@@ -306,10 +313,8 @@ public class GMSLocator implements Locator, NetLocator {
       }
     
       Object o = DataSerializer.readObject(ois2);
-      if (!(o instanceof NetView)) {
-        return false;
-      }
       this.view = (NetView)o;
+
       logger.info("Peer locator initial membership is " + view);
       return true;
 

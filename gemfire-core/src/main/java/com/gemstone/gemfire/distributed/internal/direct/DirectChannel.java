@@ -457,8 +457,8 @@ public class DirectChannel {
       }
 
       try {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "{}{}) to {} peers ({}) via tcp/ip",
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}{}) to {} peers ({}) via tcp/ip",
               (retry ? "Retrying send (" : "Sending ("),  msg, cons.size(), cons);
         }
         DMStats stats = getDMStats();

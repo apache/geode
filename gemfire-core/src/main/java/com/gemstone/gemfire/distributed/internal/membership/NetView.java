@@ -336,8 +336,8 @@ public class NetView implements DataSerializableFixedID {
    * that were members of the given view. Admin-only members are
    * not counted
    */
-  public List<InternalDistributedMember> getActualCrashedMembers(NetView oldView) {
-    List<InternalDistributedMember> result = new ArrayList<>(this.crashedMembers.size());
+  public Set<InternalDistributedMember> getActualCrashedMembers(NetView oldView) {
+    Set<InternalDistributedMember> result = new HashSet<>(this.crashedMembers.size());
     for (InternalDistributedMember mbr : this.crashedMembers) {
       if ((mbr.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE) && oldView.contains(mbr)) {
         result.add(mbr);

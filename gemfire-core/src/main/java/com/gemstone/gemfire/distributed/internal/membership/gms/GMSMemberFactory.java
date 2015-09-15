@@ -28,6 +28,8 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.tcp.ConnectionException;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.AuthenticationRequiredException;
 
 /**
  * Create a new Member based on the given inputs.
@@ -107,7 +109,10 @@ public class GMSMemberFactory implements MemberServices {
     catch (ConnectionException e) {
       throw new DistributionException(LocalizedStrings.JGroupMemberFactory_UNABLE_TO_CREATE_MEMBERSHIP_MANAGER.toLocalizedString(), e);
     }
-    catch (GemFireConfigException | SystemConnectException e) {
+    catch (GemFireConfigException
+        | SystemConnectException
+        | AuthenticationFailedException
+        | AuthenticationRequiredException e) {
       throw e;
     }
     catch (RuntimeException e) {

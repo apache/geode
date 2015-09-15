@@ -158,6 +158,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    */
   public boolean join() {
     Set<InternalDistributedMember> alreadyTried = new HashSet<>();
+    int[] lastViewIdHolder = new int[] {-1};
     
     if (Boolean.getBoolean(BYPASS_DISCOVERY)) {
       becomeCoordinator();
@@ -165,7 +166,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     for (int tries=0; tries<JOIN_ATTEMPTS; tries++) {
-      InternalDistributedMember coord = findCoordinator(alreadyTried);
+      InternalDistributedMember coord = findCoordinator(alreadyTried, lastViewIdHolder);
       logger.debug("found possible coordinator {}", coord);
       if (coord != null) {
         if (coord.equals(this.localAddress)) {
@@ -601,12 +602,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * This contacts the locators to find out who the current coordinator is.
    * All locators are contacted.  If they don't agree then we choose the oldest
    * coordinator and return it.
-   * @return
    */
-  private InternalDistributedMember findCoordinator(Set<InternalDistributedMember> alreadyTried) {
+  private InternalDistributedMember findCoordinator(Set<InternalDistributedMember> alreadyTried,
+      int[] lastViewIdHolder) {
     assert this.localAddress != null;
     
-    FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, alreadyTried);
+    FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, alreadyTried, lastViewIdHolder[0]);
     Set<InternalDistributedMember> coordinators = new HashSet<InternalDistributedMember>();
     long giveUpTime = System.currentTimeMillis() + (services.getConfig().getLocatorWaitTime() * 1000L);
     boolean anyResponses = false;
@@ -622,6 +623,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse)o : null;
           if (response != null && response.getCoordinator() != null) {
             anyResponses = false;
+            int viewId = response.getViewId();
+            if (viewId > lastViewIdHolder[0]) {
+              // if the view has changed it is possible that a member
+              // that we already tried to join with will become coordinator
+              alreadyTried.clear();
+              lastViewIdHolder[0] = viewId;
+            }
             coordinators.add(response.getCoordinator());
             if (response.isFromView()) {
               GMSMember mbr = (GMSMember)this.localAddress.getNetMember();
@@ -694,7 +702,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       
       if (isNetworkPartition(newView)) {
         if (quorumRequired) {
-          List<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
+          Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
           services.getManager().forceDisconnect(
               LocalizedStrings.Network_partition_detected.toLocalizedString(crashes.size(), crashes));
           return;

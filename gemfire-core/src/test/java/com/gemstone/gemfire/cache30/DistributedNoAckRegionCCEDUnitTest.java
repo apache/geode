@@ -364,11 +364,6 @@ public class DistributedNoAckRegionCCEDUnitTest extends
   }
 
   
-  public void testRegionVersionVectors() throws Exception {
-    versionTestRegionVersionVectors();
-  }
-  
-  
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // these methods can be uncommented to inhibit test execution

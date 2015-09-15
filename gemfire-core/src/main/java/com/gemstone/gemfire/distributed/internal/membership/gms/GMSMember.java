@@ -246,18 +246,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
         } else if (his.vmViewId < this.vmViewId) {
           result = 1;
         }
-      } else if (this.processId != 0 && his.processId != 0) {
-        // starting in 8.0 we also consider the processId.  During startup
-        // we may have a message from a member that hasn't finished joining
-        // and address canonicalization may find an old address that has
-        // the same addr:port.  Since the new member doesn't have a viewId
-        // its address will be equal to the old member's address unless
-        // we also pay attention to the processId.
-        if (this.processId < his.processId){
-          result = -1;
-        } else if (his.processId < this.processId) {
-          result = 1;
-        }
       }
     }
     if (result == 0 && this.uuidMSBs != 0 && his.uuidMSBs != 0) {

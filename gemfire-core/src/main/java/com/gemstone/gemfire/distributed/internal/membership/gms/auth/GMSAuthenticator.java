@@ -7,6 +7,7 @@ import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -17,6 +18,7 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
+
 
 // static messages
 import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED;
@@ -163,11 +165,19 @@ public class GMSAuthenticator implements Authenticator {
    */
   @Override
   public Object getCredentials(InternalDistributedMember member) {
-    return getCredentials(member, securityProps);
+    try {
+      return getCredentials(member, securityProps);
+    } catch (Exception e) {
+      String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT_NAME);
+      services.getSecurityLogWriter().warning(
+          LocalizedStrings.AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2,
+          new Object[] {authMethod, e.getLocalizedMessage()});
+      return null;
+    }
   }
 
   // for unit test
-  /* package */ Properties getCredentials(DistributedMember member, Properties secProps) {
+  Properties getCredentials(DistributedMember member, Properties secProps) {
     Properties credentials = null;
     String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT_NAME);
     try {

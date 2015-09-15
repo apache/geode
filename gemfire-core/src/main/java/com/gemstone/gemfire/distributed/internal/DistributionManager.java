@@ -3395,8 +3395,8 @@ public class DistributionManager
 
  //   message.setRecipient(DistributionManager.this.getId());
 
-    if (logger.isTraceEnabled()) {
-      logger.trace("Received message '{}' from <{}>", message, message.getSender());
+    if (logger.isDebugEnabled()) {
+      logger.debug("Received message '{}' from <{}>", message, message.getSender());
     }
     scheduleIncomingMessage(message);
   }

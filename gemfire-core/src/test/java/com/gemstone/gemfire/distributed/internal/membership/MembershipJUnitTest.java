@@ -121,7 +121,7 @@ public class MembershipJUnitTest extends TestCase {
 //    System.out.println("failed mbrs = " + failedMembers);
 //    System.out.println("failed weight = " + failedWeight);
     assertEquals("failure weight calculation is incorrect", 10, failedWeight);
-    List<InternalDistributedMember> actual = newView.getActualCrashedMembers(lastView);
+    Set<InternalDistributedMember> actual = newView.getActualCrashedMembers(lastView);
     assertTrue(!actual.contains(members[members.length-2]));
   }
   
@@ -179,8 +179,9 @@ public class MembershipJUnitTest extends TestCase {
       DMStats stats2 = mock(DMStats.class);
       m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
       
-      assert m2.getView().size() == 2;
-      assert m1.getView().size() == 2;
+      assert m2.getView().size() == 2 : "view = " + m2.getView();
+      assert m1.getView().size() == 2 : "view = " + m1.getView();
+      assert m1.getView().getCreator().equals(m2.getView().getCreator());
       assert m1.getView().getViewId() == m2.getView().getViewId();
       
       m2.shutdown();

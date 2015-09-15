@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -55,6 +56,7 @@ public class Bug33726JUnitTest{
   @Test
   public void testAfterRegionCreate() {
     Properties props = new Properties();
+    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
     DistributedSystem ds = DistributedSystem.connect(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setCacheListener(new TestCacheListener());

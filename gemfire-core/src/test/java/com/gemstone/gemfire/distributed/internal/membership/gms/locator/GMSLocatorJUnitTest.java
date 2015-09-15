@@ -43,18 +43,10 @@ public class GMSLocatorJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    String directory = "";
-    boolean isWindows = false;
-    String os = System.getProperty("os.name");
-    if (os != null) {
-      if (os.indexOf("Windows") != -1) {
-        isWindows = true;
-      }
+    tempStateFile = new File("GMSLocatorJUnitTest_locator.dat");
+    if (tempStateFile.exists()) {
+      tempStateFile.delete();
     }
-    if (!isWindows) {
-      directory = "/etc/";
-    }
-    tempStateFile = File.createTempFile(directory+"tempLocator-", ".dat", new File(""));
     locator = new GMSLocator(null, tempStateFile, null, false, false, new LocatorStats());
     // System.out.println("temp state file: " + tempStateFile);
   }
@@ -71,6 +63,7 @@ public class GMSLocatorJUnitTest {
       oos.writeInt(fileStamp);
       oos.writeInt(ordinal);
       DataSerializer.writeObject(object, oos);
+      oos.flush();
     }
   }
 

@@ -407,51 +407,6 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     }
   }
   
-  static volatile String problem;
-  
-  public void testInterruptedWhileConnecting() throws Exception {
-    fail("testInterruptedWhileConnecting must be reimplemented for the new GMS");
-  }
-  public void _testInterruptedWhileConnecting() throws Exception {
-//    Runnable r = new Runnable() {
-//      public void run() {
-//        ClientGmsImpl.SLOW_JOIN_LOCK = new Object();
-//        ClientGmsImpl.SLOW_JOIN = true;
-//        try {
-//          assertTrue("should be disconnected at this point", InternalDistributedSystem.getConnectedInstance() == null);
-//          getSystem();
-//          problem = "a connection to the distributed system was established but it should have failed";
-//        } catch (SystemConnectException e) {
-//          if (!e.getMessage().endsWith(ExternalStrings.ClientGmsImpl_JOIN_INTERRUPTED.getRawText())) {
-//            problem = "got a system connect exception but it was for the wrong reason";
-//            getLogWriter().info("wrong exception thrown: '" + e.getMessage() + "' (wanted '"+
-//              ExternalStrings.ClientGmsImpl_JOIN_INTERRUPTED.getRawText()+"')", e);
-//          }
-//        } finally {
-//          ClientGmsImpl.SLOW_JOIN = false;
-//          ClientGmsImpl.SLOW_JOIN_LOCK = null;
-//        }
-//      }
-//    };
-//    Thread connectThread = new Thread(r, "testInterruptedWhileConnecting connect thread");
-//    ClientGmsImpl.SLOW_JOIN = false;
-//    connectThread.start();
-//    while (ClientGmsImpl.SLOW_JOIN == false) {
-//      pause(1000);
-//    }
-//    pause(5000);
-//    connectThread.interrupt();
-//    connectThread.join(60000);
-//    getLogWriter().info("done waiting for connectThread.  Thread is " +
-//      (connectThread.isAlive()? "still alive" : "stopped"));
-//    if (ClientGmsImpl.SLOW_JOIN) {
-//      problem = "failed to either connect or get an exception - one of these should have happened";
-//      dumpMyThreads(getLogWriter());
-//    }
-//    if (problem != null) {
-//      fail(problem);
-//    }
-  }
 
   
 }

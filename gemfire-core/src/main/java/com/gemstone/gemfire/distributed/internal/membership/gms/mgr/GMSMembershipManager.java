@@ -114,6 +114,13 @@ public class GMSMembershipManager implements MembershipManager, Manager
   private volatile DatagramSocket oldDSUDPSocket;
   
   /**
+   * thread-local used to force use of JGroups for communications, usually to
+   * avoid deadlock when conserve-sockets=true.  Use of this should be removed
+   * when connection pools are implemented in the direct-channel 
+   */
+  private ThreadLocal<Boolean> forceUseJGroups = new ThreadLocal<Boolean>();
+  
+  /**
    * Trick class to make the startup synch more
    * visible in stack traces
    * 
@@ -2122,7 +2129,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
       useMcast = (msg.getMulticast() || allDestinations);
     }
     
-    if (useMcast || tcpDisabled) {
+    boolean sendViaJGroups = isForceUDPCommunications(); // enable when bug #46438 is fixed: || msg.sendViaJGroups();
+
+    if (useMcast || tcpDisabled || sendViaJGroups) {
       result = services.getMessenger().send(msg);
     }
     else {
@@ -2140,9 +2149,14 @@ public class GMSMembershipManager implements MembershipManager, Manager
   // MembershipManager method
   @Override
   public void forceUDPMessagingForCurrentThread() {
-    // not currently supported by this manager
+    forceUseJGroups.set(null);
   }
   
+  private boolean isForceUDPCommunications() {
+    Boolean forced = forceUseJGroups.get();
+    return forced == Boolean.TRUE;
+  }
+
   // MembershipManager method
   @Override
   public void releaseUDPMessagingForCurrentThread() {

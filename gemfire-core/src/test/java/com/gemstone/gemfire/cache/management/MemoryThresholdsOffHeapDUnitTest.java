@@ -100,8 +100,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
 
   @Override
   public void tearDown2() throws Exception {
-    super.tearDown2();
     invokeInEveryVM(this.resetResourceManager);
+    super.tearDown2();
   }
 
   private SerializableCallable resetResourceManager = new SerializableCallable() {
@@ -1262,7 +1262,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends BridgeTestCase {
     final int port1 = ports[0];
     final int port2 = ports[1];
     final int port3 = ports[2];
-    final String regionName = "testEventOrger";
+    final String regionName = "testEventOrder";
 
     startCacheServer(server1, port1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);

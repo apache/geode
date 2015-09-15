@@ -409,8 +409,8 @@ public class JGroupsMessenger implements Messenger {
     
     filterOutgoingMessage(msg);
     
-    if (logger.isTraceEnabled()) {
-      logger.trace("JGroupsMessenger sending [{}] recipients: {}", msg, msg.getRecipientsDescription());
+    if (logger.isDebugEnabled()) {
+      logger.debug("sending via UDP: [{}] recipients: {}", msg, msg.getRecipientsDescription());
     }
     
     InternalDistributedMember[] destinations = msg.getRecipients();

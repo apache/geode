@@ -58,14 +58,14 @@ public class StatRecorderJUnitTest {
     
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
-    assert stats.ucastMessagesReceived == 1;
+    assert stats.ucastMessagesReceived == 1 : "stats.ucastMessagesReceived =" + stats.ucastMessagesReceived;
     
     recorder.down(evt);
-    assert stats.ucastMessagesSent == 1;
+    assert stats.ucastMessagesSent == 1 : "stats.ucastMessagesSent =" + stats.ucastMessagesSent;
     
     when(msg.getHeader(any(Short.class))).thenReturn(Header.createXmitReqHeader());
     recorder.up(evt);
-    assert stats.ucastRetransmits == 1;
+    assert stats.ucastRetransmits == 1 : "stats.ucastRetransmits =" + stats.ucastRetransmits;
   }
 
   /**
@@ -79,18 +79,18 @@ public class StatRecorderJUnitTest {
     
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
-    assert stats.mcastMessagesReceived == 1;
+    assert stats.mcastMessagesReceived == 1 : "mcastMessagesReceived = " + stats.mcastMessagesReceived;
     
     recorder.down(evt);
-    assert stats.mcastMessagesSent == 1;
+    assert stats.mcastMessagesSent == 1 : "mcastMessagesSent = " + stats.mcastMessagesSent;
     
     when(msg.getHeader(any(Short.class))).thenReturn(NakAckHeader2.createXmitRequestHeader(null));
     recorder.up(evt);
-    assert stats.mcastRetransmitRequests == 1;
+    assert stats.mcastRetransmitRequests == 1 : "mcastRetransmitRequests = " + stats.mcastRetransmitRequests;
 
     when(msg.getHeader(any(Short.class))).thenReturn(NakAckHeader2.createXmitResponseHeader());
     recorder.up(evt);
-    assert stats.mcastRetransmits == 1;
+    assert stats.mcastRetransmits == 1 : "mcastRetransmits = " + stats.mcastRetransmits;
   }
   
   
