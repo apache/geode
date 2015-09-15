@@ -75,7 +75,6 @@ import com.gemstone.gemfire.internal.cache.wan.TransportFilterServerSocket;
 import com.gemstone.gemfire.internal.cache.wan.TransportFilterSocketFactory;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.PasswordUtil;
 import com.gemstone.org.jgroups.util.ConnectionWatcher;
@@ -1197,103 +1196,6 @@ public class SocketCreator  implements com.gemstone.org.jgroups.util.SockCreator
     return (String[]) v.toArray( new String[ v.size() ] );
   }
   
-  /**
-   * Closes the specified socket in a background thread and waits a limited
-   * amount of time for the close to complete. In some cases we see close
-   * hang (see bug 33665).
-   * Made public so it can be used from CacheClientProxy.
-   * @param sock the socket to close
-   * @param who who the socket is connected to
-   * @param extra an optional Runnable with stuff to execute in the async thread
-   */
-  public static void asyncClose(final Socket sock, String who, final Runnable extra) {
-    if (sock == null || sock.isClosed()) {
-      return;
-    }
-    try {
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup("Socket asyncClose", logger);
-
-    Thread t = new Thread(tg, new Runnable() {
-        public void run() {
-          if (extra != null) {
-            extra.run();
-          }
-          inlineClose(sock);
-        }
-      }, "AsyncSocketCloser for " + who);
-    t.setDaemon(true);
-    try {
-      t.start();
-    } catch (OutOfMemoryError ignore) {
-      // If we can't start a thread to close the socket just do it inline.
-      // See bug 50573.
-      inlineClose(sock);
-      return;
-    }
-    try {
-      // [bruce] if the network fails, this will wait the full amount of time
-      // on every close, so it must be kept very short.  it was 750ms before,
-      // causing frequent hangs in net-down hydra tests
-      t.join(50/*ms*/);
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-    }
-    }
-    catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      // NOTREACHED
-      throw e;
-    }
-  }
-  
-
-  /**
-   * Closes the specified socket
-   * @param sock the socket to close
-   */
-  public static void inlineClose(final Socket sock) {
-    
-    // the next two statements are a mad attempt to fix bug
-    // 36041 - segv in jrockit in pthread signaling code.  This
-    // seems to alleviate the problem.
-    try {
-      sock.shutdownInput();
-      sock.shutdownOutput();
-    }
-    catch (Exception e) {
-    }
-    try {
-      sock.close();
-    } catch (IOException ignore) {
-    } 
-    catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    }
-    catch (java.security.ProviderException pe) {
-      // some ssl implementations have trouble with termination and throw
-      // this exception.  See bug #40783
-    }
-    catch (Error e) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
-      // Sun's NIO implementation has been known to throw Errors
-      // that are caused by IOExceptions.  If this is the case, it's
-      // okay.
-      if (e.getCause() instanceof IOException) {
-        // okay...
-
-      } else {
-        throw e;
-      }
-    }
-  }
   
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;

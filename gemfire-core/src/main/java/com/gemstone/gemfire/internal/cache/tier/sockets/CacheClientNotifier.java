@@ -73,6 +73,7 @@ import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
+import com.gemstone.gemfire.internal.SocketCloser;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
@@ -1668,6 +1669,8 @@ public class CacheClientNotifier {
 
       // Close the statistics
       this._statistics.close();
+      
+      this.socketCloser.close();
     } 
   }
 
@@ -2120,6 +2123,7 @@ public class CacheClientNotifier {
     // Set the Cache
     this.setCache((GemFireCacheImpl)cache);
     this.acceptorStats = acceptorStats;
+    this.socketCloser = new SocketCloser(1, 50); // we only need one thread per client and wait 50ms for close
 
     // Set the LogWriter
     this.logWriter = (InternalLogWriter)cache.getLogger();
@@ -2383,6 +2387,10 @@ public class CacheClientNotifier {
  
   public CacheServerStats getAcceptorStats() {
     return this.acceptorStats;
+  }
+  
+  public SocketCloser getSocketCloser() {
+    return this.socketCloser;
   }
   
   public void addCompiledQuery(DefaultQuery query){
@@ -2650,6 +2658,8 @@ public class CacheClientNotifier {
   private final Object lockIsCompiledQueryCleanupThreadStarted = new Object();
 
   private SystemTimer.SystemTimerTask clientPingTask;
+  
+  private final SocketCloser socketCloser;
   
   private static final long CLIENT_PING_TASK_PERIOD =
     Long.getLong("gemfire.serverToClientPingPeriod", 60000);
