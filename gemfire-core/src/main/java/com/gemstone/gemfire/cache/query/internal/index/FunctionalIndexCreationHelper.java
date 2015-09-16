@@ -581,7 +581,6 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       }
     }
     catch (Exception e) {
-      e.printStackTrace();
       throw new IndexInvalidException(e);
     }
     return retValues;
