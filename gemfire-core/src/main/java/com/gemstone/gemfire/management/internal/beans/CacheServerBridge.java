@@ -350,10 +350,12 @@ public class CacheServerBridge extends ServerBridge{
       }
       for (ServerConnection conn : serverConnections) {
         ClientProxyMembershipID clientId = conn.getProxyID();
+        if (clientId != null) { // Check added to fix bug 51987
         if (uniqueIds.get(clientId.getDSMembership()) == null) {
           ClientConnInfo clientConInfo = new ClientConnInfo(conn.getProxyID(), conn.getSocketHost(),
               conn.getSocketPort(), false);
           uniqueIds.put(clientId.getDSMembership(), clientConInfo);
+        }
         }
       }
     }
