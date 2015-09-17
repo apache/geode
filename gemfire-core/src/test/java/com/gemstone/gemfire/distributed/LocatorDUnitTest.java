@@ -86,6 +86,9 @@ public class LocatorDUnitTest extends DistributedTestCase {
   
   @Override
   public void tearDown2() {
+    if (Locator.hasLocator()) {
+      Locator.getLocator().stop();
+    }
     // delete locator state files so they don't accidentally
     // get used by other tests
     if (port1 > 0) {
@@ -121,7 +124,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
     final Properties properties = new Properties();
     properties.put("mcast-port", "0");
     properties.put("start-locator", locators);
-    properties.put("log-level", getDUnitLogLevel());
+    properties.put("log-level", "finer");
+//    properties.put("log-level", getDUnitLogLevel());
     properties.put("security-peer-auth-init","com.gemstone.gemfire.distributed.AuthInitializer.create");
     properties.put("security-peer-authenticator","com.gemstone.gemfire.distributed.MyAuthenticator.create");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
@@ -132,6 +136,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
         DistributionManager.NORMAL_DM_TYPE, system.getDistributedMember().getVmKind());
     
     properties.remove("start-locator");
+    properties.put("log-level", "finer");
+//  properties.put("log-level", getDUnitLogLevel());
     properties.put("locators", locators);
     SerializableRunnable startSystem = new SerializableRunnable("start system") {
       public void run() {
@@ -190,7 +196,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
       });
   
       properties.put("start-locator", locators);
+//    properties.put("log-level", getDUnitLogLevel());
+      properties.put("log-level", "finer");
       system = (InternalDistributedSystem)DistributedSystem.connect(properties);
+      System.out.println("done connecting distributed system");
       
       assertEquals("should be the coordinator", system.getDistributedMember(), MembershipManagerHelper.getCoordinator(system));
       NetView view = MembershipManagerHelper.getMembershipManager(system).getView();
@@ -1575,8 +1584,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       properties2.put("locators", locators);
       properties2.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
       properties2.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-
-      properties.put("disable-auto-reconnect", "true");
+      properties2.put("disable-auto-reconnect", "true");
       
       vm1.invoke(new SerializableRunnable("try to connect") {
         public void run() {
@@ -1604,11 +1612,13 @@ public class LocatorDUnitTest extends DistributedTestCase {
       vm1.invoke(new SerializableRunnable("try to connect") {
         public void run() {
           DistributedSystem s = null;
-          s = DistributedSystem.connect(properties);
-          boolean enabled = ((InternalDistributedSystem)s).getConfig().getEnableNetworkPartitionDetection();
-          s.disconnect();
-          if (enabled) {
+          try {
+            s = DistributedSystem.connect(properties);
+            s.disconnect();
             fail("should not have been able to connect with different enable-network-partition-detection settings");
+          }
+          catch (GemFireConfigException e) {
+            // passed
           }
         }
       });

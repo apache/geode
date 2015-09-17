@@ -99,11 +99,11 @@ public interface Manager extends Service, MessageHandler {
    */
   boolean shutdownInProgress();
 
-  /**
-   * similar to forceDisconnect but is used solely by Messenger
-   * to tell Manager that communications have been lost
-   */
-  void membershipFailure(String message, Exception cause);
+//  /**
+//   * similar to forceDisconnect but is used solely by Messenger
+//   * to tell Manager that communications have been lost
+//   */
+//  void membershipFailure(String message, Exception cause);
 
   /**
    * used by HealthMonitor to tell Manager that a member is under

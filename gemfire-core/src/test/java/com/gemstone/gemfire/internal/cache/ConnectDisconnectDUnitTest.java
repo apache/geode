@@ -31,29 +31,6 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   
   
   
-//  @Override
-//  public void setUp() throws Exception {
-//    super.setUp();
-//    invokeInEveryVM(new SerializableRunnable() {
-//      
-//      @Override
-//      public void run() {
-//        JGroupMembershipManager.setDebugJGroups(true);
-//        System.setProperty("p2p.simulateDiscard", "true");
-//        System.setProperty("p2p.simulateDiscard.received", "0.10");
-//        System.setProperty("p2p.simulateDiscard.sent", "0.10");
-//        System.setProperty("gemfire.membership-port-range", "17000-17200");
-//      }
-//    });
-//  }
-  
-  
-//  @Override
-//  public void tearDown2() throws Exception {
-//    ex.remove();
-//  }
-
-
   // see bugs #50785 and #46438 
   public void testManyConnectsAndDisconnects() throws Throwable {
 //    invokeInEveryVM(new SerializableRunnable() {
@@ -68,7 +45,7 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
 //     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
 //     setLocatorPorts(ports);
 
-    for(int i = 0; i < 50; i++) {
+    for(int i = 0; i < 20; i++) {
       getLogWriter().info("Test run: " + i);
       runOnce();
       tearDown();

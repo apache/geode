@@ -372,6 +372,7 @@ public class JGroupsMessenger implements Messenger {
     // add the JGroups logical address to the GMSMember
     UUID uuid = this.jgAddress;
     ((GMSMember)localAddress.getNetMember()).setUUID(uuid);
+    ((GMSMember)localAddress.getNetMember()).setMemberWeight((byte)(services.getConfig().getMemberWeight() & 0xff));
   }
   
   @Override
@@ -439,7 +440,7 @@ public class JGroupsMessenger implements Messenger {
         problem = e;
       }
       catch (Exception e) {
-        logger.info("caught unexpected exception", e);
+        logger.debug("caught unexpected exception", e);
         Throwable cause = e.getCause();
         if (cause instanceof ForcedDisconnectException) {
           problem = (Exception) cause;
@@ -463,7 +464,7 @@ public class JGroupsMessenger implements Messenger {
           }
         }
         final String channelClosed = LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
-        services.getManager().membershipFailure(channelClosed, problem);
+//        services.getManager().membershipFailure(channelClosed, problem);
         throw new DistributedSystemDisconnectedException(channelClosed, problem);
       }
     } // useMcast
@@ -539,8 +540,9 @@ public class JGroupsMessenger implements Messenger {
                 ne.initCause(services.getManager().getShutdownCause());
               }
             }
-            services.getManager().membershipFailure("Channel closed", problem);
-            throw new DistributedSystemDisconnectedException("Channel closed", problem);
+          final String channelClosed = LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
+//          services.getManager().membershipFailure(channelClosed, problem);
+          throw new DistributedSystemDisconnectedException(channelClosed, problem);
           }
         } // send individually
     } // !useMcast
@@ -808,6 +810,9 @@ public class JGroupsMessenger implements Messenger {
       }
       
       try {
+        if (logger.isTraceEnabled()) {
+          logger.trace("JGroupsMessenger dispatching {}", msg);
+        }
         filterIncomingMessage(msg);
         MessageHandler h = getMessageHandler(msg);
         logger.trace("Handler for this message is {}", h);

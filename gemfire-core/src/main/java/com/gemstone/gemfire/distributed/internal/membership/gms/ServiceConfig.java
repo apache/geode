@@ -8,7 +8,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 public class ServiceConfig {
   /** various settings from Geode configuration */
   private int joinTimeout;
-  private long fdTimeout;
   private int[] membershipPortRange;
   private int udpRecvBufferSize;
   private int udpSendBufferSize;
@@ -35,11 +34,6 @@ public class ServiceConfig {
   }
 
 
-  public long getFdTimeout() {
-    return fdTimeout;
-  }
-
-
   public int[] getMembershipPortRange() {
     return membershipPortRange;
   }
@@ -60,12 +54,12 @@ public class ServiceConfig {
   }
 
 
-  public Integer getLossThreshold() {
+  public int getLossThreshold() {
     return lossThreshold;
   }
 
 
-  public Integer getMemberWeight() {
+  public int getMemberWeight() {
     return memberWeight;
   }
 
@@ -92,11 +86,7 @@ public class ServiceConfig {
     this.dconfig = theConfig;
     this.transport = transport;
     
-    // see whether the FD protocol or FD_SOCK protocol should be used
-    fdTimeout = Long.getLong("gemfire.FD_TIMEOUT", 0).longValue(); // in 4.1.2 to force use of FD
-    
     int defaultJoinTimeout = 17000;
-    int defaultNumPings = 1; // number of get_mbrs loops per findInitialMembers
     if (theConfig.getLocators().length() > 0 && !Locator.hasLocators()) {
       defaultJoinTimeout = 60000;
     }
@@ -116,7 +106,7 @@ public class ServiceConfig {
     udpRecvBufferSize = DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED;
     udpSendBufferSize = theConfig.getUdpSendBufferSize();
 
-    memberTimeout = (fdTimeout > 0) ? fdTimeout : theConfig.getMemberTimeout();
+    memberTimeout = theConfig.getMemberTimeout();
 
     // The default view-ack timeout in 7.0 is 12347 ms but is adjusted based on the member-timeout.
     // We don't want a longer timeout than 12437 because new members will likely time out trying to 

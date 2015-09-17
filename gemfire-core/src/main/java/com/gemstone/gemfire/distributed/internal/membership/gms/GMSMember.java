@@ -444,6 +444,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   @Override
   public void writeAdditionalData(DataOutput out) throws IOException {
+    // note: member weight and other GMS-only info is not included here
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
   }

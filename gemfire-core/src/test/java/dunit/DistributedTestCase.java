@@ -39,6 +39,7 @@ import com.gemstone.gemfire.cache30.GlobalLockingDUnitTest;
 import com.gemstone.gemfire.cache30.MultiVMRegionTestCase;
 import com.gemstone.gemfire.cache30.RegionTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;

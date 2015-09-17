@@ -566,8 +566,11 @@ public final class InternalDistributedMember
    *              if the specified object's type prevents it from being compared
    *              to this Object.
    */
-  public int compareTo(DistributedMember o)
-  {
+  public int compareTo(DistributedMember o) {
+    return compareTo(o, true);
+  }
+  
+  public int compareTo(DistributedMember o, boolean checkNetMembersIfEqual) {
     if (this == o) {
       return 0;
     }
@@ -635,11 +638,13 @@ public final class InternalDistributedMember
 
     if (this.uniqueTag == null && other.uniqueTag == null) {
       // not loners, so look at P2P view ID
-      if (this.vmViewId < other.vmViewId) {
-        return -1;
-      } else if (this.vmViewId > other.vmViewId) {
-        return 1;
-      } // else they're the same, so continue
+      if (this.vmViewId >= 0 && other.vmViewId >= 0) {
+        if (this.vmViewId < other.vmViewId) {
+          return -1;
+        } else if (this.vmViewId > other.vmViewId) {
+          return 1;
+        } // else they're the same, so continue
+      }
     } else if (this.uniqueTag == null) {
       return -1;
     }
@@ -653,7 +658,8 @@ public final class InternalDistributedMember
       }
     }
     
-    if (this.netMbr != null && other.netMbr != null) {
+    if (checkNetMembersIfEqual
+        && this.netMbr != null && other.netMbr != null) {
       return this.netMbr.compareTo(other.netMbr);
     } else {
       return 0;
@@ -754,10 +760,8 @@ public final class InternalDistributedMember
         sb.append(vmStr);
         sb.append(")");
       }
-      if (netMbr.splitBrainEnabled()) {
-        if (netMbr.preferredForCoordinator()) {
-          sb.append("<ec>");
-        }
+      if (netMbr.preferredForCoordinator()) {
+        sb.append("<ec>");
       }
       if (this.vmViewId >= 0) {
         sb.append("<v" + this.vmViewId + ">");

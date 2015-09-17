@@ -717,7 +717,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     @Override
     public void run() {
       List<T> requests = null;
-      logger.info("Suspect thread is starting");
+      logger.debug("Suspect thread is starting");
       long okayToSendSuspectRequest = System.currentTimeMillis() + timeout;
       try {
         for (;;) {
@@ -727,7 +727,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             }
             if (listToTrack.isEmpty()) {
               try {
-                logger.debug("Result collector is waiting");
+                logger.trace("Result collector is waiting");
                 listToTrack.wait();
               } catch (InterruptedException e) {
                 return;
@@ -762,7 +762,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         }
       } finally {
         shutdown = true;
-        logger.info("Suspect thread is stopped");
+        logger.debug("Suspect thread is stopped");
       }
     }
   }

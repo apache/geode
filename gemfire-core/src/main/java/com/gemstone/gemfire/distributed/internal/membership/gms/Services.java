@@ -120,15 +120,16 @@ public class Services {
   protected void start() {
     boolean started = false;
     try {
-      logger.info("Membership: starting Authenticator");
+      logger.info("Starting membership services");
+      logger.debug("starting Authenticator");
       this.auth.start();
-      logger.info("Membership: starting Messenger");
+      logger.debug("starting Messenger");
       this.messenger.start();
-      logger.info("Membership: starting JoinLeave");
+      logger.debug("starting JoinLeave");
       this.joinLeave.start();
-      logger.info("Membership: starting HealthMonitor");
+      logger.debug("starting HealthMonitor");
       this.healthMon.start();
-      logger.info("Membership: starting Manager");
+      logger.debug("starting Manager");
       this.manager.start();
       started = true;
     } catch (RuntimeException e) {
@@ -148,7 +149,7 @@ public class Services {
     this.joinLeave.started();
     this.healthMon.started();
     this.manager.started();
-    logger.info("Membership: all services have been started");
+    logger.info("Attempting to join the distributed system");
     try {
       this.manager.joinDistributedSystem();
     } catch (Throwable e) {
@@ -158,34 +159,68 @@ public class Services {
   }
   
   public void emergencyClose() {
-    logger.info("Membership: stopping services");
     if (stopping) {
       return;
     }
     stopping = true;
-    this.timer.cancel();
-    this.joinLeave.emergencyClose();
-    this.healthMon.emergencyClose();
-    this.auth.emergencyClose();
-    this.messenger.emergencyClose();
-    this.manager.emergencyClose();
-    this.cancelCriterion.cancel("Membership services are shut down");
+    logger.info("Stopping membership services");
+    timer.cancel();
+    try {
+      joinLeave.emergencyClose();
+    } finally {
+      try {
+        healthMon.emergencyClose();
+      } finally {
+        try {
+          auth.emergencyClose();
+        } finally {
+          try {
+            messenger.emergencyClose();
+          } finally {
+            try {
+              manager.emergencyClose();
+            } finally {
+              cancelCriterion.cancel("Membership services are shut down");
+              stopped = true;
+            }
+          }
+        }
+      }
+    }
   }
   
   public void stop() {
-    logger.info("Membership: stopping services");
     if (stopping) {
       return;
     }
+    logger.info("Stopping membership services");
     stopping = true;
-    this.timer.cancel();
-    this.joinLeave.stop();
-    this.healthMon.stop();
-    this.auth.stop();
-    this.messenger.stop();
-    this.manager.stop();
-    this.cancelCriterion.cancel("Membership services are shut down");
-    stopped = true;
+    try {
+      timer.cancel();
+    } finally {
+      try {
+        joinLeave.stop();
+      } finally {
+        try {
+          healthMon.stop();
+        } finally {
+          try {
+            auth.stop();
+          } finally {
+            try {
+              messenger.stop();
+            } finally {
+              try {
+                manager.stop();
+              } finally {
+                cancelCriterion.cancel("Membership services are shut down");
+                stopped = true;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   public static void setLogWriter(InternalLogWriter writer) {

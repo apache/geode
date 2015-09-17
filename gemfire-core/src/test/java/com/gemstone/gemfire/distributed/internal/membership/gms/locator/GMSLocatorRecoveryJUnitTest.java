@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 @Category(UnitTest.class)
-public class GMSLocatorJUnitTest {
+public class GMSLocatorRecoveryJUnitTest {
 
   File tempStateFile = null;
   GMSLocator locator = null;

@@ -2711,29 +2711,29 @@ public class GMSMembershipManager implements MembershipManager, Manager
     this.shutdownCause = t;
   }
 
-  @Override
-  public void membershipFailure(String reason, Exception e) {
-    try {
-      if (this.membershipTestHooks != null) {
-        List l = this.membershipTestHooks;
-        for (Iterator it=l.iterator(); it.hasNext(); ) {
-          MembershipTestHook dml = (MembershipTestHook)it.next();
-          dml.beforeMembershipFailure(reason, e);
-        }
-      }
-      listener.membershipFailure(reason, e);
-      if (this.membershipTestHooks != null) {
-        List l = this.membershipTestHooks;
-        for (Iterator it=l.iterator(); it.hasNext(); ) {
-          MembershipTestHook dml = (MembershipTestHook)it.next();
-          dml.afterMembershipFailure(reason, e);
-        }
-      }
-    }
-    catch (RuntimeException re) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.GroupMembershipService_EXCEPTION_CAUGHT_WHILE_SHUTTING_DOWN), re);
-    }
-  }
+//  @Override
+//  public void membershipFailure(String reason, Exception e) {
+//    try {
+//      if (this.membershipTestHooks != null) {
+//        List l = this.membershipTestHooks;
+//        for (Iterator it=l.iterator(); it.hasNext(); ) {
+//          MembershipTestHook dml = (MembershipTestHook)it.next();
+//          dml.beforeMembershipFailure(reason, e);
+//        }
+//      }
+//      listener.membershipFailure(reason, e);
+//      if (this.membershipTestHooks != null) {
+//        List l = this.membershipTestHooks;
+//        for (Iterator it=l.iterator(); it.hasNext(); ) {
+//          MembershipTestHook dml = (MembershipTestHook)it.next();
+//          dml.afterMembershipFailure(reason, e);
+//        }
+//      }
+//    }
+//    catch (RuntimeException re) {
+//      logger.warn(LocalizedMessage.create(LocalizedStrings.GroupMembershipService_EXCEPTION_CAUGHT_WHILE_SHUTTING_DOWN), re);
+//    }
+//  }
   
   public void registerTestHook(MembershipTestHook mth) {
     // lock for additions to avoid races during startup

@@ -57,7 +57,11 @@ public class GMSLocator implements Locator, NetLocator {
   
   private Set<InternalDistributedMember> registrants = new HashSet<InternalDistributedMember>();
 
-  private NetView view;
+  /**
+   * The current membership view, or one recovered from disk.
+   * This is a copy-on-write variable.
+   */
+  private transient NetView view;
 
   private File viewFile;
 
@@ -103,6 +107,8 @@ public class GMSLocator implements Locator, NetLocator {
   
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
+    logger.info("GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
+        locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled, viewFile);
     recover();
   }
   
@@ -153,6 +159,17 @@ public class GMSLocator implements Locator, NetLocator {
         int viewId = -1;
         
         if (view != null) {
+          // if the ID of the requester matches an entry in the membership view then remove
+          // that entry
+          InternalDistributedMember rid = findRequest.getMemberID();
+          for (InternalDistributedMember id: view.getMembers()) {
+            if (rid.compareTo(id, false) == 0) {
+              NetView newView = new NetView(view, view.getViewId());
+              newView.remove(id);
+              this.view = newView;
+              break;
+            }
+          }
           viewId = view.getViewId();
           if (viewId > findRequest.getLastViewId()) {
             // ignore the requests rejectedCoordinators if the view has changed
@@ -226,7 +243,6 @@ public class GMSLocator implements Locator, NetLocator {
     catch (Exception e) {
       logger.warn("Peer locator encountered an error writing current membership to disk.  Disabling persistence.  Care should be taken when bouncing this locator as it will not be able to recover knowledge of the running distributed system", e);
       this.viewFile = null;
-      // TODO - force TcpServer to shut down if this happens instead of continuing to run
     }
   }
 

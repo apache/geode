@@ -22,6 +22,8 @@ public class FindCoordinatorResponse  implements DataSerializableFixedID {
       boolean fromView, int viewId,
       boolean networkPartitionDectionEnabled, boolean usePreferredCoordinators) {
     this.coordinator = coordinator;
+    this.fromView = fromView;
+    this.viewId = viewId;
     this.networkPartitionDetectionEnabled = networkPartitionDectionEnabled;
     this.usePreferredCoordinators = usePreferredCoordinators;
   }
@@ -52,7 +54,9 @@ public class FindCoordinatorResponse  implements DataSerializableFixedID {
   
   @Override
   public String toString() {
-    return "FindCoordinatorResponse(coordinator="+coordinator+")";
+    return "FindCoordinatorResponse(coordinator="+coordinator+", fromView="+fromView+", viewId="+viewId
+        +", network partition detection enabled="+this.networkPartitionDetectionEnabled
+        +", locators preferred as coordinators="+this.usePreferredCoordinators+")";
   }
 
 
@@ -79,7 +83,7 @@ public class FindCoordinatorResponse  implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     coordinator = DataSerializer.readObject(in);
-    int viewId = in.readInt();
+    viewId = in.readInt();
     fromView = in.readBoolean();
     networkPartitionDetectionEnabled = in.readBoolean();
     usePreferredCoordinators = in.readBoolean();
