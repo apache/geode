@@ -60,7 +60,7 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
     // The queue contains iterators for all bucket results. The queue puts the entry with the highest score at the head
     // using score comparator.
     PriorityQueue<List<EntryScore>> entryListsPriorityQueue;
-    entryListsPriorityQueue = new PriorityQueue<List<EntryScore>>(Collections.reverseOrder(entryListComparator));
+    entryListsPriorityQueue = new PriorityQueue<List<EntryScore>>(11, Collections.reverseOrder(entryListComparator));
     TopEntriesCollector mergedResult = new TopEntriesCollector(id, limit);
 
     for (IndexResultCollector collector : collectors) {

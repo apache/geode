@@ -60,22 +60,22 @@ public interface LuceneService {
    * Create a lucene index using default analyzer.
    * 
    * @param indexName
-   * @param regionName
+   * @param regionPath
    * @param fields
    * @return LuceneIndex object
    */
-  public LuceneIndex createIndex(String indexName, String regionName, String... fields);
+  public LuceneIndex createIndex(String indexName, String regionPath, String... fields);
   
   /**
    * Create a lucene index using specified analyzer per field
    * 
    * @param indexName index name
-   * @param regionName region name
+   * @param regionPath region name
    * @param analyzerPerField analyzer per field map
    * @return LuceneIndex object
    *
    */
-  public LuceneIndex createIndex(String indexName, String regionName,  
+  public LuceneIndex createIndex(String indexName, String regionPath,  
       Map<String, Analyzer> analyzerPerField);
 
   /**
@@ -88,10 +88,10 @@ public interface LuceneService {
   /**
    * Get the lucene index object specified by region name and index name
    * @param indexName index name
-   * @param regionName region name
+   * @param regionPath region name
    * @return LuceneIndex object
    */
-  public LuceneIndex getIndex(String indexName, String regionName);
+  public LuceneIndex getIndex(String indexName, String regionPath);
   
   /**
    * get all the lucene indexes.

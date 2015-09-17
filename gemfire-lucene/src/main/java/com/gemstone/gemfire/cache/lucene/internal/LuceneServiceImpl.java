@@ -8,11 +8,14 @@ import org.apache.lucene.analysis.Analyzer;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
 import com.gemstone.gemfire.internal.cache.extension.Extension;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
@@ -44,21 +47,40 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
     // Initialize the Map which maintains indexes
     this.indexMap = new HashMap<String, LuceneIndex>();
   }
-
-  public String getUniqueIndexName(String indexName, String regionName) {
-    String name = indexName + "#" + regionName.replace('/', '_');
+  
+  public static String getUniqueIndexName(String indexName, String regionPath) {
+    String name = indexName + "#" + regionPath.replace('/', '_');
     return name;
   }
 
   @Override
-  public LuceneIndex createIndex(String indexName, String regionName, String... fields) {
-    // TODO Auto-generated method stub
-    return null;
+  public LuceneIndex createIndex(String indexName, String regionPath, String... fields) {
+    Region dataregion = this.cache.getRegion(regionPath);
+    if (dataregion == null) {
+      cache.getLogger().info("Data region "+regionPath+" not found");
+      return null;
+    }
+    LuceneIndexImpl index = null;
+    if (dataregion instanceof PartitionedRegion) {
+      // partitioned region
+      index = new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
+      for (String field:fields) {
+        index.addSearchableField(field);
+        index.addSearchablePDXField(field);
+      }
+      registerIndex(getUniqueIndexName(indexName, regionPath), index);
+    } else {
+      // replicated region
+      index = new LuceneIndexForReplicatedRegion(indexName, regionPath, cache);
+      registerIndex(getUniqueIndexName(indexName, regionPath), index);
+    }
+    // TODO add fields
+    return index;
   }
 
   @Override
-  public LuceneIndex getIndex(String indexName, String regionName) {
-    return indexMap.get(getUniqueIndexName(indexName, regionName));
+  public LuceneIndex getIndex(String indexName, String regionPath) {
+    return indexMap.get(getUniqueIndexName(indexName, regionPath));
   }
 
   @Override
@@ -67,7 +89,7 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
   }
 
   @Override
-  public LuceneIndex createIndex(String indexName, String regionName, Map<String, Analyzer> analyzerPerField) {
+  public LuceneIndex createIndex(String indexName, String regionPath, Map<String, Analyzer> analyzerPerField) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -75,8 +97,8 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
   @Override
   public void destroyIndex(LuceneIndex index) {
     LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
-    indexMap.remove(getUniqueIndexName(index.getName(), index.getRegionName()));
-    indexImpl.close();
+    indexMap.remove(getUniqueIndexName(index.getName(), index.getRegionPath()));
+//    indexImpl.close();
   }
 
   @Override
@@ -94,6 +116,16 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
   public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
     // TODO Auto-generated method stub
 
+  }
+  
+  public void registerIndex(final String regionAndIndex, LuceneIndex index){
+    if( !indexMap.containsKey( regionAndIndex )) {
+      indexMap.put(regionAndIndex, index);
+    }
+  }
+
+  public void unregisterIndex(final String region){
+    if( indexMap.containsKey( region )) indexMap.remove( region );
   }
 
 }
