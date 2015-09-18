@@ -1,15 +1,21 @@
 package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.UUID;
 
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
+
 /**
  * A file that is stored in a gemfire region.
  */
-public class File implements Serializable {
-  private static final long serialVersionUID = 1L;
+public class File implements DataSerializableFixedID {
   
   private transient FileSystem fileSystem;
   private transient int chunkSize;
@@ -20,6 +26,12 @@ public class File implements Serializable {
   long created = System.currentTimeMillis();
   long modified = created;
   UUID id = UUID.randomUUID();
+  
+  /**
+   * Constructor for serialization only
+   */
+  public File() {
+  }
 
   File(final FileSystem fileSystem, final String name) {
     setFileSystem(fileSystem);
@@ -85,4 +97,40 @@ public class File implements Serializable {
   public FileSystem getFileSystem() {
     return fileSystem;
   }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {
+    return LUCENE_FILE;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeString(name, out);
+    out.writeLong(length);
+    out.writeInt(chunks);
+    out.writeLong(created);
+    out.writeLong(modified);
+    out.writeLong(id.getMostSignificantBits());
+    out.writeLong(id.getLeastSignificantBits());
+  }
+
+  @Override
+  public void fromData(DataInput in)
+      throws IOException, ClassNotFoundException {
+    name = DataSerializer.readString(in);
+    length = in.readLong();
+    chunks = in.readInt();
+    created = in.readLong();
+    modified = in.readLong();
+    long high = in.readLong();
+    long low = in.readLong();
+    id = new UUID(high, low);
+  }
+  
+  
 }

@@ -31,7 +31,7 @@ public class LuceneServiceImplJUnitTest {
     function = FunctionService.getFunction(LuceneFunction.ID);
     assertNotNull(function);
   }
-
+  
   private GemFireCacheImpl createBasicCache() {
     return (GemFireCacheImpl) new CacheFactory().set("mcast-port", "0").create();
   }

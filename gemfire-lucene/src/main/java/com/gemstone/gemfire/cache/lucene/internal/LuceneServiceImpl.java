@@ -7,13 +7,16 @@ import java.util.Map;
 import org.apache.lucene.analysis.Analyzer;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.internal.DSFIDFactory;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
@@ -43,6 +46,7 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
     this.cache = gfc;
 
     FunctionService.registerFunction(new LuceneFunction());
+    registerDataSerializables();
 
     // Initialize the Map which maintains indexes
     this.indexMap = new HashMap<String, LuceneIndex>();
@@ -126,6 +130,17 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
 
   public void unregisterIndex(final String region){
     if( indexMap.containsKey( region )) indexMap.remove( region );
+  }
+
+  /**Public for test purposes */
+  public static void registerDataSerializables() {
+    DSFIDFactory.registerDSFID(
+        DataSerializableFixedID.LUCENE_CHUNK_KEY,
+        ChunkKey.class);
+    
+    DSFIDFactory.registerDSFID(
+        DataSerializableFixedID.LUCENE_FILE,
+        File.class);
   }
 
 }
