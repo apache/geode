@@ -184,7 +184,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
 
   @Test
   public void mergeShardAndLimitResults() throws Exception {
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(3);
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, 3);
     
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.addResult(null, result1);
@@ -226,7 +226,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
           }
         }));
 
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.addResult(null, result1);
     collector.addResult(null, result2);
@@ -255,7 +255,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesCollectorManager mockManager = mock(TopEntriesCollectorManager.class);
     Mockito.doThrow(new IOException()).when(mockManager).reduce(any(Collection.class));
 
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.endResults();
     collector.getResult();

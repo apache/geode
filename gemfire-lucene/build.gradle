@@ -10,6 +10,7 @@ dependencies {
     //Lucene test framework.
     testCompile 'org.apache.lucene:lucene-test-framework:5.3.0'
     testCompile 'org.apache.lucene:lucene-codecs:5.3.0'
+    testCompile project(path: ':gemfire-core', configuration: 'testOutput', transitive: false)
     //Dependency ot lucene-test-framework. Can we turn on transitive depencies for
     //the test framework somehow? We've disabled them globally in the parent
     //build.gadle.
