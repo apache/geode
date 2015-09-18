@@ -36,84 +36,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
  */
 public class RegionDirectory extends BaseDirectory {
 
-  static private final boolean CREATE_CACHE = Boolean.getBoolean("lucene.createCache");
   private static final Logger logger = LogService.getLogger();
   
   private final FileSystem fs;
-  
-  /**
-   * Create RegionDirectory to save index documents in file format into Gemfire region.
-   * @param dataRegionName data region's full name to build index from
-   */
-  public RegionDirectory(String dataRegionName) {
-    super(new SingleInstanceLockFactory());
-
-    Cache cache = null;
-    try {
-       cache = CacheFactory.getAnyInstance();
-    } catch (Exception e) {
-      //ignore
-    }
-    if (null == cache) {
-      if (CREATE_CACHE) {
-        cache = new CacheFactory().set("mcast-port", "0").set("log-level", "error").create();
-        logger.info("Created cache in RegionDirectory");
-      } else {
-        throw new IllegalStateException(LocalizedStrings.CqService_CACHE_IS_NULL.toLocalizedString());
-      }
-    } else {
-      logger.info("Found cache in RegionDirectory");
-    }
-    
-    Region dataRegion = cache.getRegion(dataRegionName);
-    assert dataRegion != null;
-    RegionAttributes ra = dataRegion.getAttributes();
-    DataPolicy dp = ra.getDataPolicy();
-    final boolean isPartitionedRegion = (ra.getPartitionAttributes() == null) ? false : true;
-    final boolean withPersistence = dp.withPersistence();
-    final boolean withStorage = isPartitionedRegion?ra.getPartitionAttributes().getLocalMaxMemory()>0:dp.withStorage();
-    RegionShortcut regionShortCut;
-    if (isPartitionedRegion) {
-      if (withPersistence) {
-        regionShortCut = RegionShortcut.PARTITION_PERSISTENT;
-      } else {
-        regionShortCut = RegionShortcut.PARTITION;
-      }
-    } else {
-      if (withPersistence) {
-        regionShortCut = RegionShortcut.REPLICATE_PERSISTENT;
-      } else {
-        regionShortCut = RegionShortcut.REPLICATE;
-      }
-    }
-    
-//    final boolean isOffHeap = ra.getOffHeap();
-    // TODO: 1) dataRegion should be withStorage
-    //       2) Persistence to Persistence
-    //       3) Replicate to Replicate, Partition To Partition
-    //       4) Offheap to Offheap
-    if (!withStorage) {
-      throw new IllegalStateException("The data region to create lucene index should be with storage");
-    }
-    
-    final String fileRegionName = dataRegionName+".files";
-    Region<String, File> fileRegion = cache.<String, File> getRegion(fileRegionName);
-    if (null == fileRegion) {
-      fileRegion = cache.<String, File> createRegionFactory(regionShortCut)
-          .setPartitionAttributes(new PartitionAttributesFactory<String, File>().setColocatedWith(dataRegionName).create())
-          .create(fileRegionName);
-    }
-
-    final String chunkRegionName = dataRegionName + ".chunks";
-    Region<ChunkKey, byte[]> chunkRegion = cache.<ChunkKey, byte[]> getRegion(chunkRegionName);
-    if (null == chunkRegion) {
-      chunkRegion = cache.<ChunkKey, byte[]> createRegionFactory(regionShortCut)
-          .setPartitionAttributes(new PartitionAttributesFactory<ChunkKey, byte[]>().setColocatedWith(fileRegion.getFullPath()).create())
-          .create(chunkRegionName);
-    }
-    
-    fs = new FileSystem(fileRegion, chunkRegion);
-  }
   
   /**
    * Create a region directory with a given file and chunk region. These regions
