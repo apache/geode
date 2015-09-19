@@ -125,4 +125,12 @@ public class FileSystem {
   void updateFile(File file) {
     fileRegion.put(file.getName(), file);
   }
+
+  public ConcurrentMap<String, File> getFileRegion() {
+    return fileRegion;
+  }
+
+  public ConcurrentMap<ChunkKey, byte[]> getChunkRegion() {
+    return chunkRegion;
+  }
 }

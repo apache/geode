@@ -27,10 +27,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /* wrapper of IndexWriter */
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
-
-  Cache cache;
-  // map to map bucketId to repo, -1 means its DR
-  HashMap<Integer, IndexRepository> indexRepositories = new HashMap<Integer, IndexRepository>();
+  private final Cache cache;
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, Cache cache) {
     this.indexName = indexName;

@@ -68,7 +68,7 @@ public class LuceneFunctionJUnitTest {
         oneOf(mockContext).getArguments();
         will(returnValue(searchArgs));
 
-        oneOf(mockRepoManager).getRepositories(mockRegion, mockContext);
+        oneOf(mockRepoManager).getRepositories(mockRegion);
         will(returnValue(repos));
 
         oneOf(mockContext).getResultSender();
@@ -133,7 +133,7 @@ public class LuceneFunctionJUnitTest {
         oneOf(mockContext).getResultSender();
         will(returnValue(mockResultSender));
 
-        oneOf(mockRepoManager).getRepositories(mockRegion, mockContext);
+        oneOf(mockRepoManager).getRepositories(mockRegion);
         will(returnValue(repos));
 
         oneOf(mockRepository1).query(with(query), with(equal(0)), with(any(IndexResultCollector.class)));
@@ -192,7 +192,7 @@ public class LuceneFunctionJUnitTest {
         oneOf(mockContext).getResultSender();
         will(returnValue(mockResultSender));
 
-        oneOf(mockRepoManager).getRepositories(mockRegion, mockContext);
+        oneOf(mockRepoManager).getRepositories(mockRegion);
         repos.remove(0);
         will(returnValue(repos));
 
@@ -240,7 +240,7 @@ public class LuceneFunctionJUnitTest {
         oneOf(mockContext).getArguments();
         will(returnValue(searchArgs));
 
-        oneOf(mockRepoManager).getRepositories(mockRegion, mockContext);
+        oneOf(mockRepoManager).getRepositories(mockRegion);
         will(returnValue(repos));
 
         oneOf(mockContext).getResultSender();
@@ -267,7 +267,7 @@ public class LuceneFunctionJUnitTest {
         oneOf(mockContext).getArguments();
         will(returnValue(searchArgs));
 
-        oneOf(mockRepoManager).getRepositories(mockRegion, mockContext);
+        oneOf(mockRepoManager).getRepositories(mockRegion);
         will(throwException(new BucketNotFoundException("")));
 
         oneOf(mockContext).getResultSender();
@@ -300,7 +300,7 @@ public class LuceneFunctionJUnitTest {
         oneOf(mockManager).reduce(with(any(Collection.class)));
         will(throwException(new IOException()));
 
-        oneOf(mockRepoManager).getRepositories(mockRegion, mockContext);
+        oneOf(mockRepoManager).getRepositories(mockRegion);
         repos.remove(1);
         will(returnValue(repos));
 

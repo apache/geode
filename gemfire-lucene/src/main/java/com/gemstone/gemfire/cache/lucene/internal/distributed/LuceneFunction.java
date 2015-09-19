@@ -103,7 +103,7 @@ public class LuceneFunction extends FunctionAdapter {
 
   private Collection<IndexRepository> getIndexRepositories(RegionFunctionContext ctx, Region region) throws BucketNotFoundException {
     synchronized (LuceneFunction.class) {
-      return repoManager.getRepositories(region, ctx);
+      return repoManager.getRepositories(region);
     }
   }
 

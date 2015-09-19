@@ -20,6 +20,7 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
+import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -31,15 +32,17 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class LuceneEventListenerJUnitTest {
 
   @Test
-  public void testProcessBatch() throws IOException {
+  public void testProcessBatch() throws IOException, BucketNotFoundException {
     RepositoryManager manager = Mockito.mock(RepositoryManager.class);
     IndexRepository repo1 = Mockito.mock(IndexRepository.class);
     IndexRepository repo2 = Mockito.mock(IndexRepository.class);
     Region region1 = Mockito.mock(Region.class);
     Region region2 = Mockito.mock(Region.class);
-
-    Mockito.when(manager.getRepository(eq(region1), any())).thenReturn(repo1);
-    Mockito.when(manager.getRepository(eq(region2), any())).thenReturn(repo2);
+    
+    Object callback1 = new Object();
+    
+    Mockito.when(manager.getRepository(eq(region1), any(), eq(callback1))).thenReturn(repo1);
+    Mockito.when(manager.getRepository(eq(region2), any(), eq(null))).thenReturn(repo2);
 
     LuceneEventListener listener = new LuceneEventListener(manager);
 
@@ -50,8 +53,10 @@ public class LuceneEventListenerJUnitTest {
       AsyncEvent event = Mockito.mock(AsyncEvent.class);
 
       Region region = i % 2 == 0 ? region1 : region2;
+      Object callback = i % 2 == 0 ? callback1 : null;
       Mockito.when(event.getRegion()).thenReturn(region);
       Mockito.when(event.getKey()).thenReturn(i);
+      Mockito.when(event.getCallbackArgument()).thenReturn(callback);
 
       switch (i % 3) {
       case 0:

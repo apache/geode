@@ -101,4 +101,13 @@ public class RegionDirectory extends BaseDirectory {
     isOpen = false;
   }
 
+  /**
+   * For testing, the file system
+   */
+  public FileSystem getFileSystem() {
+    return fs;
+  }
+  
+  
+
 }

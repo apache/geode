@@ -12,16 +12,15 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
  */
 public interface RepositoryManager {
 
-  IndexRepository getRepository(Region region, Object key);
+  IndexRepository getRepository(Region region, Object key, Object callbackArg) throws BucketNotFoundException;
 
   /**
    * Returns a collection of {@link IndexRepository} instances hosting index data of the input list of bucket ids. The
    * bucket needs to be present on this member.
    * 
-   * @param region
-   * @param ctx function context for which {@link IndexRepository}s needs to be discovered. 
+   * @param localDataSet The local data set of a function
    * @return a collection of {@link IndexRepository} instances
    * @throws BucketNotFoundException if any of the requested buckets is not found on this member
    */
-  Collection<IndexRepository> getRepositories(Region region, RegionFunctionContext ctx) throws BucketNotFoundException;
+  Collection<IndexRepository> getRepositories(Region localDataSet) throws BucketNotFoundException;
 }

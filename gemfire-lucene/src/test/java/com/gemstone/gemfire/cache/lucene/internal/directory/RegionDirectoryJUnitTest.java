@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.lucene.store.BaseDirectoryTestCase;
 import org.apache.lucene.store.Directory;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
@@ -26,14 +25,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class RegionDirectoryJUnitTest extends BaseDirectoryTestCase {
   @Rule
   public SystemPropertiesRestoreRule restoreProps = new SystemPropertiesRestoreRule();
-  
-//  @After
-//  public void clearLog4J() {
-//    //The lucene test ensures that no system properties
-//    //have been modified by the test. GFE leaves this property
-//    //set
-//    System.clearProperty("log4j.configurationFile");
-//  }
   
   protected Directory getDirectory(Path path) throws IOException {
     

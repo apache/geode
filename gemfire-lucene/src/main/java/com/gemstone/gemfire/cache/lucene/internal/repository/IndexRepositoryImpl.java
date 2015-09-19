@@ -75,4 +75,14 @@ public class IndexRepositoryImpl implements IndexRepository {
     writer.commit();
     searcherManager.maybeRefresh();
   }
+
+  public IndexWriter getWriter() {
+    return writer;
+  }
+
+  public LuceneSerializer getSerializer() {
+    return serializer;
+  }
+  
+  
 }
