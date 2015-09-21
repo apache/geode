@@ -1584,32 +1584,34 @@ public abstract class DistributedSystem implements StatisticsFactory {
         }
 
       } else {
-        if (!existingSystems.isEmpty()) {
+        boolean existingSystemDisconnecting = true;
+        while (!existingSystems.isEmpty() && existingSystemDisconnecting) {
           Assert.assertTrue(existingSystems.size() == 1);
 
           InternalDistributedSystem existingSystem =
-            (InternalDistributedSystem) existingSystems.get(0);
-          if (existingSystem.isDisconnecting()) {
-            while (existingSystem.isConnected()) {
-              boolean interrupted = Thread.interrupted();
-              try {
-                existingSystemsLock.wait(500);
-              } 
-              catch (InterruptedException ex) {
-                interrupted = true;
-              }
-              finally {
-                if (interrupted) {
-                  Thread.currentThread().interrupt();
-                }
+              (InternalDistributedSystem) existingSystems.get(0);
+          existingSystemDisconnecting = existingSystem.isDisconnecting();
+          if (existingSystemDisconnecting) {
+            boolean interrupted = Thread.interrupted();
+            try {
+              // no notify for existingSystemsLock, just to release the sync
+              existingSystemsLock.wait(50);
+            } 
+            catch (InterruptedException ex) {
+              interrupted = true;
+            }
+            finally {
+              if (interrupted) {
+                Thread.currentThread().interrupt();
               }
             }
-          }
-
-          if (existingSystem.isConnected()) {
+          } else if (existingSystem.isConnected()) {
             existingSystem.validateSameProperties(config,
                 existingSystem.isConnected());
             return existingSystem;
+          } else {
+          // This should not happen: existingSystem.isConnected()==false && existingSystem.isDisconnecting()==false 
+            throw new AssertionError("system should not be disconnecting==false and isConnected==falsed");
           }
         }
       }
