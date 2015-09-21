@@ -19,12 +19,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
@@ -345,12 +343,6 @@ public class LuceneFunctionJUnitTest {
   public void testQueryFunctionId() {
     String id = new LuceneFunction().getId();
     assertEquals(LuceneFunction.class.getName(), id);
-  }
-
-  @Test
-  public void testLuceneFunctionArgsDefaults() {
-    LuceneFunctionContext context = new LuceneFunctionContext(null);
-    assertEquals(LuceneQueryFactory.DEFAULT_LIMIT, context.getLimit());
   }
 
   @Before

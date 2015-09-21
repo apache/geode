@@ -1,5 +1,7 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,20 +11,23 @@ import java.util.PriorityQueue;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries.EntryScoreComparator;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * An implementation of {@link CollectorManager} for managing {@link TopEntriesCollector}. This is used by a member to
  * collect top matching entries from local buckets
  */
-public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCollector> {
+public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCollector>, DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
 
-  final int limit;
-  final String id;
+  private int limit;
+  private String id;
 
   public TopEntriesCollectorManager() {
     this(null, 0);
@@ -85,5 +90,41 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
 
     logger.debug("Reduced size of {} is {}", mergedResult.name, mergedResult.size());
     return mergedResult;
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {
+    return LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeString(id, out);
+    out.writeInt(limit);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    id = DataSerializer.readString(in);
+    limit = in.readInt();
+  }
+
+  /**
+   * @return Id of this collector, if any
+   */
+  public String getId() {
+    return id;
+  }
+
+  /**
+   * @return Result limit enforced by the collectors created by this manager
+   */
+  public int getLimit() {
+    return limit;
   }
 }

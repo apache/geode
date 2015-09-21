@@ -8,6 +8,9 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.CopyHelper;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
+import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -57,5 +60,14 @@ public class TopEntriesCollectorJUnitTest {
     TopEntriesCollector collector = new TopEntriesCollector("name");
     assertEquals("name", collector.getName());
     assertEquals(0, collector.size());
+  }
+
+  @Test
+  public void testSerialization() {
+    LuceneServiceImpl.registerDataSerializables();
+    TopEntriesCollectorManager manager = new TopEntriesCollectorManager("id", 213);
+    TopEntriesCollectorManager copy = CopyHelper.deepCopy(manager);
+    assertEquals("id", copy.getId());
+    assertEquals(213, copy.getLimit());
   }
 }

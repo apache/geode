@@ -813,6 +813,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short LUCENE_FILE = 2170;
   public static final short LUCENE_FUNCTION_CONTEXT = 2171;
   public static final short LUCENE_STRING_QUERY_PROVIDER = 2172;
+  public static final short LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER = 2173;
   
   // NOTE, codes > 65535 will take 4 bytes to serialize
   

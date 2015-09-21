@@ -4,22 +4,26 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 
 /**
  * Contains function arguments for text / lucene search
  */
-public class LuceneFunctionContext<C extends IndexResultCollector> implements DataSerializable {
-  private static final long serialVersionUID = 1L;
+public class LuceneFunctionContext<C extends IndexResultCollector> implements DataSerializableFixedID {
+  private CollectorManager<C> manager;
+  private int limit;
 
-  private final CollectorManager<C> manager;
-  private final int limit;
+  LuceneQueryProvider queryProvider;
 
-  final LuceneQueryProvider queryProvider;
+  public LuceneFunctionContext() {
+    this(null, null);
+  }
 
   public LuceneFunctionContext(LuceneQueryProvider provider) {
     this(provider, null);
@@ -52,19 +56,31 @@ public class LuceneFunctionContext<C extends IndexResultCollector> implements Da
     return this.manager;
   }
 
+  public LuceneQueryProvider getQueryProvider() {
+    return queryProvider;
+  }
+
+  @Override
+  public int getDSFID() {
+    return LUCENE_FUNCTION_CONTEXT;
+  }
+
   @Override
   public void toData(DataOutput out) throws IOException {
-    // TODO Auto-generated method stub
-
+    out.writeInt(limit);
+    DataSerializer.writeObject(queryProvider, out);
+    DataSerializer.writeObject(manager, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    // TODO Auto-generated method stub
-
+    limit = in.readInt();
+    queryProvider = DataSerializer.readObject(in);
+    manager = DataSerializer.readObject(in);
   }
 
-  public LuceneQueryProvider getQueryProvider() {
-    return queryProvider;
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
   }
 }
