@@ -14,7 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -53,10 +55,10 @@ public class TopEntriesJUnitTest {
   @Test
   public void testInitialization() {
     TopEntries hits = new TopEntries();
-    assertEquals(LuceneQueryFactory.DEFAULT_LIMIT, hits.limit);
+    assertEquals(LuceneQueryFactory.DEFAULT_LIMIT, hits.getLimit());
 
     hits = new TopEntries(123);
-    assertEquals(123, hits.limit);
+    assertEquals(123, hits.getLimit());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -76,6 +78,25 @@ public class TopEntriesJUnitTest {
     verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2);
   }
 
+  @Test
+  public void testSerialization() {
+    LuceneServiceImpl.registerDataSerializables();
+    TopEntries hits = new TopEntries(3);
+    
+    TopEntries copy = CopyHelper.deepCopy(hits);
+    assertEquals(3, copy.getLimit());
+    assertEquals(0, copy.getHits().size());
+    
+    hits = new TopEntries(3);
+    hits.addHit(r1_1);
+    hits.addHit(r2_1);
+    hits.addHit(r1_2);
+    
+    copy = CopyHelper.deepCopy(hits);
+    assertEquals(3, copy.size());
+    verifyResultOrder(copy.getHits(), r1_1, r2_1, r1_2);
+  }
+  
   public static void verifyResultOrder(Collection<EntryScore> list, EntryScore... expectedEntries) {
     Iterator<EntryScore> iter = list.iterator();
     for (EntryScore expectedEntry : expectedEntries) {
@@ -83,8 +104,8 @@ public class TopEntriesJUnitTest {
         fail();
       }
       EntryScore toVerify = iter.next();
-      assertEquals(expectedEntry.key, toVerify.key);
-      assertEquals(expectedEntry.score, toVerify.score, .0f);
+      assertEquals(expectedEntry.getKey(), toVerify.getKey());
+      assertEquals(expectedEntry.getScore(), toVerify.getScore(), .0f);
     }
   }
 

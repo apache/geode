@@ -1,16 +1,27 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 
 /**
  * An implementation of {@link IndexResultCollector} to collect {@link EntryScore}. It is expected that the results will
  * be ordered by score of the entry.
  */
-public class TopEntriesCollector implements IndexResultCollector {
-  final String name;
+public class TopEntriesCollector implements IndexResultCollector, DataSerializableFixedID {
+  private String name;
 
-  private final TopEntries entries;
+  private TopEntries entries;
+
+  public TopEntriesCollector() {
+    this(null);
+  }
 
   public TopEntriesCollector(String name) {
     this(name, LuceneQueryFactory.DEFAULT_LIMIT);
@@ -25,7 +36,7 @@ public class TopEntriesCollector implements IndexResultCollector {
   public void collect(Object key, float score) {
     collect(new EntryScore(key, score));
   }
-  
+
   public void collect(EntryScore entry) {
     entries.addHit(entry);
   }
@@ -46,5 +57,27 @@ public class TopEntriesCollector implements IndexResultCollector {
    */
   public TopEntries getEntries() {
     return entries;
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {
+    return LUCENE_TOP_ENTRIES_COLLECTOR;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeObject(entries, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    name = DataSerializer.readString(in);
+    entries = DataSerializer.readObject(in);
   }
 }

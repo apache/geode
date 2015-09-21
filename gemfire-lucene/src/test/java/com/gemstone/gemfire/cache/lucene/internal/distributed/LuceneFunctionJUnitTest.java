@@ -77,9 +77,9 @@ public class LuceneFunctionJUnitTest {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
             IndexResultCollector collector = (IndexResultCollector) invocation.getParameter(2);
-            collector.collect(r1_1.key, r1_1.score);
-            collector.collect(r1_2.key, r1_2.score);
-            collector.collect(r1_3.key, r1_3.score);
+            collector.collect(r1_1.getKey(), r1_1.getScore());
+            collector.collect(r1_2.getKey(), r1_2.getScore());
+            collector.collect(r1_3.getKey(), r1_3.getScore());
             return null;
           }
         });
@@ -89,8 +89,8 @@ public class LuceneFunctionJUnitTest {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
             IndexResultCollector collector = (IndexResultCollector) invocation.getParameter(2);
-            collector.collect(r2_1.key, r2_1.score);
-            collector.collect(r2_2.key, r2_2.score);
+            collector.collect(r2_1.getKey(), r2_1.getScore());
+            collector.collect(r2_2.getKey(), r2_2.getScore());
             return null;
           }
         });
@@ -139,9 +139,9 @@ public class LuceneFunctionJUnitTest {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
             IndexResultCollector collector = (IndexResultCollector) invocation.getParameter(2);
-            collector.collect(r1_1.key, r1_1.score);
-            collector.collect(r1_2.key, r1_2.score);
-            collector.collect(r1_3.key, r1_3.score);
+            collector.collect(r1_1.getKey(), r1_1.getScore());
+            collector.collect(r1_2.getKey(), r1_2.getScore());
+            collector.collect(r1_3.getKey(), r1_3.getScore());
             return null;
           }
         });
@@ -151,8 +151,8 @@ public class LuceneFunctionJUnitTest {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
             IndexResultCollector collector = (IndexResultCollector) invocation.getParameter(2);
-            collector.collect(r2_1.key, r2_1.score);
-            collector.collect(r2_2.key, r2_2.score);
+            collector.collect(r2_1.getKey(), r2_1.getScore());
+            collector.collect(r2_2.getKey(), r2_2.getScore());
             return null;
           }
         });
@@ -214,7 +214,7 @@ public class LuceneFunctionJUnitTest {
           @Override
           public Object invoke(Invocation invocation) throws Throwable {
             IndexResultCollector collector = (IndexResultCollector) invocation.getParameter(2);
-            collector.collect(r2_1.key, r2_1.score);
+            collector.collect(r2_1.getKey(), r2_1.getScore());
             return null;
           }
         });
@@ -325,20 +325,20 @@ public class LuceneFunctionJUnitTest {
         will(returnValue(mockResultSender));
         oneOf(mockContext).getArguments();
         will(returnValue(searchArgs));
-        
+
         oneOf(queryProvider).getQuery();
         will(throwException(new QueryException()));
-        
+
         oneOf(mockResultSender).sendException(with(any(QueryException.class)));
       }
     });
-    
+
     LuceneFunction function = new LuceneFunction();
     function.setRepositoryManager(mockRepoManager);
-    
+
     function.execute(mockContext);
   }
-  
+
   @Test
   public void testQueryFunctionId() {
     String id = new LuceneFunction().getId();

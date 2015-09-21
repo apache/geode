@@ -88,7 +88,7 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
       }
     }
 
-    logger.debug("Reduced size of {} is {}", mergedResult.name, mergedResult.size());
+    logger.debug("Reduced size of {} is {}", mergedResult.getName(), mergedResult.size());
     return mergedResult;
   }
 

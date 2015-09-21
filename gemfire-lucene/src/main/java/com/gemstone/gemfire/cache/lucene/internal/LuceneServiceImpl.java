@@ -12,8 +12,11 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollectorManager;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
@@ -155,5 +158,17 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
     DSFIDFactory.registerDSFID(
         DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
         TopEntriesCollectorManager.class);
+    
+    DSFIDFactory.registerDSFID(
+        DataSerializableFixedID.LUCENE_ENTRY_SCORE,
+        EntryScore.class);
+    
+    DSFIDFactory.registerDSFID(
+        DataSerializableFixedID.LUCENE_TOP_ENTRIES,
+        TopEntries.class);
+    
+    DSFIDFactory.registerDSFID(
+        DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
+        TopEntriesCollector.class);
   }
 }

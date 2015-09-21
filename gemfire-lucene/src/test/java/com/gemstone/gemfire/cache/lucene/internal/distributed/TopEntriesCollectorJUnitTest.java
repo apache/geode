@@ -10,7 +10,6 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -32,18 +31,18 @@ public class TopEntriesCollectorJUnitTest {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager();
 
     TopEntriesCollector c1 = manager.newCollector("c1");
-    c1.collect(r1_1.key, r1_1.score);
-    c1.collect(r1_2.key, r1_2.score);
-    c1.collect(r1_3.key, r1_3.score);
+    c1.collect(r1_1.getKey(), r1_1.getScore());
+    c1.collect(r1_2.getKey(), r1_2.getScore());
+    c1.collect(r1_3.getKey(), r1_3.getScore());
 
     TopEntriesCollector c2 = manager.newCollector("c2");
-    c2.collect(r2_1.key, r2_1.score);
-    c2.collect(r2_2.key, r2_2.score);
+    c2.collect(r2_1.getKey(), r2_1.getScore());
+    c2.collect(r2_2.getKey(), r2_2.getScore());
 
     TopEntriesCollector c3 = manager.newCollector("c3");
-    c3.collect(r3_1.key, r3_1.score);
-    c3.collect(r3_2.key, r3_2.score);
-    c3.collect(r3_3.key, r3_3.score);
+    c3.collect(r3_1.getKey(), r3_1.getScore());
+    c3.collect(r3_2.getKey(), r3_2.getScore());
+    c3.collect(r3_3.getKey(), r3_3.getScore());
 
     List<TopEntriesCollector> collectors = new ArrayList<>();
     collectors.add(c1);
@@ -69,5 +68,14 @@ public class TopEntriesCollectorJUnitTest {
     TopEntriesCollectorManager copy = CopyHelper.deepCopy(manager);
     assertEquals("id", copy.getId());
     assertEquals(213, copy.getLimit());
+  }
+  
+  @Test
+  public void testCollectorSerialization() {
+    LuceneServiceImpl.registerDataSerializables();
+    TopEntriesCollector collector = new TopEntriesCollector("collector", 345);
+    TopEntriesCollector copy = CopyHelper.deepCopy(collector);
+    assertEquals("collector", copy.getName());
+    assertEquals(345, copy.getEntries().getLimit());
   }
 }

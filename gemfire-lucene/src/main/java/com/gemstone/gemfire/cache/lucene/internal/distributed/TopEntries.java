@@ -1,20 +1,26 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 
 /**
  * Holds a ordered collection of entries matching a search query.
  */
-public class TopEntries {
+public class TopEntries implements DataSerializableFixedID {
   // ordered collection of entries
-  final private List<EntryScore> hits = new ArrayList<>();
+  private List<EntryScore> hits = new ArrayList<>();
 
   // the maximum number of entries stored in this
-  final int limit;
+  private int limit;
 
   // comparator to order entryScore instances
   final Comparator<EntryScore> comparator = new EntryScoreComparator();
@@ -66,13 +72,43 @@ public class TopEntries {
   }
 
   /**
+   * @return The maximum capacity of this collection
+   */
+  public int getLimit() {
+    return limit;
+  }
+
+  /**
    * Compares scores of two entries using natural ordering. I.e. it returns -1 if the first entry's score is less than
    * the second one.
    */
   class EntryScoreComparator implements Comparator<EntryScore> {
     @Override
     public int compare(EntryScore o1, EntryScore o2) {
-      return Float.compare(o1.score, o2.score);
+      return Float.compare(o1.getScore(), o2.getScore());
     }
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {
+    return LUCENE_TOP_ENTRIES;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    out.writeInt(limit);
+    DataSerializer.writeObject(hits, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    limit = in.readInt();
+    hits = DataSerializer.readObject(in);
   };
 }
