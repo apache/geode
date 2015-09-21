@@ -13,6 +13,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.internal.DSFIDFactory;
@@ -141,6 +142,13 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
     DSFIDFactory.registerDSFID(
         DataSerializableFixedID.LUCENE_FILE,
         File.class);
+    
+    DSFIDFactory.registerDSFID(
+        DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
+        LuceneFunctionContext.class);
+    
+    DSFIDFactory.registerDSFID(
+        DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
+        StringQueryProvider.class);
   }
-
 }
