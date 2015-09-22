@@ -31,7 +31,7 @@ public class StringQueryProviderJUnitTest {
 
   @Test
   public void testQueryConstruction() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider("foo:bar");
+    StringQueryProvider provider = new StringQueryProvider(null, "foo:bar");
     Query query = provider.getQuery();
     Assert.assertNotNull(query);
     assertEquals("foo:bar", query.toString());

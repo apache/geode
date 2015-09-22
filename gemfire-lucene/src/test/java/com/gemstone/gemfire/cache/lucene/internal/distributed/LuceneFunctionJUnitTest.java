@@ -367,7 +367,7 @@ public class LuceneFunctionJUnitTest {
     repos.add(mockRepository1);
     repos.add(mockRepository2);
 
-    queryProvider = new StringQueryProvider("gemfire:lucene");
+    queryProvider = new StringQueryProvider(null, "gemfire:lucene");
     query = queryProvider.getQuery();
     searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider);
   }

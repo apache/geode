@@ -37,11 +37,7 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   private LuceneIndex index;
 
   public StringQueryProvider() {
-    this(null);
-  }
-
-  public StringQueryProvider(String query) {
-    this(null, query);
+    this(null, null);
   }
 
   public StringQueryProvider(LuceneIndex index, String query) {
