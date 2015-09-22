@@ -83,6 +83,32 @@ public class PartitionedRepositoryManagerJUnitTest {
   }
   
   /**
+   * Test what happens when a bucket is destroyed.
+   */
+  @Test
+  public void destroyBucket() throws BucketNotFoundException, IOException {
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    
+    BucketRegion mockBucket0 = getMockBucket(0);
+    
+    IndexRepositoryImpl repo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
+
+    assertNotNull(repo0);
+    checkRepository(repo0, 0);
+    
+    BucketRegion fileBucket0 = fileBuckets.get(0);
+    
+    //Simulate rebalancing of a bucket by marking the old bucket is destroyed
+    //and creating a new bucket
+    Mockito.when(fileBucket0.isDestroyed()).thenReturn(true);
+    mockBucket0 = getMockBucket(0);
+    
+    IndexRepositoryImpl newRepo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
+    assertNotEquals(repo0, newRepo0);
+    checkRepository(newRepo0, 0);
+  }
+  
+  /**
    * Test that we get the expected exception when a user bucket is missing
    */
   @Test(expected = BucketNotFoundException.class)

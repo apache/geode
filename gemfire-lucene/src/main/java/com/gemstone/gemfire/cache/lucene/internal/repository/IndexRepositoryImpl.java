@@ -11,6 +11,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.SerializerUtil;
 
@@ -26,8 +27,10 @@ public class IndexRepositoryImpl implements IndexRepository {
   private final IndexWriter writer;
   private final LuceneSerializer serializer;
   private final SearcherManager searcherManager;
+  private Region<?,?> region;
   
-  public IndexRepositoryImpl(IndexWriter writer, LuceneSerializer serializer) throws IOException {
+  public IndexRepositoryImpl(Region<?,?> region, IndexWriter writer, LuceneSerializer serializer) throws IOException {
+    this.region = region;
     this.writer = writer;
     searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, null);
     this.serializer = serializer;
@@ -83,6 +86,9 @@ public class IndexRepositoryImpl implements IndexRepository {
   public LuceneSerializer getSerializer() {
     return serializer;
   }
-  
-  
+
+  @Override
+  public boolean isClosed() {
+    return region.isDestroyed();
+  }
 }

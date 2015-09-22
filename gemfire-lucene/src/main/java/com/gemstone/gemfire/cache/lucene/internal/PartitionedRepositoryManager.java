@@ -20,7 +20,7 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
  * Manages index repositories for partitioned regions.
@@ -38,7 +38,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    * 
    * It is weak so that the old BucketRegion will be garbage collected. 
    */
-  CopyOnWriteWeakHashMap<BucketRegion, IndexRepository> indexRepositories = new CopyOnWriteWeakHashMap<BucketRegion, IndexRepository>();
+  CopyOnWriteHashMap<Integer, IndexRepository> indexRepositories = new CopyOnWriteHashMap<Integer, IndexRepository>();
   
   /** The user region for this index */
   private final PartitionedRegion userRegion;
@@ -73,7 +73,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
       throw new BucketNotFoundException("User bucket was not found for region " + region + "key " +  key + " callbackarg " + callbackArg);
     }
     
-    return getRepository(userBucket);
+    return getRepository(userBucket.getId());
   }
   
   @Override
@@ -90,7 +90,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
       if(userBucket == null) {
         throw new BucketNotFoundException("User bucket was not found for region " + region + "bucket id " + bucketId);
       } else {
-        repos.add(getRepository(userBucket));
+        repos.add(getRepository(userBucket.getId()));
       }
     }
 
@@ -100,15 +100,24 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   /**
    * Return the repository for a given user bucket
    */
-  private IndexRepository getRepository(BucketRegion userBucket) throws BucketNotFoundException {
-    IndexRepository repo = indexRepositories.get(userBucket);
+  private IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
+    IndexRepository repo = indexRepositories.get(bucketId);
+    
+    //Remove the repository if it has been destroyed (due to rebalancing)
+    if(repo != null && repo.isClosed()) {
+      indexRepositories.remove(bucketId, repo);
+      repo = null;
+    }
+    
     if(repo == null) {
       try {
-        RegionDirectory dir = new RegionDirectory(getMatchingBucket(userBucket, fileRegion), getMatchingBucket(userBucket, chunkRegion));
+        BucketRegion fileBucket = getMatchingBucket(fileRegion, bucketId);
+        BucketRegion chunkBucket = getMatchingBucket(chunkRegion, bucketId);
+        RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket);
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter writer = new IndexWriter(dir, config);
-        repo = new IndexRepositoryImpl(writer, serializer);
-        IndexRepository oldRepo = indexRepositories.putIfAbsent(userBucket, repo);
+        repo = new IndexRepositoryImpl(fileBucket, writer, serializer);
+        IndexRepository oldRepo = indexRepositories.putIfAbsent(bucketId, repo);
         if(oldRepo != null) {
           repo = oldRepo;
         }
@@ -123,10 +132,10 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   /**
    * Find the bucket in region2 that matches the bucket id from region1.
    */
-  private BucketRegion getMatchingBucket(BucketRegion region1, PartitionedRegion region2) throws BucketNotFoundException {
-    BucketRegion result = region2.getDataStore().getLocalBucketById(region1.getId());
+  private BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) throws BucketNotFoundException {
+    BucketRegion result = region.getDataStore().getLocalBucketById(bucketId);
     if(result == null) {
-      throw new BucketNotFoundException("Bucket not found for region " + region2 + " bucekt id " + region1.getId());
+      throw new BucketNotFoundException("Bucket not found for region " + region + " bucekt id " + bucketId);
     }
     
     return result;
