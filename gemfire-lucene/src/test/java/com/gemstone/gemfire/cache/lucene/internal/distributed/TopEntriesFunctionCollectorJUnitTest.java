@@ -166,8 +166,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
         try {
           collector.getResult(10, TimeUnit.MILLISECONDS);
         } catch (FunctionException e) {
-          endGetResult.countDown();
           exception.set(e);
+          endGetResult.countDown();
         }
       }
     });
