@@ -37,7 +37,13 @@ public interface JoinLeave extends Service {
    * returns the current membership view
    */
   NetView getView();
-
+  
+  
+  /**
+   * returns the last known view prior to close - for reconnecting
+   */
+  NetView getPreviousView();
+  
   /**
    * test hook
    */

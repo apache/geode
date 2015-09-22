@@ -82,14 +82,6 @@ public interface Manager extends Service, MessageHandler {
   boolean isMulticastAllowed();
   
   /**
-   * This establishes the reason that a shutdown is being performed.
-   * After this the cancelCriterion will start reporting that a
-   * cancel is in progress.
-   * @param e the reason for the shutdown
-   */
-  void setShutdownCause(Exception e);
-  
-  /**
    * Returns the reason for a shutdown. 
    */
   Throwable getShutdownCause();
@@ -110,4 +102,10 @@ public interface Manager extends Service, MessageHandler {
    * suspicion
    */
   void memberSuspected(SuspectMember suspect);
+  
+  /**
+   * Indicate whether we are attempting a reconnect
+   */
+  boolean isReconnectingDS();
+  
 }

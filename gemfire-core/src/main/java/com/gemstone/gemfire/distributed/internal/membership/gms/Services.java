@@ -5,6 +5,7 @@ import java.util.Timer;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -49,6 +50,7 @@ public class Services {
   final private Stopper cancelCriterion;
   private volatile boolean stopping;
   private volatile boolean stopped;
+  private volatile Exception shutdownCause;
 
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
@@ -293,8 +295,21 @@ public class Services {
     return this.cancelCriterion;
   }
   
+  public void setShutdownCause(Exception e) {
+    this.shutdownCause = e;
+  }
   
+  public Exception getShutdownCause() {
+    return shutdownCause;
+  }
   
+  public boolean isShutdownDueToForcedDisconnect() {
+    return shutdownCause instanceof ForcedDisconnectException;
+  }
+  
+  public boolean isAutoReconnectEnabled() {
+    return !getConfig().getDistributionConfig().getDisableAutoReconnect();
+  }
   
   public static class Stopper extends CancelCriterion {
     volatile String reasonForStopping = null;

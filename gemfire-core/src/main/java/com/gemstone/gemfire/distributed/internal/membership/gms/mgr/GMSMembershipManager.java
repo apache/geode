@@ -9,9 +9,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.mgr;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +29,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
+import org.jgroups.JChannel;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.ForcedDisconnectException;
@@ -68,7 +67,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.SuspectMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsQuorumChecker;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
@@ -106,12 +105,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * the ping-pong responses used in the quorum-checking algorithm. 
    */
   private volatile QuorumChecker quorumChecker;
-  
-  /**
-   * during an auto-reconnect attempt set this to the old DistributedSystem's
-   * UDP port socket.  The failure detection protocol will pick it up and use it.
-   */
-  private volatile DatagramSocket oldDSUDPSocket;
   
   /**
    * thread-local used to force use of JGroups for communications, usually to
@@ -757,9 +750,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
         LocalizedStrings.GroupMembershipService_MEMBERSHIP_FINISHED_VIEW_PROCESSING_VIEWID___0, Long.valueOf(newViewId)));
   }
 
-  /** an exception that caused the manager to shut down */
-  volatile Exception shutdownCause;
-
   /**
    * the timer used to perform periodic tasks
    * @guarded.By latestViewLock
@@ -785,7 +775,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @throws SystemConnectException - problem joining
    */
   private void join() {
-    this.shutdownCause = null;
+    services.setShutdownCause(null);
     
     latestViewLock.writeLock().lock();
     try {
@@ -843,7 +833,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
     this.membershipCheckTimeout = config.getSecurityPeerMembershipTimeout();
     this.wasReconnectingSystem = transport.getIsReconnectingDS();
-    this.oldDSUDPSocket = (DatagramSocket)transport.getOldDSMembershipInfo();
     
     // cache these settings for use in send()
     this.mcastEnabled = transport.isMcastEnabled();
@@ -1766,8 +1755,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   public void uncleanShutdown(String reason, final Exception e) {
     inhibitForcedDisconnectLogging(false);
     
-    if (this.shutdownCause == null) {
-      this.shutdownCause = e;
+    if (services.getShutdownCause() == null) {
+      services.setShutdownCause(e);
     }
     
     if (this.directChannel != null) {
@@ -1852,8 +1841,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
     catch (RuntimeException e) {
       Throwable problem = e;
-      if (this.shutdownCause != null) {
-        Throwable cause = this.shutdownCause;
+      if (services.getShutdownCause() != null) {
+        Throwable cause = services.getShutdownCause();
         // If ForcedDisconnectException occurred then report it as actual
         // problem.
         if (cause instanceof ForcedDisconnectException) {
@@ -1864,7 +1853,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
             ne = ne.getCause();
           }
           try {
-            ne.initCause(this.shutdownCause);
+            ne.initCause(services.getShutdownCause());
           }
           catch (IllegalArgumentException selfCausation) {
             // fix for bug 38895 - the cause is already in place
@@ -1948,8 +1937,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
         theStats.incSentBytes(sentBytes);
     }
     catch (DistributedSystemDisconnectedException ex) {
-      if (this.shutdownCause != null) {
-        throw new DistributedSystemDisconnectedException("DistributedSystem is shutting down", this.shutdownCause);
+      if (services.getShutdownCause() != null) {
+        throw new DistributedSystemDisconnectedException("DistributedSystem is shutting down", services.getShutdownCause());
       } else {
         throw ex; // see bug 41416
       }
@@ -2029,50 +2018,28 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
   }
   
-  /**
-   * During jgroups connect the UDP protocol will invoke
-   * this method to find the DatagramSocket it should use instead of
-   * creating a new one.
-   */
-  public DatagramSocket getMembershipSocketForUDP() {
-    return this.oldDSUDPSocket;
-  }
-  
   @Override
   public QuorumChecker getQuorumChecker() {
-    if ( ! (this.shutdownCause instanceof ForcedDisconnectException) ) {
+    if ( ! (services.isShutdownDueToForcedDisconnect()) ) {
       return null;
     }
     if (this.quorumChecker != null) {
       return this.quorumChecker;
     }
-    try {
-      // TODO: creation of the quorum checker should be delegated to the
-      // Messenger component.  For JGroups we we really need JChannel instead
-      // of a datagram socket because jgroup
-      // doesn't have the "ping" handling that I built into the TP protocol.s
-      DatagramSocket sock = new DatagramSocket(this.address.getPort(),
-                               this.address.getNetMember().getInetAddress());
-      JGroupsQuorumChecker impl = new JGroupsQuorumChecker(
-          services.getJoinLeave().getView(), services.getConfig().getLossThreshold(),
-          sock);
-      impl.initialize();
-      this.quorumChecker = impl;
-      return impl;
-    } catch (SocketException e) {
-      logger.warn("unable to create quorum checker", e);
-      return null;
-    }
+
+    QuorumChecker impl = services.getMessenger().getQuorumChecker();
+    this.quorumChecker = impl;
+    return impl;
   }
   
   @Override
   public void releaseQuorumChecker(QuorumChecker checker) {
-    ((JGroupsQuorumChecker)checker).teardown();
+    ((GMSQuorumChecker)checker).suspend();
     InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
     if (system == null || !system.isConnected()) {
-      DatagramSocket sock = (DatagramSocket)checker.getMembershipInfo();
-      if (sock != null  &&  !sock.isClosed()) {
-        sock.close();
+      JChannel channel = (JChannel)checker.getMembershipInfo();
+      if (channel != null  &&  !channel.isClosed()) {
+        channel.close();
       }
     }
   }
@@ -2169,7 +2136,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   public Stub getStubForMember(InternalDistributedMember m)
   {
     if (shutdownInProgress) {
-      throw new DistributedSystemDisconnectedException(LocalizedStrings.GroupMembershipService_DISTRIBUTEDSYSTEM_IS_SHUTTING_DOWN.toLocalizedString(), this.shutdownCause);
+      throw new DistributedSystemDisconnectedException(LocalizedStrings.GroupMembershipService_DISTRIBUTEDSYSTEM_IS_SHUTTING_DOWN.toLocalizedString(), services.getShutdownCause());
     }
 
     if (services.getConfig().getDistributionConfig().getDisableTcp()) {
@@ -2205,7 +2172,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     latestViewLock.readLock().lock();
     try {
       if (shutdownInProgress) {
-        throw new DistributedSystemDisconnectedException(LocalizedStrings.GroupMembershipService_DISTRIBUTEDSYSTEM_IS_SHUTTING_DOWN.toLocalizedString(), this.shutdownCause);
+        throw new DistributedSystemDisconnectedException(LocalizedStrings.GroupMembershipService_DISTRIBUTEDSYSTEM_IS_SHUTTING_DOWN.toLocalizedString(), services.getShutdownCause());
       }
       InternalDistributedMember result = (InternalDistributedMember)
           stubToMemberMap.get(s);
@@ -2704,11 +2671,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   /* returns the cause of shutdown, if known */
   public Throwable getShutdownCause() {
-    return this.shutdownCause;
-  }
-  
-  public void setShutdownCause(Exception t) {
-    this.shutdownCause = t;
+    return services.getShutdownCause();
   }
 
 //  @Override
@@ -2900,48 +2863,47 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
 
   @Override
-  public void forceDisconnect(String reason) {
-    if (GMSMembershipManager.this.shutdownInProgress) {
-      return;  // probably a race condition
-    }
-    saveCacheXmlForReconnect();
-    // make sure that we've received a connected channel and aren't responsible
-    // for the notification
-    if (!isJoining()) {
+  public void forceDisconnect(final String reason) {
+	if (GMSMembershipManager.this.shutdownInProgress) {
+		return; // probably a race condition
+	}
+	saveCacheXmlForReconnect();
+    Thread reconnectThread = new Thread (new Runnable() {
+      public void run() {
+        // make sure that we've received a connected channel and aren't responsible
+        // for the notification
+        if (!isJoining()) {
 
-      AlertAppender.getInstance().shuttingDown();
+          AlertAppender.getInstance().shuttingDown();
 
-//      Exception logException = e;
-//      if (e instanceof ForcedDisconnectException) {
-//        reason = "Membership closed: " + e;
-//        logException = null;
-//      }
-//      else {
-//        reason = "Membership closed";
-//      }
+          services.getCancelCriterion().cancel(reason);
+          // cache the exception so it can be appended to ShutdownExceptions
+          Exception shutdownCause = new ForcedDisconnectException(reason);
+          services.setShutdownCause(shutdownCause);
 
-      services.getCancelCriterion().cancel(reason);
-      // cache the exception so it can be appended to ShutdownExceptions
-      shutdownCause = new ForcedDisconnectException(reason);
+          if (!inhibitForceDisconnectLogging) {
+            logger.fatal(LocalizedMessage.create(
+                LocalizedStrings.GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0, reason), shutdownCause);
+          }
+          
+          services.emergencyClose();
 
-      if (!inhibitForceDisconnectLogging) {
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0, reason), shutdownCause);
+          // stop server locators immediately since they may not have correct
+          // information.  This has caused client failures in bridge/wan
+          // network-down testing
+          InternalLocator loc = (InternalLocator)Locator.getLocator();
+          if (loc != null) {
+            loc.stop(!services.getConfig().getDistributionConfig()
+                         .getDisableAutoReconnect(), false);
+          }
+          
+          uncleanShutdown(reason, shutdownCause);
+        }
       }
-      
-      services.emergencyClose();
-
-      // stop server locators immediately since they may not have correct
-      // information.  This has caused client failures in bridge/wan
-      // network-down testing
-      InternalLocator loc = (InternalLocator)Locator.getLocator();
-      if (loc != null) {
-        loc.stop(!services.getConfig().getDistributionConfig()
-                     .getDisableAutoReconnect(), false);
-      }
-      
-      uncleanShutdown(reason, shutdownCause);
-    }
+    });
+    reconnectThread.setName("DisconnectThread");
+    reconnectThread.setDaemon(false);
+    reconnectThread.start();
   }
 
   

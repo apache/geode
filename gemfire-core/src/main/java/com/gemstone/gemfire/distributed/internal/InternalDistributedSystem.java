@@ -924,7 +924,8 @@ public final class InternalDistributedSystem
     if (isForcedDisconnect) {
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
-      reconnected = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
+    
+     reconnected = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
     }
     if (!reconnected) {
       disconnect(false, reason, shunned);
@@ -2475,20 +2476,17 @@ public final class InternalDistributedSystem
    */
   public boolean tryReconnect(boolean forcedDisconnect, String reason, GemFireCacheImpl oldCache) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
     synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a cache
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
         synchronized (reconnectLock) {
-          if (!forcedDisconnect &&
-              !oldCache.isClosed() &&
-              oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
+          if (!forcedDisconnect && !oldCache.isClosed() && oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
             if (isDebugEnabled) {
               logger.debug("tryReconnect: No required roles are missing.");
             }
             return false;
           }
-        
+
           if (isDebugEnabled) {
             logger.debug("tryReconnect: forcedDisconnect={} sqlf listener={}", forcedDisconnect, this.sqlfDisconnectListener);
           }
@@ -2496,7 +2494,7 @@ public final class InternalDistributedSystem
             // allow the fabric-service to stop before dismantling everything
             notifySqlfForcedDisconnectListener();
 
-            if (this.config.getDisableAutoReconnect()) {
+            if (config.getDisableAutoReconnect()) {
               if (isDebugEnabled) {
                 logger.debug("tryReconnect: auto reconnect after forced disconnect is disabled");
               }
@@ -2504,7 +2502,7 @@ public final class InternalDistributedSystem
             }
           }
           reconnect(forcedDisconnect, reason);
-          return this.reconnectDS != null && this.reconnectDS.isConnected();
+          return (this.reconnectDS != null && this.reconnectDS.isConnected());
         } // synchronized reconnectLock
       } // synchronized cache
     } // synchronized CacheFactory.class
@@ -2577,7 +2575,6 @@ public final class InternalDistributedSystem
       logger.debug("changing thread name to ReconnectThread");
     }
     Thread.currentThread().setName("ReconnectThread");
-    Thread.currentThread().setDaemon(false);
     
     // get the membership manager for quorum checks
     MembershipManager mbrMgr = this.dm.getMembershipManager();

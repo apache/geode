@@ -1,8 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -25,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
@@ -57,6 +54,7 @@ import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
@@ -74,6 +72,8 @@ import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class JGroupsMessenger implements Messenger {
 
@@ -114,6 +114,9 @@ public class JGroupsMessenger implements Messenger {
   private NetView view;
 
   private View jgView;
+  
+  private GMSPingPonger pingPonger = new GMSPingPonger();
+
   
   static {
     // register classes that we've added to jgroups that are put on the wire
@@ -261,7 +264,7 @@ public class JGroupsMessenger implements Messenger {
     }
 
     try {
-      
+      myChannel.setReceiver(null);
       myChannel.setReceiver(new JGroupsReceiver());
       if (!reconnecting) {
         myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
@@ -283,7 +286,12 @@ public class JGroupsMessenger implements Messenger {
   @Override
   public void stop() {
     if (this.myChannel != null) {
-      this.myChannel.close();
+      if ((services.isShutdownDueToForcedDisconnect() && services.isAutoReconnectEnabled()) || services.getManager().isReconnectingDS()) {
+        
+      }
+      else {
+        this.myChannel.close();
+      }
     }
   }
 
@@ -312,6 +320,7 @@ public class JGroupsMessenger implements Messenger {
   
   private void establishLocalAddress() {
     UUID logicalAddress = (UUID)myChannel.getAddress();
+    logicalAddress = logicalAddress.copy();
     
     IpAddress ipaddr = (IpAddress)myChannel.down(new Event(Event.GET_PHYSICAL_ADDRESS));
     
@@ -450,7 +459,7 @@ public class JGroupsMessenger implements Messenger {
       }
       if (problem != null) {
         if (services.getManager().getShutdownCause() != null) {
-          Throwable cause = services.getManager().getShutdownCause();
+          Throwable cause = services.getShutdownCause();
           // If ForcedDisconnectException occurred then report it as actual
           // problem.
           if (cause instanceof ForcedDisconnectException) {
@@ -460,7 +469,7 @@ public class JGroupsMessenger implements Messenger {
             while (ne.getCause() != null) {
               ne = ne.getCause();
             }
-            ne.initCause(services.getManager().getShutdownCause());
+            ne.initCause(services.getShutdownCause());
           }
         }
         final String channelClosed = LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
@@ -757,10 +766,21 @@ public class JGroupsMessenger implements Messenger {
   public void emergencyClose() {
     this.view = null;
     if (this.myChannel != null) {
-      this.myChannel.disconnect();
+      if ((services.isShutdownDueToForcedDisconnect() && services.isAutoReconnectEnabled()) || services.getManager().isReconnectingDS()) {
+      }
+      else {
+        this.myChannel.disconnect();
+      }
     }
   }
   
+  public QuorumChecker getQuorumChecker() {    
+    GMSQuorumChecker qc = new GMSQuorumChecker(
+          services.getJoinLeave().getPreviousView(), services.getConfig().getLossThreshold(),
+          this.myChannel);
+    qc.initialize();
+    return qc;
+  }
   /**
    * Puller receives incoming JGroups messages and passes them to a handler
    */
@@ -774,6 +794,21 @@ public class JGroupsMessenger implements Messenger {
 
       if (logger.isTraceEnabled()) {
         logger.trace("JGroupsMessenger received {} headers: {}", jgmsg, jgmsg.getHeaders());
+      }
+      
+      //Respond to ping messages sent from other systems that are in a auto reconnect state
+      Object contents = jgmsg.getBuffer();
+      if (contents instanceof byte[]) {
+          byte[] msgBytes = (byte[]) contents;
+  	    if (pingPonger.isPingMessage(msgBytes)) {
+  	    	try {
+  	    	  pingPonger.sendPongMessage(myChannel, jgAddress, jgmsg.getSrc());
+            }
+            catch (Exception e) {
+              logger.info("Failed sending Pong message to " + jgmsg.getSrc());
+            }
+  	        return;
+  	    }
       }
       
       Object o = readJGMessage(jgmsg);

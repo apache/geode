@@ -1,10 +1,10 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
-import java.io.IOException;
 import java.util.Set;
 
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
 
 public interface Messenger extends Service {
   /**
@@ -22,4 +22,9 @@ public interface Messenger extends Service {
    * returns the endpoint ID for this member
    */
   InternalDistributedMember getMemberID();
+  
+  /**
+   * 
+   */
+  QuorumChecker getQuorumChecker();
 }

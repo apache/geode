@@ -1,6 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -10,14 +11,17 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.Assert;
+
 import org.jgroups.Event;
 import org.jgroups.Message;
 import org.jgroups.util.UUID;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
+import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
@@ -211,6 +215,154 @@ public class JGroupsMessengerJUnitTest {
         sentMessages == 2);
   }
   
+  @Test
+  public void testChannelStillConnectedAfterEmergencyCloseAfterForcedDisconnectWithAutoReconnect() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doCallRealMethod().when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doCallRealMethod().when(services).isAutoReconnectEnabled();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.emergencyClose();
+    assertTrue(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelStillConnectedAfterStopAfterForcedDisconnectWithAutoReconnect() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doCallRealMethod().when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doCallRealMethod().when(services).isAutoReconnectEnabled();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.stop();
+    assertTrue(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelStillConnectedAfteremergencyWhileReconnectingDS() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(false).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(false).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(true).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.emergencyClose();
+    assertTrue(messenger.myChannel.isConnected());
+  }
+  
+  
+  @Test
+  public void testChannelStillConnectedAfterStopWhileReconnectingDS() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(false).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(false).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(true).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.stop();
+    assertTrue(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelClosedOnEmergencyClose() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(false).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(false).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(false).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.emergencyClose();
+    assertFalse(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelClosedOnStop() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(false).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(false).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(false).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.stop();
+    assertFalse(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelClosedAfterEmergencyCloseForcedDisconnectWithoutAutoReconnect() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(true).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(false).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(false).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.emergencyClose();
+    assertFalse(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelStillConnectedStopAfterForcedDisconnectWithoutAutoReconnect() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(true).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(false).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(false).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.stop();
+    assertFalse(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelClosedAfterEmergencyCloseNotForcedDisconnectWithAutoReconnect() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(false).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(true).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(false).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.emergencyClose();
+    assertFalse(messenger.myChannel.isConnected());
+  }
+  
+  @Test
+  public void testChannelStillConnectedStopNotForcedDisconnectWithAutoReconnect() throws Exception {
+    initMocks(false);
+    Mockito.doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
+    Mockito.doCallRealMethod().when(services).getShutdownCause();
+    Mockito.doCallRealMethod().when(services).emergencyClose();
+    Mockito.doReturn(false).when(services).isShutdownDueToForcedDisconnect();
+    Mockito.doReturn(true).when(services).isAutoReconnectEnabled();
+    Mockito.doReturn(false).when(manager).isReconnectingDS();
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
+    assertTrue(messenger.myChannel.isConnected());
+    messenger.stop();
+    assertFalse(messenger.myChannel.isConnected());
+  }
   
   /**
    * creates an InternalDistributedMember address that can be used

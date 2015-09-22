@@ -104,6 +104,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /** the currently installed view */
   private volatile NetView currentView;
   
+  /** the previous view **/
+  private volatile NetView previousView;
+  
   private final Set<InternalDistributedMember> removedMembers = new HashSet<>();
   
   /** a new view being installed */
@@ -734,6 +737,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   public NetView getView() {
     return currentView;
   }
+  
+  public NetView getPreviousView() {
+    return previousView;
+  }
 
   @Override
   public InternalDistributedMember getMemberID() {
@@ -771,7 +778,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           return;
         }
       }
-      
+      previousView = currentView;
       currentView = newView;
       preparedView = null;
       lastConflictingView = null;
@@ -1265,7 +1272,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       Set<InternalDistributedMember> leaveReqs = new HashSet<>();
       Set<InternalDistributedMember> removalReqs = new HashSet<>();
       List<String> removalReasons = new ArrayList<String>();
-      
+
       NetView oldView = currentView;
       List<InternalDistributedMember> oldMembers;
       if (oldView != null) {
@@ -1282,16 +1289,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         if (msg instanceof JoinRequestMessage) {
           mbr = ((JoinRequestMessage)msg).getMemberID();
 
-          boolean duplicate = false;
-          for (InternalDistributedMember m: oldMembers) {
-            // check the netMembers, which wildcards the
-            // viewID to detect old IDs still in the view
-            if (mbr.getNetMember().equals(m.getNetMember())) {
-              duplicate = true;
-              break;
-            }
-          }
-          if (!duplicate && !joinReqs.contains(mbr)) {
+          if (!joinReqs.contains(mbr)) {
             joinReqs.add(mbr);
           }
         }
