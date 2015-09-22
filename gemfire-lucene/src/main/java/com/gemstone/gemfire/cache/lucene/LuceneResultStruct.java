@@ -8,7 +8,7 @@ package com.gemstone.gemfire.cache.lucene;
  * @author Xiaojian Zhou
  * @since 8.5
  */
-public interface LuceneResultStruct {
+public interface LuceneResultStruct<K, V> {
   /**
    * Return the value associated with the given field name
    *
@@ -24,7 +24,7 @@ public interface LuceneResultStruct {
    * @return key
    * @throws IllegalArgumentException If this struct does not contain key
    */
-  public Object getKey();
+  public K getKey();
   
   /**
    * Return value of the entry
@@ -32,7 +32,7 @@ public interface LuceneResultStruct {
    * @return value the whole domain object
    * @throws IllegalArgumentException If this struct does not contain value
    */
-  public Object getValue();
+  public V getValue();
   
   /**
    * Return score of the query 

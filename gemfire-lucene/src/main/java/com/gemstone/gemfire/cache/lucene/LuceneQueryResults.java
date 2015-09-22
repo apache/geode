@@ -8,14 +8,12 @@ import java.util.List;
  * 
  * @author Xiaojian Zhou
  * @since 8.5
+ * 
+ * @param <K> The type of the key
+ * @param <V> The type of the value
  */
 
-public interface LuceneQueryResults {
-  /**
-   * @return query result identifier. The identifier can be used to trace the origin of this result
-   */
-  public Object getID();
-
+public interface LuceneQueryResults<K, V> {
   /**
    * @return total number of hits for this query
    */
@@ -26,11 +24,15 @@ public interface LuceneQueryResults {
    */
   public float getMaxScore();
 
-  /*
-   * get next page of result if pagesize is specified in query, otherwise, return null
+  /**
+   * Get the next page of results.
+   * 
+   * @return a page of results, or null if there are no more pages
    */
-  public List<LuceneResultStruct> getNextPage();
+  public List<LuceneResultStruct<K, V>> getNextPage();
 
-  /* Is next page of result available */
+  /**
+   *  True if there another page of results. 
+   */
   public boolean hasNextPage();
 }

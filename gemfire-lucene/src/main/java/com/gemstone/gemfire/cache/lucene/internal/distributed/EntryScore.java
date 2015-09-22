@@ -25,7 +25,7 @@ public class EntryScore implements DataSerializableFixedID {
     this.key = key;
     this.score = score;
   }
-
+  
   public Object getKey() {
     return key;
   }
