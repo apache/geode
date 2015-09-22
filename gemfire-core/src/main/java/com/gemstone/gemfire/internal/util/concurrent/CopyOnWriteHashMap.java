@@ -7,6 +7,7 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +25,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author dsmith
  *
  */
-public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> {
+public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> , Serializable {
   private volatile Map<K,V> map = Collections.<K,V>emptyMap();
 
   public CopyOnWriteHashMap() {
@@ -160,7 +161,7 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements Concur
   public synchronized V putIfAbsent(K key, V value) {
     V oldValue = map.get(key);
     if(oldValue == null) {
-      put(key, oldValue);
+      put(key, value);
       return null;
     } else {
       return oldValue;
