@@ -115,4 +115,9 @@ public class LuceneFunction extends FunctionAdapter {
   public String getId() {
     return ID;
   }
+  
+  @Override
+  public boolean optimizeForWrite() {
+    return true;
+  }
 }
