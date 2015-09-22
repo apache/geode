@@ -132,8 +132,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
             collector.getResult();
           }
         } catch (FunctionException e) {
-          endGetResult.countDown();
           exception.set(e);
+          endGetResult.countDown();
         }
       }
     });
