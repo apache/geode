@@ -1,11 +1,12 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.search.Query;
 import org.junit.Assert;
@@ -18,7 +19,9 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
@@ -118,10 +121,15 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
             new TopEntriesCollectorManager());
         TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
 
-        FunctionService.onRegion(region).withArgs(context).withCollector(collector).execute(LuceneFunction.ID);
-        TopEntries entries = collector.getResult();
-        assertNotNull(entries);
-        assertEquals(2, entries.getHits().size());
+        ResultCollector<TopEntriesCollector, TopEntries> rc = (ResultCollector<TopEntriesCollector, TopEntries>) FunctionService.onRegion(region).withArgs(context).withCollector(collector).execute(LuceneFunction.ID);
+        TopEntries entries;
+        try {
+          entries = rc.getResult(30, TimeUnit.SECONDS);
+          assertNotNull(entries);
+          assertEquals(2, entries.getHits().size());
+        } catch (Exception e) {
+          fail("failed", e);
+        }
       }
     };
 
