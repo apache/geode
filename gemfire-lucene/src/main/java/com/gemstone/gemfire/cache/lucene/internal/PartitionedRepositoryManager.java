@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 
@@ -46,8 +45,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   
   private final PartitionedRegion fileRegion;
   private final PartitionedRegion chunkRegion;
-
   private final LuceneSerializer serializer;
+  private final Analyzer analyzer;
   
   /**
    * 
@@ -58,11 +57,13 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    */
   public PartitionedRepositoryManager(PartitionedRegion userRegion, PartitionedRegion fileRegion,
       PartitionedRegion chunkRegion,
-      LuceneSerializer serializer) {
+      LuceneSerializer serializer,
+      Analyzer analyzer) {
     this.userRegion = userRegion;
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
     this.serializer = serializer;
+    this.analyzer = analyzer;
   }
 
   @Override
@@ -103,7 +104,6 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     IndexRepository repo = indexRepositories.get(userBucket);
     if(repo == null) {
       try {
-        Analyzer analyzer = new StandardAnalyzer();
         RegionDirectory dir = new RegionDirectory(getMatchingBucket(userBucket, fileRegion), getMatchingBucket(userBucket, chunkRegion));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter writer = new IndexWriter(dir, config);
