@@ -48,23 +48,8 @@ public interface LuceneIndex {
   public String[] getFieldNames();
   
   /**
-   * @return the indexed PDX field names in a Set
-   */
-  public String[] getPDXFieldNames();
-  
-  /**
    * @return the field to analyzer map
    */
   public Map<String, Analyzer> getFieldAnalyzerMap();
   
-  /**
-   * Returns a collection of {@link IndexRepository} instances hosting index data of the input list of bucket ids. The
-   * bucket needs to be present on this member.
-   * 
-   * @param ctx {@link RegionFunctionContext} function context. It's either a replicated region
-   * or local buckets of a Partitioned region for which {@link IndexRepository}s needs to be discovered. 
-   * empty for all primary buckets are not on this member.
-   * @return a collection of {@link IndexRepository} instances
-   */
-  public Collection<IndexRepository> getRepository(RegionFunctionContext ctx);
 }

@@ -179,7 +179,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
 
     endGetResult.await(1, TimeUnit.SECONDS);
     assertEquals(0, endGetResult.getCount());
-    if (exception != null) throw exception.get();
+    throw exception.get();
   }
 
   @Test

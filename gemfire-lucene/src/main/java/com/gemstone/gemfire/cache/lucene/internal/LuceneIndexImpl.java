@@ -1,20 +1,16 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 
 public abstract class LuceneIndexImpl implements LuceneIndex {
 
@@ -22,10 +18,9 @@ public abstract class LuceneIndexImpl implements LuceneIndex {
   static private final boolean USE_FS = Boolean.getBoolean("lucene.useFileSystem");
   
   protected HashSet<String> searchableFieldNames = new HashSet<String>();
-  protected HashSet<String> searchablePDXFieldNames = new HashSet<String>();
+  protected RepositoryManager repositoryManager;
+  protected Analyzer analyzer;
   
-  /* searchable fields should belong to a specific index
-   */
   Region<String, File> fileRegion;
   Region<ChunkKey, byte[]> chunkRegion;
   
@@ -47,10 +42,6 @@ public abstract class LuceneIndexImpl implements LuceneIndex {
     searchableFieldNames.add(field);
   }
   
-  protected void addSearchablePDXField(String field) {
-    searchablePDXFieldNames.add(field);
-  }
-
   @Override
   public String[] getFieldNames() {
     String[] fieldNames = new String[searchableFieldNames.size()];
@@ -58,21 +49,28 @@ public abstract class LuceneIndexImpl implements LuceneIndex {
   }
 
   @Override
-  public String[] getPDXFieldNames() {
-    String[] pdxFieldNames = new String[searchablePDXFieldNames.size()];;
-    return searchablePDXFieldNames.toArray(pdxFieldNames);
-  }
-  
-  @Override
   public Map<String, Analyzer> getFieldAnalyzerMap() {
     // TODO Auto-generated method stub
     // Will do that later: Gester
     return null;
   }
 
-  @Override
-  public Collection<IndexRepository> getRepository(RegionFunctionContext ctx) {
-    return null;
+  public RepositoryManager getRepositoryManager() {
+    return this.repositoryManager;
+  }
+  
+  public void setAnalyzer(Analyzer analyzer) {
+    if (analyzer == null) {
+      this.analyzer = new StandardAnalyzer();
+    } else {
+      this.analyzer = analyzer;
+    }
   }
 
+  public Analyzer getAnalyzer() {
+    return this.analyzer;
+  }
+
+  protected void initialize() {
+  }
 }

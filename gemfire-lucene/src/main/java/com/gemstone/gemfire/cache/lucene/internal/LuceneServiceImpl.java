@@ -4,7 +4,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -28,6 +31,7 @@ import com.gemstone.gemfire.internal.cache.extension.Extensible;
 import com.gemstone.gemfire.internal.cache.extension.Extension;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Implementation of LuceneService to create lucene index and query.
@@ -40,6 +44,8 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
   private final Cache cache;
 
   private final HashMap<String, LuceneIndex> indexMap;
+  
+  private static final Logger logger = LogService.getLogger();
 
   public LuceneServiceImpl(final Cache cache) {
     if (cache == null) {
@@ -64,26 +70,34 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
 
   @Override
   public LuceneIndex createIndex(String indexName, String regionPath, String... fields) {
+    LuceneIndexImpl index = createIndexRegions(indexName, regionPath);
+    if (index == null) {
+      return null;
+    }
+    for (String field:fields) {
+      index.addSearchableField(field);
+    }
+    // for this API, set index to use the default StandardAnalyzer for each field
+    index.setAnalyzer(null);
+    index.initialize();
+    registerIndex(getUniqueIndexName(indexName, regionPath), index);
+    return index;
+  }
+  
+  private LuceneIndexImpl createIndexRegions(String indexName, String regionPath) {
     Region dataregion = this.cache.getRegion(regionPath);
     if (dataregion == null) {
-      cache.getLogger().info("Data region "+regionPath+" not found");
+      logger.info("Data region "+regionPath+" not found");
       return null;
     }
     LuceneIndexImpl index = null;
     if (dataregion instanceof PartitionedRegion) {
       // partitioned region
       index = new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
-      for (String field:fields) {
-        index.addSearchableField(field);
-        index.addSearchablePDXField(field);
-      }
-      registerIndex(getUniqueIndexName(indexName, regionPath), index);
     } else {
       // replicated region
       index = new LuceneIndexForReplicatedRegion(indexName, regionPath, cache);
-      registerIndex(getUniqueIndexName(indexName, regionPath), index);
     }
-    // TODO add fields
     return index;
   }
 
@@ -99,8 +113,19 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
 
   @Override
   public LuceneIndex createIndex(String indexName, String regionPath, Map<String, Analyzer> analyzerPerField) {
-    // TODO Auto-generated method stub
-    return null;
+    LuceneIndexImpl index = createIndexRegions(indexName, regionPath);
+    if (index == null) {
+      return null;
+    }
+    
+    Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), analyzerPerField);
+    for (String field:analyzerPerField.keySet()) {
+      index.addSearchableField(field);
+    }
+    index.setAnalyzer(analyzer);
+    index.initialize();
+    registerIndex(getUniqueIndexName(indexName, regionPath), index);
+    return index;
   }
 
   @Override
