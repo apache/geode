@@ -14,6 +14,7 @@ import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSStoreDirector;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.cache.extension.Extensible;
 
 /**
  * The InternalCache interface is contract for implementing classes for defining internal cache operations that should
@@ -23,7 +24,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @see com.gemstone.gemfire.cache.Cache
  * @since 7.0
  */
-public interface InternalCache extends Cache {
+public interface InternalCache extends Cache, Extensible<Cache> {
 
   public DistributedMember getMyId();
 

@@ -6,6 +6,7 @@ import org.apache.lucene.search.Query;
 
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 
 public class LuceneQueryImpl implements LuceneQuery {
@@ -18,16 +19,16 @@ public class LuceneQueryImpl implements LuceneQuery {
   private Set<String> projectedFieldNames;
   
   /* the lucene Query object to be wrapped here */
-  private Query query;
+  private LuceneQueryProvider query;
   
-  LuceneQueryImpl(String indexName, String regionName, int limit, int pageSize, 
-      Set<String> projectionFieldNames, Query query) {
+  LuceneQueryImpl(String indexName, String regionName, LuceneQueryProvider provider, Set<String> projectionFields, 
+      int limit, int pageSize) {
     this.indexName = indexName;
     this.regionName = regionName;
     this.limit = limit;
     this.pageSize = pageSize;
-    this.projectedFieldNames = projectionFieldNames;
-    this.query = query;
+    this.projectedFieldNames = projectionFields;
+    this.query = provider;
   }
 
   @Override

@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
@@ -29,37 +30,25 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
 
   // the following members hold input data and needs to be sent on wire
   private String query;
-  private String indexName;
-  private String regionPath;
 
   // the following members hold derived objects and need not be serialized
-  private Query luceneQuery;
-  private LuceneIndex index;
+  private transient Query luceneQuery;
 
   public StringQueryProvider() {
-    this(null, null);
+    this(null);
   }
 
-  public StringQueryProvider(LuceneIndex index, String query) {
+  public StringQueryProvider(String query) {
     this.query = query;
-    this.index = index;
-    if (index != null) {
-      this.indexName = index.getName();
-      this.regionPath = index.getRegionPath();
-    }
   }
 
   @Override
-  public synchronized Query getQuery() throws QueryException {
+  public synchronized Query getQuery(LuceneIndex index) throws QueryException {
     if (luceneQuery == null) {
-      String[] fields = null;
-      if (index != null) {
-        fields = index.getFieldNames();
-      } else {
-        // TODO get index from lucene query service
-      }
+      String[] fields = index.getFieldNames();
 
-      MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new SimpleAnalyzer());
+      //TODO  get the analyzer from the index
+      MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new StandardAnalyzer());
       try {
         luceneQuery = parser.parse(query);
       } catch (ParseException e) {
@@ -77,20 +66,6 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
     return query;
   }
 
-  /**
-   * @return name of the index on which this query will be executed
-   */
-  public String getIndexName() {
-    return indexName;
-  }
-
-  /**
-   * @return path of the region on which this query will be executed
-   */
-  public String getRegionPath() {
-    return regionPath;
-  }
-
   @Override
   public Version[] getSerializationVersions() {
     return null;
@@ -104,14 +79,10 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(query, out);
-    DataSerializer.writeString(index.getName(), out);
-    DataSerializer.writeString(index.getRegionPath(), out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     query = DataSerializer.readString(in);
-    this.indexName = DataSerializer.readString(in);
-    this.regionPath = DataSerializer.readString(in);
   }
 }

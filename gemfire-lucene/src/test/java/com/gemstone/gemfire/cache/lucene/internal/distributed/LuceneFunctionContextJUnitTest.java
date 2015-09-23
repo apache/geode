@@ -30,18 +30,16 @@ public class LuceneFunctionContextJUnitTest {
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
 
-    LuceneIndex mockIndex = Mockito.mock(LuceneIndex.class);
-    Mockito.doReturn("mockIndex").when(mockIndex).getName();
-    LuceneQueryProvider provider = new StringQueryProvider(mockIndex, "text");
+    LuceneQueryProvider provider = new StringQueryProvider("text");
     CollectorManager<TopEntriesCollector> manager = new TopEntriesCollectorManager("test");
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(provider, manager, 123);
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(provider, "testIndex", manager, 123);
 
     LuceneFunctionContext<TopEntriesCollector> copy = CopyHelper.deepCopy(context);
     assertEquals(123, copy.getLimit());
     Assert.assertNotNull(copy.getQueryProvider());
     assertEquals("text", ((StringQueryProvider) copy.getQueryProvider()).getQueryString());
-    assertEquals("mockIndex", ((StringQueryProvider) copy.getQueryProvider()).getIndexName());
     assertEquals(TopEntriesCollectorManager.class, copy.getCollectorManager().getClass());
     assertEquals("test", ((TopEntriesCollectorManager) copy.getCollectorManager()).getId());
+    assertEquals("testIndex", copy.getIndexName());
   }
 }

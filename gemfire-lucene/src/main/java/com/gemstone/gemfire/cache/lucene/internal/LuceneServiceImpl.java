@@ -14,7 +14,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
@@ -28,7 +27,6 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
-import com.gemstone.gemfire.internal.cache.extension.Extension;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -40,7 +38,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * @since 8.5
  */
-public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
+public class LuceneServiceImpl implements InternalLuceneService {
   private final Cache cache;
 
   private final HashMap<String, LuceneIndex> indexMap;
@@ -80,7 +78,7 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
     // for this API, set index to use the default StandardAnalyzer for each field
     index.setAnalyzer(null);
     index.initialize();
-    registerIndex(getUniqueIndexName(indexName, regionPath), index);
+    registerIndex(index);
     return index;
   }
   
@@ -90,6 +88,9 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
       logger.info("Data region "+regionPath+" not found");
       return null;
     }
+    //Convert the region name into a canonical form
+    
+    regionPath = dataregion.getFullPath();
     LuceneIndexImpl index = null;
     if (dataregion instanceof PartitionedRegion) {
       // partitioned region
@@ -103,7 +104,11 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
 
   @Override
   public LuceneIndex getIndex(String indexName, String regionPath) {
-    return indexMap.get(getUniqueIndexName(indexName, regionPath));
+    Region region = cache.getRegion(regionPath);
+    if(region == null) {
+      return null;
+    }
+    return indexMap.get(getUniqueIndexName(indexName, region.getFullPath()));
   }
 
   @Override
@@ -124,7 +129,7 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
     }
     index.setAnalyzer(analyzer);
     index.initialize();
-    registerIndex(getUniqueIndexName(indexName, regionPath), index);
+    registerIndex(index);
     return index;
   }
 
@@ -152,7 +157,8 @@ public class LuceneServiceImpl implements LuceneService, Extension<Cache> {
 
   }
   
-  public void registerIndex(final String regionAndIndex, LuceneIndex index){
+  public void registerIndex(LuceneIndex index){
+    String regionAndIndex = getUniqueIndexName(index.getName(), index.getRegionPath()); 
     if( !indexMap.containsKey( regionAndIndex )) {
       indexMap.put(regionAndIndex, index);
     }

@@ -18,23 +18,24 @@ import com.gemstone.gemfire.internal.Version;
 public class LuceneFunctionContext<C extends IndexResultCollector> implements DataSerializableFixedID {
   private CollectorManager<C> manager;
   private int limit;
-
-  LuceneQueryProvider queryProvider;
+  private LuceneQueryProvider queryProvider;
+  private String indexName;
 
   public LuceneFunctionContext() {
-    this(null, null);
+    this(null, null, null);
   }
 
-  public LuceneFunctionContext(LuceneQueryProvider provider) {
-    this(provider, null);
+  public LuceneFunctionContext(LuceneQueryProvider provider, String indexName) {
+    this(provider, indexName, null);
   }
 
-  public LuceneFunctionContext(LuceneQueryProvider provider, CollectorManager<C> manager) {
-    this(provider, manager, LuceneQueryFactory.DEFAULT_LIMIT);
+  public LuceneFunctionContext(LuceneQueryProvider provider, String indexName, CollectorManager<C> manager) {
+    this(provider, indexName, manager, LuceneQueryFactory.DEFAULT_LIMIT);
   }
 
-  public LuceneFunctionContext(LuceneQueryProvider provider, CollectorManager<C> manager, int limit) {
+  public LuceneFunctionContext(LuceneQueryProvider provider, String indexName, CollectorManager<C> manager, int limit) {
     this.queryProvider = provider;
+    this.indexName = indexName;
     this.manager = manager;
     this.limit = limit;
   }
@@ -44,6 +45,13 @@ public class LuceneFunctionContext<C extends IndexResultCollector> implements Da
    */
   public int getLimit() {
     return limit;
+  }
+
+  /**
+   * Get the name of the index to query
+   */
+  public String getIndexName() {
+    return indexName;
   }
 
   /**
@@ -70,6 +78,7 @@ public class LuceneFunctionContext<C extends IndexResultCollector> implements Da
     out.writeInt(limit);
     DataSerializer.writeObject(queryProvider, out);
     DataSerializer.writeObject(manager, out);
+    DataSerializer.writeString(indexName, out);
   }
 
   @Override
@@ -77,6 +86,7 @@ public class LuceneFunctionContext<C extends IndexResultCollector> implements Da
     limit = in.readInt();
     queryProvider = DataSerializer.readObject(in);
     manager = DataSerializer.readObject(in);
+    this.indexName = DataSerializer.readString(in);
   }
 
   @Override

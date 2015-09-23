@@ -17,7 +17,8 @@ import com.gemstone.gemfire.cache.query.QueryException;
 public interface LuceneQueryProvider extends Serializable {
   /**
    * @return A Lucene Query object which could be used for executing Lucene Search on indexed data
+   * @param The local lucene index the query is being constructed against.
    * @throws QueryException if the provider fails to construct the query object
    */
-  public Query getQuery() throws QueryException;
+  public Query getQuery(LuceneIndex index) throws QueryException;
 }

@@ -1,6 +1,5 @@
 package com.gemstone.gemfire.cache.lucene;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 /**
@@ -48,21 +47,6 @@ public interface LuceneQueryFactory {
    * @return itself
    */
   LuceneQueryFactory setProjectionFields(String... fieldNames);
-  
-  /**
-   * Create wrapper object for lucene's QueryParser object.
-   * The queryString is using lucene QueryParser's syntax. QueryParser is for easy-to-use 
-   * with human understandable syntax. 
-   *  
-   * @param regionName region name
-   * @param indexName index name
-   * @param queryString query string in lucene QueryParser's syntax
-   * @param analyzer lucene Analyzer to parse the queryString
-   * @return LuceneQuery object
-   * @throws ParseException
-   */
-  public LuceneQuery create(String indexName, String regionName, String queryString, 
-      Analyzer analyzer) throws ParseException;
   
   /**
    * Create wrapper object for lucene's QueryParser object using default standard analyzer.

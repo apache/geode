@@ -11,15 +11,19 @@ import org.apache.lucene.index.IndexWriterConfig;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
+import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
 import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
@@ -77,13 +81,10 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
   
   @Override
-  public Collection<IndexRepository> getRepositories(Region region) throws BucketNotFoundException {
-    if(!(region instanceof LocalDataSet)) {
-      throw new IllegalStateException("Trying to find the repositories for a region which is not the local data set of a function");
-    }
+  public Collection<IndexRepository> getRepositories(RegionFunctionContext ctx) throws BucketNotFoundException {
     
-    LocalDataSet dataSet = (LocalDataSet) region;
-    Set<Integer> buckets = dataSet.getBucketSet();
+    Region<Object, Object> region = ctx.getDataSet();
+    Set<Integer> buckets = ((InternalRegionFunctionContext) ctx).getLocalBucketSet(region);
     ArrayList<IndexRepository> repos = new ArrayList<IndexRepository>(buckets.size());
     for(Integer bucketId : buckets) {
       BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);

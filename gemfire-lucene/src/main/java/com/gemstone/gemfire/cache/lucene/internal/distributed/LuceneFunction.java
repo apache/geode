@@ -14,6 +14,9 @@ import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
+import com.gemstone.gemfire.cache.lucene.LuceneService;
+import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
@@ -31,8 +34,6 @@ public class LuceneFunction extends FunctionAdapter {
   public static final String ID = LuceneFunction.class.getName();
 
   private static final Logger logger = LogService.getLogger();
-
-  private static RepositoryManager repoManager;
 
   @Override
   public void execute(FunctionContext context) {
@@ -52,10 +53,14 @@ public class LuceneFunction extends FunctionAdapter {
       resultSender.sendException(new IllegalArgumentException("Missing query provider"));
       return;
     }
+    
+    LuceneService service = LuceneServiceProvider.get(region.getCache());
+    InternalLuceneIndex index = (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+    RepositoryManager repoManager = index.getRepositoryManager();
 
     Query query = null;
     try {
-      query = queryProvider.getQuery();
+      query = queryProvider.getQuery(index);
     } catch (QueryException e) {
       resultSender.sendException(e);
       return;
@@ -65,19 +70,19 @@ public class LuceneFunction extends FunctionAdapter {
       logger.debug("Executing lucene query: {}, on region {}", query, region.getFullPath());
     }
 
+    int resultLimit = searchContext.getLimit();
     CollectorManager manager = (searchContext == null) ? null : searchContext.getCollectorManager();
     if (manager == null) {
-      int resultLimit = (searchContext == null ? LuceneQueryFactory.DEFAULT_LIMIT : searchContext.getLimit());
       manager = new TopEntriesCollectorManager(null, resultLimit);
     }
 
     Collection<IndexResultCollector> results = new ArrayList<>();
     try {
-      Collection<IndexRepository> repositories = getIndexRepositories(ctx, region);
+      Collection<IndexRepository> repositories = repoManager.getRepositories(ctx);
       for (IndexRepository repo : repositories) {
         IndexResultCollector collector = manager.newCollector(repo.toString());
         logger.debug("Executing search on repo: " + repo.toString());
-        repo.query(query, 0, collector);
+        repo.query(query, resultLimit, collector);
         results.add(collector);
       }
     } catch (IOException e) {
@@ -101,15 +106,6 @@ public class LuceneFunction extends FunctionAdapter {
     }
   }
 
-  private Collection<IndexRepository> getIndexRepositories(RegionFunctionContext ctx, Region region) throws BucketNotFoundException {
-    synchronized (LuceneFunction.class) {
-      return repoManager.getRepositories(region);
-    }
-  }
-
-  static synchronized void setRepositoryManager(RepositoryManager manager) {
-    repoManager = manager;
-  }
 
   @Override
   public String getId() {

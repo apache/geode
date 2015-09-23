@@ -1,6 +1,7 @@
 package com.gemstone.gemfire.cache.lucene;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
 
@@ -17,7 +18,7 @@ public class LuceneServiceProvider {
   public static LuceneService get(Cache cache) {
     synchronized(LuceneService.class) {
       Extensible<Cache> extensible = (Extensible<Cache>) cache;
-      LuceneServiceImpl service = (LuceneServiceImpl) extensible.getExtensionPoint().getExtension(LuceneService.class);
+      InternalLuceneService service = (InternalLuceneService) extensible.getExtensionPoint().getExtension(LuceneService.class);
       if(service == null) {
         service = new LuceneServiceImpl(cache);
         extensible.getExtensionPoint().addExtension(LuceneService.class, service);

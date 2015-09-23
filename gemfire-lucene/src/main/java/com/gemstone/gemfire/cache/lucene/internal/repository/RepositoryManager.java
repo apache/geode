@@ -22,5 +22,5 @@ public interface RepositoryManager {
    * @return a collection of {@link IndexRepository} instances
    * @throws BucketNotFoundException if any of the requested buckets is not found on this member
    */
-  Collection<IndexRepository> getRepositories(Region localDataSet) throws BucketNotFoundException;
+  Collection<IndexRepository> getRepositories(RegionFunctionContext context) throws BucketNotFoundException;
 }

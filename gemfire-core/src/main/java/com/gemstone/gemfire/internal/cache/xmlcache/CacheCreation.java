@@ -126,7 +126,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  *
  * @since 3.0
  */
-public class CacheCreation implements InternalCache, Extensible<Cache> {
+public class CacheCreation implements InternalCache {
 
   /** The amount of time to wait for a distributed lock */
   private int lockTimeout = GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT;

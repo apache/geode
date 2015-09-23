@@ -1,40 +1,30 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.lucene.search.Query;
 import org.junit.Assert;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
-import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import dunit.Host;
+import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
 import dunit.VM;
 
@@ -61,43 +51,36 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
   }
 
   public void testEnd2EndFunctionExecution() {
-    SerializableRunnable createPartitionRegion = new SerializableRunnable("createRegion") {
+    SerializableCallable createPartitionRegion = new SerializableCallable("createRegion") {
       private static final long serialVersionUID = 1L;
 
-      public void run() {
+      public Object call() throws Exception {
         final Cache cache = getCache();
         assertNotNull(cache);
         RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
-        regionFactory.create(REGION_NAME);
+        Region<Object, Object> region = regionFactory.create(REGION_NAME);
+        
 
         LuceneService service = LuceneServiceProvider.get(cache);
-        service.createIndex(INDEX_NAME, REGION_NAME);
-
-        IndexRepository mockRepo = mock(IndexRepository.class);
-        Collection<IndexRepository> repos = new ArrayList<IndexRepository>();
-        repos.add(mockRepo);
-
-        RepositoryManager mockManager = mock(RepositoryManager.class);
-        // TODO avoid using repository manager mock. The manager choice depends on the region type
-        LuceneFunction.setRepositoryManager(mockManager);
+        InternalLuceneIndex index = (InternalLuceneIndex) service.createIndex(INDEX_NAME, REGION_NAME, "text");
+        
+        
+        region.put(1, new TestObject("hello world"));
+        region.put(2, new TestObject("goodbye world"));
+        
+        //TODO - the async event queue hasn't been hooked up, so we'll fake out
+        //writing the entry to the repository.
         try {
-          Mockito.doReturn(repos).when(mockManager).getRepositories(any(Region.class));
-        } catch (BucketNotFoundException e) {
-          fail("", e);
+        IndexRepository repository1 = index.getRepositoryManager().getRepository(region, 1, null);
+        repository1.create(1, new TestObject("hello world"));
+        repository1.commit();
+        IndexRepository repository2 = index.getRepositoryManager().getRepository(region, 2, null);
+        repository2.create(2, new TestObject("hello world"));
+        repository2.commit();
+        } catch(BucketNotFoundException e) {
+          //thats ok, one of the data stores does not host these buckets.
         }
-
-        try {
-          Mockito.doAnswer(new Answer<Object>() {
-            public Object answer(InvocationOnMock invocation) {
-              Object[] args = invocation.getArguments();
-              IndexResultCollector collector = (IndexResultCollector) args[2];
-              collector.collect(cache.getDistributedSystem().getDistributedMember().getProcessId(), .1f);
-              return null;
-            }
-          }).when(mockRepo).query(any(Query.class), Mockito.anyInt(), any(IndexResultCollector.class));
-        } catch (IOException e) {
-          fail("", e);
-        }
+        return null;
       }
     };
 
@@ -115,9 +98,9 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
 
         LuceneService service = LuceneServiceProvider.get(cache);
         LuceneIndex index = service.getIndex(INDEX_NAME, REGION_NAME);
-        LuceneQueryProvider provider = new StringQueryProvider(index, "text:search");
+        LuceneQueryProvider provider = new StringQueryProvider("text:world");
 
-        LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(provider,
+        LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(provider, index.getName(),
             new TopEntriesCollectorManager());
         TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
 
@@ -135,4 +118,15 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
 
     server1.invoke(executeSearch);
   }
+  
+  private static class TestObject implements Serializable {
+    private String text;
+
+    public TestObject(String text) {
+      this.text = text;
+    }
+    
+    
+  }
+
 }

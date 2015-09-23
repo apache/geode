@@ -2,6 +2,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,6 +22,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
@@ -32,6 +34,7 @@ import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
+import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -147,8 +150,9 @@ public class PartitionedRepositoryManagerJUnitTest {
     BucketRegion mockBucket1 = getMockBucket(1);
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
-    LocalDataSet ldr = new LocalDataSet(null, buckets);
-    Collection<IndexRepository> repos = repoManager.getRepositories(ldr);
+    InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
+    Mockito.when(ctx.getLocalBucketSet((any(Region.class)))).thenReturn(buckets);
+    Collection<IndexRepository> repos = repoManager.getRepositories(ctx);
     assertEquals(2, repos.size());
 
     Iterator<IndexRepository> itr = repos.iterator();
@@ -173,9 +177,10 @@ public class PartitionedRepositoryManagerJUnitTest {
     BucketRegion mockBucket0 = getMockBucket(0);
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
-    LocalDataSet ldr = new LocalDataSet(userRegion, buckets);
 
-    repoManager.getRepositories(ldr);
+    InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
+    Mockito.when(ctx.getLocalBucketSet((any(Region.class)))).thenReturn(buckets);
+    repoManager.getRepositories(ctx);
   }
   
   private void checkRepository(IndexRepositoryImpl repo0, int bucketId) {

@@ -15,9 +15,9 @@ import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 
 public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
-  private int limit_attr = DEFAULT_LIMIT;
-  private int pageSize_attr = DEFAULT_PAGESIZE;
-  private Set<String> projection_fields_attr = new HashSet<String>();
+  private int limit = DEFAULT_LIMIT;
+  private int pageSize = DEFAULT_PAGESIZE;
+  private Set<String> projectionFields = new HashSet<String>();
   
   /* reference to the index. One index could have multiple Queries, but one Query must belong
    * to one index
@@ -26,38 +26,25 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
 
   @Override
   public LuceneQueryFactory setPageSize(int pageSize) {
-    this.pageSize_attr = pageSize;
+    this.pageSize = pageSize;
     return this;
   }
 
   @Override
   public LuceneQueryFactory setResultLimit(int limit) {
-    this.limit_attr = limit;
+    this.limit = limit;
     return this;
   }
 
   @Override
   public LuceneQuery create(String indexName, String regionName,
-      String queryString, Analyzer analyzer) throws ParseException {
-    QueryParser parser = new QueryParser(null, analyzer);
-    Query query = parser.parse(queryString);
-    LuceneQueryImpl luceneQuery = new LuceneQueryImpl(indexName, regionName, limit_attr, pageSize_attr, projection_fields_attr, query);
-    return luceneQuery;
-  }
-
-  @Override
-  public LuceneQuery create(String indexName, String regionName,
       String queryString) throws ParseException {
-    StandardAnalyzer analyzer = new StandardAnalyzer();
-    return create(indexName, regionName, queryString, analyzer);
+    return create(indexName, regionName, new StringQueryProvider(queryString));
   }
   
   public LuceneQuery create(String indexName, String regionName, LuceneQueryProvider provider) {
-//    LuceneQueryImpl luceneQuery = new LuceneQueryImpl(indexName, regionName, limit_attr, pageSize_attr, 
-//        resultType_attr, projection_fields_attr, query);
-//    return luceneQuery;
-    // TODO Auto-generated method stub
-    return null;
+    LuceneQueryImpl luceneQuery = new LuceneQueryImpl(indexName, regionName, provider, projectionFields, limit, pageSize);
+    return luceneQuery;
   }
   
 
@@ -69,7 +56,7 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   public LuceneQueryFactory setProjectionFields(String... fieldNames) {
     if (fieldNames != null) {
       for (String fieldName:fieldNames) {
-        this.projection_fields_attr.add(fieldName);
+        this.projectionFields.add(fieldName);
       }
     }
     return this;

@@ -65,6 +65,12 @@ public class IndexRepositoryImplJUnitTest {
     repo.commit();
     
     checkQuery("Cream", "s", "key2", "key4");
+    checkQuery("NotARealWord", "s");
+  }
+  
+  @Test
+  public void testEmptyRepo() throws IOException, ParseException {
+    checkQuery("NotARealWord", "s");
   }
   
   @Test

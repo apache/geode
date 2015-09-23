@@ -7,12 +7,11 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 
-public abstract class LuceneIndexImpl implements LuceneIndex {
+public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
   static private final boolean CREATE_CACHE = Boolean.getBoolean("lucene.createCache");
   static private final boolean USE_FS = Boolean.getBoolean("lucene.useFileSystem");

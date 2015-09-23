@@ -127,7 +127,7 @@ public class LuceneServiceImplJUnitTest {
     assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
     LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
     assertEquals("index1", index1.getName());
-    assertEquals("PR1", index1.getRegionPath());
+    assertEquals("/PR1", index1.getRegionPath());
     String[] fields1 = index1.getFieldNames();
     assertEquals(3, fields1.length);
     Analyzer analyzer = index1PR.getAnalyzer();
@@ -135,8 +135,8 @@ public class LuceneServiceImplJUnitTest {
     RepositoryManager RepositoryManager = index1PR.getRepositoryManager();
     assertTrue(RepositoryManager != null);
    
-    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".files";
-    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".chunks";
+    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".files";
+    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".chunks";
     PartitionedRegion filePR = (PartitionedRegion)cache.getRegion(fileRegionName);
     PartitionedRegion chunkPR = (PartitionedRegion)cache.getRegion(chunkRegionName);
     assertTrue(filePR != null);
@@ -160,7 +160,7 @@ public class LuceneServiceImplJUnitTest {
     assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
     LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
     assertEquals("index1", index1.getName());
-    assertEquals("PR1", index1.getRegionPath());
+    assertEquals("/PR1", index1.getRegionPath());
     String[] fields1 = index1.getFieldNames();
     assertEquals(3, fields1.length);
     Analyzer analyzer = index1PR.getAnalyzer();
@@ -168,8 +168,8 @@ public class LuceneServiceImplJUnitTest {
     RepositoryManager RepositoryManager = index1PR.getRepositoryManager();
     assertTrue(RepositoryManager != null);
    
-    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".files";
-    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".chunks";
+    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".files";
+    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "/PR1")+".chunks";
     PartitionedRegion filePR = (PartitionedRegion)cache.getRegion(fileRegionName);
     PartitionedRegion chunkPR = (PartitionedRegion)cache.getRegion(chunkRegionName);
     assertTrue(filePR != null);

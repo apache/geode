@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.apache.lucene.search.Query;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
@@ -31,41 +32,40 @@ public class StringQueryProviderJUnitTest {
 
   @Test
   public void testQueryConstruction() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider(null, "foo:bar");
-    Query query = provider.getQuery();
+    StringQueryProvider provider = new StringQueryProvider("foo:bar");
+    Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);
     assertEquals("foo:bar", query.toString());
   }
 
   @Test
   public void usesSearchableFieldsAsDefaults() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider(mockIndex, "findThis");
-    Query query = provider.getQuery();
+    StringQueryProvider provider = new StringQueryProvider("findThis");
+    Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);
     assertEquals("field-1:findthis field-2:findthis", query.toString());
   }
 
   @Test
+  @Ignore("Custom analyzer not yet supported, this is a duplicate test right now")
   public void usesCustomAnalyzer() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider(mockIndex, "findThis");
-    Query query = provider.getQuery();
+    StringQueryProvider provider = new StringQueryProvider("findThis");
+    Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);
     assertEquals("field-1:findthis field-2:findthis", query.toString());
   }
 
   @Test(expected = QueryException.class)
   public void errorsOnMalformedQueryString() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider(mockIndex, "invalid:lucene:query:string");
-    provider.getQuery();
+    StringQueryProvider provider = new StringQueryProvider("invalid:lucene:query:string");
+    provider.getQuery(mockIndex);
   }
   
   @Test
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
-    StringQueryProvider provider = new StringQueryProvider(mockIndex, "text:search");
+    StringQueryProvider provider = new StringQueryProvider("text:search");
     StringQueryProvider copy = CopyHelper.deepCopy(provider);
     assertEquals("text:search", copy.getQueryString());
-    assertEquals(mockIndex.getName(), copy.getIndexName());
-    assertEquals(mockIndex.getRegionPath(), copy.getRegionPath());
   }
 }
