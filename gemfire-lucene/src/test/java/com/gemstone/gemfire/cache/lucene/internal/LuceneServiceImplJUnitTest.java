@@ -6,8 +6,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -23,6 +28,7 @@ import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
+import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -124,6 +130,10 @@ public class LuceneServiceImplJUnitTest {
     assertEquals("PR1", index1.getRegionPath());
     String[] fields1 = index1.getFieldNames();
     assertEquals(3, fields1.length);
+    Analyzer analyzer = index1PR.getAnalyzer();
+    assertTrue(analyzer instanceof StandardAnalyzer);
+    RepositoryManager RepositoryManager = index1PR.getRepositoryManager();
+    assertTrue(RepositoryManager != null);
    
     final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".files";
     final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".chunks";
@@ -133,6 +143,39 @@ public class LuceneServiceImplJUnitTest {
     assertTrue(chunkPR != null);
   }
 
+  @Test
+  public void testCreateIndexForPRWithAnalyzer() throws IOException, ParseException {
+    getService();
+    createPR("PR1", false);
+    StandardAnalyzer sa = new StandardAnalyzer();
+    KeywordAnalyzer ka = new KeywordAnalyzer();
+    Map<String, Analyzer> analyzerPerField = new HashMap<String, Analyzer>();
+    analyzerPerField.put("field1", ka);
+    analyzerPerField.put("field2", sa);
+    analyzerPerField.put("field3", sa);
+    //  field2 and field3 will use StandardAnalyzer
+    PerFieldAnalyzerWrapper analyzer2 = new PerFieldAnalyzerWrapper(sa, analyzerPerField);
+
+    LuceneIndexImpl index1 = (LuceneIndexImpl)service.createIndex("index1", "PR1", analyzerPerField);
+    assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
+    LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
+    assertEquals("index1", index1.getName());
+    assertEquals("PR1", index1.getRegionPath());
+    String[] fields1 = index1.getFieldNames();
+    assertEquals(3, fields1.length);
+    Analyzer analyzer = index1PR.getAnalyzer();
+    assertTrue(analyzer instanceof PerFieldAnalyzerWrapper);
+    RepositoryManager RepositoryManager = index1PR.getRepositoryManager();
+    assertTrue(RepositoryManager != null);
+   
+    final String fileRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".files";
+    final String chunkRegionName = LuceneServiceImpl.getUniqueIndexName("index1", "PR1")+".chunks";
+    PartitionedRegion filePR = (PartitionedRegion)cache.getRegion(fileRegionName);
+    PartitionedRegion chunkPR = (PartitionedRegion)cache.getRegion(chunkRegionName);
+    assertTrue(filePR != null);
+    assertTrue(chunkPR != null);
+  }
+  
   @Test
   public void testCreateIndexForRR() throws IOException, ParseException {
 //    service.createIndex("index1", "RR1", "field1", "field2", "field3");

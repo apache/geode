@@ -20,6 +20,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -94,7 +95,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       }
 
       // we will create RegionDirectorys on the fly when data coming
-      repositoryManager = new PartitionedRepositoryManager(dataRegion, (PartitionedRegion)fileRegion, (PartitionedRegion)chunkRegion, null, analyzer);
+      HeterogenousLuceneSerializer mapper = new HeterogenousLuceneSerializer(getFieldNames());
+      repositoryManager = new PartitionedRepositoryManager(dataRegion, (PartitionedRegion)fileRegion, (PartitionedRegion)chunkRegion, mapper, analyzer);
       hasInitialized = true;
     }
   }
