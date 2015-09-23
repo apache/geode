@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.AssertionFailedError;
 
@@ -186,6 +187,17 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
       fail("should not be called.  Event="+event);
     }
   }
+
+  static class InitialCreatesListener extends AbstractConcMapOpsListener {
+    AtomicInteger numCreates = new AtomicInteger();
+    @Override
+    void validate(EntryEvent event) {
+      if (!event.getOperation().isCreate()) {
+        fail("expected only create events");
+      }
+      numCreates.incrementAndGet();
+    }
+  }
   /**
    * @param name
    */
@@ -205,18 +217,67 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     createClientRegionWithRI(client1, port1, true);
     createClientRegionWithRI(client2, port2, true);
 
-    
+    SerializableCallable addListenerToClientForInitialCreates = new SerializableCallable() {
+      public Object call() throws Exception {
+        Region r = getCache().getRegion(REP_REG_NAME);
+        r.getAttributesMutator().addCacheListener(new InitialCreatesListener());
+        Region pr = getCache().getRegion(PR_REG_NAME);
+        pr.getAttributesMutator().addCacheListener(new InitialCreatesListener());
+        return null;
+      }
+    };
+    client1.invoke(addListenerToClientForInitialCreates);
+    client2.invoke(addListenerToClientForInitialCreates);
+
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region<Integer, String> r = getGemfireCache().getRegion(REP_REG_NAME);
         Region<Integer, String> pr = getGemfireCache().getRegion(PR_REG_NAME);
-        for (int i=0; i<MAX_ENTRIES; i++) {
-          r.put(i, "value"+i);
-          pr.put(i, "value"+i);
+        for (int i = 0; i < MAX_ENTRIES; i++) {
+          r.put(i, "value" + i);
+          pr.put(i, "value" + i);
         }
         return null;
       }
     });
+
+    SerializableCallable waitForInitialCreates = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region<Integer, String> r = getGemfireCache().getRegion(REP_REG_NAME);
+        Region<Integer, String> pr = getGemfireCache().getRegion(PR_REG_NAME);
+        waitForCreates(r);
+        waitForCreates(pr);
+        return null;
+      }
+      private void waitForCreates(Region region) {
+        CacheListener[] listeners = region.getAttributes().getCacheListeners();
+        boolean listenerFound = false;
+        for (CacheListener listener : listeners) {
+          if (listener instanceof InitialCreatesListener) {
+            listenerFound = true;
+            final InitialCreatesListener initialCreatesListener = (InitialCreatesListener) listener;
+            WaitCriterion wc = new WaitCriterion() {
+              @Override
+              public boolean done() {
+                return initialCreatesListener.numCreates.get() == MAX_ENTRIES;
+              }
+              @Override
+              public String description() {
+                return "Client expected to get "+MAX_ENTRIES+" creates, but got "+initialCreatesListener.numCreates.get();
+              }
+            };
+            DistributedTestCase.waitForCriterion(wc, 30*1000, 500, true);
+          }
+        }
+        if (!listenerFound) {
+          fail("Client listener should have been found");
+        }
+      }
+    };
+    client1.invoke(waitForInitialCreates);
+    client2.invoke(waitForInitialCreates);
+
     SerializableCallable addListener = new SerializableCallable() {
       public Object call() throws Exception {
         Region r = getCache().getRegion(REP_REG_NAME);
