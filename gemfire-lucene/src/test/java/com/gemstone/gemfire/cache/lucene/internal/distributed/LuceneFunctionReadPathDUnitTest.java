@@ -1,7 +1,6 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
 import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.experimental.categories.Category;
@@ -10,14 +9,11 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
+import com.gemstone.gemfire.cache.lucene.LuceneQuery;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
-import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
@@ -25,7 +21,6 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import dunit.Host;
 import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
 import dunit.VM;
 
 @Category(DistributedTest.class)
@@ -87,32 +82,21 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
     server1.invoke(createPartitionRegion);
     server2.invoke(createPartitionRegion);
 
-    SerializableRunnable executeSearch = new SerializableRunnable("executeSearch") {
+    SerializableCallable executeSearch = new SerializableCallable("executeSearch") {
       private static final long serialVersionUID = 1L;
 
-      public void run() {
+      public Object call() throws Exception {
         Cache cache = getCache();
         assertNotNull(cache);
         Region<Object, Object> region = cache.getRegion(REGION_NAME);
         Assert.assertNotNull(region);
 
         LuceneService service = LuceneServiceProvider.get(cache);
-        LuceneIndex index = service.getIndex(INDEX_NAME, REGION_NAME);
-        LuceneQueryProvider provider = new StringQueryProvider("text:world");
-
-        LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(provider, index.getName(),
-            new TopEntriesCollectorManager());
-        TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
-
-        ResultCollector<TopEntriesCollector, TopEntries> rc = (ResultCollector<TopEntriesCollector, TopEntries>) FunctionService.onRegion(region).withArgs(context).withCollector(collector).execute(LuceneFunction.ID);
-        TopEntries entries;
-        try {
-          entries = rc.getResult(30, TimeUnit.SECONDS);
-          assertNotNull(entries);
-          assertEquals(2, entries.getHits().size());
-        } catch (Exception e) {
-          fail("failed", e);
-        }
+        LuceneQuery query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world");
+        LuceneQueryResults results = query.search();
+        assertEquals(2, results.size());
+        
+        return null;
       }
     };
 

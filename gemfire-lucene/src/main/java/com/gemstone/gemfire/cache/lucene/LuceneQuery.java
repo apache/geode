@@ -6,11 +6,11 @@ package com.gemstone.gemfire.cache.lucene;
  * {@link LuceneQueryFactory#create}.
  * 
  */
-public interface LuceneQuery {
+public interface LuceneQuery<K, V> {
   /**
    * Execute the search and get results. 
    */
-  public LuceneQueryResults search();
+  public LuceneQueryResults<K, V> search();
   
   /**
    * Get page size setting of current query. 

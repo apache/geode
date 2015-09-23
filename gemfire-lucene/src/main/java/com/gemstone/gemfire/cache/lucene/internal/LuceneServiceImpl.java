@@ -142,7 +142,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   @Override
   public LuceneQueryFactory createLuceneQueryFactory() {
-    return new LuceneQueryFactoryImpl();
+    return new LuceneQueryFactoryImpl(cache);
   }
 
   @Override
