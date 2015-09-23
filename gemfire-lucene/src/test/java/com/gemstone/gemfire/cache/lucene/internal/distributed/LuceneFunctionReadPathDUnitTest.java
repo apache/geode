@@ -1,6 +1,11 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
 
 import org.junit.Assert;
 import org.junit.experimental.categories.Category;
@@ -9,8 +14,11 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.control.RebalanceOperation;
+import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
@@ -54,32 +62,31 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
         assertNotNull(cache);
         RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
         Region<Object, Object> region = regionFactory.create(REGION_NAME);
-        
-
         LuceneService service = LuceneServiceProvider.get(cache);
         InternalLuceneIndex index = (InternalLuceneIndex) service.createIndex(INDEX_NAME, REGION_NAME, "text");
+        return null;
+      }
+    };
         
+    server1.invoke(createPartitionRegion);
+    
+
+    SerializableCallable createSomeData = new SerializableCallable("createRegion") {
+      private static final long serialVersionUID = 1L;
+
+      public Object call() throws Exception {
+        final Cache cache = getCache();
+        Region<Object, Object> region = cache.getRegion(REGION_NAME);
         
-        region.put(1, new TestObject("hello world"));
-        region.put(2, new TestObject("goodbye world"));
+        putInRegion(region, 1, new TestObject("hello world"));
+        putInRegion(region, 113, new TestObject("hi world"));
+        putInRegion(region, 2, new TestObject("goodbye world"));
         
-        //TODO - the async event queue hasn't been hooked up, so we'll fake out
-        //writing the entry to the repository.
-        try {
-        IndexRepository repository1 = index.getRepositoryManager().getRepository(region, 1, null);
-        repository1.create(1, new TestObject("hello world"));
-        repository1.commit();
-        IndexRepository repository2 = index.getRepositoryManager().getRepository(region, 2, null);
-        repository2.create(2, new TestObject("hello world"));
-        repository2.commit();
-        } catch(BucketNotFoundException e) {
-          //thats ok, one of the data stores does not host these buckets.
-        }
         return null;
       }
     };
 
-    server1.invoke(createPartitionRegion);
+    server1.invoke(createSomeData);
     server2.invoke(createPartitionRegion);
 
     SerializableCallable executeSearch = new SerializableCallable("executeSearch") {
@@ -92,23 +99,86 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
         Assert.assertNotNull(region);
 
         LuceneService service = LuceneServiceProvider.get(cache);
-        LuceneQuery query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world");
-        LuceneQueryResults results = query.search();
-        assertEquals(2, results.size());
+        LuceneQuery<Integer, TestObject> query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world");
+        LuceneQueryResults<Integer, TestObject> results = query.search();
+        assertEquals(3, results.size());
+        List<LuceneResultStruct<Integer, TestObject>> page = results.getNextPage();
+        
+        Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
+        for(LuceneResultStruct<Integer, TestObject> row : page) {
+          data.put(row.getKey(), row.getValue());
+        }
+        
+        assertEquals(data, region);
         
         return null;
       }
     };
 
+    //Make sure we can search from both members
     server1.invoke(executeSearch);
+    server2.invoke(executeSearch);
+
+    //Do a rebalance
+    server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws CancellationException, InterruptedException {
+        RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
+        RebalanceResults results = op.getResults();
+        assertTrue(1 < results.getTotalBucketTransfersCompleted());
+        return null;
+      }
+    });
+    
+    //Make sure the search still works
+    server1.invoke(executeSearch);
+    server2.invoke(executeSearch);
   }
   
+  private static void putInRegion(Region<Object, Object> region, Object key, Object value) throws BucketNotFoundException, IOException {
+    region.put(key, value);
+    
+    //TODO - the async event queue hasn't been hooked up, so we'll fake out
+    //writing the entry to the repository.
+    LuceneService service = LuceneServiceProvider.get(region.getCache());
+    InternalLuceneIndex index = (InternalLuceneIndex) service.getIndex(INDEX_NAME, REGION_NAME);
+    IndexRepository repository1 = index.getRepositoryManager().getRepository(region, 1, null);
+    repository1.create(key, value);
+    repository1.commit();
+  }
+
   private static class TestObject implements Serializable {
     private String text;
 
     public TestObject(String text) {
       this.text = text;
     }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((text == null) ? 0 : text.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      TestObject other = (TestObject) obj;
+      if (text == null) {
+        if (other.text != null)
+          return false;
+      } else if (!text.equals(other.text))
+        return false;
+      return true;
+    }
+
     
     
   }
