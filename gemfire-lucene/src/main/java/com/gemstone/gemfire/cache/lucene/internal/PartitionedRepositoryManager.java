@@ -133,6 +133,9 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    * Find the bucket in region2 that matches the bucket id from region1.
    */
   private BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) throws BucketNotFoundException {
+    //Force the bucket to be created if it is not already
+    region.getOrCreateNodeForBucketWrite(bucketId, null);
+    
     BucketRegion result = region.getDataStore().getLocalBucketById(bucketId);
     if(result == null) {
       throw new BucketNotFoundException("Bucket not found for region " + region + " bucekt id " + bucketId);

@@ -18,6 +18,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
@@ -28,6 +30,7 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -115,6 +118,24 @@ public class PartitionedRepositoryManagerJUnitTest {
   public void getMissingBucketByKey() throws BucketNotFoundException {
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
     repoManager.getRepository(userRegion, 0, null);
+  }
+  
+  @Test
+  public void createMissingBucket() throws BucketNotFoundException {
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    BucketRegion mockBucket0 = getMockBucket(0);
+    
+    Mockito.when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
+    
+    Mockito.when(fileRegion.getOrCreateNodeForBucketWrite(eq(0), (RetryTimeKeeper) any())).then(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        Mockito.when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(fileBuckets.get(0));
+        return null;
+      }
+    });
+    
+    assertNotNull(repoManager.getRepository(userRegion, 0, null));
   }
   
   @Test
