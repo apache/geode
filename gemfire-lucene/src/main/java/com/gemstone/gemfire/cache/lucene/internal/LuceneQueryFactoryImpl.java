@@ -17,7 +17,6 @@ import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   private int limit_attr = DEFAULT_LIMIT;
   private int pageSize_attr = DEFAULT_PAGESIZE;
-  private Set<ResultType> resultType_attr = new HashSet<ResultType>();
   private Set<String> projection_fields_attr = new HashSet<String>();
   
   /* reference to the index. One index could have multiple Queries, but one Query must belong
@@ -38,22 +37,11 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   }
 
   @Override
-  public LuceneQueryFactory setResultTypes(ResultType... resultTypes) {
-    if (resultTypes != null) {
-      for (ResultType resultType:resultTypes) {
-        this.resultType_attr.add(resultType);
-      }
-    }
-    return this;
-  }
-
-  @Override
   public LuceneQuery create(String indexName, String regionName,
       String queryString, Analyzer analyzer) throws ParseException {
     QueryParser parser = new QueryParser(null, analyzer);
     Query query = parser.parse(queryString);
-    LuceneQueryImpl luceneQuery = new LuceneQueryImpl(indexName, regionName, limit_attr, pageSize_attr, 
-        resultType_attr, projection_fields_attr, query);
+    LuceneQueryImpl luceneQuery = new LuceneQueryImpl(indexName, regionName, limit_attr, pageSize_attr, projection_fields_attr, query);
     return luceneQuery;
   }
 

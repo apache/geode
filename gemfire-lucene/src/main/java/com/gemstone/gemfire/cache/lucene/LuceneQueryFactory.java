@@ -25,24 +25,6 @@ public interface LuceneQueryFactory {
    */
   public static final int DEFAULT_PAGESIZE = 0;
   
-  public enum ResultType {
-    /**
-     *  Query results only contain value, which is the default setting.
-     *  If field projection is specified, use projected fields' values instead of whole domain object
-     */
-    VALUE,
-    
-    /**
-     * Query results contain score
-     */
-    SCORE,
-    
-    /**
-     * Query results contain key
-     */
-    KEY
-  };
-
   /**
    * Set page size for a query result. The default page size is 0 which means no pagination.
    * If specified negative value, throw IllegalArgumentException
@@ -58,14 +40,6 @@ public interface LuceneQueryFactory {
    * @return itself
    */
   LuceneQueryFactory setResultLimit(int limit);
-  
-  /**
-   * set weather to include SCORE, KEY in result
-   * 
-   * @param resultTypes
-   * @return itself
-   */
-  LuceneQueryFactory setResultTypes(ResultType... resultTypes);
   
   /**
    * Set a list of fields for result projection.

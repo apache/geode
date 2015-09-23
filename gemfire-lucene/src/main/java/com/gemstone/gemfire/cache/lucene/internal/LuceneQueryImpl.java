@@ -6,7 +6,6 @@ import org.apache.lucene.search.Query;
 
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory.ResultType;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 
 public class LuceneQueryImpl implements LuceneQuery {
@@ -14,7 +13,6 @@ public class LuceneQueryImpl implements LuceneQuery {
   private int pageSize = LuceneQueryFactory.DEFAULT_PAGESIZE;
   private String indexName;
   private String regionName;
-  private Set<ResultType> resultTypes;
   
   // The projected fields are local to a specific index per Query object. 
   private Set<String> projectedFieldNames;
@@ -22,13 +20,12 @@ public class LuceneQueryImpl implements LuceneQuery {
   /* the lucene Query object to be wrapped here */
   private Query query;
   
-  LuceneQueryImpl(String indexName, String regionName, int limit, int pageSize, Set<ResultType> resultTypes, 
+  LuceneQueryImpl(String indexName, String regionName, int limit, int pageSize, 
       Set<String> projectionFieldNames, Query query) {
     this.indexName = indexName;
     this.regionName = regionName;
     this.limit = limit;
     this.pageSize = pageSize;
-    this.resultTypes = resultTypes;
     this.projectedFieldNames = projectionFieldNames;
     this.query = query;
   }
@@ -47,11 +44,6 @@ public class LuceneQueryImpl implements LuceneQuery {
   @Override
   public int getLimit() {
     return this.limit;
-  }
-
-  @Override
-  public ResultType[] getResultTypes() {
-    return (ResultType[])this.resultTypes.toArray();
   }
 
   @Override

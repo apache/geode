@@ -1,7 +1,5 @@
 package com.gemstone.gemfire.cache.lucene;
 
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory.ResultType;
-
 /**
  * Provides wrapper object of Lucene's Query object and execute the search. 
  * <p>Instances of this interface are created using
@@ -24,11 +22,6 @@ public interface LuceneQuery {
    */
   public int getLimit();
 
-  /**
-   * Get result types setting of current query. 
-   */
-  public ResultType[] getResultTypes();
-  
   /**
    * Get projected fields setting of current query. 
    */
