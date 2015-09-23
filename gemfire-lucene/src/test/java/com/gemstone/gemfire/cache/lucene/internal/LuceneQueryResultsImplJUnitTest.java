@@ -27,6 +27,7 @@ public class LuceneQueryResultsImplJUnitTest {
 
   private List<EntryScore> hits;
   private List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
+  private Region<String, String> userRegion;
   
   @Before
   public void setUp() {
@@ -36,21 +37,8 @@ public class LuceneQueryResultsImplJUnitTest {
       hits.add(new EntryScore("key_" + i, i));
       expected.add(new LuceneResultStructImpl<String, String>("key_" + i, "value_" + i, i));
     }
-  }
-  
-  @Test
-  public void testMaxStore() {
-
-    hits.set(5, new EntryScore("key_5", 502));
     
-    LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, null, 5);
-    
-    assertEquals(502, results.getMaxScore(), 0.1f);
-  }
-  
-  @Test
-  public void testPagination() {
-    Region<String, String> userRegion = Mockito.mock(Region.class);
+    userRegion = Mockito.mock(Region.class);
     
     Mockito.when(userRegion.getAll(Mockito.anyCollection())).thenAnswer(new Answer() {
 
@@ -65,8 +53,20 @@ public class LuceneQueryResultsImplJUnitTest {
         return results;
       }
     });
+  }
+  
+  @Test
+  public void testMaxStore() {
+
+    hits.set(5, new EntryScore("key_5", 502));
     
+    LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, null, 5);
     
+    assertEquals(502, results.getMaxScore(), 0.1f);
+  }
+  
+  @Test
+  public void testPagination() {
     LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, userRegion, 10);
     
     assertEquals(23, results.size());
@@ -84,6 +84,21 @@ public class LuceneQueryResultsImplJUnitTest {
     next  = results.getNextPage();
     assertEquals(expected.subList(20, 23), next);
     
+    
+    assertFalse(results.hasNextPage());
+    assertNull(results.getNextPage());
+  }
+  
+  @Test
+  public void testNoPagination() {
+    LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, userRegion, 0);
+    
+    assertEquals(23, results.size());
+    
+    assertTrue(results.hasNextPage());
+    
+    List<LuceneResultStruct<String, String>> next  = results.getNextPage();
+    assertEquals(expected, next);
     
     assertFalse(results.hasNextPage());
     assertNull(results.getNextPage());

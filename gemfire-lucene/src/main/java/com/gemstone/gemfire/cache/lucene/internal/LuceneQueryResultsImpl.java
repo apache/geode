@@ -46,7 +46,7 @@ public class LuceneQueryResultsImpl<K,V> implements LuceneQueryResults<K,V> {
   public LuceneQueryResultsImpl(List<EntryScore> hits, Region<K,V> userRegion, int pageSize) {
     this.hits = hits;
     this.userRegion = userRegion;
-    this.pageSize = pageSize;
+    this.pageSize = pageSize == 0 ? Integer.MAX_VALUE : pageSize;
   }
 
   @Override
