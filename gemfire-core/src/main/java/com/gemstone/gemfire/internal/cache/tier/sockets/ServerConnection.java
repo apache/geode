@@ -566,7 +566,7 @@ public class ServerConnection implements Runnable {
       }
 
       if (isDebugEnabled) {
-        logger.debug("{} registering client {}", (registerClient? "" : "not "), proxyId);
+        logger.debug("{}registering client {}", (registerClient? "" : "not "), proxyId);
       }
       this.crHelper.checkCancelInProgress(null);
       if (clientJoined && isFiringMembershipEvents()) {

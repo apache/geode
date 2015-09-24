@@ -10,17 +10,17 @@ import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Version;
 
-public class PingRequestMessage extends HighPriorityDistributionMessage{
+public class CheckRequestMessage extends HighPriorityDistributionMessage{
 
   int requestId;
   InternalDistributedMember target;
   
-  public PingRequestMessage(InternalDistributedMember neighbour, int id) {
+  public CheckRequestMessage(InternalDistributedMember neighbour, int id) {
     requestId = id;
     this.target = neighbour;
   }
   
-  public PingRequestMessage(){}
+  public CheckRequestMessage(){}
   
   public InternalDistributedMember getTarget() {
     return target;
@@ -28,7 +28,7 @@ public class PingRequestMessage extends HighPriorityDistributionMessage{
   
   @Override
   public int getDSFID() {
-    return PING_REQUEST;
+    return CHECK_REQUEST;
   }
 
   @Override
@@ -38,7 +38,7 @@ public class PingRequestMessage extends HighPriorityDistributionMessage{
 
   @Override
   public String toString() {
-    return "PingRequestMessage [requestId=" + requestId + "] from " + getSender();
+    return "CheckRequestMessage [requestId=" + requestId + "]";
   }
 
   public int getRequestId() {

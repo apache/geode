@@ -147,7 +147,14 @@ public class MembershipManagerHelper
   public static void crashDistributedSystem(final DistributedSystem msys) {
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.playDead(msys);
-    ((GMSMembershipManager)getMembershipManager(msys)).forceDisconnect("for testing");
+    GMSMembershipManager mgr = ((GMSMembershipManager)getMembershipManager(msys));
+    mgr.forceDisconnect("for testing");
+    while (msys.isConnected()) {
+      try { Thread.sleep(1000); } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return;
+      }
+    }
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
   

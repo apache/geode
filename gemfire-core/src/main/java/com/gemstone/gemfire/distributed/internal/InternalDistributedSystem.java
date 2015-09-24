@@ -743,7 +743,6 @@ public final class InternalDistributedSystem
           } finally {
             if (!startedPeerLocation) {
               this.startedLocator.stop();
-              this.startedLocator = null;
             }
           }
         }
@@ -776,7 +775,6 @@ public final class InternalDistributedSystem
       } finally {
         if (!finished) {
           this.startedLocator.stop();
-          this.startedLocator = null;
         }
       }
     }

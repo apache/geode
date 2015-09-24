@@ -44,7 +44,7 @@ public class NetView implements DataSerializableFixedID {
   private Set<InternalDistributedMember> crashedMembers;
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
-  static final private Random rd = new Random();
+  static public final Random RANDOM = new Random();
 
   public NetView() {
     viewId = 0;
@@ -242,7 +242,7 @@ public class NetView implements DataSerializableFixedID {
       results.add(localAddress);// to add local address
 
       if (notPreferredCoordinatorList.size() > 0) {
-        int idx = rd.nextInt(notPreferredCoordinatorList.size());
+        int idx = RANDOM.nextInt(notPreferredCoordinatorList.size());
         results.add(notPreferredCoordinatorList.get(idx)); // to add non preferred local address
       }
     }

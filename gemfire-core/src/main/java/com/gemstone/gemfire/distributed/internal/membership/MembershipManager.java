@@ -11,6 +11,7 @@ import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -48,7 +49,7 @@ public interface MembershipManager {
    * While this lock is held the view can't change.
    * @since 5.7
    */
-  public Object getViewLock();
+  public ReadWriteLock getViewLock();
 
   /**
    * Return a {@link InternalDistributedMember} representing the current system

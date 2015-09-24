@@ -151,7 +151,7 @@ public class Services {
     this.joinLeave.started();
     this.healthMon.started();
     this.manager.started();
-    logger.info("Attempting to join the distributed system");
+    logger.debug("All membership services have been started");
     try {
       this.manager.joinDistributedSystem();
     } catch (Throwable e) {

@@ -72,8 +72,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
 
   @Override
   public String toString() {
-    String s = getSender() == null? getRecipientsDescription() : ""+getSender();
-    return "InstallViewMessage("+s+"; preparing="+this.preparing+"; "+this.view
+    return "InstallViewMessage(preparing="+this.preparing+"; "+this.view
             +"; cred="+(credentials==null?"null": "not null")
              +")";
   }

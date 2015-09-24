@@ -8,14 +8,14 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
 import com.gemstone.gemfire.internal.Version;
 
-public class PingResponseMessage extends HighPriorityDistributionMessage {
+public class CheckResponseMessage extends HighPriorityDistributionMessage {
   int requestId;
   
-  public PingResponseMessage(int id) {
+  public CheckResponseMessage(int id) {
     requestId = id;
   }
 
-  public PingResponseMessage(){}
+  public CheckResponseMessage(){}
   
   public int getRequestId() {
     return requestId;
@@ -24,7 +24,7 @@ public class PingResponseMessage extends HighPriorityDistributionMessage {
 
   @Override
   public int getDSFID() {
-    return PING_RESPONSE;
+    return CHECK_RESPONSE;
   }
 
   @Override
@@ -34,7 +34,7 @@ public class PingResponseMessage extends HighPriorityDistributionMessage {
  
   @Override
   public String toString() {
-    return "PingResponseMessage [requestId=" + requestId + "] from " + getSender();
+    return "CheckResponseMessage [requestId=" + requestId + "]";
   }
 
   @Override

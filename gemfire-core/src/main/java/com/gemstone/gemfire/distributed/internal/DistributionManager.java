@@ -2844,7 +2844,8 @@ public class DistributionManager
     if (ch != null) {
       MembershipManager mgr = ch.getMembershipManager();
       if (mgr != null) {
-        synchronized (mgr.getViewLock()) {
+        mgr.getViewLock().writeLock().lock();
+        try {
           synchronized (this.membersLock) {
             // Don't let the members come and go while we are adding this
             // listener.  This ensures that the listener (probably a
@@ -2852,6 +2853,8 @@ public class DistributionManager
             addAllMembershipListener(l);
             return getDistributionManagerIdsIncludingAdmin();
           }
+        } finally {
+          mgr.getViewLock().writeLock().unlock();
         }
       }
     }

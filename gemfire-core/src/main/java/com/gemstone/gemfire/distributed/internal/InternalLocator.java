@@ -725,10 +725,6 @@ public class InternalLocator extends Locator implements ConnectListener {
       startCache(existing);
     }
     else {
-      if (System.getProperty("p2p.joinTimeout", "").length() == 0) {
-          System.setProperty("p2p.joinTimeout", "5000");
-        }
-
       String thisLocator;
       {
         StringBuilder sb = new StringBuilder(100);

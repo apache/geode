@@ -12,7 +12,8 @@ import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Version;
 
-public class RemoveMemberMessage extends HighPriorityDistributionMessage {
+public class RemoveMemberMessage extends HighPriorityDistributionMessage
+  implements HasMemberID {
   private InternalDistributedMember memberID;
   private String reason;
 

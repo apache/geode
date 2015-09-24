@@ -3,6 +3,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.locator;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -12,7 +13,8 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 
-public class FindCoordinatorRequest implements DataSerializableFixedID, PeerLocatorRequest {
+public class FindCoordinatorRequest extends HighPriorityDistributionMessage
+  implements PeerLocatorRequest {
 
   private InternalDistributedMember memberID;
   private Collection<InternalDistributedMember> rejectedCoordinators;
@@ -67,15 +69,31 @@ public class FindCoordinatorRequest implements DataSerializableFixedID, PeerLoca
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.memberID, out);
-    DataSerializer.writeObject(this.rejectedCoordinators, out);
+    if (this.rejectedCoordinators != null) {
+      out.writeInt(this.rejectedCoordinators.size());
+      for (InternalDistributedMember mbr: this.rejectedCoordinators) {
+        DataSerializer.writeObject(mbr, out);
+      }
+    } else {
+      out.writeInt(0);
+    }
     out.writeInt(lastViewId);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.memberID = DataSerializer.readObject(in);
-    this.rejectedCoordinators = DataSerializer.readObject(in);
+    int size = in.readInt();
+    this.rejectedCoordinators = new ArrayList<InternalDistributedMember>(size);
+    for (int i=0; i<size; i++) {
+      this.rejectedCoordinators.add((InternalDistributedMember)DataSerializer.readObject(in));
+    }
     this.lastViewId = in.readInt();
+  }
+
+  @Override
+  protected void process(DistributionManager dm) {
+    throw new IllegalStateException("this message should not be executed");
   }
 
 }

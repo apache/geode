@@ -181,11 +181,21 @@ public class MembershipJUnitTest extends TestCase {
       System.out.println("creating 2nd membership manager");
       m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
       
-      assert m2.getView().size() == 2 : "view = " + m2.getView();
-      assert m1.getView().size() == 2 : "view = " + m1.getView();
-      assert m1.getView().getCreator().equals(m2.getView().getCreator());
-      assert m1.getView().getViewId() == m2.getView().getViewId();
-      
+      long giveUp = System.currentTimeMillis() + 10000;
+      for (;;) {
+        try {
+          assert m2.getView().size() == 2 : "view = " + m2.getView();
+          assert m1.getView().size() == 2 : "view = " + m1.getView();
+          assert m1.getView().getCreator().equals(m2.getView().getCreator());
+          assert m1.getView().getViewId() == m2.getView().getViewId();
+          break;
+        } catch  (AssertionError e) {
+          if (System.currentTimeMillis() > giveUp) {
+            throw e;
+          }
+        }
+      }
+        
       m2.shutdown();
       assert !m2.isConnected();
       

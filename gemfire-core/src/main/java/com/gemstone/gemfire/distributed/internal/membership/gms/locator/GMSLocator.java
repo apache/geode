@@ -54,6 +54,7 @@ public class GMSLocator implements Locator, NetLocator {
   private final List<InetSocketAddress> locators;
   private Services services;
   private final LocatorStats stats;
+  private InternalDistributedMember localAddress;
   
   private Set<InternalDistributedMember> registrants = new HashSet<InternalDistributedMember>();
 
@@ -95,6 +96,7 @@ public class GMSLocator implements Locator, NetLocator {
     if (services == null || services.isStopped()) {
       logger.info("Peer locator is connecting to local membership services");
       services = ((GMSMembershipManager)mgr).getServices();
+      localAddress = services.getMessenger().getMemberID();
       services.setLocator(this);
       NetView newView = services.getJoinLeave().getView();
       if (newView != null) {
@@ -157,37 +159,32 @@ public class GMSLocator implements Locator, NetLocator {
         
         boolean fromView = false;
         int viewId = -1;
+        NetView v = this.view;
         
-        if (view != null) {
+        if (v != null) {
           // if the ID of the requester matches an entry in the membership view then remove
-          // that entry
+          // that entry - it's obviously an old member since the ID has been reused
           InternalDistributedMember rid = findRequest.getMemberID();
-          for (InternalDistributedMember id: view.getMembers()) {
+          for (InternalDistributedMember id: v.getMembers()) {
             if (rid.compareTo(id, false) == 0) {
-              NetView newView = new NetView(view, view.getViewId());
+              NetView newView = new NetView(v, v.getViewId());
               newView.remove(id);
-              this.view = newView;
+              v = newView;
               break;
             }
           }
-          viewId = view.getViewId();
+          viewId = v.getViewId();
           if (viewId > findRequest.getLastViewId()) {
             // ignore the requests rejectedCoordinators if the view has changed
-            coord = view.getCoordinator(Collections.<InternalDistributedMember>emptyList());
+            coord = v.getCoordinator(Collections.<InternalDistributedMember>emptyList());
           } else {
-            coord = view.getCoordinator(findRequest.getRejectedCoordinators());
+            coord = v.getCoordinator(findRequest.getRejectedCoordinators());
           }
           logger.debug("Peer locator: coordinator from view is {}", coord);
           fromView = true;
         }
         
-        if (coord != null) {
-          // no need to keep track of registrants after we're in the distributed system
-          synchronized(registrants) {
-            registrants.clear();
-          }
-          
-        } else {
+        if (coord == null) {
           // find the "oldest" registrant
           Collection<InternalDistributedMember> rejections = findRequest.getRejectedCoordinators();
           if (rejections == null) {
@@ -209,12 +206,16 @@ public class GMSLocator implements Locator, NetLocator {
             logger.debug("Peer locator: coordinator from registrations is {}", coord);
           }
         }
-        response = new FindCoordinatorResponse(coord, fromView, viewId,
-            this.networkPartitionDetectionEnabled, this.usePreferredCoordinators);
+        
+        synchronized(registrants) {
+          response = new FindCoordinatorResponse(coord, localAddress,
+              fromView, view, new HashSet<InternalDistributedMember>(registrants),
+              this.networkPartitionDetectionEnabled, this.usePreferredCoordinators);
+        }
       }
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Peer locator returning " + response);
+      logger.debug("Peer locator returning {}", response);
     }
     return response;
   }
@@ -288,8 +289,8 @@ public class GMSLocator implements Locator, NetLocator {
   
   private boolean recoverFromOthers() {
     for (InetSocketAddress other: this.locators) {
-      logger.info("Peer locator attempting to get state from " + other);
       if (recover(other)) {
+        logger.info("Peer locator recovered state from " + other);
         return true;
       }
     } // for
@@ -306,7 +307,7 @@ public class GMSLocator implements Locator, NetLocator {
         return true;
       }
     } catch (IOException | ClassNotFoundException ignore) {
-      logger.info("Peer locator could not recover membership view from {}: {}", other, ignore.getMessage());
+      logger.debug("Peer locator could not recover membership view from {}: {}", other, ignore.getMessage());
     }
     return false;
   }

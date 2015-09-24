@@ -77,8 +77,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
   
   public static final short SUSPECT_MEMBERS_MESSAGE = -156;
   
-  public static final short PING_RESPONSE = -155;
-  public static final short PING_REQUEST = -154;
+  public static final short CHECK_RESPONSE = -155;
+  public static final short CHECK_REQUEST = -154;
   public static final short REMOVE_MEMBER_REQUEST = -153;
   
   public static final short LEAVE_REQUEST_MESSAGE = -152;

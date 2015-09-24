@@ -99,8 +99,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Install
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.PingRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.PingResponseMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckRequestMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
@@ -474,8 +474,8 @@ public final class DSFIDFactory implements DataSerializableFixedID {
 
   private static void registerDSFIDTypes() {
     registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
-    registerDSFID(PING_REQUEST, PingRequestMessage.class);
-    registerDSFID(PING_RESPONSE, PingResponseMessage.class);
+    registerDSFID(CHECK_REQUEST, CheckRequestMessage.class);
+    registerDSFID(CHECK_RESPONSE, CheckResponseMessage.class);
     registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
     registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
     registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);

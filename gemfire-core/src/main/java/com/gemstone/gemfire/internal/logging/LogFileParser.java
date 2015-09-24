@@ -149,6 +149,14 @@ public class LogFileParser  {
     int llen = line.length();
     String result = null;
     if (llen > 10) {
+      // first see if the start of the line is a timestamp, as in a thread-dump's stamp
+      if (line.charAt(0) == '2' &&
+          line.charAt(1) == '0' &&
+          line.charAt(4) == '-' &&
+          line.charAt(7) == '-') {
+        return line.substring(0, 19).replace('-', '/');
+      }
+      // now look for gemfire's log format
       if (line.charAt(0) == '[') {
         if ((line.charAt(1) == 'i' &&
              line.charAt(2) == 'n' &&

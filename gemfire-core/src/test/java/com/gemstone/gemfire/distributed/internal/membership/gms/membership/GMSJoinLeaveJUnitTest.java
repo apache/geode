@@ -29,6 +29,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.SearchState;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
@@ -38,6 +40,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAck
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+import dunit.standalone.DUnitLauncher;
 
 @Category(UnitTest.class)
 public class GMSJoinLeaveJUnitTest {
@@ -95,6 +99,41 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
     gmsJoinLeave.started();
+  }
+  
+  @Test
+  public void testFindCoordinatorInView() throws Exception {
+    initMocks();
+
+    int viewId = 1;
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
+    mbrs.add(mockMembers[0]);
+    mbrs.add(mockMembers[1]);
+    
+    when(services.getMessenger()).thenReturn(messenger);
+    
+    //prepare the view
+    NetView netView = new NetView(mockMembers[0], viewId, mbrs, shutdowns, crashes);
+    SearchState state = gmsJoinLeave.searchState;
+    state.view = netView;
+    state.viewId = netView.getViewId();
+    // already tried joining using member 0
+    Set<InternalDistributedMember> set = new HashSet<>();
+    set.add(mockMembers[1]);
+    state.alreadyTried = set;
+    state.hasContactedALocator = true;
+    // simulate a response being received
+    FindCoordinatorResponse resp = new FindCoordinatorResponse(mockMembers[1], mockMembers[2]);
+    gmsJoinLeave.processMessage(resp);
+    // tell GMSJoinLeave that a unit test is running so it won't clear the
+    // responses collection
+    gmsJoinLeave.unitTesting.add("findCoordinatorFromView");
+    // now for the test
+    boolean result = gmsJoinLeave.findCoordinatorFromView();
+    assert result : "should have found coordinator " + mockMembers[2];
+    assert state.possibleCoordinator == mockMembers[2] : "should have found " + mockMembers[2] + " but found " + state.possibleCoordinator;
   }
   
   @Test
@@ -252,6 +291,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testDuplicateLeaveRequestDoesNotCauseNewView() throws Exception {
     String reason = "testing";
     initMocks();
+    gmsJoinLeave.unitTesting.add("noRandomViewChange");
     prepareAndInstallView();
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.becomeCoordinator();
@@ -279,6 +319,7 @@ public class GMSJoinLeaveJUnitTest {
     prepareAndInstallView();
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);
+    gmsJoinLeave.unitTesting.add("noRandomViewChange");
     gmsJoinLeave.becomeCoordinator();
     RemoveMemberMessage msg = new RemoveMemberMessage(gmsJoinLeave.getMemberID(), mockMembers[0], reason);
     msg.setSender(mockMembers[0]);
@@ -300,6 +341,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testDuplicateJoinRequestDoesNotCauseNewView() throws Exception {
     initMocks();
+    gmsJoinLeave.unitTesting.add("noRandomViewChange");
     prepareAndInstallView();
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);

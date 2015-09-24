@@ -74,7 +74,8 @@ public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
     try {
       p.waitForCacheException();
     } catch (ForceReattemptException e) {
-      throw new InternalGemFireError("unexpected ForceReattemptException", e);
+      // ignore - the member is going away or has destroyed the PR so
+      // it won't be forwarding anything to clients for the PR
     }
   }
 

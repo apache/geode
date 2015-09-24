@@ -339,6 +339,10 @@ public final class ClientProxyMembershipID
 //          "serializing a client ID with zero port: " + this.toString(),
 //          new Exception("Stack trace"));
 //    }
+    Version v = InternalDataSerializer.getVersionForDataStream(out);
+    if (v.compareTo(Version.GFE_90) >= 0) {
+      Version.CURRENT.writeOrdinal(out, true);
+    }
     DataSerializer.writeByteArray(this.identity, out);
     out.writeInt(this.uniqueId);
   }
@@ -346,6 +350,11 @@ public final class ClientProxyMembershipID
   public void fromData(DataInput in) throws IOException, ClassNotFoundException
   {
     this.clientVersion = InternalDataSerializer.getVersionForDataStream(in);
+    // client IDs are not always carefully serialized/deserialized so they
+    // must know their own version
+    if (this.clientVersion.compareTo(Version.GFE_90) >= 0) {
+      this.clientVersion = Version.readVersion(in, false);
+    }
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
 //    {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}

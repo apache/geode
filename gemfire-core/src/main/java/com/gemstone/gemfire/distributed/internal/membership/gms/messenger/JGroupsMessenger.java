@@ -270,6 +270,7 @@ public class JGroupsMessenger implements Messenger {
         myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
       }
     } catch (Exception e) {
+      myChannel.close();
       throw new SystemConnectException("unable to create jgroups channel", e);
     }
     
@@ -568,6 +569,7 @@ public class JGroupsMessenger implements Messenger {
       for (int i = 0; i < destinations.length; i ++) {
         InternalDistributedMember d = destinations[i];
         if (!newView.contains(d)) {
+          logger.debug("messenger: member has left the view: {}", d);
           result.add(d);
         }
       }
