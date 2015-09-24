@@ -797,7 +797,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
    */
   public void replaceOfflineMemberAndRestartCreateColocatedPRLate(SerializableRunnable createParentPR, SerializableRunnable createChildPR) throws Throwable {
     addExpectedException("PartitionOfflineException");
-    addExpectedException("PartitionOfflineException");
+    addExpectedException("RegionDestroyedException");
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
