@@ -146,6 +146,7 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("Could not find any server to create redundant client"));
       expected.add(Pattern.compile("Could not find any server to create primary client"));
       expected.add(Pattern.compile("Pool unexpected closed socket on server"));
+      expected.add(Pattern.compile("SocketTimeoutException"));
       expected.add(Pattern.compile("Could not initialize a primary queue on startup"));
       expected.add(Pattern.compile("java.lang.IllegalArgumentException: Sample timestamp must be greater than previous timestamp"));
       //The following 2 strings are ignored due to bug 52042
