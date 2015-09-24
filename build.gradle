@@ -160,7 +160,7 @@ subprojects {
         dep.transitive = true
       }
       findbugs.effort = 'max'
-      findbugs.reportLevel = 'low'
+      findbugs.reportLevel = 'high'
     }
  
     tasks.withType(FindBugs) {
