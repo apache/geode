@@ -24,6 +24,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
@@ -141,6 +142,10 @@ public class LuceneServiceImplJUnitTest {
     PartitionedRegion chunkPR = (PartitionedRegion)cache.getRegion(chunkRegionName);
     assertTrue(filePR != null);
     assertTrue(chunkPR != null);
+    
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(index1.getName(), index1.getRegionPath());
+    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl)cache.getAsyncEventQueue(aeqId);
+    assertTrue(aeq != null);
   }
 
   @Test

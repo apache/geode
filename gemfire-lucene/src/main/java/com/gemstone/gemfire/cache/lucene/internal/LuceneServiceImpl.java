@@ -62,6 +62,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
   
   public static String getUniqueIndexName(String indexName, String regionPath) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/"+regionPath;
+    }
     String name = indexName + "#" + regionPath.replace('/', '_');
     return name;
   }
@@ -72,9 +75,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if (index == null) {
       return null;
     }
-    for (String field:fields) {
-      index.addSearchableField(field);
-    }
+    index.setSearchableFields(fields);
     // for this API, set index to use the default StandardAnalyzer for each field
     index.setAnalyzer(null);
     index.initialize();
@@ -124,9 +125,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
     
     Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), analyzerPerField);
-    for (String field:analyzerPerField.keySet()) {
-      index.addSearchableField(field);
-    }
+    String[] fields = (String[])analyzerPerField.keySet().toArray(new String[analyzerPerField.keySet().size()]);
+    index.setSearchableFields(fields);
     index.setAnalyzer(analyzer);
     index.initialize();
     registerIndex(index);
