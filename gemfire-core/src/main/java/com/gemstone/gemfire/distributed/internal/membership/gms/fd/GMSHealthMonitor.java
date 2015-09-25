@@ -652,8 +652,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         viewVsMembers = new HashSet<SuspectRequest>();
         viewVsSuspectedMembers.put(cv, viewVsMembers);
       }
-      for (int i = 0; i < sMembers.size(); i++) {
-        SuspectRequest sr = sMembers.get(i);
+      for (SuspectRequest sr: sMembers) {       
         if (!viewVsMembers.contains(sr)) {
           viewVsMembers.add(sr);
         }
@@ -806,8 +805,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     logger.debug("Sending suspect request for members {}", requests);
     synchronized (suspectRequests) {
       if (suspectRequests.size() > 0) {
-        for (int i = 0; i < suspectRequests.size(); i++) {
-          SuspectRequest sr = suspectRequests.get(0);
+        for (SuspectRequest sr: suspectRequests) {
           if (!requests.contains(sr)) {
             requests.add(sr);
           }

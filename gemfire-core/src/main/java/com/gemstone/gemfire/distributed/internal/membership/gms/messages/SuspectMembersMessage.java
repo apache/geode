@@ -54,8 +54,7 @@ public class SuspectMembersMessage extends HighPriorityDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     if (suspectRequests != null) {
       out.writeInt(suspectRequests.size());
-      for (int i = 0; i < suspectRequests.size(); i++) {
-        SuspectRequest sr = suspectRequests.get(0);
+      for (SuspectRequest sr: suspectRequests) {        
         DataSerializer.writeObject(sr.getSuspectMember(), out);
         DataSerializer.writeString(sr.getReason(), out);
       }
