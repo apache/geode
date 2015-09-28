@@ -34,16 +34,6 @@ public class LuceneResultStructImpl<K,V> implements LuceneResultStruct<K,V> {
   }
 
   @Override
-  public Object[] getNames() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Object[] getResultValues() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;

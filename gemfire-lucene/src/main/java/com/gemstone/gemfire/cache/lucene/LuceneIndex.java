@@ -8,15 +8,9 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
-
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
-import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 
 
 /**

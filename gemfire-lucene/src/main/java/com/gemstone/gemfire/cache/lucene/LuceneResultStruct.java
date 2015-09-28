@@ -41,18 +41,5 @@ public interface LuceneResultStruct<K, V> {
    * @throws IllegalArgumentException If this struct does not contain score
    */
   public float getScore();
-  
-  /**
-   * Get the types of values ordered list
-   * Item in the list could be either ResultType, or field name
-   * @return the array of result types
-   */
-  public Object[] getNames();
-  
-  /**
-   * Get the values in same order as result types
-   * @return the array of values
-   */
-  public Object[] getResultValues();
 }
 
