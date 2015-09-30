@@ -181,9 +181,18 @@ subprojects {
       }
     }
 
+    task mergeIntegrationTestCoverage (type: JacocoMerge) {
+      description 'Merges Distributed and Integration test coverage results'
+
+      destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
+      executionData = fileTree(dir: 'build/jacoco', include: ['**/distributedTest.exec','**/integrationTest.exec'])
+
+    }
+
     jacocoTestReport {
       reports { 
         csv.enabled false
+        sourceSets project.sourceSets.main
         html.destination "${buildDir}/jacocoTestHtml"
       }
     }
