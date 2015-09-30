@@ -50,6 +50,11 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
 
   @Override
   public TopEntriesCollector reduce(Collection<TopEntriesCollector> collectors) throws IOException {
+    TopEntriesCollector mergedResult = new TopEntriesCollector(id, limit);
+    if (collectors.isEmpty()) {
+      return mergedResult;
+    }
+    
     final EntryScoreComparator scoreComparator = new TopEntries().new EntryScoreComparator();
 
     // orders a entry with higher score above a doc with lower score
@@ -65,8 +70,7 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
     // The queue contains iterators for all bucket results. The queue puts the entry with the highest score at the head
     // using score comparator.
     PriorityQueue<List<EntryScore>> entryListsPriorityQueue;
-    entryListsPriorityQueue = new PriorityQueue<List<EntryScore>>(Collections.reverseOrder(entryListComparator));
-    TopEntriesCollector mergedResult = new TopEntriesCollector(id, limit);
+    entryListsPriorityQueue = new PriorityQueue<List<EntryScore>>(collectors.size(), Collections.reverseOrder(entryListComparator));
 
     for (IndexResultCollector collector : collectors) {
       logger.debug("Number of entries found in collector {} is {}", collector.getName(), collector.size());
