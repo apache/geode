@@ -236,6 +236,11 @@ public class TXEntryState implements Releasable
   private transient DistTxThinEntryState distTxThinEntryState;
   
   /**
+   * Use this system property if you need to display/log string values in conflict messages
+   */
+  private static final boolean VERBOSE_CONFLICT_STRING = Boolean.getBoolean("gemfire.verboseConflictString");
+
+  /**
    * This constructor is used to create a singleton used by LocalRegion to
    * signal that noop invalidate op has been performed. The instance returned by
    * this constructor is just a marker; it is not good for anything else.
@@ -1511,14 +1516,14 @@ public class TXEntryState implements Releasable
         //           curCmtVersionId =
         // ((CachedDeserializable)curCmtVersionId).getDeserializedValue();
         //         }
-        String fromString = calcConflictString(getOriginalVersionId());
-        String toString = calcConflictString(curCmtVersionId);
-        if (fromString.equals(toString)) {
-          throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_A_STATE_CHANGE.toLocalizedString(new Object[] {key, r.getDisplayName()}));
+        if (VERBOSE_CONFLICT_STRING || logger.isDebugEnabled()) {
+          String fromString = calcConflictString(getOriginalVersionId());
+          String toString = calcConflictString(curCmtVersionId);
+          if (!fromString.equals(toString)) {
+            throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_ALREADY_BEEN_CHANGED_FROM_2_TO_3.toLocalizedString(new Object[] {key, r.getDisplayName(), fromString, toString}));
+          }
         }
-        else {
-          throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_ALREADY_BEEN_CHANGED_FROM_2_TO_3.toLocalizedString(new Object[] {key, r.getDisplayName(), fromString, toString}));
-        }
+        throw new CommitConflictException(LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_A_STATE_CHANGE.toLocalizedString(new Object[]{key, r.getDisplayName()}));
       }
       } finally {
         OffHeapHelper.release(curCmtVersionId);

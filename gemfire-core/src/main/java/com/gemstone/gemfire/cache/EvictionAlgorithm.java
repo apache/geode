@@ -72,7 +72,8 @@ public final class EvictionAlgorithm extends EnumSyntax
     return stringTable;
   }
     
-  private static final EvictionAlgorithm[] enumValueTable = {
+  //TODO post Java 1.8.0u45 uncomment final flag, see JDK-8076152
+  private static /*final*/ EvictionAlgorithm[] enumValueTable = {
     NONE,
     LRU_ENTRY,
     LRU_HEAP,

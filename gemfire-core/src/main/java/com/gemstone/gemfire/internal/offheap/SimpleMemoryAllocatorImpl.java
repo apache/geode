@@ -3341,7 +3341,13 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
       }
       if (!isSerialized()) {
         // byte array
-        return "byte[" + ((Chunk)this.block).getDataSize() + "]";
+        if (isCompressed()) {
+          return "compressed byte[" + ((Chunk)this.block).getDataSize() + "]";
+        } else {
+          return "byte[" + ((Chunk)this.block).getDataSize() + "]";
+        }
+      } else if (isCompressed()) {
+        return "compressed object of size " + ((Chunk)this.block).getDataSize();
       }
       //Object obj = EntryEventImpl.deserialize(((Chunk)this.block).getRawBytes());
       byte[] bytes = ((Chunk)this.block).getRawBytes();

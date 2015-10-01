@@ -96,11 +96,13 @@ public class CreateHDFSStoreFunction extends FunctionAdapter implements Internal
     hdfsStoreFactory.setMajorCompactionInterval(configHolder.getMajorCompactionInterval());
     hdfsStoreFactory.setMajorCompactionThreads(configHolder.getMajorCompactionThreads());
     hdfsStoreFactory.setMinorCompaction(configHolder.getMinorCompaction());
-    
+    hdfsStoreFactory.setMaxMemory(configHolder.getMaxMemory());
     hdfsStoreFactory.setBatchSize(configHolder.getBatchSize());
     hdfsStoreFactory.setBatchInterval(configHolder.getBatchInterval());
     hdfsStoreFactory.setDiskStoreName(configHolder.getDiskStoreName());
     hdfsStoreFactory.setDispatcherThreads(configHolder.getDispatcherThreads());
+    hdfsStoreFactory.setMinorCompactionThreads(configHolder.getMinorCompactionThreads());
+    hdfsStoreFactory.setPurgeInterval(configHolder.getPurgeInterval());
     hdfsStoreFactory.setSynchronousDiskWrite(configHolder.getSynchronousDiskWrite());
     hdfsStoreFactory.setBufferPersistent(configHolder.getBufferPersistent());
     

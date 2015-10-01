@@ -737,7 +737,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
   
   public void basicProcessOps() {
     {
-      List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+      List<EntryEventImpl> pendingCallbacks = new ArrayList<>(this.farSideEntryOps.size());
       Collections.sort(this.farSideEntryOps);
       Iterator it = this.farSideEntryOps.iterator();
       while (it.hasNext()) {
@@ -758,14 +758,18 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
     Iterator<EntryEventImpl> ci = callbacks.iterator();
     while(ci.hasNext()) {
       EntryEventImpl ee = ci.next();
-      if(ee.getOperation().isDestroy()) {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true);
-      } else if(ee.getOperation().isInvalidate()) {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, ee, true);
-      } else if(ee.getOperation().isCreate()) {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true);
-      } else {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true);
+      try {
+        if (ee.getOperation().isDestroy()) {
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true);
+        } else if (ee.getOperation().isInvalidate()) {
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, ee, true);
+        } else if (ee.getOperation().isCreate()) {
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true);
+        } else {
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true);
+        }
+      } finally {
+        ee.release();
       }
     }
   }
@@ -1294,7 +1298,6 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
          * This happens when we don't have the bucket and are getting adjunct notification
          */
         EntryEventImpl eei = AbstractRegionMap.createCBEvent(this.r, entryOp.op, entryOp.key, entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,entryOp.filterRoutingInfo,this.msg.bridgeContext, null, entryOp.versionTag, entryOp.tailKey);
-        try {
         if(entryOp.filterRoutingInfo!=null) {
           eei.setLocalFilterInfo(entryOp.filterRoutingInfo.getFilterInfo(this.r.getCache().getMyId()));
         }
@@ -1309,10 +1312,8 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
         // the message was sent and already reflects the change caused by this event.
         // In the latter case we need to invoke listeners
         final boolean skipListeners = !isDuplicate;
-        eei.invokeCallbacks(this.r, skipListeners, true);
-        } finally {
-          eei.release();
-        }
+        eei.setInvokePRCallbacks(!skipListeners);
+        pendingCallbacks.add(eei);
         return;
       }
       if (logger.isDebugEnabled()) {

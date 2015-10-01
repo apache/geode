@@ -102,6 +102,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   }
   
   public void tearDown2() throws Exception {
+    super.tearDown2();
     cleanup();
     invokeInEveryVM(getClass(), "cleanup");
     /*for (int h = 0; h < Host.getHostCount(); h++) {

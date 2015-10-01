@@ -772,7 +772,7 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
   /**
    * Test that doing a destroyRegion removes all data from HDFS.
    */
-  public void testGlobalDestroyWithQueueData() {
+  public void _testGlobalDestroyWithQueueData() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -877,7 +877,7 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
     });
   }
 
-  public void testGlobalDestroyFromAccessor() {
+  public void _testGlobalDestroyFromAccessor() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

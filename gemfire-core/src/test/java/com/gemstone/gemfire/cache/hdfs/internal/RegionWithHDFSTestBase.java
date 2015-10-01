@@ -367,7 +367,7 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
    * most of the time the data is not found in memory and queue and 
    * is fetched from HDFS
    */
-  public void testPutAllAndGetFromHDFS() {
+  public void _testPutAllAndGetFromHDFS() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -441,7 +441,7 @@ public abstract class RegionWithHDFSTestBase extends CacheTestCase {
     
   }
 
-  public void testWObasicClose() throws Throwable{
+  public void _testWObasicClose() throws Throwable{
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
