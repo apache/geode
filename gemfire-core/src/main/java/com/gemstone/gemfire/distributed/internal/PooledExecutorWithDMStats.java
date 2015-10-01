@@ -8,18 +8,18 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.java.util.concurrent.SynchronousQueueNoSpin;
-
-import java.util.List;
 
 /**
  * A ThreadPoolExecutor with stat support.
@@ -58,7 +58,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
     if (q instanceof SynchronousQueue || q instanceof SynchronousQueueNoSpin) {
       return q;
     } else {
-      return new SynchronousQueueNoSpin<Runnable>();
+      return new SynchronousQueue/*NoSpin*/<Runnable>();
     }
   }
 
