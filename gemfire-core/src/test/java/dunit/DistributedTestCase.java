@@ -746,7 +746,6 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
   private static void cleanupThisVM() {
     closeCache();
     
-    IpAddress.resolve_dns = true;
     SocketCreator.resolve_dns = true;
     InitialImageOperation.slowImageProcessing = 0;
     DistributionMessageObserver.setInstance(null);
