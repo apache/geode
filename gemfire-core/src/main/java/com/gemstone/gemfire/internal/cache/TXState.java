@@ -245,7 +245,7 @@ public class TXState implements TXStateInterface {
     }
     if (logger.isDebugEnabled()) {
       logger.debug("TXState writeRegion flag {} region-state {} ",
-          false, result, new Throwable());
+          false, result/*, new Throwable()*/);
     }
     return result;
   }

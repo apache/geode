@@ -8,6 +8,7 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.REMOVE_MEMBE
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.VIEW_ACK_MESSAGE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -54,6 +55,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Install
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
@@ -155,6 +157,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   
   /** a collection used to detect unit testing */
   Set<String> unitTesting = new HashSet<>();
+  
+  /** the view where quorum was most recently lost */
+  NetView quorumLostView;
   
   static class SearchState {
     Set<InternalDistributedMember> alreadyTried = new HashSet<>();
@@ -307,7 +312,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         if (response.getBecomeCoordinator()) {
           logger.info("I am being told to become the membership coordinator by {}", coord);
           this.currentView = response.getCurrentView();
-          becomeCoordinator(response.getCurrentView().getCoordinator());
+          becomeCoordinator(null);
         }
 
         return true;
@@ -442,6 +447,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (mbr.equals(this.localAddress)) {
       // oops - I've been kicked out
       forceDisconnect(incomingRequest.getReason());
+      return;
+    }
+    
+    if (getPendingRequestIDs(REMOVE_MEMBER_REQUEST).contains(mbr)) {
+      logger.debug("ignoring request as I already have a removal request for this member");
       return;
     }
     
@@ -870,7 +880,7 @@ logger.debug("waiting for view responses");
         boolean mbrIsNoob = (mbr.getVmViewId() < 0);
         if (mbrIsNoob) {
           // member has not yet joined
-          if (coordIsNoob && (coord == null || coord.compareTo(mbr) > 0)) {
+          if (coordIsNoob && (coord == null || coord.compareTo(mbr,false) > 0)) {
             coord = mbr;
           }
         } else {
@@ -915,6 +925,12 @@ logger.debug("waiting for view responses");
       searchState.responses.add(resp);
     }
   }
+  
+  private void processNetworkPartitionMessage(NetworkPartitionMessage msg) {
+    String str = "Membership coordinator "
+        + msg.getSender() + " has declared that a network partition has occurred";
+    forceDisconnect(str);
+  }
 
   @Override
   public NetView getView() {
@@ -956,7 +972,7 @@ logger.debug("waiting for view responses");
       if (isNetworkPartition(newView)) {
         if (quorumRequired) {
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
-          services.getManager().forceDisconnect(
+          forceDisconnect(
               LocalizedStrings.Network_partition_detected.toLocalizedString(crashes.size(), crashes));
           return;
         }
@@ -1009,6 +1025,24 @@ logger.debug("waiting for view responses");
   }
   
   /**
+   * Sends a message declaring a network partition to the
+   * members of the given view via Messenger
+   * 
+   * @param view
+   */
+  void sendNetworkPartitionMessage(NetView view) {
+    List<InternalDistributedMember> recipients = new ArrayList<>(view.getMembers());
+    recipients.remove(localAddress);
+    NetworkPartitionMessage msg = new NetworkPartitionMessage(recipients);
+    try {
+      services.getMessenger().send(msg);
+    } catch (RuntimeException e) {
+      logger.debug("unable to send network partition message - continuing", e);
+    }
+  }
+  
+  
+  /**
    * returns true if this member thinks it is the membership coordinator
    * for the distributed system
    */
@@ -1045,7 +1079,8 @@ logger.debug("waiting for view responses");
         newView.logCrashedMemberWeights(currentView, logger);
       }
       int failurePoint = (int)(Math.round(51 * oldWeight) / 100.0);
-      if (failedWeight > failurePoint) {
+      if (failedWeight > failurePoint && quorumLostView != newView) {
+        quorumLostView = newView;
         logger.warn("total weight lost in this view change is {} of {}.  Quorum has been lost!",
             failedWeight, oldWeight);
         services.getManager().quorumLost(newView.getActualCrashedMembers(currentView), currentView);
@@ -1071,7 +1106,6 @@ logger.debug("waiting for view responses");
     isJoined = false;
     stopCoordinatorServices();
     isCoordinator = false;
-    currentView = null;
   }
 
   public void beSick() {
@@ -1216,6 +1250,7 @@ logger.debug("waiting for view responses");
     services.getMessenger().addHandler(JoinResponseMessage.class, this);
     services.getMessenger().addHandler(FindCoordinatorRequest.class, this);
     services.getMessenger().addHandler(FindCoordinatorResponse.class, this);
+    services.getMessenger().addHandler(NetworkPartitionMessage.class, this);
 
     int ackCollectionTimeout = dc.getMemberTimeout() * 2 * 12437 / 10000;
     if (ackCollectionTimeout < 1500) {
@@ -1263,6 +1298,9 @@ logger.debug("waiting for view responses");
       break;
     case FIND_COORDINATOR_RESP:
       processFindCoordinatorResponse((FindCoordinatorResponse)m);
+      break;
+    case NETWORK_PARTITION_MESSAGE:
+      processNetworkPartitionMessage((NetworkPartitionMessage)m);
       break;
     default:
       throw new IllegalArgumentException("unknown message type: " + m);
@@ -1644,6 +1682,23 @@ logger.debug("waiting for view responses");
         if (this.shutdown || Thread.currentThread().isInterrupted()) {
           return;
         }
+        
+        if (quorumRequired && isNetworkPartition(newView)) {
+          sendNetworkPartitionMessage(newView);
+          try {
+            Thread.sleep(LEAVE_MESSAGE_SLEEP_TIME);
+          } catch (InterruptedException e) {
+            // signal the run() method to exit
+            shutdown = true;
+            return;
+          }
+          Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
+          forceDisconnect(
+              LocalizedStrings.Network_partition_detected.toLocalizedString(crashes.size(), crashes));
+          shutdown = true;
+          return;
+        }
+
         prepared = prepareView(newView, joinReqs);
         if (prepared) {
           break;

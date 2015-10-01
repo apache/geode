@@ -1324,7 +1324,7 @@ public final class InternalDistributedSystem
           // we close the locator after the DM so that when split-brain detection
           // is enabled, loss of the locator doesn't cause the DM to croak
           if (this.startedLocator != null) {
-            this.startedLocator.stop(preparingForReconnect, false);
+            this.startedLocator.stop(preparingForReconnect, preparingForReconnect, false);
             this.startedLocator = null;
           }
         } finally { // timer canceled

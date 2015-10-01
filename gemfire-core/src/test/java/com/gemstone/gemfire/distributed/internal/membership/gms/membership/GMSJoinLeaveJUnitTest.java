@@ -3,6 +3,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +28,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
@@ -49,6 +51,7 @@ public class GMSJoinLeaveJUnitTest {
   private ServiceConfig mockConfig;
   private DistributionConfig mockDistConfig;
   private Authenticator authenticator;
+  private HealthMonitor healthMonitor;
   private InternalDistributedMember gmsJoinLeaveMemberId;
   private InternalDistributedMember[] mockMembers;
   private InternalDistributedMember mockOldMember;
@@ -82,12 +85,15 @@ public class GMSJoinLeaveJUnitTest {
     
     manager = mock(Manager.class);
     
+    healthMonitor = mock(HealthMonitor.class);
+    
     services = mock(Services.class);
     when(services.getAuthenticator()).thenReturn(authenticator);
     when(services.getConfig()).thenReturn(mockConfig);
     when(services.getMessenger()).thenReturn(messenger);
     when(services.getCancelCriterion()).thenReturn(stopper);
     when(services.getManager()).thenReturn(manager);
+    when(services.getHealthMonitor()).thenReturn(healthMonitor);
     
     mockMembers = new InternalDistributedMember[4];
     for (int i = 0; i < mockMembers.length; i++) {
@@ -111,6 +117,7 @@ public class GMSJoinLeaveJUnitTest {
     Set<InternalDistributedMember> crashes = new HashSet<>();
     mbrs.add(mockMembers[0]);
     mbrs.add(mockMembers[1]);
+    mbrs.add(mockMembers[2]);
     
     when(services.getMessenger()).thenReturn(messenger);
     
@@ -119,21 +126,31 @@ public class GMSJoinLeaveJUnitTest {
     SearchState state = gmsJoinLeave.searchState;
     state.view = netView;
     state.viewId = netView.getViewId();
-    // already tried joining using member 0
+    
+    InternalDistributedMember coordinator = mockMembers[2];
+    coordinator.setVmViewId(viewId);
+
+    // already tried joining using members 0 and 1
     Set<InternalDistributedMember> set = new HashSet<>();
+    mockMembers[0].setVmViewId(viewId-1);
+    set.add(mockMembers[0]);
+    mockMembers[1].setVmViewId(viewId-1);
     set.add(mockMembers[1]);
     state.alreadyTried = set;
     state.hasContactedALocator = true;
+    
     // simulate a response being received
-    FindCoordinatorResponse resp = new FindCoordinatorResponse(mockMembers[1], mockMembers[2]);
+    InternalDistributedMember sender = mockMembers[2];
+    FindCoordinatorResponse resp = new FindCoordinatorResponse(coordinator, sender);
     gmsJoinLeave.processMessage(resp);
     // tell GMSJoinLeave that a unit test is running so it won't clear the
     // responses collection
     gmsJoinLeave.unitTesting.add("findCoordinatorFromView");
+
     // now for the test
     boolean result = gmsJoinLeave.findCoordinatorFromView();
     assert result : "should have found coordinator " + mockMembers[2];
-    assert state.possibleCoordinator == mockMembers[2] : "should have found " + mockMembers[2] + " but found " + state.possibleCoordinator;
+    assert state.possibleCoordinator == coordinator : "should have found " + coordinator + " but found " + state.possibleCoordinator;
   }
   
   @Test
@@ -213,13 +230,13 @@ public class GMSJoinLeaveJUnitTest {
     prepareAndInstallView();
     MethodExecuted removeMessageSent = new MethodExecuted();
     when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(removeMessageSent);
-    gmsJoinLeave.remove(mockMembers[1], "removing for test");
+    gmsJoinLeave.remove(mockMembers[0], "removing for test");
     Thread.sleep(GMSJoinLeave.MEMBER_REQUEST_COLLECTION_INTERVAL*2);
     assert removeMessageSent.methodExecuted;
   }
   
   
-   @Test 
+  @Test 
   public void testRejectOlderView() throws IOException {
     initMocks();
     prepareAndInstallView();
@@ -341,6 +358,8 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testDuplicateJoinRequestDoesNotCauseNewView() throws Exception {
     initMocks();
+    when(healthMonitor.checkIfAvailable(any(InternalDistributedMember.class),
+        any(String.class), any(Boolean.class))).thenReturn(true);
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
     prepareAndInstallView();
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
@@ -367,6 +386,8 @@ public class GMSJoinLeaveJUnitTest {
     }
     Assert.assertTrue("expected member to only be in the view once: " + mockMembers[2] + "; view: " + view,
         occurrences == 1);
+    verify(healthMonitor, times(5)).checkIfAvailable(any(InternalDistributedMember.class),
+        any(String.class), any(Boolean.class));
   }
   
   

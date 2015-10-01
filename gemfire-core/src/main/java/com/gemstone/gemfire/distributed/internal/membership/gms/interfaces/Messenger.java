@@ -24,7 +24,13 @@ public interface Messenger extends Service {
   InternalDistributedMember getMemberID();
   
   /**
-   * 
+   * retrieves the quorum checker that is used during auto-reconnect attempts
    */
   QuorumChecker getQuorumChecker();
+  
+  /**
+   * test whether multicast is not only turned on but is working
+   * @return true multicast is enabled and working
+   */
+  boolean testMulticast(long timeout) throws InterruptedException;
 }

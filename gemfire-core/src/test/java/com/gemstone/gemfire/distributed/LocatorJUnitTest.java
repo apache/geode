@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
@@ -33,8 +34,10 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProfile;
@@ -93,13 +96,43 @@ public class LocatorJUnitTest {
     }
   }
 
-  public void _testBasicInfo() throws Exception {
+  @Test
+  public void testBasicInfo() throws Exception {
     locator = Locator.startLocator(port, tmpFile);
     Assert.assertTrue(locator.isPeerLocator());
     Assert.assertFalse(locator.isServerLocator());
     String[] info = InternalLocator.getLocatorInfo(InetAddress.getLocalHost(), port);
     Assert.assertNotNull(info);
     Assert.assertTrue(info.length > 1);
+  }
+
+  @Test
+  public void testNoThreadLeftBehind() throws Exception {
+    Properties dsprops = new Properties();
+    dsprops.setProperty("mcast-port", "0");
+    dsprops.setProperty("locators", "localhost[" + port + "]");
+    dsprops.setProperty("jmx-manager-start", "false");
+    dsprops.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+
+    JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = true;
+    int threadCount = Thread.activeCount();
+    try {
+      locator = Locator.startLocatorAndDS(port, new File(""), dsprops);
+      locator.stop();
+      fail("expected an exception");
+    } catch (SystemConnectException e) {
+      
+      for (int i=0; i<10; i++) {
+        if (threadCount < Thread.activeCount()) {
+          Thread.sleep(1000);
+        }
+      }
+      if (threadCount < Thread.activeCount()) {
+          OSProcess.printStacks(0);
+          fail("expected " + threadCount + " threads or fewer but found " + Thread.activeCount()
+              +".  Check log file for a thread dump.");
+        }
+    }
   }
 
   @Test

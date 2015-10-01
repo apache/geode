@@ -36,7 +36,9 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
@@ -125,6 +127,14 @@ public class MembershipJUnitTest extends TestCase {
     assertTrue(!actual.contains(members[members.length-2]));
   }
   
+//  @Test
+//  public void testRepeat() throws Exception {
+//    for (int i=0; i<50; i++) {
+//      System.out.println("--------------------run #" + i);
+//      testMultipleManagersInSameProcess();
+//    }
+//  }
+  
   /**
    * This test creates a locator with a colocated
    * membership manager and then creates a second
@@ -148,7 +158,6 @@ public class MembershipJUnitTest extends TestCase {
       
       // this locator will hook itself up with the first MembershipManager
       // to be created
-//      l = Locator.startLocator(port, new File(""), localHost);
       l = InternalLocator.startLocator(port, new File(""), null,
           null, null, localHost, false, new Properties(), true, false, null,
           false);
@@ -158,7 +167,7 @@ public class MembershipJUnitTest extends TestCase {
       nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
       nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
       nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-      nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+//      nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "finest");
       nonDefault.put(DistributionConfig.LOCATORS_NAME, localHost.getHostName()+'['+port+']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport = new RemoteTransportConfig(config,
@@ -171,6 +180,7 @@ public class MembershipJUnitTest extends TestCase {
         DMStats stats1 = mock(DMStats.class);
         System.out.println("creating 1st membership manager");
         m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
+        m1.startEventProcessing();
       } finally {
         System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY);
       }
@@ -180,14 +190,21 @@ public class MembershipJUnitTest extends TestCase {
       DMStats stats2 = mock(DMStats.class);
       System.out.println("creating 2nd membership manager");
       m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2);
+      m2.startEventProcessing();
       
-      long giveUp = System.currentTimeMillis() + 10000;
+      // we have to check the views with JoinLeave because the membership
+      // manager queues new views for processing through the DM listener,
+      // which is a mock object in this test
+      System.out.println("waiting for views to stabilize");
+      JoinLeave jl1 = ((GMSMembershipManager)m1).getServices().getJoinLeave();
+      JoinLeave jl2 = ((GMSMembershipManager)m2).getServices().getJoinLeave();
+      long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
-          assert m2.getView().size() == 2 : "view = " + m2.getView();
-          assert m1.getView().size() == 2 : "view = " + m1.getView();
-          assert m1.getView().getCreator().equals(m2.getView().getCreator());
-          assert m1.getView().getViewId() == m2.getView().getViewId();
+          assert jl2.getView().size() == 2 : "view = " + jl2.getView();
+          assert jl1.getView().size() == 2 : "view = " + jl1.getView();
+          assert jl1.getView().getCreator().equals(jl2.getView().getCreator());
+          assert jl1.getView().getViewId() == jl2.getView().getViewId();
           break;
         } catch  (AssertionError e) {
           if (System.currentTimeMillis() > giveUp) {

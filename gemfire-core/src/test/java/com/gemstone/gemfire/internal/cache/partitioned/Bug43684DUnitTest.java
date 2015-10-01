@@ -68,6 +68,7 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     server2 = host.getVM(1);
     server3 = host.getVM(2);
     client1 = host.getVM(3);
+    addExpectedException("Connection refused: connect");
   }
 
   public void tearDown2() throws Exception {

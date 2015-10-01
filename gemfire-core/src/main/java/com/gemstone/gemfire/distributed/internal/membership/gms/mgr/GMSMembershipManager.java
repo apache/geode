@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.AdminMessageType;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DSClock;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -947,7 +949,13 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   @Override
   public boolean testMulticast() {
-    return true;
+    try {
+      return services.getMessenger().testMulticast(services.getConfig().getMemberTimeout());
+    } catch (InterruptedException e) {
+      services.getCancelCriterion().checkCancelInProgress(e);
+      Thread.currentThread().interrupt();
+      return false;
+    }
   }
   
   /**
@@ -1742,6 +1750,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
         }
       }
     }
+    
+    if (cleanupTimer != null) {
+      cleanupTimer.cancel();
+    }
+    
     if (logger.isDebugEnabled()) {
       logger.debug("Membership: channel closed");
     }
@@ -2070,6 +2083,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
           result.add(destinations[i]);
         return result;
       }
+    }
+    
+    if (msg instanceof AdminMessageType
+        && this.shutdownInProgress) {
+      // no alerts while shutting down - this can cause threads to hang
+      return new HashSet(Arrays.asList(msg.getRecipients()));
     }
 
     // Handle trivial cases
@@ -2852,43 +2871,41 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   @Override
   public void forceDisconnect(final String reason) {
-	if (GMSMembershipManager.this.shutdownInProgress) {
-		return; // probably a race condition
-	}
-	saveCacheXmlForReconnect();
+    if (GMSMembershipManager.this.shutdownInProgress  || isJoining()) {
+      return; // probably a race condition
+    }
+    
+    final Exception shutdownCause = new ForcedDisconnectException(reason);
+    if (!inhibitForceDisconnectLogging) {
+      logger.fatal(LocalizedMessage.create(
+          LocalizedStrings.GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0, reason), shutdownCause);
+    }
+    
+    if (!services.getConfig().getDistributionConfig().getDisableAutoReconnect()) {
+      saveCacheXmlForReconnect();
+    }
+    
+    AlertAppender.getInstance().shuttingDown();
+
+    services.getCancelCriterion().cancel(reason);
+    // cache the exception so it can be appended to ShutdownExceptions
+    services.setShutdownCause(shutdownCause);
+
     Thread reconnectThread = new Thread (new Runnable() {
       public void run() {
-        // make sure that we've received a connected channel and aren't responsible
-        // for the notification
-        if (!isJoining()) {
-
-          AlertAppender.getInstance().shuttingDown();
-
-          services.getCancelCriterion().cancel(reason);
-          // cache the exception so it can be appended to ShutdownExceptions
-          Exception shutdownCause = new ForcedDisconnectException(reason);
-          services.setShutdownCause(shutdownCause);
-
-          if (!inhibitForceDisconnectLogging) {
-            logger.fatal(LocalizedMessage.create(
-                LocalizedStrings.GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0, reason), shutdownCause);
-          }
-          
-          services.emergencyClose();
-
-          // stop server locators immediately since they may not have correct
-          // information.  This has caused client failures in bridge/wan
-          // network-down testing
-          InternalLocator loc = (InternalLocator)Locator.getLocator();
-          if (loc != null) {
-            loc.stop(!services.getConfig().getDistributionConfig()
-                         .getDisableAutoReconnect(), false);
-          }
-          
-          uncleanShutdown(reason, shutdownCause);
+        // stop server locators immediately since they may not have correct
+        // information.  This has caused client failures in bridge/wan
+        // network-down testing
+        InternalLocator loc = (InternalLocator)Locator.getLocator();
+        if (loc != null) {
+          loc.stop(true, !services.getConfig().getDistributionConfig()
+              .getDisableAutoReconnect(), false);
         }
+
+        uncleanShutdown(reason, shutdownCause);
       }
     });
+    
     reconnectThread.setName("DisconnectThread");
     reconnectThread.setDaemon(false);
     reconnectThread.start();

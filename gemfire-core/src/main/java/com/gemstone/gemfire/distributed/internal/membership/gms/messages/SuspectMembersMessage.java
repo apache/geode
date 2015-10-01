@@ -15,9 +15,9 @@ import com.gemstone.gemfire.internal.Version;
 public class SuspectMembersMessage extends HighPriorityDistributionMessage {
   final List<SuspectRequest> suspectRequests;
 
-  public SuspectMembersMessage(List<InternalDistributedMember> recipient, List<SuspectRequest> s) {
+  public SuspectMembersMessage(List<InternalDistributedMember> recipients, List<SuspectRequest> s) {
     super();
-    setRecipients(recipient);
+    setRecipients(recipients);
     this.suspectRequests = s;
   }
 

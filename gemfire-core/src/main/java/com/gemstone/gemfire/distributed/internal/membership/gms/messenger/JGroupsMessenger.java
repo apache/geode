@@ -99,6 +99,8 @@ public class JGroupsMessenger implements Messenger {
   /** JG magic numbers for types we need to serialize */
   public static final short JGROUPS_TYPE_JGADDRESS = 2000;
 
+  public static boolean THROW_EXCEPTION_ON_START_HOOK;
+
   String jgStackConfig;
   
   JChannel myChannel;
@@ -116,6 +118,10 @@ public class JGroupsMessenger implements Messenger {
   private View jgView;
   
   private GMSPingPonger pingPonger = new GMSPingPonger();
+  
+  private volatile long pingsReceived;
+  
+  private volatile long pongsReceived;
 
   
   static {
@@ -274,9 +280,14 @@ public class JGroupsMessenger implements Messenger {
       throw new SystemConnectException("unable to create jgroups channel", e);
     }
     
+    if (THROW_EXCEPTION_ON_START_HOOK) {
+      THROW_EXCEPTION_ON_START_HOOK = false;
+      throw new SystemConnectException("failing for test");
+    }
+    
     establishLocalAddress();
     
-    logger.info("JGroups channel created (took {}ms)", System.currentTimeMillis()-start);
+    logger.debug("JGroups channel created (took {}ms)", System.currentTimeMillis()-start);
     
   }
 
@@ -400,6 +411,24 @@ public class JGroupsMessenger implements Messenger {
   @Override
   public void addHandler(Class c, MessageHandler h) {
     handlers.put(c, h);
+  }
+  
+  @Override
+  public boolean testMulticast(long timeout) throws InterruptedException {
+    long pongsSnapshot = pongsReceived;
+    JGAddress dest = null;
+    try {
+      pingPonger.sendPingMessage(myChannel, jgAddress, dest);
+    } catch (Exception e) {
+      logger.warn("unable to send multicast message: {}", (jgAddress==null? "multicast recipients":jgAddress),
+          e.getMessage());
+      return false;
+    }
+    long giveupTime = System.currentTimeMillis() + timeout;
+    while (pongsReceived == pongsSnapshot && System.currentTimeMillis() < giveupTime) {
+      Thread.sleep(100);
+    }
+    return pongsReceived > pongsSnapshot;
   }
 
   @Override
@@ -799,18 +828,19 @@ public class JGroupsMessenger implements Messenger {
       }
       
       //Respond to ping messages sent from other systems that are in a auto reconnect state
-      Object contents = jgmsg.getBuffer();
-      if (contents instanceof byte[]) {
-          byte[] msgBytes = (byte[]) contents;
-  	    if (pingPonger.isPingMessage(msgBytes)) {
-  	    	try {
-  	    	  pingPonger.sendPongMessage(myChannel, jgAddress, jgmsg.getSrc());
-            }
-            catch (Exception e) {
-              logger.info("Failed sending Pong message to " + jgmsg.getSrc());
-            }
-  	        return;
-  	    }
+      byte[] contents = jgmsg.getBuffer();
+      if (pingPonger.isPingMessage(contents)) {
+        pingsReceived++;
+        try {
+          pingPonger.sendPongMessage(myChannel, jgAddress, jgmsg.getSrc());
+        }
+        catch (Exception e) {
+          logger.info("Failed sending Pong message to " + jgmsg.getSrc());
+        }
+        return;
+      } else if (pingPonger.isPongMessage(contents)) {
+        pongsReceived++;
+        return;
       }
       
       Object o = readJGMessage(jgmsg);

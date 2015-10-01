@@ -101,6 +101,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRes
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckResponseMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
@@ -473,6 +474,7 @@ public final class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private static void registerDSFIDTypes() {
+    registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
     registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
     registerDSFID(CHECK_REQUEST, CheckRequestMessage.class);
     registerDSFID(CHECK_RESPONSE, CheckResponseMessage.class);

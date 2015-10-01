@@ -240,7 +240,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
-  public void testBug30341() throws Exception {
+  public void testStartTwoLocators() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM loc1 = host.getVM(1);
@@ -494,6 +494,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put("disable-auto-reconnect", "true");
     properties.put("member-timeout", "2000");
     properties.put("log-level", getDUnitLogLevel());
+//    properties.put("log-level", "fine");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     try {
@@ -529,6 +530,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
 
 
       assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
+      
+      properties.put("log-level", getDUnitLogLevel());
       
       DistributedMember mem1 = (DistributedMember)vm1.invoke(this.getClass(),
           "getDistributedMember", connectArgs);
@@ -1836,7 +1839,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
       } else {
         cause.printStackTrace();
       }
-      InternalDistributedSystem.getLoggerI18n().fine("TestHook exiting");
     }
 
     @Override

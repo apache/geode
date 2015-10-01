@@ -144,6 +144,7 @@ public class Services {
         this.joinLeave.stop();
         this.messenger.stop();
         this.auth.stop();
+        this.timer.cancel();
       }
     }
     this.auth.started();

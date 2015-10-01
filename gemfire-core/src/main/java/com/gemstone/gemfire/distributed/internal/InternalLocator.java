@@ -75,16 +75,6 @@ import com.gemstone.gemfire.management.internal.configuration.handlers.SharedCon
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorDiscovery;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorHelper;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorJoinMessage;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListenerImpl;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinResponse;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingResponse;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorRequest;
-//import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorResponse;
 
 /**
  * Provides the implementation of a distribution <code>Locator</code>
@@ -173,6 +163,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   
   /** whether the locator was stopped during forced-disconnect processing but a reconnect will occur */
   private volatile boolean stoppedForReconnect;
+  
+  /** whether the locator was stopped during forced-disconnect processing */
+  private volatile boolean forcedDisconnect;
   
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
   
@@ -321,10 +314,9 @@ public class InternalLocator extends Locator implements ConnectListener {
       String hostnameForClients, 
       boolean loadSharedConfigFromDir
       )
-      throws IOException
-    {
+      throws IOException {
     return startLocator(port, logFile, stateFile, logger, securityLogger, bindAddress, true, dsProperties, peerLocator, enableServerLocator, hostnameForClients, loadSharedConfigFromDir);
-    }
+  }
   
   
   /**
@@ -393,8 +385,13 @@ public class InternalLocator extends Locator implements ConnectListener {
       slocator.startPeerLocation(startDistributedSystem);
     }
     
-    if(startDistributedSystem) {
-      slocator.startDistributedSystem();
+    if (startDistributedSystem) {
+      try {
+        slocator.startDistributedSystem();
+      } catch (RuntimeException e) {
+        slocator.stop();
+        throw e;
+      }
       // fix bug #46324
       final InternalDistributedSystem ids = (InternalDistributedSystem)slocator.myDs;
       if (ids != null) {
@@ -788,7 +785,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         myDs.addDisconnectListener(new DisconnectListener() {
           @Override
           public void onDisconnect(InternalDistributedSystem sys) {
-            stop(false, false);
+            stop(false, false, false);
           }
         });
         
@@ -900,7 +897,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   @Override
   public void stop() {
-    stop(false, true);
+    stop(false, false, true);
   }
   
   /**
@@ -916,7 +913,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param stopForReconnect - stopping for distributed system reconnect
    * @param waitForDisconnect - wait up to 60 seconds for the locator to completely stop
    */
-  public void stop(boolean stopForReconnect, boolean waitForDisconnect) {
+  public void stop(boolean forcedDisconnect, boolean stopForReconnect, boolean waitForDisconnect) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (this.server.isShuttingDown()) {
       // fix for bug 46156
@@ -945,6 +942,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       return;
     }
     this.stoppedForReconnect = stopForReconnect;
+    this.forcedDisconnect = forcedDisconnect;
     
     if (this.server.isAlive()) {
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STOPPING__0, this));
@@ -1001,7 +999,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (myDs != null) {
       ((InternalDistributedSystem)myDs).setDependentLocator(null);
     }
-    if (this.myCache != null && !this.stoppedForReconnect) {
+    if (this.myCache != null && !this.stoppedForReconnect && !this.forcedDisconnect) {
       logger.info("Closing locator's cache");
       try {
         this.myCache.close();
@@ -1019,7 +1017,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     
     this.isSharedConfigurationStarted = false;
-    if (myDs != null && !this.stoppedForReconnect) {
+    if (myDs != null && !this.forcedDisconnect) {
       if (myDs.isConnected()) {
         logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_DISCONNECTING_DISTRIBUTED_SYSTEM_FOR_0, this));
         myDs.disconnect();

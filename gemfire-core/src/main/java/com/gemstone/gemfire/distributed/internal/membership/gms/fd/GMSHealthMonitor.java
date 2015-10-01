@@ -35,6 +35,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckRe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 
 /**
  * Failure Detection
@@ -88,6 +89,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   final private ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberVsView = new ConcurrentHashMap<>();
   final private Map<NetView, Set<SuspectRequest>> viewVsSuspectedMembers = new HashMap<>();
 
+  /**
+   * currentSuspects tracks members that we've already checked and
+   * did not receive a response from.  This collection keeps us from
+   * checking the same member over and over if it's already under
+   * suspicion
+   */
+  final private Set<InternalDistributedMember> currentSuspects = new ConcurrentHashSet<>();
+
   private ScheduledExecutorService scheduler;
 
   private ExecutorService checkExecutor;
@@ -118,6 +127,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   @Override
   public void contactedBy(InternalDistributedMember sender) {
+    if (currentSuspects.remove(sender)) {
+      logger.info("No longer suspecting {}", sender);
+    }
     CustomTimeStamp cTS = memberVsLastMsgTS.get(sender);
     if (cTS != null) {
       cTS.setTimeStamp(currentTimeStamp);
@@ -234,8 +246,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (!pinged) {
           String reason = String.format("Member isn't responding to check message: %s", mbr);
           GMSHealthMonitor.this.sendSuspectMessage(mbr, reason);
+          currentSuspects.add(mbr);
         } else {
           logger.trace("Setting next neighbour as member {} has not responded.", mbr);
+          currentSuspects.remove(mbr);
           // back to previous one
           setNextNeighbor(GMSHealthMonitor.this.currentView, null);
         }
@@ -249,7 +263,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       logger.debug("sick member is not sending suspect message concerning {}", mbr);
       return;
     }
-    logger.debug("Suspecting {} reason=\"{}\"", mbr, reason);
+    logger.info("Sending suspect request {} reason=\"{}\"", mbr, reason);
     SuspectRequest sr = new SuspectRequest(mbr, reason);
     List<SuspectRequest> sl = new ArrayList<SuspectRequest>();
     sl.add(sr);
@@ -282,9 +296,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           CustomTimeStamp ts = memberVsLastMsgTS.get(pingMember);
           if (pingResp.getResponseMsg() == null) {
             // double check the activity map
-            if (ts != null &&
-                ts.getTimeStamp()
-                  > (System.currentTimeMillis() - services.getConfig().getMemberTimeout())) {
+            if (isStopping ||
+                (ts != null &&
+                 ts.getTimeStamp()
+                  > (System.currentTimeMillis() - services.getConfig().getMemberTimeout())
+                  )) {
               return true;
             }
             return false;
@@ -336,7 +352,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       scheduler = Executors.newScheduledThreadPool(1, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
-          Thread th = new Thread(Services.getThreadGroup(), r, "Member-Check Scheduler ");
+          Thread th = new Thread(Services.getThreadGroup(), r, "GemFire Member-Check Scheduler ");
           th.setDaemon(true);
           return th;
         }
@@ -349,7 +365,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         @Override
         public Thread newThread(Runnable r) {
           int id = threadIdx.getAndIncrement();
-          Thread th = new Thread(Services.getThreadGroup(), r, "Member-Check Thread " + id);
+          Thread th = new Thread(Services.getThreadGroup(), r, "GemFire Member-Check Thread " + id);
           th.setDaemon(true);
           return th;
         }
@@ -379,8 +395,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     synchronized (viewVsSuspectedMembers) {
       viewVsSuspectedMembers.clear();
     }
-    setNextNeighbor(newView, null);
+    currentSuspects.clear();
     currentView = newView;
+    setNextNeighbor(newView, null);
   }
 
   /***
@@ -408,8 +425,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     int index = allMembers.indexOf(nextTo);
     if (index != -1) {
       int nextNeighborIndex = (index + 1) % allMembers.size();
-      nextNeighbor = allMembers.get(nextNeighborIndex);
-      logger.trace("Next neighbour to check is {}", nextNeighbor);
+      InternalDistributedMember newNeighbor = allMembers.get(nextNeighborIndex);
+      if (currentSuspects.contains(newNeighbor)) {
+        setNextNeighbor(newView, newNeighbor);
+        return;
+      }
+      InternalDistributedMember oldNeighbor = nextNeighbor;
+      if (oldNeighbor != newNeighbor) {
+        logger.debug("Failure detection is now watching {}", newNeighbor);
+        nextNeighbor = newNeighbor;
+      }
     }
 
     if (!sameView || memberVsLastMsgTS.size() == 0) {
@@ -454,22 +479,26 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private void stopServices() {
     logger.debug("Stopping HealthMonitor");
     isStopping = true;
-    {
+    if (monitorFuture != null) {
       monitorFuture.cancel(true);
+    }
+    if (scheduler != null) {
       scheduler.shutdown();
     }
-    {
-      Collection<Response> val = requestIdVsResponse.values();
-      for (Iterator<Response> it = val.iterator(); it.hasNext();) {
-        Response r = it.next();
-        synchronized (r) {
-          r.notify();
-        }
-      }
 
+    Collection<Response> val = requestIdVsResponse.values();
+    for (Iterator<Response> it = val.iterator(); it.hasNext();) {
+      Response r = it.next();
+      synchronized (r) {
+        r.notify();
+      }
+    }
+
+    if (checkExecutor != null) {
       checkExecutor.shutdown();
     }
-    {
+
+    if (suspectRequestCollectorThread != null) {
       suspectRequestCollectorThread.shutdown();
     }
   }
@@ -591,14 +620,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     List<SuspectRequest> sMembers = incomingRequest.getMembers();
 
-    if (!cv.contains(incomingRequest.getSender())) {
+    InternalDistributedMember sender = incomingRequest.getSender();
+    int viewId = sender.getVmViewId();
+    if (cv.getViewId() >= viewId && !cv.contains(incomingRequest.getSender())) {
       logger.info("Membership ignoring suspect request for " + incomingRequest + " from non-member " + incomingRequest.getSender());
+      services.getJoinLeave().remove(sender, "this process is initiating suspect processing but is no longer a member");
       return;
     }
 
     InternalDistributedMember localAddress = services.getJoinLeave().getMemberID();
-
-    InternalDistributedMember sender = incomingRequest.getSender();
 
     if (cv.getCoordinator().equals(localAddress)) {
       for (SuspectRequest req: incomingRequest.getMembers()) {
@@ -687,9 +717,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             try {
               logger.info("Membership: Doing final check for suspect member {}", mbr);
               boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr);
-              if (!pinged) {
+              if (!pinged && !isStopping) {
                 GMSHealthMonitor.this.services.getJoinLeave().remove(mbr, reason);
               }
+              // whether it's alive or not, at this point we allow it to
+              // be a suspect again
+              currentSuspects.remove(mbr);
             } catch (DistributedSystemDisconnectedException e) {
               return;
             } catch (Exception e) {
@@ -813,11 +846,20 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         suspectRequests.clear();
       }
     }
-    HashSet<InternalDistributedMember> filter = new HashSet<InternalDistributedMember>();
-    for (int i = 0; i < requests.size(); i++) {
-      filter.add(requests.get(i).getSuspectMember());
-    }
-    List<InternalDistributedMember> recipients = currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 5);
+    NetView v = currentView;
+    List<InternalDistributedMember> recipients;
+//    if (v.size() > 20) {
+//      // TODO this needs some rethinking - we need the guys near the
+//      // front of the membership view who aren't preferred for coordinator
+//      // to see the suspect message.
+//      HashSet<InternalDistributedMember> filter = new HashSet<InternalDistributedMember>();
+//      for (int i = 0; i < requests.size(); i++) {
+//        filter.add(requests.get(i).getSuspectMember());
+//      }
+//      recipients = currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 5);
+//    } else {
+      recipients = currentView.getMembers();
+//    }
 
     SuspectMembersMessage rmm = new SuspectMembersMessage(recipients, requests);
     Set<InternalDistributedMember> failedRecipients;

@@ -110,7 +110,7 @@ public class NetView implements DataSerializableFixedID {
   public List<InternalDistributedMember> getMembers() {
     return Collections.unmodifiableList(this.members);
   }
-
+  
   /**
    * return members that are i this view but not the given old view
    */
@@ -339,8 +339,10 @@ public class NetView implements DataSerializableFixedID {
   public Set<InternalDistributedMember> getActualCrashedMembers(NetView oldView) {
     Set<InternalDistributedMember> result = new HashSet<>(this.crashedMembers.size());
     for (InternalDistributedMember mbr : this.crashedMembers) {
-      if ((mbr.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE) && oldView.contains(mbr)) {
-        result.add(mbr);
+      if ((mbr.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE)) {
+        if (oldView == null || oldView.contains(mbr)) {
+          result.add(mbr);
+        }
       }
     }
     return result;

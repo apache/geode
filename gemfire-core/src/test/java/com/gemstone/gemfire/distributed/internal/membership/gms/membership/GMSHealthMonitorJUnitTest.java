@@ -64,15 +64,17 @@ public class GMSHealthMonitorJUnitTest {
     when(services.getCancelCriterion()).thenReturn(stopper);
     when(stopper.isCancelInProgress()).thenReturn(false);
 
-    mockMembers = new ArrayList<InternalDistributedMember>();
-    for (int i = 0; i < 7; i++) {
-      InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
-
-      if (i == 0 || i == 1) {
-        mbr.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-        mbr.getNetMember().setPreferredForCoordinator(true);
+    if (mockMembers == null) {
+      mockMembers = new ArrayList<InternalDistributedMember>();
+      for (int i = 0; i < 7; i++) {
+        InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
+  
+        if (i == 0 || i == 1) {
+          mbr.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
+          mbr.getNetMember().setPreferredForCoordinator(true);
+        }
+        mockMembers.add(mbr);
       }
-      mockMembers.add(mbr);
     }
 
     gmsHealthMonitor = new GMSHealthMonitor();
@@ -129,27 +131,30 @@ public class GMSHealthMonitorJUnitTest {
 
   }
 
-  /**
-   * it checks neighbor after membertimeout, it should be different
-   */
-
   @Test
-  public void testHMNextNeighborAfterTimeout() throws IOException {
+  public void testHMNextNeighborAfterTimeout() throws Exception {
 
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
+//    System.out.printf("memberID is %s view is %s\n", mockMembers.get(3), v);
+    
     // 3rd is current member
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
 
     gmsHealthMonitor.installView(v);
 
-    try {
-      // member-timeout is 1000 ms
-      Thread.sleep(memberTimeout + 5);
-    } catch (InterruptedException e) {
+    // allow the monitor to give up on the initial "next neighbor" and
+    // move on to the one after it
+    long giveup = System.currentTimeMillis() + memberTimeout + 5;
+    InternalDistributedMember expected = mockMembers.get(5);
+    InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
+    while (System.currentTimeMillis() < giveup && neighbor != expected) {
+      Thread.sleep(5);
+      neighbor = gmsHealthMonitor.getNextNeighbor();
     }
+
     // neighbor should change to 5th
-    Assert.assertEquals(mockMembers.get(5), gmsHealthMonitor.getNextNeighbor());
+    Assert.assertEquals(mockMembers.get(5), neighbor);
   }
 
   /**
