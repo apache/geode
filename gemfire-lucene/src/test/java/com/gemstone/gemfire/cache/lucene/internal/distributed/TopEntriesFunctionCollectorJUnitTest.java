@@ -211,6 +211,24 @@ public class TopEntriesFunctionCollectorJUnitTest {
   }
 
   @Test
+  public void getResultsTwice() throws Exception {
+    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
+    collector.addResult(null, result1);
+    collector.addResult(null, result2);
+    collector.endResults();
+    
+    TopEntries merged = collector.getResult();
+    Assert.assertNotNull(merged);
+    assertEquals(4, merged.size());
+    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
+    
+    merged = collector.getResult();
+    Assert.assertNotNull(merged);
+    assertEquals(4, merged.size());
+    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
+  }
+  
+  @Test
   public void mergeResultsCustomCollectorManager() throws Exception {
     TopEntries resultEntries = new TopEntries();
     TopEntriesCollector mockCollector = mock(TopEntriesCollector.class);

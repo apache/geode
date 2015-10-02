@@ -40,6 +40,7 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
   private static final Logger logger = LogService.getLogger();
 
   private final Collection<TopEntriesCollector> subResults = new ArrayList<>();
+  private TopEntriesCollector mergedResults;
 
   public TopEntriesFunctionCollector() {
     this(null, null);
@@ -99,9 +100,13 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
 
   private TopEntries aggregateResults() {
     synchronized (subResults) {
+      if (mergedResults != null) {
+        return mergedResults.getEntries();
+      }
+      
       try {
-        TopEntriesCollector finalResult = manager.reduce(subResults);
-        return finalResult.getEntries();
+        mergedResults = manager.reduce(subResults);
+        return mergedResults.getEntries();
       } catch (IOException e) {
         logger.debug("Error while merging function execution results", e);
         throw new FunctionException(e);

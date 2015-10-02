@@ -54,46 +54,71 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
     if (collectors.isEmpty()) {
       return mergedResult;
     }
-    
+
     final EntryScoreComparator scoreComparator = new TopEntries().new EntryScoreComparator();
 
     // orders a entry with higher score above a doc with lower score
-    Comparator<List<EntryScore>> entryListComparator = new Comparator<List<EntryScore>>() {
+    Comparator<ListScanner> entryListComparator = new Comparator<ListScanner>() {
       @Override
-      public int compare(List<EntryScore> l1, List<EntryScore> l2) {
-        EntryScore o1 = l1.get(0);
-        EntryScore o2 = l2.get(0);
+      public int compare(ListScanner l1, ListScanner l2) {
+        EntryScore o1 = l1.peek();
+        EntryScore o2 = l2.peek();
         return scoreComparator.compare(o1, o2);
       }
     };
 
     // The queue contains iterators for all bucket results. The queue puts the entry with the highest score at the head
     // using score comparator.
-    PriorityQueue<List<EntryScore>> entryListsPriorityQueue;
-    entryListsPriorityQueue = new PriorityQueue<List<EntryScore>>(collectors.size(), Collections.reverseOrder(entryListComparator));
+    PriorityQueue<ListScanner> entryListsPriorityQueue;
+    entryListsPriorityQueue = new PriorityQueue<ListScanner>(collectors.size(),
+        Collections.reverseOrder(entryListComparator));
 
     for (IndexResultCollector collector : collectors) {
       logger.debug("Number of entries found in collector {} is {}", collector.getName(), collector.size());
 
       if (collector.size() > 0) {
-        entryListsPriorityQueue.add(((TopEntriesCollector) collector).getEntries().getHits());
+        entryListsPriorityQueue.add(new ListScanner(((TopEntriesCollector) collector).getEntries().getHits()));
       }
     }
 
     logger.debug("Only {} count of entries will be reduced. Other entries will be ignored", limit);
     while (entryListsPriorityQueue.size() > 0 && limit > mergedResult.size()) {
 
-      List<EntryScore> list = entryListsPriorityQueue.remove();
-      EntryScore entry = list.remove(0);
+      ListScanner scanner = entryListsPriorityQueue.remove();
+      EntryScore entry = scanner.next();
       mergedResult.collect(entry);
 
-      if (list.size() > 0) {
-        entryListsPriorityQueue.add(list);
+      if (scanner.hasNext()) {
+        entryListsPriorityQueue.add(scanner);
       }
     }
 
     logger.debug("Reduced size of {} is {}", mergedResult.getName(), mergedResult.size());
     return mergedResult;
+  }
+
+  /*
+   * Utility class to iterate on hits without modifying it
+   */
+  static class ListScanner {
+    private List<EntryScore> hits;
+    private int index = 0;
+
+    ListScanner(List<EntryScore> hits) {
+      this.hits = hits;
+    }
+
+    boolean hasNext() {
+      return index < hits.size();
+    }
+
+    EntryScore peek() {
+      return hits.get(index);
+    }
+
+    EntryScore next() {
+      return hits.get(index++);
+    }
   }
 
   @Override
