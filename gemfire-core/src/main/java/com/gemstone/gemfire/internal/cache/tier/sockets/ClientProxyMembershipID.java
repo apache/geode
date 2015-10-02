@@ -341,7 +341,7 @@ public final class ClientProxyMembershipID
 //    }
     Version v = InternalDataSerializer.getVersionForDataStream(out);
     if (v.compareTo(Version.GFE_90) >= 0) {
-      Version.CURRENT.writeOrdinal(out, true);
+      clientVersion.writeOrdinal(out, true);
     }
     DataSerializer.writeByteArray(this.identity, out);
     out.writeInt(this.uniqueId);
@@ -350,8 +350,10 @@ public final class ClientProxyMembershipID
   public void fromData(DataInput in) throws IOException, ClassNotFoundException
   {
     this.clientVersion = InternalDataSerializer.getVersionForDataStream(in);
+    
     // client IDs are not always carefully serialized/deserialized so they
-    // must know their own version
+    // must know their own version.  If this ID was serialized with 9.0
+    // then it carries the version of the client
     if (this.clientVersion.compareTo(Version.GFE_90) >= 0) {
       this.clientVersion = Version.readVersion(in, false);
     }
