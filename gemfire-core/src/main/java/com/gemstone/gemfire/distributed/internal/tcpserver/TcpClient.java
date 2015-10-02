@@ -91,8 +91,10 @@ public class TcpClient {
     
     logger.debug("TcpClient sending {} to {}", request, ipAddr);
 
+    long giveupTime = System.currentTimeMillis() + timeout;
+    
     // Get the GemFire version of the TcpServer first, before sending any other request.
-    short serverVersion = getServerVersion(ipAddr, REQUEST_TIMEOUT).shortValue();
+    short serverVersion = getServerVersion(ipAddr, timeout/2).shortValue();
 
     if (serverVersion > Version.CURRENT_ORDINAL) {
       serverVersion = Version.CURRENT_ORDINAL;
@@ -105,10 +107,17 @@ public class TcpClient {
       gossipVersion = TcpServer.getOldGossipVersion();
     }
 
-    Socket sock=SocketCreator.getDefaultInstance().connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
-    sock.setSoTimeout(timeout);
+    long newTimeout = giveupTime - System.currentTimeMillis();
+    if (newTimeout <= 0) {
+      return null;
+    }
+    
+    Socket sock=SocketCreator.getDefaultInstance().connect(ipAddr.getAddress(), ipAddr.getPort(), (int)newTimeout, null, false);
+    sock.setSoTimeout((int)newTimeout);
+    DataOutputStream out = null;
     try {
-      DataOutputStream out=new DataOutputStream(sock.getOutputStream());
+      out=new DataOutputStream(sock.getOutputStream());
+      
       if (serverVersion < Version.CURRENT_ORDINAL) {
         out = new VersionedDataOutputStream(out, Version.fromOrdinalNoThrow(serverVersion, false));
       }
@@ -125,6 +134,7 @@ public class TcpClient {
         in = new VersionedDataInputStream(in, Version.fromOrdinal(serverVersion, false)); 
         try {
           Object response = DataSerializer.readObject(in);
+          logger.debug("received response: {}", response);
           return response;
         } catch (EOFException ex) {
           throw new EOFException("Locator at " + ipAddr + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
@@ -141,6 +151,9 @@ public class TcpClient {
       }
       return null;
     } finally {
+      if (out != null) {
+        out.close();
+      }
       try {
         sock.close();
       } catch(Exception e) {

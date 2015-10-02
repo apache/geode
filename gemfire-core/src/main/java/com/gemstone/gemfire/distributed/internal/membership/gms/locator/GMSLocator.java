@@ -299,6 +299,7 @@ public class GMSLocator implements Locator, NetLocator {
   
   private boolean recover(InetSocketAddress other) {
     try {
+      logger.info("Peer locator attempting to recover from " + other);
       Object response = TcpClient.requestToServer(other.getAddress(), other.getPort(),
           new GetViewRequest(), 20000, true);
       if (response != null && (response instanceof GetViewResponse)) {
@@ -309,6 +310,7 @@ public class GMSLocator implements Locator, NetLocator {
     } catch (IOException | ClassNotFoundException ignore) {
       logger.debug("Peer locator could not recover membership view from {}: {}", other, ignore.getMessage());
     }
+    logger.info("Peer locator was unable to recover state from this locator");
     return false;
   }
 

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -42,8 +43,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAck
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import dunit.standalone.DUnitLauncher;
 
 @Category(UnitTest.class)
 public class GMSJoinLeaveJUnitTest {
@@ -149,8 +148,9 @@ public class GMSJoinLeaveJUnitTest {
 
     // now for the test
     boolean result = gmsJoinLeave.findCoordinatorFromView();
-    assert result : "should have found coordinator " + mockMembers[2];
-    assert state.possibleCoordinator == coordinator : "should have found " + coordinator + " but found " + state.possibleCoordinator;
+    assertTrue("should have found coordinator " + mockMembers[2], result);
+    assertTrue("should have found " + coordinator + " but found " + state.possibleCoordinator,
+        state.possibleCoordinator == coordinator);
   }
   
   @Test
@@ -158,7 +158,7 @@ public class GMSJoinLeaveJUnitTest {
     initMocks();
  
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockOldMember, mockOldMember, null));
-    Assert.assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
+    assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
   
@@ -170,7 +170,7 @@ public class GMSJoinLeaveJUnitTest {
     when(services.getMessenger()).thenReturn(messenger);
          
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials));
-    Assert.assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
+    assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
   
@@ -182,26 +182,10 @@ public class GMSJoinLeaveJUnitTest {
     when(services.getMessenger()).thenReturn(messenger);
       
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null));
-    Assert.assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
+    assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
   
-  
-  private void prepareView() throws IOException {
-    int viewId = 1;
-    List<InternalDistributedMember> mbrs = new LinkedList<>();
-    Set<InternalDistributedMember> shutdowns = new HashSet<>();
-    Set<InternalDistributedMember> crashes = new HashSet<>();
-    mbrs.add(mockMembers[0]);
-    
-    when(services.getMessenger()).thenReturn(messenger);
-    
-    //prepare the view
-    NetView netView = new NetView(mockMembers[0], viewId, mbrs, shutdowns, crashes);
-    InstallViewMessage installViewMessage = new InstallViewMessage(netView, credentials, true);
-    gmsJoinLeave.processMessage(installViewMessage);
-    verify(messenger).send(any(ViewAckMessage.class));
-  }
   
   private void prepareAndInstallView() throws IOException {
     int viewId = 1;
@@ -232,7 +216,7 @@ public class GMSJoinLeaveJUnitTest {
     when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(removeMessageSent);
     gmsJoinLeave.remove(mockMembers[0], "removing for test");
     Thread.sleep(GMSJoinLeave.MEMBER_REQUEST_COLLECTION_INTERVAL*2);
-    assert removeMessageSent.methodExecuted;
+    assertTrue(removeMessageSent.methodExecuted);
   }
   
   
@@ -278,6 +262,7 @@ public class GMSJoinLeaveJUnitTest {
     verify(mockManager).forceDisconnect(any(String.class));
   }
   
+  @SuppressWarnings("rawtypes")
   private class MethodExecuted implements Answer {
     private boolean methodExecuted = false;
     @Override
@@ -285,10 +270,6 @@ public class GMSJoinLeaveJUnitTest {
       //do we only expect a join response on a failure?
       methodExecuted = true;
       return null;
-    }
-    
-    public boolean isMethodExecuted() {
-      return methodExecuted;
     }
   } 
 
@@ -301,7 +282,7 @@ public class GMSJoinLeaveJUnitTest {
     RemoveMemberMessage msg = new RemoveMemberMessage(mockMembers[0], mockMembers[1], reason);
     msg.setSender(new InternalDistributedMember("localhost", 9000));
     gmsJoinLeave.processMessage(msg);
-    Assert.assertTrue("RemoveMemberMessage should not have been added to view requests", gmsJoinLeave.getViewRequests().size() == 0);
+    assertTrue("RemoveMemberMessage should not have been added to view requests", gmsJoinLeave.getViewRequests().size() == 0);
   }
   
   @Test
@@ -323,9 +304,9 @@ public class GMSJoinLeaveJUnitTest {
     waitForViewAndNoRequestsInProgress(7);
 
     NetView view = gmsJoinLeave.getView();
-    Assert.assertTrue("expected member to be removed: " + mockMembers[0] + "; view: " + view,
+    assertTrue("expected member to be removed: " + mockMembers[0] + "; view: " + view,
         !view.contains(mockMembers[0]));
-    Assert.assertTrue("expected member to be in shutdownMembers collection: " + mockMembers[0] + "; view: " + view,
+    assertTrue("expected member to be in shutdownMembers collection: " + mockMembers[0] + "; view: " + view,
         view.getShutdownMembers().contains(mockMembers[0]));
   }
   
@@ -348,9 +329,9 @@ public class GMSJoinLeaveJUnitTest {
     waitForViewAndNoRequestsInProgress(7);
     
     NetView view = gmsJoinLeave.getView();
-    Assert.assertTrue("expected member to be removed: " + mockMembers[0] + "; view: " + view,
+    assertTrue("expected member to be removed: " + mockMembers[0] + "; view: " + view,
         !view.contains(mockMembers[0]));
-    Assert.assertTrue("expected member to be in crashedMembers collection: " + mockMembers[0] + "; view: " + view,
+    assertTrue("expected member to be in crashedMembers collection: " + mockMembers[0] + "; view: " + view,
         view.getCrashedMembers().contains(mockMembers[0]));
   }
   
@@ -375,7 +356,7 @@ public class GMSJoinLeaveJUnitTest {
     waitForViewAndNoRequestsInProgress(7);
     
     NetView view = gmsJoinLeave.getView();
-    Assert.assertTrue("expected member to be added: " + mockMembers[2] + "; view: " + view,
+    assertTrue("expected member to be added: " + mockMembers[2] + "; view: " + view,
         view.contains(mockMembers[2]));
     List<InternalDistributedMember> members = view.getMembers();
     int occurrences = 0;
@@ -384,7 +365,7 @@ public class GMSJoinLeaveJUnitTest {
         occurrences += 1;
       }
     }
-    Assert.assertTrue("expected member to only be in the view once: " + mockMembers[2] + "; view: " + view,
+    assertTrue("expected member to only be in the view once: " + mockMembers[2] + "; view: " + view,
         occurrences == 1);
     verify(healthMonitor, times(5)).checkIfAvailable(any(InternalDistributedMember.class),
         any(String.class), any(Boolean.class));
@@ -439,7 +420,7 @@ public class GMSJoinLeaveJUnitTest {
     LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), mockMembers[1], reason);
     msg.setSender(mockMembers[1]);
     gmsJoinLeave.processMessage(msg);
-    Assert.assertTrue("Expected leave request from non-member to be ignored", gmsJoinLeave.getViewRequests().isEmpty());
+    assertTrue("Expected leave request from non-member to be ignored", gmsJoinLeave.getViewRequests().isEmpty());
   }
 
   @Test
@@ -453,7 +434,7 @@ public class GMSJoinLeaveJUnitTest {
     LeaveRequestMessage msg = new LeaveRequestMessage(creator, creator, reason);
     msg.setSender(creator);
     gmsJoinLeave.processMessage(msg);
-    Assert.assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
+    assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
   }
 
   @Test
@@ -467,12 +448,11 @@ public class GMSJoinLeaveJUnitTest {
     RemoveMemberMessage msg = new RemoveMemberMessage(creator, creator, reason);
     msg.setSender(creator);
     gmsJoinLeave.processMessage(msg);
-    Assert.assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
+    assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
   }
 
   @Test
   public void testBecomeCoordinatorThroughViewChange() throws Exception {
-    String reason = "testing";
     initMocks();
     prepareAndInstallView();
     NetView oldView = gmsJoinLeave.getView();
@@ -483,12 +463,11 @@ public class GMSJoinLeaveJUnitTest {
     InstallViewMessage msg = new InstallViewMessage(view, creator);
     msg.setSender(creator);
     gmsJoinLeave.processMessage(msg);
-    Assert.assertTrue("Expected it to become coordinator", gmsJoinLeave.isCoordinator());
+    assertTrue("Expected it to become coordinator", gmsJoinLeave.isCoordinator());
   }
 
   @Test
   public void testBecomeParticipantThroughViewChange() throws Exception {
-    String reason = "testing";
     initMocks();
     prepareAndInstallView();
     NetView oldView = gmsJoinLeave.getView();
@@ -502,7 +481,7 @@ public class GMSJoinLeaveJUnitTest {
     InstallViewMessage msg = new InstallViewMessage(view, creator);
     msg.setSender(creator);
     gmsJoinLeave.processMessage(msg);
-    Assert.assertTrue("Expected it to stop being coordinator", !gmsJoinLeave.isCoordinator());
+    assertTrue("Expected it to stop being coordinator", !gmsJoinLeave.isCoordinator());
   }
 
   @Test 
@@ -591,7 +570,7 @@ public class GMSJoinLeaveJUnitTest {
     msg = new InstallViewMessage(alternateView, null, true);
     gmsJoinLeave.processMessage(msg);
     
-    Assert.assertTrue(gmsJoinLeave.getPreparedView().equals(newView));
+    assertTrue(gmsJoinLeave.getPreparedView().equals(newView));
   }
   
   

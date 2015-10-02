@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -84,7 +85,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   volatile long currentTimeStamp;
 
-  final private Map<InternalDistributedMember, CustomTimeStamp> memberVsLastMsgTS = new ConcurrentHashMap<>();
+  final ConcurrentMap<InternalDistributedMember, CustomTimeStamp> memberVsLastMsgTS = new ConcurrentHashMap<>();
   final private Map<Integer, Response> requestIdVsResponse = new ConcurrentHashMap<>();
   final private ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberVsView = new ConcurrentHashMap<>();
   final private Map<NetView, Set<SuspectRequest>> viewVsSuspectedMembers = new HashMap<>();
@@ -107,7 +108,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /**
    * to stop check scheduler
    */
-  private ScheduledFuture monitorFuture;
+  private ScheduledFuture<?> monitorFuture;
   
   /** test hook */
   boolean playingDead = false;
@@ -130,13 +131,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     if (currentSuspects.remove(sender)) {
       logger.info("No longer suspecting {}", sender);
     }
-    CustomTimeStamp cTS = memberVsLastMsgTS.get(sender);
+    CustomTimeStamp cTS = new CustomTimeStamp(currentTimeStamp);
+    cTS = memberVsLastMsgTS.putIfAbsent(sender, cTS);
     if (cTS != null) {
       cTS.setTimeStamp(currentTimeStamp);
-    } else {
-      cTS = new CustomTimeStamp();
-      cTS.setTimeStamp(currentTimeStamp);
-      memberVsLastMsgTS.put(sender, cTS);
     }
   }
 
@@ -144,7 +142,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * this class is to avoid garbage
    */
   private static class CustomTimeStamp {
-    volatile long timeStamp;
+    private volatile long timeStamp;
+    
+    CustomTimeStamp(long timeStamp) {
+      this.timeStamp = timeStamp;
+    }
 
     public long getTimeStamp() {
       return timeStamp;
@@ -188,8 +190,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         }
 
         if (nextNeighborTS == null) {
-          CustomTimeStamp customTS = new CustomTimeStamp();
-          customTS.setTimeStamp(currentTime);
+          CustomTimeStamp customTS = new CustomTimeStamp(currentTime);
           memberVsLastMsgTS.put(neighbour, customTS);
           return;
         }
@@ -445,8 +446,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
       long cts = System.currentTimeMillis();
       for (InternalDistributedMember mbr: allMembers) {
-        CustomTimeStamp customTS = new CustomTimeStamp();
-        customTS.setTimeStamp(cts);
+        CustomTimeStamp customTS = new CustomTimeStamp(cts);
         memberVsLastMsgTS.put(mbr, customTS);
       }
     }
@@ -715,10 +715,17 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           @Override
           public void run() {
             try {
+              long startTime = System.currentTimeMillis();
+              CustomTimeStamp ts = new CustomTimeStamp(startTime);
+              memberVsLastMsgTS.put(mbr, ts);
+
               logger.info("Membership: Doing final check for suspect member {}", mbr);
               boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr);
               if (!pinged && !isStopping) {
-                GMSHealthMonitor.this.services.getJoinLeave().remove(mbr, reason);
+                ts = memberVsLastMsgTS.get(mbr);
+                if (ts == null || ts.getTimeStamp() <= startTime) {
+                  services.getJoinLeave().remove(mbr, reason);
+                }
               }
               // whether it's alive or not, at this point we allow it to
               // be a suspect again
@@ -846,7 +853,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         suspectRequests.clear();
       }
     }
-    NetView v = currentView;
     List<InternalDistributedMember> recipients;
 //    if (v.size() > 20) {
 //      // TODO this needs some rethinking - we need the guys near the

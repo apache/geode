@@ -778,6 +778,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   private void join() {
     services.setShutdownCause(null);
+    services.getCancelCriterion().cancel(null);
     
     latestViewLock.writeLock().lock();
     try {
@@ -1944,8 +1945,15 @@ public class GMSMembershipManager implements MembershipManager, Manager
           this.services.getConfig().getDistributionConfig().getAckWaitThreshold(),
           this.services.getConfig().getDistributionConfig().getAckSevereAlertThreshold());
                                      
-      if (theStats != null)
+      if (theStats != null) {
         theStats.incSentBytes(sentBytes);
+      }
+      
+      if (sentBytes == 0) {
+        if (services.getCancelCriterion().cancelInProgress() != null) {
+          throw new DistributedSystemDisconnectedException();
+        }
+      }
     }
     catch (DistributedSystemDisconnectedException ex) {
       if (services.getShutdownCause() != null) {
@@ -2070,10 +2078,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
     Set result = null;
     boolean allDestinations = msg.forAll();
     
-    if (!this.hasConnected) {
-      if (services.getCancelCriterion().cancelInProgress() != null) {
-        throw services.getCancelCriterion().generateCancelledException(null);
-      }
+    if (services.getCancelCriterion().cancelInProgress() != null) {
+      throw new DistributedSystemDisconnectedException("Distributed System is shutting down",
+          services.getCancelCriterion().generateCancelledException(null));
+    }
+    
+    if (isJoining()) {
       // If we get here, we are starting up, so just report a failure.
       if (allDestinations)
         return null;
@@ -2876,6 +2886,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
     
     final Exception shutdownCause = new ForcedDisconnectException(reason);
+
+    // cache the exception so it can be appended to ShutdownExceptions
+    services.setShutdownCause(shutdownCause);
+    services.getCancelCriterion().cancel(reason);
+
     if (!inhibitForceDisconnectLogging) {
       logger.fatal(LocalizedMessage.create(
           LocalizedStrings.GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0, reason), shutdownCause);
@@ -2886,10 +2901,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
     
     AlertAppender.getInstance().shuttingDown();
-
-    services.getCancelCriterion().cancel(reason);
-    // cache the exception so it can be appended to ShutdownExceptions
-    services.setShutdownCause(shutdownCause);
 
     Thread reconnectThread = new Thread (new Runnable() {
       public void run() {

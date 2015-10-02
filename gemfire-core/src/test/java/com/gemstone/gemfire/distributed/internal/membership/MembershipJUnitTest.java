@@ -201,10 +201,10 @@ public class MembershipJUnitTest extends TestCase {
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
-          assert jl2.getView().size() == 2 : "view = " + jl2.getView();
-          assert jl1.getView().size() == 2 : "view = " + jl1.getView();
-          assert jl1.getView().getCreator().equals(jl2.getView().getCreator());
-          assert jl1.getView().getViewId() == jl2.getView().getViewId();
+          assertTrue("view = " + jl2.getView(), jl2.getView().size() == 2);
+          assertTrue("view = " + jl1.getView(), jl1.getView().size() == 2);
+          assertTrue(jl1.getView().getCreator().equals(jl2.getView().getCreator()));
+          assertTrue(jl1.getView().getViewId() == jl2.getView().getViewId());
           break;
         } catch  (AssertionError e) {
           if (System.currentTimeMillis() > giveUp) {
@@ -214,9 +214,9 @@ public class MembershipJUnitTest extends TestCase {
       }
         
       m2.shutdown();
-      assert !m2.isConnected();
+      assertTrue(!m2.isConnected());
       
-      assert m1.getView().size() == 1;
+      assertTrue(m1.getView().size() == 1);
     }
     finally {
       

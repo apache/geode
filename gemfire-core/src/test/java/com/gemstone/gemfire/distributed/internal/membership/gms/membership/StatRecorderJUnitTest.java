@@ -3,6 +3,8 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
@@ -58,19 +60,22 @@ public class StatRecorderJUnitTest {
     
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
-    assert stats.ucastMessagesReceived == 1 : "stats.ucastMessagesReceived =" + stats.ucastMessagesReceived;
-    assert stats.ucastMessageBytesReceived == 150;
+    assertTrue("stats.ucastMessagesReceived =" + stats.ucastMessagesReceived,
+        stats.ucastMessagesReceived == 1);
+    assertEquals(stats.ucastMessageBytesReceived, 150);
     
     recorder.down(evt);
-    assert stats.ucastMessagesSent == 1 : "stats.ucastMessagesSent =" + stats.ucastMessagesSent;
-    assert stats.ucastMessageBytesSent == 150;
+    assertTrue("stats.ucastMessagesSent =" + stats.ucastMessagesSent,
+        stats.ucastMessagesSent == 1);
+    assertEquals(stats.ucastMessageBytesSent, 150);
     
     msg = mock(Message.class);
     when(msg.getHeader(any(Short.class))).thenReturn(Header.createXmitReqHeader());
     when(msg.size()).thenReturn(150L);
     evt = new Event(Event.MSG, msg);
     recorder.down(evt);
-    assert stats.ucastRetransmits == 1 : "stats.ucastRetransmits =" + stats.ucastRetransmits;
+    assertTrue("stats.ucastRetransmits =" + stats.ucastRetransmits,
+        stats.ucastRetransmits == 1);
   }
 
   /**
@@ -84,26 +89,30 @@ public class StatRecorderJUnitTest {
     
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
-    assert stats.mcastMessagesReceived == 1 : "mcastMessagesReceived = " + stats.mcastMessagesReceived;
-    assert stats.mcastMessageBytesReceived == 150;
+    assertTrue("mcastMessagesReceived = " + stats.mcastMessagesReceived,
+        stats.mcastMessagesReceived == 1);
+    assertEquals(stats.mcastMessageBytesReceived, 150);
     
     recorder.down(evt);
-    assert stats.mcastMessagesSent == 1 : "mcastMessagesSent = " + stats.mcastMessagesSent;
-    assert stats.mcastMessageBytesSent == 150;
+    assertTrue("mcastMessagesSent = " + stats.mcastMessagesSent,
+        stats.mcastMessagesSent == 1);
+    assertEquals(stats.mcastMessageBytesSent, 150);
     
     msg = mock(Message.class);
     when(msg.size()).thenReturn(150L);
     when(msg.getHeader(any(Short.class))).thenReturn(NakAckHeader2.createXmitRequestHeader(null));
     evt = new Event(Event.MSG, msg);
     recorder.down(evt);
-    assert stats.mcastRetransmitRequests == 1 : "mcastRetransmitRequests = " + stats.mcastRetransmitRequests;
+    assertTrue("mcastRetransmitRequests = " + stats.mcastRetransmitRequests,
+        stats.mcastRetransmitRequests == 1);
 
     msg = mock(Message.class);
     when(msg.size()).thenReturn(150L);
     when(msg.getHeader(any(Short.class))).thenReturn(NakAckHeader2.createXmitResponseHeader());
     evt = new Event(Event.MSG, msg);
     recorder.down(evt);
-    assert stats.mcastRetransmits == 1 : "mcastRetransmits = " + stats.mcastRetransmits;
+    assertTrue("mcastRetransmits = " + stats.mcastRetransmits,
+        stats.mcastRetransmits == 1);
   }
   
   
@@ -132,7 +141,7 @@ public class StatRecorderJUnitTest {
     messenger.init(mockServices);
     String jgroupsConfig = messenger.getJGroupsStackConfig();
     System.out.println(jgroupsConfig);
-    assert jgroupsConfig.contains("gms.messenger.StatRecorder");
+    assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
     
     // now test to see if the multicast stack has the recorder installed
     nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "12345");
@@ -142,7 +151,7 @@ public class StatRecorderJUnitTest {
     when(mockConfig.getTransport()).thenReturn(transport);
     messenger = new JGroupsMessenger();
     messenger.init(mockServices);
-    assert jgroupsConfig.contains("gms.messenger.StatRecorder");
+    assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
   }
 
   static class MyStats extends DummyDMStats {

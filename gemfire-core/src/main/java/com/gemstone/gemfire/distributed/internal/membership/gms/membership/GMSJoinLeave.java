@@ -725,7 +725,12 @@ logger.debug("waiting for view responses");
     
     FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, state.alreadyTried, state.viewId);
     Set<InternalDistributedMember> coordinators = new HashSet<InternalDistributedMember>();
-    long giveUpTime = System.currentTimeMillis() + (services.getConfig().getLocatorWaitTime() * 1000L);
+    long waitTime = services.getConfig().getLocatorWaitTime() * 1000;
+    if (waitTime <= 0) {
+      waitTime = services.getConfig().getMemberTimeout() * 2;
+    }
+    long giveUpTime = System.currentTimeMillis() + waitTime;
+    int connectTimeout = (int)services.getConfig().getMemberTimeout();
     boolean anyResponses = false;
     boolean flagsSet = false;
     
@@ -735,7 +740,7 @@ logger.debug("waiting for view responses");
       for (InetSocketAddress addr: locators) { 
         try {
           Object o = TcpClient.requestToServer(
-              addr.getAddress(), addr.getPort(), request, services.getConfig().getJoinTimeout(), 
+              addr.getAddress(), addr.getPort(), request, connectTimeout, 
               true);
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse)o : null;
           if (response != null && response.getCoordinator() != null) {
