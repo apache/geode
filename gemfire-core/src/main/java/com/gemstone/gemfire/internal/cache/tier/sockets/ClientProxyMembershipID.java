@@ -341,6 +341,9 @@ public final class ClientProxyMembershipID
 //    }
     Version v = InternalDataSerializer.getVersionForDataStream(out);
     if (v.compareTo(Version.GFE_90) >= 0) {
+      if (clientVersion == null) {
+        clientVersion = Version.CURRENT;
+      }
       clientVersion.writeOrdinal(out, true);
     }
     DataSerializer.writeByteArray(this.identity, out);
