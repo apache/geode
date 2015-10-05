@@ -852,7 +852,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     }
     QueryService qs = CacheUtils.getQueryService();
     String[] queries = {
-        "select pos.secId from  /portfolio  p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) ",// 6
+        "select pos.secId from  /portfolio  p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) group by pos.secId ",// 6
         "select pos.secId , count(pos.ID) from /portfolio p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",// 7
 
     };
