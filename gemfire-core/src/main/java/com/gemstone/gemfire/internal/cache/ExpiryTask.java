@@ -222,7 +222,6 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   
   protected final boolean expire(boolean isPending) throws CacheException 
   {
-    waitOnExpirationSuspension();
     ExpirationAction action = getAction();
     if (action == null) return false;
     return expire(action, isPending);
@@ -351,6 +350,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
           getLocalRegion().isDestroyed()) {
         return;
       }
+      waitOnExpirationSuspension();
       if (logger.isTraceEnabled()) {
         logger.trace("{} is fired", this);
       }
@@ -396,6 +396,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
        // is still usable:
        SystemFailure.checkFailure();
        logger.fatal(LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+    } finally {
+      if (expiryTaskListener != null) {
+        expiryTaskListener.afterExpire(this);
+      }
     }
   }
 
@@ -508,4 +512,18 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     return result;
   }
 
+  // Should only be set by unit tests
+  public static ExpiryTaskListener expiryTaskListener;
+  
+  /**
+   * Used by tests to determine if events related
+   * to an ExpiryTask have happened.
+   */
+  public interface ExpiryTaskListener {
+    /**
+     * Called after the given expiry task has expired.
+     */
+    public void afterExpire(ExpiryTask et);
+    
+  }
 }

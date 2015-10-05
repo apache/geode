@@ -8822,6 +8822,13 @@ public class LocalRegion extends AbstractRegion
   public RegionIdleExpiryTask getRegionIdleExpiryTask() {
     return this.regionIdleExpiryTask;
   }
+  /**
+   * Used by unit tests to get access to the RegionTTLExpiryTask
+   * of this region. Returns null if no task exists.
+   */
+  public RegionTTLExpiryTask getRegionTTLExpiryTask() {
+    return this.regionTTLExpiryTask;
+  }
   
   private void addExpiryTask(RegionEntry re, boolean ifAbsent)
   {
