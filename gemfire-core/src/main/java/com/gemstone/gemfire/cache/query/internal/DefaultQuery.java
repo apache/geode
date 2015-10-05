@@ -628,7 +628,7 @@ public class DefaultQuery implements Query {
       }
 
       // If there are more than one  PRs they have to be co-located.
-      QueryExecutor root = null;
+      QueryExecutor other = null;
       for (QueryExecutor eachPR : prs) {
         boolean colocated = false;
         
@@ -636,7 +636,7 @@ public class DefaultQuery implements Query {
           if (eachPR == allPRs) {
             continue;
           }
-
+          other = allPRs;
           if ((((PartitionedRegion) eachPR).colocatedByList.contains(allPRs) || 
               ((PartitionedRegion) allPRs).colocatedByList.contains(eachPR)))  {
             colocated = true;
@@ -644,13 +644,12 @@ public class DefaultQuery implements Query {
           } 
         } // allPrs
 
-        if (!colocated && root != null) {
+        if (!colocated) { 
           throw new UnsupportedOperationException(
               LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_NON_COLOCATED_PARTITIONED_REGION_1
               .toLocalizedString(new Object[] { eachPR.getName(),
-                  root.getName() }));
+                  other.getName() }));
         }
-        root = eachPR;
         
       } // eachPR
 
