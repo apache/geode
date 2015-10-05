@@ -2783,8 +2783,11 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
       /*
        * No rebalancing above because the simulation flag is on.
        * Therefore, vm1 will have recovered its buckets.
+       * We need to wait for the buckets because they
+       * might still be in the middle of creation in the
+       * background
        */
-      assertEquals(vm1Buckets,getBucketList("region1",vm1));      
+      waitForBucketList("region1", vm1, vm1Buckets);      
     }
     
     // look at vm2 buckets
