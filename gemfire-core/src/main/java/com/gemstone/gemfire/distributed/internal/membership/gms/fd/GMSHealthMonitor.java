@@ -379,7 +379,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     {
-      suspectRequestCollectorThread = this.new RequestCollector<SuspectRequest>("Suspect message collector thread", Services.getThreadGroup(), suspectRequests,
+      suspectRequestCollectorThread = this.new RequestCollector<SuspectRequest>("GemFire Suspect Message Collector", Services.getThreadGroup(), suspectRequests,
           new Callback<SuspectRequest>() {
             @Override
             public void process(List<SuspectRequest> requests) {

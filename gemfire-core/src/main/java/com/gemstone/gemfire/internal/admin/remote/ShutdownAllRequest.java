@@ -98,6 +98,8 @@ public class ShutdownAllRequest extends AdminRequest {
       if(!(e.getCause() instanceof CancelException)) {
         e.handleAsUnexpected();
       }
+    } catch (CancelException e) {
+      // expected
     } catch (InterruptedException e) {
       interrupted = true;
     }

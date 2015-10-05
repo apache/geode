@@ -449,23 +449,26 @@ public class JGroupsMessenger implements Messenger {
     
     filterOutgoingMessage(msg);
     
-    if (logger.isDebugEnabled()) {
-      logger.debug("sending via UDP: [{}] recipients: {}", msg, msg.getRecipientsDescription());
-    }
-    
     InternalDistributedMember[] destinations = msg.getRecipients();
     boolean allDestinations = msg.forAll();
     
     boolean useMcast = false;
     if (services.getConfig().getTransport().isMcastEnabled()) {
-      useMcast = !services.getManager().isMulticastAllowed()
+      useMcast = services.getManager().isMulticastAllowed()
           && (msg.getMulticast() || allDestinations);
+    }
+    
+    if (logger.isDebugEnabled()) {
+      String recips = "multicast";
+      if (!useMcast) {
+        recips = msg.getRecipients().toString();
+      }
+      logger.debug("sending via JGroups: [{}] recipients: {}", msg, recips);
     }
     
     JGAddress local = this.jgAddress;
     
     if (useMcast) {
-      logger.trace("This message is being multicast");
 
       Exception problem = null;
       try {

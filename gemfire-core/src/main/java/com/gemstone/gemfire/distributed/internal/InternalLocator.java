@@ -116,6 +116,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   
   /** system property name for inhibiting DM banner */
   public static final String INHIBIT_DM_BANNER = "Locator.inhibitDMBanner";
+  
+  /** system property name for forcing locators to be preferred as coordinators */
+  public static final String LOCATORS_PREFERRED_AS_COORDINATORS = "gemfire.disable-floating-coordinator";
 
   /////////////////////  Instance Fields  //////////////////////
 
@@ -652,7 +655,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       String prop = this.config.getSecurityPeerAuthInit();
       locatorsAreCoordinators =  (prop != null && prop.length() > 0);
       if (!locatorsAreCoordinators) {
-        locatorsAreCoordinators = Boolean.getBoolean("gemfire.disable-floating-coordinator");
+        locatorsAreCoordinators = Boolean.getBoolean(LOCATORS_PREFERRED_AS_COORDINATORS);
       }
     }
     if (locatorsAreCoordinators) {

@@ -354,11 +354,11 @@ public class MemberMBeanBridge {
     } catch (CacheClosedException e) {
       commandServiceInitError = e.getMessage();
       // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage(), e);
+      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
     } catch (CommandServiceException e) {
       commandServiceInitError = e.getMessage();
       // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage(), e);
+      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
     } catch (DependenciesNotFoundException e) {
       commandServiceInitError = e.getMessage();
       if (CacheServerLauncher.isDedicatedCacheServer) {

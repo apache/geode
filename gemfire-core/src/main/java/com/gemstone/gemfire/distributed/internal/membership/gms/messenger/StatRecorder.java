@@ -65,6 +65,7 @@ public class StatRecorder extends Protocol {
 
   private void processForMulticast(Message msg, int direction) {
     Object o = msg.getHeader(nakackHeaderId);
+//    logger.debug("sending message with NakAck header {}: {}", o, msg);
     if (o instanceof NakAckHeader2  &&  stats != null) {
       NakAckHeader2 hdr = (NakAckHeader2)o;
       switch (direction) {

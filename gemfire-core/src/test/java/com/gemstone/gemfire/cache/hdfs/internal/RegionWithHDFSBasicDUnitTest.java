@@ -70,7 +70,7 @@ public class RegionWithHDFSBasicDUnitTest extends RegionWithHDFSTestBase {
   public void setUp() throws Exception {
     super.setUp();
     ee0 = DistributedTestCase.addExpectedException("com.gemstone.gemfire.cache.RegionDestroyedException");
-    ee1 = DistributedTestCase.addExpectedException("com.gemstone.gemfire.cache.RegionDestroyedException");
+    ee1 = DistributedTestCase.addExpectedException("java.lang.InterruptedException");
   }
 
   public void tearDown2() throws Exception {

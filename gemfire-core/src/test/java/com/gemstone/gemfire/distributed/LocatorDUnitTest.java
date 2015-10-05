@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionException;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
@@ -1792,7 +1793,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       public void run() {
         File logFile = new File("");
         try {
-          System.setProperty("gemfire.disable-floating-coordinator", "true");
+          System.setProperty(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS, "true");
           System.setProperty("p2p.joinTimeout", "1000");
           Properties locProps = new Properties();
           locProps.put("mcast-port", "0");
@@ -1802,7 +1803,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
           fail("While starting locator on port " + port, ex);
         }
         finally {
-          System.getProperties().remove("gemfire.disable-floating-coordinator");
+          System.getProperties().remove(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS);
           System.getProperties().remove("p2p.joinTimeout");
         }
       }

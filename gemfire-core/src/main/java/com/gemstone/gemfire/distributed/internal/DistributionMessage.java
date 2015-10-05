@@ -280,15 +280,15 @@ public abstract class DistributionMessage
 
   public String getRecipientsDescription() {
     if (this.recipients == null) {
-      return "<recipients: ALL>";
+      return "recipients: ALL";
     }
     else if (this.multicast) {
-      return "<recipients: multcast>";
+      return "recipients: multicast";
     } else if (this.recipients.length > 0 && this.recipients[0] == ALL_RECIPIENTS) {
-      return "<recipients: ALL>";
+      return "recipients: ALL";
     } else {
       StringBuffer sb = new StringBuffer(100);
-      sb.append("<recipients: ");
+      sb.append("recipients: <");
       for (int i=0; i < this.recipients.length; i++) {
         if (i != 0) {
           sb.append(", ");
@@ -485,7 +485,7 @@ public abstract class DistributionMessage
    */
   public static boolean isPreciousThread() {
     String thrname = Thread.currentThread().getName();
-    return thrname.startsWith("UDP");
+    return thrname.startsWith("Incoming-") || thrname.startsWith("OOB-");
   }
 
 

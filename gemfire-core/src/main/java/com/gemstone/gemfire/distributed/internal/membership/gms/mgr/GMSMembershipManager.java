@@ -1101,6 +1101,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
       if (surpriseMembers.containsKey(member)) {
         return true;
       }
+      if (member.getVmViewId() < 0) {
+        logger.error("attempt to add a surprise member that has not yet joined the distributed system", new Exception("stack trace"));
+      }
       if (latestView.getViewId() > member.getVmViewId()) {
         // tell the process that it should shut down distribution.
         // Run in a separate thread so we don't hold the view lock during the request.  Bug #44995
@@ -1110,7 +1113,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
           public void run() {
             // fix for bug #42548
             // this is an old member that shouldn't be added
-            logger.fatal(LocalizedMessage.create(
+            logger.warn(LocalizedMessage.create(
                 LocalizedStrings.GroupMembershipService_Invalid_Surprise_Member, new Object[]{member, latestView}));
             requestMemberRemoval(member, "this member is no longer in the view but is initiating connections");
           }
@@ -1842,7 +1845,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (mbr.equals(this.address)) {
       return false;
     }
-    logger.fatal(LocalizedMessage.create(
+    logger.warn(LocalizedMessage.create(
         LocalizedStrings.GroupMembershipService_MEMBERSHIP_REQUESTING_REMOVAL_OF_0_REASON_1,
         new Object[] {mbr, reason}));
     try {
