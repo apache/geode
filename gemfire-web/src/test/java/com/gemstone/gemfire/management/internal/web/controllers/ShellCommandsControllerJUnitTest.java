@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.web.controllers;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,9 +37,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * The ShellCommandsControllerJUnitTest class is a test suite of test cases testing the contract and functionality of the
@@ -59,11 +64,10 @@ public class ShellCommandsControllerJUnitTest {
 
   @BeforeClass
   public static void setupBeforeClass() {
-    controller = new ShellCommandsController() {
-      @Override protected URI toUri(final String path) {
-        return URI.create(UriUtils.encode(path));
-      }
-    };
+    controller = new ShellCommandsController();
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setContextPath("gemfire");
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
   }
 
   @AfterClass
@@ -99,6 +103,10 @@ public class ShellCommandsControllerJUnitTest {
   }
 
   protected List<String> getControllerWebServiceEndpoints() {
+    RequestAttributes requestAttrs = RequestContextHolder.getRequestAttributes();
+    HttpServletRequest servletRequest = ((ServletRequestAttributes) requestAttrs).getRequest();
+    String scheme = servletRequest.getScheme();
+
     try {
       Set<Class<?>> controllerClasses = ClasspathScanLoadHelper.loadAndGet(
         "com.gemstone.gemfire.management.internal.web.controllers", AbstractCommandsController.class, true);
@@ -112,7 +120,7 @@ public class ShellCommandsControllerJUnitTest {
               RequestMapping requestMappingAnnotation = method.getAnnotation(RequestMapping.class);
 
               String webServiceEndpoint = String.format("%1$s %2$s", requestMappingAnnotation.method()[0],
-                requestMappingAnnotation.value()[0]);
+                UriUtils.decode(controller.toUri(requestMappingAnnotation.value()[0], scheme).toString()));
 
               String[] requestParameters = requestMappingAnnotation.params();
 
@@ -136,7 +144,7 @@ public class ShellCommandsControllerJUnitTest {
 
   @Test
   public void testUniqueIndex() {
-    LinkIndex linkIndex = controller.index();
+    LinkIndex linkIndex = controller.index("https");
 
     List<String> conflicts = new ArrayList<>();
     Map<String, String> uriRelationMapping = new HashMap<>(linkIndex.size());
@@ -161,7 +169,7 @@ public class ShellCommandsControllerJUnitTest {
     assertNotNull(commands);
     assertFalse(commands.isEmpty());
 
-    LinkIndex linkIndex = controller.index();
+    LinkIndex linkIndex = controller.index("https");
 
     assertNotNull(linkIndex);
     assertFalse(linkIndex.isEmpty());
@@ -190,7 +198,7 @@ public class ShellCommandsControllerJUnitTest {
     assertNotNull(controllerWebServiceEndpoints);
     assertFalse(controllerWebServiceEndpoints.isEmpty());
 
-    LinkIndex linkIndex = controller.index();
+    LinkIndex linkIndex = controller.index("http");
 
     assertNotNull(linkIndex);
     assertFalse(linkIndex.isEmpty());
@@ -208,8 +216,25 @@ public class ShellCommandsControllerJUnitTest {
     missingControllerWebServiceEndpoints.removeAll(controllerWebServiceEndpoints);
 
     assertTrue(String.format(
-      "The Management REST API Web Service Controllers in (%1$s) are missing the following REST API Web Service Endpoint(s): %2$s!",
+        "The Management REST API Web Service Controllers in (%1$s) are missing the following REST API Web Service Endpoint(s): %2$s!",
         getClass().getPackage().getName(), missingControllerWebServiceEndpoints), missingControllerWebServiceEndpoints.isEmpty());
   }
 
+  @Test
+  public void testIndexUrisHaveCorrectScheme() {
+    String versionCmd = "version";
+    List<String> controllerWebServiceEndpoints = getControllerWebServiceEndpoints();
+
+    assertNotNull(controllerWebServiceEndpoints);
+    assertFalse(controllerWebServiceEndpoints.isEmpty());
+
+    String testScheme = "xyz";
+    LinkIndex linkIndex = controller.index(testScheme);
+
+    assertNotNull(linkIndex);
+    assertFalse(linkIndex.isEmpty());
+
+    assertTrue(String.format("Link does not have correct scheme %1$s", linkIndex.find(versionCmd)),
+        testScheme.equals(linkIndex.find(versionCmd).getHref().getScheme()));
+  }
 }
