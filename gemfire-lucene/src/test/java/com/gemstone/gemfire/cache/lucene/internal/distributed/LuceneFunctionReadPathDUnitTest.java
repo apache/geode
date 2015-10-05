@@ -111,7 +111,6 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
         Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
         for(LuceneResultStruct<Integer, TestObject> row : page) {
           data.put(row.getKey(), row.getValue());
-          System.out.println("GGG:"+row.getKey()+":"+row.getValue());
         }
         
         assertEquals(data, region);

@@ -1,7 +1,5 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
