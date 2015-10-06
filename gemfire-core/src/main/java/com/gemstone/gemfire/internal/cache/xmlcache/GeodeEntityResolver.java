@@ -27,11 +27,11 @@ import org.xml.sax.ext.EntityResolver2;
  * 
  * @since 8.1
  */
-public final class PivotalEntityResolver extends DefaultEntityResolver2 {
+public final class GeodeEntityResolver extends DefaultEntityResolver2 {
 
-  private static final String SYSTEM_ID_ROOT = "http://schema.pivotal.io/";
+  private static final String SYSTEM_ID_ROOT = "http://geode.incubator.apache.org/schema";
 
-  private static final String CLASSPATH_ROOT = "/META-INF/schemas/schema.pivotal.io/";
+  private static final String CLASSPATH_ROOT = "/META-INF/schemas/geode.incubator.apache.org/";
 
   @Override
   public InputSource resolveEntity(final String name, final String publicId, final String baseURI, final String systemId) throws SAXException, IOException {
