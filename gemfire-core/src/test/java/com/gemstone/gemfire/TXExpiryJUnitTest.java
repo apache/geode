@@ -318,14 +318,15 @@ public class TXExpiryJUnitTest {
       }
     };
     mutator.addCacheListener(cl);
-    if (useTTL) {
-      mutator.setRegionTimeToLive(exprAtt);
-    } else {
-      mutator.setRegionIdleTimeout(exprAtt);
-    }
-
+    // Suspend before enabling region expiration to prevent
+    // it from happening before we do the put.
+    ExpiryTask.suspendExpiration();
     try {
-      ExpiryTask.suspendExpiration();
+      if (useTTL) {
+        mutator.setRegionTimeToLive(exprAtt);
+      } else {
+        mutator.setRegionIdleTimeout(exprAtt);
+      }
 
       // Create some keys and age them, I wish we could fake/force the age
       // instead of having to actually wait
