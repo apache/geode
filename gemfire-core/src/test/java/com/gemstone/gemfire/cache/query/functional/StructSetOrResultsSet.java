@@ -382,7 +382,7 @@ public class StructSetOrResultsSet extends TestCase {
       Object p1 = itert1.next();
       Object p2 = null;
       if (!checkOrder) {
-        if (!result2.contains(p1)) {
+        if (!collectionContains(result2, p1)) {
           fail("Atleast one element in the pair of SelectResults "
               + "supposedly identical, is not equal " + "Match not found for :"
               + p1 + " compared with:" + p2 + "; failed query=" + query + "; element unmatched ="
@@ -394,7 +394,7 @@ public class StructSetOrResultsSet extends TestCase {
         boolean matched = false;
         if (itert2.hasNext()) {
           p2 = itert2.next();
-          matched = (p2 == p1) || p2.equals(p1);
+          matched = objectsEqual(p1, p2);
           if (!matched) {
             fail("Order of results was not the same, match not found for :"
                 + p1 + " compared with:" + p2 + "; failed query=" + query + "; element unmatched ="
@@ -406,5 +406,42 @@ public class StructSetOrResultsSet extends TestCase {
       }
       currentIndex ++;
     }
+  }
+  
+  private boolean collectionContains(Collection collection, Object object) {
+    Iterator iterator = collection.iterator();
+    while (iterator.hasNext()) {
+      Object o = iterator.next();
+      if (objectsEqual(object, o)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  private boolean objectsEqual(Object o1, Object o2) {
+    //Assumed that o1 and o2 are the same object type as both are from collections created by executing the same query
+    if (o1 instanceof Struct) {
+      //if o2 is null, an NPE will be thrown.
+      Object[] values1 = ((Struct) o1).getFieldValues();
+      Object[] values2 = ((Struct) o2).getFieldValues();
+      assertEquals(values1.length, values2.length);
+      boolean elementEqual = true;
+      for (int i = 0; i < values1.length; ++i) {
+        elementEqual = elementEqual
+            && ((values1[i] == values2[i]) || values1[i]
+                .equals(values2[i]));
+      }
+      if (elementEqual) {
+        return true;
+      }
+    } 
+    else {
+      //if o1 is null and o2 is not, an NPE will be thrown
+      if (o1 == o2 || o1.equals(o2)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
