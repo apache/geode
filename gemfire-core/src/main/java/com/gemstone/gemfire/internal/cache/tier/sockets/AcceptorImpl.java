@@ -11,8 +11,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.BindException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -270,6 +268,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
 
   private boolean isGatewayReceiver;
   private List<GatewayTransportFilter> gatewayTransportFilters;
+  private final SocketCreator socketCreator; 
   /**
    * Initializes this acceptor thread to listen for connections on the given
    * port.
@@ -386,43 +385,20 @@ public class AcceptorImpl extends Acceptor implements Runnable
 
     {
       final int backLog = Integer.getInteger(BACKLOG_PROPERTY_NAME, DEFAULT_BACKLOG).intValue();
-      SocketCreator sc = null;
       DistributionConfig config = ((InternalDistributedSystem)c.getDistributedSystem()).getConfig();
       if(!isGatewayReceiver) {
         //If configured use SSL properties for cache-server
-        sc = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
+        this.socketCreator = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
             config.getServerSSLRequireAuthentication(),
             config.getServerSSLProtocols(),
             config.getServerSSLCiphers(),
             config.getServerSSLProperties());
-        if(config.getServerSSLEnabled()) {
-          StringWriter sw = new StringWriter();
-          PrintWriter writer = new PrintWriter(sw);
-          config.getServerSSLProperties().list(writer);          
-          logger.info(
-              "Starting CacheServer with SSL config : Authentication Required {} Ciphers {} Protocols {} Other Properties {} ",
-                  config.getServerSSLRequireAuthentication(),
-                  config.getServerSSLCiphers(),
-                  config.getServerSSLProtocols(),
-                  sw.toString());
-        }
       } else {
-        sc = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
+        this.socketCreator = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
             config.getGatewaySSLRequireAuthentication(),
             config.getGatewaySSLProtocols(),
             config.getGatewaySSLCiphers(),
             config.getGatewaySSLProperties());
-        if(config.getGatewaySSLEnabled()) {
-          StringWriter sw = new StringWriter();
-          PrintWriter writer = new PrintWriter(sw);
-          config.getGatewaySSLProperties().list(writer);          
-          logger.info(
-              "Starting Gateway with SSL config : Authentication Required {} Ciphers {} Protocols {} Other Properties {} ",
-                  config.getGatewaySSLRequireAuthentication(),
-                  config.getGatewaySSLCiphers(),
-                  config.getGatewaySSLProtocols(),
-                  sw.toString());
-        }
       }
       
       final GemFireCacheImpl gc;
@@ -435,7 +411,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       final long tilt = System.currentTimeMillis() + 120 * 1000;
 
       if (isSelector()) {
-        if (sc.useSSL()) {
+        if (this.socketCreator.useSSL()) {
           throw new IllegalArgumentException(LocalizedStrings.AcceptorImpl_SELECTOR_THREAD_POOLING_CAN_NOT_BE_USED_WITH_CLIENTSERVER_SSL_THE_SELECTOR_CAN_BE_DISABLED_BY_SETTING_MAXTHREADS0.toLocalizedString());
         }
         ServerSocketChannel channel = ServerSocketChannel.open();
@@ -486,7 +462,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         // immediately restarted, which sometimes results in a bind exception
         for (;;) {
           try {
-            this.serverSock = sc.createServerSocket(port, backLog,
+            this.serverSock = this.socketCreator.createServerSocket(port, backLog,
                 getBindAddress(), this.gatewayTransportFilters,
                 socketBufferSize);
             break;
@@ -1323,7 +1299,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
             break;
           }
         }
-        SocketCreator.getDefaultInstance().configureServerSSLSocket(s);
+        this.socketCreator.configureServerSSLSocket(s);
         this.loggedAcceptError = false;
 
         handOffNewClientConnection(s);
