@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import dunit.DistributedTestCase;
 import dunit.DistributedTestCase.WaitCriterion;
@@ -54,7 +54,7 @@ import dunit.DistributedTestCase.WaitCriterion;
  * @since 4.0
  *
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class TXExpiryJUnitTest {
 
   protected GemFireCacheImpl cache;
