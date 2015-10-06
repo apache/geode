@@ -87,29 +87,8 @@ public class ConnectionImpl implements Connection {
   
   public ServerQueueStatus connect(EndpointManager endpointManager,
       ServerLocation location, HandShake handShake, int socketBufferSize,
-      int handShakeTimeout, int readTimeout, byte communicationMode, GatewaySender sender)
+      int handShakeTimeout, int readTimeout, byte communicationMode, GatewaySender sender, SocketCreator sc)
       throws IOException {
-    SocketCreator sc = SocketCreator.getDefaultInstance();
-    DistributionConfig config = ds.getConfig();
-    if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-      sc = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
-          config.getGatewaySSLRequireAuthentication(), config.getGatewaySSLProtocols(),
-          config.getGatewaySSLCiphers(), config.getGatewaySSLProperties());
-      if (sender!= null && !sender.getGatewayTransportFilters().isEmpty()) {
-        sc.initializeTransportFilterClientSocketFactory(sender);
-      }
-    } else {
-      //If configured use SSL properties for cache-server
-      sc = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
-          config.getServerSSLRequireAuthentication(),
-          config.getServerSSLProtocols(),
-          config.getServerSSLCiphers(),
-          config.getServerSSLProperties());
-    }
-    if (!sc
-        .isHostReachable(InetAddress.getByName(location.getHostName()))) {
-      throw new NoRouteToHostException("Server is not reachable: " + location.getHostName());
-    }
     theSocket = sc.connectForClient(
         location.getHostName(), location.getPort(), handShakeTimeout, socketBufferSize);
     theSocket.setTcpNoDelay(true);
@@ -142,11 +121,6 @@ public class ConnectionImpl implements Connection {
     
     try {
       // if a forced-disconnect has occurred, we can't send messages to anyone
-      SocketCreator sc = SocketCreator.getDefaultInstance();
-      if (!sc.isHostReachable(this.theSocket.getInetAddress())) {
-        return;
-      }
-
       boolean sendCloseMsg = !TEST_DURABLE_CLIENT_CRASH;
       if (sendCloseMsg) {
         try {

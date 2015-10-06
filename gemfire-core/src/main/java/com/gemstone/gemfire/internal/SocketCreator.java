@@ -1028,45 +1028,7 @@ public class SocketCreator  implements com.gemstone.org.jgroups.util.SockCreator
 //         rw.readLock().unlock();
 //       }
   }
-  
-  /** has the isReachable method been looked up already? */
-  volatile boolean isReachableChecked;
-  
-  /** InetAddress.isReachable() is in v1.5 and later */
-  volatile Method isReachableMethod;
-  
-  public boolean isHostReachable(InetAddress host) {
-    boolean result = true;
-    try {
-      Method m = null;
-      if (isReachableChecked) {
-        m = isReachableMethod;
-      }
-      else {
-        // deadcoded - InetAddress.isReachable uses the ECHO port
-        // if we don't have root permission, and the ECHO port may
-        // be blocked
-        //m = InetAddress.class.getMethod("isReachable", new Class[] { int.class });
-        //isReachableMethod = m;
-        isReachableChecked = true;
-      }
-      if (m != null) {
-        result = ((Boolean)m.invoke(host, new Object[] {Integer.valueOf(250)})).booleanValue();
-        return result;
-      }
-    }
-    catch (InvocationTargetException e) {
-    }
-//    catch (NoSuchMethodException e) {
-//    }
-    catch (IllegalAccessException e) {
-    }
-    // any other bright ideas?  attempts to connect a socket to a missing
-    // machine may hang, so don't try the echo port or anything requiring
-    // full Sockets
-    return result;
-  }
-  
+
   /** Will be a server socket... this one simply registers the listeners. */
   public void configureServerSSLSocket( Socket socket ) throws IOException {
 //       rw.readLock().lockInterruptibly();

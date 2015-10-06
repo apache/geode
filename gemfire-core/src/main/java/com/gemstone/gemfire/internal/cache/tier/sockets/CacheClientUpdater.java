@@ -278,7 +278,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       String name, ServerLocation location,
       boolean primary, DistributedSystem ids,
       HandShake handshake, QueueManager qManager, EndpointManager eManager,
-      Endpoint endpoint, int handshakeTimeout) throws AuthenticationRequiredException,
+      Endpoint endpoint, int handshakeTimeout,
+      SocketCreator socketCreator) throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     super(LoggingThreadGroup.createThreadGroup("Client update thread"), name);
     this.setDaemon(true);
@@ -308,12 +309,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       int socketBufferSize = Integer.getInteger(
           "BridgeServer.SOCKET_BUFFER_SIZE", 32768).intValue();
 
-      if (!SocketCreator.getDefaultInstance()
-          .isHostReachable(InetAddress.getByName(location.getHostName()))) {
-        throw new NoRouteToHostException("Server is not reachable: " + location.getHostName());
-      }
-
-      mySock = SocketCreator.getDefaultInstance().connectForClient(
+      mySock = socketCreator.connectForClient(
           location.getHostName(), location.getPort(), handshakeTimeout, socketBufferSize);
       mySock.setTcpNoDelay(true);
       mySock.setSendBufferSize(socketBufferSize);

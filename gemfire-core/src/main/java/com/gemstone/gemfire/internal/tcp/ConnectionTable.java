@@ -804,7 +804,6 @@ public class ConnectionTable  {
         }
       }
       // now close any sockets being formed
-      SocketCreator sc = SocketCreator.getDefaultInstance();
       synchronized(connectingSockets) {
         for (Iterator it = connectingSockets.entrySet().iterator(); it.hasNext(); ) {
           Map.Entry entry = (Map.Entry)it.next();

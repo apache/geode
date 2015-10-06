@@ -32,11 +32,6 @@ public class SockCreatorImpl implements SockCreator {
   }
 
   @Override
-  public boolean isHostReachable(InetAddress ipAddress) {
-    return true;
-  }
-
-  @Override
   public Socket connect(InetAddress ipAddress, int port, int i,
       ConnectionWatcher watcher, boolean clientToServer) throws IOException {
     Socket socket = new Socket();
