@@ -11,6 +11,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
+import com.gemstone.gemfire.cache.lucene.internal.xml.LuceneIndexCreation;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 public abstract class LuceneIndexImpl implements InternalLuceneIndex {
@@ -74,6 +76,18 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.analyzer;
   }
 
-  protected void initialize() {
+  protected abstract void initialize();
+  
+  /**
+   * Register an extension with the region
+   * so that xml will be generated for this index.
+   */
+  protected void addExtension(PartitionedRegion dataRegion) {
+    LuceneIndexCreation creation = new LuceneIndexCreation();
+    creation.setName(this.getName());
+    creation.setFieldNames(this.getFieldNames());
+    creation.setRegion(dataRegion);
+    creation.setFieldFieldAnalyzerMap(this.getFieldAnalyzerMap());
+    dataRegion.getExtensionPoint().addExtension(creation, creation);
   }
 }

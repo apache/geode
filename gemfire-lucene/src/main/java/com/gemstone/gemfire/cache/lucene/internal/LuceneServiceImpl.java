@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollecto
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollectorManager;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import com.gemstone.gemfire.internal.DSFIDFactory;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -147,14 +148,13 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   @Override
   public XmlGenerator<Cache> getXmlGenerator() {
-    // TODO Auto-generated method stub
-    return null;
+    return new LuceneServiceXmlGenerator();
   }
 
   @Override
   public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
-    // TODO Auto-generated method stub
-
+    //This is called when CacheCreation (source) is turned into a GemfireCacheImpl (target)
+    //nothing to do there.
   }
   
   public void registerIndex(LuceneIndex index){
