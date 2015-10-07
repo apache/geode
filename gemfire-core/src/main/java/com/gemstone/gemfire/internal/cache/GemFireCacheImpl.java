@@ -387,6 +387,12 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    * {@link #allGatewaySendersLock}
    */
   private volatile Set<GatewaySender> allGatewaySenders = Collections.emptySet();
+  
+  /**
+   * The list of all async event queues added to the cache. 
+   * CopyOnWriteArrayList is used to allow concurrent add, remove and retrieval operations.
+   */
+  private volatile Set<AsyncEventQueue> allVisibleAsyncEventQueues = new CopyOnWriteArraySet<AsyncEventQueue>();
 
   /**
    * The list of all async event queues added to the cache. 
@@ -3881,8 +3887,11 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
   }
 
-  public void addAsyncEventQueue(AsyncEventQueue asyncQueue) {
+  public void addAsyncEventQueue(AsyncEventQueueImpl asyncQueue) {
     this.allAsyncEventQueues.add(asyncQueue);
+    if(!asyncQueue.isMetaQueue()) {
+      this.allVisibleAsyncEventQueues.add(asyncQueue);
+    }
     system
         .handleResourceEvent(ResourceEvent.ASYNCEVENTQUEUE_CREATE, asyncQueue);
   }
@@ -3925,7 +3934,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   public Set<AsyncEventQueue> getAsyncEventQueues() {
-    return this.allAsyncEventQueues;
+    return this.allVisibleAsyncEventQueues;
   }
   
   public AsyncEventQueue getAsyncEventQueue(String id) {
@@ -3949,6 +3958,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     // using gateway senders lock since async queue uses a gateway sender
     synchronized (allGatewaySendersLock) {
       this.allAsyncEventQueues.remove(asyncQueue);
+      this.allVisibleAsyncEventQueues.remove(asyncQueue);
     }
   }
   

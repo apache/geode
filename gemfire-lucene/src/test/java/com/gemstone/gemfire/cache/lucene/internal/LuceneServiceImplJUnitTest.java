@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,7 +124,7 @@ public class LuceneServiceImplJUnitTest {
   @Test
   public void testCreateIndexForPR() throws IOException, ParseException {
     getService();
-    createPR("PR1", false);
+    LocalRegion userRegion = createPR("PR1", false);
     LuceneIndexImpl index1 = (LuceneIndexImpl)service.createIndex("index1", "PR1", "field1", "field2", "field3");
     assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
     LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
@@ -146,6 +147,9 @@ public class LuceneServiceImplJUnitTest {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(index1.getName(), index1.getRegionPath());
     AsyncEventQueueImpl aeq = (AsyncEventQueueImpl)cache.getAsyncEventQueue(aeqId);
     assertTrue(aeq != null);
+    
+    //Make sure our queue doesn't show up in the list of async event queues 
+    assertEquals(Collections.emptySet(), cache.getAsyncEventQueues());
   }
 
   @Test

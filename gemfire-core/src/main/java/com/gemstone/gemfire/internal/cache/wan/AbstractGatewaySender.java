@@ -152,6 +152,8 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   
   protected boolean isHDFSQueue;
   
+  protected boolean isMetaQueue;
+  
   private int parallelismForReplicatedRegion;
   
   protected AbstractGatewaySenderEventProcessor eventProcessor;
@@ -252,6 +254,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     this.myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager().getDistributedSystemId();
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.isHDFSQueue = attrs.isHDFSQueue();
+    this.isMetaQueue = attrs.isMetaQueue();
     if (!(this.cache instanceof CacheCreation)) {
       this.stopper = new Stopper(cache.getCancelCriterion());
       this.senderAdvisor = GatewaySenderAdvisor.createGatewaySenderAdvisor(this);
@@ -474,6 +477,10 @@ public abstract class AbstractGatewaySender implements GatewaySender,
 
   public boolean getIsHDFSQueue() {
     return this.isHDFSQueue;
+  }
+  
+  public boolean getIsMetaQueue() {
+    return this.isMetaQueue;
   }
   
   public InternalDistributedSystem getSystem() {
