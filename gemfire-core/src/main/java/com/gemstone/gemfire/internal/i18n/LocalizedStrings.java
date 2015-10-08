@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.i18n;
@@ -1699,7 +1708,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId MBeanUtil_WHILE_UNREGISTERING_COULDNT_FIND_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5121, "While unregistering, could not find MBean with ObjectName : {0}");
   public static final StringId MBeanUtil_COULD_NOT_UNREGISTER_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5122, "Could not un-register MBean with ObjectName : {0}");
   public static final StringId AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_REQUEST_REJECTED_BY_POOL = new StringIdImpl(5123, "Rejected connection from {0} because incoming request was rejected by pool possibly due to thread exhaustion");
-  public static final StringId GatewayImpl_GATEWAY_SOCKET_READ_TIMEOUT_DISABLED = new StringIdImpl(5124, "Setting the socket read timeout on a gateway is currently disabled. Please contact Pivotal support for assistance.");
+  public static final StringId GatewayImpl_GATEWAY_SOCKET_READ_TIMEOUT_DISABLED = new StringIdImpl(5124, "Setting the socket read timeout on a gateway is currently disabled.");
   public static final StringId EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION = new StringIdImpl(5125, "Function execution without result encountered an Exception on server.");
   public static final StringId ConnectionFactoryImpl_POOL_0_IS_NOT_AVAILABLE = new StringIdImpl(5126, "Pool {0} is not available");
   public static final StringId CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3 = new StringIdImpl(5128, "Cannot create region {0} with off-heap={1} because another cache ({2}) has the same region with off-heap={3}.");
