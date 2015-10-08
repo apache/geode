@@ -27,28 +27,52 @@ public class LuceneXmlParser extends AbstractXmlParser {
     if(INDEX.equals(localName)) {
       startIndex(atts);
     }
+    if(FIELD.equals(localName)) {
+      startField(atts);
+    }
+  }
+
+  private void startField(Attributes atts) {
+    //Ignore any whitespace noise between fields
+    if(stack.peek() instanceof StringBuffer) {
+      stack.pop();
+    }
+    LuceneIndexCreation creation = (LuceneIndexCreation) stack.peek();
+    String name = atts.getValue(NAME);
+    creation.addField(name);
   }
 
   private void startIndex(Attributes atts) {
     final RegionCreation region = (RegionCreation) stack.peek();
     RegionAttributesCreation rac = (RegionAttributesCreation) region.getAttributes();
     String name = atts.getValue(NAME);
-    String[] fields = atts.getValue(FIELDS).split(" *, *");
     rac.addAsyncEventQueueId(LuceneServiceImpl.getUniqueIndexName(name, region.getFullPath()));
-    
     
     LuceneIndexCreation indexCreation = new LuceneIndexCreation();
     indexCreation.setName(name);
-    indexCreation.setFieldNames(fields);
     indexCreation.setRegion(region);
     region.getExtensionPoint().addExtension(indexCreation, indexCreation);
-    //TODO support nested field objects by adding the creation object to the stack
-    //stack.push(indexCreation)
+    stack.push(indexCreation);
   }
 
   @Override
   public void endElement(String uri, String localName, String qName)
       throws SAXException {
-    //Nothing to do.
+    if(!NAMESPACE.equals(uri)) {
+      return;
+    }
+    if(INDEX.equals(localName)) {
+      endIndex();
+    }
+  }
+
+  private void endIndex() {
+    //Ignore any whitespace noise between fields
+    if(stack.peek() instanceof StringBuffer) {
+      stack.pop();
+    }
+    
+    //Remove the index creation from the stack
+    stack.pop();
   }
 }

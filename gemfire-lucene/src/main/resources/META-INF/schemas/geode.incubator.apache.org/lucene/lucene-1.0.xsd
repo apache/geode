@@ -29,8 +29,14 @@ XML schema for Lucene indexes in Geode.
   </xsd:annotation>
   <xsd:element name="index">
     <xsd:complexType>
+    	<xsd:sequence>
+    	  <xsd:element name="field" maxOccurs="unbounded">
+			<xsd:complexType>
+				<xsd:attribute name="name" type="xsd:string" />
+			</xsd:complexType>
+    	  </xsd:element>
+    	</xsd:sequence>
     	<xsd:attribute name="name" type="xsd:string"/>
-    	<xsd:attribute name="fields" type="xsd:string"/>
     </xsd:complexType>
   </xsd:element>
 </xsd:schema>

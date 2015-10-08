@@ -85,7 +85,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected void addExtension(PartitionedRegion dataRegion) {
     LuceneIndexCreation creation = new LuceneIndexCreation();
     creation.setName(this.getName());
-    creation.setFieldNames(this.getFieldNames());
+    creation.addFieldNames(this.getFieldNames());
     creation.setRegion(dataRegion);
     creation.setFieldFieldAnalyzerMap(this.getFieldAnalyzerMap());
     dataRegion.getExtensionPoint().addExtension(creation, creation);

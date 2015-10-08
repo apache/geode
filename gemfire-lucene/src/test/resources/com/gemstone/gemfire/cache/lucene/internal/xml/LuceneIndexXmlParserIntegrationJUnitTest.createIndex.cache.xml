@@ -10,7 +10,15 @@
     version="9.0">
 
 	<region name="region" refid="PARTITION">
-    	<lucene:index name="index1" fields="a, b,c,d"/>
-    	<lucene:index name="index2" fields="f,g"/>
+    	<lucene:index name="index1">
+    	  <lucene:field name="a"/>
+    	  <lucene:field name="b"/>
+    	  <lucene:field name="c"/>
+    	  <lucene:field name="d"/>
+    	</lucene:index>
+    	<lucene:index name="index2">
+    	  <lucene:field name="f"/>
+    	  <lucene:field name="g"/>
+    	</lucene:index>
     </region>    
 </cache>

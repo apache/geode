@@ -1,6 +1,9 @@
 package com.gemstone.gemfire.cache.lucene.internal.xml;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 
@@ -16,7 +19,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
 public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>> {
   private Region region;
   private String name;
-  private String[] fieldNames;
+  private Set<String> fieldNames = new LinkedHashSet<String>();
   private Map<String, Analyzer> fieldFieldAnalyzerMap;
 
   
@@ -28,10 +31,6 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     this.name = name;
   }
 
-  public void setFieldNames(String[] fieldNames) {
-    this.fieldNames = fieldNames;
-  }
-  
   public Map<String, Analyzer> getFieldFieldAnalyzerMap() {
     return fieldFieldAnalyzerMap;
   }
@@ -51,7 +50,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   }
 
   public String[] getFieldNames() {
-    return fieldNames;
+    return fieldNames.toArray(new String[fieldNames.size()]);
   }
 
   @Override
@@ -72,5 +71,14 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     LuceneService service = LuceneServiceProvider.get(cache);
     //TODO - should this be a different method than the public API here?
     service.createIndex(getName(), getRegionPath(), getFieldNames());
+  }
+
+  public void addField(String name) {
+    this.fieldNames.add(name);
+  }
+
+  public void addFieldNames(String[] fieldNames) {
+    this.fieldNames.addAll(Arrays.asList(fieldNames));
+    
   }
 }

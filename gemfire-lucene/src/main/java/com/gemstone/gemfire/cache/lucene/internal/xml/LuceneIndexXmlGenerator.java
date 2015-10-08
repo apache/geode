@@ -34,8 +34,13 @@ public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
     AttributesImpl attr = new AttributesImpl();
     //TODO - should the type be xs:string ?
     XmlGeneratorUtils.addAttribute(attr, NAME, index.getName());
-    XmlGeneratorUtils.addAttribute(attr, FIELDS, String.join(",", index.getFieldNames()));
-    XmlGeneratorUtils.emptyElement(cacheXmlGenerator.getContentHandler(), PREFIX, INDEX, attr);
+    XmlGeneratorUtils.startElement(handler, PREFIX, INDEX, attr);
+    for(String field : index.getFieldNames()) {
+      AttributesImpl fieldAttr = new AttributesImpl();
+      XmlGeneratorUtils.addAttribute(fieldAttr, NAME, field);
+      XmlGeneratorUtils.emptyElement(handler, PREFIX, FIELD, fieldAttr);
+    }
+    XmlGeneratorUtils.endElement(handler, PREFIX, INDEX);
   }
 
 }
