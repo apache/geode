@@ -1114,6 +1114,7 @@ public class MemberMBeanBridge {
           }
         }
       });
+      t.setDaemon(false);
       t.start();
     }
 
