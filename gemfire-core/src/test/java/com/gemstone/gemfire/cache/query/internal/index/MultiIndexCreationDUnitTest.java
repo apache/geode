@@ -70,10 +70,12 @@ public class MultiIndexCreationDUnitTest extends CacheTestCase {
     AsyncInvocation a2 = server1.invokeAsync(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        while (!hooked){
+        long giveupTime = System.currentTimeMillis() + 60000;
+        while (!hooked && System.currentTimeMillis() < giveupTime) {
           getLogWriter().info("Query Waiting for index hook.");
           pause(100);
         }
+        assertTrue(hooked);
         
         QueryObserver old = QueryObserverHolder
             .setInstance(new QueryObserverAdapter() {
@@ -163,10 +165,11 @@ public class MultiIndexCreationDUnitTest extends CacheTestCase {
 
     @Override
     public void hook(int spot) throws RuntimeException {
+      long giveupTime = System.currentTimeMillis() + 60000;
       if (spot == 13) {
         hooked = true;
         getLogWriter().info("MultiIndexCreationTestHook is hooked in create defined indexes.");
-        while (hooked) {
+        while (hooked && System.currentTimeMillis() < giveupTime) {
           getLogWriter().info("MultiIndexCreationTestHook waiting.");
           pause(100);
         }

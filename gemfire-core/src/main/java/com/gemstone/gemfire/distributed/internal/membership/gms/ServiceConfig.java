@@ -1,5 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms;
 
+import java.net.InetAddress;
+
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.SocketCreator;
@@ -70,6 +72,30 @@ public class ServiceConfig {
   
   public void setNetworkPartitionDetectionEnabled(boolean enabled) {
     this.networkPartitionDetectionEnabled = enabled;
+  }
+  
+  /**
+   * returns the address that will be used by the DirectChannel to
+   * identify this member
+   */
+  public InetAddress getInetAddress() {
+    String bindAddress = this.dconfig.getBindAddress();
+
+    try {
+      /* note: had to change the following to make sure the prop wasn't empty 
+         in addition to not null for admin.DistributedSystemFactory */
+      if (bindAddress != null && bindAddress.length() > 0) {
+        return InetAddress.getByName(bindAddress);
+
+      }
+      else {
+       return SocketCreator.getLocalHost();
+      }
+    }
+    catch (java.net.UnknownHostException unhe) {
+      throw new RuntimeException(unhe);
+
+    }
   }
   
   public DistributionConfig getDistributionConfig() {

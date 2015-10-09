@@ -65,11 +65,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
     super(name);
   }
 
-  private static final String WAIT1_MS_NAME = "LocatorDUnitTest.WAIT1_MS";
-  private static final int WAIT1_MS_DEFAULT = 40000; // 5000 -- see bug 36470
-  private static final int WAIT1_MS 
-      = Integer.getInteger(WAIT1_MS_NAME, WAIT1_MS_DEFAULT).intValue();
-
   private static final String WAIT2_MS_NAME = "LocatorDUnitTest.WAIT2_MS";
   private static final int WAIT2_MS_DEFAULT = 5000; // 2000 -- see bug 36470
   private static final int WAIT2_MS 
@@ -127,7 +122,6 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put("mcast-port", "0");
     properties.put("start-locator", locators);
     properties.put("log-level", getDUnitLogLevel());
-//    properties.put("log-level", getDUnitLogLevel());
     properties.put("security-peer-auth-init","com.gemstone.gemfire.distributed.AuthInitializer.create");
     properties.put("security-peer-authenticator","com.gemstone.gemfire.distributed.MyAuthenticator.create");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
@@ -532,7 +526,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
 
       assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
       
-      properties.put("log-level", getDUnitLogLevel());
+//      properties.put("log-level", getDUnitLogLevel());
       
       DistributedMember mem1 = (DistributedMember)vm1.invoke(this.getClass(),
           "getDistributedMember", connectArgs);
@@ -1042,6 +1036,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     bgexecLogger.info(addExpected);
     
     boolean exceptionOccurred = true;
+    String oldValue = (String)System.getProperties().put("p2p.joinTimeout", "15000");
     try {
       DistributedSystem.connect(props);
       exceptionOccurred = false;
@@ -1059,6 +1054,11 @@ public class LocatorDUnitTest extends DistributedTestCase {
       fail("Failed with unexpected exception", ex);
     }
     finally {
+      if (oldValue == null) {
+        System.getProperties().remove("p2p.joinTimeout");
+      } else {
+        System.getProperties().put("p2p.joinTimeout", oldValue);
+      }
       bgexecLogger.info(removeExpected);
     }
 
@@ -1164,6 +1164,14 @@ public class LocatorDUnitTest extends DistributedTestCase {
     }
   }
 
+  public void testRepeat() throws Exception {
+    for (int i=0; i<10; i++) {
+      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> run #"+i);
+      testLocatorBecomesCoordinator();
+      tearDown();
+      setUp();
+    }
+  }
   /**
    * Tests starting one locator in a remote VM and having multiple
    * members of the distributed system join it.  This ensures that
@@ -1449,6 +1457,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
             props.setProperty("mcast-port", String.valueOf(mcastport));
             props.setProperty("locators", locators);
             props.setProperty("log-level", getDUnitLogLevel());
+            props.setProperty("mcast-ttl", "0");
+            props.setProperty("enable-network-partition-detection", "true");
             props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
             Locator.startLocatorAndDS(port1, logFile, null, props);
@@ -1466,6 +1476,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
             props.setProperty("mcast-port", String.valueOf(mcastport));
             props.setProperty("locators", locators);
             props.setProperty("log-level", getDUnitLogLevel());
+            props.setProperty("mcast-ttl", "0");
+            props.setProperty("enable-network-partition-detection", "true");
             props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
             Locator.startLocatorAndDS(port2, logFile, null, props);
           }
@@ -1481,6 +1493,9 @@ public class LocatorDUnitTest extends DistributedTestCase {
             Properties props = new Properties();
             props.setProperty("mcast-port", String.valueOf(mcastport));
             props.setProperty("locators", locators);
+            props.setProperty("log-level", getDUnitLogLevel());
+            props.setProperty("mcast-ttl", "0");
+            props.setProperty("enable-network-partition-detection", "true");
             DistributedSystem.connect(props);
           }
         };
@@ -1491,6 +1506,9 @@ public class LocatorDUnitTest extends DistributedTestCase {
       Properties props = new Properties();
       props.setProperty("mcast-port", String.valueOf(mcastport));
       props.setProperty("locators", locators);
+      props.setProperty("log-level", getDUnitLogLevel());
+      props.setProperty("mcast-ttl", "0");
+      props.setProperty("enable-network-partition-detection", "true");
 
       system = (InternalDistributedSystem)DistributedSystem.connect(props);
       WaitCriterion ev = new WaitCriterion() {
@@ -1504,7 +1522,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
           return false; // NOTREACHED
         }
         public String description() {
-          return null;
+          return "waiting for 5 members - have " + system.getDM().getViewMembers().size();
         }
       };
       DistributedTestCase.waitForCriterion(ev, WAIT2_MS, 200, true);
@@ -1756,6 +1774,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   
   /** return the distributed member id for the ds on this vm */
   public static DistributedMember getDistributedMember(Properties props) {
+    props.put("name", "vm_"+VM.getCurrentVMNum());
     DistributedSystem sys = DistributedSystem.connect(props);
     sys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
     sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");

@@ -94,6 +94,7 @@ public class GMSHealthMonitorJUnitTest {
     InternalDistributedMember mbr = new InternalDistributedMember(SocketCreator.getLocalHost(), 12345);
     when(messenger.getMemberID()).thenReturn(mbr);
     when(messenger.send(any(CheckResponseMessage.class))).thenAnswer(messageSent);
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.processMessage(new CheckRequestMessage(mbr, 1));
     Assert.assertTrue("Check Response should have been sent", messageSent.isMethodExecuted());
@@ -108,11 +109,12 @@ public class GMSHealthMonitorJUnitTest {
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     MethodExecuted messageSent = new MethodExecuted();
-    when(services.getJoinLeave().getMemberID()).thenAnswer(messageSent);
+    when(services.getMessenger().getMemberID()).thenAnswer(messageSent);
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
-    Assert.assertTrue("It should have got memberID from services.getJoinLeave().getMemberID()", messageSent.isMethodExecuted());
+    Assert.assertTrue("It should have got memberID from services.getMessenger().getMemberID()", messageSent.isMethodExecuted());
   }
 
   /**
@@ -123,7 +125,8 @@ public class GMSHealthMonitorJUnitTest {
 
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
@@ -139,7 +142,8 @@ public class GMSHealthMonitorJUnitTest {
 //    System.out.printf("memberID is %s view is %s\n", mockMembers.get(3), v);
     
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
@@ -154,7 +158,8 @@ public class GMSHealthMonitorJUnitTest {
     }
 
     // neighbor should change to 5th
-    Assert.assertEquals(mockMembers.get(5), neighbor);
+    Assert.assertEquals("expected " + mockMembers.get(5) + " but found " + neighbor
+        + ".  view="+v, mockMembers.get(5), neighbor);
   }
 
   /**
@@ -167,7 +172,8 @@ public class GMSHealthMonitorJUnitTest {
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
@@ -189,7 +195,8 @@ public class GMSHealthMonitorJUnitTest {
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
@@ -215,7 +222,7 @@ public class GMSHealthMonitorJUnitTest {
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
 
     gmsHealthMonitor.installView(v);
 
@@ -240,7 +247,7 @@ public class GMSHealthMonitorJUnitTest {
     
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
     
     gmsHealthMonitor.installView(v);
 
@@ -263,7 +270,7 @@ public class GMSHealthMonitorJUnitTest {
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
 
     gmsHealthMonitor.installView(v);
 
@@ -290,7 +297,8 @@ public class GMSHealthMonitorJUnitTest {
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
@@ -325,7 +333,8 @@ public class GMSHealthMonitorJUnitTest {
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
@@ -361,7 +370,8 @@ public class GMSHealthMonitorJUnitTest {
 
     MethodExecuted messageSent = new MethodExecuted();
     // preferred coordinators are 0 and 1
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(1));// next preferred coordinator
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(1));// next preferred coordinator
+    gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
@@ -396,7 +406,7 @@ public class GMSHealthMonitorJUnitTest {
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
 
     gmsHealthMonitor.installView(v);
 
@@ -417,7 +427,7 @@ public class GMSHealthMonitorJUnitTest {
 
     MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
 
     gmsHealthMonitor.installView(v);
 

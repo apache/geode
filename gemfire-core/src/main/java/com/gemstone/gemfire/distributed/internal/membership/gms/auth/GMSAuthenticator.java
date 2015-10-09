@@ -43,50 +43,38 @@ public class GMSAuthenticator implements Authenticator {
 
   @Override
   public void start() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void started() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void stop() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void stopped() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void installView(NetView v) {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void beSick() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void playDead() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void beHealthy() {
-    // TODO Auto-generated method stub
-
+  }
+  
+  @Override
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
   }
 
   /**

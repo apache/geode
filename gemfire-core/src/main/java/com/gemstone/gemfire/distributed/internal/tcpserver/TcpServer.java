@@ -70,7 +70,7 @@ public class TcpServer {
    * with the addition of support for all old versions of clients you can no
    * longer change this version number
    */
-  public final static int GOSSIPVERSION = 1003;
+  public final static int GOSSIPVERSION = 1002;
   // Don't change it ever. We did NOT send GemFire version in a Gossip request till 1001 version.
   // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a GossipServer.
   public final static int OLDGOSSIPVERSION = 1001;

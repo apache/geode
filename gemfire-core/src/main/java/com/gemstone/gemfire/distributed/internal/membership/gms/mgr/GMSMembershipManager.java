@@ -9,7 +9,6 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.mgr;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1352,7 +1351,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         logger.trace(LogMarker.DM_VIEWS, "Membership: queuing new view for processing, id = {}, view = {}", 
             newId, newView);
       }
-      FakeViewMessage v = new FakeViewMessage(address, newId, newView,
+      LocalViewMessage v = new LocalViewMessage(address, newId, newView,
           GMSMembershipManager.this);
 
       listener.messageReceived(v);
@@ -1362,8 +1361,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   @Override
-  public void memberSuspected(SuspectMember suspect) {
-    handleOrDeferSuspect(suspect);
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+    SuspectMember s = new SuspectMember(initiator, suspect);
+    handleOrDeferSuspect(s);
   }
 
   /**

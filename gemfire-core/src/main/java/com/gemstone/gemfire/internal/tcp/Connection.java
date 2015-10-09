@@ -858,24 +858,31 @@ public class Connection implements Runnable {
 
   private static final int CONNECT_HANDSHAKE_SIZE = 4096;
 
-  private void handshakeNio() throws IOException {
-    // We jump through some extra hoops to use a MsgOutputStream
-    // This keeps us from allocating an extra DirectByteBuffer.
+  /**
+   * waits until we've joined the distributed system
+   * before returning
+   */
+  private void waitForAddressCompletion() {
     InternalDistributedMember myAddr = this.owner.getConduit().getLocalAddress();
     synchronized (myAddr) {
-      while (myAddr.getInetAddress() == null) {
+      while ((owner.getConduit().getCancelCriterion().cancelInProgress() == null)
+          && myAddr.getInetAddress() == null && myAddr.getVmViewId() < 0) {
         try {
-          myAddr.wait(); // spurious wakeup ok
+          myAddr.wait(100); // spurious wakeup ok
         }
         catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           this.owner.getConduit().getCancelCriterion().checkCancelInProgress(ie);
         }
       }
+      Assert.assertTrue(myAddr.getDirectChannelPort() == this.owner.getConduit().getPort());
     }
+  }
 
-    Assert.assertTrue(myAddr.getDirectChannelPort() == this.owner.getConduit().getPort());
-
+  private void handshakeNio() throws IOException {
+    waitForAddressCompletion();
+    
+    InternalDistributedMember myAddr = this.owner.getConduit().getLocalAddress();
     final MsgOutputStream connectHandshake
       = new MsgOutputStream(CONNECT_HANDSHAKE_SIZE);
     //connectHandshake.reset();
@@ -911,6 +918,8 @@ public class Connection implements Runnable {
   }
 
   private void handshakeStream() throws IOException {
+    waitForAddressCompletion();
+
     //this.output = new BufferedOutputStream(getSocket().getOutputStream(), owner.getConduit().bufferSize);
     this.output = getSocket().getOutputStream();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(CONNECT_HANDSHAKE_SIZE);

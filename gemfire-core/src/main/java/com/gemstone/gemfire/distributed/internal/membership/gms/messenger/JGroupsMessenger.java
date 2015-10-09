@@ -11,11 +11,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +33,7 @@ import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.Message.Flag;
+import org.jgroups.Message.TransientFlag;
 import org.jgroups.Receiver;
 import org.jgroups.View;
 import org.jgroups.ViewId;
@@ -60,6 +63,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.OSProcess;
@@ -191,7 +195,7 @@ public class JGroupsMessenger implements Messenger {
     
     if (transport.isMcastEnabled()) {
       properties = replaceStrings(properties, "MCAST_PORT", String.valueOf(transport.getMcastId().getPort()));
-      properties = replaceStrings(properties, "MCAST_ADDRESS", transport.getMcastId().getHost().getHostAddress());
+      properties = replaceStrings(properties, "MCAST_ADDRESS", dc.getMcastAddress().getHostAddress());
       properties = replaceStrings(properties, "MCAST_TTL", String.valueOf(dc.getMcastTtl()));
       properties = replaceStrings(properties, "MCAST_SEND_BUFFER_SIZE", String.valueOf(dc.getMcastSendBufferSize()));
       properties = replaceStrings(properties, "MCAST_RECV_BUFFER_SIZE", String.valueOf(dc.getMcastRecvBufferSize()));
@@ -256,6 +260,7 @@ public class JGroupsMessenger implements Messenger {
         reconnecting = true;
       }
       else {
+        checkForWindowsIPv6();
         InputStream is = new ByteArrayInputStream(properties.getBytes("UTF-8"));
         myChannel = new JChannel(is);
       }
@@ -287,8 +292,24 @@ public class JGroupsMessenger implements Messenger {
     
     establishLocalAddress();
     
-    logger.debug("JGroups channel created (took {}ms)", System.currentTimeMillis()-start);
+    logger.info("JGroups channel created (took {}ms)", System.currentTimeMillis()-start);
     
+  }
+  
+  /**
+   * JGroups picks an IPv6 address if preferIPv4Stack is false or not set
+   * and preferIPv6Addresses is not set or is true.  We want it to use an
+   * IPv4 address for a dual-IP stack so that both IPv4 and IPv6 messaging work
+   */
+  private void checkForWindowsIPv6() throws Exception {
+    boolean isWindows = ((String)System.getProperty("os.name")).indexOf("Windows") >= 0;
+    boolean preferIpV6Addr = Boolean.getBoolean("java.net.preferIPv6Addresses");
+    if (isWindows && !preferIpV6Addr) {
+      logger.debug("Windows detected - forcing JGroups to think IPv4 is being used so it will choose an IPv4 address");
+      Field m = org.jgroups.util.Util.class.getDeclaredField("ip_stack_type");
+      m.setAccessible(true);
+      m.set(null, org.jgroups.util.StackType.IPv4);
+    }
   }
 
   @Override
@@ -312,6 +333,10 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+  }
+
+  @Override
   public void installView(NetView v) {
     this.view = v;
     
@@ -325,6 +350,7 @@ public class JGroupsMessenger implements Messenger {
     ViewId vid = new ViewId(new JGAddress(v.getCoordinator()), v.getViewId());
     View jgv = new View(vid, new ArrayList<Address>(mbrs));
     this.jgView = jgv;
+    logger.trace("installing JGroups view: {}", jgv);
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
   }
   
@@ -441,6 +467,7 @@ public class JGroupsMessenger implements Messenger {
     // code to create a versioned input stream, read the sender address, then read the message
     // and set its sender address
     DMStats theStats = services.getStatistics();
+    NetView oldView = this.view;
 
     if (!myChannel.isConnected()) {
       logger.info("JGroupsMessenger channel is closed - messaging is not possible");
@@ -461,7 +488,7 @@ public class JGroupsMessenger implements Messenger {
     if (logger.isDebugEnabled()) {
       String recips = "multicast";
       if (!useMcast) {
-        recips = msg.getRecipients().toString();
+        recips = Arrays.toString(msg.getRecipients());
       }
       logger.debug("sending via JGroups: [{}] recipients: {}", msg, recips);
     }
@@ -474,8 +501,10 @@ public class JGroupsMessenger implements Messenger {
       try {
         long startSer = theStats.startMsgSerialization();
         Message jmsg = createJGMessage(msg, local, Version.CURRENT_ORDINAL);
+        jmsg.setTransientFlag(TransientFlag.DONT_LOOPBACK);
         theStats.endMsgSerialization(startSer);
         theStats.incSentBytes(jmsg.getLength());
+        logger.trace("Sending JGroups message: {}", jmsg);
         myChannel.send(jmsg);
       }
       catch (IllegalArgumentException e) {
@@ -560,8 +589,7 @@ public class JGroupsMessenger implements Messenger {
             Message tmp = (i < (calculatedLen-1)) ? jmsg.copy(true) : jmsg;
             tmp.setDest(to);
             tmp.setSrc(this.jgAddress);
-            if (logger.isTraceEnabled())
-              logger.trace("Unicasting to {}", to);
+            logger.trace("Unicasting to {}", to);
             myChannel.send(tmp);
           }
           catch (Exception e) {
@@ -596,12 +624,12 @@ public class JGroupsMessenger implements Messenger {
       return Collections.emptySet();
     }
     Set<InternalDistributedMember> result = new HashSet<InternalDistributedMember>();
-    NetView newView = services.getJoinLeave().getView();
-    if (newView != null) {
+    NetView newView = this.view;
+    if (newView != null && newView != oldView) {
       for (int i = 0; i < destinations.length; i ++) {
         InternalDistributedMember d = destinations[i];
         if (!newView.contains(d)) {
-          logger.debug("messenger: member has left the view: {}", d);
+          logger.debug("messenger: member has left the view: {}  view is now {}", d, newView);
           result.add(d);
         }
       }
@@ -773,6 +801,13 @@ public class JGroupsMessenger implements Messenger {
   }
   
   /**
+   * returns the JChannel for test verification
+   */
+  public JChannel getJGroupsChannel() {
+    return this.myChannel;
+  }
+  
+  /**
    * for unit testing we need to replace UDP with a fake UDP protocol 
    */
   public void setJGroupsStackConfigForTesting(String config) {
@@ -838,7 +873,7 @@ public class JGroupsMessenger implements Messenger {
           pingPonger.sendPongMessage(myChannel, jgAddress, jgmsg.getSrc());
         }
         catch (Exception e) {
-          logger.info("Failed sending Pong message to " + jgmsg.getSrc());
+          logger.info("Failed sending Pong response to " + jgmsg.getSrc());
         }
         return;
       } else if (pingPonger.isPongMessage(contents)) {
@@ -881,7 +916,7 @@ public class JGroupsMessenger implements Messenger {
       
       try {
         if (logger.isTraceEnabled()) {
-          logger.trace("JGroupsMessenger dispatching {}", msg);
+          logger.trace("JGroupsMessenger dispatching {} from {}", msg, msg.getSender());
         }
         filterIncomingMessage(msg);
         MessageHandler h = getMessageHandler(msg);

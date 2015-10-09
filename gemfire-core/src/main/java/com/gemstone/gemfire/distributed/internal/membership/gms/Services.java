@@ -11,6 +11,7 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.auth.GMSAuthenticator;
@@ -34,7 +35,7 @@ public class Services {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final ThreadGroup threadGroup = LoggingThreadGroup.createThreadGroup("Membership", logger); 
+  private static final ThreadGroup threadGroup = LoggingThreadGroup.createThreadGroup("GemFire Membership", logger); 
   
   private static InternalLogWriter staticLogWriter;
   private static InternalLogWriter staticSecurityLogWriter;
@@ -55,7 +56,7 @@ public class Services {
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
   
-  private Timer timer = new Timer("Membership Timer", true);
+  private Timer timer = new Timer("GemFire Membership Timer", true);
   
   
 
@@ -258,6 +259,26 @@ public class Services {
     healthMon.installView(v);
     messenger.installView(v);
     manager.installView(v);
+  }
+  
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+    try {
+      joinLeave.memberSuspected(initiator, suspect);
+    } finally {
+      try {
+        healthMon.memberSuspected(initiator, suspect);
+      } finally {
+        try {
+          auth.memberSuspected(initiator, suspect);
+        } finally {
+          try {
+            messenger.memberSuspected(initiator, suspect);
+          } finally {
+            manager.memberSuspected(initiator, suspect);
+          }
+        }
+      }
+    }
   }
 
   public Manager getManager() {

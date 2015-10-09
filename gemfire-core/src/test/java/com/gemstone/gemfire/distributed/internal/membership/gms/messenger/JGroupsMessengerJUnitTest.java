@@ -72,6 +72,7 @@ public class JGroupsMessengerJUnitTest {
     when(stopper.isCancelInProgress()).thenReturn(false);
     
     manager = mock(Manager.class);
+    when(manager.isMulticastAllowed()).thenReturn(enableMcast);
     
     joinLeave = mock(JoinLeave.class);
     

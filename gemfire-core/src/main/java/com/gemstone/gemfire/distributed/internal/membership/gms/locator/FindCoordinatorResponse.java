@@ -86,8 +86,8 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     if (this.isShortForm) { 
       return "FindCoordinatorResponse(coordinator="+coordinator+")";
     } else {
-      return "FindCoordinatorResponse(coordinator="+coordinator+", fromView="+fromView+", viewId="+view.getViewId()
-        +", registrants=" + registrants.size()
+      return "FindCoordinatorResponse(coordinator="+coordinator+", fromView="+fromView+", viewId="+(view==null? "nul" : view.getViewId())
+        +", registrants=" + (registrants == null? 0 : registrants.size())
         +", network partition detection enabled="+this.networkPartitionDetectionEnabled
         +", locators preferred as coordinators="+this.usePreferredCoordinators+")";
     }

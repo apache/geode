@@ -502,6 +502,16 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     checkData(vm0, numBuckets, 113, "b", "region");
   }
   
+  
+//  public void testRepeat() throws Throwable {
+//    for (int i=0; i<10; i++) {
+//      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> run #"+i);
+//      testShutdownAllWithMembersWaiting();
+//      tearDown();
+//      setUp();
+//    }
+//  }
+  
   /**
    * Test for 43551. Do a shutdown all with some
    * members waiting on recovery.
@@ -532,7 +542,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     AsyncInvocation a0 = createRegionAsync(vm0, "region", "disk", true, 1);
     
     //Wait a bit for the initialization to get stuck
-    pause(5000);
+    pause(20000);
     assertTrue(a0.isAlive());
     
     //Do another shutdown all, with a member offline and another stuck

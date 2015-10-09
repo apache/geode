@@ -194,66 +194,76 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    */
   public boolean join() {
     
-    if (Boolean.getBoolean(BYPASS_DISCOVERY)) {
-      becomeCoordinator();
-      return true;
-    }
-    
-    SearchState state = searchState;
-    
-    long timeout = services.getConfig().getJoinTimeout();
-    logger.debug("join timeout is set to {}", timeout);
-    long retrySleep =  JOIN_RETRY_SLEEP;
-    long startTime = System.currentTimeMillis();
-    long giveupTime = startTime + timeout;
-
-    for (int tries=0; !this.isJoined; tries++) {
-
-      boolean found = findCoordinator();
-      if (found) {
-        logger.debug("found possible coordinator {}", state.possibleCoordinator);
-        if (localAddress.getNetMember().preferredForCoordinator()
-            && state.possibleCoordinator.equals(this.localAddress)) {
-          if (tries > 2 || System.currentTimeMillis() < giveupTime ) {
-            becomeCoordinator();
-            return true;
+    try {
+      if (Boolean.getBoolean(BYPASS_DISCOVERY)) {
+        becomeCoordinator();
+        return true;
+      }
+      
+      SearchState state = searchState;
+      
+      long timeout = services.getConfig().getJoinTimeout();
+      logger.debug("join timeout is set to {}", timeout);
+      long retrySleep =  JOIN_RETRY_SLEEP;
+      long startTime = System.currentTimeMillis();
+      long giveupTime = startTime + timeout;
+  
+      for (int tries=0; !this.isJoined; tries++) {
+        logger.debug("searching for the membership coordinator");
+        boolean found = findCoordinator();
+        if (found) {
+          logger.debug("found possible coordinator {}", state.possibleCoordinator);
+          if (localAddress.getNetMember().preferredForCoordinator()
+              && state.possibleCoordinator.equals(this.localAddress)) {
+            if (tries > 2 || System.currentTimeMillis() < giveupTime ) {
+              becomeCoordinator();
+              return true;
+            }
+          } else {
+            if (attemptToJoin()) {
+              return true;
+            }
+            if (System.currentTimeMillis() > giveupTime) {
+              break;
+            }
+            if (!state.possibleCoordinator.equals(localAddress)) {
+              state.alreadyTried.add(state.possibleCoordinator);
+            }
           }
         } else {
-          if (attemptToJoin()) {
-            return true;
-          }
           if (System.currentTimeMillis() > giveupTime) {
             break;
           }
-          if (!state.possibleCoordinator.equals(localAddress)) {
-            state.alreadyTried.add(state.possibleCoordinator);
-          }
         }
-      } else {
-        if (System.currentTimeMillis() > giveupTime) {
-          break;
+        try {
+          logger.debug("sleeping for {} before making another attempt to find the coordinator", retrySleep);
+          Thread.sleep(retrySleep);
+        } catch (InterruptedException e) {
+          logger.debug("retry sleep interrupted - giving up on joining the distributed system");
+          return false;
+        }
+      } // for
+      
+      if (!this.isJoined) {
+        logger.debug("giving up attempting to join the distributed system after " + (System.currentTimeMillis() - startTime) + "ms");
+      }
+      
+      // to preserve old behavior we need to throw a SystemConnectException if
+      // unable to contact any of the locators
+      if (!this.isJoined && state.hasContactedALocator) {
+        throw new SystemConnectException("Unable to join the distributed system in "
+           + (System.currentTimeMillis()-startTime) + "ms");
+      }
+      
+      return this.isJoined;
+    } finally {
+      // notify anyone waiting on the address to be completed
+      if (this.isJoined) {
+        synchronized(this.localAddress) {
+          this.localAddress.notifyAll();
         }
       }
-      try {
-        Thread.sleep(retrySleep);
-      } catch (InterruptedException e) {
-        logger.debug("retry sleep interrupted - giving up on joining the distributed system");
-        return false;
-      }
-    } // for
-    
-    if (!this.isJoined) {
-      logger.debug("giving up attempting to join the distributed system after " + (System.currentTimeMillis() - startTime) + "ms");
     }
-    
-    // to preserve old behavior we need to throw a SystemConnectException if
-    // unable to contact any of the locators
-    if (!this.isJoined && state.hasContactedALocator) {
-      throw new SystemConnectException("Unable to join the distributed system in "
-         + (System.currentTimeMillis()-startTime) + "ms");
-    }
-    
-    return this.isJoined;
   }
 
   /**
@@ -605,8 +615,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       recips.addAll(view.getCrashedMembers());
     }
 
-    logger.info((preparing? "preparing" : "sending") + " new view " + view);
-
     if (preparing) {
       this.preparedView = view;
     } else {
@@ -614,20 +622,25 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
     
     if (recips.isEmpty()) {
+      logger.info("no recipients for new view aside from myself");
       return true;
     }
     
+    logger.info((preparing? "preparing" : "sending") + " new view " + view);
+
     msg.setRecipients(recips);
     
     Set<InternalDistributedMember> pendingLeaves = getPendingRequestIDs(LEAVE_REQUEST_MESSAGE);
     Set<InternalDistributedMember> pendingRemovals = getPendingRequestIDs(REMOVE_MEMBER_REQUEST);
+    pendingRemovals.removeAll(view.getCrashedMembers());
     rp.initialize(id, responders);
     rp.processPendingRequests(pendingLeaves, pendingRemovals);
     services.getMessenger().send(msg);
 
     // only wait for responses during preparation
     if (preparing) {
-logger.debug("waiting for view responses");
+      logger.debug("waiting for view responses");
+      
       Set<InternalDistributedMember> failedToRespond = rp.waitForResponses();
 
       logger.info("finished waiting for responses to view preparation");
@@ -653,7 +666,7 @@ logger.debug("waiting for view responses");
 
   private void processViewMessage(InstallViewMessage m) {
     
-    logger.info("Membership: processing {}", m);
+    logger.debug("Membership: processing {}", m);
     
     NetView view = m.getView();
     
@@ -744,7 +757,7 @@ logger.debug("waiting for view responses");
               true);
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse)o : null;
           if (response != null && response.getCoordinator() != null) {
-            anyResponses = false;
+            anyResponses = true;
             NetView v = response.getView();
             int viewId = v == null? -1 : v.getViewId();
             if (viewId > state.viewId) {
@@ -761,30 +774,7 @@ logger.debug("waiting for view responses");
             coordinators.add(response.getCoordinator());
             if (!flagsSet) {
               flagsSet = true;
-              
-              boolean enabled = response.isNetworkPartitionDetectionEnabled();
-              if (!enabled && services.getConfig().isNetworkPartitionDetectionEnabled()) {
-                throw new GemFireConfigException("locator at "+addr
-                    +" does not have network-partition-detection enabled but my configuration has it enabled");
-              }
-
-              GMSMember mbr = (GMSMember)this.localAddress.getNetMember();
-              mbr.setSplitBrainEnabled(enabled);
-              services.getConfig().setNetworkPartitionDetectionEnabled(enabled);
-              services.getConfig().getDistributionConfig().setEnableNetworkPartitionDetection(enabled);
-
-              if (response.isUsePreferredCoordinators()) {
-                this.quorumRequired = true;
-                logger.debug("The locator indicates that all locators should be preferred as coordinators");
-                if (services.getLocator() != null
-                    || Locator.hasLocator()
-                    || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty()
-                    || localAddress.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
-                  ((GMSMember)localAddress.getNetMember()).setPreferredForCoordinator(true);
-                }
-              } else {
-                ((GMSMember)localAddress.getNetMember()).setPreferredForCoordinator(true);
-              }
+              inheritSettingsFromLocator(addr, response);
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
@@ -794,7 +784,7 @@ logger.debug("waiting for view responses");
         return false;
       }
       if (!anyResponses) {
-        try { Thread.sleep(2000); } catch (InterruptedException e) {
+        try { Thread.sleep(1000); } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           return false;
         }
@@ -900,6 +890,36 @@ logger.debug("waiting for view responses");
     
     state.possibleCoordinator = coord;
     return coord != null;
+  }
+  
+  /**
+   * Some settings are gleaned from locator responses and set into the local
+   * configuration
+   */
+  private void inheritSettingsFromLocator(InetSocketAddress addr, FindCoordinatorResponse response) {
+    boolean enabled = response.isNetworkPartitionDetectionEnabled();
+    if (!enabled && services.getConfig().isNetworkPartitionDetectionEnabled()) {
+      throw new GemFireConfigException("locator at "+addr
+          +" does not have network-partition-detection enabled but my configuration has it enabled");
+    }
+
+    GMSMember mbr = (GMSMember)this.localAddress.getNetMember();
+    mbr.setSplitBrainEnabled(enabled);
+    services.getConfig().setNetworkPartitionDetectionEnabled(enabled);
+    services.getConfig().getDistributionConfig().setEnableNetworkPartitionDetection(enabled);
+
+    if (response.isUsePreferredCoordinators()) {
+      this.quorumRequired = true;
+      logger.debug("The locator indicates that all locators should be preferred as coordinators");
+      if (services.getLocator() != null
+          || Locator.hasLocator()
+          || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty()
+          || localAddress.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+        ((GMSMember)localAddress.getNetMember()).setPreferredForCoordinator(true);
+      }
+    } else {
+      ((GMSMember)localAddress.getNetMember()).setPreferredForCoordinator(true);
+    }
   }
   
   /**
@@ -1080,7 +1100,8 @@ logger.debug("waiting for view responses");
     int oldWeight = currentView.memberWeight();
     int failedWeight = newView.getCrashedMemberWeight(currentView);
     if (failedWeight > 0) {
-      if (logger.isInfoEnabled()) {
+      if (logger.isInfoEnabled()
+          && !newView.getCreator().equals(localAddress)) { // view-creator logs this
         newView.logCrashedMemberWeights(currentView, logger);
       }
       int failurePoint = (int)(Math.round(51 * oldWeight) / 100.0);
@@ -1147,8 +1168,12 @@ logger.debug("waiting for view responses");
 
   @Override
   public void stopped() {
-    // TODO Auto-generated method stub
-    
+  }
+
+  @Override
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+    prepareProcessor.memberSuspected(initiator, suspect);
+    viewProcessor.memberSuspected(initiator, suspect);
   }
 
 
@@ -1359,21 +1384,34 @@ logger.debug("waiting for view responses");
       // We don't want to mix the two because pending removals
       // aren't reflected as having crashed in the current view
       // and need to cause a new view to be generated
-      notRepliedYet.removeAll(pendingLeaves);
       synchronized(this.pendingRemovals) {
         this.pendingRemovals.addAll(pendingRemovals);
       }
     }
     
+    synchronized void memberSuspected(InternalDistributedMember initiator,
+        InternalDistributedMember suspect) {
+      if (waiting) {
+        // we will do a final check on this member if it hasn't already
+        // been done, so stop waiting for it now
+        logger.debug("view response processor recording suspect status for {}", suspect);
+        pendingRemovals.add(suspect);
+        checkIfDone();
+      }
+    }
+    
     synchronized void processLeaveRequest(InternalDistributedMember mbr) {
       if (waiting) {
+        logger.debug("view response processor recording leave request for {}", mbr);
         stopWaitingFor(mbr);
       }
     }
     
     synchronized void processRemoveRequest(InternalDistributedMember mbr) {
       if (waiting) {
+        logger.debug("view response processor recording remove request for {}", mbr);
         pendingRemovals.add(mbr);
+        checkIfDone();
       }
     }
     
@@ -1388,6 +1426,7 @@ logger.debug("waiting for view responses");
           this.conflictingView = conflictingView;
         }
 
+        logger.debug("view response processor recording response for {}", sender);
         stopWaitingFor(sender);
       }
     }
@@ -1395,11 +1434,18 @@ logger.debug("waiting for view responses");
     /** call with synchronized(this) */
     private void stopWaitingFor(InternalDistributedMember mbr) {
       notRepliedYet.remove(mbr);
+      checkIfDone();
+    }
+    
+    /** call with synchronized(this) */
+    private void checkIfDone() {
       if (notRepliedYet.isEmpty() ||
           (pendingRemovals != null && pendingRemovals.containsAll(notRepliedYet))) {
         logger.debug("All anticipated view responses received - notifying waiting thread");
         waiting = false;
         notify();
+      } else {
+        logger.debug("Still waiting for these view replies: {}", notRepliedYet);
       }
     }
     
@@ -1528,6 +1574,13 @@ logger.debug("waiting for view responses");
                 return;
               } finally {
                 waiting = false;
+              }
+              if (viewRequests.size() == 1) {
+                // start the timer when we have only one request because
+                // concurrent startup / shutdown of multiple members is
+                // a common occurrence
+                okayToCreateView = System.currentTimeMillis() + MEMBER_REQUEST_COLLECTION_INTERVAL;
+                continue;
               }
             } else {
               if (System.currentTimeMillis() < okayToCreateView) {
@@ -1705,6 +1758,8 @@ logger.debug("waiting for view responses");
         }
 
         prepared = prepareView(newView, joinReqs);
+        logger.debug("view preparation phase completed.  prepared={}", prepared);
+
         if (prepared) {
           break;
         }
@@ -1712,12 +1767,14 @@ logger.debug("waiting for view responses");
         Set<InternalDistributedMember> unresponsive = prepareProcessor.getUnresponsiveMembers();
         unresponsive.removeAll(removalReqs);
         unresponsive.removeAll(leaveReqs);
-        try {
-          removeHealthyMembers(unresponsive);
-        } catch (InterruptedException e) {
-          // abort the view if interrupted
-          shutdown = true;
-          return;
+        if (!unresponsive.isEmpty()) {
+          try {
+            removeHealthyMembers(unresponsive);
+          } catch (InterruptedException e) {
+            // abort the view if interrupted
+            shutdown = true;
+            return;
+          }
         }
 
         List<InternalDistributedMember> failures = new ArrayList<>(currentView.getCrashedMembers().size() + unresponsive.size());

@@ -18,21 +18,21 @@ import com.gemstone.gemfire.distributed.internal.membership.NetView;
 
 
 /**
-  ViewMessage is used to pass a new membership view to the GemFire cache
+  LocalViewMessage is used to pass a new membership view to the GemFire cache
   in an orderly manner.  It is intended to be queued with serially
   executed messages so that the view takes effect at the proper time.
   
   @author Bruce Schuchardt
  */
 
-public final class FakeViewMessage extends SerialDistributionMessage
+public final class LocalViewMessage extends SerialDistributionMessage
 {
 
   private GMSMembershipManager manager;
   private long viewId;
   private NetView view;
   
-  public FakeViewMessage(
+  public LocalViewMessage(
     InternalDistributedMember addr,
     long viewId,
     NetView view,

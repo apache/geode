@@ -98,12 +98,6 @@ public interface Manager extends Service, MessageHandler {
 //  void membershipFailure(String message, Exception cause);
 
   /**
-   * used by HealthMonitor to tell Manager that a member is under
-   * suspicion
-   */
-  void memberSuspected(SuspectMember suspect);
-  
-  /**
    * Indicate whether we are attempting a reconnect
    */
   boolean isReconnectingDS();

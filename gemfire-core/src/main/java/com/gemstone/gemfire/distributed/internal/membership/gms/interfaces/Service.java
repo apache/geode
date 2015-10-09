@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 
@@ -55,4 +56,11 @@ public interface Service {
    * shut down threads, cancel timers, etc.
    */
   void emergencyClose();
+  
+  /**
+   * a member is suspected of having crashed
+   * @param initiator
+   * @param suspect
+   */
+  void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect);
 }

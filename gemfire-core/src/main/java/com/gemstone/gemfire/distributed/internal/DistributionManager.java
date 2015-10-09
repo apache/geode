@@ -1149,7 +1149,7 @@ public class DistributionManager
     membershipManager = MemberFactory.newMembershipManager(l, system.getConfig(), transport, stats);
 
     sb.append(System.currentTimeMillis() - start);
-    sb.append("/");
+
     this.myid = membershipManager.getLocalMember();
 
 //    dc.patchUpAddress(this.myid);
