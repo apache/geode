@@ -120,8 +120,7 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("No admin on"));
       expected.add(Pattern.compile("nonExistentMethod"));
       expected.add(Pattern.compile("Expected exception"));
-      expected.add(Pattern.compile("BridgeLoaderTestNonSerializable"));
-      expected.add(Pattern.compile("BridgeLoaderTestSerializableImpl"));
+      expected.add(Pattern.compile("ConnectionPoolTestNonSerializable"));
       expected.add(Pattern.compile("One or more DUnit tests failed"));
       expected.add(Pattern.compile("ReplyException"));
       expected.add(Pattern.compile("fine 2"));
@@ -146,6 +145,7 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("Could not find any server to create redundant client"));
       expected.add(Pattern.compile("Could not find any server to create primary client"));
       expected.add(Pattern.compile("Pool unexpected closed socket on server"));
+      expected.add(Pattern.compile("SocketTimeoutException"));
       expected.add(Pattern.compile("Could not initialize a primary queue on startup"));
       expected.add(Pattern.compile("java.lang.IllegalArgumentException: Sample timestamp must be greater than previous timestamp"));
       //The following 2 strings are ignored due to bug 52042

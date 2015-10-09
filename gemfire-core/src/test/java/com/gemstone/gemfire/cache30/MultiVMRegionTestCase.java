@@ -2323,8 +2323,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           region.destroyRegion(arg);
           if (region.getAttributes().getOffHeap() && !(region instanceof PartitionedRegion)) {
             GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
-            SimpleMemoryAllocatorImpl ma = (SimpleMemoryAllocatorImpl) gfc.getOffHeapStore();
-            assertEquals(0, ma.getStats().getObjects());
+            final SimpleMemoryAllocatorImpl ma = (SimpleMemoryAllocatorImpl) gfc.getOffHeapStore();
+            WaitCriterion waitForStatChange = new WaitCriterion() {
+              public boolean done() {
+                return ma.getStats().getObjects() == 0;
+              }
+              public String description() {
+                return "never saw off-heap object count go to zero. Last value was " + ma.getStats().getObjects();
+              }
+            };
+            DistributedTestCase.waitForCriterion(waitForStatChange, 3000, 10, true);
           }
         }
       });

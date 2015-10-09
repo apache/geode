@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionStatus;
 import com.gemstone.gemfire.internal.cache.RegionStatus;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
@@ -539,7 +539,7 @@ public class GemFireMemberStatus implements Serializable {
       // The following method returns a map of client member id to a cache
       // client info. For now, keep track of the member ids in the set of
       // _connectedClients.
-      Map allConnectedClients = InternalBridgeMembership.getStatusForAllClientsIgnoreSubscriptionStatus();
+      Map allConnectedClients = InternalClientMembership.getStatusForAllClientsIgnoreSubscriptionStatus();
       Iterator allConnectedClientsIterator = allConnectedClients.values().iterator();
       while (allConnectedClientsIterator.hasNext()) {
         CacheClientStatus ccs = (CacheClientStatus) allConnectedClientsIterator.next();
@@ -549,7 +549,7 @@ public class GemFireMemberStatus implements Serializable {
       }
 
       // Get client queue sizes
-      Map clientQueueSize = getClientIDMap(InternalBridgeMembership.getClientQueueSizes());
+      Map clientQueueSize = getClientIDMap(InternalClientMembership.getClientQueueSizes());
       setClientQueueSizes(clientQueueSize);
       
       // Set server acceptor port (set it based on the first CacheServer)
@@ -590,11 +590,6 @@ public class GemFireMemberStatus implements Serializable {
 	  }
 
   protected void initializeClient() {
-    // There are several ways to detect a client:
-    // - is a loner
-    // - has regions that use BridgeWriters or BridgeLoaders
-    // This method uses the presence of a connection proxy or
-    // a pool on the PoolManager.
     Map poolMap = PoolManager.getAll();
     if (poolMap.size() == 0) {
       setIsClient(false);
@@ -608,7 +603,7 @@ public class GemFireMemberStatus implements Serializable {
       // the logical connections for that server will be 0. For now, keep track
       // of the keys (server names) of this map in the sets of _connectedServers
       // and _unconnectedServers.
-      Map connectedServers = InternalBridgeMembership.getConnectedServers();
+      Map connectedServers = InternalClientMembership.getConnectedServers();
       if (!connectedServers.isEmpty()) {
         Iterator connected = connectedServers.entrySet().iterator();
         while (connected.hasNext()) {

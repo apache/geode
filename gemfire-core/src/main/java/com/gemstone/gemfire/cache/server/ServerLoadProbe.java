@@ -11,8 +11,8 @@ import com.gemstone.gemfire.cache.CacheCallback;
 
 
 /**
- * A load probe is installed in a bridge server to measure the load on the
- * bridge server for balancing load between multiple bridge servers.
+ * A load probe is installed in a cache server to measure the load on the
+ * cache server for balancing load between multiple cache servers.
  * 
  * <p>
  * The getLoad method will be called once per poll interval see
@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.CacheCallback;
  * Because cache servers can be stopped, reconfigured, and restarted, the open
  * and close methods on this callback can be called several times. If the same
  * callback object is installed on multiple cache servers, open and close will
- * be called once for each bridge server.
+ * be called once for each cache server.
  * </p>
  * 
  * @author dsmith
@@ -53,13 +53,13 @@ public interface ServerLoadProbe extends CacheCallback {
    */
   ServerLoad getLoad(ServerMetrics metrics);
   
-  /** Signals that a bridge server
+  /** Signals that a cache server
    * using this load probe has been started.
    */
   void open();
   
   /**
-   * Signals that a bridge server
+   * Signals that a cache server
    * using this load probe has been closed.
    */
   void close();

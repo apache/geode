@@ -29,6 +29,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.Index;
@@ -1740,6 +1742,51 @@ public class IndexUseJUnitTest
       }
     }
 
+    @Test
+    public void testBug52444() throws Exception {
+        // Create partitioned region
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        AttributesFactory af = new AttributesFactory();
+        af.setPartitionAttributes(paf.create());
+        Region region = CacheUtils.createRegion("testBug52444", af.create(), false);
+
+        // Add index
+        PartitionedIndex index = (PartitionedIndex) qs.createIndex("statusIndex", "status", region.getFullPath());
+
+        // Do puts
+        for (int i=0; i<200; i++) {
+          region.put(i, new Portfolio(i));
+        }
+        
+        // Initialize query observer
+        QueryObserverImpl observer = new QueryObserverImpl();
+        QueryObserverHolder.setInstance(observer);
+        
+        // Create and run query
+        Query query = qs.newQuery("SELECT * FROM " + region.getFullPath() + " where status = 'active'");
+        query.execute();
+
+        // Verify index was used
+        assertTrue(observer.isIndexesUsed);
+
+        // Get the first index entry in the PartitionedIndex bucketIndexes and delete the index from it (to simulate what happens when a bucket is moved)
+        Map.Entry<Region,List<Index>> firstIndexEntry = index.getFirstBucketIndex();
+        assertTrue(!firstIndexEntry.getValue().isEmpty());
+        index.removeFromBucketIndexes(firstIndexEntry.getKey(), firstIndexEntry.getValue().iterator().next());
+        
+        // Verify the index was removed from the entry and the entry was removed from the bucket indexes
+        assertTrue(firstIndexEntry.getValue().isEmpty());      
+        Map.Entry<Region,List<Index>> nextFirstIndexEntry = index.getFirstBucketIndex();
+        assertTrue(!nextFirstIndexEntry.getValue().isEmpty());
+        
+        // Run query again
+        observer.reset();
+        query.execute();
+        
+        // Verify index was still used
+        assertTrue(observer.isIndexesUsed);
+      }
+
   class QueryObserverImpl extends QueryObserverAdapter
   {
     boolean isIndexesUsed = false;
@@ -1754,6 +1801,11 @@ public class IndexUseJUnitTest
       if (results != null) {
         isIndexesUsed = true;
       }
+    }
+    
+    public void reset() {
+      this.isIndexesUsed = false;
+      this.indexesUsed.clear();
     }
   }
   

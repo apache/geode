@@ -314,7 +314,7 @@ public interface GemFireVM {
    *
    * @since 4.0
    */
-  public AdminBridgeServer addBridgeServer(CacheInfo cache)
+  public AdminBridgeServer addCacheServer(CacheInfo cache)
     throws AdminException;
 
   /**

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -146,35 +147,21 @@ public class AutoBalancerJUnitTest {
   public void testLockSuccess() throws InterruptedException {
     cache = createBasicCache();
 
-    final DistributedLockService mockDLS = mockContext.mock(DistributedLockService.class);
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockDLS).lock(AutoBalancer.AUTO_BALANCER_LOCK, 0L, -1L);
-        will(new CustomAction("acquire lock") {
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            DistributedLockService dls = new GeodeCacheFacade().getDLS();
-            return dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0L, -1L);
-          }
-        });
-      }
-    });
-
-    final AtomicBoolean success = new AtomicBoolean(false);
+    final CountDownLatch locked = new CountDownLatch(1);
+    final AtomicBoolean success = new AtomicBoolean(true);
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
-        CacheOperationFacade cacheFacade = new GeodeCacheFacade() {
-          public DistributedLockService getDLS() {
-            return mockDLS;
-          };
-        };
+        CacheOperationFacade cacheFacade = new GeodeCacheFacade();
         success.set(cacheFacade.acquireAutoBalanceLock());
+        locked.countDown();
       }
     });
     thread.start();
-    thread.join();
+    locked.await(1, TimeUnit.SECONDS);
     assertTrue(success.get());
+    DistributedLockService dls = new GeodeCacheFacade().getDLS();
+    assertFalse(dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0, -1));
   }
 
   @Test
@@ -184,29 +171,11 @@ public class AutoBalancerJUnitTest {
     DistributedLockService dls = new GeodeCacheFacade().getDLS();
     assertTrue(dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0, -1));
 
-    final DistributedLockService mockDLS = mockContext.mock(DistributedLockService.class);
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockDLS).lock(AutoBalancer.AUTO_BALANCER_LOCK, 0L, -1L);
-        will(new CustomAction("acquire lock") {
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            DistributedLockService dls = new GeodeCacheFacade().getDLS();
-            return dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0L, -1L);
-          }
-        });
-      }
-    });
-
     final AtomicBoolean success = new AtomicBoolean(true);
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
-        CacheOperationFacade cacheFacade = new GeodeCacheFacade() {
-          public DistributedLockService getDLS() {
-            return mockDLS;
-          }
-        };
+        CacheOperationFacade cacheFacade = new GeodeCacheFacade();
         success.set(cacheFacade.acquireAutoBalanceLock());
       }
     });
@@ -263,7 +232,7 @@ public class AutoBalancerJUnitTest {
   @Test
   public void testAcquireLockAfterReleasedRemotely() throws InterruptedException {
     cache = createBasicCache();
-    
+
     final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     final Sequence sequence = mockContext.sequence("sequence");
     mockContext.checking(new Expectations() {
@@ -279,13 +248,13 @@ public class AutoBalancerJUnitTest {
         will(returnValue(0L));
       }
     });
-    
+
     AutoBalancer balancer = new AutoBalancer();
     balancer.setCacheOperationFacade(mockCacheFacade);
     balancer.getOOBAuditor().execute();
     balancer.getOOBAuditor().execute();
   }
-  
+
   @Test
   public void testFailExecuteIfLockedElsewhere() throws InterruptedException {
     cache = createBasicCache();

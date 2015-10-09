@@ -45,7 +45,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
 
   private static final Filter BRIDGE_SERVER_FILTER = new Filter() {
       public boolean include(Profile profile) {
-        return profile instanceof BridgeServerAdvisor.BridgeServerProfile;
+        return profile instanceof CacheServerAdvisor.CacheServerProfile;
       }
     };
   
@@ -327,9 +327,9 @@ public abstract class GridAdvisor extends DistributionAdvisor {
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
       final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
       if (cache != null && !cache.isClosed()) {
-        List<?> bridgeServers = cache.getBridgeServersAndGatewayReceiver();
+        List<?> bridgeServers = cache.getCacheServersAndGatewayReceiver();
         for (int i = 0; i < bridgeServers.size(); i++) {
-          BridgeServerImpl bsi = (BridgeServerImpl)bridgeServers.get(i);
+          CacheServerImpl bsi = (CacheServerImpl)bridgeServers.get(i);
           if (bsi.isRunning()) {
             if(bsi.getProfile().equals(this)) {
               continue;

@@ -25,7 +25,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.cache.CacheClientStatus;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.domain.CacheServerInfo;
@@ -114,7 +114,7 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
           CacheServerInfo cacheServerInfo = new CacheServerInfo(bindAddress, port, isRunning);
           memberInfo.addCacheServerInfo(cacheServerInfo);
         }
-        Map<ClientProxyMembershipID, CacheClientStatus> allConnectedClients = InternalBridgeMembership
+        Map<ClientProxyMembershipID, CacheClientStatus> allConnectedClients = InternalClientMembership
             .getStatusForAllClientsIgnoreSubscriptionStatus();
         Iterator<ClientProxyMembershipID> it = allConnectedClients.keySet().iterator();
         int numConnections = 0;

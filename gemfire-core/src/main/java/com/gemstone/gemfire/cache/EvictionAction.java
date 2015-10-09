@@ -49,7 +49,8 @@ public final class EvictionAction extends EnumSyntax
     return stringTable;
   }
     
-  private static final EvictionAction[] enumValueTable = {
+  //TODO post Java 1.8.0u45 uncomment final flag, see JDK-8076152
+  private static /*final*/ EvictionAction[] enumValueTable = {
     NONE,
     LOCAL_DESTROY,
     OVERFLOW_TO_DISK

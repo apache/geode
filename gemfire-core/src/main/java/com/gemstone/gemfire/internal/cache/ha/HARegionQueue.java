@@ -68,7 +68,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -3013,9 +3013,9 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
                 && !queueRemovalMessageList.isEmpty()) { // messages exist
               QueueRemovalMessage qrm = new QueueRemovalMessage();
               qrm.resetRecipients();
-              List<BridgeServerImpl> servers = this.cache.getBridgeServers();
+              List<CacheServerImpl> servers = this.cache.getCacheServers();
               List<DistributedMember> recipients = new LinkedList();
-              for (BridgeServerImpl server: servers) {
+              for (CacheServerImpl server: servers) {
                 recipients.addAll(server.getCacheServerAdvisor().adviseBridgeServers());
               }
               qrm.setRecipients(recipients);

@@ -27,14 +27,14 @@ import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRespons
 import com.gemstone.gemfire.cache.server.ServerLoad;
 import com.gemstone.gemfire.cache.server.ServerLoadProbeAdapter;
 import com.gemstone.gemfire.cache.server.ServerMetrics;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.ServerLocator;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
@@ -241,8 +241,8 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     Runnable checkConnectionCount = new SerializableRunnable("checkConnectionCount") {
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
-        final BridgeServerImpl server = (BridgeServerImpl)
-            cache.getBridgeServers().get(0);
+        final CacheServerImpl server = (CacheServerImpl)
+            cache.getCacheServers().get(0);
         WaitCriterion wc = new WaitCriterion() {
           String excuse;
           public boolean done() {
@@ -456,7 +456,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
-        BridgeServer server = (BridgeServer) cache.getBridgeServers().get(0);
+        CacheServer server = (CacheServer) cache.getCacheServers().get(0);
         MyLoadProbe probe = (MyLoadProbe) server.getLoadProbe();
         probe.setLoad(newLoad);
       }

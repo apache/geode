@@ -19,13 +19,12 @@ import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
  */
 public class MemoryEvent implements ResourceEvent {
   private final ResourceType type;
-  private volatile MemoryState state;
+  private final MemoryState state;
   private final MemoryState previousState;
   private final DistributedMember member;
   private final long bytesUsed;
   private final boolean isLocal;
   private final MemoryThresholds thresholds;
-  private final long eventTime;
  
   public MemoryEvent(final ResourceType type, final MemoryState previousState, final MemoryState state,
       final DistributedMember member, final long bytesUsed, final boolean isLocal, final MemoryThresholds thresholds) {
@@ -36,7 +35,6 @@ public class MemoryEvent implements ResourceEvent {
     this.bytesUsed = bytesUsed;
     this.isLocal = isLocal;
     this.thresholds = thresholds;
-    this.eventTime = System.currentTimeMillis();
   }
 
   @Override
@@ -66,10 +64,6 @@ public class MemoryEvent implements ResourceEvent {
     return this.isLocal;
   }
   
-  public long getEventTime() {
-    return this.eventTime;
-  }
-
   public MemoryThresholds getThresholds() {
     return this.thresholds;
   }
@@ -84,7 +78,6 @@ public class MemoryEvent implements ResourceEvent {
         .append(",state:" + this.state)
         .append(",bytesUsed:" + this.bytesUsed)
         .append(",isLocal:" + this.isLocal)
-        .append(",eventTime:" + this.eventTime)
         .append(",thresholds:" + this.thresholds + "]")
         .toString();
   }

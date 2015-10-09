@@ -81,9 +81,10 @@ public class FDDUnitTest extends CacheTestCase {
       }
     }
     try {
+      StringBuffer incaseOfFailure = new StringBuffer();
       final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
       final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-      int numThreads = 10;
+      int numThreads = 30;
 
       startCacheServer(vm0, port[0], mcastPort);
       startCacheServer(vm1, port[1], mcastPort);
@@ -99,6 +100,7 @@ public class FDDUnitTest extends CacheTestCase {
       doPuts(vm0, numThreads, "portfolios");
       long endFDs = checkFD(vm0);
       long numFDs = endFDs - startingFDs;
+      incaseOfFailure.append("NoSelectorPooling startFDs: " + startingFDs + " endFDs: " + endFDs + " diff:" + numFDs + " ");
 
       // run test with selector pooling
       setUseSelectorPooling(vm0, true);
@@ -106,7 +108,8 @@ public class FDDUnitTest extends CacheTestCase {
       doPuts(vm0, numThreads, "portfolios");
       long endFDsWithPooling = checkFD(vm0);
       long numFDsWithPooling = endFDsWithPooling - startingFDsWithPooling;
-      assertTrue(numFDsWithPooling < numFDs);
+      incaseOfFailure.append("SelectorPooling#1 startFDs: " + startingFDsWithPooling + " endFDs: " + endFDsWithPooling + " diff:" + numFDsWithPooling + " ");
+      assertTrue(incaseOfFailure.toString(), numFDsWithPooling < numFDs);
 
       // run it again and see if the number still is below
       startingFDsWithPooling = checkFD(vm0);
@@ -115,7 +118,8 @@ public class FDDUnitTest extends CacheTestCase {
       numFDsWithPooling = endFDsWithPooling - startingFDsWithPooling;
       // if you see these asserts failing, it could be that we are not using the
       // selector pool
-      assertTrue(numFDsWithPooling < numFDs);
+      incaseOfFailure.append("SelectorPooling#2 startFDs: " + startingFDsWithPooling + " endFDs: " + endFDsWithPooling + " diff:" + numFDsWithPooling + " ");
+      assertTrue(incaseOfFailure.toString(), numFDsWithPooling < numFDs);
 
     } finally {
       setUseSelectorPooling(vm0, true);
@@ -151,7 +155,7 @@ public class FDDUnitTest extends CacheTestCase {
           for (int i = 0; i < numThreads; i++) {
             executor.execute(new Runnable() {
               public void run() {
-                  for (int i = 0; i < 20; i++) {
+                  for (int i = 0; i < 10; i++) {
                     String myValue = "string" + i;
                     region.put("k" + i, myValue);
                     try {

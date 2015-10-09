@@ -74,14 +74,14 @@ import com.gemstone.gemfire.internal.StatisticsManager;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.execute.FunctionServiceStats;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
-import com.gemstone.gemfire.internal.cache.xmlcache.BridgeServerCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -2569,7 +2569,7 @@ public final class InternalDistributedSystem
     // the membership manager when forced-disconnect starts.  If we're
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
-    List<BridgeServerCreation> cacheServerCreation = null;
+    List<CacheServerCreation> cacheServerCreation = null;
     
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     boolean inhibitCacheForSQLFire = false;
@@ -2835,8 +2835,8 @@ public final class InternalDistributedSystem
             }
             cache = GemFireCacheImpl.create(this.reconnectDS, config);
             if (cacheServerCreation != null) {
-              for (BridgeServerCreation bridge: cacheServerCreation) {
-                BridgeServerImpl impl = (BridgeServerImpl)cache.addCacheServer();
+              for (CacheServerCreation bridge: cacheServerCreation) {
+                CacheServerImpl impl = (CacheServerImpl)cache.addCacheServer();
                 impl.configureFrom(bridge);
                 try {
                   if (!impl.isRunning()) {
@@ -2844,7 +2844,7 @@ public final class InternalDistributedSystem
                   }
                 } catch (IOException ex) {
                   throw new GemFireIOException(
-                      LocalizedStrings.CacheCreation_WHILE_STARTING_BRIDGE_SERVER_0
+                      LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0
                           .toLocalizedString(impl), ex);
                 }
               }

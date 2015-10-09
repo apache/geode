@@ -422,8 +422,7 @@ public final class FunctionServiceManager {
    */
   private final boolean isClientRegion(Region region) {
     LocalRegion localRegion = (LocalRegion) region;
-    return (localRegion.hasServerProxy() || AbstractRegion.isBridgeLoader(localRegion.getCacheLoader()) || AbstractRegion
-        .isBridgeWriter(localRegion.getCacheWriter()));
+    return localRegion.hasServerProxy();
   }
 
 

@@ -21,7 +21,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.java.util.concurrent.SynchronousQueueNoSpin;
 
 import java.util.List;
 
@@ -75,10 +74,10 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
   Thread bufferConsumer;
   
   private static BlockingQueue<Runnable> initQ(BlockingQueue<Runnable> q) {
-    if (q instanceof SynchronousQueue || q instanceof SynchronousQueueNoSpin) {
+    if (q instanceof SynchronousQueue) {
       return q;
     } else {
-      return new SynchronousQueueNoSpin<Runnable>();
+      return new SynchronousQueue<Runnable>();
     }
   }
 
@@ -124,7 +123,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
     }
     else {
 
-      if (q instanceof SynchronousQueue || q instanceof SynchronousQueueNoSpin) {
+      if (q instanceof SynchronousQueue) {
         return new CallerRunsPolicy();
         // return new BlockHandler();
       }

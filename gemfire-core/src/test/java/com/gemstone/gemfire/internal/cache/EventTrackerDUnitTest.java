@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -160,7 +160,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
         getCache();
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, hostName, port, -1, false, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, hostName, port, -1, false, -1, -1, null);
         createRegion(regionName, factory.create());
       }
     });
@@ -233,7 +233,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
         getCache();
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, hostName, port, -1, false, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, hostName, port, -1, false, -1, -1, null);
         createRegion(regionName, factory.create());
       }
     });
@@ -311,7 +311,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
         getCache();
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, hostName, port, -1, false, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, hostName, port, -1, false, -1, -1, null);
         createRootRegion("partitioned", factory.create());
         createRootRegion("replicate", factory.create());
       }

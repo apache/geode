@@ -64,29 +64,9 @@ public class StructSetOrResultsSet extends TestCase {
 
     Collection coll1 = null;
     Collection coll2 = null;
-    Iterator itert1 = null;
-    Iterator itert2 = null;
-    ObjectType type1, type2;
     for (int j = 0; j < len; j++) {
-      type1 = ((SelectResults) r[j][0]).getCollectionType().getElementType();
-      type2 = ((SelectResults) r[j][1]).getCollectionType().getElementType();
-      if ((type1.getClass().getName()).equals(type2.getClass().getName())) {
-        CacheUtils.log("Both SelectResults are of the same Type i.e.--> "
-            + ((SelectResults) r[j][0]).getCollectionType().getElementType());
-      } else {
-        CacheUtils.log("Classes are : " + type1.getClass().getName() + " "
-            + type2.getClass().getName());
-        fail("FAILED:Select result Type is different in both the cases."
-            + "; failed query=" + queries[j]);
-      }
-      if (((SelectResults) r[j][0]).size() == ((SelectResults) r[j][1]).size()) {
-        CacheUtils.log("Both SelectResults are of Same Size i.e.  Size= "
-            + ((SelectResults) r[j][1]).size());
-      } else {
-        fail("FAILED:SelectResults size is different in both the cases. Size1="
-            + ((SelectResults) r[j][0]).size() + " Size2 = "
-            + ((SelectResults) r[j][1]).size() + "; failed query=" + queries[j]);
-      }
+      checkSelectResultTypes((SelectResults)r[j][0], (SelectResults)r[j][1], queries[j]);
+      checkResultSizes((SelectResults)r[j][0], (SelectResults)r[j][1], queries[j]);
       
       if (checkOrder) {
         coll2 = (((SelectResults) r[j][1]).asList());
@@ -95,47 +75,7 @@ public class StructSetOrResultsSet extends TestCase {
         coll2 = (((SelectResults) r[j][1]).asSet());
         coll1 = (((SelectResults) r[j][0]).asSet());
       }
-      // boolean pass = true;
-      itert1 = coll1.iterator();
-      itert2 = coll2.iterator();
-      while (itert1.hasNext()) {
-        Object p1 = itert1.next();
-        if (!checkOrder) {
-          itert2 = coll2.iterator();
-        }
-
-        boolean exactMatch = false;
-        while (itert2.hasNext()) {
-          Object p2 = itert2.next();
-          if (p1 instanceof Struct) {
-            Object[] values1 = ((Struct) p1).getFieldValues();
-            Object[] values2 = ((Struct) p2).getFieldValues();
-            assertEquals(values1.length, values2.length);
-            boolean elementEqual = true;
-            for (int i = 0; i < values1.length; ++i) {
-              // CacheUtils.log("Comparing: " + values1[i] + " with: " +
-              // values2[i]);
-              elementEqual = elementEqual
-                  && ((values1[i] == values2[i]) || values1[i]
-                      .equals(values2[i]));
-            }
-            exactMatch = elementEqual;
-          } else {
-            // CacheUtils.log("Comparing: " + p1 + " with: " + p2);
-            exactMatch = (p2 == p1) || p2.equals(p1);
-          }
-          if (exactMatch || checkOrder) {
-            break;
-          }
-        }
-        if (!exactMatch) {
-          fail("Atleast one element in the pair of SelectResults "
-              + "supposedly identical, is not equal " + "Match not found for :"
-              + p1 + "; failed query=" + queries[j] + "; element unmatched ="
-              + p1 + ";p1 class=" + p1.getClass() + " ; other set has ="
-              + coll2);
-        }
-      }
+      compareResults(coll1, coll2, queries[j], checkOrder);
     }
   }
 
@@ -357,38 +297,10 @@ public class StructSetOrResultsSet extends TestCase {
       assertEquals(queries[j], 1, result1.size());
       assertEquals(queries[j], 1, result2.size());
 
-      if ((result1.asList().get(0).getClass().getName()).equals(result2
-          .asList().get(0).getClass().getName())) {
-        CacheUtils.log("Both SelectResults are of the same Type i.e.--> "
-            + ((SelectResults) r[j][0]).getCollectionType().getElementType());
-      } else {
-        fail("FAILED:Select result Type is different in both the cases."
-            + "; failed query=" + queries[j]);
-      }
-
-      if (((SelectResults) r[j][0]).size() == ((SelectResults) r[j][1]).size()) {
-        CacheUtils.log("Both SelectResults are of Same Size i.e.  Size= "
-            + ((SelectResults) r[j][1]).size());
-      } else {
-        fail("FAILED:SelectResults size is different in both the cases. Size1="
-            + ((SelectResults) r[j][0]).size() + " Size2 = "
-            + ((SelectResults) r[j][1]).size() + "; failed query=" + queries[j]);
-      }
-
-      // boolean pass = true;
-      itert1 = result1.iterator();
-      itert2 = result2.iterator();
-      while (itert1.hasNext()) {
-        Integer p1 = itert1.next();
-        Integer p2 = itert2.next();
-        CacheUtils.log("result1: " + p1 + "result2: " + p2);
-        exactMatch &= p1.intValue() == p2.intValue();
-
-      }
-      if (!exactMatch) {
-        fail("Atleast one element in the pair of SelectResults supposedly identical, is not equal "
-            + "; failed query=" + queries[j]);
-      }
+      
+      checkSelectResultTypes((SelectResults) r[j][0], (SelectResults) r[j][1], queries[j]);
+      checkResultSizes((SelectResults) r[j][0], (SelectResults) r[j][1], queries[j]);
+      compareResults(result1, result2, queries[j], true);
     }
   }
 
@@ -413,71 +325,123 @@ public class StructSetOrResultsSet extends TestCase {
     Integer count1, count2;
     Iterator<Integer> itert1, itert2;
     ArrayList result1, result2;
+
     for (int j = 0; j < len; j++) {
       result1 = ((ArrayList) r[j][0]);
       result2 = ((ArrayList) r[j][1]);
       result1.trimToSize();
       result2.trimToSize();
-      // assertFalse(queries[j], result1.size()==0);
-      // assertFalse(queries[j], result2.size()==0);
-
-      if (checkClass) {
-        if ((result1.get(0).getClass().getName()).equals(result2.get(0)
-            .getClass().getName())) {
-          CacheUtils.log("Both SelectResults are of the same Type i.e.--> "
-              + result1.get(0).getClass().getName());
-        } else {
-          fail("FAILED:Select result Type is different in both the cases."
-              + result1.get(0).getClass().getName() + "and"
-              + result1.get(0).getClass().getName() + "; failed query="
-              + queries[j]);
-        }
-      }
-
-      if (result1.size() == result2.size()) {
-        CacheUtils.log("Both SelectResults are of Same Size i.e.  Size= "
-            + result2.size());
+    
+      compareQueryResultLists(result1, result2, len, checkOrder, checkClass, queries[j]);
+    }
+  }
+  
+  public void compareQueryResultLists(List r1, List r2,
+      int len, boolean checkOrder, boolean checkClass, String query) {
+    if (checkClass) {
+      if ((r1.get(0).getClass().getName()).equals(r2.get(0)
+          .getClass().getName())) {
+        CacheUtils.log("Both SelectResults are of the same Type i.e.--> "
+            + r1.get(0).getClass().getName());
       } else {
-        fail("FAILED:SelectResults size is different in both the cases. Size1="
-            + result1.size() + " Size2 = " + result2.size() + "; failed query="
-            + queries[j]);
-      }
-
-      // boolean pass = true;
-      itert1 = result1.iterator();
-      itert2 = result2.iterator();
-      while (itert1.hasNext()) {
-        Object p1 = itert1.next();
-        if (!checkOrder) {
-          itert2 = result2.iterator();
-        }
-
-        boolean exactMatch = false;
-        while (itert2.hasNext()) {
-          Object p2 = itert2.next();
-          if (p1 instanceof Struct) {
-            Object[] values1 = ((Struct) p1).getFieldValues();
-            Object[] values2 = ((Struct) p2).getFieldValues();
-            assertEquals(values1.length, values2.length);
-            boolean elementEqual = true;
-            for (int i = 0; i < values1.length; ++i) {
-              elementEqual = elementEqual
-                  && ((values1[i] == values2[i]) || values1[i]
-                      .equals(values2[i]));
-            }
-            exactMatch = elementEqual;
-          } else {
-            exactMatch = (p2 == p1) || p2.equals(p1);
-          }
-          if (exactMatch || checkOrder) {
-            break;
-          }
-        }
-        if (!exactMatch) {
-          fail("Atleast one element in the pair of SelectResults supposedly identical, is not equal "
-              + "; failed query=" + queries[j]);
-        }
+        fail("FAILED:Select result Type is different in both the cases."
+            + r1.get(0).getClass().getName() + "and"
+            + r1.get(0).getClass().getName() + "; failed query="
+            + query);
       }
     }
+
+    checkResultSizes(r1, r2, query);
+    compareResults(r1, r2, query, checkOrder);
+  }
+  
+  private void checkSelectResultTypes(SelectResults r1, SelectResults r2, String query) {
+    ObjectType type1, type2;
+    type1 = r1.getCollectionType().getElementType();
+    type2 = r2.getCollectionType().getElementType();
+    if (!(type1.getClass().getName()).equals(type2.getClass().getName())) {
+      CacheUtils.log("Classes are : " + type1.getClass().getName() + " " + type2.getClass().getName());
+      fail("FAILED:Select result Type is different in both the cases." + "; failed query=" + query);
+    }
+  }
+  
+  private void checkResultSizes(Collection r1, Collection r2, String query) {
+    if (r1.size() != r2.size()) {
+      fail("FAILED:SelectResults size is different in both the cases. Size1="
+          + ((SelectResults) r1).size() + " Size2 = "
+          + ((SelectResults) r2).size() + "; failed query=" + query);
+    }
+  }
+  
+  
+  private void compareResults(Collection result1, Collection result2, String query, boolean checkOrder) {
+    Iterator itert1 = result1.iterator();
+    Iterator itert2 = result2.iterator();
+    int currentIndex = 0;
+    while (itert1.hasNext()) {
+      Object p1 = itert1.next();
+      Object p2 = null;
+      if (!checkOrder) {
+        if (!collectionContains(result2, p1)) {
+          fail("Atleast one element in the pair of SelectResults "
+              + "supposedly identical, is not equal " + "Match not found for :"
+              + p1 + " compared with:" + p2 + "; failed query=" + query + "; element unmatched ="
+              + p1 + ";p1 class=" + p1.getClass() + " ; other set has ="
+              + result2);
+        }
+      }
+      else {
+        boolean matched = false;
+        if (itert2.hasNext()) {
+          p2 = itert2.next();
+          matched = objectsEqual(p1, p2);
+          if (!matched) {
+            fail("Order of results was not the same, match not found for :"
+                + p1 + " compared with:" + p2 + "; failed query=" + query + "; element unmatched ="
+                + p1 + ";p1 class=" + p1.getClass() + " compared with " + p2 + ";p2 class=" + p2.getClass()
+                + "currentIndex:" + currentIndex 
+                + "\nr1:" + result1 + "\n\nr2:" + result2);
+          }
+        }
+      }
+      currentIndex ++;
+    }
+  }
+  
+  private boolean collectionContains(Collection collection, Object object) {
+    Iterator iterator = collection.iterator();
+    while (iterator.hasNext()) {
+      Object o = iterator.next();
+      if (objectsEqual(object, o)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  private boolean objectsEqual(Object o1, Object o2) {
+    //Assumed that o1 and o2 are the same object type as both are from collections created by executing the same query
+    if (o1 instanceof Struct) {
+      //if o2 is null, an NPE will be thrown.
+      Object[] values1 = ((Struct) o1).getFieldValues();
+      Object[] values2 = ((Struct) o2).getFieldValues();
+      assertEquals(values1.length, values2.length);
+      boolean elementEqual = true;
+      for (int i = 0; i < values1.length; ++i) {
+        elementEqual = elementEqual
+            && ((values1[i] == values2[i]) || values1[i]
+                .equals(values2[i]));
+      }
+      if (elementEqual) {
+        return true;
+      }
+    } 
+    else {
+      //if o1 is null and o2 is not, an NPE will be thrown
+      if (o1 == o2 || o1.equals(o2)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

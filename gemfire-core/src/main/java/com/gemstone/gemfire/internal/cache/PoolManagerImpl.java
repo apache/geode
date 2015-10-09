@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.RegisterDataSerializersOp;
 import com.gemstone.gemfire.cache.client.internal.RegisterInstantiatorsOp;
@@ -101,24 +100,6 @@ public class PoolManagerImpl {
     return this.pools.get(name);
   }
   
-  /**
-   * Set the keep alive flag before closing. Only for use with the deprecated
-   * BridgeWriter/Loader code. A BridgeWriter is automatically
-   * closed then the last region is disconnected from it,
-   * so we need to mark the connections as keep alive
-   * before we close the regions that use the bridge writer/loader
-   * 
-   * @param keepAlive
-   */
-  public static void setKeepAlive(boolean keepAlive) {
-    for(Iterator<Pool> itr = PoolManager.getAll().values().iterator(); itr.hasNext(); ) {
-      Pool nextPool = itr.next();
-      if(nextPool instanceof BridgePoolImpl) {
-        BridgePoolImpl bridgePool = (BridgePoolImpl) nextPool;
-        bridgePool.setKeepAlive(keepAlive);
-      }
-    }
-  }
   /**
    * Destroys all created pool in this manager.
    */

@@ -105,9 +105,9 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
   protected CacheOperationMessage createMessage()
   {
     DestroyRegionMessage mssg;
-    if (this.event instanceof BridgeRegionEventImpl) {
+    if (this.event instanceof ClientRegionEventImpl) {
       mssg = new DestroyRegionWithContextMessage();
-      ((DestroyRegionWithContextMessage)mssg).context = ((BridgeRegionEventImpl)this.event)
+      ((DestroyRegionWithContextMessage)mssg).context = ((ClientRegionEventImpl)this.event)
           .getContext();
     }
     else {
@@ -502,7 +502,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     @Override
     final public RegionEventImpl createRegionEvent(DistributedRegion rgn)
     {
-      BridgeRegionEventImpl event = new BridgeRegionEventImpl(rgn,
+      ClientRegionEventImpl event = new ClientRegionEventImpl(rgn,
           getOperation(), this.callbackArg, true /* originRemote */,
           getSender(), (ClientProxyMembershipID)this.context);
       return event;

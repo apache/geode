@@ -81,7 +81,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
    */
   public void testRedundancyNotSpecifiedPrimaryServerFails()
   {
-    /*BridgeObserver oldBo = BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    /*ClientServerObserver oldBo = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeFailoverByCacheClientUpdater(Endpoint epFailed)
       {
         try{
@@ -123,7 +123,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
           "test failed due to exception in test RedundancyNotSpecifiedPrimaryServerFails ",
           ex);
     }/*finally {
-      BridgeObserverHolder.setInstance(oldBo);
+      ClientServerObserverHolder.setInstance(oldBo);
     }*/
   }
 

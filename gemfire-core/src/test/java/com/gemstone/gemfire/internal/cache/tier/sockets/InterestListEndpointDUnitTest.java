@@ -29,12 +29,12 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.QueueConnectionImpl;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -263,8 +263,8 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   {
   try {
         Cache c = CacheFactory.getAnyInstance();
-        assertEquals("More than one BridgeServer", 1, c.getBridgeServers().size());
-        BridgeServerImpl bs = (BridgeServerImpl) c.getBridgeServers().iterator().next();
+        assertEquals("More than one BridgeServer", 1, c.getCacheServers().size());
+        CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
         assertNotNull(bs);
         assertNotNull(bs.getAcceptor());
         assertNotNull(bs.getAcceptor().getCacheClientNotifier());
@@ -273,9 +273,9 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
        CacheClientProxy proxy = (CacheClientProxy)iter_prox.next();
        //if (proxy._interestList._keysOfInterest.get("/"+REGION_NAME) != null) {
        if(proxy.isPrimary()){
-          Iterator iter = cache.getBridgeServers().iterator();
+          Iterator iter = cache.getCacheServers().iterator();
           if (iter.hasNext()) {
-            BridgeServer server = (BridgeServer)iter.next();
+            CacheServer server = (CacheServer)iter.next();
                   cache.getLogger().fine("stopping server " + server);
             server.stop();
           }
@@ -356,7 +356,7 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
     new InterestListEndpointDUnitTest("temp").createCache(new Properties());
     RegionAttributes attrs = impl.createServerCacheAttributes();
     cache.createRegion(REGION_NAME, attrs);
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
     server1.setPort(port);
     server1.setMaxThreads(maxThreads.intValue());
@@ -390,8 +390,8 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   {
     try {
       Cache c = CacheFactory.getAnyInstance();
-      assertEquals("More than one BridgeServer", 1, c.getBridgeServers().size());
-      BridgeServerImpl bs = (BridgeServerImpl) c.getBridgeServers().iterator().next();
+      assertEquals("More than one CacheServer", 1, c.getCacheServers().size());
+      CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
       assertNotNull(bs);
       assertNotNull(bs.getAcceptor());
       assertNotNull(bs.getAcceptor().getCacheClientNotifier());

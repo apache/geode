@@ -28,12 +28,12 @@ import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -464,7 +464,7 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     Region r = cache.createRegion(REGION_NAME, attrs);
     assertNotNull(r);
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
@@ -563,8 +563,8 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
         .getClientProxies().size();
   }
   
-  private static BridgeServerImpl getBridgeServer() {
-    BridgeServerImpl bridgeServer = (BridgeServerImpl) cache.getBridgeServers().iterator().next();
+  private static CacheServerImpl getBridgeServer() {
+    CacheServerImpl bridgeServer = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bridgeServer);
     return bridgeServer;
   }

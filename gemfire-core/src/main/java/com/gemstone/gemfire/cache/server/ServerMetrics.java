@@ -9,7 +9,7 @@ package com.gemstone.gemfire.cache.server;
 
 
 /**
- * Metrics about the resource usage for a bridge server.
+ * Metrics about the resource usage for a cache server.
  * These metrics are provided to the {@link ServerLoadProbe} for
  * use in calculating the load on the server.
  * @author dsmith
@@ -19,23 +19,23 @@ package com.gemstone.gemfire.cache.server;
 public interface ServerMetrics {
   /**
    * Get the number of open connections
-   * for this bridge server.
+   * for this cache server.
    */
   int getConnectionCount();
   
   /** Get the number of clients connected to this
-   * bridge server.
+   * cache server.
    */ 
   int getClientCount();
   
   /**
    * Get the number of client subscription connections hosted on this
-   * bridge server.
+   * cache server.
    */
   int getSubscriptionConnectionCount();
   
   /**
-   * Get the max connections for this bridge server.
+   * Get the max connections for this cache server.
    */
   int getMaxConnections();
   

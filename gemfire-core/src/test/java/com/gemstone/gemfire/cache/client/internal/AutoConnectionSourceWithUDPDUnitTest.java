@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -90,7 +90,7 @@ public class AutoConnectionSourceWithUDPDUnitTest extends
             for(int i = 0; i < regions.length; i++) {
               cache.createRegion(regions[i], attrs);
             }
-            BridgeServer server = cache.addBridgeServer();
+            CacheServer server = cache.addCacheServer();
             final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
             server.setPort(serverPort);
             server.setGroups(groups);

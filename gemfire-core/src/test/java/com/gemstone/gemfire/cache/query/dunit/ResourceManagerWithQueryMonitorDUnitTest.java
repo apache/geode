@@ -42,7 +42,7 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -63,7 +63,7 @@ import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.VM;
 
-public class ResourceManagerWithQueryMonitorDUnitTest extends BridgeTestCase {
+public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCase {
   
   private static int MAX_TEST_QUERY_TIMEOUT = 4000;
   private static int TEST_QUERY_TIMEOUT = 1000;

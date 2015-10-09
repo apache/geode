@@ -14,7 +14,6 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.DynamicRegionFactory.Config;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerProxy;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 
 /**

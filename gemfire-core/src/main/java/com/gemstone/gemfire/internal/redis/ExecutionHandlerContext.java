@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.TransactionException;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
+import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.internal.redis.executor.transactions.TransactionExecutor;
 import com.gemstone.gemfire.redis.GemFireRedisServer;
 
@@ -213,7 +214,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       } catch (Exception e) {
         cause = e;
-        if (e instanceof RegionDestroyedException || e.getCause() instanceof QueryInvocationTargetException)
+        if (e instanceof RegionDestroyedException || e instanceof RegionNotFoundException || e.getCause() instanceof QueryInvocationTargetException)
           Thread.sleep(WAIT_REGION_DSTRYD_MILLIS);
       }
     }

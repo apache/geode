@@ -45,9 +45,9 @@ public class DurableClientInfoResponse extends AdminResponse
     try {
       GemFireCacheImpl c = (GemFireCacheImpl)CacheFactory.getInstanceCloseOk(dm
           .getSystem());
-      if (c.getBridgeServers().size() > 0) {
+      if (c.getCacheServers().size() > 0) {
 
-        BridgeServerImpl server = (BridgeServerImpl)c.getBridgeServers()
+        CacheServerImpl server = (CacheServerImpl)c.getCacheServers()
             .iterator().next();
         switch (request.action) {
         case DurableClientInfoRequest.HAS_DURABLE_CLIENT_REQUEST: {

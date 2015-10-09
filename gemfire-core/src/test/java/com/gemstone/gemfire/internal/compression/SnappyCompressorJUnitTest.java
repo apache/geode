@@ -54,7 +54,7 @@ public class SnappyCompressorJUnitTest extends TestCase {
     // repeat findNativeLibrary and make sure it's pointing at a file in tmpdir
     Method findNativeLibraryMethod = SnappyLoader.class.getDeclaredMethod("findNativeLibrary", new Class[0]);
     findNativeLibraryMethod.setAccessible(true);
-    File nativeLibrary = (File) findNativeLibraryMethod.invoke(null, null);
+    File nativeLibrary = (File) findNativeLibraryMethod.invoke(null);
     System.out.println(nativeLibrary);
     assertNotNull(nativeLibrary);
     assertTrue(nativeLibrary + " does not exist", nativeLibrary.exists());

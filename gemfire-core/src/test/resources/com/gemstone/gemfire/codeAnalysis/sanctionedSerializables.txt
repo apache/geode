@@ -218,15 +218,6 @@ com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$1,false
 com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$2,false
 com/gemstone/gemfire/cache/snapshot/SnapshotOptions$SnapshotFormat,false
 com/gemstone/gemfire/cache/util/BoundedLinkedHashMap,true,-3419897166186852692,_maximumNumberOfEntries:int
-com/gemstone/gemfire/cache/util/BridgeWriterException,true,-295001316745954159
-com/gemstone/gemfire/cache/util/EndpointDoesNotExistException,true,1654241470788247283
-com/gemstone/gemfire/cache/util/EndpointException,false
-com/gemstone/gemfire/cache/util/EndpointExistsException,true,950617116786308012
-com/gemstone/gemfire/cache/util/EndpointInUseException,true,-4087729485272321469
-com/gemstone/gemfire/cache/util/IncompatibleVersionException,true,7008667865037538081
-com/gemstone/gemfire/cache/util/ServerRefusedConnectionException,true,-4996327025772566931
-com/gemstone/gemfire/cache/util/UnknownVersionException,true,7379530185697556990
-com/gemstone/gemfire/cache/util/VersionException,false
 com/gemstone/gemfire/cache/wan/GatewaySender$OrderPolicy,false
 com/gemstone/gemfire/cache/util/Gateway$OrderPolicy,false
 com/gemstone/gemfire/compression/CompressionException,true,4118639654597191235

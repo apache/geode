@@ -23,14 +23,14 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
@@ -52,7 +52,7 @@ import dunit.VM;
  * @since 4.2.1
  */
 
-public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase {
+public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTestCase {
   protected static final boolean CLIENT = true;
   protected static final boolean SERVER = false;
   
@@ -81,7 +81,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
   @Override
   public void tearDown2() throws Exception {
     super.tearDown2();
-    InternalBridgeMembership.unregisterAllListeners();
+    InternalClientMembership.unregisterAllListeners();
   }
   
   /**
@@ -115,7 +115,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
     };
     
     DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalBridgeMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyJoined(clientJoined, true);
     synchronized(listener) {
       if (!fired[0]) {
         listener.wait(SYNC_ASYNC_EVENT_WAIT_MILLIS);
@@ -173,7 +173,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
     DistributedMember memberA = new TestDistributedMember("memberA");
     
     // first join
-    InternalBridgeMembership.notifyJoined(memberA, true);
+    InternalClientMembership.notifyJoined(memberA, true);
     synchronized(listener) {
       if (!fired[JOINED]) {
         listener.wait(SYNC_ASYNC_EVENT_WAIT_MILLIS);
@@ -187,14 +187,14 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
     memberId[JOINED] = null;
 
     // duplicate join
-    InternalBridgeMembership.notifyJoined(memberA, true);
+    InternalClientMembership.notifyJoined(memberA, true);
     pause(BRIEF_PAUSE_MILLIS);
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
     assertNull(memberId[JOINED]);
 
     // first left
-    InternalBridgeMembership.notifyLeft(memberA, true);
+    InternalClientMembership.notifyLeft(memberA, true);
     synchronized(listener) {
       if (!fired[LEFT]) {
         listener.wait(SYNC_ASYNC_EVENT_WAIT_MILLIS);
@@ -208,14 +208,14 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
     memberId[LEFT] = null;
 
     // duplicate left
-    InternalBridgeMembership.notifyLeft(memberA, true);
+    InternalClientMembership.notifyLeft(memberA, true);
     pause(BRIEF_PAUSE_MILLIS);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
     assertNull(memberId[LEFT]);
     
     // rejoin
-    InternalBridgeMembership.notifyJoined(memberA, true);
+    InternalClientMembership.notifyJoined(memberA, true);
     synchronized(listener) {
       if (!fired[JOINED]) {
         listener.wait(SYNC_ASYNC_EVENT_WAIT_MILLIS);
@@ -410,7 +410,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
       }
@@ -870,7 +870,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
         assertFalse(getCache().isClosed());
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
       }
@@ -1327,7 +1327,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
    * com.gemstone.gemfire.internal.cache.tier.Endpoint#getNumConnections
    * Endpoint.getNumConnections()} to {@link 
    * com.gemstone.gemfire.internal.cache.tier.Endpoint}. Note: This probably
-   * won't work if the BridgeLoader has more than one Endpoint.
+   * won't work if the pool has more than one Endpoint.
    */
   protected void waitForClientToFullyConnect(final PoolImpl pool) {
     getLogWriter().info("[waitForClientToFullyConnect]");
@@ -1864,7 +1864,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
     
     vm0.invoke(createBridgeServer);
     
-    // gather details for later creation of BridgeLoader...
+    // gather details for later creation of pool...
     assertEquals(ports[0],
                  vm0.invokeInt(UniversalMembershipListenerAdapterDUnitTest.class, 
                                "getTestServerEventsInLonerClient_port"));
@@ -1880,7 +1880,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
     // create region which connects to bridge server
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    BridgeTestCase.configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
+    ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
     createRegion(name, factory.create());
     assertNotNull(getRootRegion().getSubregion(name));
 
@@ -2035,7 +2035,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends BridgeTestCase 
     // reconnect bridge client to test for crashed event
     vm0.invoke(createBridgeServer);
     
-    // gather details for later creation of BridgeLoader...
+    // gather details for later creation of pool...
     assertEquals(ports[0],
                  vm0.invokeInt(UniversalMembershipListenerAdapterDUnitTest.class, 
                                "getTestServerEventsInLonerClient_port"));

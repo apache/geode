@@ -137,9 +137,6 @@ public class RuntimeIterator extends AbstractCompiledValue  {
   }
 
   public Object evaluate(ExecutionContext context) {
-    if(current == UNINITIALIZED) {
-      System.out.println("asif");
-    }
     Support.Assert(current != UNINITIALIZED,
         "error to evaluate RuntimeIterator without setting current first");
     return this.current;

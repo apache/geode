@@ -12,7 +12,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import java.util.Iterator;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
@@ -202,9 +202,9 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
   public static void stopServer()
   {
     try {
-      Iterator iter = CacheServerTestUtil.getCache().getBridgeServers().iterator();
+      Iterator iter = CacheServerTestUtil.getCache().getCacheServers().iterator();
       if (iter.hasNext()) {
-        BridgeServer server = (BridgeServer)iter.next();
+        CacheServer server = (CacheServer)iter.next();
           server.stop();
       }
     }

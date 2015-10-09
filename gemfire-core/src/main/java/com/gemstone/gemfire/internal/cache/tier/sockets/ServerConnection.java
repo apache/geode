@@ -47,7 +47,7 @@ import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
 import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.command.Default;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -571,7 +571,7 @@ public class ServerConnection implements Runnable {
       this.crHelper.checkCancelInProgress(null);
       if (clientJoined && isFiringMembershipEvents()) {
         // This is a new client. Notify bridge membership and heartbeat monitor.
-        InternalBridgeMembership.notifyJoined(this.proxyId.getDistributedMember(),
+        InternalClientMembership.notifyJoined(this.proxyId.getDistributedMember(),
             true);
         }
 
@@ -871,9 +871,9 @@ public class ServerConnection implements Runnable {
         // the heartbeat monitor; other wise just remove the connection.
         if (clientDeparted && isFiringMembershipEvents()) {
           if (this.clientDisconnectedCleanly && !forceClientCrashEvent) {
-            InternalBridgeMembership.notifyLeft(proxyId.getDistributedMember(), true);
+            InternalClientMembership.notifyLeft(proxyId.getDistributedMember(), true);
           } else {
-            InternalBridgeMembership.notifyCrashed(this.proxyId.getDistributedMember(), true);
+            InternalClientMembership.notifyCrashed(this.proxyId.getDistributedMember(), true);
           }
           // The client has departed. Remove this last connection and unregister it.
         }

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.NoSubscriptionServersAvailableException;
 
@@ -566,7 +566,7 @@ public class InterestListDUnitTest extends DistributedTestCase
 
   /** wait for queues to drain in the server */
   public static void flushQueues() throws Exception {
-    BridgeServerImpl impl = (BridgeServerImpl)server;
+    CacheServerImpl impl = (CacheServerImpl)server;
     for (CacheClientProxy proxy: (Set<CacheClientProxy>)impl.getAllClientSessions()) {
       final CacheClientProxy fproxy = proxy;
       WaitCriterion ev = new WaitCriterion() {

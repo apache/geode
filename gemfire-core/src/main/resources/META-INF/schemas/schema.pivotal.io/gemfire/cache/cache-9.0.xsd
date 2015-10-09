@@ -257,15 +257,6 @@ declarative caching XML file elements unless indicated otherwise.
             </xsd:complexContent>
           </xsd:complexType>
         </xsd:element>
-        <xsd:element maxOccurs="unbounded" minOccurs="0" name="bridge-server" type="gf:server-type">
-          <xsd:annotation>
-            <xsd:documentation>
-              The "bridge-server" element specifies a Cache Bridge Server that is started when the Cache is declaratively initialized.
-              NOTE: as
-              of 5.7 this element is deprecated; use the "cache-server" element instead.
-            </xsd:documentation>
-          </xsd:annotation>
-        </xsd:element>
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="pool" type="gf:pool-type" />
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="disk-store" type="gf:disk-store-type" />
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="hdfs-store" type="gf:hdfs-store-type" />
@@ -917,14 +908,6 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
     <!-- ======================================================= -->
 
   <xsd:complexType name="server-type">
-    <xsd:annotation>
-      <xsd:documentation>
-        The "bridge-server" element specifies a Cache Bridge Server that is started when the Cache is declaratively initialized.
-        NOTE: as
-        of 5.7
-        this element is deprecated; use the "cache-server" element instead.
-      </xsd:documentation>
-    </xsd:annotation>
     <xsd:sequence>
       <xsd:element maxOccurs="unbounded" minOccurs="0" name="group" type="xsd:string">
         <xsd:annotation>
@@ -1327,19 +1310,10 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
         pool used
         by client applications in a client/server cache configuration.
         It should not be specified in servers or peers.
-
-        The optional "cache-loader" and
-        "cache-writer" are for legacy client client
-        applications that doen't use a connection pool. They must be a
-        bridge-loader and a bridge-writer. They should
-        not be specified in
-        servers or peers.
       </xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
       <xsd:element maxOccurs="1" minOccurs="0" name="disk-dir" type="gf:disk-dir-type" />
-      <xsd:element maxOccurs="1" minOccurs="0" name="cache-loader" type="gf:cache-loader-type" />
-      <xsd:element maxOccurs="1" minOccurs="0" name="cache-writer" type="gf:cache-writer-type" />
     </xsd:sequence>
     <xsd:attribute name="disable-persist-backup" type="xsd:boolean" use="optional" />
     <xsd:attribute name="disable-register-interest" type="xsd:boolean" use="optional" />

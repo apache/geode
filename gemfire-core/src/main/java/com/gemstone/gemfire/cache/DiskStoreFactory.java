@@ -111,13 +111,16 @@ public interface DiskStoreFactory
   public DiskStoreFactory setAutoCompact(boolean isAutoCompact);
 
   /**
-   * Sets the threshold at which an oplog will become compactable. Until it reaches
-   * this threshold the oplog will not be compacted.
-   * The threshold is a percentage in the range 0..100.
-   * When the amount of garbage in an oplog exceeds this percentage then when a compaction
-   * is done this garbage will be cleaned up freeing up disk space. Garbage is created by
+   * Sets the threshold at which an oplog will become compactable. Until it
+   * reaches this threshold the oplog will not be compacted. The threshold is a
+   * percentage in the range 0..100. When the amount of live data in an oplog
+   * becomes less than this percentage then when a compaction is done this
+   * garbage will be cleaned up freeing up disk space. Garbage is created by
    * entry destroys, entry updates, and region destroys.
-   * @param compactionThreshold the threshold percentage at which an oplog is compactable
+   * 
+   * @param compactionThreshold
+   *          percentage of remaining live data in the oplog at which an oplog
+   *          is compactable
    * @return a reference to <code>this</code>
    */
   public DiskStoreFactory setCompactionThreshold(int compactionThreshold);

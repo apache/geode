@@ -19,9 +19,9 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-@Category(IntegrationTest.class)
+@Category(UnitTest.class)
 public class ByteSourceJUnitTest {
   
   protected ByteSource createByteSource(byte[] bytes) {

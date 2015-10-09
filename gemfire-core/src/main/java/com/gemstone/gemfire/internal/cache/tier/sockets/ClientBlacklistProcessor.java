@@ -17,7 +17,7 @@ import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 import java.io.DataInput;
@@ -96,7 +96,7 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
           if (l != null) {
             Iterator i = l.iterator();
             while (i.hasNext()) {
-              BridgeServerImpl bs = (BridgeServerImpl)i.next();
+              CacheServerImpl bs = (CacheServerImpl)i.next();
               CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier(); 
               //add client to the black list.
               ccn.addToBlacklistedClient(this.proxyId);

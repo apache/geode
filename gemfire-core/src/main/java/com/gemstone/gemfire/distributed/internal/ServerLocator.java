@@ -46,7 +46,7 @@ import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.cache.BridgeServerAdvisor.BridgeServerProfile;
+import com.gemstone.gemfire.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import com.gemstone.gemfire.internal.cache.ControllerAdvisor;
 import com.gemstone.gemfire.internal.cache.ControllerAdvisor.ControllerProfile;
 import com.gemstone.gemfire.internal.cache.FindDurableQueueProcessor;
@@ -375,8 +375,8 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
    * @param profile
    */
   public void profileCreated(Profile profile) {
-    if(profile instanceof BridgeServerProfile) {
-      BridgeServerProfile bp = (BridgeServerProfile) profile;
+    if(profile instanceof CacheServerProfile) {
+      CacheServerProfile bp = (CacheServerProfile) profile;
       ServerLocation location = buildServerLocation(bp);
       String[] groups = bp.getGroups();
       loadSnapshot.addServer(location, groups,
@@ -398,8 +398,8 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
    * @param profile
    */
   public void profileRemoved(Profile profile) {
-    if(profile instanceof BridgeServerProfile) {
-      BridgeServerProfile bp = (BridgeServerProfile) profile;
+    if(profile instanceof CacheServerProfile) {
+      CacheServerProfile bp = (CacheServerProfile) profile;
       //InternalDistributedMember id = bp.getDistributedMember();
       ServerLocation location = buildServerLocation(bp);
       loadSnapshot.removeServer(location);

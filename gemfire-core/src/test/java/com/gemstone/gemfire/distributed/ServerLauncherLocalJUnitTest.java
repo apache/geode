@@ -21,7 +21,7 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.cache.AbstractBridgeServer;
+import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
@@ -121,7 +121,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     this.launcher = builder.build();
     assertNotNull(this.launcher);
@@ -173,7 +174,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -228,7 +230,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -273,7 +276,9 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+    
     this.launcher = builder.build();
 
     // wait for server to start
@@ -328,7 +333,9 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+
     this.launcher = builder.build();
 
     // wait for server to start
@@ -387,7 +394,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setForce(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     assertTrue(builder.getForce());
     this.launcher = builder.build();
@@ -466,7 +474,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .setServerPort(freeTCPPorts[1])
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     this.launcher = builder.build();
     this.launcher.start();
@@ -535,7 +544,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .setServerPort(this.serverPort)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     this.launcher = builder.build();
     this.launcher.start();
@@ -585,7 +595,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
     final Builder builder = new Builder()
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     this.launcher = builder.build();
     
@@ -594,7 +605,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       this.launcher.start();
      
       // why did it not fail like it's supposed to?
-      final String property = System.getProperty(AbstractBridgeServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY);
+      final String property = System.getProperty(AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY);
       assertNotNull(property);
       assertEquals(this.serverPort, Integer.valueOf(property).intValue());
       assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
@@ -663,7 +674,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -741,7 +753,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .setServerPort(freeTCPPort)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     this.launcher = builder.build();
     
@@ -801,7 +814,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
     
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -865,7 +879,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
     
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -930,7 +945,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -983,7 +999,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config");
+        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+        .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();

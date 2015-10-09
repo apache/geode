@@ -35,7 +35,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.util.BridgeClient;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -514,10 +513,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     CacheLoader old = this.cacheLoader;
     this.cacheLoader = cacheLoader;
     setHasCacheLoader(true);
-    if (cacheLoader instanceof BridgeClient && !hasCacheWriter()) {
-      // fix for bug 36247
-      setCacheWriter((BridgeClient)cacheLoader);
-    }
     return old;
   }
 
@@ -529,10 +524,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     CacheWriter old = this.cacheWriter;
     this.cacheWriter = cacheWriter;
     setHasCacheWriter(true);
-    if (cacheWriter instanceof BridgeClient && !hasCacheLoader()) {
-      // fix for bug 36247
-      setCacheLoader((BridgeClient)cacheWriter);
-    }
     return old;
   }
 
