@@ -90,6 +90,7 @@ public class FileSystem {
     destFile.length = sourceFile.length;
     destFile.modified = sourceFile.modified;
     destFile.id = sourceFile.id;
+    updateFile(destFile);
     
     // TODO - What is the state of the system if 
     // things crash in the middle of moving this file?

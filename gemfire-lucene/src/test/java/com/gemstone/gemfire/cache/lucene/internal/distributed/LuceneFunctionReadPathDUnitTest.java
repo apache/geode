@@ -135,9 +135,8 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
     });
     
     //Make sure the search still works
-    // TODO: rebalance is broken when hooked with AEQ, disable the test for the time being
-//    server1.invoke(executeSearch);
-//    server2.invoke(executeSearch);
+    server1.invoke(executeSearch);
+    server2.invoke(executeSearch);
   }
   
   private static void putInRegion(Region<Object, Object> region, Object key, Object value) throws BucketNotFoundException, IOException {

@@ -1,8 +1,10 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -30,7 +32,6 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Heteroge
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -71,8 +72,8 @@ public class PartitionedRepositoryManagerJUnitTest {
   public void getByKey() throws BucketNotFoundException, IOException {
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
     
-    BucketRegion mockBucket0 = getMockBucket(0);
-    BucketRegion mockBucket1 = getMockBucket(1);
+    setUpMockBucket(0);
+    setUpMockBucket(1);
     
     IndexRepositoryImpl repo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
     IndexRepositoryImpl repo1 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 1, null);
@@ -95,7 +96,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   public void destroyBucket() throws BucketNotFoundException, IOException {
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
     
-    BucketRegion mockBucket0 = getMockBucket(0);
+    setUpMockBucket(0);
     
     IndexRepositoryImpl repo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
 
@@ -107,7 +108,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     //Simulate rebalancing of a bucket by marking the old bucket is destroyed
     //and creating a new bucket
     Mockito.when(fileBucket0.isDestroyed()).thenReturn(true);
-    mockBucket0 = getMockBucket(0);
+    setUpMockBucket(0);
     
     IndexRepositoryImpl newRepo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
     assertNotEquals(repo0, newRepo0);
@@ -126,7 +127,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
-    BucketRegion mockBucket0 = getMockBucket(0);
+    setUpMockBucket(0);
     
     Mockito.when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
     
@@ -146,8 +147,8 @@ public class PartitionedRepositoryManagerJUnitTest {
 
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
     
-    BucketRegion mockBucket0 = getMockBucket(0);
-    BucketRegion mockBucket1 = getMockBucket(1);
+    setUpMockBucket(0);
+    setUpMockBucket(1);
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
@@ -174,7 +175,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   public void getMissingBucketByRegion() throws BucketNotFoundException {
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
     
-    BucketRegion mockBucket0 = getMockBucket(0);
+    setUpMockBucket(0);
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
 
@@ -191,7 +192,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     assertEquals(serializer, repo0.getSerializer());
   }
   
-  private BucketRegion getMockBucket(int id) {
+  private BucketRegion setUpMockBucket(int id) {
     BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
     BucketRegion fileBucket = Mockito.mock(BucketRegion.class);
     BucketRegion chunkBucket = Mockito.mock(BucketRegion.class);
