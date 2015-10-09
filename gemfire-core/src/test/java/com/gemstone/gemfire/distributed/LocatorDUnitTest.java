@@ -1164,14 +1164,14 @@ public class LocatorDUnitTest extends DistributedTestCase {
     }
   }
 
-  public void testRepeat() throws Exception {
-    for (int i=0; i<10; i++) {
-      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> run #"+i);
-      testLocatorBecomesCoordinator();
-      tearDown();
-      setUp();
-    }
-  }
+//  public void testRepeat() throws Exception {
+//    for (int i=0; i<10; i++) {
+//      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> run #"+i);
+//      testLocatorBecomesCoordinator();
+//      tearDown();
+//      setUp();
+//    }
+//  }
   /**
    * Tests starting one locator in a remote VM and having multiple
    * members of the distributed system join it.  This ensures that
