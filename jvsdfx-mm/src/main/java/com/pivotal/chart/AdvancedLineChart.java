@@ -32,7 +32,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.util.Duration;
 
-import com.pivotal.com.sun.javafx.charts.LegendItem;
+import com.pivotal.javafx.scene.chart.LegendItem;
 import com.pivotal.javafx.scene.chart.Series;
 import com.pivotal.javafx.scene.chart.MultiAxisLineChart;
 

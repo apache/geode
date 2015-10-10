@@ -1,10 +1,12 @@
 package com.pivotal.jvsd.controller;
 
 import com.pivotal.jvsd.fx.ChartManager;
+import com.pivotal.jvsd.fx.Main;
 import com.pivotal.jvsd.fx.StatFileManager;
 import com.pivotal.jvsd.model.ResourceWrapper;
 import com.pivotal.jvsd.model.stats.StatArchiveFile;
 import com.pivotal.jvsd.model.stats.StatArchiveFile.StatValue;
+import java.io.File;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -24,6 +26,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.event.ActionEvent;
+import javafx.scene.control.MenuItem;
+import javafx.stage.FileChooser;
 
 /**
  * @author Jens Deppe
@@ -84,12 +91,7 @@ public class RootController implements Initializable {
 
     resources = FXCollections.observableArrayList();
 
-    int row = 0;
-    for (StatArchiveFile s : fileManager.getArchives()) {
-      for (StatArchiveFile.ResourceInst r : s.getResourceInstList()) {
-        resources.add(new ResourceWrapper(r, row++));
-      }
-    }
+        updateArchives();
 
     tableView.setItems(resources);
     tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -109,6 +111,15 @@ public class RootController implements Initializable {
     chartList = FXCollections.observableArrayList();
     chartCombo.setItems(chartList);
   }
+
+    private void updateArchives() {
+        int row = 0;
+        for (StatArchiveFile s : fileManager.getArchives()) {
+            for (StatArchiveFile.ResourceInst r : s.getResourceInstList()) {
+                resources.add(new ResourceWrapper(r, row++));
+            }
+        }
+    }
 
   private List<StatValue> getSelectedStatValues() {
     List<StatValue> result = new ArrayList<>();
@@ -158,6 +169,26 @@ public class RootController implements Initializable {
     }
   }
 
+  @FXML
+  private void handleOpenMenuAction(ActionEvent e){
+      try {
+          FileChooser fileChooser = new FileChooser();
+          fileChooser.setTitle("Open Statistics File");
+          File file=fileChooser.showOpenDialog(null);
+          StatFileManager.getInstance().add(file.getCanonicalPath());
+          updateArchives();
+      } catch (IOException ex) {
+          //TODO needs warning dialog of failed file open.
+      }
+  }
+  
+  @FXML
+  private void handleCloseMenuAction(ActionEvent e){
+    //TODO do a real clean up and shutdown   
+    //just kill it now
+      System.exit(0);
+  }
+  
   public void setChartList(Collection<Integer> chartList) {
     if (chartList.size() > 0) {
       chartCombo.setDisable(false);

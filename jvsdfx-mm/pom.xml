@@ -33,6 +33,14 @@
 			<systemPath>${java.home}/lib/jfxrt.jar</systemPath>
 		</dependency>
 		-->
+		<dependency>
+    			<groupId>com.pivotal.javafx</groupId>
+    			<artifactId>MultiAxisChart</artifactId>
+    			<version>1.0-SNAPSHOT</version>
+			<!-- use scope and system path only if not installing jar into local maven repo -->
+    			<!--<scope>system</scope>
+    			<systemPath>${HOME}/Projects/MultiAxisChartFX/target/MultiAxisChart-1.0-SNAPSHOT.jar</systemPath> -->
+		</dependency>
 	</dependencies>
 
 	<build>

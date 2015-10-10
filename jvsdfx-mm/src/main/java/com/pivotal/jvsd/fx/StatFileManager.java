@@ -30,6 +30,10 @@ public class StatFileManager {
       statFiles.add(new StatArchiveFile(name));
     }
   }
+  
+  public void add(String fileName) throws IOException {
+      statFiles.add(new StatArchiveFile(fileName));
+  }
 
   public List<StatArchiveFile> getArchives() {
     return statFiles;

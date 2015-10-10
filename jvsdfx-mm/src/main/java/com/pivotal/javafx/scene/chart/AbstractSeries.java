@@ -17,7 +17,7 @@ import javafx.scene.Node;
 import javafx.scene.chart.Axis;
 import javafx.scene.chart.ValueAxis;
 
-import com.pivotal.com.sun.javafx.charts.LegendItem;
+//import com.pivotal.com.sun.javafx.charts.LegendItem;
 
 /**
  * A named series of data items
