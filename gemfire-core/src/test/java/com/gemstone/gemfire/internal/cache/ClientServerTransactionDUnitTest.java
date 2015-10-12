@@ -16,38 +16,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
 import javax.transaction.UserTransaction;
 
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.*;
 import org.junit.Ignore;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.TransactionDataNodeHasDepartedException;
-import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
-import com.gemstone.gemfire.cache.TransactionEvent;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.TransactionInDoubtException;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.TransactionWriterException;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
@@ -78,6 +56,7 @@ import com.gemstone.gemfire.internal.cache.execute.util.CommitFunction;
 import com.gemstone.gemfire.internal.cache.execute.util.RollbackFunction;
 import com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub;
 
+import dunit.DistributedTestCase;
 import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
@@ -121,7 +100,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
           CacheServer s = getCache().addCacheServer();
           s.setPort(port);
-          ((BridgeServerImpl)s).setTransactionTimeToLive(10);
+          ((CacheServerImpl)s).setTransactionTimeToLive(10);
           s.start();
           return port;
         }
@@ -146,7 +125,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
           CacheServer s = cache.addCacheServer();
           s.setPort(port);
-          ((BridgeServerImpl)s).setTransactionTimeToLive(10);
+          ((CacheServerImpl)s).setTransactionTimeToLive(10);
           s.start();
           return port;
         }
@@ -214,7 +193,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
-        ((BridgeServerImpl)s).setTransactionTimeToLive(10);
+        ((CacheServerImpl)s).setTransactionTimeToLive(10);
         s.start();
         return port;
       }
@@ -738,7 +717,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
     
-    Thread.sleep(10000);
     datastore.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
@@ -926,14 +904,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
     
-    Thread.sleep(10000);
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
 //        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
         assertTrue(cl.invoked);
         assertEquals("it should be 1 but its:"+cl.invokeCount,1,cl.invokeCount);
         return null;
@@ -981,14 +957,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	      }
 	    });
 	    
-	    Thread.sleep(10000);
 	    client.invoke(new SerializableCallable() {
 	      public Object call() throws Exception {
 	        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
 //	        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //	        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
 	        ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-	        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
 	        assertTrue(cl.invoked);
 	        assertEquals("it should be 1 but its:"+cl.invokeCount,1,cl.invokeCount);
 	        return null;
@@ -1038,14 +1012,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	      }
 	    });
 	    
-	    Thread.sleep(10000);
 	    client.invoke(new SerializableCallable() {
 	      public Object call() throws Exception {
 	        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
 //	        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //	        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
 	        ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-	        getCache().getLogger().info("SWAP:CLIENTinvoked:"+cl.invoked);
 	        assertTrue(cl.invoked);
 	        assertTrue(cl.putAllOp);
 	        assertFalse(cl.isOriginRemote);
@@ -1094,7 +1066,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	      }
 	    });
 	    
-	    Thread.sleep(10000);
 	    client.invoke(new SerializableCallable() {
 	      public Object call() throws Exception {
 	        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
@@ -1150,9 +1121,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
     
-    Thread.sleep(10000);
-    
-    
     /*
      * Validate nothing came through
      */
@@ -1199,7 +1167,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     
     client.invoke(doAPutInTx);
     client.invoke(doAnInvalidateInTx);
-    Thread.sleep(10000);
     
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -1365,7 +1332,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
           Customer cust = new Customer("name"+i, "address"+i);
           pr.put(custId, cust);
           r.put(i, "value"+i);
-          Thread.sleep(100);
         }
         return null;
       }
@@ -1464,7 +1430,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
           getGemfireCache().getLogger().info("SWAP:putting:"+custId);
           pr.put(custId, cust);
           r.put(i, "value"+i);
-          Thread.sleep(100);
         }
         return mgr.getTransactionId();
       }
@@ -2142,7 +2107,11 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   }
 
   @Override
-  public void testSize() {
+  public void testSizeForTXHostedOnRemoteNode() {
+  }
+
+  @Override
+  public void testSizeOnAccessor() {
   }
 
   @Override
@@ -2960,9 +2929,21 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         Region r = getCache().getRegion(CUSTOMER);
         assertNull(r.get(new CustId(101)));
         mgr.begin();
+        final TXStateProxy txState = mgr.getTXState();
+        assertTrue(txState.isInProgress());
         r.put(new CustId(101), new Customer("name101", "address101"));
-        TransactionId txId = mgr.suspend();
-        Thread.sleep(70*1000);
+        TransactionId txId = mgr.suspend(TimeUnit.MILLISECONDS);
+        WaitCriterion waitForTxTimeout = new WaitCriterion() {
+          public boolean done() {
+            return !txState.isInProgress();
+          }
+          public String description() {
+            return "txState stayed in progress indicating that the suspend did not timeout";
+          }
+        };
+        // tx should timeout after 1 ms but to deal with loaded machines and thread
+        // scheduling latency wait for 10 seconds before reporting an error.
+        DistributedTestCase.waitForCriterion(waitForTxTimeout, 10 * 1000, 10, true);
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");
@@ -3245,5 +3226,129 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
     
+  }
+
+  public void testAdjunctMessage() {
+    Host host = Host.getHost(0);
+    VM server1 = host.getVM(0);
+    VM server2 = host.getVM(1);
+    VM client1 = host.getVM(2);
+    VM client2 = host.getVM(3);
+    final String regionName = "testAdjunctMessage";
+
+    final int port1 = createRegionsAndStartServer(server1, false);
+    final int port2 = createRegionsAndStartServer(server2, false);
+
+    SerializableCallable createServerRegionWithInterest = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        RegionFactory rf = getCache().createRegionFactory(RegionShortcut.PARTITION);
+        rf.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT));
+        rf.create(regionName);
+        return null;
+      }
+    };
+    server1.invoke(createServerRegionWithInterest);
+    server2.invoke(createServerRegionWithInterest);
+
+    // get two colocated keys on server1
+    final List<String> keys = (List<String>) server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region r = getCache().getRegion(regionName);
+        PartitionedRegion pr = (PartitionedRegion) r;
+        List<String> server1Keys = new ArrayList<String>();
+        for (int i=0; i<100; i++) {
+          String key = "k"+i;
+          //pr.put(key, "v" + i);
+          DistributedMember owner = pr.getOwnerForKey(pr.getKeyInfo(key));
+          if (owner.equals(pr.getMyId())) {
+            server1Keys.add(key);
+            if (server1Keys.size() == 2) {
+              break;
+            }
+          }
+        }
+        return server1Keys;
+      }
+    });
+
+    class ClientListener extends CacheListenerAdapter {
+      Set keys = new HashSet();
+      @Override
+      public void afterCreate(EntryEvent event) {
+        add(event);
+      }
+      @Override
+      public void afterUpdate(EntryEvent event) {
+        add(event);
+      }
+      private void add(EntryEvent event) {
+        keys.add(event.getKey());
+      }
+    }
+    client2.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        ClientCacheFactory ccf = new ClientCacheFactory();
+        ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port2);
+        ccf.setPoolMinConnections(0);
+        ccf.setPoolSubscriptionEnabled(true);
+        ccf.setPoolSubscriptionRedundancy(0);
+        ccf.set("log-level", getDUnitLogLevel());
+        ClientCache cCache = getClientCache(ccf);
+        Region r = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).addCacheListener(new ClientListener()).create(regionName);
+        r.registerInterestRegex(".*");
+        //cCache.readyForEvents();
+        return null;
+      }
+    });
+    client1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        ClientCacheFactory ccf = new ClientCacheFactory();
+        ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
+        ccf.setPoolMinConnections(0);
+        ccf.setPoolSubscriptionEnabled(true);
+        ccf.set("log-level", getDUnitLogLevel());
+        ClientCache cCache = getClientCache(ccf);
+        Region r = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
+        getCache().getCacheTransactionManager().begin();
+        for (String key : keys) {
+          r.put(key, "value");
+        }
+        getCache().getCacheTransactionManager().commit();
+        return null;
+      }
+    });
+    client2.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region r = getCache().getRegion(regionName);
+        CacheListener[] listeners = r.getAttributes().getCacheListeners();
+        boolean foundListener = false;
+        for (CacheListener listener : listeners) {
+          if (listener instanceof ClientListener) {
+            foundListener = true;
+            final ClientListener clientListener = (ClientListener) listener;
+            WaitCriterion wc = new WaitCriterion() {
+              @Override
+              public boolean done() {
+                return clientListener.keys.containsAll(keys);
+              }
+              @Override
+              public String description() {
+                return "expected:"+keys+" found:"+clientListener.keys;
+              }
+            };
+            DistributedTestCase.waitForCriterion(wc, 30*1000, 500, true);
+          }
+        }
+        assertTrue(foundListener);
+        return null;
+      }
+    });
   }
 }

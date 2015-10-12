@@ -128,9 +128,9 @@ public class DistributedClearOperation extends DistributedCacheOperation
   protected CacheOperationMessage createMessage()
   {
     ClearRegionMessage mssg;
-    if (this.event instanceof BridgeRegionEventImpl) {
+    if (this.event instanceof ClientRegionEventImpl) {
       mssg = new ClearRegionWithContextMessage();
-      ((ClearRegionWithContextMessage)mssg).context = ((BridgeRegionEventImpl)this.event)
+      ((ClearRegionWithContextMessage)mssg).context = ((ClientRegionEventImpl)this.event)
           .getContext();
 
     }
@@ -271,7 +271,7 @@ public class DistributedClearOperation extends DistributedCacheOperation
     final public RegionEventImpl createRegionEvent(DistributedRegion rgn)
     {
       
-      BridgeRegionEventImpl event = new BridgeRegionEventImpl(rgn,
+      ClientRegionEventImpl event = new ClientRegionEventImpl(rgn,
           getOperation(), this.callbackArg, true /* originRemote */,
           getSender(), (ClientProxyMembershipID)this.context);
       return event;

@@ -23,12 +23,12 @@ import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 import dunit.DistributedTestCase;
@@ -402,10 +402,10 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
   // occasional failures in precheckins and cruisecontrol.
   
   public static void assertAllQueuesEmpty() {
-    Iterator servers = cacheServer.getBridgeServers().iterator();
+    Iterator servers = cacheServer.getCacheServers().iterator();
     assertTrue("No servers found!", servers.hasNext());
     while (servers.hasNext()) {
-      Iterator proxies = ((BridgeServerImpl)servers.next()).getAcceptor().
+      Iterator proxies = ((CacheServerImpl)servers.next()).getAcceptor().
         getCacheClientNotifier().getClientProxies().iterator();
       assertTrue("No proxies found!", proxies.hasNext());
       while (proxies.hasNext()) {
@@ -420,8 +420,8 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
       String excuse;
       public boolean done() {
         // assume a single cache server as configured in this test
-        BridgeServerImpl bridgeServer = (BridgeServerImpl) cacheServer.
-          getBridgeServers().iterator().next();
+        CacheServerImpl bridgeServer = (CacheServerImpl) cacheServer.
+          getCacheServers().iterator().next();
         if (bridgeServer == null) {
           excuse = "No Cache Server";
           return false;
@@ -474,7 +474,7 @@ public class ClientInterestNotifyDUnitTest extends DistributedTestCase
     cacheServer.createRegion(REGION_NAME1, attrs);
     cacheServer.createRegion(REGION_NAME2, attrs);
     cacheServer.createRegion(REGION_NAME3, attrs);
-    BridgeServer server = cacheServer.addBridgeServer();
+    CacheServer server = cacheServer.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
     server.setPort(port);
     server.setNotifyBySubscription(true);

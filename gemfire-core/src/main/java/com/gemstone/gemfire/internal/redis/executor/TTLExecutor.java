@@ -9,7 +9,7 @@ import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.Extendable;
 import com.gemstone.gemfire.internal.redis.RedisConstants.ArityDef;
 import com.gemstone.gemfire.internal.redis.RedisDataType;
-import com.gemstone.gemfire.internal.redis.RegionCache;
+import com.gemstone.gemfire.internal.redis.RegionProvider;
 
 public class TTLExecutor extends AbstractExecutor implements Extendable {
 
@@ -27,7 +27,7 @@ public class TTLExecutor extends AbstractExecutor implements Extendable {
     }
 
     ByteArrayWrapper key = command.getKey();
-    RegionCache rC = context.getRegionCache();
+    RegionProvider rC = context.getRegionProvider();
     boolean exists = false;
     RedisDataType val = rC.getRedisDataType(key);
     if (val != null)

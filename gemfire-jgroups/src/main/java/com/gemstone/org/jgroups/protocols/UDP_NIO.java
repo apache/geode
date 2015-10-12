@@ -528,7 +528,7 @@ public class UDP_NIO extends Protocol implements Receiver {
 
             case Event.CONFIG:
                 passUp(evt);
-                 if(log.isInfoEnabled()) log.info(ExternalStrings.UDP_NIO_RECEIVED_CONFIG_EVENT__0, evt.getArg());
+                if(log.isInfoEnabled()) log.info(ExternalStrings.UDP_NIO_RECEIVED_CONFIG_EVENT__0, (Object)evt.getArg());
                 handleConfigEvent((HashMap)evt.getArg());
                 return;
         }
@@ -839,7 +839,7 @@ public class UDP_NIO extends Protocol implements Receiver {
                 break;
 
             case Event.CONFIG:
-                 if(log.isInfoEnabled()) log.info(ExternalStrings.UDP_NIO_RECEIVED_CONFIG_EVENT__0, evt.getArg());
+                if(log.isInfoEnabled()) log.info(ExternalStrings.UDP_NIO_RECEIVED_CONFIG_EVENT__0, (Object)evt.getArg());
                 handleConfigEvent((HashMap)evt.getArg());
                 break;
         }

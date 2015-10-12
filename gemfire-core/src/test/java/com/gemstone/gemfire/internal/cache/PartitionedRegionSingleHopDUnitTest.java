@@ -2216,10 +2216,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       }
     };
     DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      assertEquals(2, ((List)entry.getValue()).size());
-    }
   }
 }
 

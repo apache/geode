@@ -1325,13 +1325,14 @@ public class MemberMBeanBridge {
     if (threadInfos == null || threadInfos.length < 1) {
       return ManagementConstants.NO_DATA_STRING;
     }
-    String[] thrdStr = new String[threadInfos.length];
-    int j = 0;
+    ArrayList<String> thrdStr = new ArrayList<String>(threadInfos.length);
     for (ThreadInfo thInfo : threadInfos) {
-      thrdStr[j] = thInfo.getThreadName();
-      j++;
+      if (thInfo != null) {
+        thrdStr.add(thInfo.getThreadName());
+      }
     }
-    return thrdStr;
+    String[] result = new String[thrdStr.size()];
+    return thrdStr.toArray(result);
   }
 
   /**

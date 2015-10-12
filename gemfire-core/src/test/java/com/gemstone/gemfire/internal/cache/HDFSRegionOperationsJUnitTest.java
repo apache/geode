@@ -36,7 +36,6 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.hdfs.HDFSEventQueueAttributesFactory;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
@@ -71,9 +70,7 @@ public class HDFSRegionOperationsJUnitTest extends TestCase {
     String storeName = getName()+"-store";
     HDFSStoreFactory hsf = cache.createHDFSStoreFactory();
     hsf.setHomeDir(getName()+"-test");
-    HDFSEventQueueAttributesFactory f = new HDFSEventQueueAttributesFactory();
-    f.setBatchTimeInterval(getBatchTimeInterval());
-    hsf.setHDFSEventQueueAttributes(f.create());
+    hsf.setBatchInterval(getBatchTimeInterval());
     hdfsStore = hsf.create(storeName);
   }
 

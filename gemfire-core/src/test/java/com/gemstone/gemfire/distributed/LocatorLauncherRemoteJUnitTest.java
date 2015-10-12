@@ -86,8 +86,13 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     assertTrue(this.temporaryFolder.getRoot().isDirectory() && this.temporaryFolder.getRoot().canWrite());
 
     // launch LocatorLauncherForkingProcess which then launches the GemFire Locator
-    List<String> command = new ArrayList<String>();
+    final List<String> jvmArguments = getJvmArguments();
+    
+    final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
+    for (String jvmArgument : jvmArguments) {
+      command.add(jvmArgument);
+    }
     command.add("-cp");
     command.add(System.getProperty("java.class.path"));
     command.add(LocatorLauncherRemoteDUnitTest.class.getName().concat("$").concat(LocatorLauncherForkingProcess.class.getSimpleName()));
@@ -129,9 +134,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   @Test
   public void testStartCreatesPidFile() throws Throwable {
     // build and start the locator
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -200,9 +203,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     assertTrue(this.statusFile.exists());
     
     // build and start the locator
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -264,9 +265,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     writePid(this.pidFile, Integer.MAX_VALUE);
 
     // build and start the locator
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -323,9 +322,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     writePid(this.pidFile, otherPid);
 
     // build and start the locator
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -380,9 +377,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   public void testStartUsingPortInUseFails() throws Throwable {
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
     
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -456,10 +451,8 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     assertFalse(this.socket.isClosed());
     
     // launch locator
-    final List<String> jvmArguments = new ArrayList<String>();
+    final List<String> jvmArguments = getJvmArguments();
     jvmArguments.add("-D" + DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY + "=" + this.locatorPort);
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -533,9 +526,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     writePid(this.pidFile, realPid);
     
     // build and start the locator
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -606,9 +597,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
 
   @Test
   public void testStatusUsingPid() throws Throwable {
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -690,9 +679,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   
   @Test
   public void testStatusUsingWorkingDirectory() throws Throwable {
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -817,9 +804,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   
   @Test
   public void testStopUsingPid() throws Throwable {
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -893,9 +878,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   
   @Test
   public void testStopUsingWorkingDirectory() throws Throwable {
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + getUniqueName() + "=true");
-    jvmArguments.add("-Dgemfire.log-level=config");
+    final List<String> jvmArguments = getJvmArguments();
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -948,6 +931,12 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     }
   }
 
+  public static List<String> getJvmArguments() {
+    final List<String> jvmArguments = new ArrayList<String>();
+    jvmArguments.add("-Dgemfire.log-level=config");
+    return jvmArguments;
+  }
+  
   /**
    * Used only by {@link LocatorLauncherRemoteJUnitTest#testRunningLocatorOutlivesForkingProcess}
    */

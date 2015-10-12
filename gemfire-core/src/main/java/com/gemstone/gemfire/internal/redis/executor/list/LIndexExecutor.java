@@ -38,7 +38,7 @@ public class LIndexExecutor extends ListExecutor {
       return;
     }
 
-    int listSize = keyRegion.size();
+    int listSize = keyRegion.size() - LIST_EMPTY_SIZE;
 
     Integer redisIndex;
 
@@ -90,7 +90,7 @@ public class LIndexExecutor extends ListExecutor {
 
     Query query = getQuery(key, ListQuery.LINDEX, context);
 
-    Object[] params = {new Integer(index + 1)};
+    Object[] params = {Integer.valueOf(index + 1)};
 
     SelectResults<?> results = (SelectResults<?>) query.execute(params);
 

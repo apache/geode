@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.junit.Test;
+
 import com.gemstone.gemfire.test.process.ProcessWrapper;
 
 /**
@@ -12,11 +14,9 @@ import com.gemstone.gemfire.test.process.ProcessWrapper;
  * 
  * @author Kirk Lund
  */
-public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase {
+public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase implements ExecutableProcess {
 
-  PassWithExpectedProblemTestCase(String name) {
-    super(name);
-  }
+  private int problemLine; 
   
   @Override
   protected GoldenComparator createGoldenComparator() {
@@ -25,7 +25,11 @@ public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase {
 
   @Override
   protected String[] expectedProblemLines() {
-    return new String[] { ".*" + name() + ".*", "^\\[" + problem() + ".*\\] ExpectedStrings: This is an expected problem in the output" };
+    this.problemLine = 1; 
+    return new String[] { 
+        ".*" + name() + ".*", 
+        "^\\[" + problem() + ".*\\] ExpectedStrings: This is an expected problem in the output" 
+    };
   }
   
   String name() {
@@ -34,36 +38,38 @@ public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase {
   
   abstract String problem();
   
-  abstract void outputProblem(String message);
+  abstract void outputProblemInProcess(String message);
   
-  public void testPassWithExpectedProblem() throws InterruptedException, IOException {
-    // output has an expected warning/error/severe message and should pass
-    final ProcessWrapper process = createProcessWrapper(getClass());
+  /**
+   * Process output has an expected warning/error/severe message and should pass
+   */
+  @Test
+  public void testPassWithExpectedProblem() throws Exception {
+    final String goldenString = 
+        "Begin " + name() + ".main" + "\n" + 
+        "Press Enter to continue." + "\n" +
+        "\n" +
+        expectedProblemLines()[this.problemLine] + "\n" +
+        "End " + name() + ".main" + "\n";
+    debug(goldenString, "GOLDEN");
+
+    final ProcessWrapper process = createProcessWrapper(new ProcessWrapper.Builder(), getClass());
     process.execute(createProperties());
     process.waitForOutputToMatch("Begin " + name() + "\\.main");
     process.waitForOutputToMatch("Press Enter to continue\\.");
     process.sendInput();
     process.waitForOutputToMatch("End " + name() + "\\.main");
     process.waitFor();
-    String goldenString = "Begin " + name() + ".main" + "\n" 
-        + "Press Enter to continue." + "\n" 
-        + "\n"
-        + "^\\[" + problem() + ".*\\] ExpectedStrings: This is an expected problem in the output" + "\n"
-        + "End " + name() + ".main" + "\n";
-    innerPrintOutput(goldenString, "GOLDEN");
-    String[] printMe = expectedProblemLines();
-    for (String str : printMe) {
-      System.out.println(str);
-    }
+    
     assertOutputMatchesGoldenFile(process.getOutput(), goldenString);
   }
   
-  void execute() throws IOException {
-    System.out.println("Begin " + name() + ".main");
-    System.out.println("Press Enter to continue.");
-    BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in));
-    inputReader.readLine();
-    outputProblem("ExpectedStrings: This is an expected problem in the output");
-    System.out.println("End " + name() + ".main");
+  @Override
+  public final void executeInProcess() throws IOException {
+    outputLine("Begin " + name() + ".main");
+    outputLine("Press Enter to continue.");
+    new BufferedReader(new InputStreamReader(System.in)).readLine();
+    outputProblemInProcess("ExpectedStrings: This is an expected problem in the output");
+    outputLine("End " + name() + ".main");
   }
 }

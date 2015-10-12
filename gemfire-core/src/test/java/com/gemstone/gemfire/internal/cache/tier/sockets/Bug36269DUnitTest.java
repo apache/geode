@@ -19,7 +19,7 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -160,7 +160,7 @@ public class Bug36269DUnitTest extends DistributedTestCase
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.KEYS_VALUES);
     cache.createRegion(REGION_NAME, factory.create());
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);

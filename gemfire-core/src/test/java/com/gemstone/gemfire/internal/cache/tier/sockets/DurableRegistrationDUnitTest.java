@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.FilterProfile;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
@@ -835,9 +835,9 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     return proxy;
   }
 
-  private static BridgeServerImpl getBridgeServer() {
-    BridgeServerImpl bridgeServer = (BridgeServerImpl)CacheServerTestUtil
-        .getCache().getBridgeServers().iterator().next();
+  private static CacheServerImpl getBridgeServer() {
+    CacheServerImpl bridgeServer = (CacheServerImpl)CacheServerTestUtil
+        .getCache().getCacheServers().iterator().next();
     assertNotNull(bridgeServer);
     return bridgeServer;
   }

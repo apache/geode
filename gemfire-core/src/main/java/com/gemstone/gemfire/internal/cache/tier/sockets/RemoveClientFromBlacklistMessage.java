@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 /**
@@ -60,7 +60,7 @@ public class RemoveClientFromBlacklistMessage extends PooledDistributionMessage 
       if (l != null) {
         Iterator i = l.iterator();
         while (i.hasNext()) {
-          BridgeServerImpl bs = (BridgeServerImpl)i.next();
+          CacheServerImpl bs = (CacheServerImpl)i.next();
           CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
           Set s = ccn.getBlacklistedClient();
           if (s != null) {

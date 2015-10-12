@@ -235,14 +235,9 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
 
   public SystemMemberCacheServer addCacheServer()
     throws AdminException {
-    return (SystemMemberCacheServer)addBridgeServer();
-  }
 
-  public SystemMemberBridgeServer addBridgeServer()
-    throws AdminException {
-
-    AdminBridgeServer bridge = this.vm.addBridgeServer(this.info);
-    SystemMemberBridgeServer admin =
+    AdminBridgeServer bridge = this.vm.addCacheServer(this.info);
+    SystemMemberCacheServer admin =
       createSystemMemberBridgeServer(bridge);
     bridgeServers.put(bridge.getId(), admin);
     return admin;
@@ -279,14 +274,6 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
       new SystemMemberCacheServer[bridges.size()];
     return (SystemMemberCacheServer[]) bridges.toArray(array);
   };
-
-  public SystemMemberBridgeServer[] getBridgeServers()
-    throws AdminException {
-    Collection bridges = getCacheServersCollection();
-    SystemMemberBridgeServer[] array =
-      new SystemMemberBridgeServer[bridges.size()];
-    return (SystemMemberBridgeServer[]) bridges.toArray(array);
-  }
 
   /**
    * Creates a new instance of <Code>SystemMemberBridgeServer</code>

@@ -599,6 +599,8 @@ public abstract class PartitionMessage extends DistributionMessage implements
     }
 
     appendFields(buff);
+    buff.append(" ,distTx=");
+    buff.append(this.isTransactionDistributed);
     buff.append(")");
     return buff.toString();
   }
@@ -680,7 +682,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
       return pr.notifiesMultipleSerialGateways();
     } catch (PRLocallyDestroyedException e) {
       return false;
-    } catch (CancelException ignore) {
+    } catch (RuntimeException ignore) {
       return false;
     }
   }

@@ -373,7 +373,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     throw new UnsupportedOperationException(LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
   }
 
-  public AdminBridgeServer addBridgeServer(CacheInfo cache)
+  public AdminBridgeServer addCacheServer(CacheInfo cache)
     throws AdminException {
 
     throw new UnsupportedOperationException(LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());

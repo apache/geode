@@ -7,8 +7,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.internal.cache.BridgeObserverAdapter;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 
 import dunit.DistributedTestCase;
@@ -59,7 +59,7 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase
       PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
       registerInterestCalled = false;
       makePrimaryCalled = false;
-      BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+      ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
         public void beforeInterestRegistration()
         {
           registerInterestCalled = true;

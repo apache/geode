@@ -16,7 +16,7 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
@@ -42,7 +42,7 @@ public class ContunuousQueryFunction implements Function, InternalEntity {
       String clientID = (String) context.getArguments();      
       GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.getAnyInstance();      
       if (cache.getCacheServers().size() > 0) {       
-        BridgeServerImpl server = (BridgeServerImpl)cache.getCacheServers().iterator().next();        
+        CacheServerImpl server = (CacheServerImpl)cache.getCacheServers().iterator().next();        
         if(server != null){          
           AcceptorImpl  acceptorImpl  = server.getAcceptor(); 
           if(acceptorImpl != null){          

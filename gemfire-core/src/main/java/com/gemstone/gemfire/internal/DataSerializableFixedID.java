@@ -135,7 +135,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PR_FUNCTION_REPLY_MESSAGE = -93;
 
   public static final byte PROFILES_REPLY_MESSAGE = -92;
-  public static final byte BRIDGE_SERVER_PROFILE = -91;
+  public static final byte CACHE_SERVER_PROFILE = -91;
   public static final byte CONTROLLER_PROFILE = -90;
 
   public static final byte CREATE_REGION_MESSAGE = -89;
@@ -341,12 +341,12 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PARTITION_PROFILE = 18;
 
   public static final byte ROLE_EVENT = 19;
-  public static final byte BRIDGE_REGION_EVENT = 20;
+  public static final byte CLIENT_REGION_EVENT = 20;
 
   public static final byte CONCURRENT_HASH_MAP = 21;
   public static final byte FIND_DURABLE_QUEUE = 22;
   public static final byte FIND_DURABLE_QUEUE_REPLY = 23;
-  public static final byte BRIDGE_SERVER_LOAD_MESSAGE = 24;
+  public static final byte CACHE_SERVER_LOAD_MESSAGE = 24;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>ObjectPartList</code>.

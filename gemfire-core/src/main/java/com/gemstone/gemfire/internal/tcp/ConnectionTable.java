@@ -19,8 +19,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -33,10 +40,12 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.SocketCloser;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
@@ -129,7 +138,15 @@ public class ConnectionTable  {
    */
   private volatile boolean closed = false;
 
-
+  /**
+   * Executor used by p2p reader and p2p handshaker threads.
+   */
+  private final Executor p2pReaderThreadPool;
+  /** Number of seconds to wait before timing out an unused p2p reader thread. Default is 120 (2 minutes). */
+  private final static long READER_POOL_KEEP_ALIVE_TIME = Long.getLong("p2p.READER_POOL_KEEP_ALIVE_TIME", 120).longValue();
+  
+  private final SocketCloser socketCloser;
+  
   /**
    * The most recent instance to be created
    * 
@@ -202,11 +219,41 @@ public class ConnectionTable  {
     this.threadOrderedConnMap = new ThreadLocal();
     this.threadConnMaps = new ArrayList();
     this.threadConnectionMap = new ConcurrentHashMap();
+    this.p2pReaderThreadPool = createThreadPoolForIO(c.getDM().getSystem().isShareSockets());
+    this.socketCloser = new SocketCloser();
   /*  NOMUX: if (TCPConduit.useNIO) {
       inputMuxManager = new InputMuxManager(this);
       inputMuxManager.start(c.logger);
     }*/
   }
+  
+  private Executor createThreadPoolForIO(boolean conserveSockets) { 
+    Executor executor = null; 
+    final ThreadGroup connectionRWGroup = LoggingThreadGroup.createThreadGroup("P2P Reader Threads", logger);
+    if (conserveSockets) { 
+      executor = new Executor() { 
+        @Override 
+        public void execute(Runnable command) { 
+          Thread th = new Thread(connectionRWGroup, command); 
+          th.setDaemon(true); 
+          th.start(); 
+        } 
+      }; 
+    } 
+    else { 
+      BlockingQueue synchronousQueue = new SynchronousQueue(); 
+      ThreadFactory tf = new ThreadFactory() { 
+        public Thread newThread(final Runnable command) { 
+          Thread thread = new Thread(connectionRWGroup, command); 
+          thread.setDaemon(true); 
+          return thread; 
+        } 
+      }; 
+      executor = new ThreadPoolExecutor(1, Integer.MAX_VALUE, READER_POOL_KEEP_ALIVE_TIME, 
+          TimeUnit.SECONDS, synchronousQueue, tf); 
+    } 
+    return executor; 
+  } 
 
   /** conduit sends connected() after establishing the server socket */
 //   protected void connected() {
@@ -715,6 +762,14 @@ public class ConnectionTable  {
         this.threadConnMaps.clear();
       }
     }
+    {
+      Executor localExec = this.p2pReaderThreadPool;
+      if (localExec != null) {
+        if (localExec instanceof ExecutorService) {
+          ((ExecutorService)localExec).shutdown();
+        }
+      }
+    }
     closeReceivers(false);
     
     Map m = (Map)this.threadOrderedConnMap.get();
@@ -724,8 +779,16 @@ public class ConnectionTable  {
         m.clear();
       }        
     }
+    this.socketCloser.close();
   }
 
+  public void executeCommand(Runnable runnable) { 
+    Executor local = this.p2pReaderThreadPool;
+    if (local != null) {
+      local.execute(runnable);
+    }
+  }
+  
   /**
    * Close all receiving threads.  This is used during shutdown and is also
    * used by a test hook that makes us deaf to incoming messages.
@@ -800,11 +863,20 @@ public class ConnectionTable  {
     }
 
     if (needsRemoval) {
+      InternalDistributedMember remoteAddress = null;
       synchronized (this.orderedConnectionMap) {
-           closeCon(reason, this.orderedConnectionMap.remove(stub));
+        Object c = this.orderedConnectionMap.remove(stub);
+        if (c instanceof Connection) {
+          remoteAddress = ((Connection) c).getRemoteAddress();
+        }
+        closeCon(reason, c);
       }
       synchronized (this.unorderedConnectionMap) {
-         closeCon(reason, this.unorderedConnectionMap.remove(stub));
+        Object c = this.unorderedConnectionMap.remove(stub);
+        if (remoteAddress == null && (c instanceof Connection)) {
+          remoteAddress = ((Connection) c).getRemoteAddress();
+        }
+        closeCon(reason, c);
       }
 
       {
@@ -813,8 +885,13 @@ public class ConnectionTable  {
           ArrayList al = (ArrayList)cm.remove(stub);
           if (al != null) {
             synchronized (al) {
-              for (Iterator it=al.iterator(); it.hasNext();)
-                closeCon(reason, it.next());
+              for (Iterator it=al.iterator(); it.hasNext();) {
+                Object c = it.next();
+                if (remoteAddress == null && (c instanceof Connection)) {
+                  remoteAddress = ((Connection) c).getRemoteAddress();
+                }
+                closeCon(reason, c);
+              }
               al.clear();
             }
           }
@@ -867,7 +944,15 @@ public class ConnectionTable  {
       if (notifyDisconnect) {
         owner.getMemberForStub(stub, false);
       }
+      
+      if (remoteAddress != null) {
+        this.socketCloser.releaseResourcesForAddress(remoteAddress.toString());
+      }
     }
+  }
+  
+  SocketCloser getSocketCloser() {
+    return this.socketCloser;
   }
   
   /** check to see if there are still any receiver threads for the given end-point */

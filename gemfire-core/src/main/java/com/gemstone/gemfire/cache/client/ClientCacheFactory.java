@@ -423,12 +423,15 @@ public class ClientCacheFactory {
    * Add a locator, given its host and port, to this factory.
    * The locator must be a server locator and will be used to discover other running
    * cache servers and locators.
+   * Note that if the host is unknown at the time of this call
+   * the locator will still be added. When the pool is used for
+   * an operation if the host is still unknown an exception will
+   * be thrown.
    * @param host the host name or ip address that the locator is listening on.
    * @param port the port that the locator is listening on
    * @return a reference to <code>this</code>
-   * @throws IllegalArgumentException if <code>host</code> is an unknown host
-   * according to {@link java.net.InetAddress#getByName(String)} or if port is outside
-   * the valid range of [1..65535] inclusive.
+   * @throws IllegalArgumentException if port is outside
+   * the valid range of [0..65535] inclusive.
    * @throws IllegalStateException if a server has already been {@link #addPoolServer added} to this factory.
    */
   public ClientCacheFactory addPoolLocator(String host, int port) {
@@ -441,12 +444,15 @@ public class ClientCacheFactory {
    * Add a server, given its host and port, to this factory.
    * The server must be a cache server and this client will
    * directly connect to without consulting a server locator.
+   * Note that if the host is unknown at the time of this call
+   * the server will still be added. When the pool is used for
+   * an operation if the host is still unknown an exception will
+   * be thrown.
    * @param host the host name or ip address that the server is listening on.
    * @param port the port that the server is listening on
    * @return a reference to <code>this</code>
-   * @throws IllegalArgumentException if <code>host</code> is an unknown host
-   * according to {@link java.net.InetAddress#getByName(String)} or if port is outside
-   * the valid range of [1..65535] inclusive.
+   * @throws IllegalArgumentException if port is outside
+   * the valid range of [0..65535] inclusive.
    * @throws IllegalStateException if a locator has already been {@link #addPoolLocator added} to this factory.
    */
   public ClientCacheFactory addPoolServer(String host, int port) {

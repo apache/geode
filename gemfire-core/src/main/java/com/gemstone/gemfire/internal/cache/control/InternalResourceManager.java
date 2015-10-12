@@ -20,6 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -36,7 +37,6 @@ import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
 import com.gemstone.gemfire.distributed.internal.SerialQueuedExecutorWithDMStats;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
@@ -57,6 +57,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  */
 public class InternalResourceManager implements ResourceManager {
   private static final Logger logger = LogService.getLogger();
+
+  final int MAX_RESOURCE_MANAGER_EXE_THREADS = Integer.getInteger("gemfire.resource.manager.threads", 1);
   
   public enum ResourceType {
     HEAP_MEMORY(0x1), OFFHEAP_MEMORY(0x2), MEMORY(0x3), ALL(0xFFFFFFFF);
@@ -107,18 +109,23 @@ public class InternalResourceManager implements ResourceManager {
     
     // Create a new executor that other classes may use for handling resource
     // related tasks
-    final ThreadGroup thrdGrp = LoggingThreadGroup.createThreadGroup(
+    final ThreadGroup threadGroup = LoggingThreadGroup.createThreadGroup(
         "ResourceManagerThreadGroup", logger);
 
     ThreadFactory tf = new ThreadFactory() {
+      AtomicInteger ai = new AtomicInteger();
       @Override
       public Thread newThread(Runnable r) {
-        Thread thread = new Thread(thrdGrp, r, "ResourceManagerRecoveryThread");
+        int tId = ai.getAndIncrement();
+        Thread thread = new Thread(threadGroup, r,
+        "ResourceManagerRecoveryThread " + tId);
         thread.setDaemon(true);
         return thread;
       }
     };
-    this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, tf);
+    int nThreads = MAX_RESOURCE_MANAGER_EXE_THREADS;
+
+    this.scheduledExecutor = new ScheduledThreadPoolExecutor(nThreads, tf);
 
     // Initialize the load probe
     try {

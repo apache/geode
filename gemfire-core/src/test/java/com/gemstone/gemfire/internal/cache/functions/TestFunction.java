@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -927,7 +927,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
         } else {
           r.put("stopped", ++numTimesStopped);
           for (CacheServer s : servers) {
-            if (((BridgeServerImpl)s).getSystem().getDistributedMember().equals(
+            if (((CacheServerImpl)s).getSystem().getDistributedMember().equals(
                 ((GemFireCacheImpl)CacheFactory.getAnyInstance()).getMyId())) {
               s.stop();
               DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
@@ -954,7 +954,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
       }
       
       for (CacheServer s : servers) {
-        if (((BridgeServerImpl)s).getSystem().getDistributedMember().equals(
+        if (((CacheServerImpl)s).getSystem().getDistributedMember().equals(
             ((GemFireCacheImpl)CacheFactory.getAnyInstance()).getMyId())) {
           s.stop();
           DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
@@ -990,7 +990,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
         } else {
           r.put("stopped", ++numTimesStopped);
           for (CacheServer s : servers) {
-            if (((BridgeServerImpl)s).getSystem().getDistributedMember().equals(
+            if (((CacheServerImpl)s).getSystem().getDistributedMember().equals(
                 ((GemFireCacheImpl)CacheFactory.getAnyInstance()).getMyId())) {
               s.stop();
               DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
@@ -1016,7 +1016,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
       }
       
       for (CacheServer s : servers) {
-        if (((BridgeServerImpl)s).getSystem().getDistributedMember().equals(
+        if (((CacheServerImpl)s).getSystem().getDistributedMember().equals(
             ((GemFireCacheImpl)CacheFactory.getAnyInstance()).getMyId())) {
           s.stop();
           DistributedSystem ds = InternalDistributedSystem.getAnyInstance();

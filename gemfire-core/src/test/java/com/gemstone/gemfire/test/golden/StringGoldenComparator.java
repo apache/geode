@@ -7,12 +7,12 @@ package com.gemstone.gemfire.test.golden;
  */
 public class StringGoldenComparator extends GoldenComparator {
 
-  protected StringGoldenComparator(String[] expectedProblemLines) {
+  protected StringGoldenComparator(final String[] expectedProblemLines) {
     super(expectedProblemLines);
   }
   
   @Override
-  protected boolean compareLines(String actualLine, String goldenLine) {
+  protected boolean compareLines(final String actualLine, final String goldenLine) {
     if (actualLine == null) {
       return goldenLine == null;
     }

@@ -32,14 +32,16 @@ public abstract class TestCacheCallback implements CacheCallback {
   volatile protected Throwable callbackError = null;
 
   /**
-   * Returns wether or not one of this <code>CacheListener</code>
+   * Returns whether or not one of this <code>CacheListener</code>
    * methods was invoked.  Before returning, the <code>invoked</code>
    * flag is cleared.
    */
   public boolean wasInvoked() {
     checkForError();
     boolean value = this.invoked;
-    this.invoked = false;
+    if (value) {
+      this.invoked = false;
+    }
     return value;
   }
   /**
@@ -47,16 +49,19 @@ public abstract class TestCacheCallback implements CacheCallback {
    * Calls wasInvoked and returns its value
    */
   public boolean waitForInvocation(int timeoutMs) {
+    return waitForInvocation(timeoutMs, 200);
+  }
+  public boolean waitForInvocation(int timeoutMs, long interval) {
     if (!this.invoked) {
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
           return invoked;
         }
         public String description() {
-          return null;
+          return "listener was never invoked";
         }
       };
-      DistributedTestCase.waitForCriterion(ev, timeoutMs, 200, true);
+      DistributedTestCase.waitForCriterion(ev, timeoutMs, interval, true);
     }
     return wasInvoked();
   }

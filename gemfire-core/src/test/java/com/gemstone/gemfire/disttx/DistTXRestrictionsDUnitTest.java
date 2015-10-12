@@ -13,7 +13,6 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
  * Same tests as that of {@link TXRestrictionsDUnitTest} after setting
  * "distributed-transactions" property to true
  */
-@Category({DistributedTransactionsTest.class})
 public class DistTXRestrictionsDUnitTest extends TXRestrictionsDUnitTest {
 
   public DistTXRestrictionsDUnitTest(String name) {

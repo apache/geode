@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -322,7 +322,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
     
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(gemfirecache, props, Scope.DISTRIBUTED_ACK);
     assertNotNull(region);
-    BridgeServer bs1 = gemfirecache.addBridgeServer();
+    CacheServer bs1 = gemfirecache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     bs1.setPort(port);
     bs1.start();
@@ -369,7 +369,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
       assertTrue(region.getRegionService().isClosed());
       
       region = null;
-      List bsRunning = gemfirecache.getBridgeServers();
+      List bsRunning = gemfirecache.getCacheServers();
       assertTrue(bsRunning.isEmpty());
     }
     finally {

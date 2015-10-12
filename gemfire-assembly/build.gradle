@@ -112,7 +112,8 @@ def cp = {
       it.contains('spring-core') ||
       it.contains('spring-shell') ||
       it.contains('snappy-java') ||
-      it.contains('hbase')
+      it.contains('hbase') ||
+      it.contains('netty')
     }.join(' ') 
 }
 

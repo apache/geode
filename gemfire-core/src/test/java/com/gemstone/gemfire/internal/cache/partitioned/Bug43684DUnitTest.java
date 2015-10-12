@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
@@ -248,7 +248,7 @@ public class Bug43684DUnitTest extends DistributedTestCase {
       rf.setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(numBuckets).create());
     }
     rf.create(REGION_NAME);
-    BridgeServerImpl server = (BridgeServerImpl)cache.addCacheServer();
+    CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
     server.setPort(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
     server.start();
     return server.getPort();

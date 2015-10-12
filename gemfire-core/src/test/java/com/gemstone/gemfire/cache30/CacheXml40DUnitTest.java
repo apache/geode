@@ -8,7 +8,7 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
 
@@ -56,9 +56,9 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
   public void testBridgeServers() {
     CacheCreation cache = new CacheCreation();
 
-    BridgeServer bridge1 = cache.addBridgeServer();
+    CacheServer bridge1 = cache.addCacheServer();
     setBridgeAttributes(bridge1);
-    BridgeServer bridge2 = cache.addBridgeServer();
+    CacheServer bridge2 = cache.addCacheServer();
     bridge2.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
 
     testXml(cache);
@@ -68,7 +68,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    * Used by testBridgeServers to set version specific attributes
    * @param bridge1 the bridge server to set attributes upon
    */
-  public void setBridgeAttributes(BridgeServer bridge1)
+  public void setBridgeAttributes(CacheServer bridge1)
   {
     bridge1.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
   }

@@ -514,6 +514,7 @@ public interface DiskEntry extends RegionEntry {
         did.setValueLength(re.getValueLength());
         if (re.getRecoveredKeyId() < 0) {
           drv.incNumOverflowOnDisk(1L);
+          drv.incNumOverflowBytesOnDisk(did.getValueLength());
           incrementBucketStats(r, 0/*InVM*/, 1/*OnDisk*/, did.getValueLength());
         }
         else {
@@ -947,6 +948,7 @@ public interface DiskEntry extends RegionEntry {
           // First, undo the stats done for the previous recovered value
           if (oldKeyId < 0) {
             dr.incNumOverflowOnDisk(-1L);
+            dr.incNumOverflowBytesOnDisk(-oldValueLength);
             incrementBucketStats(region, 0/*InVM*/, -1/*OnDisk*/, -oldValueLength);
           } else {
             dr.incNumEntriesInVM(-1L);
@@ -964,6 +966,7 @@ public interface DiskEntry extends RegionEntry {
               
             }
             dr.incNumOverflowOnDisk(1L);
+            dr.incNumOverflowBytesOnDisk(did.getValueLength());
             incrementBucketStats(region, 0/*InVM*/, 1/*OnDisk*/,
                                  did.getValueLength());
           } else {
@@ -981,9 +984,17 @@ public interface DiskEntry extends RegionEntry {
           //disk access exception.
           
           //entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+          
+          if(did != null && did.isPendingAsync()) {
+            //if the entry was not yet written to disk, we didn't update
+            //the bytes on disk.
+            oldValueLength = 0;
+          } else {
+            oldValueLength = getValueLength(did);
+          }
+          
           if (dr.isBackup()) {
             dr.testIsRecoveredAndClear(did); // fixes bug 41409
-            oldValueLength = getValueLength(did);
             if (dr.isSync()) {
               //In case of compression the value is being set first 
               // because atleast for now , GemFireXD does not support compression
@@ -1054,6 +1065,7 @@ public interface DiskEntry extends RegionEntry {
               // done by lruEntryUpdate
               dr.incNumEntriesInVM(1L);
               dr.incNumOverflowOnDisk(-1L);
+              dr.incNumOverflowBytesOnDisk(-oldValueLength);
               incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -oldValueLength);
             }
           }
@@ -1092,6 +1104,7 @@ public interface DiskEntry extends RegionEntry {
       DiskId did = entry.getDiskId();
       synchronized (did) {
         boolean oldValueWasNull = entry.isValueNull();
+        int oldValueLength = did.getValueLength();
         // Now that oplog creates are immediately put in cache
         // a later oplog modify will get us here
         long oldOplogId = did.getOplogId();
@@ -1126,6 +1139,9 @@ public interface DiskEntry extends RegionEntry {
             // done by lruEntryUpdate
             drv.incNumEntriesInVM(1L);
             drv.incNumOverflowOnDisk(-1L);
+            drv.incNumOverflowBytesOnDisk(-oldValueLength);
+            //No need to call incrementBucketStats here because we don't have
+            //a real bucket region, this is during recovery from disk.
           }
         }
       }
@@ -1419,6 +1435,7 @@ public interface DiskEntry extends RegionEntry {
       entry.setValueWithContext((RegionEntryContext) region, preparedValue);
       dr.incNumEntriesInVM(1L);
       dr.incNumOverflowOnDisk(-1L);
+      dr.incNumOverflowBytesOnDisk(-bytesOnDisk);
       incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -bytesOnDisk);
       return preparedValue;
     }
@@ -1546,12 +1563,13 @@ public interface DiskEntry extends RegionEntry {
           movedValueToDisk = true;
           change = ((LRUClockNode)entry).updateEntrySize(ccHelper);
         }
-        dr.incNumEntriesInVM(-1L);
-        dr.incNumOverflowOnDisk(1L);
         int valueLength = 0;
         if (movedValueToDisk) {
           valueLength = getValueLength(did);
         }
+        dr.incNumEntriesInVM(-1L);
+        dr.incNumOverflowOnDisk(1L);
+        dr.incNumOverflowBytesOnDisk(valueLength);
         incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/, valueLength);
       }
       } finally {
@@ -1588,6 +1606,7 @@ public interface DiskEntry extends RegionEntry {
             try {
               if (Token.isRemovedFromDisk(entryVal)) {
                 // onDisk was already deced so just do the valueLength here
+                dr.incNumOverflowBytesOnDisk(-did.getValueLength());
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      -did.getValueLength());
                 dr.remove(region, entry, true, false);
@@ -1618,6 +1637,7 @@ public interface DiskEntry extends RegionEntry {
                 region.updateSizeOnEvict(entry.getKey(), entryValSize);
                 // note the old size was already accounted for
                 // onDisk was already inced so just do the valueLength here
+                dr.incNumOverflowBytesOnDisk(did.getValueLength());
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      did.getValueLength());
                 try {
@@ -1699,6 +1719,7 @@ public interface DiskEntry extends RegionEntry {
               if (Token.isRemovedFromDisk(entryVal)) {
                 if (region.isThisRegionBeingClosedOrDestroyed()) return;
                 // onDisk was already deced so just do the valueLength here
+                dr.incNumOverflowBytesOnDisk(-did.getValueLength());
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      -did.getValueLength());
                 dr.remove(region, entry, true, false);
@@ -1737,6 +1758,7 @@ public interface DiskEntry extends RegionEntry {
                 region.updateSizeOnEvict(entry.getKey(), entryValSize);
                 // note the old size was already accounted for
                 // onDisk was already inced so just do the valueLength here
+                dr.incNumOverflowBytesOnDisk(did.getValueLength());
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      did.getValueLength());
                 try {
@@ -1844,6 +1866,7 @@ public interface DiskEntry extends RegionEntry {
         }
         if (valueWasNull) {
           dr.incNumOverflowOnDisk(-1L);
+          dr.incNumOverflowBytesOnDisk(-oldValueLength);
           incrementBucketStats(region, 0/*InVM*/, -1/*OnDisk*/, -oldValueLength);
         }
         else {

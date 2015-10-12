@@ -24,8 +24,8 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -257,7 +257,7 @@ public class QueueStateImpl implements QueueState {
         return;
       }
       if (PoolImpl.BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.beforeSendingClientAck();
       }
       //if ((qManager.getPool().getSubscriptionRedundancy() != 0) || (qManager.getPool().isDurableClient())) {

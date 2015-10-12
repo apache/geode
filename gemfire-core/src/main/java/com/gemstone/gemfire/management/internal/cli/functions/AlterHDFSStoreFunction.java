@@ -19,8 +19,6 @@ import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator.HDFSCompactionConfigMutator;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator.HDFSEventQueueAttributesMutator;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreMutatorImpl;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.InternalEntity;
@@ -107,39 +105,35 @@ public class AlterHDFSStoreFunction extends FunctionAdapter implements InternalE
     HDFSStoreMutator storeMutator = new HDFSStoreMutatorImpl(hdfsStore);
   
 		if (alterAttributes.getFileRolloverInterval() != null)
-			storeMutator.setFileRolloverInterval(alterAttributes
+			storeMutator.setWriteOnlyFileRolloverInterval(alterAttributes
 					.getFileRolloverInterval());
 
 		if (alterAttributes.getMaxWriteonlyFileSize() != null)
-			storeMutator.setMaxFileSize(alterAttributes.getMaxWriteonlyFileSize());
-
-		HDFSCompactionConfigMutator compactionMutator = storeMutator.getCompactionConfigMutator();
+			storeMutator.setWriteOnlyFileRolloverSize(alterAttributes.getMaxWriteonlyFileSize());
 
 		if (alterAttributes.getMinorCompact() != null)
 			storeMutator.setMinorCompaction(alterAttributes.getMinorCompact());
 
 		if (alterAttributes.getMajorCompact() != null)
-			compactionMutator.setAutoMajorCompaction(alterAttributes.getMajorCompact());
+		  storeMutator.setMajorCompaction(alterAttributes.getMajorCompact());
 
 		if (alterAttributes.getMajorCompactionInterval() != null)
-			compactionMutator.setMajorCompactionIntervalMins(alterAttributes.getMajorCompactionInterval());
+		  storeMutator.setMajorCompactionInterval(alterAttributes.getMajorCompactionInterval());
 
 		if (alterAttributes.getMajorCompactionThreads() != null)
-			compactionMutator.setMajorCompactionMaxThreads(alterAttributes.getMajorCompactionThreads());
+		  storeMutator.setMajorCompactionThreads(alterAttributes.getMajorCompactionThreads());
 
 		if (alterAttributes.getMajorCompactionThreads() != null)
-			compactionMutator.setMaxThreads(alterAttributes.getMajorCompactionThreads());
+		  storeMutator.setMinorCompactionThreads(alterAttributes.getMajorCompactionThreads());
 
 		if (alterAttributes.getPurgeInterval() != null)
-			compactionMutator.setOldFilesCleanupIntervalMins(alterAttributes.getPurgeInterval());
+			storeMutator.setPurgeInterval(alterAttributes.getPurgeInterval());
 
-		HDFSEventQueueAttributesMutator eventQueueMutator = storeMutator.getHDFSEventQueueAttributesMutator();
-		
 		if (alterAttributes.getBatchSize() != null)
-			eventQueueMutator.setBatchSizeMB(alterAttributes.getBatchSize());
+		  storeMutator.setBatchSize(alterAttributes.getBatchSize());
 
 		if (alterAttributes.getBatchInterval() != null)
-			eventQueueMutator.setBatchTimeInterval(alterAttributes.getBatchInterval());
+		  storeMutator.setBatchInterval(alterAttributes.getBatchInterval());
 
 		hdfsStore.alter(storeMutator);
 		return hdfsStore;

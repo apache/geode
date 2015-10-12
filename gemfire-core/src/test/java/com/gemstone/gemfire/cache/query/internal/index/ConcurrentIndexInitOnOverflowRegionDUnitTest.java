@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager.TestHook;
 import com.gemstone.gemfire.cache.query.partitioned.PRQueryDUnitHelper;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
@@ -200,7 +200,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
         Region partitionRegion = null;
         IndexManager.testHook = null;
         try {
-          BridgeServer bridge = cache.addBridgeServer();
+          CacheServer bridge = cache.addCacheServer();
           bridge.setPort(0);
           bridge.start();
           bridgeServerPort = bridge.getPort();

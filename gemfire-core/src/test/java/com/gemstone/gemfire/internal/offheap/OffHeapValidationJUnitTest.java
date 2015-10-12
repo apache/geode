@@ -5,10 +5,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,9 +36,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.compression.SnappyCompressor;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
@@ -87,7 +94,7 @@ public class OffHeapValidationJUnitTest {
   }
   
   @Test
-  public void testMemoryInspection() {
+  public void testMemoryInspection() throws IOException {
     // validate initial state
     MemoryAllocator allocator = this.cache.getOffHeapStore();
     assertNotNull(allocator);
@@ -113,6 +120,7 @@ public class OffHeapValidationJUnitTest {
     
     // create off-heap region
     Region<Object, Object> region = this.cache.createRegionFactory(getRegionShortcut()).setOffHeap(true).create(getRegionName());
+    Region<Object, Object> compressedRegion = this.cache.createRegionFactory(getRegionShortcut()).setOffHeap(true).setCompressor(SnappyCompressor.getDefaultInstance()).create(getRegionName()+"Compressed");
     
     // perform some ops
     List<ExpectedValues> expected = new ArrayList<ExpectedValues>();
@@ -120,8 +128,10 @@ public class OffHeapValidationJUnitTest {
     // Chunk.OFF_HEAP_HEADER_SIZE + 4 ?
     
     putString(region, expected);
+    putCompressedString(compressedRegion, expected);
     putDate(region, expected);
     putByteArray(region, expected);
+    putCompressedByteArray(compressedRegion, expected);
     putByteArrayArray(region, expected);
     putShortArray(region, expected);
     putStringArray(region, expected);
@@ -189,8 +199,11 @@ public class OffHeapValidationJUnitTest {
         assertTrue(obj instanceof String);
         assertEquals("this is a string", (String)obj);
       }
-      if (values.dataType.contains("[")) { //for (int j = 0; j < ((byte[])values.dataValue).length; j++) {
-        // TODO
+      if ((values.dataType.contains("byte [") && values.dataType.lastIndexOf('[') == values.dataType.indexOf('[')) || values.dataType.startsWith("compressed")) {
+        assertTrue("for dataType=" + values.dataType + " expected " + Arrays.toString((byte[])values.dataValue) + " but was " + Arrays.toString((byte[])block.getDataValue()),
+            Arrays.equals((byte[])values.dataValue, (byte[])block.getDataValue()));
+      } else if (values.dataType.contains("[")) {
+        // TODO: multiple dimension arrays or non-byte arrays
       } else if (values.dataValue instanceof Collection) {
         int diff = joint((Collection<?>)values.dataValue, (Collection<?>)block.getDataValue());
         assertEquals(i + ":" + values.dataType, 0, diff);
@@ -214,14 +227,6 @@ public class OffHeapValidationJUnitTest {
 
     // validate more inspection
     
-  }
-  
-  @Test
-  public void testCompaction() {
-    // create fragmented state
-    // validate fragmented
-    // perform compaction
-    // validate freed fragments
   }
   
   /**
@@ -289,6 +294,17 @@ public class OffHeapValidationJUnitTest {
     expected.add(new ExpectedValues(value, value.length()*2, "java.lang.String", -1, getMemoryAddress(region, key), 1, 0, false, true));
   }
   
+  private void putCompressedString(Region<Object, Object> region, List<ExpectedValues> expected) throws IOException {
+    String key = "keyString";
+    String value = "this is a string";
+    region.put(key, value);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(value, hdos);
+    byte[] uncompressedBytes = hdos.toByteArray();
+    byte[] expectedValue = SnappyCompressor.getDefaultInstance().compress(uncompressedBytes);
+    expected.add(new ExpectedValues(expectedValue, 32, "compressed object of size " + expectedValue.length, -1, getMemoryAddress(region, key), 1, 0, true, true));
+  }
+
   private void putDate(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyDate";
     Date value = new Date();
@@ -301,6 +317,13 @@ public class OffHeapValidationJUnitTest {
     byte[] value = new byte[10];
     region.put(key, value);
     expected.add(new ExpectedValues(value, 24, "byte[10]", -1, getMemoryAddress(region, key), 1, 0, false, false));
+  }
+  private void putCompressedByteArray(Region<Object, Object> region, List<ExpectedValues> expected) throws IOException {
+    String key = "keyByteArray";
+    byte[] value = new byte[10];
+    region.put(key, value);
+    byte[] expectedValue = SnappyCompressor.getDefaultInstance().compress(value);
+    expected.add(new ExpectedValues(expectedValue, 24, "compressed byte[" + expectedValue.length + "]", -1, getMemoryAddress(region, key), 1, 0, true, false));
   }
   
   private void putByteArrayArray(Region<Object, Object> region, List<ExpectedValues> expected) {

@@ -63,12 +63,11 @@ import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisee;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import com.gemstone.gemfire.internal.cache.Conflatable;
@@ -116,6 +115,8 @@ public class CacheClientProxy implements ClientSession {
    * The socket between the server and the client
    */
   protected Socket _socket;
+  
+  private final AtomicBoolean _socketClosed = new AtomicBoolean();
 
   /**
    * A communication buffer used by each message we send to the client
@@ -960,10 +961,7 @@ public class CacheClientProxy implements ClientSession {
       // to fix bug 37684
       // 1. check to see if dispatcher is still alive
       if (this._messageDispatcher.isAlive()) {
-        if (this._socket != null && !this._socket.isClosed()) {
-          SocketCreator.asyncClose(this._socket, this._remoteHostAddress, null);
-          getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
-        }
+        closeSocket();
         destroyRQ();
         alreadyDestroyed = true;
         this._messageDispatcher.interrupt();
@@ -996,19 +994,27 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  private void closeTransientFields() {
-    // Close the socket
-    if (this._socket != null && !this._socket.isClosed()) {
-      try {
-        this._socket.close();
-        getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
-      } catch (IOException e) {/*ignore*/}
+  private void closeSocket() {
+    if (this._socketClosed.compareAndSet(false, true)) {
+      // Close the socket
+      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, this._remoteHostAddress, null);
+      getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
     }
+  }
+  
+  private void closeTransientFields() {
+    closeSocket();
 
     // Null out comm buffer, host address, ports and proxy id. All will be
     // replaced when the client reconnects.
     releaseCommBuffer();
-    this._remoteHostAddress = null;
+    {
+      String remoteHostAddress = this._remoteHostAddress;
+      if (remoteHostAddress != null) {
+        this._cacheClientNotifier.getSocketCloser().releaseResourcesForAddress(remoteHostAddress);
+        this._remoteHostAddress = null;
+      }
+    }
     try {
       this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
     } catch (CacheClosedException e) {
@@ -2790,7 +2796,7 @@ public class CacheClientProxy implements ClientSession {
             latestValue);
         
         if (AFTER_MESSAGE_CREATION_FLAG) {
-          BridgeObserver bo = BridgeObserverHolder.getInstance();
+          ClientServerObserver bo = ClientServerObserverHolder.getInstance();
           bo.afterMessageCreation(message);
         }
      }

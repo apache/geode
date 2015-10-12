@@ -7,7 +7,7 @@
  */
 package com.gemstone.gemfire.management.membership;
 
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 
 /**
  * Provides utility methods for registering and unregistering
@@ -29,7 +29,7 @@ public final class ClientMembership {
    *          a ClientMembershipListener to be registered
    */
   public static void registerClientMembershipListener(ClientMembershipListener listener) {
-    InternalBridgeMembership.registerClientMembershipListener(listener);
+    InternalClientMembership.registerClientMembershipListener(listener);
   }
 
   /**
@@ -40,7 +40,7 @@ public final class ClientMembership {
    *          a ClientMembershipListener to be unregistered
    */
   public static void unregisterClientMembershipListener(ClientMembershipListener listener) {
-    InternalBridgeMembership.unregisterClientMembershipListener(listener);
+    InternalClientMembership.unregisterClientMembershipListener(listener);
   }
 
   /**
@@ -52,7 +52,7 @@ public final class ClientMembership {
    *         array if no listeners
    */
   public static ClientMembershipListener[] getClientMembershipListeners() {
-    return InternalBridgeMembership.getClientMembershipListeners();
+    return InternalClientMembership.getClientMembershipListeners();
   }
 
 }

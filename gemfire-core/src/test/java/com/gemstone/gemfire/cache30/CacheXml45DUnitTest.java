@@ -9,7 +9,7 @@ package com.gemstone.gemfire.cache30;
 
 import com.company.app.DBLoader;
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
@@ -46,7 +46,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
   
 
   
-  public void setBridgeAttributes(BridgeServer bridge1)
+  public void setBridgeAttributes(CacheServer bridge1)
   {
     super.setBridgeAttributes(bridge1);
     bridge1.setMaxConnections(100);

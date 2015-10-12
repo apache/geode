@@ -44,7 +44,7 @@ public class PartitionedRegionObserverHolder {
     return oldObserver;
   }
 
-  /** Return the current BridgeObserver instance */
+  /** Return the current ClientServerObserver instance */
   public static final PartitionedRegionObserver getInstance()
   {
     return _instance;

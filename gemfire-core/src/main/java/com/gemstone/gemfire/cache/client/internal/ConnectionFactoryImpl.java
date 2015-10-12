@@ -20,9 +20,8 @@ import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
 import com.gemstone.gemfire.cache.client.internal.ServerBlackList.FailureTracker;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.PoolCancelledException;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientUpdater;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -54,7 +53,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   private final CancelCriterion cancelCriterion;
   private ConnectionSource source;
   private int readTimeout;
-  private DistributedSystem ds;
+  private InternalDistributedSystem ds;
   private EndpointManager endpointManager;
   private GatewaySender gatewaySender;
   private PoolImpl pool;
@@ -67,7 +66,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   public static boolean testFailedConnectionToServer = false;
     
   public ConnectionFactoryImpl(ConnectionSource source,
-      EndpointManager endpointManager, DistributedSystem sys,
+      EndpointManager endpointManager, InternalDistributedSystem sys,
       int socketBufferSize, int handShakeTimeout, int readTimeout,
       ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion,
       boolean usedByGateway, GatewaySender sender,long pingInterval,

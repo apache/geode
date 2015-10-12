@@ -7,9 +7,7 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException; 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,9 +17,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.util.EndpointDoesNotExistException;
-import com.gemstone.gemfire.cache.util.EndpointExistsException;
-import com.gemstone.gemfire.cache.util.EndpointInUseException;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
@@ -64,15 +59,18 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     this.serverList = Collections.unmodifiableList(serverList);
   }
 
+  @Override
   public synchronized void start(InternalPool pool) {
     this.pool = pool;
     pool.getStats().setInitialContacts(serverList.size());
   }
   
+  @Override
   public void stop() {
     //do nothing
   }
 
+  @Override
   public ServerLocation findReplacementServer(ServerLocation currentServer, Set/*<ServerLocation>*/ excludedServers) {
     // at this time we always try to find a server other than currentServer
     // and if we do return it. Otherwise return null;
@@ -85,6 +83,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     return findServer(excludedPlusCurrent);
   }
   
+  @Override
   public synchronized ServerLocation findServer(Set excludedServers) {
     if(PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return null;
@@ -109,6 +108,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
    * connect to every server in the system to find where our durable
    * queue lives.
    */
+  @Override
   public synchronized List findServersForQueue(Set excludedServers,
       int numServers, ClientProxyMembershipID proxyId, boolean findDurableQueue) {
     if(PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
@@ -124,80 +124,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     }
   }
   
-  /**
-   * Remove an endpoint from this connection source.
-   * 
-   * @param host
-   * @param port
-   * @throws EndpointDoesNotExistException if the <code>Endpoint</code> to be
-   * removed doesn't exist.
-   */
-  public synchronized void removeEndpoint(String host,int port) throws EndpointInUseException,EndpointDoesNotExistException {
-    serverList = new ArrayList(serverList);
-    Iterator it = serverList.iterator();
-    boolean found = false;
-    host = lookupHostName(host);
-    while(it.hasNext()) {
-      ServerLocation loc = (ServerLocation)it.next();
-      if(loc.getHostName().equalsIgnoreCase(host)) {
-        if(loc.getPort()==port) {
-          EndpointManager em = pool.getEndpointManager();
-          if(em.getEndpointMap().containsKey(loc)) {
-            throw new EndpointInUseException("Endpoint in use cannot be removed:"+loc);
-          } else {
-            it.remove();
-            found = true;
-          }
-        }
-      }
-    }
-    serverList = Collections.unmodifiableList(serverList);
-    if(!found) {
-      throw new EndpointDoesNotExistException("endpointlist:"+serverList,host,port);
-    }
-  }
-  
-  /**
-   * Add an endpoint to this connection source.
-   * 
-   * @param host
-   * @param port
-   * @throws EndpointExistsException if the <code>Endpoint</code> to be
-   * added already exists.
-   */
-  public synchronized void addEndpoint(String host,int port) throws EndpointExistsException {
-    Iterator it = serverList.iterator();
-    host = lookupHostName(host);
-    while(it.hasNext()) {
-      ServerLocation loc = (ServerLocation)it.next();
-      if(loc.getHostName().equalsIgnoreCase(host)) {
-        if(loc.getPort()==port) {
-          throw new EndpointExistsException("Endpoint already exists host="+host+" port="+port);
-        }
-      }
-    }
-    serverList = new ArrayList(serverList);
-    serverList.add(new ServerLocation(host,port));
-    serverList = Collections.unmodifiableList(serverList);
-  }
- 
-  /**
-   * When we create an ExplicitConnectionSource, we convert a the hostname of an
-   * endpoint from a string to an InetAddress and back. This method duplicates
-   * that process for endpoints that are added or removed after the fact.
-   */
-  private String lookupHostName(String host) {
-    try {
-      InetAddress hostAddr = InetAddress.getByName(host);
-      host = hostAddr.getHostName();
-    } catch (UnknownHostException cause) {
-      IllegalArgumentException ex = new IllegalArgumentException("Unknown host " + host);
-      ex.initCause(cause);
-      throw ex;
-    }
-    return host;
-  } 
-
+  @Override
   public boolean isBalanced() {
     return false;
   }

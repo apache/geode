@@ -24,6 +24,7 @@ import com.gemstone.gemfire.cache.CommitConflictException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
@@ -31,7 +32,6 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.Position;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -39,8 +39,8 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 
+import dunit.DistributedTestCase;
 import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
@@ -157,13 +157,14 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //operations we have done on this vm consist of:
           //numPortfoliosPerVM instances of Portfolio created for put operation
           //Due to index, we have deserialized all of the entries this vm currently host
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(),((PartitionedRegion)region).getLocalSize() + numPortfoliosPerVM , Portfolio.instanceCount.get());
+          Index index = getCache().getQueryService().getIndex(region, "idIndex");
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)index.getStatistics().getNumberOfValues() + numPortfoliosPerVM), 5000, 200, true);
         }
         else {
           //operations we have done on this vm consist of:
           //numPortfoliosPerVM instances of Portfolio created for put operation
           //We do not have an index, so we have not deserialized any values
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfoliosPerVM , Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfoliosPerVM), 5000, 200, true);
         }
         return null;
       }
@@ -184,13 +185,14 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //operations we have done on this vm consist of:
           //numPortfoliosPerVM instances of Portfolio created for put operation
           //Due to index, we have deserialized all of the entries this vm currently host
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), ((PartitionedRegion)region).getLocalSize() + numPortfoliosPerVM, Portfolio.instanceCount.get());
+          Index index = getCache().getQueryService().getIndex(region, "idIndex");
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)index.getStatistics().getNumberOfValues() + numPortfoliosPerVM), 5000, 200, true);
         }
         else {
           //operations we have done on this vm consist of:
           //numPortfoliosPerVM instances of Portfolio created for put operation
           //We do not have an index, so we have not deserialized any values
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfoliosPerVM, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfoliosPerVM), 5000, 200, true);
         }
         return null;
       }
@@ -219,14 +221,15 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //50 instances of Portfolio created for put operation
           //Due to index, we have deserialized all of the entries this vm currently host
           //Since we have deserialized and cached these values, we just need to add the number of results we did a copy of due to copy on read
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), ((PartitionedRegion)region).getLocalSize() + numPortfoliosPerVM + numExpectedResults, Portfolio.instanceCount.get());
+          Index index = getCache().getQueryService().getIndex(region, "idIndex");
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)index.getStatistics().getNumberOfValues() + numPortfoliosPerVM + numExpectedResults), 5000, 200, true);
         }
         else {
           //operations we have done on this vm consist of:
           //50 instances of Portfolio created for put operation
           //Due to the query we deserialized the number of entries this vm currently hosts
           //We had to deserialized the results from the other data nodes when we iterated through the results as well as our own
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(),((PartitionedRegion)region).getLocalSize() + numExpectedResults + numPortfoliosPerVM , Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)((PartitionedRegion)region).getLocalSize() + numExpectedResults + numPortfoliosPerVM), 5000, 200, true);
         }
         return null;
       }
@@ -238,11 +241,11 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         if (hasIndex) {
           //After vm0 executed the query, we already had the values deserialized in our cache
           //So it's the same total as before
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), ((PartitionedRegion)region).getLocalSize() + numPortfoliosPerVM, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)((PartitionedRegion)region).getLocalSize() + numPortfoliosPerVM), 5000, 200, true);
         }
         else {
           //After vm0 executed the query, we had to deserialize the values in our vm
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), ((PartitionedRegion)region).getLocalSize() + numPortfoliosPerVM, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)((PartitionedRegion)region).getLocalSize() + numPortfoliosPerVM), 5000, 200, true);
         }
         return null;
       }
@@ -271,7 +274,8 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //50 instances of Portfolio created for put operation
           //Due to index, we have deserialized all of the entries this vm currently host
           //This is the second query, because we have deserialized and cached these values, we just need to add the number of results a second time
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), ((PartitionedRegion)region).getLocalSize() + numExpectedResults + numExpectedResults + numPortfoliosPerVM, Portfolio.instanceCount.get());
+          Index index = getCache().getQueryService().getIndex(region, "idIndex");
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)index.getStatistics().getNumberOfValues() + numExpectedResults + numExpectedResults + numPortfoliosPerVM), 5000, 200, true);
         }
         else {
         //operations we have done on this vm consist of:
@@ -279,7 +283,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //Due to index, we have deserialized all of the entries this vm currently host
           //This is the second query, because we have deserialized and cached these values, we just need to add the number of results a second time
           //Because we have no index, we have to again deserialize all the values that this vm is hosting
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(),((PartitionedRegion)region).getLocalSize() + ((PartitionedRegion)region).getLocalSize() + numExpectedResults + numExpectedResults + numPortfoliosPerVM, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)(((PartitionedRegion)region).getLocalSize() + ((PartitionedRegion)region).getLocalSize() + numExpectedResults + numExpectedResults + numPortfoliosPerVM)), 5000, 200, true);
         }
         return null;
       }
@@ -333,7 +337,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         }
         
         //We should have the same number of portfolio objects that we created for the put
-        assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfolios , Portfolio.instanceCount.get());
+        DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfolios), 5000, 200, true);
         return null;
       }
     });
@@ -342,7 +346,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         //At this point, we should only have serialized values in this vm
         Region region = getCache().getRegion("/portfolios");
-        assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), 0, Portfolio.instanceCount.get());
+        DistributedTestCase.waitForCriterion(verifyPortfolioCount(0), 0, 200, true);
         return null;
       }
     });
@@ -352,10 +356,10 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         //There is an index for vm2, so we should have deserialized values at this point,
         Region region = getCache().getRegion("/portfolios");
         if (hasIndex) {
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfolios, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfolios), 0, 200, true);
         }
         else {
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), 0, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount(0), 0, 200, true);
         }
         return null;
       }
@@ -397,7 +401,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         
         //We have created puts from our previous callable
         //Now we have copied the results from the query 
-        assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numExpectedResults + numPortfolios, Portfolio.instanceCount.get());
+        DistributedTestCase.waitForCriterion(verifyPortfolioCount(numExpectedResults + numPortfolios), 0, 200, true);
         return null;
       }
     });
@@ -425,8 +429,8 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         }
         //first it must deserialize the portfolios in the replicated region
         //then we do a copy on read of these deserialized objects for the final result set
-        assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfolios + numExpectedResults, Portfolio.instanceCount.get());
-        
+        DistributedTestCase.waitForCriterion(verifyPortfolioCount(numExpectedResults + numPortfolios), 0, 200, true);
+
         results = (SelectResults) query.execute();
         assertEquals(numExpectedResults, results.size());
         for (Object o: results) {
@@ -443,8 +447,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
       
         //we never created index on vm1
         //so in this case, we always have to deserialize the value from the region
-        assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfolios * 2 + numExpectedResults * 2, Portfolio.instanceCount.get());
-
+        DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfolios * 2 + numExpectedResults * 2), 0, 200, true);
         return null;
       }
     });
@@ -471,8 +474,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           }
         }
         //with or without index, the values had to have been deserialized at one point
-        assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfolios + numExpectedResults, Portfolio.instanceCount.get());
-        
+        DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfolios + numExpectedResults), 0, 200, true);        
         results = (SelectResults) query.execute();
         assertEquals(numExpectedResults, results.size());
         for (Object o: results) {
@@ -492,12 +494,12 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //we have an index, so the values are already deserialized
           //total is now our original deserialization amount : numPortfolios
           //two query results copied.
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfolios + numExpectedResults * 2, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfolios + numExpectedResults * 2), 0, 200, true);        
         }
         else {
           //we never created index on vm1
           //so in this case, we always have to deserialize the value from the region
-          assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(), numPortfolios * 2 + numExpectedResults * 2, Portfolio.instanceCount.get());
+          DistributedTestCase.waitForCriterion(verifyPortfolioCount(numPortfolios * 2 + numExpectedResults * 2), 0, 200, true);        
         }
         return null;
       }
@@ -524,7 +526,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         }
         
         //with or without index, the values we put in the region were already deserialized values
-        assertEquals("Incorrect number of portfolio instances"+ Portfolio.instanceCount.get(),numExpectedResults * 2 + numPortfolios, Portfolio.instanceCount.get());
+        DistributedTestCase.waitForCriterion(verifyPortfolioCount(numExpectedResults * 2 + numPortfolios), 0, 200, true);        
         return null;
       }
     });
@@ -605,7 +607,19 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
     p.setProperty(DistributionConfig.LOCATORS_NAME, "");
     return p;
   }
-  
+
+  private WaitCriterion verifyPortfolioCount(final int expected) {
+    return new WaitCriterion() {
+      private int expectedCount = expected;
+      public boolean done() {
+        return expectedCount == Portfolio.instanceCount.get();
+      }
+      
+      public String description() {
+        return "verifying number of object instances created";
+      }
+    };
+  }
   
 
 }

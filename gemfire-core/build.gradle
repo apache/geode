@@ -92,16 +92,6 @@ sourceSets {
   }
 }
  
-
-//  task rerunTest(type:Test) {
-//    include '**/CacheXml81DUnitTest.class'
-//    include '**/CacheXml82DUnitTest.class'
-//    include '**/ServerLauncherLocalDUnitTest.class'
-//    include '**/ServerLauncherLocalFileDUnitTest.class'
-//    include '**/JSONPdxClientServerDUnitTest.class'
-//    include '**/PRColocatedEquiJoinDUnitTest.class'
-//  }
-
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
@@ -109,10 +99,22 @@ task createVersionPropertiesFile {
   inputs.dir compileJava.destinationDir
 
   doLast {
-    def gitFolder = new File ("${rootProject.projectDir}/.git")
-    if ( gitFolder.exists() ) {
+    new ByteArrayOutputStream().withStream { gitWorkspaceStream ->
+      def result = exec {
+        workingDir = "${projectDir}"
+        standardOutput = gitWorkspaceStream
+        ignoreExitValue = true
+        executable = "git"
+        args = ['rev-parse', '--is-inside-work-tree']
+      }
+      ext.isGitWorkspace = gitWorkspaceStream.toString()
+      ext.isGitWorkspace = ext.isGitWorkspace.trim()
+    }
+
+    if ( isGitWorkspace.equalsIgnoreCase('true') ) {
       new ByteArrayOutputStream().withStream { gitBranchStream ->
         def result = exec {
+          workingDir = "${projectDir}"
           standardOutput = gitBranchStream
           executable = "git"
           args = ['rev-parse', '--abbrev-ref', 'HEAD']
@@ -123,6 +125,7 @@ task createVersionPropertiesFile {
 
       new ByteArrayOutputStream().withStream { commitStream ->
         def result = exec {
+          workingDir = "${projectDir}"
           standardOutput = commitStream
           executable = "git"
           args = ['rev-parse', 'HEAD']
@@ -133,6 +136,7 @@ task createVersionPropertiesFile {
 
       new ByteArrayOutputStream().withStream { sourceDateStream ->
         def result = exec {
+          workingDir = "${projectDir}"
           standardOutput = sourceDateStream
           executable = "git"
           args = ['show', '-s', '--format=%ci', "${ext.commitId}"]
@@ -156,7 +160,7 @@ task createVersionPropertiesFile {
     ext.jdkVersion = System.getProperty('java.version')
 
     def props = [
-      "Product-Name"      : "Pivotal GemFire",
+      "Product-Name"      : "Apache Geode (incubating)",
       "Product-Version"   : version,
       "Build-Id"          : System.env.USER + ' ' + ext.buildNumber,
       "Build-Date"        : ext.buildDate,

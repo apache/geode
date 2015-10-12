@@ -3,7 +3,7 @@ package com.gemstone.gemfire.internal.redis;
 
 public class RedisConstants {
 
-  public static final int NUM_DEFAULT_KEYS = 4;
+  public static final int NUM_DEFAULT_KEYS = 3;
 
   /*
    * Responses
@@ -31,6 +31,9 @@ public class RedisConstants {
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
   public static final String ERROR_NESTED_MULTI = "The MULTI command cannot be nested";
   public static final String ERROR_NAN_INF_INCR = "increment would produce NaN or Infinity";
+  public static final String ERROR_NO_PASS = "Attempting to authenticate when no password has been set";
+  public static final String ERROR_INVALID_PWD = "Attemping to authenticate with an invalid password";
+  public static final String ERROR_NOT_AUTH = "Must authenticate before sending any requests";
   
   public static class ArityDef {
 
@@ -38,6 +41,7 @@ public class RedisConstants {
      * General 
      */
     public static final int DBSIZE_ARITY = 0;
+    public static final String AUTH =           "The wrong number of arguments or syntax was provided, the format for the AUTH command is \"AUTH password\"";
     public static final String DBSIZE =         null;
     public static final String DEL =            "The wrong number of arguments or syntax was provided, the format for the DEL command is \"DEL key [key ...]\"";
     public static final String ECHO =           "The wrong number of arguments or syntax was provided, the format for the ECHO command is \"ECHO message\"";

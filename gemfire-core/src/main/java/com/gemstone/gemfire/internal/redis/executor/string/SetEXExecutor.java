@@ -24,7 +24,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionCache().getStringsRegion();
+    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
@@ -54,7 +54,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
     checkAndSetDataType(key, context);
     r.put(key, new ByteArrayWrapper(value));
 
-    context.getRegionCache().setExpiration(key, expiration);
+    context.getRegionProvider().setExpiration(key, expiration);
 
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
 

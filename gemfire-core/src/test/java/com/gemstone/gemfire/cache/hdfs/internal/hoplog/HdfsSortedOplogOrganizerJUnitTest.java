@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.hdfs.HDFSIOException;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore.HDFSCompactionConfig;
+import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreMutator;
 import com.gemstone.gemfire.cache.hdfs.internal.PersistedEventImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.SortedHoplogPersistedEvent;
@@ -418,7 +418,7 @@ public class HdfsSortedOplogOrganizerJUnitTest extends BaseHoplogTestCase {
             markers.add(marker);
           }
           // inject a dummy old expiry marker for major compacted file
-          long age = 2 * HDFSCompactionConfig.DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS * 60 * 1000;
+          long age = 2 * HDFSStore.DEFAULT_MAJOR_COMPACTION_INTERVAL_MINS * 60 * 1000;
           String markerName = "0-2-2222" + AbstractHoplogOrganizer.MAJOR_HOPLOG_EXTENSION + EXPIRED_HOPLOG_EXTENSION;
           FileStatus marker = new FileStatus(0, false, 1, 1024, System.currentTimeMillis() - age, new Path(bucketPath, markerName));
           markers.add(marker);
@@ -509,7 +509,7 @@ public class HdfsSortedOplogOrganizerJUnitTest extends BaseHoplogTestCase {
     assertEquals(0, count);
     
     HDFSStoreMutator mutator = hdfsStore.createHdfsStoreMutator();
-    mutator.getCompactionConfigMutator().setOldFilesCleanupIntervalMins(1);
+    mutator.setPurgeInterval(1);
     hdfsStore.alter(mutator);
     count = organizer.initiateCleanup();
     assertEquals(4, count);
@@ -727,7 +727,7 @@ public class HdfsSortedOplogOrganizerJUnitTest extends BaseHoplogTestCase {
       assertEquals(0, majorCReqCount.get());
     }
     HDFSStoreMutator mutator = hdfsStore.createHdfsStoreMutator();
-    mutator.getCompactionConfigMutator().setMajorCompactionIntervalMins(1);
+    mutator.setMajorCompactionInterval(1);
     hdfsStore.alter(mutator);
     TimeUnit.SECONDS.sleep(5);
     assertTrue(3 < majorCReqCount.get());
@@ -1031,7 +1031,7 @@ public class HdfsSortedOplogOrganizerJUnitTest extends BaseHoplogTestCase {
     FileSystem fs = hdfsStore.getFileSystem();
     Path cleanUpIntervalPath = new Path(hdfsStore.getHomeDir(), HoplogConfig.CLEAN_UP_INTERVAL_FILE_NAME);
     assertTrue(fs.exists(cleanUpIntervalPath));
-    long interval = HDFSCompactionConfig.DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS
+    long interval = HDFSStore.DEFAULT_OLD_FILE_CLEANUP_INTERVAL_MINS
         *60 * 1000;
     assertEquals(interval, HoplogUtil.readCleanUpIntervalMillis(fs,cleanUpIntervalPath));
   }

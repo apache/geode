@@ -16,6 +16,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -24,13 +25,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.gemfire.support.GemfireCache;
 
 import junit.framework.TestCase;
 
+import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogConfig;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
@@ -52,9 +57,13 @@ import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
+import com.gemstone.gemfire.internal.cache.DiskStoreObserver;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
@@ -90,6 +99,7 @@ import dunit.standalone.DUnitLauncher;
 public abstract class DistributedTestCase extends TestCase implements java.io.Serializable {
   private static final Logger logger = LogService.getLogger();
   private static final LogWriterLogger oldLogger = LogWriterLogger.create(logger);
+  private static final LinkedHashSet<String> testHistory = new LinkedHashSet<String>();
 
   private static void setUpCreationStackGenerator() {
     // the following is moved from InternalDistributedSystem to fix #51058
@@ -670,6 +680,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    */
   @Override
   public void setUp() throws Exception {
+    logTestHistory();
     setUpCreationStackGenerator();
     testName = getName();
     System.setProperty(HoplogConfig.ALLOW_LOCAL_HDFS_PROP, "true");
@@ -687,6 +698,16 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
       }
     }
     System.out.println("\n\n[setup] START TEST " + getClass().getSimpleName()+"."+testName+"\n\n");
+  }
+
+  /**
+   * Write a message to the log about what tests have ran previously. This
+   * makes it easier to figure out if a previous test may have caused problems
+   */
+  private void logTestHistory() {
+    String classname = getClass().getSimpleName();
+    testHistory.add(classname);
+    System.out.println("Previously run tests: " + testHistory);
   }
 
   public static void perVMSetUp(String name, String defaultDiskStoreName) {
@@ -765,6 +786,8 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
 
 
   private static void cleanupThisVM() {
+    closeCache();
+    
     IpAddress.resolve_dns = true;
     SocketCreator.resolve_dns = true;
     InitialImageOperation.slowImageProcessing = 0;
@@ -776,13 +799,14 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     LogWrapper.close();
     ClientProxyMembershipID.system = null;
     MultiVMRegionTestCase.CCRegion = null;
-    InternalBridgeMembership.unregisterAllListeners();
+    InternalClientMembership.unregisterAllListeners();
     ClientStatsManager.cleanupForTests();
     unregisterInstantiatorsInThisVM();
     GemFireTracer.DEBUG = Boolean.getBoolean("DistributionManager.DEBUG_JAVAGROUPS");
     Protocol.trace = GemFireTracer.DEBUG;
     DistributionMessageObserver.setInstance(null);
     QueryObserverHolder.reset();
+    DiskStoreObserver.setInstance(null);
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {
       InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
     }
@@ -791,6 +815,41 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
       ex.remove();
     }
   }
+
+  private static void closeCache() {
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if(cache != null && !cache.isClosed()) {
+      destroyRegions(cache);
+      cache.close();
+    }
+  }
+  
+  protected static final void destroyRegions(Cache cache)
+      throws InternalGemFireError, Error, VirtualMachineError {
+    if (cache != null && !cache.isClosed()) {
+      //try to destroy the root regions first so that
+      //we clean up any persistent files.
+      for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
+        Region root = (Region)itr.next();
+        //for colocated regions you can't locally destroy a partitioned
+        //region.
+        if(root.isDestroyed() || root instanceof HARegion || root instanceof PartitionedRegion) {
+          continue;
+        }
+        try {
+          root.localDestroyRegion("teardown");
+        }
+        catch (VirtualMachineError e) {
+          SystemFailure.initiateFailure(e);
+          throw e;
+        }
+        catch (Throwable t) {
+          getLogWriter().error(t);
+        }
+      }
+    }
+  }
+  
   
   public static void unregisterAllDataSerializersFromAllVms()
   {
@@ -974,12 +1033,35 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     
   }
   
+  /**
+   * Blocks until the clock used for expiration moves forward.
+   * @return the last time stamp observed
+   */
+  public static final long waitForExpiryClockToChange(LocalRegion lr) {
+    return waitForExpiryClockToChange(lr, lr.cacheTimeMillis());
+  }
+  /**
+   * Blocks until the clock used for expiration moves forward.
+   * @param baseTime the timestamp that the clock must exceed
+   * @return the last time stamp observed
+   */
+  public static final long waitForExpiryClockToChange(LocalRegion lr, final long baseTime) {
+    long nowTime;
+    do {
+      Thread.yield();
+      nowTime = lr.cacheTimeMillis();
+    } while ((nowTime - baseTime) <= 0L);
+    return nowTime;
+  }
+  
   /** pause for specified ms interval
    * Make sure system clock has advanced by the specified number of millis before
    * returning.
    */
   public static final void pause(int ms) {
-    getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
+    if (ms > 50) {
+      getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
+    }
     final long target = System.currentTimeMillis() + ms;
     try {
       for (;;) {

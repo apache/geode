@@ -343,7 +343,55 @@ public class TXRegionState {
       // passed. So do nothing.
     }
   }
-    
+
+  void buildMessageForAdjunctReceivers(LocalRegion r, TXCommitMessage msg) {
+    try {
+      if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
+        
+        msg.startRegion(r, entryMods.size());
+        Iterator it = this.entryMods.entrySet().iterator();
+        Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        
+        while (it.hasNext()) {
+          Map.Entry me = (Map.Entry)it.next();
+          Object eKey = me.getKey();
+          TXEntryState txes = (TXEntryState)me.getValue();
+          txes.buildMessage(r, eKey, msg,this.otherMembers);
+          if(txes.getFilterRoutingInfo()!=null) {
+            newMemberSet.addAll(txes.getFilterRoutingInfo().getMembers());
+          }
+          if(txes.getAdjunctRecipients()!=null) {
+            
+            Set adjunctRecipients = txes.getAdjunctRecipients();
+            newMemberSet.addAll(adjunctRecipients);  
+          }
+        }
+        
+        
+        if (!newMemberSet.equals(this.otherMembers)) 
+        { 
+          // r.getCache().getLogger().info("DEBUG: participants list has changed! bug 32999."); 
+          // Flag the message that the lock manager needs to be updated with the new member set
+          msg.setUpdateLockMembers();
+          this.otherMembers = newMemberSet;
+        }
+        
+        msg.finishRegion(this.otherMembers);
+      }
+    }
+    catch (RegionDestroyedException ex) {
+      // region was destroyed out from under us; after conflict checking
+      // passed. So act as if the region destroy happened right after the
+      // commit. We act this way by doing nothing; including distribution
+      // of this region's commit data.
+    }
+    catch (CancelException ex) {
+      // cache was closed out from under us; after conflict checking
+      // passed. So do nothing.
+    }
+  }
+
+  
   void buildCompleteMessage(LocalRegion r, TXCommitMessage msg) {
     try {
       if (!this.entryMods.isEmpty()) {

@@ -45,7 +45,7 @@ import com.gemstone.gemfire.cache.query.internal.index.RangeIndex;
 import com.gemstone.gemfire.cache.query.types.CollectionType;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -168,7 +168,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
         Region region = createRegion(regionName, rootRegionName,  factory.create());
         getLogWriter().info("Put PortfolioPdx");
         for (int i=0; i<numberOfEntries; i++) {
@@ -426,7 +426,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
         Region region = createRegion(regionName, rootRegionName,  factory.create());
         getLogWriter().info("Put PortfolioPdx");
         for (int i=0; i<numberOfEntries; i++) {
@@ -638,7 +638,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
         Region region = createRegion(regionName, rootRegionName,  factory.create());
         getLogWriter().info("Put PortfolioPdx");
         for (int i=0; i<numberOfEntries; i++) {
@@ -852,7 +852,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
         Region region = createRegion(regionName, rootRegionName,  factory.create());
         getLogWriter().info("Put PortfolioPdx");
         for (int i=0; i<numberOfEntries; i++) {
@@ -1116,7 +1116,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
         Region region = createRegion(regionName, rootRegionName,  factory.create());
         getLogWriter().info("Put PortfolioPdx");
         for (int i=0; i<numberOfEntries; i++) {
@@ -1343,7 +1343,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
         Region region = createRegion(regionName, rootRegionName,  factory.create());
         getLogWriter().info("Put PortfolioPdx");
         for (int i=0; i<numberOfEntries; i++) {
@@ -1570,7 +1570,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        BridgeTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, host0, port1,-1, true, -1, -1, null);
         Region region = createRegion(regionName, rootRegionName,  factory.create());
       
         getLogWriter().info("Put PortfolioPdx");

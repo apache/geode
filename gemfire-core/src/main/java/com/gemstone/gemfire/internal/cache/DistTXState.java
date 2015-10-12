@@ -154,7 +154,7 @@ public class DistTXState extends TXState {
     if (this.closed) {
       return;
     }
-
+    
     synchronized (this.completionGuard) {
       this.completionStarted = true;
     }
@@ -257,13 +257,34 @@ public class DistTXState extends TXState {
       try {
         attachFilterProfileInformation(entries);
 
+        if (GemFireCacheImpl.internalBeforeApplyChanges != null) {
+          GemFireCacheImpl.internalBeforeApplyChanges.run();
+        }
+        
         // apply changes to the cache
         applyChanges(entries);
+        
         // For internal testing
         if (this.internalAfterApplyChanges != null) {
           this.internalAfterApplyChanges.run();
         }
 
+        // [DISTTX]TODO:
+        // Build a message specifically for those nodes who
+        // hold gateway senders and listeners but not a copy of the buckets
+        // on which changes in this tx are done.
+        // This is applicable only for partitioned regions and 
+        // serial gateway senders.
+        // This works only if the coordinator and sender are not the same node.
+        // For same sender as coordinator, this results in a hang, which needs to be addressed.
+        // If an another method of notifying adjunct receivers is implemented, 
+        // the following two lines should be commented out.
+        msg = buildMessageForAdjunctReceivers();
+        msg.send(this.locks.getDistributedLockId());
+
+        // Fire callbacks collected in the local txApply* executions
+        firePendingCallbacks();
+        
         this.commitMessage = buildCompleteMessage();
 
       } finally {
@@ -280,6 +301,27 @@ public class DistTXState extends TXState {
       cleanup();
     }
   }
+  
+  /**
+   * this builds a new DistTXAdjunctCommitMessage and returns it
+   * @return the new message
+   */
+  protected TXCommitMessage buildMessageForAdjunctReceivers() {
+    TXCommitMessage msg = new DistTXAdjunctCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
+    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry<LocalRegion, TXRegionState> me = it.next();
+      LocalRegion r = me.getKey();
+      TXRegionState txrs = me.getValue();
+      
+      // only on the primary
+      if (r.isUsedForPartitionedRegionBucket() && !txrs.isCreatedDuringCommit()) {
+        txrs.buildMessageForAdjunctReceivers(r, msg);  
+      }
+    }
+    return msg;
+  }
+
 
   @Override
   public void rollback() {
@@ -532,7 +574,19 @@ public class DistTXState extends TXState {
               distKeyInfo.setCheckPrimary(false);
               ev.setKeyInfo(distKeyInfo);
             }
-            if (theRegion.basicPut(ev, false, false, null, false)) {
+            /*
+             * Whenever commit is called, especially when its a
+             * DistTxStateOnCoordinator the txState is set to null in @see
+             * TXManagerImpl.commit() and thus when @see LocalRegion.basicPut
+             * will be called as in this function, they will not found a TxState
+             * with call for getDataView()
+             */
+            if (!(theRegion.getDataView() instanceof TXStateInterface)) {
+              if (putEntry(ev, false, false, null, false, 0L, false)) {
+                successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key,
+                    null);
+              }
+            } else if (theRegion.basicPut(ev, false, false, null, false)) {
               successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
             }
           } finally {
@@ -578,9 +632,24 @@ public class DistTXState extends TXState {
             distKeyInfo.setCheckPrimary(false);
             ev.setKeyInfo(distKeyInfo);
           }
+          /*
+           * Whenever commit is called, especially when its a
+           * DistTxStateOnCoordinator the txState is set to null in @see
+           * TXManagerImpl.commit() and thus when basicDestroy will be called
+           * will be called as in i.e. @see LocalRegion.basicDestroy, they will
+           * not found a TxState with call for getDataView()
+           * 
+           * [DISTTX] TODO verify if this is correct to call
+           * destroyExistingEntry directly?
+           */
           try {
-            theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */,
-                null);
+            if (!(theRegion.getDataView() instanceof TXStateInterface)) {
+              destroyExistingEntry(ev, true/* should we invoke cacheWriter? */,
+                  null);
+            } else {
+              theRegion.basicDestroy(ev,
+                  true/* should we invoke cacheWriter? */, null);
+            }
           } catch (EntryNotFoundException ignore) {
           }
           successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);

@@ -4,11 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
@@ -20,13 +16,10 @@ import com.gemstone.gemfire.internal.cache.DistributedRemoveAllOperation.RemoveA
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.KeyInfo;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
@@ -34,6 +27,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
  *
  */
 public class DistTxEntryEvent extends EntryEventImpl {
+  
+  protected static final byte HAS_PUTALL_OP = 0x1;
+  protected static final byte HAS_REMOVEALL_OP = 0x2;
 
   // For Serialization
   public DistTxEntryEvent(EntryEventImpl entry) {
@@ -64,19 +60,23 @@ public class DistTxEntryEvent extends EntryEventImpl {
     DataSerializer.writeInteger(this.keyInfo.getBucketId(), out);
     DataSerializer.writeObject(this.basicGetNewValue(), out);
 
+    byte flags = 0;
+    if (this.putAllOp != null) {
+      flags |= HAS_PUTALL_OP;
+    }
+    if (this.removeAllOp != null) {
+      flags |= HAS_REMOVEALL_OP;
+    }
+    DataSerializer.writeByte(flags, out);
+    
     // handle putAll
     if (this.putAllOp != null) {
       putAllToData(out);
-    } else {
-      DataSerializer.writeInteger(0, out);
-    }
-
+    } 
     // handle removeAll
     if (this.removeAllOp != null) {
       removeAllToData(out);
-    } else {
-      DataSerializer.writeInteger(0, out);
-    }
+    } 
   }
 
   @Override
@@ -96,13 +96,14 @@ public class DistTxEntryEvent extends EntryEventImpl {
                                                       * TODO
                                                       */, bucketId);
     basicSetNewValue(DataSerializer.readObject(in));
-    int putAllSize = DataSerializer.readInteger(in);
-    if (putAllSize > 0) {
-      putAllFromData(in, putAllSize);
+    
+    byte flags = DataSerializer.readByte(in);
+    if ((flags & HAS_PUTALL_OP) != 0 ) {
+      putAllFromData(in);
     }
-    int removeAllSize = DataSerializer.readInteger(in);
-    if (removeAllSize > 0) {
-      removeAllFromData(in, removeAllSize);
+    
+    if ((flags & HAS_REMOVEALL_OP) != 0 ) {
+      removeAllFromData(in);
     }
   }
 
@@ -139,12 +140,12 @@ public class DistTxEntryEvent extends EntryEventImpl {
 
   /**
    * @param in
-   * @param putAllSize
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  private void putAllFromData(DataInput in, int putAllSize)
+  private void putAllFromData(DataInput in)
       throws IOException, ClassNotFoundException {
+    int putAllSize = DataSerializer.readInteger(in);
     PutAllEntryData[] putAllEntries = new PutAllEntryData[putAllSize];
     if (putAllSize > 0) {
       final Version version = InternalDataSerializer
@@ -208,12 +209,12 @@ public class DistTxEntryEvent extends EntryEventImpl {
 
   /**
    * @param in
-   * @param removeAllSize
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  private void removeAllFromData(DataInput in, int removeAllSize)
+  private void removeAllFromData(DataInput in)
       throws IOException, ClassNotFoundException {
+    int removeAllSize = DataSerializer.readInteger(in);
     final RemoveAllEntryData[] removeAllData = new RemoveAllEntryData[removeAllSize];
     final Version version = InternalDataSerializer
         .getVersionForDataStreamOrNull(in);
@@ -245,12 +246,27 @@ public class DistTxEntryEvent extends EntryEventImpl {
   @Override
   public String toString() {
     StringBuilder buf = new StringBuilder();
+    buf.append(getShortClassName());
+    buf.append("[");
+    buf.append("eventID=");
+    buf.append(this.eventID);
+    if (this.region != null) {
+      buf.append(";r=").append(this.region.getName());
+    }
+    buf.append(";op=");
+    buf.append(getOperation());
+    buf.append(";key=");
+    buf.append(this.getKey());
+    buf.append(";bucket=");
+    buf.append(this.getKeyInfo().getBucketId());
+    buf.append(";oldValue=");
     if (this.putAllOp != null) {
-      buf.append("putAllDataSize :" + this.putAllOp.putAllDataSize);
+      buf.append(";putAllDataSize :" + this.putAllOp.putAllDataSize);
     }
     if (this.removeAllOp != null) {
-      buf.append("removeAllDataSize :" + this.removeAllOp.removeAllDataSize);
+      buf.append(";removeAllDataSize :" + this.removeAllOp.removeAllDataSize);
     }
-    return buf.toString(); 
+    buf.append("]");
+    return buf.toString();
   }
 }

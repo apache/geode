@@ -160,7 +160,7 @@ subprojects {
         dep.transitive = true
       }
       findbugs.effort = 'max'
-      findbugs.reportLevel = 'high'
+      findbugs.reportLevel = 'low'
     }
  
     tasks.withType(FindBugs) {
@@ -181,9 +181,18 @@ subprojects {
       }
     }
 
+    task mergeIntegrationTestCoverage (type: JacocoMerge) {
+      description 'Merges Distributed and Integration test coverage results'
+
+      destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
+      executionData = fileTree(dir: 'build/jacoco', include: ['**/distributedTest.exec','**/integrationTest.exec'])
+
+    }
+
     jacocoTestReport {
       reports { 
         csv.enabled false
+        sourceSets project.sourceSets.main
         html.destination "${buildDir}/jacocoTestHtml"
       }
     }
@@ -278,12 +287,15 @@ subprojects {
     testCompile 'com.github.stefanbirkner:system-rules:1.9.0'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:1.01'
     testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:2.1.0'
+    testCompile 'org.mockito:mockito-core:1.10.19'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
     testCompile 'org.jmock:jmock:2.8.1'
     testCompile 'org.jmock:jmock-junit4:2.8.1'
     testCompile 'org.jmock:jmock-legacy:2.8.1'
+    testCompile 'pl.pragmatists:JUnitParams:1.0.4'
     
-    testRuntime 'cglib:cglib-nodep:3.1'
+    testRuntime 'cglib:cglib:3.1'
     testRuntime 'org.objenesis:objenesis:2.1'
     testRuntime 'org.ow2.asm:asm:5.0.3'
   }
@@ -355,6 +367,10 @@ subprojects {
       check.dependsOn test
       test.configure {
         onlyIf { ! Boolean.getBoolean('skip.tests') }
+
+        //force tests to be run every time by
+        //saying the results are never up to date
+        outputs.upToDateWhen { false }
     
         def resultsDir = testResultsDir(buildDir, test.name)
         workingDir resultsDir.absolutePath

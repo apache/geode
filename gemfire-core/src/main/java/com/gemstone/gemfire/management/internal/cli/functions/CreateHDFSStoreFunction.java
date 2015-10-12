@@ -88,12 +88,24 @@ public class CreateHDFSStoreFunction extends FunctionAdapter implements Internal
     hdfsStoreFactory.setName(configHolder.getName());
     hdfsStoreFactory.setNameNodeURL(configHolder.getNameNodeURL());
     hdfsStoreFactory.setBlockCacheSize(configHolder.getBlockCacheSize());
-    hdfsStoreFactory.setFileRolloverInterval(configHolder.getFileRolloverInterval());
+    hdfsStoreFactory.setWriteOnlyFileRolloverInterval(configHolder.getWriteOnlyFileRolloverInterval());
     hdfsStoreFactory.setHomeDir(configHolder.getHomeDir());
-    hdfsStoreFactory.setHDFSEventQueueAttributes(configHolder.getHDFSEventQueueAttributes());
     hdfsStoreFactory.setHDFSClientConfigFile(configHolder.getHDFSClientConfigFile());
-    hdfsStoreFactory.setHDFSCompactionConfig(configHolder.getHDFSCompactionConfig());
-    hdfsStoreFactory.setMaxFileSize(configHolder.getMaxFileSize());
+    hdfsStoreFactory.setWriteOnlyFileRolloverSize(configHolder.getWriteOnlyFileRolloverSize());
+    hdfsStoreFactory.setMajorCompaction(configHolder.getMajorCompaction());
+    hdfsStoreFactory.setMajorCompactionInterval(configHolder.getMajorCompactionInterval());
+    hdfsStoreFactory.setMajorCompactionThreads(configHolder.getMajorCompactionThreads());
+    hdfsStoreFactory.setMinorCompaction(configHolder.getMinorCompaction());
+    hdfsStoreFactory.setMaxMemory(configHolder.getMaxMemory());
+    hdfsStoreFactory.setBatchSize(configHolder.getBatchSize());
+    hdfsStoreFactory.setBatchInterval(configHolder.getBatchInterval());
+    hdfsStoreFactory.setDiskStoreName(configHolder.getDiskStoreName());
+    hdfsStoreFactory.setDispatcherThreads(configHolder.getDispatcherThreads());
+    hdfsStoreFactory.setMinorCompactionThreads(configHolder.getMinorCompactionThreads());
+    hdfsStoreFactory.setPurgeInterval(configHolder.getPurgeInterval());
+    hdfsStoreFactory.setSynchronousDiskWrite(configHolder.getSynchronousDiskWrite());
+    hdfsStoreFactory.setBufferPersistent(configHolder.getBufferPersistent());
+    
     return hdfsStoreFactory.create(configHolder.getName());   
   }
   

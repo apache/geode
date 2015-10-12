@@ -468,7 +468,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
     // Determine if the set of VMs for any of the Regions for this TX have
     // changed
-    DistributedRegion dr = null;
     HashSet<LocalRegion> affectedRegions = new HashSet<LocalRegion>();
     for (DistTXCoordinatorInterface distTXStateStub : target2realDeals.values()) {
       affectedRegions.clear();
@@ -477,9 +476,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         if (lr.getScope().isLocal()) {
           continue;
         }
-        // [DISTTX] TODO what about PR?
         if (lr instanceof DistributedRegion) {
-          dr = (DistributedRegion) lr;
+          DistributedRegion dr = (DistributedRegion) lr;
           CacheDistributionAdvisor adv = dr.getCacheDistributionAdvisor();
           Set newRegionMemberView = adv.adviseTX();
 
@@ -489,6 +487,24 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
                     .create(
                         LocalizedStrings.TXCommitMessage_NEW_MEMBERS_FOR_REGION_0_ORIG_LIST_1_NEW_LIST_2,
                         new Object[] { dr, txParticpants, newRegionMemberView }));
+          }
+        } else if (lr instanceof PartitionedRegion
+            || lr instanceof BucketRegion) {
+          final PartitionedRegion pr;
+          if (lr instanceof BucketRegion) {
+            pr = ((BucketRegion) lr).getPartitionedRegion();
+          } else {
+            pr = (PartitionedRegion) lr;
+          }
+          CacheDistributionAdvisor adv = pr.getCacheDistributionAdvisor();
+          Set newRegionMemberView = adv.adviseTX();
+
+          if (!txParticpants.containsAll(newRegionMemberView)) {
+            logger
+                .warn(LocalizedMessage
+                    .create(
+                        LocalizedStrings.TXCommitMessage_NEW_MEMBERS_FOR_REGION_0_ORIG_LIST_1_NEW_LIST_2,
+                        new Object[] { pr, txParticpants, newRegionMemberView }));
           }
         }
       }
@@ -872,6 +888,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
               event, putallOp.putAllDataSize, putallOp.isBridgeOp);
           bucketToPutallMap.put(bucketId, putAllForBucket);
         } 
+        putallOp.putAllData[i].setFakeEventID();
         putAllForBucket.addEntry(putallOp.putAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);
@@ -943,12 +960,13 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistributedRemoveAllOperation removeAllForBucket = 
             bucketToRemoveAllMap.get(bucketId);
         if (removeAllForBucket == null) {
-          EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, region,
-              Operation.REMOVEALL_DESTROY, key, null);
+          EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, region, key);
+          event.setEventId(op.removeAllData[i].getEventID());
           removeAllForBucket = new DistributedRemoveAllOperation(
               event, op.removeAllDataSize, op.isBridgeOp);
           bucketToRemoveAllMap.put(bucketId, removeAllForBucket);
         } 
+        op.removeAllData[i].setFakeEventID();
         removeAllForBucket.addEntry(op.removeAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);

@@ -71,7 +71,7 @@ public class ConnectionImpl implements Connection {
   private short wanSiteVersion = -1;//In Gateway communication version of connected wan site
                                    //will be stored after successful handshake
 //  private final CancelCriterion cancelCriterion;
-  private final DistributedSystem ds;
+  private final InternalDistributedSystem ds;
 
   private OutputStream out;
   private InputStream in;
@@ -80,7 +80,7 @@ public class ConnectionImpl implements Connection {
 
   private HandShake handShake;
 
-  public ConnectionImpl(DistributedSystem ds, CancelCriterion cancelCriterion) {
+  public ConnectionImpl(InternalDistributedSystem ds, CancelCriterion cancelCriterion) {
 //    this.cancelCriterion = cancelCriterion;
     this.ds = ds;
   }
@@ -90,7 +90,7 @@ public class ConnectionImpl implements Connection {
       int handShakeTimeout, int readTimeout, byte communicationMode, GatewaySender sender)
       throws IOException {
     SocketCreator sc = SocketCreator.getDefaultInstance();
-    DistributionConfig config = InternalDistributedSystem.getConnectedInstance().getConfig();
+    DistributionConfig config = ds.getConfig();
     if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
       sc = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
           config.getGatewaySSLRequireAuthentication(), config.getGatewaySSLProtocols(),

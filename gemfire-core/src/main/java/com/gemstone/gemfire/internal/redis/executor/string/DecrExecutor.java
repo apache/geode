@@ -9,7 +9,7 @@ import com.gemstone.gemfire.internal.redis.Command;
 import com.gemstone.gemfire.internal.redis.ExecutionHandlerContext;
 import com.gemstone.gemfire.internal.redis.RedisConstants.ArityDef;
 import com.gemstone.gemfire.internal.redis.RedisDataType;
-import com.gemstone.gemfire.internal.redis.RegionCache;
+import com.gemstone.gemfire.internal.redis.RegionProvider;
 
 public class DecrExecutor extends StringExecutor {
 
@@ -25,7 +25,7 @@ public class DecrExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    RegionCache rC = context.getRegionCache();
+    RegionProvider rC = context.getRegionProvider();
     Region<ByteArrayWrapper, ByteArrayWrapper> r = rC.getStringsRegion();;
 
     if (commandElems.size() < 2) {

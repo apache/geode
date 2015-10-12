@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.cache.client.*;
@@ -214,7 +214,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
       RegionAttributes attrs = factory.createRegionAttributes();
       cache.createVMRegion(REGION_NAME, attrs);
     }
-    BridgeServerImpl server = (BridgeServerImpl)cache.addBridgeServer();
+    CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);

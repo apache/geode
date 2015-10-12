@@ -8,6 +8,7 @@
 package com.gemstone.gemfire.internal;
 
 import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
 
 import java.io.File;
@@ -68,9 +69,19 @@ public class SharedLibrary {
       int scaleIndex = 0;
       int tmpReferenceSize = 0;
       int tmpObjectHeaderSize = 0;
+      if (SystemUtils.isAzulJVM()) {
+        tmpObjectHeaderSize = 8;
+        tmpReferenceSize = 8;
+      } else {
       if (unsafe != null) {
         // Use unsafe to figure out the size of an object reference since we might
         // be using compressed oops.
+        // Note: as of java 8 compressed oops do not imply a compressed object header.
+        // The object header is determined by UseCompressedClassPointers.
+        // UseCompressedClassPointers requires UseCompressedOops
+        // but UseCompressedOops does not require UseCompressedClassPointers.
+        // But it seems unlikely that someone would compress their oops
+        // not their class pointers. 
         scaleIndex = unsafe.arrayScaleIndex(Object[].class);
         if (scaleIndex == 4) {
           // compressed oops
@@ -85,14 +96,19 @@ public class SharedLibrary {
         }
       }
       if (scaleIndex == 0) {
-        // If our heap is > 32G then assume large oops. Otherwise assume compressed oops.
-        if (Runtime.getRuntime().maxMemory() > (32L*1024*1024*1024)) {
+        // If our heap is > 32G (64G on java 8) then assume large oops. Otherwise assume compressed oops.
+        long SMALL_OOP_BOUNDARY = 32L;
+        if (SystemUtils.isJavaVersionAtLeast("1.8")) {
+          SMALL_OOP_BOUNDARY = 64L;
+        }
+        if (Runtime.getRuntime().maxMemory() > (SMALL_OOP_BOUNDARY*1024*1024*1024)) {
           tmpReferenceSize = 8;
           tmpObjectHeaderSize = 16;
         } else {
           tmpReferenceSize = 4;
           tmpObjectHeaderSize = 12;
         }
+      }
       }
       referenceSize = tmpReferenceSize;
       objectHeaderSize = tmpObjectHeaderSize;

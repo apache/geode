@@ -435,6 +435,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     buff.append("(regionPath="); // make sure this is the first one
     buff.append(this.regionPath);
     appendFields(buff);
+    buff.append(" ,distTx=");
+    buff.append(this.isTransactionDistributed);
     buff.append(")");
     return buff.toString();
   }

@@ -1117,6 +1117,10 @@ public final class TXManagerImpl implements CacheTransactionManager,
   private ConcurrentMap<TransactionId, TXStateProxy> suspendedTXs = new ConcurrentHashMap<TransactionId, TXStateProxy>();
   
   public TransactionId suspend() {
+    return suspend(TimeUnit.MINUTES);
+  }
+  
+  TransactionId suspend(TimeUnit expiryTimeUnit) {
     TXStateProxy result = getTXState();
     if (result != null) {
       TransactionId txId = result.getTransactionId();
@@ -1137,7 +1141,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
           LockSupport.unpark(waitingThread);
         }
       }
-      scheduleExpiry(txId);
+      scheduleExpiry(txId, expiryTimeUnit);
       return txId;
     }
     return null;
@@ -1266,8 +1270,9 @@ public final class TXManagerImpl implements CacheTransactionManager,
   /**
    * schedules the transaction to expire after {@link #suspendedTXTimeout}
    * @param txId
+   * @param expiryTimeUnit the time unit to use when scheduling the expiration
    */
-  private void scheduleExpiry(TransactionId txId) {
+  private void scheduleExpiry(TransactionId txId, TimeUnit expiryTimeUnit) {
     final GemFireCacheImpl cache = (GemFireCacheImpl) this.cache;
     if (suspendedTXTimeout < 0) {
       if (logger.isDebugEnabled()) {
@@ -1279,7 +1284,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
     if (logger.isDebugEnabled()) {
       logger.debug("TX: scheduling transaction: {} to expire after:{}", txId, suspendedTXTimeout);
     }
-    cache.getCCPTimer().schedule(task, suspendedTXTimeout*60*1000);
+    cache.getCCPTimer().schedule(task, TimeUnit.MILLISECONDS.convert(suspendedTXTimeout, expiryTimeUnit));
     this.expiryTasks.put(txId, task);
   }
 

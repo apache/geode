@@ -58,8 +58,4 @@ public class PartitionedRegionCompressionDUnitTest extends
     }
     return factory.create();
   }
-  
-  public void testCustomEntryTtl3()  {
-    // Disabled this test for now #50880
-  }
 }

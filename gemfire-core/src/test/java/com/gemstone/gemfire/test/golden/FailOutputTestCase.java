@@ -10,11 +10,7 @@ import java.io.InputStreamReader;
  * 
  * @author Kirk Lund
  */
-public abstract class FailOutputTestCase extends GoldenTestCase {
-  
-  FailOutputTestCase(String name) {
-    super(name);
-  }
+public abstract class FailOutputTestCase extends GoldenTestCase implements ExecutableProcess {
   
   @Override
   protected GoldenComparator createGoldenComparator() {
@@ -27,14 +23,14 @@ public abstract class FailOutputTestCase extends GoldenTestCase {
   
   abstract String problem();
   
-  abstract void outputProblem(String message);
+  abstract void outputProblemInProcess(String message);
   
-  void execute() throws IOException {
-    System.out.println("Begin " + name() + ".main");
-    System.out.println("Press Enter to continue.");
-    BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in));
-    inputReader.readLine();
-    outputProblem(problem());
-    System.out.println("End " + name() + ".main");
+  @Override
+  public final void executeInProcess() throws IOException {
+    outputLine("Begin " + name() + ".main");
+    outputLine("Press Enter to continue.");
+    new BufferedReader(new InputStreamReader(System.in)).readLine();
+    outputProblemInProcess(problem());
+    outputLine("End " + name() + ".main");
   }
 }

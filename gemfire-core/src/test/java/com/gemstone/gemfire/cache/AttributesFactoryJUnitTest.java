@@ -14,7 +14,6 @@ import org.junit.experimental.categories.Category;
 
 import junit.framework.TestCase;
 
-import com.gemstone.gemfire.cache.util.BridgeLoader;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.compression.SnappyCompressor;
@@ -400,23 +399,6 @@ public class AttributesFactoryJUnitTest extends TestCase {
     factory = new AttributesFactory();
     factory.setCacheLoader(cl);
     factory.setPoolName("mypool");
-    
-    factory = new AttributesFactory();
-    factory.setCacheLoader(new BridgeLoader());
-    
-    try {
-      factory.setPoolName("mypool");
-      fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
-    }
-    
-    factory = new AttributesFactory();
-    factory.setCacheLoader(new BridgeLoader());
-    try {
-      factory.setPoolName("mypool");
-      fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
-    }
   }
   
  /**

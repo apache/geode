@@ -30,7 +30,7 @@ import com.gemstone.gemfire.admin.internal.PrepareBackupResponse;
 import com.gemstone.gemfire.admin.internal.SystemMemberCacheEventProcessor;
 import com.gemstone.gemfire.admin.jmx.internal.StatAlertNotification;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.client.internal.BridgeServerLoadMessage;
+import com.gemstone.gemfire.cache.client.internal.CacheServerLoadMessage;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientReplacementRequest;
@@ -180,8 +180,8 @@ import com.gemstone.gemfire.internal.admin.remote.VersionInfoResponse;
 import com.gemstone.gemfire.internal.admin.statalerts.GaugeThresholdDecoratorImpl;
 import com.gemstone.gemfire.internal.admin.statalerts.NumberThresholdDecoratorImpl;
 import com.gemstone.gemfire.internal.cache.AddCacheServerProfileMessage;
-import com.gemstone.gemfire.internal.cache.BridgeRegionEventImpl;
-import com.gemstone.gemfire.internal.cache.BridgeServerAdvisor.BridgeServerProfile;
+import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
 import com.gemstone.gemfire.internal.cache.CloseCacheMessage;
@@ -820,7 +820,7 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(GATEWAY_SENDER_PROFILE,
         GatewaySenderAdvisor.GatewaySenderProfile.class);
     registerDSFID(ROLE_EVENT, RoleEventImpl.class);
-    registerDSFID(BRIDGE_REGION_EVENT, BridgeRegionEventImpl.class);
+    registerDSFID(CLIENT_REGION_EVENT, ClientRegionEventImpl.class);
     registerDSFID(PR_INVALIDATE_MESSAGE, InvalidateMessage.class);
     registerDSFID(PR_INVALIDATE_REPLY_MESSAGE,
         InvalidateMessage.InvalidateReplyMessage.class);
@@ -860,8 +860,8 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(ALERTS_NOTIF_MESSAGE, AlertsNotificationMessage.class);
     registerDSFID(FIND_DURABLE_QUEUE, FindDurableQueueMessage.class);
     registerDSFID(FIND_DURABLE_QUEUE_REPLY, FindDurableQueueReply.class);
-    registerDSFID(BRIDGE_SERVER_LOAD_MESSAGE, BridgeServerLoadMessage.class);
-    registerDSFID(BRIDGE_SERVER_PROFILE, BridgeServerProfile.class);
+    registerDSFID(CACHE_SERVER_LOAD_MESSAGE, CacheServerLoadMessage.class);
+    registerDSFID(CACHE_SERVER_PROFILE, CacheServerProfile.class);
     registerDSFID(CONTROLLER_PROFILE, ControllerProfile.class);
     registerDSFID(DLOCK_QUERY_MESSAGE,
         DLockQueryProcessor.DLockQueryMessage.class);

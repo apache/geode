@@ -4,14 +4,37 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
-import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * This is the first part of the channel pipeline for Netty. Here incoming
+ * bytes are read and a created {@link Command} is sent down the pipeline.
+ * It is unfortunate that this class is not {@link Sharable} because no state
+ * is kept in this class. State is kept by {@link ByteToMessageDecoder}, it may
+ * be worthwhile to look at a different decoder setup as to avoid allocating a decoder
+ * for every new connection.
+ * <p>
+ * The code flow of the protocol parsing may not be exactly Java like, but this is done 
+ * very intentionally. It was found that in cases where large Redis requests are sent
+ * that end up being fragmented, throwing exceptions when the command could not be fully
+ * parsed took up an enormous amount of cpu time. The simplicity of the Redis protocol
+ * allows us to just back out and wait for more data, while exceptions are left to 
+ * malformed requests which should never happen if using a proper Redis client.
+ * 
+ * @author Vitaliy Gavrilov
+ *
+ */
 public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
-
+  /**
+   * Important note
+   * 
+   * Do not use '' <-- java primitive chars. Redis uses {@link Coder#CHARSET}
+   * encoding so we should not risk java handling char to byte conversions, rather 
+   * just hard code {@link Coder#CHARSET} chars as bytes
+   */
+  
   private static final byte rID = 13; // '\r';
   private static final byte nID = 10; // '\n';
   private static final byte bulkStringID = 36; // '$';
@@ -35,18 +58,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     } while (in.isReadable()); // Try to take advantage of pipelining if it is being used
   }
 
-  /**
-   * The only public method for CommandParser is parse. It will take a buffer
-   * and break up the individual pieces into a list is char[] for the caller
-   * based on the Redis protocol.
-   * 
-   * @param buffer The buffer to read the command from
-   * @return A new {@link Command} object
-   * @throws RedisCommandParserException Thrown when the command has illegal syntax
-   * @throws BufferUnderflowException Thrown when the parser runs out of chars
-   * to read when it still expects chars to remain in the command
-   */
-  public static Command parse(ByteBuf buffer) throws RedisCommandParserException {
+  private Command parse(ByteBuf buffer) throws RedisCommandParserException {
     if (buffer == null)
       throw new NullPointerException();
     if (!buffer.isReadable())
@@ -63,14 +75,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     return new Command(commandElems);
   }
 
-  /**
-   * Helper method to parse the array which contains the Redis command
-   * 
-   * @param commandElems The list to add the elements of the command to
-   * @param buffer The buffer to read from
-   * @throws RedisCommandParserException Thrown when command contains illegal syntax
-   */
-  private static boolean parseArray(ArrayList<byte[]> commandElems, ByteBuf buffer) throws RedisCommandParserException { 
+  private boolean parseArray(ArrayList<byte[]> commandElems, ByteBuf buffer) throws RedisCommandParserException { 
     byte currentChar;
     int arrayLength = parseCurrentNumber(buffer);
     if (arrayLength == Integer.MIN_VALUE || !parseRN(buffer))
@@ -100,7 +105,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
    * @return byte[] representation of the Bulk String read
    * @throws RedisCommandParserException Thrown when there is illegal syntax
    */
-  private static byte[] parseBulkString(ByteBuf buffer) throws RedisCommandParserException {
+  private byte[] parseBulkString(ByteBuf buffer) throws RedisCommandParserException {
     int bulkStringLength = parseCurrentNumber(buffer);
     if (bulkStringLength == Integer.MIN_VALUE)
       return null;
@@ -126,7 +131,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
    * @param buffer Buffer to read
    * @return The number found at the beginning of the buffer
    */
-  private static int parseCurrentNumber(ByteBuf buffer) {
+  private int parseCurrentNumber(ByteBuf buffer) {
     int number = 0;
     int readerIndex = buffer.readerIndex();
     byte b = 0;
@@ -153,7 +158,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
    * @throws RedisCommandParserException Thrown when the next two characters
    * are not "\r\n"
    */
-  private static boolean parseRN(ByteBuf buffer) throws RedisCommandParserException {
+  private boolean parseRN(ByteBuf buffer) throws RedisCommandParserException {
     if (!buffer.isReadable(2))
       return false;
     byte b = buffer.readByte();

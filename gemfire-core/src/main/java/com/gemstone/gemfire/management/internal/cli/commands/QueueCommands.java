@@ -110,8 +110,8 @@ public class QueueCommands implements CommandMarker {
                  help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER__HELP)
       @CliMetaData (valueSeparator = ",") 
       String[] gatewayEventFilters,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER, 
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_LISTENER__HELP)
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER, 
+                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER__HELP)
       String gatewaySubstitutionListener,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER,
                  mandatory = true,

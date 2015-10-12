@@ -1,62 +1,43 @@
 package com.gemstone.gemfire.test.golden;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.junit.After;
+import org.junit.Before;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.process.ProcessWrapper;
 
-import junit.framework.TestCase;
-
 /**
- * The abstract superclass of tests that need to process output from the
- * quickstart examples.
+ * Test framework for launching processes and comparing output to expected golden output.
  *
  * @author Kirk Lund
  * @since 4.1.1
  */
-public abstract class GoldenTestCase extends TestCase {
-  protected static final Marker GOLDEN_TEST = MarkerManager.getMarker("GOLDEN_TEST");
+public abstract class GoldenTestCase {
 
-  protected final Logger logger = LogService.getLogger();
+  /** Use to enable debug output in the JUnit process */
+  protected static final String DEBUG_PROPERTY = "golden.test.DEBUG";
+  protected static final boolean DEBUG = Boolean.getBoolean(DEBUG_PROPERTY);
   
-  private final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+  /** The log4j2 config used within the spawned process */
+  private static final String LOG4J2_CONFIG_URL_STRING = GoldenTestCase.class.getResource("log4j2-test.xml").toString();
+  private static final String[] JVM_ARGS = new String[] {
+      "-D"+ConfigurationFactory.CONFIGURATION_FILE_PROPERTY+"="+LOG4J2_CONFIG_URL_STRING
+    };
+  
   private final List<ProcessWrapper> processes = new ArrayList<ProcessWrapper>();
   
-  static {
-    final URL configUrl = GoldenTestCase.class.getResource("log4j2-test.xml");
-    if (configUrl != null) {
-      System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configUrl.toString());
-    }
-  }
-  
-  private final static String[] jvmArgs = new String[] {
-    "-D"+ConfigurationFactory.CONFIGURATION_FILE_PROPERTY+"="+System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY)
-  };
-  
-  public GoldenTestCase(String name) {
-    super(name);
-  }
-
-  @Override
-  public final void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public final void setUpGoldenTest() throws Exception {
     subSetUp();
   }
   
-  @Override
-  public final void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public final void tearDownGoldenTest() throws Exception {
     try {
       for (ProcessWrapper process : this.processes) {
         process.destroy();
@@ -86,25 +67,13 @@ public abstract class GoldenTestCase extends TestCase {
   public void subTearDown() throws Exception {
     // override me
   }
-  
-  protected final ProcessWrapper createProcessWrapper(Class<?> main) {
-    final ProcessWrapper processWrapper = new ProcessWrapper.Builder().jvmArgs(jvmArgs).main(main).build();
-    this.processes.add(processWrapper);
-    return processWrapper;
-  }
-  
-  protected final ProcessWrapper createProcessWrapper(Class<?> main, String[] mainArgs) {
-    final ProcessWrapper processWrapper = new ProcessWrapper.Builder().jvmArgs(jvmArgs).main(main).mainArgs(mainArgs).build();
-    this.processes.add(processWrapper);
-    return processWrapper;
-  }
-  
-  protected final ProcessWrapper createProcessWrapper(Class<?> main, String[] mainArgs, boolean useMainLauncher) {
-    final ProcessWrapper processWrapper = new ProcessWrapper.Builder().jvmArgs(jvmArgs).main(main).mainArgs(mainArgs).useMainLauncher(useMainLauncher).build();
-    this.processes.add(processWrapper);
-    return processWrapper;
-  }
 
+  protected final ProcessWrapper createProcessWrapper(final ProcessWrapper.Builder processWrapperBuilder, final Class<?> main) {
+    final ProcessWrapper processWrapper = processWrapperBuilder.jvmArguments(JVM_ARGS).mainClass(main).build();
+    this.processes.add(processWrapper);
+    return processWrapper;
+  }
+  
   /** 
    * Creates and returns a new GoldenComparator instance. Default implementation
    * is RegexGoldenComparator. Override if you need a different implementation
@@ -125,19 +94,19 @@ public abstract class GoldenTestCase extends TestCase {
     return null;
   }
   
-  protected void assertOutputMatchesGoldenFile(String actualOutput, String goldenFileName) throws IOException {
+  protected void assertOutputMatchesGoldenFile(final String actualOutput, final String goldenFileName) throws IOException {
     GoldenComparator comparator = createGoldenComparator();
     comparator.assertOutputMatchesGoldenFile(actualOutput, goldenFileName);
   }
 
-  protected final void assertOutputMatchesGoldenFile(ProcessWrapper process, String goldenFileName) throws IOException {
+  protected final void assertOutputMatchesGoldenFile(final ProcessWrapper process, final String goldenFileName) throws IOException {
     GoldenComparator comparator = createGoldenComparator();
     comparator.assertOutputMatchesGoldenFile(process.getOutput(), goldenFileName);
   }
 
   protected final Properties createProperties() {
     Properties properties = new Properties();
-    properties.setProperty("gemfire.mcast-port", String.valueOf(this.mcastPort));
+    properties.setProperty("gemfire.mcast-port", "0");
     properties.setProperty("gemfire.log-level", "warning");
     properties.setProperty("file.encoding", "UTF-8");
     return editProperties(properties);
@@ -150,30 +119,23 @@ public abstract class GoldenTestCase extends TestCase {
     return properties;
   }
   
-  protected final int getMcastPort() {
-    return this.mcastPort;
+  protected final void outputLine(final String string) {
+    System.out.println(string);
   }
   
-  // TODO: get rid of this to tighten up tests
-  protected final void sleep(long millis) throws InterruptedException {
-    Thread.sleep(millis);
+  protected final void printProcessOutput(final ProcessWrapper process, final boolean ignoreStopped) {
+    debug(process.getOutput(ignoreStopped), "OUTPUT");
   }
   
-  protected final void printProcessOutput(ProcessWrapper process) {
-    innerPrintOutput(process.getOutput(), "OUTPUT");
+  protected static void debug(final String output, final String title) {
+    debug("------------------ BEGIN " + title + " ------------------");
+    debug(output);
+    debug("------------------- END " + title + " -------------------");
   }
   
-  protected final void printProcessOutput(ProcessWrapper process, boolean ignoreStopped) {
-    innerPrintOutput(process.getOutput(ignoreStopped), "OUTPUT");
-  }
-  
-  protected final void printProcessOutput(ProcessWrapper process, String banner) {
-    innerPrintOutput(process.getOutput(), banner);
-  }
-  
-  protected final void innerPrintOutput(String output, String title) {
-    System.out.println("------------------ BEGIN " + title + " ------------------");
-    System.out.println(output);
-    System.out.println("------------------- END " + title + " -------------------");
+  protected static void debug(final String string) {
+    if (DEBUG) {
+      System.out.println(string);
+    }
   }
 }

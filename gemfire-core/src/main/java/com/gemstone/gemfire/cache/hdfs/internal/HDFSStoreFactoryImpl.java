@@ -40,6 +40,8 @@ public class HDFSStoreFactoryImpl extends HDFSStoreCreation {
       throw new GemFireConfigException("HDFS store name not provided");
     }
     
+    this.configHolder.validate();
+    
     HDFSStore result = null;
     synchronized (this) {
       if (this.cache instanceof GemFireCacheImpl) {

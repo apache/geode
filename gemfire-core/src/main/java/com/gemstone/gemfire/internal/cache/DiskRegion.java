@@ -235,6 +235,12 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   @Override
+  public void incNumOverflowBytesOnDisk(long delta) {
+    getStats().incNumOverflowBytesOnDisk(delta);
+    super.incNumOverflowBytesOnDisk(delta);
+  }
+
+  @Override
   public void incNumOverflowOnDisk(long delta) {
     getStats().incNumOverflowOnDisk(delta);
     super.incNumOverflowOnDisk(delta);
@@ -514,10 +520,13 @@ public class DiskRegion extends AbstractDiskRegion {
       BucketRegion owner=(BucketRegion)region;
       long curInVM = owner.getNumEntriesInVM()*-1;
       long curOnDisk = owner.getNumOverflowOnDisk()*-1;
+      long curOnDiskBytes = owner.getNumOverflowBytesOnDisk()*-1;
       incNumEntriesInVM(curInVM);
       incNumOverflowOnDisk(curOnDisk);
+      incNumOverflowBytesOnDisk(curOnDiskBytes);
       owner.incNumEntriesInVM(curInVM);
       owner.incNumOverflowOnDisk(curOnDisk);
+      owner.incNumOverflowBytesOnDisk(curOnDiskBytes);
     } else {
       // set them both to zero
       incNumEntriesInVM(getNumEntriesInVM()*-1);

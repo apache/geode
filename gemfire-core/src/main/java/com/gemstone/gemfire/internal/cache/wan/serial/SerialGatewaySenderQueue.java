@@ -206,6 +206,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     this.maximumQueueMemory = abstractSender.getMaximumMemeoryPerDispatcherQueue();
     this.stats = abstractSender.getStatistics();
     initializeRegion(abstractSender, listener);
+    // Increment queue size. Fix for bug 51988.
+    this.stats.incQueueSize(this.region.size());
     this.removalThread = new BatchRemovalThread((GemFireCacheImpl)abstractSender.getCache());
     this.removalThread.start();
     this.sender = abstractSender;

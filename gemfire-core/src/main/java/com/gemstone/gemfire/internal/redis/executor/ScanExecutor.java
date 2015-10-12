@@ -84,7 +84,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     }
 
     @SuppressWarnings("unchecked")
-    List<String> returnList = (List<String>) getIteration(context.getRegionCache().metaKeySet(), matchPattern, count, cursor);
+    List<String> returnList = (List<String>) getIteration(context.getRegionProvider().metaKeySet(), matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
@@ -98,7 +98,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     int numElements = 0;
     int i = -1;
     for (String key: (Collection<String>) list) {
-      if (key.equals(GemFireRedisServer.REDIS_META_DATA_REGION) || key.equals(GemFireRedisServer.LISTS_META_DATA_REGION) || key.equals(GemFireRedisServer.STRING_REGION) || key.equals(GemFireRedisServer.HLL_REGION))
+      if (key.equals(GemFireRedisServer.REDIS_META_DATA_REGION) || key.equals(GemFireRedisServer.STRING_REGION) || key.equals(GemFireRedisServer.HLL_REGION))
         continue;
       i++;
       if (beforeCursor < cursor) {
