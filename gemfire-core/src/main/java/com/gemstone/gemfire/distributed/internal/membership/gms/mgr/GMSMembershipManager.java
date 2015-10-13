@@ -1101,7 +1101,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         return true;
       }
       if (member.getVmViewId() < 0) {
-        logger.error("attempt to add a surprise member that has not yet joined the distributed system", new Exception("stack trace"));
+        logger.warn("attempt to add a surprise member that has not yet joined the distributed system: " + member, new Exception("stack trace"));
       }
       if (latestView.getViewId() > member.getVmViewId()) {
         // tell the process that it should shut down distribution.

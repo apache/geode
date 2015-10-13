@@ -447,6 +447,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     // note: member weight and other GMS-only info is not included here
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
+    out.write(memberWeight);
   }
 
   @Override
@@ -454,5 +455,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
       IOException {
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
+    memberWeight = (byte)(in.readByte() & 0xFF);
   }
 }

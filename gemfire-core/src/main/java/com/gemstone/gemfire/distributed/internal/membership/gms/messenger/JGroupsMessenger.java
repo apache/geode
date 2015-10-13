@@ -654,11 +654,16 @@ public class JGroupsMessenger implements Messenger {
     Message msg = new Message();
     msg.setDest(null);
     msg.setSrc(src);
+    // GemFire uses its own reply processors so there is no need
+    // to maintain message order
+    msg.setFlag(Flag.OOB);
+    // Bundling is mostly only useful if we're doing no-ack work,
+    // which is fairly rare
+    msg.setFlag(Flag.DONT_BUNDLE);
+
     //log.info("Creating message with payload " + gfmsg);
     if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
         || gfmsg instanceof HighPriorityDistributionMessage) {
-      msg.setFlag(Flag.OOB);
-      msg.setFlag(Flag.DONT_BUNDLE);
       msg.setFlag(Flag.NO_FC);
       msg.setFlag(Flag.SKIP_BARRIER);
     }
@@ -778,6 +783,7 @@ public class JGroupsMessenger implements Messenger {
           &&  services.getConfig().getTransport().isMcastEnabled()) {
         Digest digest = (Digest)jrsp.getMessengerData();
         if (digest != null) {
+          logger.trace("installing JGroups message digest {}", digest);
           this.myChannel.getProtocolStack()
               .getTopProtocol().down(new Event(Event.SET_DIGEST, digest));
         }

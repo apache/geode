@@ -59,8 +59,8 @@ public interface Service {
   
   /**
    * a member is suspected of having crashed
-   * @param initiator
-   * @param suspect
    */
   void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect);
+
+
 }

@@ -317,7 +317,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   public String getStartLocator();
   /**
-   * Sets the start-locators property.  This is a string in the form
+   * Sets the start-locator property.  This is a string in the form
    * bindAddress[port] and, if set, tells the distributed system to start
    * a locator prior to connecting
    * @param value must be of the form <code>hostName[portNum]</code>
@@ -329,11 +329,11 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   public boolean isStartLocatorModifiable();
   /**
-   * The name of the "start-locators" property
+   * The name of the "start-locator" property
    */
   public static final String START_LOCATOR_NAME = "start-locator";
   /**
-   * The default value of the "start-locators" property
+   * The default value of the "start-locator" property
    */
   public static final String DEFAULT_START_LOCATOR = "";
   

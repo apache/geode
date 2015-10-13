@@ -1,14 +1,14 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.VIEW_ACK_MESSAGE;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -313,16 +313,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         throw new AuthenticationFailedException(failReason);
       }
       if (response.getCurrentView() != null) {
-        this.birthViewId = response.getMemberID().getVmViewId();
-        this.localAddress.setVmViewId(this.birthViewId);
-        GMSMember me = (GMSMember)this.localAddress.getNetMember();
-        me.setBirthViewId(birthViewId);
-        installView(response.getCurrentView());
-
         if (response.getBecomeCoordinator()) {
           logger.info("I am being told to become the membership coordinator by {}", coord);
           this.currentView = response.getCurrentView();
           becomeCoordinator(null);
+        } else {
+          this.birthViewId = response.getMemberID().getVmViewId();
+          this.localAddress.setVmViewId(this.birthViewId);
+          GMSMember me = (GMSMember)this.localAddress.getNetMember();
+          me.setBirthViewId(birthViewId);
+          installView(response.getCurrentView());
         }
 
         return true;
@@ -546,6 +546,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         synchronized(viewInstallationLock) {
           int rand = testing? 0 : NetView.RANDOM.nextInt(10);
           int viewNumber = currentView.getViewId() + 5 + rand;
+          if (this.localAddress.getVmViewId() < 0) {
+            this.localAddress.setVmViewId(viewNumber);
+          }
+
           List<InternalDistributedMember> mbrs = new ArrayList<>(currentView.getMembers());
           if (!mbrs.contains(localAddress)) {
             mbrs.add(localAddress);
@@ -572,7 +576,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       stateLock.writeLock().unlock();
     }
   }
-  
   
   private void sendJoinResponses(List<InternalDistributedMember> newMbrs, NetView newView) {
     for (InternalDistributedMember mbr: newMbrs) {
@@ -832,7 +835,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     ArrayList<FindCoordinatorResponse> result;
     SearchState state = searchState;
     NetView v = state.view;
-    List<InternalDistributedMember> recipients = new ArrayList(v.getMembers());
+    List<InternalDistributedMember> recipients = new ArrayList<>(v.getMembers());
 
     if (recipients.size() > MAX_DISCOVERY_NODES && MAX_DISCOVERY_NODES > 0) {
       recipients = recipients.subList(0, MAX_DISCOVERY_NODES);
@@ -1384,8 +1387,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       // We don't want to mix the two because pending removals
       // aren't reflected as having crashed in the current view
       // and need to cause a new view to be generated
-      synchronized(this.pendingRemovals) {
-        this.pendingRemovals.addAll(pendingRemovals);
+      for (InternalDistributedMember mbr: pendingLeaves) {
+        notRepliedYet.remove(mbr);
+      }
+      for (InternalDistributedMember mbr: pendingRemovals) {
+        if (this.notRepliedYet.contains(mbr)) {
+          this.pendingRemovals.add(mbr);
+        }
       }
     }
     
@@ -1395,8 +1403,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         // we will do a final check on this member if it hasn't already
         // been done, so stop waiting for it now
         logger.debug("view response processor recording suspect status for {}", suspect);
-        pendingRemovals.add(suspect);
-        checkIfDone();
+        if (notRepliedYet.contains(suspect) && !pendingRemovals.contains(suspect)) {
+          pendingRemovals.add(suspect);
+          checkIfDone();
+        }
       }
     }
     
@@ -1473,8 +1483,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           // if we've set waiting to false due to incoming messages then
           // we've discounted receiving any other responses from the
           // remaining members due to leave/crash notification
-          result = Collections.emptySet();
+          result = pendingRemovals;
         } else {
+          result.addAll(pendingRemovals);
           this.waiting = false;
         }
       }
@@ -1641,8 +1652,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         logger.debug("processing request {}", msg);
 
         InternalDistributedMember mbr = null;
-        
-        if (msg instanceof JoinRequestMessage) {
+        switch (msg.getDSFID()) {
+        case JOIN_REQUEST:
           mbr = ((JoinRequestMessage)msg).getMemberID();
           // see if an old member ID is being reused.  If
           // so we'll remove it from the new view
@@ -1655,22 +1666,23 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           if (!joinReqs.contains(mbr)) {
             joinReqs.add(mbr);
           }
-        }
-        else if (msg instanceof LeaveRequestMessage) {
+          break;
+        case LEAVE_REQUEST_MESSAGE:
           mbr = ((LeaveRequestMessage) msg).getMemberID();
           if (oldMembers.contains(mbr) && !leaveReqs.contains(mbr)) {
             leaveReqs.add(mbr);
           }
-        }
-        else if (msg instanceof RemoveMemberMessage) {
+          break;
+        case REMOVE_MEMBER_REQUEST:
           mbr = ((RemoveMemberMessage) msg).getMemberID();
           if (oldMembers.contains(mbr) && !leaveReqs.contains(mbr) && !removalReqs.contains(mbr)) {
             removalReqs.add(mbr);
             removalReasons.add(((RemoveMemberMessage) msg).getReason());
           }
-        }
-        else {
+          break;
+        default: 
           logger.warn("Unknown membership request encountered: {}", msg);
+          break;
         }
       }
       

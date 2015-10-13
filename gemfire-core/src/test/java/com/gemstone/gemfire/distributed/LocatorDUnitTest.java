@@ -557,7 +557,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
        * failure and eject the lost members from the view.
        */
       
-      getLogWriter().info("waiting for remaining vms to disconnect due to partition detection");
+      getLogWriter().info("waiting for my distributed system to disconnect due to partition detection");
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
           return !sys.isConnected();

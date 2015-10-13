@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import junit.framework.AssertionFailedError;
+
 import org.junit.Ignore;
 
 import com.gemstone.gemfire.SystemFailure;
@@ -712,12 +714,22 @@ public class TXDistributedDUnitTest extends CacheTestCase {
               fail("While creating region", e);
             }
           }
-          Region.Entry re = rgn1.getEntry("key0");
-          assertNotNull(re);
-          assertEquals("val0_3", re.getValue());
-          re = rgn1.getEntry("key1");
-          assertNotNull(re);
-          assertEquals("val1_3", re.getValue());
+          long giveUp = System.currentTimeMillis() + 10000;
+          while (giveUp > System.currentTimeMillis()) {
+            try {
+              Region.Entry re = rgn1.getEntry("key0");
+              assertNotNull(re);
+              assertEquals("val0_3", re.getValue());
+              re = rgn1.getEntry("key1");
+              assertNotNull(re);
+              assertEquals("val1_3", re.getValue());
+              break;
+            } catch (AssertionFailedError e) {
+              if (giveUp > System.currentTimeMillis()) {
+                throw e;
+              }
+            }
+          }
         }
       };
     invokeInEveryVM(nonSoloChangeValidator1);

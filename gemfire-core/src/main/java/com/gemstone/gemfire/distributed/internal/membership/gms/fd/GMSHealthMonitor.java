@@ -402,7 +402,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     synchronized (viewVsSuspectedMembers) {
       viewVsSuspectedMembers.clear();
     }
-    currentSuspects.clear();
+    currentSuspects.removeAll(newView.getCrashedMembers());
+    currentSuspects.removeAll(newView.getShutdownMembers());
     currentView = newView;
     setNextNeighbor(newView, null);
   }
@@ -603,11 +604,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     
     // only respond if the intended recipient is this member
     InternalDistributedMember me = localAddress;
+    // TODO the first part of this check should be removed.
+    // because a restarted server will probably have the same
+    // membership port as it had in its last incarnation, causing
+    // delays in removing the old member ID from the view.
     if (me.getVmViewId() < 0 || m.getTarget().equals(me)) {
       CheckResponseMessage prm = new CheckResponseMessage(m.getRequestId());
       prm.setRecipient(m.getSender());
       Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(prm);
-      // TODO: send is throwing exception right now
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(m.getSender())) {
         logger.debug("Unable to send check response to member: {}", m.getSender());
       }
@@ -752,8 +756,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
                 }
               }
               // whether it's alive or not, at this point we allow it to
-              // be a suspect again
-              currentSuspects.remove(mbr);
+              // be watched again
+              contactedBy(mbr);
             } catch (DistributedSystemDisconnectedException e) {
               return;
             } catch (Exception e) {

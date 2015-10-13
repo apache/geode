@@ -2,12 +2,17 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -39,6 +44,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messa
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -112,6 +118,17 @@ public class JGroupsMessengerJUnitTest {
     }
   }
   
+  @Test
+  public void testMemberWeightIsSerialized() throws Exception {
+    HeapDataOutputStream out = new HeapDataOutputStream(500, Version.CURRENT);
+    InternalDistributedMember m = new InternalDistributedMember("localhost", 8888);
+    ((GMSMember)m.getNetMember()).setMemberWeight((byte)40);
+    m.toData(out);
+    DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
+    m = new InternalDistributedMember();
+    m.fromData(in);
+    assertEquals(40, m.getNetMember().getMemberWeight());
+  }
   
   @Test
   public void testMessageDeliveredToHandler() throws Exception {
