@@ -120,6 +120,9 @@ abstract class RegionExpiryTask extends ExpiryTask
     }
 
     addExpiryTask();
+    if (expiryTaskListener != null) {
+      expiryTaskListener.afterReschedule(this);
+    }
   }
 
   @Override

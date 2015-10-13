@@ -223,7 +223,11 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   {
     ExpirationAction action = getAction();
     if (action == null) return false;
-    return expire(action, isPending);
+    boolean result = expire(action, isPending);
+    if (result && expiryTaskListener != null) {
+      expiryTaskListener.afterExpire(this);
+    }
+    return result;
   }
   
   /** Why did this expire?
@@ -380,7 +384,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
        logger.fatal(LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
     } finally {
       if (expiryTaskListener != null) {
-        expiryTaskListener.afterExpire(this);
+        expiryTaskListener.afterTaskRan(this);
       }
     }
   }
@@ -502,6 +506,22 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * to an ExpiryTask have happened.
    */
   public interface ExpiryTaskListener {
+    /**
+     * Called after the given expiry task has run.
+     * This means that the time it was originally
+     * scheduled to run has elapsed and the scheduler
+     * has run the task. While running the task it
+     * may decide to expire it or reschedule it.
+     */
+    public void afterTaskRan(ExpiryTask et);
+    /**
+     * Called after the given expiry task has been
+     * rescheduled. afterTaskRan can still be called
+     * on the same task.
+     * In some cases a task is rescheduled without expiring it.
+     * In others it is expired and rescheduled.
+     */
+    public void afterReschedule(ExpiryTask et);
     /**
      * Called after the given expiry task has expired.
      */
