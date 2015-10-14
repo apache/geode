@@ -88,3 +88,12 @@ Geode applications can be written in a number of client technologies:
 * [Python](https://github.com/gemfire/py-gemfire-rest)
 * [REST](http://geode-docs.cfapps.io/docs/geode_rest/book_intro.html)
 * [[memcached|Moving from memcached to gemcached]]
+
+
+# Build environment in Docker
+```
+dev-tools/docker/compile/start-compile-docker.sh
+
+```
+
+

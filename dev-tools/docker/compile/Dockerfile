@@ -19,28 +19,3 @@ MAINTAINER Geode Community <dev@geode.incubator.apache.org>
 
 LABEL Vendor="Apache Geode (incubating)"
 LABEL version=unstable
-
-# download JDK 8
-# ENV	JAVA_HOME /jdk1.8.0_51
-
-RUN	git clone -b develop https://github.com/apache/incubator-geode.git \
-	&& cd incubator-geode \
-	&& ./gradlew build -Dskip.tests=true \
-	&& ls /incubator-geode | grep -v gemfire-assembly | xargs rm -rf \
-	&& rm -rf /root/.gradle/ \
-	&& rm -rf /incubator-geode/gemfire-assembly/build/distributions/ \
-    && yum remove -y perl
-
-ENV GEODE_HOME /incubator-geode/gemfire-assembly/build/install/apache-geode
-ENV PATH $PATH:$GEODE_HOME/bin
-
-# Default ports:
-# RMI/JMX 1099
-# REST 8080
-# PULE 7070
-# LOCATOR 10334
-# CACHESERVER 40404
-EXPOSE  8080 10334 40404 1099 7070
-VOLUME ["/data/"]
-CMD ["gfsh"]
-
