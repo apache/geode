@@ -276,6 +276,12 @@ public abstract class AbstractConfig implements Config {
     String[] validAttributeNames = getAttributeNames();
     for (int i=0; i < validAttributeNames.length; i++) {
       String attName = validAttributeNames[i];
+      if (this.isDeprecated(attName)) {
+        // since toProperties skips isDeprecated sameAs
+        // needs to also skip them.
+        // See GEODE-405.
+        continue;
+      }
       Object thisAtt = this.getAttributeObject(attName);
       Object otherAtt = other.getAttributeObject(attName);
       if (thisAtt == otherAtt) {

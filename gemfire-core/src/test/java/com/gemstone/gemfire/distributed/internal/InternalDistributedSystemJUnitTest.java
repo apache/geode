@@ -704,6 +704,7 @@ public class InternalDistributedSystemJUnitTest
 
     try {
       sys.validateSameProperties(config2.toProperties(), true);
+      fail("should have detected different mcast-ports");
     } catch (IllegalStateException iex) {
       // This passes the test
     }
@@ -711,6 +712,29 @@ public class InternalDistributedSystemJUnitTest
     } finally {
       sys.disconnect();
     }
+  }
+  @Test
+  public void testDeprecatedSSLProps() {
+    Properties props = new Properties();
+    props.setProperty("mcast-port", "0");
+    props.setProperty("locators", "");
+    props.setProperty("ssl-enabled", "true");
+    Config config1 = new DistributionConfigImpl(props, false);
+    Properties props1 = config1.toProperties();
+    // For the deprecated ssl-* properties a decision was made
+    // to not include them in the result of "toProperties".
+    // The cause of this is: com.gemstone.gemfire.internal.AbstractConfig.isDeprecated(String)
+    // and its use in toProperties.
+    // The other thing that is done is the ssl-* props are copied to cluster-ssl-*.
+    // The following two assertions demonstrate this.
+    assertEquals(null, props1.getProperty("ssl-enabled"));
+    assertEquals("true", props1.getProperty("cluster-ssl-enabled"));
+    Config config2 = new DistributionConfigImpl(props1, false);
+    assertEquals(true, config1.sameAs(config2));
+    Properties props3 = new Properties(props1);
+    props3.setProperty("ssl-enabled", "false");
+    Config config3 = new DistributionConfigImpl(props3, false);
+    assertEquals(false, config1.sameAs(config3));
   }
   public static String getHostAddress(InetAddress addr) {
     String address = addr.getHostAddress();
