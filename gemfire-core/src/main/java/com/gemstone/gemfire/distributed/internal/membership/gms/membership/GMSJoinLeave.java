@@ -584,7 +584,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
   
-  private void sendRemoveMessages(Set<InternalDistributedMember> removals,
+  private void sendRemoveMessages(List<InternalDistributedMember> removals,
       List<String> reasons, NetView newView) {
     Iterator<String> reason = reasons.iterator();
     for (InternalDistributedMember mbr: removals) {
@@ -1615,7 +1615,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             }
           } // synchronized
           if (requests != null  && !requests.isEmpty()) {
-            logger.debug("View Creator is processing {} requests for the next membership view", requests.size());
+            logger.info("View Creator is processing {} requests for the next membership view", requests.size());
             try {
               createAndSendView(requests);
             } catch (DistributedSystemDisconnectedException e) {
@@ -1636,7 +1636,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     void createAndSendView(List<DistributionMessage> requests) {
       List<InternalDistributedMember> joinReqs = new ArrayList<>();
       Set<InternalDistributedMember> leaveReqs = new HashSet<>();
-      Set<InternalDistributedMember> removalReqs = new HashSet<>();
+      List<InternalDistributedMember> removalReqs = new ArrayList<>();
       List<String> removalReasons = new ArrayList<String>();
 
       NetView oldView = currentView;
@@ -1678,6 +1678,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           if (oldMembers.contains(mbr) && !leaveReqs.contains(mbr) && !removalReqs.contains(mbr)) {
             removalReqs.add(mbr);
             removalReasons.add(((RemoveMemberMessage) msg).getReason());
+          } else {
+            sendRemoveMessages(Collections.<InternalDistributedMember>singletonList(mbr),
+                Collections.<String>singletonList(((RemoveMemberMessage)msg).getReason()),
+                currentView);
           }
           break;
         default: 
@@ -1711,7 +1715,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         mbrs.removeAll(leaveReqs);
         mbrs.removeAll(removalReqs);
         newView = new NetView(localAddress, viewNumber, mbrs, leaveReqs,
-            removalReqs);
+            new HashSet<InternalDistributedMember>(removalReqs));
       }
       
       // if there are no membership changes then abort creation of
@@ -1735,7 +1739,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         sendJoinResponses(joinReqs, newView);
       }
 
-      prepareAndSendView(newView, joinReqs, leaveReqs, removalReqs);
+      prepareAndSendView(newView, joinReqs, leaveReqs, newView.getCrashedMembers());
       return;
     }
     

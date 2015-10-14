@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import junit.framework.AssertionFailedError;
@@ -507,6 +508,13 @@ public class TXDistributedDUnitTest extends CacheTestCase {
         }
       });
 
+  }
+  
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties p = super.getDistributedSystemProperties();
+    p.put("log-level", "fine");
+    return p;
   }
 
   public void testHighAvailabilityFeatures() throws Exception {

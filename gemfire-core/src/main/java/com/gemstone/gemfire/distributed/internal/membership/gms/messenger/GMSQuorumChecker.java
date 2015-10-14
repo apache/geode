@@ -172,7 +172,7 @@ public class GMSQuorumChecker implements QuorumChecker {
         try {
           pingPonger.sendPingMessage(channel, myAddress, dest);
         } catch (Exception e) {
-          logger.info("Failed sending Ping message to " + dest);
+          logger.debug("Failed sending Ping message to " + dest);
         }
       }
     }
@@ -189,7 +189,7 @@ public class GMSQuorumChecker implements QuorumChecker {
           try {
             pingPonger.sendPongMessage(channel, myAddress, msg.getSrc());
           } catch (Exception e) {
-            logger.info("Failed sending Pong message to " + msg.getSrc());
+            logger.debug("Failed sending Pong message to " + msg.getSrc());
           }
         } else if (pingPonger.isPongMessage(msgBytes)) {
           pongReceived(msg.getSrc());
@@ -228,13 +228,13 @@ public class GMSQuorumChecker implements QuorumChecker {
     }
 
     public void pongReceived(Address sender) {
-      logger.info("received ping-pong response from {}", sender);
+      logger.debug("received ping-pong response from {}", sender);
       JGAddress jgSender = (JGAddress) sender;
       SocketAddress sockaddr = new InetSocketAddress(jgSender.getInetAddress(), jgSender.getPort());
       InternalDistributedMember memberAddr = addressConversionMap.get(sockaddr);
 
       if (memberAddr != null) {
-        logger.info("quorum check: mapped address to member ID {}", memberAddr);
+        logger.debug("quorum check: mapped address to member ID {}", memberAddr);
         receivedAcks.add(memberAddr);
       }
     }
