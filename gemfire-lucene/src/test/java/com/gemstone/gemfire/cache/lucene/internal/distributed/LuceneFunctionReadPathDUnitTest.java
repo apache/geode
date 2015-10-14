@@ -60,14 +60,11 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         final Cache cache = getCache();
         assertNotNull(cache);
-        // TODO: we have to workarround it now: specify an AEQ id when creating data region
-        String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
+        LuceneService service = LuceneServiceProvider.get(cache);
+        service.createIndex(INDEX_NAME, REGION_NAME, "text");
         RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
         Region<Object, Object> region = regionFactory.
-            addAsyncEventQueueId(aeqId). // TODO: we need it for the time being
             create(REGION_NAME);
-        LuceneService service = LuceneServiceProvider.get(cache);
-        InternalLuceneIndex index = (InternalLuceneIndex) service.createIndex(INDEX_NAME, REGION_NAME, "text");
         return null;
       }
     };

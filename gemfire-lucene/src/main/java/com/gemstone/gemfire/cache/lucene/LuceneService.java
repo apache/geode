@@ -64,7 +64,7 @@ public interface LuceneService {
    * @param fields
    * @return LuceneIndex object
    */
-  public LuceneIndex createIndex(String indexName, String regionPath, String... fields);
+  public void createIndex(String indexName, String regionPath, String... fields);
   
   /**
    * Create a lucene index using specified analyzer per field
@@ -75,7 +75,7 @@ public interface LuceneService {
    * @return LuceneIndex object
    *
    */
-  public LuceneIndex createIndex(String indexName, String regionPath,  
+  public void createIndex(String indexName, String regionPath,  
       Map<String, Analyzer> analyzerPerField);
 
   /**

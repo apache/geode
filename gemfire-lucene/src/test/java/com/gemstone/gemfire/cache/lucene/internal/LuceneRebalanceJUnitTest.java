@@ -1,11 +1,12 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,10 +22,11 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class LuceneRebalanceJUnitTest {
   String[] indexedFields = new String[] { "txt" };
   HeterogenousLuceneSerializer mapper = new HeterogenousLuceneSerializer(indexedFields);
@@ -36,6 +38,14 @@ public class LuceneRebalanceJUnitTest {
     mapper = new HeterogenousLuceneSerializer(indexedFields);
     analyzer = new StandardAnalyzer();
     LuceneServiceImpl.registerDataSerializables();
+  }
+  
+  @After
+  public void tearDown() {
+    Cache cache = GemFireCacheImpl.getInstance();
+    if(cache != null) {
+      cache.close();
+    }
   }
 
   /**

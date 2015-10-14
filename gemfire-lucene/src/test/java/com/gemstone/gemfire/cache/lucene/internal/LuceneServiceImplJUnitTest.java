@@ -120,12 +120,23 @@ public class LuceneServiceImplJUnitTest {
       return region;
     }
   }
+  
+  /**Test that we don't allow the user
+   * to create the region first.
+   */
+  @Test(expected = IllegalStateException.class)
+  public void createRegionFirst() throws IOException, ParseException {
+    getService();
+    LocalRegion userRegion = createPR("PR1", false);
+    service.createIndex("index1", "PR1", "field1", "field2", "field3");
+  }
 
   @Test
   public void testCreateIndexForPR() throws IOException, ParseException {
     getService();
+    service.createIndex("index1", "PR1", "field1", "field2", "field3");
     LocalRegion userRegion = createPR("PR1", false);
-    LuceneIndexImpl index1 = (LuceneIndexImpl)service.createIndex("index1", "PR1", "field1", "field2", "field3");
+    LuceneIndexImpl index1 = (LuceneIndexImpl) service.getIndex("index1", "PR1");
     assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
     LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
     assertEquals("index1", index1.getName());
@@ -155,7 +166,6 @@ public class LuceneServiceImplJUnitTest {
   @Test
   public void testCreateIndexForPRWithAnalyzer() throws IOException, ParseException {
     getService();
-    createPR("PR1", false);
     StandardAnalyzer sa = new StandardAnalyzer();
     KeywordAnalyzer ka = new KeywordAnalyzer();
     Map<String, Analyzer> analyzerPerField = new HashMap<String, Analyzer>();
@@ -165,7 +175,9 @@ public class LuceneServiceImplJUnitTest {
     //  field2 and field3 will use StandardAnalyzer
     PerFieldAnalyzerWrapper analyzer2 = new PerFieldAnalyzerWrapper(sa, analyzerPerField);
 
-    LuceneIndexImpl index1 = (LuceneIndexImpl)service.createIndex("index1", "PR1", analyzerPerField);
+    service.createIndex("index1", "PR1", analyzerPerField);
+    createPR("PR1", false);
+    LuceneIndexImpl index1 = (LuceneIndexImpl)service.getIndex("index1", "PR1");
     assertTrue(index1 instanceof LuceneIndexForPartitionedRegion);
     LuceneIndexForPartitionedRegion index1PR = (LuceneIndexForPartitionedRegion)index1;
     assertEquals("index1", index1.getName());

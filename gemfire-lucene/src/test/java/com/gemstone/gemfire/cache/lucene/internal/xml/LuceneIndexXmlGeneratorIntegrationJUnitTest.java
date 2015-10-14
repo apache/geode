@@ -28,10 +28,10 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
   @Test
   public void generateWithFields() {
     Cache cache = new CacheFactory().set("mcast-port", "0").create();
-    cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
     LuceneService service = LuceneServiceProvider.get(cache);
-    
     service.createIndex("index", "region", "a", "b", "c");
+    cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
+    
     
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintWriter pw = new PrintWriter(baos);

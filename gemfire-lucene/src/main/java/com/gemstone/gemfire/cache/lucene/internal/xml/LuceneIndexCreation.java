@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
 import com.gemstone.gemfire.internal.cache.extension.Extension;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
@@ -68,9 +70,13 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
       Extensible<Region<?, ?>> target) {
     target.getExtensionPoint().addExtension(LuceneIndex.class, this);
     Cache cache = target.getExtensionPoint().getTarget().getCache();
-    LuceneService service = LuceneServiceProvider.get(cache);
-    //TODO - should this be a different method than the public API here?
-    service.createIndex(getName(), getRegionPath(), getFieldNames());
+    LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
+    Region region = target.getExtensionPoint().getTarget();
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), getRegionPath());
+    //Here, it is safe to add the aeq with the mutator, because onCreate is
+    //fired in a special place before the region is initialized.
+    region.getAttributesMutator().addAsyncEventQueueId(aeqId);
+    service.afterDataRegionCreated(getName(), new StandardAnalyzer(), getRegionPath(), getFieldNames());
   }
 
   public void addField(String name) {

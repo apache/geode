@@ -98,12 +98,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       LuceneEventListener listener = new LuceneEventListener(repositoryManager);
       String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
       AsyncEventQueueImpl aeq = (AsyncEventQueueImpl)cache.getAsyncEventQueue(aeqId);
-      if (aeq == null) {
-        AsyncEventQueue indexQueue = factory.create(aeqId, listener);
-        dataRegion.getAttributesMutator().addAsyncEventQueueId(aeqId);
-      } else {
-        logger.info("The AEQ "+aeq+" is created at another member");
-      }
+      AsyncEventQueue indexQueue = factory.create(aeqId, listener);
 
       addExtension(dataRegion);
       hasInitialized = true;
