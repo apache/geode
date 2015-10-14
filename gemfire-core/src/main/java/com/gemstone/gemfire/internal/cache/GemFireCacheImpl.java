@@ -198,6 +198,7 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQue
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParser;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import com.gemstone.gemfire.internal.cache.xmlcache.PropertyResolver;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
 import com.gemstone.gemfire.internal.jta.TransactionManagerImpl;
@@ -588,6 +589,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   private SimpleExtensionPoint<Cache> extensionPoint = new SimpleExtensionPoint<Cache>(this, this);
   
   private final CqService cqService;
+  
+  private final Set<RegionListener> regionListeners = new ConcurrentHashSet<RegionListener>();
   
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
 
@@ -3023,6 +3026,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     stopper.checkCancelInProgress(null);
     LocalRegion.validateRegionName(name);
     RegionAttributes<K, V> attrs = p_attrs;
+    attrs = invokeRegionBefore(null, name, attrs, internalRegionArgs);
     if (attrs == null) {
       throw new IllegalArgumentException(LocalizedStrings.GemFireCache_ATTRIBUTES_MUST_NOT_BE_NULL.toLocalizedString());
     }
@@ -3158,6 +3162,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       throw ex;
     }
 
+    invokeRegionAfter(rgn);
     /**
      * Added for M&M . Putting the callback here to avoid creating RegionMBean in case of Exception
      **/
@@ -3166,6 +3171,20 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
 
     return rgn;
+  }
+
+  public RegionAttributes invokeRegionBefore(LocalRegion parent,
+      String name, RegionAttributes attrs, InternalRegionArguments internalRegionArgs) {
+    for(RegionListener listener : regionListeners) {
+      attrs = listener.beforeCreate(parent, name, attrs, internalRegionArgs);
+    }
+    return attrs;
+  }
+  
+  public void invokeRegionAfter(LocalRegion region) {
+    for(RegionListener listener : regionListeners) {
+      listener.afterCreate(region);
+    }
   }
 
   /**
@@ -3712,6 +3731,14 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     synchronized (GemFireCacheImpl.class) {
       return cacheLifecycleListeners.remove(l);
     }
+  }
+  
+  public void addRegionListener(RegionListener l ) {
+    this.regionListeners.add(l);
+  }
+  
+  public void removeRegionListener(RegionListener l ) {
+    this.regionListeners.remove(l);
   }
 
   /**
