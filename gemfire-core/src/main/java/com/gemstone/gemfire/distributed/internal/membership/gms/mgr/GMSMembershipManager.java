@@ -74,7 +74,7 @@ import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.xmlcache.BridgeServerCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
@@ -1829,10 +1829,10 @@ public class GMSMembershipManager implements MembershipManager, Manager
         }
       } else if (sharedConfigEnabled && !cache.getCacheServers().isEmpty()) {
         // we need to retain a cache-server description if this JVM was started by gfsh
-        List<BridgeServerCreation> list = new ArrayList<BridgeServerCreation>(cache.getCacheServers().size());
+        List<CacheServerCreation> list = new ArrayList<CacheServerCreation>(cache.getCacheServers().size());
         for (Iterator it = cache.getCacheServers().iterator(); it.hasNext(); ) {
           CacheServer cs = (CacheServer)it.next();
-          BridgeServerCreation bsc = new BridgeServerCreation(cache, cs);
+          CacheServerCreation bsc = new CacheServerCreation(cache, cs);
           list.add(bsc);
         }
         cache.getCacheConfig().setCacheServerCreation(list);

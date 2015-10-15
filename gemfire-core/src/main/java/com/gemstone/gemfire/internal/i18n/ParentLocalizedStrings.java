@@ -920,7 +920,7 @@ class ParentLocalizedStrings {
   public static final StringId ProcessBatch_0_DURING_BATCH_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1 = new StringId(1917, "{0}: during batch destroy no entry was found for key {1}");
   public static final StringId ProcessBatch_0_FAILED_TO_CREATE_OR_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_CALLBACKARG_4 = new StringId(1918, "{0}: Failed to create or update entry for region {1} key {2} value {3} callbackArg {4}");
   public static final StringId ProcessBatch_0_FAILED_TO_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_AND_CALLBACKARG_4 = new StringId(1919, "{0}: Failed to update entry for region {1}, key {2}, value {3}, and callbackArg {4}");
-  public static final StringId JGroupMembershipManager_Invalid_Surprise_Member = new StringId(1920, "attempt to add old member: {0} as surprise member to {1}");
+  public static final StringId GroupMembershipService_Invalid_Surprise_Member = new StringId(1920, "attempt to add old member: {0} as surprise member to {1}");
   public static final StringId ProcessBatch_0_THE_INPUT_KEY_FOR_THE_BATCH_DESTROY_REQUEST_1_IS_NULL = new StringId(1921, "{0}: The input key for the batch destroy request {1} is null");
   public static final StringId ProcessBatch_0_THE_INPUT_KEY_FOR_THE_BATCH_UPDATE_REQUEST_1_IS_NULL = new StringId(1922, "{0}: The input key for the batch update request {1} is null");
   public static final StringId ProcessBatch_0_THE_INPUT_REGION_NAME_FOR_THE_BATCH_CREATE_REQUEST_1_IS_NULL = new StringId(1923, "{0}: The input region name for the batch create request {1} is null");

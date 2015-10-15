@@ -1076,7 +1076,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId QueueManagerImpl_REDUNDANCY_LEVEL_0_IS_NOT_SATISFIED_BUT_THERE_ARE_NO_MORE_SERVERS_AVAILABLE_REDUNDANCY_IS_CURRENTLY_1 = new StringId(4455, "Redundancy level {0} is not satisfied, but there are no more servers available. Redundancy is currently {1}.");
   public static final StringId QueueManagerImpl_QUEUEMANAGERIMPL_FAILED_TO_RECOVER_INTEREST_TO_SERVER_0 = new StringId(4456, "QueueManagerImpl failed to recover interest to server {0}.");
   public static final StringId QueueManagerImpl_ERROR_IN_REDUNDANCY_SATISFIER = new StringId(4457, "Error in redundancy satisfier");
-  public static final StringId JGroupMembershipManager_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0 = new StringId(4458, "Membership: expiring membership of surprise member <{0}>");
+  public static final StringId GroupMembershipService_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0 = new StringId(4458, "Membership: expiring membership of surprise member <{0}>");
   public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_PORT_0 = new StringId(4459, "Starting GemFireRedisServer on port {0}");
   public static final StringId GroupMembershipService_EXCEPTION_DESERIALIZING_MESSAGE_PAYLOAD_0 = new StringId(4460, "Exception deserializing message payload: {0}");
   public static final StringId GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0 = new StringId(4461, "Membership service failure: {0}");
@@ -1169,7 +1169,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AcceptorImpl_COULD_NOT_CHECK_FOR_STUCK_KEYS = new StringId(4548, "Could not check for stuck keys.");
   public static final StringId AcceptorImpl_STUCK_SELECTION_KEY_DETECTED_ON_0 = new StringId(4549, "stuck selection key detected on {0}");
   public static final StringId AcceptorImpl_UNEXPECTED_EXCEPTION = new StringId(4550, "Unexpected Exception:");
-  public static final StringId JGroupMembershipManager_MEMBERSHIP_DISREGARDING_SHUNNED_MEMBER_0 = new StringId(4551, "Membership: disregarding shunned member <{0}>");
+  public static final StringId GroupMembershipService_MEMBERSHIP_DISREGARDING_SHUNNED_MEMBER_0 = new StringId(4551, "Membership: disregarding shunned member <{0}>");
   public static final StringId GlobalTransaction_COULD_NOT_COMPARE_0_TO_1 = new StringId(4552, "Could not compare {0} to {1}");
   public static final StringId DistributedSystem_THIS_VM_ALREADY_HAS_ONE_OR_MORE_DISTRIBUTED_SYSTEM_CONNECTIONS_0 = new StringId(4553, "This VM already has one or more Distributed System connections {0}");
   public static final StringId DistributedFunctionMessage_UNABLE_TO_DESERIALIZE_RESPONSE = new StringId(4554, "Unable to deserialize a portion of the data in a distributed function response.");
