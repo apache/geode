@@ -1148,11 +1148,16 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
                   help=CliStrings.VALIDATE_DISK_STORE__NAME__HELP)
                   String diskStoreName,
       @CliOption(key=CliStrings.VALIDATE_DISK_STORE__DISKDIRS,
-                 mandatory=true,
-                 unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,                 
-                 help=CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP)
+                  mandatory=true,
+                  unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,                 
+                  help=CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP)
       @CliMetaData (valueSeparator = ",")
-                  String[] diskDirs) {   
+                  String[] diskDirs,
+      @CliOption(key=CliStrings.VALIDATE_DISK_STORE__J,
+                  unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
+                  help=CliStrings.VALIDATE_DISK_STORE__J__HELP)
+      @CliMetaData (valueSeparator = ",")
+      String[] jvmProps) {   
     try {
       String resultString = new String();
       
@@ -1169,6 +1174,14 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
       configureLogging(commandList);
       
+      if (jvmProps != null && jvmProps.length != 0) {
+        for (int i = 0; i < jvmProps.length; i++) {
+          commandList.add(jvmProps[i]);
+        }
+      }
+      
+      //Pass any java options on to the command
+      commandList.add(System.getenv("JAVA_OPTS"));
       commandList.add("-classpath");
       commandList.add(System.getProperty("java.class.path", "."));
       commandList.add(DiskStoreValidater.class.getName());

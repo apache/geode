@@ -2063,6 +2063,8 @@ public class CliStrings {
   public static final String VALIDATE_DISK_STORE__NAME__HELP = "Name of the disk store to be validated.";
   public static final String VALIDATE_DISK_STORE__DISKDIRS = "disk-dirs";
   public static final String VALIDATE_DISK_STORE__DISKDIRS__HELP = "Directories where data for the disk store was previously written.";
+  public static final String VALIDATE_DISK_STORE__J = "J";
+  public static final String VALIDATE_DISK_STORE__J__HELP = "Arguments passed to the Java Virtual Machine performing the compact operation on the disk store.";
   public static final String VALIDATE_DISK_STORE__MSG__NO_DIRS = VALIDATE_DISK_STORE__DISKDIRS + " is mandatory";
   public static final String VALIDATE_DISK_STORE__MSG__IO_ERROR = "Input/Output error in validating disk store {0} is : {1}";
   public static final String VALIDATE_DISK_STORE__MSG__ERROR = "Error in validating disk store {0} is : {1}";
