@@ -75,6 +75,8 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), getRegionPath());
     //Here, it is safe to add the aeq with the mutator, because onCreate is
     //fired in a special place before the region is initialized.
+    //TODO - this may only work for PRs. We need to intercept the attributes
+    //before the region is created with a RegionListener.
     region.getAttributesMutator().addAsyncEventQueueId(aeqId);
     service.afterDataRegionCreated(getName(), new StandardAnalyzer(), getRegionPath(), getFieldNames());
   }
