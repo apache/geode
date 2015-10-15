@@ -68,7 +68,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   @Override
   public void onCreate(Extensible<Region<?, ?>> source,
       Extensible<Region<?, ?>> target) {
-    target.getExtensionPoint().addExtension(LuceneIndex.class, this);
+    target.getExtensionPoint().addExtension(this);
     Cache cache = target.getExtensionPoint().getTarget().getCache();
     LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
     Region region = target.getExtensionPoint().getTarget();

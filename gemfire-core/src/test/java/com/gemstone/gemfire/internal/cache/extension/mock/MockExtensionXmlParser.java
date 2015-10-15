@@ -76,13 +76,13 @@ public class MockExtensionXmlParser extends AbstractXmlParser {
     case ELEMENT_CACHE: {
       MockCacheExtension extension = (MockCacheExtension) stack.pop();
       CacheCreation cache = (CacheCreation) stack.peek();
-      cache.getExtensionPoint().addExtension(MockCacheExtension.class, extension);
+      cache.getExtensionPoint().addExtension(extension);
       break;
     }
     case ELEMENT_REGION: {
       MockRegionExtension extension = (MockRegionExtension) stack.pop();
       RegionCreation region = (RegionCreation) stack.peek();
-      region.getExtensionPoint().addExtension(MockRegionExtension.class, extension);
+      region.getExtensionPoint().addExtension(extension);
       break;
     }
     default:

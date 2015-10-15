@@ -91,6 +91,7 @@ import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
+import com.gemstone.gemfire.internal.cache.CacheService;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -1652,6 +1653,9 @@ public class CacheCreation implements InternalCache {
     }
     
   };
-	  
 
+  @Override
+  public <T extends CacheService> T getService(Class<T> clazz) {
+    throw new UnsupportedOperationException();
+  }
 }

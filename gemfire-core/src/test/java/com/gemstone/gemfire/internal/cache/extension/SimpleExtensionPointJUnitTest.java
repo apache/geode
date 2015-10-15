@@ -7,11 +7,7 @@
  */
 package com.gemstone.gemfire.internal.cache.extension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -42,7 +38,7 @@ public class SimpleExtensionPointJUnitTest {
     final MockImpl m = new MockImpl();
     assertSame(m.extensionPoint.extensible, m.extensionPoint.target);
     assertNotNull(m.extensionPoint.extensions);
-    assertNotNull(m.extensionPoint.extensions);
+    assertNotNull(m.extensionPoint.iterable);
   }
 
   /**
@@ -53,7 +49,7 @@ public class SimpleExtensionPointJUnitTest {
     final MockImpl m = new MockImpl();
 
     assertEquals(0, m.extensionPoint.extensions.size());
-    assertTrue(!m.extensionPoint.extensions.values().iterator().hasNext());
+    assertTrue(!m.extensionPoint.iterable.iterator().hasNext());
 
     final Iterable<Extension<MockInterface>> extensions = m.getExtensionPoint().getExtensions();
     assertNotNull(extensions);
@@ -77,7 +73,7 @@ public class SimpleExtensionPointJUnitTest {
     final MockImpl m = new MockImpl();
     final MockExtension extension = new MockExtension();
 
-    m.getExtensionPoint().addExtension(MockExtension.class, extension);
+    m.getExtensionPoint().addExtension(extension);
     assertEquals(1, m.extensionPoint.extensions.size());
 
     final Iterable<Extension<MockInterface>> extensions = m.getExtensionPoint().getExtensions();
@@ -105,7 +101,7 @@ public class SimpleExtensionPointJUnitTest {
   public void testRemoveExtension() {
     final MockImpl m = new MockImpl();
     final MockExtension extension = new MockExtension();
-    m.getExtensionPoint().addExtension(MockExtension.class, extension);
+    m.getExtensionPoint().addExtension(extension);
 
     final Iterable<Extension<MockInterface>> extensions = m.getExtensionPoint().getExtensions();
     assertNotNull(extensions);
@@ -124,7 +120,7 @@ public class SimpleExtensionPointJUnitTest {
       // ignore
     }
 
-    m.getExtensionPoint().removeExtension(MockExtension.class);
+    m.getExtensionPoint().removeExtension(extension);
     assertEquals(0, m.extensionPoint.extensions.size());
 
     // extensions should be empty
@@ -163,13 +159,13 @@ public class SimpleExtensionPointJUnitTest {
     };
 
     counter.set(0);
-    m.getExtensionPoint().addExtension(MockExtension.class, extension);
+    m.getExtensionPoint().addExtension(extension);
     // fire with itself as the target
     m.extensionPoint.fireCreate(m);
     assertEquals(1, counter.get());
 
     counter.set(0);
-    m.getExtensionPoint().removeExtension(MockExtension.class);
+    m.getExtensionPoint().removeExtension(extension);
     // fire with itself as the target
     m.extensionPoint.fireCreate(m);
     assertEquals(0, counter.get());

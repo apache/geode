@@ -2,8 +2,7 @@ package com.gemstone.gemfire.cache.lucene;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
+import com.gemstone.gemfire.internal.cache.InternalCache;
 
 /**
  * Class for retrieving or creating the currently running
@@ -16,16 +15,8 @@ public class LuceneServiceProvider {
    * Retrieve or create the lucene service for this cache
    */
   public static LuceneService get(Cache cache) {
-    synchronized(LuceneService.class) {
-      Extensible<Cache> extensible = (Extensible<Cache>) cache;
-      InternalLuceneService service = (InternalLuceneService) extensible.getExtensionPoint().getExtension(LuceneService.class);
-      if(service == null) {
-        service = new LuceneServiceImpl(cache);
-        extensible.getExtensionPoint().addExtension(LuceneService.class, service);
-      }
-      
-      return service;
-    }
+    InternalCache internalCache = (InternalCache) cache;
+    return internalCache.getService(InternalLuceneService.class);
   }
   
   private LuceneServiceProvider() {

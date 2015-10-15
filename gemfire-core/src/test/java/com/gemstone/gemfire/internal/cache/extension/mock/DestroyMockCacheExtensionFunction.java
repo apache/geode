@@ -48,7 +48,12 @@ public class DestroyMockCacheExtensionFunction extends FunctionAdapter {
 
     @SuppressWarnings("unchecked")
     final Extensible<Cache> extensible = (Extensible<Cache>) cache;
-    extensible.getExtensionPoint().removeExtension(MockCacheExtension.class);
+    for (Extension<Cache> extension : extensible.getExtensionPoint().getExtensions()) {
+      if (extension instanceof MockCacheExtension) {
+        extensible.getExtensionPoint().removeExtension(extension);
+        break;
+      }
+    }
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE).build();
 

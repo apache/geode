@@ -55,7 +55,7 @@ public class LuceneServiceImplJUnitTest {
     assertNull(function);
 
     cache = createBasicCache();
-    new LuceneServiceImpl(cache);
+    new LuceneServiceImpl().init(cache);
 
     function = FunctionService.getFunction(LuceneFunction.ID);
     assertNotNull(function);

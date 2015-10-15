@@ -33,7 +33,7 @@ public final class MockCacheExtension extends AbstractMockExtension<Cache> {
   @Override
   public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
     super.onCreate(source, target);
-    target.getExtensionPoint().addExtension(MockCacheExtension.class, this);
+    target.getExtensionPoint().addExtension(this);
   }
 
   @Override

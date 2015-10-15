@@ -8,9 +8,9 @@
 
 package com.gemstone.gemfire.internal.cache.extension;
 
-import java.util.Map;
+import java.util.ArrayList;
 
-import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
+import com.gemstone.gemfire.internal.util.CollectionUtils;
 
 /**
  * Simple implementation of {@link ExtensionPoint} for easy integration with
@@ -23,7 +23,9 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
 // UnitTest SimpleExtensionPointJUnitTest
 public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
 
-  protected final Map<Object, Extension<T>> extensions = new CopyOnWriteHashMap<Object, Extension<T>>();
+  protected final ArrayList<Extension<T>> extensions = new ArrayList<Extension<T>>();
+
+  protected final Iterable<Extension<T>> iterable = CollectionUtils.unmodifiableIterable(extensions);
 
   protected final Extensible<T> extensible;
 
@@ -48,22 +50,17 @@ public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
 
   @Override
   public Iterable<Extension<T>> getExtensions() {
-    return extensions.values();
+    return iterable;
   }
 
   @Override
-  public void addExtension(Object key, Extension<T> extension) {
-    extensions.put(key, extension);
-  }
-
-  @Override
-  public Extension<T> getExtension(Object key) {
-    return extensions.get(key);
+  public void addExtension(Extension<T> extension) {
+    extensions.add(extension);
   }
   
   @Override
-  public void removeExtension(Object key) {
-    extensions.remove(key);
+  public void removeExtension(Extension<T> extension) {
+    extensions.remove(extension);
   }
 
   @Override
@@ -72,7 +69,7 @@ public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
   }
 
   public void fireCreate(final Extensible<T> newTarget) {
-    for (final Extension<T> extension : getExtensions()) {
+    for (final Extension<T> extension : extensions) {
       extension.onCreate(extensible, newTarget);
     }
   }

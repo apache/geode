@@ -37,4 +37,6 @@ public interface InternalCache extends Cache, Extensible<Cache> {
   public CqService getCqService();
   
   public Collection<HDFSStoreImpl> getHDFSStores() ;
+  
+  public <T extends CacheService> T getService(Class<T> clazz);
 }

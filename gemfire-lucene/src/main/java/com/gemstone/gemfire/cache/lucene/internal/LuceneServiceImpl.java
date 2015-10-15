@@ -27,6 +27,7 @@ import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import com.gemstone.gemfire.internal.DSFIDFactory;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.cache.CacheService;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -46,11 +47,14 @@ import com.gemstone.gemfire.internal.logging.LogService;
 public class LuceneServiceImpl implements InternalLuceneService {
   private static final Logger logger = LogService.getLogger();
   
-  private final GemFireCacheImpl cache;
+  private GemFireCacheImpl cache;
   private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();;
   
+  public LuceneServiceImpl() {
+    
+  }
 
-  public LuceneServiceImpl(final Cache cache) {
+  public void init(final Cache cache) {
     if (cache == null) {
       throw new IllegalStateException(LocalizedStrings.CqService_CACHE_IS_NULL.toLocalizedString());
     }
@@ -63,6 +67,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
     registerDataSerializables();
   }
   
+  @Override
+  public Class<? extends CacheService> getInterface() {
+    return InternalLuceneService.class;
+  }
+
   public static String getUniqueIndexName(String indexName, String regionPath) {
     if (!regionPath.startsWith("/")) {
       regionPath = "/"+regionPath;

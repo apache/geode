@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -592,6 +593,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   private final Set<RegionListener> regionListeners = new ConcurrentHashSet<RegionListener>();
   
+  private final Map<Class<? extends CacheService>, CacheService> services = new HashMap<Class<? extends CacheService>, CacheService>();
+  
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
 
   private static int clientFunctionTimeout;
@@ -1126,6 +1129,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     
     boolean completedCacheXml = false;
     
+    initializeServices();
+    
     try {
       //Deploy all the jars from the deploy working dir.
       new JarDeployer(this.system.getConfig().getDeployWorkingDir()).loadPreviouslyDeployedJars();
@@ -1159,6 +1164,18 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     clientFunctionTimeout = time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 
     return this;
+  }
+
+  /**
+   * Initialize any services that provided as extensions to the cache using the
+   * service loader mechanism.
+   */
+  private void initializeServices() {
+    ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
+    for(CacheService service : loader) {
+      service.init(this);
+      this.services.put(service.getInterface(), service);
+    }
   }
   
   private boolean isNotJmxManager(){
@@ -3739,6 +3756,11 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   public void removeRegionListener(RegionListener l ) {
     this.regionListeners.remove(l);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public <T extends CacheService> T getService(Class<T> clazz) {
+    return (T) services.get(clazz);
   }
 
   /**

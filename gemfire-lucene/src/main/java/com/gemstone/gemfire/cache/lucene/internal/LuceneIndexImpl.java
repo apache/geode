@@ -88,6 +88,6 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.addFieldNames(this.getFieldNames());
     creation.setRegion(dataRegion);
     creation.setFieldFieldAnalyzerMap(this.getFieldAnalyzerMap());
-    dataRegion.getExtensionPoint().addExtension(creation, creation);
+    dataRegion.getExtensionPoint().addExtension(creation);
   }
 }

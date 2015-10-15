@@ -387,9 +387,7 @@ public class LuceneFunctionJUnitTest {
       will(returnValue(mockCache));
       allowing(mockRegion).getFullPath();
       will(returnValue(regionPath));
-      allowing(mockCache).getExtensionPoint();
-      will(returnValue(mockExtensionPoint));
-      allowing(mockExtensionPoint).getExtension(LuceneService.class);
+      allowing(mockCache).getService(InternalLuceneService.class);
       will(returnValue(mockService));
       allowing(mockService).getIndex(with("indexName"), with(regionPath));
       will(returnValue(mockIndex));

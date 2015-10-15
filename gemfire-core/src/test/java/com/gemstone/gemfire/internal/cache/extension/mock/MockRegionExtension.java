@@ -27,7 +27,7 @@ public final class MockRegionExtension extends AbstractMockExtension<Region<?, ?
   @Override
   public void onCreate(Extensible<Region<?, ?>> source, Extensible<Region<?, ?>> target) {
     super.onCreate(source, target);
-    target.getExtensionPoint().addExtension(MockRegionExtension.class, this);
+    target.getExtensionPoint().addExtension(this);
   }
 
   @Override

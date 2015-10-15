@@ -51,7 +51,7 @@ public class LuceneXmlParser extends AbstractXmlParser {
     LuceneIndexCreation indexCreation = new LuceneIndexCreation();
     indexCreation.setName(name);
     indexCreation.setRegion(region);
-    region.getExtensionPoint().addExtension(indexCreation, indexCreation);
+    region.getExtensionPoint().addExtension(indexCreation);
     stack.push(indexCreation);
   }
 
