@@ -566,7 +566,7 @@ public class CliStrings {
   public static final String CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP = "Action to be taken on an entry that has exceeded the idle expiration.";
   public static final String CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE = "entry-time-to-live-expiration";
   public static final String CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP = "How long the region's entries can remain in the cache without being accessed or updated. The default is no expiration of this type.";
-  public static final String CREATE_REGION__ENTRYEXPIRATIONTTLACTION = "entry-time-to-live-expiriation-action";
+  public static final String CREATE_REGION__ENTRYEXPIRATIONTTLACTION = "entry-time-to-live-expiration-action";
   public static final String CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP = "Action to be taken on an entry that has exceeded the TTL expiration.";
   public static final String CREATE_REGION__REGIONEXPIRATIONIDLETIME = "region-idle-time-expiration";
   public static final String CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP = "How long the region can remain in the cache without being accessed. The default is no expiration of this type.";

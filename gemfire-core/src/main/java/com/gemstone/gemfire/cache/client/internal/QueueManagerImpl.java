@@ -48,8 +48,8 @@ import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
@@ -733,7 +733,7 @@ public class QueueManagerImpl implements QueueManager {
   private boolean promoteBackupCnxToPrimary(QueueConnectionImpl cnx) {
     boolean result = false;
     if (PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG) {
-      BridgeObserver bo = BridgeObserverHolder.getInstance();
+      ClientServerObserver bo = ClientServerObserverHolder.getInstance();
       bo.beforePrimaryIdentificationFromBackup();
     }
     try {
@@ -752,7 +752,7 @@ public class QueueManagerImpl implements QueueManager {
         MakePrimaryOp.execute(pool, cnx, haveSentClientReady);
         result = true;
         if (PoolImpl.AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG) {
-          BridgeObserver bo = BridgeObserverHolder.getInstance();
+          ClientServerObserver bo = ClientServerObserverHolder.getInstance();
           bo.afterPrimaryIdentificationFromBackup(cnx.getServer());
         }
       }
@@ -888,7 +888,7 @@ public class QueueManagerImpl implements QueueManager {
         logger.debug("SubscriptionManager redundancy satisfier - Switched backup server to primary: {}", newPrimary.getEndpoint());
       }
       if (PoolImpl.AFTER_PRIMARY_RECOVERED_CALLBACK_FLAG) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterPrimaryRecovered(newPrimary.getServer());
       }
      
@@ -924,7 +924,7 @@ public class QueueManagerImpl implements QueueManager {
       }
 
       if (newPrimary != null && PoolImpl.AFTER_PRIMARY_RECOVERED_CALLBACK_FLAG) {
-        BridgeObserver bo = BridgeObserverHolder.getInstance();
+        ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.afterPrimaryRecovered(newPrimary.getServer());
       }
       printPrimaryNotFoundError = true;
@@ -1207,7 +1207,7 @@ public class QueueManagerImpl implements QueueManager {
   protected void recoverAllInterestTypes(final Connection recoveredConnection,
       boolean isFirstNewConnection) {
     if (PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG) {
-      BridgeObserver bo = BridgeObserverHolder.getInstance();
+      ClientServerObserver bo = ClientServerObserverHolder.getInstance();
       bo.beforeInterestRecovery();
     }
     recoverInterestList(recoveredConnection, false, true, isFirstNewConnection);

@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.java.util.concurrent.SynchronousQueueNoSpin;
 
 /**
  * A ThreadPoolExecutor with stat support.
@@ -55,7 +54,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   private Thread bufferConsumer;
   
   private static BlockingQueue<Runnable> initQ(BlockingQueue<Runnable> q) {
-    if (q instanceof SynchronousQueue || q instanceof SynchronousQueueNoSpin) {
+    if (q instanceof SynchronousQueue) {
       return q;
     } else {
       return new SynchronousQueue/*NoSpin*/<Runnable>();
@@ -63,7 +62,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   }
 
   private static RejectedExecutionHandler initREH(BlockingQueue<Runnable> q) {
-    if (q instanceof SynchronousQueue || q instanceof SynchronousQueueNoSpin) {
+    if (q instanceof SynchronousQueue) {
       return new CallerRunsPolicy();
       //return new BlockHandler();
     } else {

@@ -20,14 +20,14 @@ import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeObserverAdapter;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 
@@ -285,9 +285,9 @@ public class HAInterestBaseTest extends DistributedTestCase {
     r1.put(k2, server_k2);
   }
 
-  public static void setBridgeObserverForBeforeInterestRecoveryFailure() {
+  public static void setClientServerObserverForBeforeInterestRecoveryFailure() {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
-    BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRecovery() {
         synchronized (HAInterestBaseTest.class) {
           Thread t = new Thread() {
@@ -310,9 +310,9 @@ public class HAInterestBaseTest extends DistributedTestCase {
     });
   }
 
-  public static void setBridgeObserverForBeforeInterestRecovery() {
+  public static void setClientServerObserverForBeforeInterestRecovery() {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
-    BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRecovery() {
         synchronized (HAInterestBaseTest.class) {
           Thread t = new Thread() {
@@ -341,9 +341,9 @@ public class HAInterestBaseTest extends DistributedTestCase {
     }
   }
 
-  public static void setBridgeObserverForBeforeRegistration(final VM vm) {
+  public static void setClientServerObserverForBeforeRegistration(final VM vm) {
     PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = true;
-    BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRegistration() {
         synchronized (HAInterestBaseTest.class) {
           vm.invoke(HAInterestBaseTest.class, "startServer");
@@ -364,9 +364,9 @@ public class HAInterestBaseTest extends DistributedTestCase {
     }
   }
 
-  public static void setBridgeObserverForAfterRegistration(final VM vm) {
+  public static void setClientServerObserverForAfterRegistration(final VM vm) {
     PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = true;
-    BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void afterInterestRegistration() {
         synchronized (HAInterestBaseTest.class) {
           vm.invoke(HAInterestBaseTest.class, "startServer");
@@ -389,7 +389,7 @@ public class HAInterestBaseTest extends DistributedTestCase {
     }
   }
 
-  public static void unSetBridgeObserverForRegistrationCallback() {
+  public static void unSetClientServerObserverForRegistrationCallback() {
     synchronized (HAInterestBaseTest.class) {
       PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = false;
       PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = false;
@@ -399,21 +399,21 @@ public class HAInterestBaseTest extends DistributedTestCase {
   }
 
   public static void verifyDispatcherIsAlive() {
-    assertEquals("More than one BridgeServer", 1, cache.getBridgeServers().size());
+    assertEquals("More than one BridgeServer", 1, cache.getCacheServers().size());
     
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        return cache.getBridgeServers().size() == 1;
+        return cache.getCacheServers().size() == 1;
       }
       @Override
       public String description() {
-        return "waiting for cache.getBridgeServers().size() == 1";
+        return "waiting for cache.getCacheServers().size() == 1";
       }
     };
     DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
-    BridgeServerImpl bs = (BridgeServerImpl) cache.getBridgeServers().iterator().next();
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
     assertNotNull(bs.getAcceptor());
     assertNotNull(bs.getAcceptor().getCacheClientNotifier());
@@ -458,16 +458,16 @@ public class HAInterestBaseTest extends DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        return cache.getBridgeServers().size() == 1;
+        return cache.getCacheServers().size() == 1;
       }
       @Override
       public String description() {
-        return "cache.getBridgeServers().size() == 1";
+        return "cache.getCacheServers().size() == 1";
       }
     };
     DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
-    BridgeServerImpl bs = (BridgeServerImpl) cache.getBridgeServers().iterator().next();
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
     assertNotNull(bs.getAcceptor());
     assertNotNull(bs.getAcceptor().getCacheClientNotifier());
@@ -551,15 +551,15 @@ public class HAInterestBaseTest extends DistributedTestCase {
 
   public static void startServer() throws IOException {
     Cache c = CacheFactory.getAnyInstance();
-    assertEquals("More than one BridgeServer", 1, c.getBridgeServers().size());
-    BridgeServerImpl bs = (BridgeServerImpl) c.getBridgeServers().iterator().next();
+    assertEquals("More than one BridgeServer", 1, c.getCacheServers().size());
+    CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
     assertNotNull(bs);
     bs.start();
   }
 
   public static void stopServer() {
-    assertEquals("More than one BridgeServer", 1, cache.getBridgeServers().size());
-    BridgeServerImpl bs = (BridgeServerImpl) cache.getBridgeServers().iterator().next();
+    assertEquals("More than one BridgeServer", 1, cache.getCacheServers().size());
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
     bs.stop();
   }
@@ -749,16 +749,16 @@ public class HAInterestBaseTest extends DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        return cache.getBridgeServers().size() == 1;
+        return cache.getCacheServers().size() == 1;
       }
       @Override
       public String description() {
-        return "waiting for cache.getBridgeServers().size() == 1";
+        return "waiting for cache.getCacheServers().size() == 1";
       }
     };
     DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
-    BridgeServerImpl bs = (BridgeServerImpl) cache.getBridgeServers().iterator().next();
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
     assertNotNull(bs.getAcceptor());
     assertNotNull(bs.getAcceptor().getCacheClientNotifier());
@@ -809,16 +809,16 @@ public class HAInterestBaseTest extends DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        return cache.getBridgeServers().size() == 1;
+        return cache.getCacheServers().size() == 1;
       }
       @Override
       public String description() {
-        return "waiting for cache.getBridgeServers().size() == 1";
+        return "waiting for cache.getCacheServers().size() == 1";
       }
     };
     DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
-    BridgeServerImpl bs = (BridgeServerImpl) cache.getBridgeServers().iterator().next();
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
     assertNotNull(bs);
     assertNotNull(bs.getAcceptor());
     assertNotNull(bs.getAcceptor().getCacheClientNotifier());
@@ -976,7 +976,7 @@ public class HAInterestBaseTest extends DistributedTestCase {
     factory.setConcurrencyChecksEnabled(true);
     cache.createRegion(REGION_NAME, factory.create());
 
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     server.setMaximumTimeBetweenPings(180000);
@@ -994,7 +994,7 @@ public class HAInterestBaseTest extends DistributedTestCase {
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     // ensures updates to be sent instead of invalidations

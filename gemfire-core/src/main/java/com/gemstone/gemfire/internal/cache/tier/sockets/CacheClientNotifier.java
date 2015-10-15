@@ -79,10 +79,10 @@ import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeRegionEventImpl;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheClientStatus;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
@@ -1109,7 +1109,7 @@ public class CacheClientNotifier {
           removeClientProxy(proxy);
 
           if (PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG) {
-            BridgeObserver bo = BridgeObserverHolder.getInstance();
+            ClientServerObserver bo = ClientServerObserverHolder.getInstance();
             bo.afterQueueDestroyMessage();
           }
 
@@ -1165,8 +1165,8 @@ public class CacheClientNotifier {
       RegionEventImpl regionEvent = (RegionEventImpl)event;
       callbackArgument = regionEvent.getRawCallbackArgument();
       eventIdentifier = regionEvent.getEventId();
-      if (event instanceof BridgeRegionEventImpl) {
-        BridgeRegionEventImpl bridgeEvent = (BridgeRegionEventImpl)event;
+      if (event instanceof ClientRegionEventImpl) {
+        ClientRegionEventImpl bridgeEvent = (ClientRegionEventImpl)event;
         membershipID = bridgeEvent.getContext();
       }
     }
@@ -2144,7 +2144,7 @@ public class CacheClientNotifier {
         && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributesList
             .get(0))) {
       haContainer = new HAContainerRegion(cache.getRegion(Region.SEPARATOR
-          + BridgeServerImpl.clientMessagesRegion((GemFireCacheImpl)cache,
+          + CacheServerImpl.clientMessagesRegion((GemFireCacheImpl)cache,
               (String)overflowAttributesList.get(0),
               ((Integer)overflowAttributesList.get(1)).intValue(),
               ((Integer)overflowAttributesList.get(2)).intValue(),

@@ -1475,9 +1475,16 @@ public abstract class DataSerializer {
     throws IOException {
     Object object = obj;
     if (obj instanceof CachedDeserializable) {
-     // if( ( !(obj instanceof ByteSource) || ((StoredObject) obj).isSerialized())) {
+      if (obj instanceof StoredObject) {
+        StoredObject so = (StoredObject)obj;
+        if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
+          logger.trace(LogMarker.SERIALIZER, "writeObjectAsByteArray StoredObject");
+        }
+        so.sendAsByteArray(out);
+        return;
+      } else {
         object = ((CachedDeserializable) obj).getSerializedValue();
-     // }
+      }
     }
     if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
       if (object == null) {

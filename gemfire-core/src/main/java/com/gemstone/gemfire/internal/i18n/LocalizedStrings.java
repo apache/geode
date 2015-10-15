@@ -130,7 +130,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId EndpointImpl_0_CAN_NOT_REGISTER_INSTANTIATORS_1_BECAUSE_THE_SERVER_IS_NOT_AVAILABLE = new StringId(3505, "{0} : Can not register instantiators   {1}  because the server is not available.");
   public static final StringId EndpointImpl_0_CANNOT_UNREGISTER_INTEREST_IN_REGION_1_KEY_2_BECAUSE_THE_SERVER_IS_NOT_AVAILABLE = new StringId(3506, "{0} : Cannot unregister interest in region  {1}  key  {2}  because the server is not available.");
   public static final StringId EndpointImpl_0_CAN_NOT_NOTIFY_SERVER_THAT_THIS_CLIENT_IS_READY_BECAUSE_THE_SERVER_IS_NOT_AVAILABLE = new StringId(3507, "{0} : Can not notify server that this client is ready because the server is not available.");
-  public static final StringId CacheCreation_WHILE_STARTING_BRIDGE_SERVER_0 = new StringId(3508, "While starting bridge server  {0}");
+  public static final StringId CacheCreation_WHILE_STARTING_CACHE_SERVER_0 = new StringId(3508, "While starting cache server  {0}");
   public static final StringId CacheCreation_WHILE_STARTING_GATEWAY_HUB_0 = new StringId(3509, "While starting gateway hub  {0}");
   public static final StringId CacheXml_ERROR_WHILE_PARSING_XML = new StringId(3510, "Error while parsing XML");
   public static final StringId CacheXml_FATAL_ERROR_WHILE_PARSING_XML = new StringId(3511, "Fatal error while parsing XML");
@@ -148,7 +148,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId ConnectionPoolCacheImpl_CONNECTIONPOOLCACHEIMPLGENEWCONNECTION_CONNECTIONPOOLCACHE_NOT_INTIALIZED_WITH_CONNECTIONPOOLDATASOURCE = new StringId(3523, "ConnectionPoolCacheImpl::getNewConnection: ConnectionPoolCache not initialized with ConnectionPoolDatasource");
   public static final StringId FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_GETTING_CONNECTION_FROM_POOL_DUE_TO_0 = new StringId(3524, "FacetsJCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to  {0}");
   public static final StringId FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_SYSTEM_EXCEPTION_DUE_TO_0 = new StringId(3525, "FacetsJCAConnectionManagerImpl:: allocateConnection :system exception due to  {0}");
-  //public static final StringId GemFireBasicDataSource_GEMFIREBASICDATASOURCEGETCONNECTIONEXCEPTION_WHILE_TRYING_TO_LOAD_THE_DRIVER_DUE_TO_0 = new StringIdImpl(3526, "GemFireBasicDataSource::getConnection:Exception while trying to load the driver due to  {0}");
+  //public static final StringId GemFireBasicDataSource_GEMFIREBASICDATASOURCEGETCONNECTIONEXCEPTION_WHILE_TRYING_TO_LOAD_THE_DRIVER_DUE_TO_0 = new StringId(3526, "GemFireBasicDataSource::getConnection:Exception while trying to load the driver due to  {0}");
   public static final StringId JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_GETTING_CONNECTION_FROM_POOL_DUE_TO_0 = new StringId(3527, "JCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to  {0}");
   public static final StringId JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_TRANSACTION_DUE_TO_0 = new StringId(3528, "JCAConnectionManagerImpl:: allocateConnection : in transaction due to  {0}");
   public static final StringId JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_SYSTEM_EXCEPTION_DUE_TO_0 = new StringId(3529, "JCAConnectionManagerImpl:: allocateConnection :system exception due to  {0}");
@@ -259,8 +259,8 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AdminConfig_MODIFIED_0 = new StringId(3633, "Modified {0}");
   public static final StringId DLockService_DISCONNECT_LISTENER_FOR_DISTRIBUTEDLOCKSERVICE = new StringId(3634, "Disconnect listener for DistributedLockService");
   public static final StringId DLockService_DISTRIBUTED_LOCKING_THREADS = new StringId(3635, "Distributed Locking Threads");
-  // public static final StringId Oplog_BACKUP = new StringIdImpl(3636, "BACKUP");
-  // public static final StringId Oplog_OVERFLOW = new StringIdImpl(3637, "OVERFLOW");
+  // public static final StringId Oplog_BACKUP = new StringId(3636, "BACKUP");
+  // public static final StringId Oplog_OVERFLOW = new StringId(3637, "OVERFLOW");
   public static final StringId DiskRegion_DISK_WRITERS = new StringId(3638, "Disk Writers");
   public static final StringId DiskRegion_ASYNCHRONOUS_DISK_WRITER_0 = new StringId(3639, "Asynchronous disk writer for region {0}");
   public static final StringId PartitionedRegion_SHUTDOWN_LISTENER_FOR_PARTITIONEDREGION = new StringId(3640, "Shutdown listener for PartitionedRegion");
@@ -653,9 +653,9 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AdminWaiters_REQUEST_WAIT_WAS_INTERRUPTED = new StringId(4029, "Request wait was interrupted.");
   public static final StringId AlertLevelChangeMessage_CHANGING_ALERT_LEVEL_TO_0 = new StringId(4030, "Changing alert level to {0}");
   public static final StringId BridgeServerRequest_ADD_BRIDGE_SERVER = new StringId(4031, "Add bridge server");
-  public static final StringId BridgeServerRequest_GET_INFO_ABOUT_BRIDGE_SERVER_0 = new StringId(4032, "Get info about bridge server {0}");
-  public static final StringId BridgeServerRequest_START_BRIDGE_SERVER_0 = new StringId(4033, "Start bridge server {0}");
-  public static final StringId BridgeServerRequest_STOP_BRIDGE_SERVER_0 = new StringId(4034, "Stop bridge server {0}");
+  public static final StringId BridgeServerRequest_GET_INFO_ABOUT_BRIDGE_SERVER_0 = new StringId(4032, "Get info about cache server {0}");
+  public static final StringId BridgeServerRequest_START_BRIDGE_SERVER_0 = new StringId(4033, "Start cache server {0}");
+  public static final StringId BridgeServerRequest_STOP_BRIDGE_SERVER_0 = new StringId(4034, "Stop cache server {0}");
   public static final StringId BridgeServerRequest_UNKNOWN_OPERATION_0 = new StringId(4035, "Unknown operation {0}");
   public static final StringId CacheConfigRequest_SET_A_SINGLE_CACHE_CONFIGURATION_ATTRIBUTE = new StringId(4036, "Set a single cache configuration attribute");
   public static final StringId CancellationMessage_CANCELLATIONMESSAGE_FROM_0_FOR_MESSAGE_ID_1 = new StringId(4037, "CancellationMessage from {0} for message id {1}");
@@ -981,7 +981,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId StatAlertsManager_STATALERTMANAGER_EVALUATEALERTDEFNSTASK_GENERAL_EXCEPTION_0 = new StringId(4357, "StatAlertManager.EvaluateAlertDefnsTask :General Exception: {0}");
   public static final StringId CqQueryImpl_CQ_NOT_REGISTERED_ON_PRIMARY = new StringId(4358, "Cq not registered on primary");
   public static final StringId HACacheServer_INITIALIZED = new StringId(4359, "Initialized");
-  public static final StringId BridgeServerImpl_CLIENT_MESSAGES_REGION_IS_GETTING_CREATED = new StringId(4360, "client messages Region is getting created");
+  // ok to reuse 4360
   public static final StringId HARegionQueue_TASK_TO_DECREMENT_THE_REF_COUNT_MAY_NOT_HAVE_BEEN_STARTED = new StringId(4361, "Exception in HARegionQueue.updateHAContainer(). The task to decrement the ref count by one for all the HAEventWrapper instances of this queue present in the haContainer may not have been started");
   public static final StringId CacheClientNotifier_HACONTAINER_0_IS_NOW_CLEANED_UP = new StringId(4362, "haContainer ({0}) is now cleaned up.");
   public static final StringId CacheClientNotifier_HACONTAINER_0_HAS_BEEN_CREATED = new StringId(4363, "haContainer ({0}) has been created.");
@@ -1005,7 +1005,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId RegionAttributesCreation_CUSTOMENTRYTIMETOLIVE_IS_NOT_THE_SAME = new StringId(4381, "CustomEntryTimeToLive is not the same");
   public static final StringId AbstractRegion_CANNOT_SET_CUSTOM_TIME_TO_LIVE_WHEN_STATISTICS_ARE_DISABLED = new StringId(4382, "Cannot set custom time to live when statistics are disabled");
   public static final StringId PutMessage_UNKNOWN_DESERIALIZATION_POLICY = new StringId(4383, "unknown deserialization policy");
-  public static final StringId BridgeServerImpl__0_INVALID_EVICTION_POLICY = new StringId(4384, "{0} Invalid eviction policy");
+  public static final StringId CacheServerImpl__0_INVALID_EVICTION_POLICY = new StringId(4384, "{0} Invalid eviction policy");
   public static final StringId MergeLogFiles_IF_A_DIRECTORY_IS_SPECIFIED_ALL_LOG_FILES_IN_THAT_DIRECTORY_ARE_MERGED = new StringId(4385, "If a directory is specified, all .log files in that directory are merged.");
   public static final StringId MergeLogFiles_FILE_0_IS_NEITHER_A_FILE_NOR_A_DIRECTORY = new StringId(4386, "File ''{0}'' is neither a file nor a directory.");
   public static final StringId AvailablePort_NETWORK_IS_UNREACHABLE = new StringId(4387, "Network is unreachable");
@@ -1076,7 +1076,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId QueueManagerImpl_REDUNDANCY_LEVEL_0_IS_NOT_SATISFIED_BUT_THERE_ARE_NO_MORE_SERVERS_AVAILABLE_REDUNDANCY_IS_CURRENTLY_1 = new StringId(4455, "Redundancy level {0} is not satisfied, but there are no more servers available. Redundancy is currently {1}.");
   public static final StringId QueueManagerImpl_QUEUEMANAGERIMPL_FAILED_TO_RECOVER_INTEREST_TO_SERVER_0 = new StringId(4456, "QueueManagerImpl failed to recover interest to server {0}.");
   public static final StringId QueueManagerImpl_ERROR_IN_REDUNDANCY_SATISFIER = new StringId(4457, "Error in redundancy satisfier");
-  public static final StringId GroupMembershipService_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0 = new StringId(4458, "Membership: expiring membership of surprise member <{0}>");
+  public static final StringId JGroupMembershipManager_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0 = new StringId(4458, "Membership: expiring membership of surprise member <{0}>");
   public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_PORT_0 = new StringId(4459, "Starting GemFireRedisServer on port {0}");
   public static final StringId GroupMembershipService_EXCEPTION_DESERIALIZING_MESSAGE_PAYLOAD_0 = new StringId(4460, "Exception deserializing message payload: {0}");
   public static final StringId GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0 = new StringId(4461, "Membership service failure: {0}");
@@ -1145,9 +1145,9 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId Oplog_OPLOG_SHUTDOWN_INTERRUPTED_ACQUIRING_READ_LOCK = new StringId(4524, "Oplog#shutdown: interrupted acquiring read lock.");
   public static final StringId InternalDistributedSystem_UNABLE_TO_START_THE_MONITOR_SERVICE = new StringId(4525, "Unable to start the monitor service");
   public static final StringId AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1 = new StringId(4526, "The redis-bind-address \"{0}\" is not a valid address for this machine.  These are the valid addresses for this machine: {1}");
-  public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR = new StringId(4527, "CacheServer - Error closing load monitor");
-  public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR = new StringId(4528, "CacheServer - Error closing advisor");
-  public static final StringId BridgeServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR = new StringId(4529, "CacheServer - Error closing acceptor monitor");
+  public static final StringId CacheServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR = new StringId(4527, "CacheServer - Error closing load monitor");
+  public static final StringId CacheServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR = new StringId(4528, "CacheServer - Error closing advisor");
+  public static final StringId CacheServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR = new StringId(4529, "CacheServer - Error closing acceptor monitor");
   public static final StringId DiskRegion_COMPLEXDISKREGION_CLOSE_EXCEPTION_IN_STOPPING_COMPACTOR = new StringId(4530, "DiskRegion::close: Exception in stopping compactor");
   public static final StringId CacheClientNotifier_CACHECLIENTNOTIFIER_CAUGHT_EXCEPTION_ATTEMPTING_TO_CLIENT = new StringId(4531, "CacheClientNotifier: Caught exception attempting to client: ");
   public static final StringId CqQueryImpl_EXCEPTION_WHILE_EXECUTING_CQ_EXCEPTION_0 = new StringId(4532, "Exception while executing cq Exception: {0}");
@@ -1159,7 +1159,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId ServerLocator_SERVERLOCATOR_UNEXPECTED_PROFILE_UPDATE = new StringId(4538, "ServerLocator - unexpected profile update.");
   public static final StringId LoadMonitor_CACHESERVER_LOAD_MONITOR_ERROR_IN_POLLING_THREAD = new StringId(4539, "CacheServer Load Monitor Error in polling thread");
   public static final StringId LoadMonitor_INTERRUPTED_WAITING_FOR_POLLING_THREAD_TO_FINISH = new StringId(4540, "Interrupted waiting for polling thread to finish");
-  public static final StringId GroupMembershipService_MEMBERSHIP_DISREGARDING_MESSAGES_FROM_SHUNNED_MEMBER_0 = new StringId(4541, "Membership: disregarding messages from shunned member <{0}>");
+  public static final StringId JGroupMembershipManager_MEMBERSHIP_DISREGARDING_MESSAGES_FROM_SHUNNED_MEMBER_0 = new StringId(4541, "Membership: disregarding messages from shunned member <{0}>");
   public static final StringId BlobHelper_DESERIALIZATION_OF_A_0_DID_NOT_READ_1_BYTES_THIS_INDICATES_A_LOGIC_ERROR_IN_THE_SERIALIZATION_CODE_FOR_THIS_CLASS = new StringId(4542, "Deserialization of a {0} did not read {1} bytes. This indicates a logic error in the serialization code for this class.");
   public static final StringId BucketAdvisor_REDUNDANCY_HAS_DROPPED_BELOW_0_CONFIGURED_COPIES_TO_1_ACTUAL_COPIES_FOR_2 = new StringId(4543, "Redundancy has dropped below {0} configured copies to {1} actual copies for {2}");
   public static final StringId AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_PUTALL_OPERATION_ON_REGION_0 = new StringId(4544, "Not authorized to perform PUTALL operation on region [{0}]");
@@ -1169,7 +1169,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AcceptorImpl_COULD_NOT_CHECK_FOR_STUCK_KEYS = new StringId(4548, "Could not check for stuck keys.");
   public static final StringId AcceptorImpl_STUCK_SELECTION_KEY_DETECTED_ON_0 = new StringId(4549, "stuck selection key detected on {0}");
   public static final StringId AcceptorImpl_UNEXPECTED_EXCEPTION = new StringId(4550, "Unexpected Exception:");
-  public static final StringId GroupMembershipService_MEMBERSHIP_DISREGARDING_SHUNNED_MEMBER_0 = new StringId(4551, "Membership: disregarding shunned member <{0}>");
+  public static final StringId JGroupMembershipManager_MEMBERSHIP_DISREGARDING_SHUNNED_MEMBER_0 = new StringId(4551, "Membership: disregarding shunned member <{0}>");
   public static final StringId GlobalTransaction_COULD_NOT_COMPARE_0_TO_1 = new StringId(4552, "Could not compare {0} to {1}");
   public static final StringId DistributedSystem_THIS_VM_ALREADY_HAS_ONE_OR_MORE_DISTRIBUTED_SYSTEM_CONNECTIONS_0 = new StringId(4553, "This VM already has one or more Distributed System connections {0}");
   public static final StringId DistributedFunctionMessage_UNABLE_TO_DESERIALIZE_RESPONSE = new StringId(4554, "Unable to deserialize a portion of the data in a distributed function response.");
@@ -1295,7 +1295,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId GatewayImpl_PAUSED__0 = new StringId(4674, "Paused {0}");
   public static final StringId GatewayImpl_RESUMED__0 = new StringId(4675, "Resumed {0}");
   public static final StringId CacheClientProxy_NOT_PRIMARY = new StringId(4676, "This process is not the primary server for the given client");
-  public static final StringId BridgeServerImpl_MUST_BE_RUNNING = new StringId(4677, "The bridge server must be running to use this operation");
+  public static final StringId CacheServerImpl_MUST_BE_RUNNING = new StringId(4677, "The cache server must be running to use this operation");
   public static final StringId InitialImageOperation_0_UNABLE_TO_FLUSH_STATE_TO_1 = new StringId(4678, "{0}: Unable to flush state to {1} for concurrent gii union");
   public static final StringId InstantiatorRecoveryListener_INSTANTIATORRECOVERYTASK_ERROR_CLASSNOTFOUNDEXCEPTION = new StringId(4679, "InstantiatorRecoveryTask - Error ClassNotFoundException: {0}");
   public static final StringId AbstractRegion_NO_CUSTOM_EVICTION_SET = new StringId(4680, "Custom eviction not enabled for region {0}");  public static final StringId ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE = new StringId(4682, "This member caught exception processing profile {0} {1}");

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -36,6 +35,7 @@ import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.client.internal.Connection;
+import com.gemstone.gemfire.cache.server.CacheServer;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -287,10 +287,10 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
   public static void killServer(Integer port)
   {
     try {
-      Iterator iter = cache.getBridgeServers().iterator();
-      getLogWriter().fine ("Asif: servers running = "+cache.getBridgeServers().size());
+      Iterator iter = cache.getCacheServers().iterator();
+      getLogWriter().fine ("Asif: servers running = "+cache.getCacheServers().size());
       if (iter.hasNext()) {
-        BridgeServer server = (BridgeServer)iter.next();
+        CacheServer server = (CacheServer)iter.next();
         getLogWriter().fine("asif : server running on port="+server.getPort()+ " asked to kill serevre onport="+port);
          if(port.intValue() == server.getPort()){
          server.stop();
@@ -305,7 +305,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
   public static void startServer(Integer port)
   {
     try {
-      BridgeServer server1 = cache.addBridgeServer();
+      CacheServer server1 = cache.addCacheServer();
       server1.setPort(port.intValue());
       server1.setNotifyBySubscription(true);
       server1.start();
@@ -455,7 +455,7 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
     server.setPort(port);
     server.setNotifyBySubscription(true);

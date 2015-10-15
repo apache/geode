@@ -14,7 +14,7 @@ import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.ServerLauncher.ServerState;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.AbstractBridgeServer;
+import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 
 /**
  * @author Kirk Lund
@@ -35,7 +35,7 @@ public abstract class AbstractServerLauncherJUnitTestCase extends AbstractLaunch
   public final void setUpServerLauncherTest() throws Exception {
     System.setProperty("gemfire." + DistributionConfig.MCAST_PORT_NAME, Integer.toString(0));
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    System.setProperty(AbstractBridgeServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(port));
+    System.setProperty(AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(port));
     this.serverPort = port;
   }
 

@@ -67,7 +67,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
    */
   
   private void attachBridgeServer() throws IOException {
-    BridgeServerImpl server = (BridgeServerImpl)cache.addBridgeServer();
+    CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
@@ -80,7 +80,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
         Region.SEPARATOR + regionName).getAttributes().getEvictionAttributes();
     assertTrue("Eviction Algorithm is not LIFO", ea.isLIFO());
     // The CacheClientNotifier is a singleton. 
-    if (cache.getBridgeServers().size() <= 1) {
+    if (cache.getCacheServers().size() <= 1) {
       assertTrue("client messages region name should not be present ", (regionNames).add(regionName));
     } else {
       assertTrue("client messages region name should have been already present ", (regionNames).contains(regionName));      
@@ -106,7 +106,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
    * Attach bridge server
    */
   private void attachmentOfBridgeServer() {
-    if (cache.getBridgeServers().size() < brigeNum) {
+    if (cache.getCacheServers().size() < brigeNum) {
       try {
         // attaching and starting bridge server
         attachBridgeServer();
@@ -122,8 +122,8 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
    */
   private void dettachmentOfBridgeServer() {
     // detach all bridge server to test destroy of client_messages_region
-    for (Iterator itr = cache.getBridgeServers().iterator(); itr.hasNext();) {
-      BridgeServerImpl server = (BridgeServerImpl)itr.next();
+    for (Iterator itr = cache.getCacheServers().iterator(); itr.hasNext();) {
+      CacheServerImpl server = (CacheServerImpl)itr.next();
       String rName = ((HAContainerWrapper)server.getAcceptor().getCacheClientNotifier().getHaContainer()).getName();
       assertNotNull("client messages region is null ", cache.getRegion(Region.SEPARATOR + rName));
       server.stop();

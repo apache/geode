@@ -10,10 +10,11 @@ package com.gemstone.gemfire.cache.query.dunit;
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.cache.util.*;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -43,9 +44,6 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /** The port on which the bridge server was started in this VM */
   private static int bridgeServerPort;
 
-  /**
-   * Creates a new <code>GemFireMemberStatusDUnitTest</code>
-   */
   public RemoteQueryDUnitTest(String name) {
     super(name);
   }
@@ -118,7 +116,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
-          BridgeTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
+          ClientServerTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
           createRegion(name, factory.create());
         }
       });
@@ -262,7 +260,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           
-          BridgeTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
+          ClientServerTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
           createRegion(name, factory.create());
         }
       });
@@ -389,7 +387,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
-          BridgeTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
+          ClientServerTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
           createRegion(name, factory.create());
         }
       });
@@ -622,7 +620,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
-          BridgeTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
+          ClientServerTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
           createRegion(name, factory.create());
         }
       });
@@ -709,7 +707,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
-          BridgeTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
+          ClientServerTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
           createRegion(name, factory.create());
         }
       });
@@ -879,7 +877,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
-          BridgeTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
+          ClientServerTestCase.configureConnectionPool(factory, host0, port,-1, true, -1, -1, null);
           createRegion(name+"1", factory.create());
           createRegion(name+"2", factory.create());
         }
@@ -945,7 +943,6 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
           createRegion(name, factory.create());
-          pause(1000);
           try {
             startBridgeServer(0, false);
           } catch (Exception ex) {
@@ -973,16 +970,11 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
-          BridgeClient writer = new BridgeClient();
-          Properties props = new Properties();
-          props.setProperty("endpoints", "server=" + host0 + ":" +
-                            port);
-          props.setProperty("establishCallbackConnection", "true");
-          writer.init(props);
-          factory.setCacheWriter(writer);
+          factory.setPoolName("clientPool");
           createRegion(name, factory.create());
         }
       });
@@ -993,16 +985,11 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           Properties config = new Properties();
           config.setProperty("mcast-port", "0");
           system = (InternalDistributedSystem) DistributedSystem.connect(config);
+          PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
           getCache();
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
-          BridgeClient loader = new BridgeClient();
-          Properties props = new Properties();
-          props.setProperty("endpoints", "server=" + host0 + ":" +
-                            port);
-          props.setProperty("establishCallbackConnection", "true");
-          loader.init(props);
-          factory.setCacheLoader(loader);
+          factory.setPoolName("clientPool");
           createRegion(name, factory.create());
         }
       });
@@ -1069,10 +1056,8 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
       vm1.invoke(new CacheSerializableRunnable("Close client") {
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
-          BridgeClient writer = (BridgeClient)
-            region.getAttributes().getCacheWriter();
-          writer.close();
-          region.getAttributesMutator().setCacheWriter(null);
+          region.close();
+          PoolManager.find("clientPool").destroy();
         }
       });
 
@@ -1080,10 +1065,8 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
       vm2.invoke(new CacheSerializableRunnable("Close client") {
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
-          BridgeClient loader = (BridgeClient)
-            region.getAttributes().getCacheLoader();
-          loader.close();
-          region.getAttributesMutator().setCacheLoader(null);
+          region.close();
+          PoolManager.find("clientPool").destroy();
         }
       });
 
@@ -1119,7 +1102,6 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
            AttributesFactory factory = new AttributesFactory();
            factory.setScope(Scope.LOCAL);
            createRegion(name, factory.createRegionAttributes());
-           pause(1000);
            try {
              startBridgeServer(0, false);
            } catch (Exception ex) {
@@ -1147,16 +1129,11 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
            Properties config = new Properties();
            config.setProperty("mcast-port", "0");
            system = (InternalDistributedSystem) DistributedSystem.connect(config);
+           PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
            getCache();
            AttributesFactory factory = new AttributesFactory();
            factory.setScope(Scope.LOCAL);
-           BridgeClient writer = new BridgeClient();
-           Properties props = new Properties();
-           props.setProperty("endpoints", "server=" + host0 + ":" +
-                             port);
-           props.setProperty("establishCallbackConnection", "true");
-           writer.init(props);
-           factory.setCacheWriter(writer);
+           factory.setPoolName("clientPool");
            createRegion(name, factory.createRegionAttributes());
          }
        });
@@ -1189,10 +1166,8 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
        vm1.invoke(new CacheSerializableRunnable("Close client") {
          public void run2() throws CacheException {
            Region region = getRootRegion().getSubregion(name);
-           BridgeClient writer = (BridgeClient)
-             region.getAttributes().getCacheWriter();
-           writer.close();
-           region.getAttributesMutator().setCacheWriter(null);
+           region.close();
+           PoolManager.find("clientPool").destroy();
          }
        });
 
@@ -1238,7 +1213,6 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
               }
 
             });
-            pause(1000);
             try {
               startBridgeServer(0, false);
             } catch (Exception ex) {
@@ -1266,16 +1240,11 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
             Properties config = new Properties();
             config.setProperty("mcast-port", "0");
             system = (InternalDistributedSystem) DistributedSystem.connect(config);
+            PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
             getCache();
             AttributesFactory factory = new AttributesFactory();
             factory.setScope(Scope.LOCAL);
-            BridgeClient writer = new BridgeClient();
-            Properties props = new Properties();
-            props.setProperty("endpoints", "server=" + host0 + ":" +
-                              port);
-            props.setProperty("establishCallbackConnection", "true");
-            writer.init(props);
-            factory.setCacheWriter(writer);
+            factory.setPoolName("clientPool");
             createRegion(name, factory.createRegionAttributes());
           }
         });
@@ -1312,7 +1281,6 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
               }
 
             });
-            pause(1000);
             for (int i=0; i<numberOfEntries; i++) {
               region1.put("key-"+i, new TestObject(i, "ibm"));
               region2.put("key-"+i, new TestObject(i, "ibm"));
@@ -1342,10 +1310,8 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
         vm1.invoke(new CacheSerializableRunnable("Close client") {
           public void run2() throws CacheException {
             Region region = getRootRegion().getSubregion(name);
-            BridgeClient writer = (BridgeClient)
-              region.getAttributes().getCacheWriter();
-            writer.close();
-            region.getAttributesMutator().setCacheWriter(null);
+            region.close();
+            PoolManager.find("clientPool").destroy();
           }
         });
 
@@ -1373,7 +1339,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     throws IOException {
 
     Cache cache = getCache();
-    BridgeServer bridge = cache.addBridgeServer();
+    CacheServer bridge = cache.addCacheServer();
     bridge.setPort(port);
     bridge.setNotifyBySubscription(notifyBySubscription);
     bridge.start();
@@ -1384,8 +1350,8 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
    * Stops the bridge server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
-    BridgeServer bridge =
-      (BridgeServer) cache.getBridgeServers().iterator().next();
+    CacheServer bridge =
+      (CacheServer) cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }

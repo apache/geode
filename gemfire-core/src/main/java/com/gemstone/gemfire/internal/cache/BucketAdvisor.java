@@ -1789,7 +1789,7 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
 
       HashSet<BucketServerLocation66> serverLocations = new HashSet<BucketServerLocation66>();
       for (Object object : servers) {
-        BridgeServerImpl server = (BridgeServerImpl)object;
+        CacheServerImpl server = (CacheServerImpl)object;
         if (server.isRunning() && (server.getExternalAddress() != null)) {
           BucketServerLocation66 location = new BucketServerLocation66(
               getBucket().getId(), server.getPort(), server

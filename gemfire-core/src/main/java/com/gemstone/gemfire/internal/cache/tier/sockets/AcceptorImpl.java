@@ -58,7 +58,7 @@ import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -90,8 +90,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from
  * the edge and starts up threads to process requests from these.
- * 
- * @see com.gemstone.gemfire.cache.util.BridgeServer
  * 
  * @author Sudhir Menon
  * @since 2.0.2
@@ -328,7 +326,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
     }
     {
       int tmp_maxThreads = maxThreads;
-      if (maxThreads == BridgeServer.DEFAULT_MAX_THREADS) {
+      if (maxThreads == CacheServer.DEFAULT_MAX_THREADS) {
         // consult system properties for 5.0.2 backwards compatibility
         if (DEPRECATED_SELECTOR) {
           tmp_maxThreads = DEPRECATED_SELECTOR_POOL_SIZE;
@@ -534,7 +532,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       this.localPort = port;
       String sockName = this.serverSock.getLocalSocketAddress().toString();
       logger.info(LocalizedMessage.create(
-          LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_CONNECTION_LISTENER_BOUND_TO_ADDRESS_0_WITH_BACKLOG_1,
+          LocalizedStrings.AcceptorImpl_CACHE_SERVER_CONNECTION_LISTENER_BOUND_TO_ADDRESS_0_WITH_BACKLOG_1,
           new Object[] {sockName, Integer.valueOf(backLog)}));
       if(isGatewayReceiver){
         this.stats = GatewayReceiverStats.createGatewayReceiverStats(sockName);
@@ -1357,7 +1355,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         if (isRunning()) {
           if (!this.loggedAcceptError) {
             this.loggedAcceptError = true;
-            logger.error(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_UNEXPECTED_IOEXCEPTION_FROM_ACCEPT, e));
+            logger.error(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_UNEXPECTED_IOEXCEPTION_FROM_ACCEPT, e));
           }
           // Why sleep?
           // try {Thread.sleep(3000);} catch (InterruptedException ie) {}
@@ -1370,7 +1368,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       catch (Exception e) {
         closeSocket(s);
         if (isRunning()) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_UNEXPECTED_EXCEPTION, e));
+          logger.fatal(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_UNEXPECTED_EXCEPTION, e));
         }
       }
     }
@@ -1410,10 +1408,10 @@ public class AcceptorImpl extends Acceptor implements Runnable
                 if (!AcceptorImpl.this.loggedAcceptError) {
                   AcceptorImpl.this.loggedAcceptError = true;
                   if (ex instanceof SocketTimeoutException) {
-                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION_DUE_TO_SOCKET_TIMEOUT));
+                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION_DUE_TO_SOCKET_TIMEOUT));
                   }
                   else {
-                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION__0, ex), ex);
+                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION__0, ex), ex);
                   }
                 }
               }
@@ -1487,7 +1485,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
           @Override
           public void run2() {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_TIMED_OUT_WAITING_FOR_HANDSHAKE_FROM__0, s.getRemoteSocketAddress()));
+            logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_TIMED_OUT_WAITING_FOR_HANDSHAKE_FROM__0, s.getRemoteSocketAddress()));
             closeSocket(s);
           }
         };
@@ -1636,7 +1634,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
     try {
       synchronized (syncLock) {
         this.shutdown = true;
-        logger.info(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_ON_PORT_0_IS_SHUTTING_DOWN, this.localPort)); 
+        logger.info(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_ON_PORT_0_IS_SHUTTING_DOWN, this.localPort)); 
         if (this.thread != null) {
           this.thread.interrupt();
         }

@@ -160,33 +160,6 @@ public interface SystemMemberCache {
   public void refresh();
 
   /**
-   * Adds a new, unstarted bridge server that will serve the contents
-   * of this cache.
-   *
-   * @see com.gemstone.gemfire.cache.Cache#addBridgeServer
-   *
-   * @since 4.0
-   * @deprecated as of 5.7 use {@link #addCacheServer} instead.
-   */
-  @Deprecated
-  public SystemMemberBridgeServer addBridgeServer()
-    throws AdminException;
-
-  /**
-   * Returns the bridge servers that run in this member's VM.  Note
-   * that this list will not be updated until {@link #refresh} is
-   * called.
-   *
-   * @see com.gemstone.gemfire.cache.Cache#getBridgeServers
-   *
-   * @since 4.0
-   * @deprecated as of 5.7 use {@link #getCacheServers} instead.
-   */
-  @Deprecated
-  public SystemMemberBridgeServer[] getBridgeServers()
-    throws AdminException;
-
-  /**
    * Adds a new, unstarted cache server that will serve the contents
    * of this cache to clients.
    *

@@ -7,6 +7,8 @@ import java.util.Arrays;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.DSCODE;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.EntryBits;
@@ -105,6 +107,24 @@ public abstract class OffHeapCachedDeserializable implements MemoryChunkWithRefC
       Object objToSend = (byte[]) getDeserializedForReading(); // deserialized as a byte[]
       DataSerializer.writeObject(objToSend, out);
     }
+  }
+  @Override
+  public void sendAsByteArray(DataOutput out) throws IOException {
+    byte[] bytes;
+    if (isSerialized()) {
+      bytes = getSerializedValue();
+    } else {
+      bytes = (byte[]) getDeserializedForReading();
+    }
+    DataSerializer.writeByteArray(bytes, out);
+  }
+  @Override
+  public void sendAsCachedDeserializable(DataOutput out) throws IOException {
+    if (!isSerialized()) {
+      throw new IllegalStateException("sendAsCachedDeserializable can only be called on serialized StoredObjects");
+    }
+    InternalDataSerializer.writeDSFIDHeader(DataSerializableFixedID.VM_CACHED_DESERIALIZABLE, out);
+    sendAsByteArray(out);
   }
   public boolean checkDataEquals(@Unretained OffHeapCachedDeserializable other) {
     if (this == other) {

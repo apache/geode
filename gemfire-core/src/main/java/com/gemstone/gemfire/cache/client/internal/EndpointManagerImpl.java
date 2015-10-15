@@ -26,7 +26,7 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.cache.PoolStats;
 import com.gemstone.gemfire.internal.cache.execute.TransactionFunctionService;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
@@ -274,7 +274,7 @@ public class EndpointManagerImpl implements EndpointManager {
         return;
       }
       //logger.warn("EMANFIRE:CRASH:"+endpoint.getLocation());
-      InternalBridgeMembership.notifyCrashed(endpoint.getMemberId(), false);
+      InternalClientMembership.notifyCrashed(endpoint.getMemberId(), false);
     }
 
     public void endpointNoLongerInUse(Endpoint endpoint) {
@@ -282,7 +282,7 @@ public class EndpointManagerImpl implements EndpointManager {
         return;
       }
       //logger.warn("EMANFIRE:LEFT:"+endpoint.getLocation());
-      InternalBridgeMembership.notifyLeft(endpoint.getMemberId(), false);
+      InternalClientMembership.notifyLeft(endpoint.getMemberId(), false);
     }
 
     public void endpointNowInUse(Endpoint endpoint) {
@@ -290,7 +290,7 @@ public class EndpointManagerImpl implements EndpointManager {
         return;
       }
       //logger.warn("EMANFIRE:JOIN:"+endpoint.getLocation()+" mid:"+endpoint.getMemberId(),new Exception());
-      InternalBridgeMembership.notifyJoined(endpoint.getMemberId(), false);
+      InternalClientMembership.notifyJoined(endpoint.getMemberId(), false);
     }
   }
 

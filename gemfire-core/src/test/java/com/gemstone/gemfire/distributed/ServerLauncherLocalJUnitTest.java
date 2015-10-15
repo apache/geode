@@ -21,7 +21,7 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.cache.AbstractBridgeServer;
+import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
@@ -605,7 +605,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       this.launcher.start();
      
       // why did it not fail like it's supposed to?
-      final String property = System.getProperty(AbstractBridgeServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY);
+      final String property = System.getProperty(AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY);
       assertNotNull(property);
       assertEquals(this.serverPort, Integer.valueOf(property).intValue());
       assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));

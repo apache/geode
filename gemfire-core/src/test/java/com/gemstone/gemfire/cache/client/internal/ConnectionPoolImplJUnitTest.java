@@ -24,10 +24,7 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.cache.util.BridgeServer;
-import com.gemstone.gemfire.cache.util.EndpointDoesNotExistException;
-import com.gemstone.gemfire.cache.util.EndpointExistsException;
-import com.gemstone.gemfire.cache.util.EndpointInUseException;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -158,8 +155,8 @@ public class ConnectionPoolImplJUnitTest {
   
   @Test
   public void testExecuteOp() throws Exception {
-    BridgeServer server1 = cache.addBridgeServer();
-    BridgeServer server2 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
+    CacheServer server2 = cache.addCacheServer();
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = ports[0];
     int port2 = ports[1];
@@ -223,7 +220,7 @@ public class ConnectionPoolImplJUnitTest {
   
   @Test
   public void testCreatePool() throws Exception {
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     int port1 = port;
     server1.setPort(port1);
     

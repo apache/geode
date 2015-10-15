@@ -8,12 +8,12 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 
 import dunit.Host;
 import dunit.VM;
@@ -148,7 +148,7 @@ public void testMessageSyncInterval() throws CacheException {
 public void testBridgeAttributesRelatedToClientQueuesHA() throws CacheException {
   CacheCreation cache = new CacheCreation();
   cache.setMessageSyncInterval(3445);
-  BridgeServer bs = cache.addBridgeServer();
+  CacheServer bs = cache.addCacheServer();
   bs.setMaximumMessageCount(12345);
   bs.setMessageTimeToLive(56789);
   bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -158,7 +158,7 @@ public void testBridgeAttributesRelatedToClientQueuesHA() throws CacheException 
   testXml(cache);
   Cache c = getCache();
   assertNotNull(c);
-  BridgeServer server = (BridgeServer)cache.getBridgeServers().iterator().next();
+  CacheServer server = (CacheServer)cache.getCacheServers().iterator().next();
   assertNotNull(server);
   assertEquals(12345,server.getMaximumMessageCount());
   assertEquals(56789,server.getMessageTimeToLive());     
@@ -199,7 +199,7 @@ public void testBridgeAttributesRelatedToClientQueuesHA() throws CacheException 
   {
     CacheCreation cache = new CacheCreation();
 
-    BridgeServer bs = cache.addBridgeServer();
+    CacheServer bs = cache.addCacheServer();
     bs.setMaxThreads(37);
     bs.setMaxConnections(999);
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());

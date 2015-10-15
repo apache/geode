@@ -111,7 +111,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     
     createPR(vm0);
     createPR(vm1);
-    int port = addBridgeServer(vm1);
+    int port = addCacheServer(vm1);
     createClient(vm3, port);
     
     
@@ -132,7 +132,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     createPR(vm0);
     createPR(vm1);
     createAccessor(vm2, false);
-    int port = addBridgeServer(vm2);
+    int port = addCacheServer(vm2);
     createClient(vm3, port);
     
     doPropagationTest(vm0, vm3, true, true);
@@ -151,7 +151,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     createAccessor(vm2, false);
     
     //test an invalidate from the accessor through one of the data stores
-    int port1 = addBridgeServer(vm0);
+    int port1 = addCacheServer(vm0);
     createClient(vm3, port1);
     doPropagationTest(vm2, vm3, true, true);
     vm3.invoke(new SerializableRunnable("close cache") {
@@ -163,7 +163,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     });
     
     //test an invalidate from the accessor through the other data store
-    int port2 = addBridgeServer(vm1);
+    int port2 = addCacheServer(vm1);
     createClient(vm3, port2);
     doPropagationTest(vm2, vm3, true, true);
   }
@@ -347,7 +347,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     
   }
 
-  private int addBridgeServer(VM vm) {
+  private int addCacheServer(VM vm) {
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     vm.invoke(new SerializableRunnable("add bridge server") {
       public void run() {

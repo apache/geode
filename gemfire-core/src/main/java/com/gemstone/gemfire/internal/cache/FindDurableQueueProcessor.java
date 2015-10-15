@@ -76,11 +76,11 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
   private static void findLocalDurableQueues(ClientProxyMembershipID proxyId, ArrayList<ServerLocation> matches) {
     Cache c = GemFireCacheImpl.getInstance();
     if(c!=null) {
-      List l = c.getBridgeServers();
+      List l = c.getCacheServers();
       if(l!=null) {
         Iterator i = l.iterator();
         while(i.hasNext()) {
-          BridgeServerImpl bs = (BridgeServerImpl)i.next();
+          CacheServerImpl bs = (CacheServerImpl)i.next();
           if(bs.getAcceptor().getCacheClientNotifier().getClientProxy(proxyId)!=null) {
             ServerLocation loc = new ServerLocation(bs.getExternalAddress(),bs.getPort());
             matches.add(loc);

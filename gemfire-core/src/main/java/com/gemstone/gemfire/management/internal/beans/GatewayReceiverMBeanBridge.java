@@ -15,7 +15,7 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.wan.GatewayReceiverStats;
@@ -187,7 +187,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge{
 
   public String[] getConnectedGatewaySenders() {
     Set<String> uniqueIds = null;
-    AcceptorImpl acceptor = ((BridgeServerImpl)rcv.getServer()).getAcceptor();
+    AcceptorImpl acceptor = ((CacheServerImpl)rcv.getServer()).getAcceptor();
     Set<ServerConnection> serverConnections = acceptor.getAllServerConnections();
     if(serverConnections !=null && serverConnections.size() >0){
       uniqueIds = new HashSet<String>();

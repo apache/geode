@@ -21,12 +21,12 @@ import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
 import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.BridgeMembership;
-import com.gemstone.gemfire.cache.util.BridgeMembershipEvent;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.management.membership.ClientMembership;
+import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
+import com.gemstone.gemfire.management.membership.ClientMembershipListenerAdapter;
 
 import dunit.Host;
 import dunit.SerializableCallable;
@@ -270,7 +270,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     final String locators = getServerHostName(vm0.getHost()) + "[" + locatorPort + "]";
     
     final int serverPort1 =startBridgeServerInVM(vm1, new String[] {"group1"}, locators);
-    final int serverPort2 =addBridgeServerInVM(vm1, new String[] {"group2"});
+    final int serverPort2 =addCacheServerInVM(vm1, new String[] {"group2"});
     
     startBridgeClientInVM(vm2, "group2", getServerHostName(vm0.getHost()), locatorPort);
     
@@ -283,7 +283,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     checkEndpoints(vm2, new int[] {serverPort1});
   }
   
-  public void testBridgeMembershipListener() throws Exception {
+  public void testClientMembershipListener() throws Exception {
     final Host host = Host.getHost(0);
     VM locatorVM = host.getVM(0);
     VM bridge1VM = host.getVM(1);
@@ -454,7 +454,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     vm.invoke(new SerializableRunnable("Add membership listener") {
       public void run() {
         MyListener listener = new MyListener();
-        BridgeMembership.registerBridgeMembershipListener(listener);
+        ClientMembership.registerClientMembershipListener(listener);
         remoteObjects.put(BRIDGE_LISTENER, listener);
       }
     });
@@ -543,12 +543,13 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     });
   }
   
-  public static class MyListener extends BridgeMembershipListenerAdapter implements Serializable {
+  public static class MyListener extends ClientMembershipListenerAdapter implements Serializable {
     protected int crashes = 0;
     protected int joins = 0;
     protected int departures= 0;
 
-    public synchronized void memberCrashed(BridgeMembershipEvent event) {
+    @Override
+    public synchronized void memberCrashed(ClientMembershipEvent event) {
       crashes++;
       notifyAll();
     }
@@ -559,12 +560,14 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       departures = 0;
     }
 
-    public synchronized void memberJoined(BridgeMembershipEvent event) {
+    @Override
+    public synchronized void memberJoined(ClientMembershipEvent event) {
       joins++;
       notifyAll();
     }
 
-    public synchronized void memberLeft(BridgeMembershipEvent event) {
+    @Override
+    public synchronized void memberLeft(ClientMembershipEvent event) {
       departures++;
       notifyAll();
     }

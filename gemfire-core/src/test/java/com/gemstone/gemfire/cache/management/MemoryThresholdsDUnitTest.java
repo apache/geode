@@ -47,7 +47,7 @@ import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -84,7 +84,7 @@ import dunit.VM;
  * @author Mitch Thomas
  * @since 6.0
  */
-public class MemoryThresholdsDUnitTest extends BridgeTestCase {
+public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   
   public static class Range implements Serializable {
     public final static Range DEFAULT = new Range(0, 20);

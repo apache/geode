@@ -20,14 +20,14 @@ import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeObserverAdapter;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -98,7 +98,7 @@ public class FailoverDUnitTest extends DistributedTestCase
     registerInterestList();
     primary.invoke(FailoverDUnitTest.class, "put");
     verifyEntries();
-    setBridgeObserver();
+    setClientServerObserver();
     primary.invoke(FailoverDUnitTest.class, "stopServer");
     verifyEntriesAfterFailover();
   }
@@ -135,7 +135,7 @@ public class FailoverDUnitTest extends DistributedTestCase
 */
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    BridgeTestCase.configureConnectionPoolWithName(factory, hostName, new int[] {PORT1,PORT2}, true, -1, 2, null, "FailoverPool");
+    ClientServerTestCase.configureConnectionPoolWithName(factory, hostName, new int[] {PORT1,PORT2}, true, -1, 2, null, "FailoverPool");
     factory.setCacheListener(new CacheListenerAdapter() {
       public void afterUpdate(EntryEvent event)
       {
@@ -157,7 +157,7 @@ public class FailoverDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     cache.createRegion(regionName, attrs);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
@@ -224,9 +224,9 @@ public class FailoverDUnitTest extends DistributedTestCase
   public static void stopServer()
   {
     try {
-      Iterator iter = cache.getBridgeServers().iterator();
+      Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        BridgeServer server = (BridgeServer)iter.next();
+        CacheServer server = (CacheServer)iter.next();
           server.stop();
       }
     }
@@ -270,9 +270,9 @@ public class FailoverDUnitTest extends DistributedTestCase
     assertEquals("value-3", r.getEntry("key-3").getValue());
   }
 
-  public static void setBridgeObserver() {
+  public static void setClientServerObserver() {
     PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
-    BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
         public void beforePrimaryIdentificationFromBackup() {
           primary.invoke(FailoverDUnitTest.class, "putDuringFailover");
           PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;

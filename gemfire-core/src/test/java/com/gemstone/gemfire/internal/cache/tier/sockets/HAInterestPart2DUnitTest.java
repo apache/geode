@@ -82,12 +82,12 @@ public class HAInterestPart2DUnitTest extends HAInterestBaseTest {
     VM backup = getBackupVM();
     backup.invoke(HAInterestBaseTest.class, "stopServer");
     verifyDeadAndLiveServers(1, 2);
-    setBridgeObserverForBeforeRegistration(backup);
+    setClientServerObserverForBeforeRegistration(backup);
     try {
       registerK1AndK2();
       waitForBeforeRegistrationCallback();
     } finally {
-      unSetBridgeObserverForRegistrationCallback();
+      unSetClientServerObserverForRegistrationCallback();
     }
     server1.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
     server2.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
@@ -111,12 +111,12 @@ public class HAInterestPart2DUnitTest extends HAInterestBaseTest {
     backup.invoke(HAInterestBaseTest.class, "stopServer");
     verifyDeadAndLiveServers(1, 2);
 
-    setBridgeObserverForAfterRegistration(backup);
+    setClientServerObserverForAfterRegistration(backup);
     try {
       registerK1AndK2();
       waitForAfterRegistrationCallback();
     } finally {
-      unSetBridgeObserverForRegistrationCallback();
+      unSetClientServerObserverForRegistrationCallback();
     }
 
     server1.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
@@ -248,7 +248,7 @@ public class HAInterestPart2DUnitTest extends HAInterestBaseTest {
     // put on stopped server
     server1.invoke(HAInterestBaseTest.class, "putK1andK2");
     // spawn a thread to put on server , which will acquire a lock on entry
-    setBridgeObserverForBeforeInterestRecovery();
+    setClientServerObserverForBeforeInterestRecovery();
     server1.invoke(HAInterestBaseTest.class, "startServer");
     verifyDeadAndLiveServers(0, 1);
     waitForBeforeInterestRecoveryCallBack();
@@ -304,7 +304,7 @@ public class HAInterestPart2DUnitTest extends HAInterestBaseTest {
     verifyDeadAndLiveServers(2, 0);
 
     primary.invoke(HAInterestBaseTest.class, "putK1andK2");
-    setBridgeObserverForBeforeInterestRecoveryFailure();
+    setClientServerObserverForBeforeInterestRecoveryFailure();
     primary.invoke(HAInterestBaseTest.class, "startServer");
     waitForBeforeInterestRecoveryCallBack();
     if (exceptionOccured) {

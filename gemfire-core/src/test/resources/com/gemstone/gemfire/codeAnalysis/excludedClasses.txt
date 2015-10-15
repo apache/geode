@@ -91,7 +91,7 @@ com/gemstone/gemfire/internal/shared/OSType$4
 com/gemstone/gemfire/internal/shared/OSType$5
 com/gemstone/gemfire/internal/shared/TCPSocketOptions
 com/gemstone/gemfire/internal/process/SharedConfigurationNotAvailableException
-com/gemstone/gemfire/internal/cache/tier/InternalBridgeMembership$EventType
+com/gemstone/gemfire/internal/cache/tier/InternalClientMembership$EventType
 com/gemstone/gemfire/internal/util/concurrent/StoppableReadWriteLock
 com/gemstone/gemfire/rest/internal/web/exception.GemfireRestException
 com/gemstone/gemfire/rest/internal/web/controllers/support/JSONTypes

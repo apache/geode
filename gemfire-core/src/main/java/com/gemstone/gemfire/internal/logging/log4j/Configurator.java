@@ -10,6 +10,7 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.filter.AbstractFilterable;
@@ -123,6 +124,10 @@ public class Configurator {
 
   public static boolean hasContextWideFilter(final Configuration config) {
     return config.hasFilter();
+  }
+  
+  public static String getConfigurationSourceLocation(final Configuration config) {
+    return config.getConfigurationSource().getLocation();
   }
   
   public static boolean hasAppenderFilter(final Configuration config) {

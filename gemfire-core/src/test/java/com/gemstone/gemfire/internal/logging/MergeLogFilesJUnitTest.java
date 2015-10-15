@@ -90,7 +90,7 @@ public class MergeLogFilesJUnitTest {
     PrintWriter pw = new PrintWriter(sw, true);
     MergeLogFiles.mergeLogFiles(streams, names, pw);
 
-    System.out.println(sw.toString());
+    //System.out.println(sw.toString());
 
     // Verfiy that the entries are sorted
     BufferedReader br =
@@ -222,7 +222,7 @@ public class MergeLogFilesJUnitTest {
         }
       }
 
-      System.out.println(baos.toString());
+      //System.out.println(baos.toString());
       in = new ByteArrayInputStream(baos.toByteArray());
     }
 

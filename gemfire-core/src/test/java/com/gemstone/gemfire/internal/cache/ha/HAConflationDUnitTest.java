@@ -21,13 +21,13 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
 
 import dunit.Host;
@@ -311,7 +311,7 @@ public class HAConflationDUnitTest extends CacheTestCase
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");
     new HAConflationDUnitTest("temp").createCache(props);
     AttributesFactory factory = new AttributesFactory();
-    BridgeTestCase.configureConnectionPool(factory, host, new int[] { PORT1 }, true, -1, -1, null);
+    ClientServerTestCase.configureConnectionPool(factory, host, new int[] { PORT1 }, true, -1, -1, null);
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableConflation(true);
     if (isListenerPresent.booleanValue() == true) {
@@ -346,7 +346,7 @@ public class HAConflationDUnitTest extends CacheTestCase
     }
     RegionAttributes attrs = factory.create();
     cache.createRegion(regionName, attrs);
-    BridgeServerImpl server = (BridgeServerImpl)cache.addBridgeServer();
+    CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);

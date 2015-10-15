@@ -25,7 +25,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.DistTXState;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -130,7 +130,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
         int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
-        ((BridgeServerImpl) s).setTransactionTimeToLive(10);
+        ((CacheServerImpl) s).setTransactionTimeToLive(10);
         s.start();
         return port;
       }

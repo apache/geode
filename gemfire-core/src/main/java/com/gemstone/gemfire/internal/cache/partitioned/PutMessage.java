@@ -51,6 +51,8 @@ import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
+import com.gemstone.gemfire.internal.cache.RemotePutMessage;
+import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -1036,6 +1038,14 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
 
     VersionTag versionTag;
 
+    /**
+     * Set to true by the import methods if the oldValue
+     * is already serialized. In that case toData
+     * should just copy the bytes to the stream.
+     * In either case fromData just calls readObject.
+     */
+    private transient boolean oldValueIsSerialized;
+
     @Override
     public boolean getInlineProcess() {
       return true;
@@ -1047,7 +1057,8 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     public PutReplyMessage() {
     }
     
-    private PutReplyMessage(int processorId,
+    // package access for unit test
+    PutReplyMessage(int processorId,
                             boolean result,
                             Operation op,
                             ReplyException ex,
@@ -1139,12 +1150,13 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
       this.versionTag = (VersionTag)DataSerializer.readObject(in);
     }
 
-    @Override
+   @Override
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
       out.writeBoolean(this.result);
       out.writeByte(this.op.ordinal);
-      DataSerializer.writeObject(this.oldValue, out);
+      Object ov = getOldValue();
+      RemotePutMessage.PutReplyMessage.oldValueToData(out, getOldValue(), this.oldValueIsSerialized);
       DataSerializer.writeObject(this.versionTag, out);
     }
 
@@ -1180,11 +1192,12 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     @Override
     public void importOldObject(@Unretained(ENTRY_EVENT_OLD_VALUE) Object ov, boolean isSerialized) {
       this.oldValue = ov;
+      this.oldValueIsSerialized = isSerialized;
     }
 
     @Override
     public void importOldBytes(byte[] ov, boolean isSerialized) {
-      this.oldValue = ov;
+      importOldObject(ov, isSerialized);
     }
   }
 

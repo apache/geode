@@ -19,7 +19,6 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
@@ -237,18 +236,6 @@ public interface Cache extends GemFireCache {
   public void setSearchTimeout(int seconds);
 
   /**
-   * Creates a new bridge server with the default configuration.
-   *
-   * @see com.gemstone.gemfire.cache.util.BridgeLoader
-   * @see com.gemstone.gemfire.cache.util.BridgeWriter
-   *
-   * @since 4.0
-   * @deprecated as of 5.7 use {@link #addCacheServer} instead.
-   */
-  @Deprecated
-  public BridgeServer addBridgeServer();
-
-  /**
    * Creates a new cache server, with the default configuration,
    * that will allow clients to access this cache.
    * <p>For the default configuration see the constants in
@@ -258,20 +245,6 @@ public interface Cache extends GemFireCache {
    * @since 5.7
    */
   public CacheServer addCacheServer();
-
-  /**
-   * Returns a collection of all of the <code>BridgeServer</code>s
-   * that can serve the contents of this <code>Cache</code>.
-   * <p>Since <code>5.7</code> this method returns a <code>List</code
-   * instead of a <code>Collection</code>.
-   *
-   * @see #addBridgeServer
-   *
-   * @since 4.0
-   * @deprecated as of 5.7 use {@link #getCacheServers} instead.
-   */
-  @Deprecated
-  public List<CacheServer> getBridgeServers();
 
   /**
    * Returns a collection of all of the <code>CacheServer</code>s

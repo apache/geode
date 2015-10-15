@@ -196,6 +196,9 @@ public class EntryExpiryTask extends ExpiryTask {
     }
     if (getExpirationTime() > 0) {
       addExpiryTask();
+      if (expiryTaskListener != null) {
+        expiryTaskListener.afterReschedule(this);
+      }
     }
   }
 

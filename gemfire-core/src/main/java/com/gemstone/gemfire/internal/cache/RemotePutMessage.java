@@ -54,7 +54,6 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
 
 import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
-
 import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
 import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
 import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALUE_IS_OBJECT;
@@ -880,7 +879,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
      * or null if not set.
      */
     @Unretained(ENTRY_EVENT_OLD_VALUE)
-    Object oldValue;
+    private Object oldValue;
     
     /**
      * version tag for concurrency control
@@ -898,7 +897,8 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
     public PutReplyMessage() {
     }
 
-    private PutReplyMessage(int processorId,
+    // unit tests may call this constructor
+    PutReplyMessage(int processorId,
                             boolean result,
                             Operation op,
                             ReplyException ex,
@@ -965,13 +965,15 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
       dm.getStats().incReplyMessageTime(NanoTimer.getTime()-startTime);
     }
 
-    /** Return oldValue in deserialized form */
+    /** Return oldValue as a byte[] or as a CachedDeserializable.
+     * This method used to deserialize a CachedDeserializable but that is too soon.
+     * This method is called during message processing. The deserialization needs
+     * to be deferred until we get back to the application thread which happens
+     * for this oldValue when they call EntryEventImpl.getOldValue.
+     */
     public Object getOldValue() {
       // oldValue field is in serialized form, either a CachedDeserializable,
       // a byte[], or null if not set
-      if (this.oldValue instanceof CachedDeserializable) {
-        return ((CachedDeserializable)this.oldValue).getDeserializedValue(null, null);
-      }
       return this.oldValue;
     }
 
@@ -994,7 +996,29 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
       }
     }
 
-    @Override
+    public static void oldValueToData(DataOutput out, Object ov, boolean ovIsSerialized) throws IOException {
+      if (ovIsSerialized && ov != null) {
+        byte[] oldValueBytes;
+        if (ov instanceof byte[]) {
+          oldValueBytes = (byte[]) ov;
+          DataSerializer.writeObject(new VMCachedDeserializable(oldValueBytes), out);
+        } else if (ov instanceof CachedDeserializable) {
+          if (ov instanceof StoredObject) {
+            ((StoredObject) ov).sendAsCachedDeserializable(out);
+          } else {
+            DataSerializer.writeObject(ov, out);
+          }
+        } else {
+          oldValueBytes = EntryEventImpl.serialize(ov);
+          DataSerializer.writeObject(new VMCachedDeserializable(oldValueBytes), out);
+        }
+      } else {
+        DataSerializer.writeObject(ov, out);
+      }
+      
+    }
+    
+     @Override
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
       byte flags = 0;
@@ -1003,12 +1027,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
       if (this.versionTag instanceof DiskVersionTag) flags |= FLAG_PERSISTENT;
       out.writeByte(flags);
       out.writeByte(this.op.ordinal);
-      if (this.oldValueIsSerialized) {
-        byte[] oldValueBytes = (byte[]) this.oldValue;
-        out.write(oldValueBytes);
-      } else {
-        DataSerializer.writeObject(this.oldValue, out);
-      }
+      oldValueToData(out, getOldValue(), this.oldValueIsSerialized);
       if (this.versionTag != null) {
         InternalDataSerializer.invokeToData(this.versionTag, out);
       }
@@ -1045,18 +1064,13 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
 
     @Override
     public void importOldObject(@Unretained(ENTRY_EVENT_OLD_VALUE) Object ov, boolean isSerialized) {
-      // isSerialized does not matter.
-      // toData will just call writeObject
-      // and fromData will just call readObject
+      this.oldValueIsSerialized = isSerialized;
       this.oldValue = ov;
     }
 
     @Override
     public void importOldBytes(byte[] ov, boolean isSerialized) {
-      if (isSerialized) {
-        this.oldValueIsSerialized = true;
-      }
-      this.oldValue = ov;
+      importOldObject(ov, isSerialized);
     }
   }
 

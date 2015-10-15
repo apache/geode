@@ -13,10 +13,10 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 
 import dunit.*;
 
@@ -28,7 +28,7 @@ import java.util.*;
  * @author Barry Oglesby
  * @since 5.7
  */
- public class ClientServerGetAllDUnitTest extends BridgeTestCase {
+ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
 
   public ClientServerGetAllDUnitTest(String name) {
     super(name);
@@ -63,7 +63,7 @@ import java.util.*;
           keys.add("key-"+i);
         }
         
-        keys.add(BridgeTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
+        keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
         
         // Invoke getAll
         Region region = getRootRegion(regionName);
@@ -79,13 +79,13 @@ import java.util.*;
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(BridgeTestCase.NON_EXISTENT_KEY))
+          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
         }
         
-        assertEquals(null, region.get(BridgeTestCase.NON_EXISTENT_KEY));
+        assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
     });
 
@@ -114,7 +114,7 @@ import java.util.*;
           keys.add("key-"+i);
         }
         
-        keys.add(BridgeTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
+        keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
         
         // Invoke getAll
         Region region = getRootRegion(regionName);
@@ -130,13 +130,13 @@ import java.util.*;
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(BridgeTestCase.NON_EXISTENT_KEY))
+          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
         }
         
-        assertEquals(null, region.get(BridgeTestCase.NON_EXISTENT_KEY));
+        assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
     });
     checkServerForOrphans(server, regionName);
@@ -389,7 +389,7 @@ import java.util.*;
           keys.add("key-"+i);
         }
         
-        keys.add(BridgeTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
+        keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
         
         // Invoke getAll
         Region region = getRootRegion(regionName);
@@ -405,13 +405,13 @@ import java.util.*;
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(BridgeTestCase.NON_EXISTENT_KEY))
+          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
         }
         
-        assertEquals(null, region.get(BridgeTestCase.NON_EXISTENT_KEY));
+        assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
     });
 
@@ -463,7 +463,7 @@ import java.util.*;
         for (int i=0; i<5; i++) {
           keys.add("key-"+i);
         }
-        keys.add(BridgeTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
+        keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
         
         // Invoke getAll
         
@@ -480,12 +480,12 @@ import java.util.*;
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(BridgeTestCase.NON_EXISTENT_KEY))
+          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
         }
-        assertEquals(null, region.get(BridgeTestCase.NON_EXISTENT_KEY));
+        assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
     });
 
@@ -656,9 +656,9 @@ import java.util.*;
           factory.setOffHeap(true);
         }
         if (expectCallback) {
-          factory.setCacheLoader(new CallbackBridgeServerCacheLoader());
+          factory.setCacheLoader(new CallbackCacheServerCacheLoader());
         } else {
-          factory.setCacheLoader(new BridgeServerCacheLoader());
+          factory.setCacheLoader(new CacheServerCacheLoader());
         }
         if (createPR) {
           factory.setDataPolicy(DataPolicy.PARTITION);
@@ -673,7 +673,7 @@ import java.util.*;
         }
         try {
           Cache cache = getCache();
-          BridgeServer bridge = cache.addBridgeServer();
+          CacheServer bridge = cache.addCacheServer();
           bridge.setPort(serverPort);
           // for off-heap I want the server to use a selector
           bridge.setMaxThreads(offheap ? 16 : getMaxThreads());
@@ -687,7 +687,7 @@ import java.util.*;
   
   private static final String CALLBACK_ARG = "ClientServerGetAllDUnitTestCB";
 
-  private static class CallbackBridgeServerCacheLoader extends BridgeServerCacheLoader {
+  private static class CallbackCacheServerCacheLoader extends CacheServerCacheLoader {
     @Override
     public Object load2(LoaderHelper helper) {
       if (helper.getArgument() instanceof String) {
@@ -695,7 +695,7 @@ import java.util.*;
           fail("Expected " + helper.getArgument() + " to be " + CALLBACK_ARG);
         }
       } else {
-        if (!helper.getKey().equals(BridgeTestCase.NON_EXISTENT_KEY)) {
+        if (!helper.getKey().equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
           fail("Expected callback arg to be " + CALLBACK_ARG + " but it was null");
         }
       }

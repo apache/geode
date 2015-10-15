@@ -282,7 +282,7 @@ public class RegionEventImpl
   }
   
   public ClientProxyMembershipID getContext() {
-    // regular region events do not have bridge context - see BridgeRegionEventImpl
+    // regular region events do not have a context - see ClientRegionEventImpl
     return null;
   }
   
