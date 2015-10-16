@@ -100,8 +100,9 @@ public class JGroupsMessenger implements Messenger {
    */
   private static final String DEFAULT_JGROUPS_MCAST_CONFIG = "com/gemstone/gemfire/distributed/internal/jgroups-mcast.xml";
 
-  /** JG magic numbers for types we need to serialize */
+  /** JG magic numbers for types added to the JG ClassConfigurator */
   public static final short JGROUPS_TYPE_JGADDRESS = 2000;
+  public static final short JGROUPS_PROTOCOL_TRANSPORT = 1000;
 
   public static boolean THROW_EXCEPTION_ON_START_HOOK;
 
@@ -130,7 +131,9 @@ public class JGroupsMessenger implements Messenger {
   
   static {
     // register classes that we've added to jgroups that are put on the wire
-    ClassConfigurator.add(JGroupsMessenger.JGROUPS_TYPE_JGADDRESS, JGAddress.class);
+    // or need a header ID
+    ClassConfigurator.add(JGROUPS_TYPE_JGADDRESS, JGAddress.class);
+    ClassConfigurator.addProtocol(JGROUPS_PROTOCOL_TRANSPORT, Transport.class);
   }
 
   @Override

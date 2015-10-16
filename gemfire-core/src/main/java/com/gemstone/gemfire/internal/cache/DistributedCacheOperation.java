@@ -1100,8 +1100,8 @@ public abstract class DistributedCacheOperation {
       boolean sendReply = true;
       InternalCacheEvent event = null;
 
-      if (logger.isDebugEnabled()) {
-        logger.debug("DistributedCacheOperation.basicProcess: {}", this);
+      if (logger.isTraceEnabled()) {
+        logger.trace("DistributedCacheOperation.basicProcess: {}", this);
       }
       try {
         // LocalRegion lclRgn = getRegionFromPath(dm.getSystem(),

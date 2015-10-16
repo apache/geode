@@ -1,7 +1,7 @@
 <config xmlns="urn:org:jgroups"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
-<UDP
+<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.Transport
   BIND_ADDR_SETTING
   bind_port="MEMBERSHIP_PORT_RANGE_START"
   port_range="MEMBERSHIP_PORT_RANGE_END"

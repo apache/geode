@@ -9204,6 +9204,11 @@ public class LocalRegion extends AbstractRegion
   {
     
     CacheListener[] listeners = region.fetchCacheListenersField();
+    if (event.getOperation().isCreate()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("invoking listeners: " + Arrays.toString(listeners));
+      }
+    }
     if (listeners == null || listeners.length == 0) {
       return;
     }

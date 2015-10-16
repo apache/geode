@@ -95,7 +95,7 @@ public class JGroupsMessengerJUnitTest {
     messenger.init(services);
     
     String jgroupsConfig = messenger.getJGroupsStackConfig();
-    int startIdx = jgroupsConfig.indexOf("<UDP");
+    int startIdx = jgroupsConfig.indexOf("<com");
     int insertIdx = jgroupsConfig.indexOf('>', startIdx+4) + 1;
     jgroupsConfig = jgroupsConfig.substring(0, insertIdx) +
         "<"+InterceptUDP.class.getName()+"/>" +

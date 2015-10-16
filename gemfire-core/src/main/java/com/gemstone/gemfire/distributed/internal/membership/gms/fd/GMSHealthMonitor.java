@@ -749,6 +749,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
               logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
               boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+              logger.info("Final check {}", pinged? "succeeded" : "failed");
+              
               if (!pinged && !isStopping) {
                 ts = memberVsLastMsgTS.get(mbr);
                 if (ts == null || ts.getTimeStamp() <= startTime) {

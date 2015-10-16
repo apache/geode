@@ -31,7 +31,7 @@ public class AddressManager extends Protocol {
 
   private static final Logger logger = Services.getLogger();
   
-  private UDP udp;
+  private TP transport;
   private Method setPingData;
   boolean warningLogged = false;
 
@@ -82,7 +82,7 @@ public class AddressManager extends Protocol {
     if (setPingData != null) {
       Exception problem = null;
       try {
-        setPingData.invoke(udp, new Object[]{pd});
+        setPingData.invoke(transport, new Object[]{pd});
       } catch (InvocationTargetException e) {
         problem = e;
       } catch (IllegalAccessException e) {
@@ -99,7 +99,7 @@ public class AddressManager extends Protocol {
    * find and initialize the method used to update UDP's address cache
    */
   private void findPingDataMethod() {
-    udp = (UDP)getProtocolStack().findProtocol("UDP");
+    transport = (TP)getProtocolStack().getTransport();
     try {
       setPingData = TP.class.getDeclaredMethod("setPingData", new Class<?>[]{PingData.class});
       setPingData.setAccessible(true);
