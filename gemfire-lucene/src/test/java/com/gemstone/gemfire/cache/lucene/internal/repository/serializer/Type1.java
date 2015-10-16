@@ -1,18 +1,25 @@
 package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
+import java.io.Serializable;
+
 /**
  * A test type to get mapped to a lucene document
  */
-public class Type1 {
-  private String s;
-  private int i;
-  private long l;
-  private double d;
-  private float f;
-  private Object o = new Object();
+public class Type1 implements Serializable {
+  private static final long serialVersionUID = 1L;
+
+  public static final String[] fields = new String[] {"s", "i", "l", "d", "f"};
+  
+  String s;
+  int i;
+  long l;
+  double d;
+  float f;
+  Serializable o = new Serializable() {
+    private static final long serialVersionUID = 1L;
+  };
   
   public Type1(String s, int i, long l, double d, float f) {
-    super();
     this.s = s;
     this.i = i;
     this.l = l;

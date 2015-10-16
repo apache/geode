@@ -179,9 +179,6 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
         return false;
       return true;
     }
-
-    
-    
   }
 
 }
