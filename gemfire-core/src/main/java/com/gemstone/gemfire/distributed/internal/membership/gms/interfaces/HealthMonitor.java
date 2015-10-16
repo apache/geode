@@ -1,9 +1,5 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
-import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Map;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 
@@ -38,17 +34,4 @@ public interface HealthMonitor extends Service {
    * ShutdownMessage has been received from the given member
    */
   public void memberShutdown(DistributedMember mbr, String reason);
-  
-  /**
-   * Returns a map that describes the members and their server sockets
-   */
-  public Map<InternalDistributedMember, InetSocketAddress> getSocketInfo();
-
-  /**
-   * Update the information of the members and their server sockets
-   * 
-   * @param members
-   * @param portsForMembers List of socket ports for each member
-   */
-  public void installSocketInfo(List<InternalDistributedMember> members, List<Integer> portsForMembers);
 }

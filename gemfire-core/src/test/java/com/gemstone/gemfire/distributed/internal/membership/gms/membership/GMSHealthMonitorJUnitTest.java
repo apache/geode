@@ -46,11 +46,9 @@ public class GMSHealthMonitorJUnitTest {
   private GMSJoinLeave joinLeave;
   private GMSHealthMonitor gmsHealthMonitor;
   final long memberTimeout = 1000l;
-  private int[] portRange= new int[]{0, 65535};
 
   @Before
   public void initMocks() throws UnknownHostException {
-    System.setProperty("gemfire.bind-address", "localhost");
     mockDistConfig = mock(DistributionConfig.class);
     mockConfig = mock(ServiceConfig.class);
     messenger = mock(Messenger.class);
@@ -60,13 +58,11 @@ public class GMSHealthMonitorJUnitTest {
 
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
     when(mockConfig.getMemberTimeout()).thenReturn(memberTimeout);
-    when(mockConfig.getMembershipPortRange()).thenReturn(portRange);
     when(services.getConfig()).thenReturn(mockConfig);
     when(services.getMessenger()).thenReturn(messenger);
     when(services.getJoinLeave()).thenReturn(joinLeave);
     when(services.getCancelCriterion()).thenReturn(stopper);
     when(stopper.isCancelInProgress()).thenReturn(false);
-    
 
     if (mockMembers == null) {
       mockMembers = new ArrayList<InternalDistributedMember>();
@@ -80,7 +76,7 @@ public class GMSHealthMonitorJUnitTest {
         mockMembers.add(mbr);
       }
     }
-    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+
     gmsHealthMonitor = new GMSHealthMonitor();
     gmsHealthMonitor.init(services);
     gmsHealthMonitor.start();
@@ -320,7 +316,7 @@ public class GMSHealthMonitorJUnitTest {
 
     try {
       // this happens after final check, ping timeout
-      Thread.sleep(memberTimeout);
+      Thread.sleep(150l);
     } catch (InterruptedException e) {
     }
 
@@ -356,7 +352,7 @@ public class GMSHealthMonitorJUnitTest {
 
     try {
       // this happens after final check, ping timeout
-      Thread.sleep(memberTimeout);
+      Thread.sleep(90l);
     } catch (InterruptedException e) {
     }
 
@@ -393,8 +389,8 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.processMessage(sm);
 
     try {
-      // this happens after final check, ping timeout = 1000 ms
-      Thread.sleep(memberTimeout);
+      // this happens after final check, ping timeout = 100 ms
+      Thread.sleep(110l);
     } catch (InterruptedException e) {
     }
 

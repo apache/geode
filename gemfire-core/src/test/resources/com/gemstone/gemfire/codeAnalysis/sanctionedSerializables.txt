@@ -218,7 +218,6 @@ com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$1,false
 com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$2,false
 com/gemstone/gemfire/cache/snapshot/SnapshotOptions$SnapshotFormat,false
 com/gemstone/gemfire/cache/util/BoundedLinkedHashMap,true,-3419897166186852692,_maximumNumberOfEntries:int
-com/gemstone/gemfire/cache/util/Gateway$OrderPolicy,false
 com/gemstone/gemfire/cache/wan/GatewaySender$OrderPolicy,false
 com/gemstone/gemfire/compression/CompressionException,true,4118639654597191235
 com/gemstone/gemfire/compression/SnappyCompressor,true,496609875302446099
@@ -831,5 +830,9 @@ com/gemstone/gemfire/security/AuthenticationFailedException,true,-82028664722790
 com/gemstone/gemfire/security/AuthenticationRequiredException,true,4675976651103154919
 com/gemstone/gemfire/security/GemFireSecurityException,true,3814254578203076926
 com/gemstone/gemfire/security/NotAuthorizedException,true,419215768216387745,principal:java/security/Principal
+com/gemstone/java/util/concurrent/SynchronousQueueNoSpin,true,-3223113410248163686,qlock:java/util/concurrent/locks/ReentrantLock,waitingConsumers:com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$WaitQueue,waitingProducers:com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$WaitQueue
+com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$FifoWaitQueue,true,-3623113410248163686
+com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$LifoWaitQueue,true,-3633113410248163686
+com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$WaitQueue,true,423369940180943459
 com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessage,true,-665975803997290697,messagePattern:java/lang/String,stringArgs:java/lang/String[]
 com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessageFactory,true,1

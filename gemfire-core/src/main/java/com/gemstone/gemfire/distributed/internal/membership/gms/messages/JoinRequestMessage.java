@@ -13,7 +13,7 @@ import com.gemstone.gemfire.internal.Version;
 public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
   private Object credentials;
-  private int socketPort = -1;
+
   
   public JoinRequestMessage(InternalDistributedMember coord,
       InternalDistributedMember id, Object credentials) {
@@ -47,7 +47,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   
   @Override
   public String toString() {
-    return getShortClassName() + "(" + memberID + (credentials==null? ")" : "; with credentials)") + " socketPort:" + socketPort;
+    return getShortClassName() + "(" + memberID + (credentials==null? ")" : "; with credentials)");
   }
 
   @Override
@@ -59,7 +59,6 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(memberID, out);
     DataSerializer.writeObject(credentials, out);
-    DataSerializer.writePrimitiveInt(socketPort, out);
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
     out.writeBoolean(getMulticast());
@@ -69,16 +68,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = DataSerializer.readObject(in);
     credentials = DataSerializer.readObject(in);
-    socketPort = DataSerializer.readPrimitiveInt(in);
     setMulticast(in.readBoolean());
   }
 
-  public int getSocketPort() {
-    return socketPort;
-  }
-
-  public void setSocketPort(int socketPort) {
-    this.socketPort = socketPort;
-  }
-  
 }
