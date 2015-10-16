@@ -45,7 +45,10 @@ public interface LuceneQueryFactory {
    * 
    * @param fieldNames
    * @return itself
+   * 
+   * @deprecated TODO This feature is not yet implemented
    */
+  @Deprecated
   LuceneQueryFactory setProjectionFields(String... fieldNames);
   
   /**

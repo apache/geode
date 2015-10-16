@@ -73,8 +73,9 @@ public interface LuceneService {
    * @param regionPath region name
    * @param analyzerPerField analyzer per field map
    * @return LuceneIndex object
-   *
+   * @deprecated TODO This feature is not yet implemented
    */
+  @Deprecated
   public void createIndex(String indexName, String regionPath,  
       Map<String, Analyzer> analyzerPerField);
 
@@ -82,7 +83,9 @@ public interface LuceneService {
    * Destroy the lucene index
    * 
    * @param index index object
+   * @deprecated TODO This feature is not yet implemented
    */
+  @Deprecated
   public void destroyIndex(LuceneIndex index);
   
   /**
