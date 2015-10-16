@@ -2,6 +2,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionShortcut;
@@ -64,9 +65,11 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       // create PR fileRegion, but not to create its buckets for now
       final String fileRegionName = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath)+".files";
       fileRegion = cache.<String, File> getRegion(fileRegionName);
+      PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
       if (null == fileRegion) {
         fileRegion = cache.<String, File> createRegionFactory(regionShortCut)
             .setPartitionAttributes(new PartitionAttributesFactory<String, File>().setColocatedWith(regionPath)
+                .setTotalNumBuckets(partitionAttributes.getTotalNumBuckets())
                 .create())
                 .create(fileRegionName);
       }
@@ -77,6 +80,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       if (null == chunkRegion) {
         chunkRegion = cache.<ChunkKey, byte[]> createRegionFactory(regionShortCut)
             .setPartitionAttributes(new PartitionAttributesFactory<ChunkKey, byte[]>().setColocatedWith(fileRegionName)
+                .setTotalNumBuckets(partitionAttributes.getTotalNumBuckets())
                 .create())
                 .create(chunkRegionName);
       }
