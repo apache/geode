@@ -1,6 +1,5 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +10,8 @@ import org.junit.Assert;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
@@ -21,10 +22,10 @@ import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
+import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import dunit.Host;
@@ -34,7 +35,6 @@ import dunit.VM;
 @Category(DistributedTest.class)
 public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
   private static final String INDEX_NAME = "index";
-  private static final String REGION_NAME = "indexedRegion";
 
   private static final long serialVersionUID = 1L;
 
@@ -54,74 +54,33 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
   }
 
   public void testEnd2EndFunctionExecution() {
-    SerializableCallable createPartitionRegion = new SerializableCallable("createRegion") {
+    e2eTextSearchForRegionType(RegionShortcut.PARTITION);
+    e2eTextSearchForRegionType(RegionShortcut.PARTITION_PERSISTENT);
+    e2eTextSearchForRegionType(RegionShortcut.PARTITION_OVERFLOW);
+    e2eTextSearchForRegionType(RegionShortcut.PARTITION_PERSISTENT_OVERFLOW);
+  }
+
+  private void e2eTextSearchForRegionType(RegionShortcut type) {
+    final String regionName = type.toString();
+    createPartitionRegionAndIndex(server1, regionName, type);
+    putDataInRegion(server1, regionName);
+    createPartitionRegionAndIndex(server2, regionName, type);
+    // Make sure we can search from both members
+    executeTextSearch(server1, regionName);
+    executeTextSearch(server2, regionName);
+
+    rebalanceRegion(server1);
+    // Make sure the search still works
+    executeTextSearch(server1, regionName);
+    executeTextSearch(server2, regionName);
+    destroyRegion(server2, regionName);
+  }
+
+  private void rebalanceRegion(VM vm) {
+    // Do a rebalance
+    vm.invoke(new SerializableCallable<Object>() {
       private static final long serialVersionUID = 1L;
 
-      public Object call() throws Exception {
-        final Cache cache = getCache();
-        assertNotNull(cache);
-        LuceneService service = LuceneServiceProvider.get(cache);
-        service.createIndex(INDEX_NAME, REGION_NAME, "text");
-        RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
-        Region<Object, Object> region = regionFactory.
-            create(REGION_NAME);
-        return null;
-      }
-    };
-        
-    server1.invoke(createPartitionRegion);
-    
-
-    SerializableCallable createSomeData = new SerializableCallable("createRegion") {
-      private static final long serialVersionUID = 1L;
-
-      public Object call() throws Exception {
-        final Cache cache = getCache();
-        Region<Object, Object> region = cache.getRegion(REGION_NAME);
-        
-        putInRegion(region, 1, new TestObject("hello world"));
-        putInRegion(region, 113, new TestObject("hi world"));
-        putInRegion(region, 2, new TestObject("goodbye world"));
-        
-        return null;
-      }
-    };
-
-    server1.invoke(createSomeData);
-    server2.invoke(createPartitionRegion);
-
-    SerializableCallable executeSearch = new SerializableCallable("executeSearch") {
-      private static final long serialVersionUID = 1L;
-
-      public Object call() throws Exception {
-        Cache cache = getCache();
-        assertNotNull(cache);
-        Region<Object, Object> region = cache.getRegion(REGION_NAME);
-        Assert.assertNotNull(region);
-
-        LuceneService service = LuceneServiceProvider.get(cache);
-        LuceneQuery<Integer, TestObject> query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world");
-        LuceneQueryResults<Integer, TestObject> results = query.search();
-        assertEquals(3, results.size());
-        List<LuceneResultStruct<Integer, TestObject>> page = results.getNextPage();
-        
-        Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
-        for(LuceneResultStruct<Integer, TestObject> row : page) {
-          data.put(row.getKey(), row.getValue());
-        }
-        
-        assertEquals(data, region);
-        
-        return null;
-      }
-    };
-
-    //Make sure we can search from both members
-    server1.invoke(executeSearch);
-    server2.invoke(executeSearch);
-
-    //Do a rebalance
-    server1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws CancellationException, InterruptedException {
         RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
@@ -130,25 +89,105 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
         return null;
       }
     });
-    
-    //Make sure the search still works
-    server1.invoke(executeSearch);
-    server2.invoke(executeSearch);
   }
-  
-  private static void putInRegion(Region<Object, Object> region, Object key, Object value) throws BucketNotFoundException, IOException {
-    region.put(key, value);
-    
-    //TODO - the async event queue hasn't been hooked up, so we'll fake out
-    //writing the entry to the repository.
-//    LuceneService service = LuceneServiceProvider.get(region.getCache());
-//    InternalLuceneIndex index = (InternalLuceneIndex) service.getIndex(INDEX_NAME, REGION_NAME);
-//    IndexRepository repository1 = index.getRepositoryManager().getRepository(region, 1, null);
-//    repository1.create(key, value);
-//    repository1.commit();
+
+  private void executeTextSearch(VM vm, final String regionName) {
+    SerializableCallable<Object> executeSearch = new SerializableCallable<Object>("executeSearch") {
+      private static final long serialVersionUID = 1L;
+
+      public Object call() throws Exception {
+        Cache cache = getCache();
+        assertNotNull(cache);
+        Region<Object, Object> region = cache.getRegion(regionName);
+        Assert.assertNotNull(region);
+
+        LuceneService service = LuceneServiceProvider.get(cache);
+        LuceneQuery<Integer, TestObject> query;
+        query = service.createLuceneQueryFactory().create(INDEX_NAME, regionName, "text:world");
+        LuceneQueryResults<Integer, TestObject> results = query.search();
+        assertEquals(3, results.size());
+        List<LuceneResultStruct<Integer, TestObject>> page = results.getNextPage();
+
+        Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
+        for (LuceneResultStruct<Integer, TestObject> row : page) {
+          data.put(row.getKey(), row.getValue());
+        }
+
+        assertEquals(data, region);
+        return null;
+      }
+    };
+
+    vm.invoke(executeSearch);
+  }
+
+  private void putDataInRegion(VM vm, final String regionName) {
+    SerializableCallable<Object> createSomeData = new SerializableCallable<Object>("putDataInRegion") {
+      private static final long serialVersionUID = 1L;
+
+      public Object call() throws Exception {
+        final Cache cache = getCache();
+        Region<Object, Object> region = cache.getRegion(regionName);
+        assertNotNull(region);
+        region.put(1, new TestObject("hello world"));
+        region.put(113, new TestObject("hi world"));
+        region.put(2, new TestObject("goodbye world"));
+
+        return null;
+      }
+    };
+
+    vm.invoke(createSomeData);
+  }
+
+  private void createPartitionRegionAndIndex(VM vm, final String regionName, final RegionShortcut type) {
+    SerializableCallable<Object> createPartitionRegion = new SerializableCallable<Object>("createRegionAndIndex") {
+      private static final long serialVersionUID = 1L;
+
+      public Object call() throws Exception {
+        final Cache cache = getCache();
+        assertNotNull(cache);
+        LuceneService service = LuceneServiceProvider.get(cache);
+        service.createIndex(INDEX_NAME, regionName, "text");
+        RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(type);
+        if (regionName.contains("OVERFLOW")) {
+          System.out.println("yello");
+          EvictionAttributesImpl evicAttr = new EvictionAttributesImpl().setAction(EvictionAction.OVERFLOW_TO_DISK);
+          evicAttr.setAlgorithm(EvictionAlgorithm.LRU_ENTRY).setMaximum(1);
+          regionFactory.setEvictionAttributes(evicAttr);
+        }
+        regionFactory.create(regionName);
+        return null;
+      }
+    };
+    vm.invoke(createPartitionRegion);
+  }
+
+  private void destroyRegion(VM vm, final String regionName) {
+    SerializableCallable<Object> createPartitionRegion = new SerializableCallable<Object>("destroyRegion") {
+      private static final long serialVersionUID = 1L;
+
+      public Object call() throws Exception {
+        final Cache cache = getCache();
+        assertNotNull(cache);
+        String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, regionName);
+        PartitionedRegion chunkRegion = (PartitionedRegion) cache.getRegion(aeqId + ".chunks");
+        assertNotNull(chunkRegion);
+        chunkRegion.destroyRegion();
+        PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
+        assertNotNull(fileRegion);
+        fileRegion.destroyRegion();
+        Region<Object, Object> region = cache.getRegion(regionName);
+        assertNotNull(region);
+        region.destroyRegion();
+        return null;
+      }
+    };
+    vm.invoke(createPartitionRegion);
   }
 
   private static class TestObject implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String text;
 
     public TestObject(String text) {
@@ -180,5 +219,4 @@ public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {
       return true;
     }
   }
-
 }
