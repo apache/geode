@@ -36,9 +36,9 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   @Override
   public LuceneQueryResults<K, V> search() {
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(query, indexName,
-        new TopEntriesCollectorManager());
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
+    TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
+    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(query, indexName, manager, limit);
+    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
 
     ResultCollector<TopEntriesCollector, TopEntries> rc = (ResultCollector<TopEntriesCollector, TopEntries>) FunctionService.onRegion(region)
         .withArgs(context)
@@ -65,5 +65,4 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   public String[] getProjectedFieldNames() {
     return this.projectedFieldNames;
   }
-  
 }

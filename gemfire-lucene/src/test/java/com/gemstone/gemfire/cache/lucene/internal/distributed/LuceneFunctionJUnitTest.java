@@ -1,6 +1,6 @@
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,11 +21,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
@@ -36,7 +34,6 @@ import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
-import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -63,7 +60,7 @@ public class LuceneFunctionJUnitTest {
   InternalLuceneIndex mockIndex;
 
   ArrayList<IndexRepository> repos;
-  LuceneFunctionContext searchArgs;
+  LuceneFunctionContext<IndexResultCollector> searchArgs;
   LuceneQueryProvider queryProvider;
   Query query;
 
@@ -381,7 +378,6 @@ public class LuceneFunctionJUnitTest {
     
     searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");
     
-    final ExtensionPoint mockExtensionPoint = mocker.mock(ExtensionPoint.class);
     mocker.checking(new Expectations() {{
       allowing(mockRegion).getCache();
       will(returnValue(mockCache));
@@ -395,7 +391,6 @@ public class LuceneFunctionJUnitTest {
       will(returnValue(mockRepoManager));
       allowing(mockIndex).getFieldNames();
       will(returnValue(new String[] {"gemfire"}));
-      
     }});
     
     query = queryProvider.getQuery(mockIndex);

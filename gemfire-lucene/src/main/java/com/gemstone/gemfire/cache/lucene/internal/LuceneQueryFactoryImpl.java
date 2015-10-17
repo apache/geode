@@ -1,10 +1,5 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.lucene.queryparser.classic.ParseException;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
@@ -34,13 +29,12 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   }
 
   @Override
-  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName,
-      String queryString) {
+  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString) {
     return create(indexName, regionName, new StringQueryProvider(queryString));
   }
   
   public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, LuceneQueryProvider provider) {
-    Region region = cache.getRegion(regionName);
+    Region<K, V> region = cache.getRegion(regionName);
     LuceneQueryImpl<K, V> luceneQuery = new LuceneQueryImpl<K, V>(indexName, region, provider, projectionFields, limit, pageSize);
     return luceneQuery;
   }

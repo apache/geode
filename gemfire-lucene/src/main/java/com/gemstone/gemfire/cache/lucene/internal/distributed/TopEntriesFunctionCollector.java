@@ -43,7 +43,7 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
   private TopEntriesCollector mergedResults;
 
   public TopEntriesFunctionCollector() {
-    this(null, null);
+    this(null);
   }
 
   public TopEntriesFunctionCollector(LuceneFunctionContext<TopEntriesCollector> context) {
