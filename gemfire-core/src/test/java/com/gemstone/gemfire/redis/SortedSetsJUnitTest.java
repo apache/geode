@@ -263,8 +263,8 @@ public class SortedSetsJUnitTest {
       }
       jedis.zadd(key, scoreMembers);
       Collections.sort(expected, new EntryCmp());
-      for (int i = expected.size(); i <= 0; i--) {
-        Entry<String, Double> remEntry = expected.remove(i);
+      for (int i = expected.size(); i > 0; i--) {
+        Entry<String, Double> remEntry = expected.remove(i-1);
         String rem = remEntry.getKey();
         Double val = remEntry.getValue();
         assertEquals(val, jedis.zscore(key, rem));
