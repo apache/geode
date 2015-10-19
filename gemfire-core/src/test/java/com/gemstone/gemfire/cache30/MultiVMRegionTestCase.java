@@ -4059,13 +4059,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       
       vm0.invoke(new CacheSerializableRunnable("Check local destroy") {
           public void run2() throws CacheException {
-            Region region =
+            final Region region =
               getRootRegion().getSubregion(name);
             // make sure we created the entry
             {
               CountingDistCacheListener l = (CountingDistCacheListener)
                 region.getAttributes().getCacheListeners()[0];
-              int retry = 100;
+              int retry = 1000;
               while (retry-- > 0) {
                 try {
                   l.assertCount(1, 0, 0, 0);
@@ -4081,11 +4081,19 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
 
             { // now make sure it expires
-              // this should happen really fast since timeout is 10 ms
-              int retry = 10;
-              while (retry-- > 0 && region.getEntry(key) != null) {
-                pause(timeout);
-              }
+              // this should happen really fast since timeout is 10 ms.
+              // But it may take longer in some cases because of thread
+              // scheduling delays and machine load (see GEODE-410).
+              // The previous code would fail after 100ms; now we wait 3000ms.
+              WaitCriterion waitForUpdate = new WaitCriterion() {
+                public boolean done() {
+                  return region.getEntry(key) == null;
+                }
+                public String description() {
+                  return "Entry for key " + key + " never expired (since it still exists)";
+                }
+              };
+              DistributedTestCase.waitForCriterion(waitForUpdate, 3000, 1, true);
             }
             assertNull(region.getEntry(key));
           }
