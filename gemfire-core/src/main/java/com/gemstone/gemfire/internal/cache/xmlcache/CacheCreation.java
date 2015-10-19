@@ -1378,11 +1378,6 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
   }
   
   @Override
-  public HDFSStoreFactory createHDFSStoreFactory() {
-    // TODO Auto-generated method stub
-    return new HDFSStoreFactoryImpl(this);
-  }
-  @Override
   public HDFSStore findHDFSStore(String storeName) {
     return (HDFSStore)this.hdfsStores.get(storeName);
   }

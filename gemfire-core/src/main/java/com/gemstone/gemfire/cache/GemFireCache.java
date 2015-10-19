@@ -267,12 +267,4 @@ public interface GemFireCache extends RegionService {
    * @param name the name of the HDFSStore to find.
    */
   public HDFSStore findHDFSStore(String name);
-
-   /**
-	* Creates a {@link HDFSStoreFactory} for creating a {@link HDFSStore}
-	* 
-	* @return the HDFS store factory
-	*/
-  public HDFSStoreFactory createHDFSStoreFactory();
-  
 }

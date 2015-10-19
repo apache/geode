@@ -5309,12 +5309,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
   }
   
-  @Override
-  public HDFSStoreFactory createHDFSStoreFactory() {
-    // TODO Auto-generated method stub
-    return new HDFSStoreFactoryImpl(this);
-  }
-  
   public HDFSStoreFactory createHDFSStoreFactory(HDFSStoreCreation creation) {
     return new HDFSStoreFactoryImpl(this, creation);
   }
