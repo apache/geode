@@ -102,7 +102,6 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
     
   }
   
-  
   public void testNetSearchNormals() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -125,7 +124,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
       assertEquals(null, get(vm3, "a"));
 
       //Make sure we only processed one message
-      assertEquals(vm3Count + 3, getReceivedMessages(vm3));
+      waitForReceivedMessages(vm3, vm3Count + 3);
 
       //Make sure the normal guys each saw 1 query message.
       assertEquals(vm0Count + vm1Count + vm2Count + 3, getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
@@ -144,17 +143,9 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
       assertEquals("b", get(vm3, "a"));
 
       //Make sure we only processed one message
-      assertEquals(vm2Count + 1, getReceivedMessages(vm2));
+      waitForReceivedMessages(vm2, vm2Count + 1);
 
-      //Make sure we only processed one message
-      DistributedTestCase.waitForCriterion(new WaitCriterion() {
-        public boolean done() {
-          return getReceivedMessages(vm3) == vm3Count + 3;
-        }
-        public String description() {
-          return "expected " + (vm3Count+3) + " but was " + getReceivedMessages(vm3);
-        }
-      }, 2000, 100, true);
+      waitForReceivedMessages(vm3, vm3Count + 3);
 
       //Make sure the normal guys each saw 1 query message.
       assertEquals(vm0Count + vm1Count + vm2Count + 3, getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
@@ -351,6 +342,21 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
         return region.get(key);
       }
     });
+  }
+  
+  private void waitForReceivedMessages(VM vm, long expected) {
+    waitForCriterion(new WaitCriterion() {
+      
+      @Override
+      public boolean done() {
+        return getReceivedMessages(vm) == expected;
+      }
+      
+      @Override
+      public String description() {
+        return "Expected " + expected + " but got " + getReceivedMessages(vm);
+      }
+    }, 2000, 100, true);
   }
   
   private long getReceivedMessages(VM vm) {
