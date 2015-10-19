@@ -144,7 +144,7 @@ class PulseBaseTests extends PulseTests {
 	public void validateServerGroupGridData() {
 		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='memberListSG']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
-		System.out.println(rowsCount);
+		System.out.println("validateServerGroupGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
@@ -189,7 +189,7 @@ class PulseBaseTests extends PulseTests {
 	public void validateRedundancyZonesGridData() {
 		List<WebElement> rzGridRows = driver.findElements(By.xpath("//table[@id='memberListRZ']/tbody/tr"));
 		int rowsCount = rzGridRows.size();
-		System.out.println(rowsCount);
+		System.out.println("validateRedundancyZoneGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
@@ -237,7 +237,7 @@ class PulseBaseTests extends PulseTests {
 	public void validateTopologyGridData() {
 		List<WebElement> rzGridRows = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 		int rowsCount = rzGridRows.size();
-		System.out.println(rowsCount);
+		System.out.println("validateTopologyGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
@@ -272,7 +272,7 @@ class PulseBaseTests extends PulseTests {
 	public void validateDataPrespectiveGridData() {
 		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='regionsList']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
-		System.out.println(rowsCount);
+		System.out.println("validateDataPerspectiveGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
@@ -312,7 +312,7 @@ class PulseBaseTests extends PulseTests {
 	public void validateRegionDetailsGridData() {
 		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
-		System.out.println(rowsCount);
+		System.out.println("validateRegionDetailsGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
@@ -446,8 +446,8 @@ class PulseBaseTests extends PulseTests {
 
 	public void verifyElementAttributeById(String id, String attribute, String value) {
 		String actualValue = findElementById(id).getAttribute(attribute);
-		System.out.println(value);
-		System.out.println(actualValue);
+		System.out.println("verifyElementAttributeById: Value = " + value);
+		System.out.println("verifyElementAttributeById: Actual Value = " + actualValue);
 		Assert.assertTrue(actualValue.equals(value) || actualValue.contains(value));
 	}
 
@@ -457,7 +457,7 @@ class PulseBaseTests extends PulseTests {
 		Actions action = new Actions(driver);
 		WebElement we = driver.findElement(By.id(id));
 		action.moveToElement(we).release().perform();
-		System.out.println("testing");
+		System.out.println("mouseReleaseById: testing...");
 	}
 	public void mouseClickAndHoldOverElementById(String id) {
 		verifyElementPresentById(id);
@@ -519,15 +519,15 @@ class PulseBaseTests extends PulseTests {
 		}	
 		for(Entry<Long, String> entry : memberMap.entrySet()) {		
 			//here matching painting style to validation that the members are painted according to their cpu usage			
-			String refMemberCPUUsage = null;
+			String refMemberHeapUsage = null;
 			if(entry.getValue().equalsIgnoreCase("M1")){
-				refMemberCPUUsage = PulseTestData.Topology.heapUsagePaintStyleM1;
+				refMemberHeapUsage = PulseTestData.Topology.heapUsagePaintStyleM1;
 			}else if(entry.getValue().equalsIgnoreCase("M2")){
-				refMemberCPUUsage = PulseTestData.Topology.heapUsagePaintStyleM2;
+				refMemberHeapUsage = PulseTestData.Topology.heapUsagePaintStyleM2;
 			}else{
-				refMemberCPUUsage = PulseTestData.Topology.heapUsagePaintStyleM3;
+				refMemberHeapUsage = PulseTestData.Topology.heapUsagePaintStyleM3;
 			}			
-			Assert.assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));			
+			Assert.assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberHeapUsage));
 	    } 			
 	}		
 	
@@ -553,7 +553,7 @@ class PulseBaseTests extends PulseTests {
 	}	
 	
 	
-	public void assertMemeberSortingBySgHeapUsage(){		
+	public void assertMemberSortingBySgHeapUsage(){
 		String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");		
 		HashMap<String, HashMap<String, Member>> sgMap = new HashMap<String, HashMap<String, Member>>();
 		for (String member : memberNames) {
@@ -594,7 +594,7 @@ class PulseBaseTests extends PulseTests {
 	
 	
 	
-	public void assertMemeberSortingBySgCpuUsage(){		
+	public void assertMemberSortingBySgCpuUsage(){
 		String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");		
 		HashMap<String, HashMap<String, Member>> sgMap = new HashMap<String, HashMap<String, Member>>();
 		for (String member : memberNames) {
@@ -633,7 +633,7 @@ class PulseBaseTests extends PulseTests {
 	    } 	
 	}
 	
-	public void assertMemeberSortingByRzHeapUsage(){		
+	public void assertMemberSortingByRzHeapUsage(){
 		String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");			
 		HashMap<String, HashMap<String, Member>> rzMap = new HashMap<String, HashMap<String, Member>>();
 		for (String member : memberNames) {
@@ -656,15 +656,15 @@ class PulseBaseTests extends PulseTests {
 			
 		for(Map.Entry<Float,String> entry : memberMap.entrySet()) {		
 			//here matching painting style to validation that the members are painted according to their cpu usage			
-			String refMemberCPUUsage = null;
+			String refMemberHeapUsage = null;
 			if(entry.getValue().equalsIgnoreCase("M1")){
-				refMemberCPUUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ1RZ2M1;
+				refMemberHeapUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ1RZ2M1;
 			}else if(entry.getValue().equalsIgnoreCase("M2")){
-				refMemberCPUUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ1RZ2M2;
+				refMemberHeapUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ1RZ2M2;
 			}else{
-				refMemberCPUUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ3M3;
+				refMemberHeapUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ3M3;
 			}			
-			Assert.assertTrue(findElementById("RZ1 RZ2(!)"+entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));			
+			Assert.assertTrue(findElementById("RZ1 RZ2(!)"+entry.getValue()).getAttribute("style").contains(refMemberHeapUsage));
 	    } 	
 	}
 	
@@ -857,7 +857,7 @@ public class PulseAutomatedTests extends PulseBaseTests {
 			verifyTextPresrntByXpath(PulseTestLocators.TopologyView.hostNameTTXpath, getPropertyValue("member.M" + i + ".host"));
 			verifyTextPresrntByXpath(PulseTestLocators.TopologyView.cpuUsageTTXpath, "0%");
 			verifyTextPresrntByXpath(PulseTestLocators.TopologyView.memoryUsageTTXpath, getPropertyValue("member.M" + i
-					+ ".currentHeapSize"));
+					+ ".UsedMemory"));
 			verifyTextPresrntByXpath(PulseTestLocators.TopologyView.loadAvgTTXpath, getPropertyValue("member.M" + i
 					+ ".loadAverage"));
 			verifyTextPresrntByXpath(PulseTestLocators.TopologyView.soketsTTXpath, getPropertyValue("member.M" + i
@@ -1279,19 +1279,19 @@ public class PulseAutomatedTests extends PulseBaseTests {
 	}	
 
 	@Test
-	public void testSortingUsingCpuUsageOnServerGroupView(){
-		navigateToServerGroupTreeView();
-		clickElementUsingId(PulseTestLocators.ServerGroups.hotSpotId);
-		clickElementUsingXpath(PulseTestLocators.ServerGroups.heapUsageXpath);
-		assertMemeberSortingBySgHeapUsage();
-	}
-	
-	@Test
 	public void testSortingUsingHeapUsageOnServerGroupView(){
 		navigateToServerGroupTreeView();
 		clickElementUsingId(PulseTestLocators.ServerGroups.hotSpotId);
+		clickElementUsingXpath(PulseTestLocators.ServerGroups.heapUsageXpath);
+		assertMemberSortingBySgHeapUsage();
+	}
+	
+	@Test
+	public void testSortingUsingCpuUsageOnServerGroupView(){
+		navigateToServerGroupTreeView();
+		clickElementUsingId(PulseTestLocators.ServerGroups.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.ServerGroups.cpuUsageXpath);
-		assertMemeberSortingBySgCpuUsage();
+		assertMemberSortingBySgCpuUsage();
 	}
 	
 	//--- Redundancy Zone view
@@ -1336,7 +1336,7 @@ public class PulseAutomatedTests extends PulseBaseTests {
 		navigateToRedundancyZonesTreeView();
 		clickElementUsingId(PulseTestLocators.RedundancyZone.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.RedundancyZone.heapUsageXpath);
-		assertMemeberSortingByRzHeapUsage();
+		assertMemberSortingByRzHeapUsage();
 	}
 	
 	@Test
