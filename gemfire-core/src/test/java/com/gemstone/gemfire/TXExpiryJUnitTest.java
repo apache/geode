@@ -185,7 +185,7 @@ public class TXExpiryJUnitTest {
       }
       assertTrue(!exprReg.containsKey("key0"));
       // key1 is the canary for the rest of the entries
-      assertTrue(!exprReg.containsKey("key1"));
+      waitForEntryToBeDestroyed(exprReg, "key1");
 
       // rollback and failed commit test, ensure expiration continues
       for(int j=0; j<2; j++) {
@@ -222,12 +222,24 @@ public class TXExpiryJUnitTest {
         }
         assertTrue(!exprReg.containsKey("key0"));
         // key1 is the canary for the rest of the entries
-        assertTrue(!exprReg.containsKey("key1"));
+        waitForEntryToBeDestroyed(exprReg, "key1");
       }
     } finally {
       mutator.removeCacheListener(cl);
       ExpiryTask.permitExpiration();
     }
+  }
+  
+  private void waitForEntryToBeDestroyed(final Region r, final String key) {
+    WaitCriterion waitForExpire = new WaitCriterion() {
+      public boolean done() {
+        return r.getEntry(key) == null;
+      }
+      public String description() {
+        return "never saw entry destroy of " + key;
+      }
+    };
+    DistributedTestCase.waitForCriterion(waitForExpire, 3000, 10, true);
   }
   
   private void waitForEntryExpiration(LocalRegion lr, String key) {
