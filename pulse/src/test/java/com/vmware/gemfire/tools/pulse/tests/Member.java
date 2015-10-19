@@ -78,12 +78,14 @@ public class Member extends JMXBaseBean implements MemberMBean {
 
   @Override
   public long getCurrentHeapSize() {
-    return getLong("currentHeapSize");
+//    return getLong("currentHeapSize");
+    return getLong("UsedMemory");
   }
 
   @Override
   public long getMaximumHeapSize() {
-    return getLong("maximumHeapSize");
+//    return getLong("maximumHeapSize");
+    return getLong("MaxMemory");
   }
 
   @Override

@@ -426,7 +426,7 @@ public class PulseTests {
           .findElement(
               By.xpath("//table[@id='memberList']/tbody/tr[" + (i + 1) + "]/td[4]")).getText());
       Float gridHeapUsagestring = Float.parseFloat(JMXProperties.getInstance()
-          .getProperty("member.M" + i + ".currentHeapSize"));
+          .getProperty("member.M" + i + ".UsedMemory"));
      Assert.assertEquals(gridHeapUsagestring, HeapUsage);
     }
   }
@@ -533,7 +533,7 @@ public class PulseTests {
         .format(memberOffHeapUsedSize));
     Assert.assertEquals(memberOffHeapUsedSize, OffHeapUsedSize);
   }
-
+   @Ignore("For Gemfire XD")
    @Test  // conflict between UI and properties file
   public void testMemberClients() {  
     String Clients = driver.findElement(By.id(MEMBER_VIEW_CLIENTS_ID))
@@ -858,7 +858,8 @@ public class PulseTests {
 	  Assert.assertEquals(databrowserColocatedRegion3, DataBrowserColocatedRegion3);
 	  
   }
-  
+
+  @Ignore("Bad Test") // clusterDetails element not found on Data Browser page. No assertions in test
   @Test
   public void testDataBrowserQueryValidation() throws IOException, InterruptedException {
 	  loadDataBrowserpage();
@@ -915,7 +916,7 @@ public class PulseTests {
 				  .getText();
 		  String MemoryUsageM1 = MemoryUsageM1temp.replaceAll("MB", "");
 		  String memoryUsageM1 = JMXProperties.getInstance().getProperty(
-				  "member.M" + (i) + ".currentHeapSize");
+				  "member.M" + (i) + ".UsedMemory");
 		  Assert.assertEquals(memoryUsageM1, MemoryUsageM1);
 		  
 		  String LoadAvgM1 = driver.findElement(By.xpath("//div[@id='_tooltip']/div/div/div[2]/div[" + (j + 2) + "]/div[2]/div"))

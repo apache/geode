@@ -9,10 +9,7 @@ sourceSets {// Force new dependencies only - do no inherit from parent project
     }
   }
   test {
-    output.resourcesDir = output.classesDir
-    resources {
-      include('**/pulse.properties')
-    }
+    runtimeClasspath += fileTree("$projectDir/src/main/resources")
   }
 }
 
@@ -38,13 +35,19 @@ dependencies {
   providedCompile 'org.apache.httpcomponents:httpmime:4.3.3'
 
   provided 'org.mortbay.jetty:servlet-api:2.5-20081211'
+  provided 'com.google.guava:guava:15.0'
 
   testCompile 'junit:junit:4.10'
   testCompile 'org.apache.tomcat.embed:tomcat-embed-core:7.0.30'
   testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.30'
   testCompile 'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.30'
-  testCompile 'org.seleniumhq.selenium:selenium-server-standalone:2.41.0'
-//  testCompile 'org.seleniumhq.selenium:selenium-server:2.47.1'
+  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:2.47.2'
+  testCompile 'org.seleniumhq.selenium:selenium-api:2.47.2'
+  testCompile 'org.seleniumhq.selenium:selenium-remote-driver:2.47.2'
+  testCompile 'org.seleniumhq.selenium:selenium-support:2.47.2'
+
+  testRuntime 'com.google.code.gson:gson:2.3.1'
+  testRuntime 'org.apache.commons:commons-exec:1.3'
 
   // Required only for creating test categories
 //  testPulseCompile project(path: ':gemfire-junit', configuration: 'testOutput')
@@ -80,12 +83,13 @@ war {
 
 test {
 
-  include '**/junit/*.class'
-  exclude '**/AllTests.class'
-  exclude '**/Base*.class'
+// Includes all tests in PulseTests, PulseBaseTests & PulseAutomatedTests
+  include '**/PulseAutomatedTests.class'
 
   systemProperty 'pulse.propfile', "$projectDir/src/test/resources/test.properties"
   systemProperty 'pulse.war', "$buildDir/libs/$pulseWarFile"
+//  systemProperty 'pulse.propMockDataUpdaterClass', "com.vmware.gemfire.tools.pulse.testbed.PropMockDataUpdater"
+//  systemProperty 'pulse.updater', "MOCK"
 
   useJUnit {
     // TODO: Classify and add categories to different Pulse tests
@@ -94,35 +98,6 @@ test {
 //    excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
   }
 
-  // show standard out and standard error of the test JVM(s) on the console
-  testLogging.showStandardStreams = true
-
-}
-
-integrationTest {
-
-// Run tests individually
-//  include '**/PulseUITest.class'
-//  include '**/PulseTests.class'
-//  include '**/PulseAutomatedTests.class'
-
-  include '**/*Tests.class'
-  include '**/*Test.class'
-  exclude '**/AllTests.class'
-  exclude '**/junit/*.class'
-  exclude '**/Base*.class'
-
-  systemProperty 'pulse.propfile', "$projectDir/src/test/resources/test.properties"
-  systemProperty 'pulse.war', "$buildDir/libs/$pulseWarFile"
-
-  useJUnit() {
-
-    // TODO: Classify and add categories to different Pulse tests
-//    includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-//    excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-
-  }
   // show standard out and standard error of the test JVM(s) on the console
   testLogging.showStandardStreams = true
 

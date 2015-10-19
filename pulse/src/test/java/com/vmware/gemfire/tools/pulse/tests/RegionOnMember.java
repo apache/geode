@@ -58,12 +58,12 @@ public class RegionOnMember extends JMXBaseBean implements RegionOnMemberMBean {
 
   @Override
   public float getDiskGetsRate(){
-    return getFloat("diskGetsRate");
+    return getFloat("diskReadsRate");
   }
 
   @Override
   public float getDiskPutsRate(){
-    return getFloat("diskPutsRate");
+    return getFloat("diskWritesRate");
   }
 
   @Override

@@ -62,6 +62,12 @@ public class ServerObject extends NotificationBroadcasterSupport implements
   }
 
   @Override
+  public String[] listServers() {
+    return JMXProperties.getInstance()
+            .getProperty(getKey("listServers"), "").split(" ");
+  }
+
+  @Override
   public TabularData viewRemoteClusterStatus() {
     wanInfo.clear();
     String[] wan = JMXProperties.getInstance()

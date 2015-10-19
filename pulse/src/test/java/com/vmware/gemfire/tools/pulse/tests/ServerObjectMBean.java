@@ -62,5 +62,7 @@ public interface ServerObjectMBean {
 
   public String[] listCacheServers();
 
+  public String[] listServers();
+
   public String queryData(String p0, String p1, int p2);
 }
