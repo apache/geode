@@ -255,7 +255,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return dr.getMemoryThresholdReachedMembers().size() == 0;
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });
@@ -618,7 +618,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return keyFoundOnSickMember && caughtException;
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });
@@ -671,7 +671,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return done;
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });
@@ -1543,7 +1543,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             throw new IllegalStateException("Unknown memory state");
         }
         if (useWaitCriterion) {
-          waitForCriterion(wc, 5000, 100, true);
+          waitForCriterion(wc, 30000, 10, true);
         }
         return null;
       }
@@ -1563,7 +1563,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return numberOfProfiles == ra.adviseGeneric().size();
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });
