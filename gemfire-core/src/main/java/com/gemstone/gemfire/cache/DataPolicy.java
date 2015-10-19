@@ -88,18 +88,6 @@ public class DataPolicy implements java.io.Serializable {
    */
   public static final DataPolicy PERSISTENT_PARTITION = new DataPolicy(6, "PERSISTENT_PARTITION");
   
-  /**
-   * In addition to <code>PARTITION</code> also causes data to be stored to
-   * HDFS. The region initialization may use the data stored on HDFS.
-   */
-  public static final DataPolicy HDFS_PARTITION = new DataPolicy(7, "HDFS_PARTITION");
-  
-  /**
-   * In addition to <code>HDFS_PARTITION</code> also causes data to be stored on local
-   * disk. The data can be evicted from the local disk and still be read
-   * from HDFS.
-   */
-  public static final DataPolicy HDFS_PERSISTENT_PARTITION = new DataPolicy(10, "HDFS_PERSISTENT_PARTITION");
    /**
    * The data policy used by default; it is {@link #NORMAL}.
    */
@@ -169,7 +157,7 @@ public class DataPolicy implements java.io.Serializable {
    * @since 6.5
    */
   public boolean withPersistence() {
-    return this == PERSISTENT_PARTITION || this == PERSISTENT_REPLICATE || this == HDFS_PERSISTENT_PARTITION;
+    return this == PERSISTENT_PARTITION || this == PERSISTENT_REPLICATE;
   }
 
   /** Return whether this policy does partitioning.
@@ -179,7 +167,7 @@ public class DataPolicy implements java.io.Serializable {
    * @since 6.5
    */
   public boolean withPartitioning() {
-    return this == PARTITION || this == PERSISTENT_PARTITION || this == HDFS_PARTITION || this==HDFS_PERSISTENT_PARTITION;
+    return this == PARTITION || this == PERSISTENT_PARTITION;
   }
 
   /** Return whether this policy does preloaded.
@@ -254,7 +242,8 @@ public class DataPolicy implements java.io.Serializable {
    * @see #HDFS_PARTITION
    */
   public boolean withHDFS() {
-	  return this == HDFS_PARTITION || this == HDFS_PERSISTENT_PARTITION;
+//    return this == HDFS_PARTITION || this == HDFS_PERSISTENT_PARTITION;
+	  return false;
   }
   
   

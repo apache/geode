@@ -115,8 +115,6 @@ public class PartitionedRegionHelper
     Set policies = new HashSet();
     policies.add(DEFAULT_DATA_POLICY);
     policies.add(DataPolicy.PERSISTENT_PARTITION);
-    policies.add(DataPolicy.HDFS_PARTITION);
-    policies.add(DataPolicy.HDFS_PERSISTENT_PARTITION);
 //    policies.add(DataPolicy.NORMAL);
     ALLOWED_DATA_POLICIES = Collections.unmodifiableSet(policies);
   }

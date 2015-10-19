@@ -1261,12 +1261,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       else if (dp.equals(PERSISTENT_PARTITION_DP)) {
         attrs.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
       }
-      else if (dp.equals(HDFS_PARTITION_DP)) {
-        attrs.setDataPolicy(DataPolicy.HDFS_PARTITION);
-      }
-      else if (dp.equals(HDFS_PERSISTENT_PARTITION_DP)) {
-        attrs.setDataPolicy(DataPolicy.HDFS_PERSISTENT_PARTITION);
-      }
       else {
         throw new InternalGemFireException(LocalizedStrings.CacheXmlParser_UNKNOWN_DATA_POLICY_0.toLocalizedString(dp));
       }

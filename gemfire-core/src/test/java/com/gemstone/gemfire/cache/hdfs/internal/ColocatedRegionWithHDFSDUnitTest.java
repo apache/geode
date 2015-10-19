@@ -57,7 +57,7 @@ public class ColocatedRegionWithHDFSDUnitTest extends RegionWithHDFSTestBase {
         hsf.create(uniqueName);
 
         AttributesFactory af = new AttributesFactory();
-        af.setDataPolicy(DataPolicy.HDFS_PARTITION);
+        af.setDataPolicy(DataPolicy.PARTITION);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setTotalNumBuckets(totalnumOfBuckets);
         paf.setRedundantCopies(1);
