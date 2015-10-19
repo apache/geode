@@ -27,7 +27,7 @@ public abstract class ProcessStreamReaderTestCase {
   protected static final int PROCESS_TIME_TO_LIVE = 3*500;
   
   /** Timeout to wait for a forked process to start */
-  protected static final int WAIT_FOR_PROCESS_TO_START_TIMEOUT = 30*1000;
+  protected static final int WAIT_FOR_PROCESS_TO_START_TIMEOUT = 60*1000;
   
   /** Timeout to wait for a running process to die -- this keeps timing out so I'm increasing it very large */
   protected static final int WAIT_FOR_PROCESS_TO_DIE_TIMEOUT = 5*60*1000;
@@ -93,7 +93,7 @@ public abstract class ProcessStreamReaderTestCase {
     for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done = (callable.call())) {
       Thread.sleep(interval);
     }
-    assertTrue(message, done);
+    assertTrue(message + " within timeout of " + timeout + " milliseconds", done);
   }
   
   protected static void assertEventuallyFalse(final String message, final Callable<Boolean> callable, final int timeout, final int interval) throws Exception {
@@ -101,7 +101,7 @@ public abstract class ProcessStreamReaderTestCase {
     for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done = (!callable.call())) {
       Thread.sleep(interval);
     }
-    assertTrue(message, done);
+    assertTrue(message + " within timeout of " + timeout + " milliseconds", done);
   }
   
   protected static void assertIsAlive(final Process process) {
