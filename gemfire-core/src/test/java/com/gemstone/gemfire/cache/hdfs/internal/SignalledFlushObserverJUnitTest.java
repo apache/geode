@@ -5,15 +5,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
-
 import com.gemstone.gemfire.cache.hdfs.internal.FlushObserver.AsyncFlushResult;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.AbstractHoplogOrganizer;
-import com.gemstone.gemfire.test.junit.categories.HoplogTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest
 ;
 
-@Category({IntegrationTest.class, HoplogTest.class})
+import junit.framework.TestCase;
+
+@Category({IntegrationTest.class})
 public class SignalledFlushObserverJUnitTest extends TestCase {
   private AtomicInteger events;
   private AtomicInteger delivered;

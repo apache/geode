@@ -17,8 +17,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Operation;
@@ -41,16 +39,17 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAttributes;
-import com.gemstone.gemfire.test.junit.categories.HoplogTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest
 ;
+
+import junit.framework.TestCase;
 
 /**
  * A test class for testing whether the functionalities of sorted Aysync Queue.
  * 
  * @author Hemant Bhanawat
  */
-@Category({IntegrationTest.class, HoplogTest.class})
+@Category({IntegrationTest.class})
 public class SortedListForAsyncQueueJUnitTest extends TestCase {
   
   public SortedListForAsyncQueueJUnitTest() {
