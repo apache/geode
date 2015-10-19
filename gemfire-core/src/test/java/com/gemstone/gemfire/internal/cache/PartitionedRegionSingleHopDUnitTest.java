@@ -106,14 +106,14 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
   public void tearDown2() throws Exception {
     try {
-
+      /* fixes GEODE-444, really close client cache first by using super.tearDown2();
       // close the clients first
       member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       closeCache();
-
+      */
       super.tearDown2();
 
       member0 = null;
@@ -755,7 +755,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     pause(5000);
     assertFalse(cms.isRefreshMetadataTestOnly());
   }
-  
+
   public void testServerLocationRemovalThroughPing() {
     Integer port0 = (Integer)member0.invoke(
         PartitionedRegionSingleHopDUnitTest.class, "createServer",
@@ -842,7 +842,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
 //    assertEquals(4/*numBuckets*/, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());    
   }
-  
+
   public void testMetadataFetchOnlyThroughputAll() {
     Integer port0 = (Integer)member0.invoke(
         PartitionedRegionSingleHopDUnitTest.class, "createServer",
