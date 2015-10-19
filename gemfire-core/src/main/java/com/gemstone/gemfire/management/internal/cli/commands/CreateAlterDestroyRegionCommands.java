@@ -202,14 +202,6 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
                   help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP)
       @CliMetaData (valueSeparator = ",") 
       String[] gatewaySenderIds,
-      @CliOption (key = CliStrings.CREATE_REGION__HDFSSTORE_NAME,
-                  help = CliStrings.CREATE_REGION__HDFSSTORE_NAME__HELP ,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE)
-      String hdfsStoreName,
-      @CliOption (key = CliStrings.CREATE_REGION__HDFSSTORE_WRITEONLY,      
-                  help = CliStrings.CREATE_REGION__HDFSSTORE_WRITEONLY__HELP,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE)
-      Boolean hdfsWriteOnly,      
       @CliOption (key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
                   help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP)
       String keyConstraint,
@@ -319,7 +311,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
             prRedundantCopies, prStartupRecoveryDelay,
             prTotalMaxMemory, prTotalNumBuckets,
-            offHeap, hdfsStoreName , hdfsWriteOnly,  regionAttributes);
+            offHeap, regionAttributes);
         
 
         if (regionAttributes.getPartitionAttributes() == null && regionFunctionArgs.hasPartitionAttributes()) {
@@ -339,7 +331,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
           prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
           prRedundantCopies, prStartupRecoveryDelay,
-          prTotalMaxMemory, prTotalNumBuckets, null,compressor, offHeap , hdfsStoreName , hdfsWriteOnly);
+          prTotalMaxMemory, prTotalNumBuckets, null,compressor, offHeap);
         
         if (!regionShortcut.name().startsWith("PARTITION") && regionFunctionArgs.hasPartitionAttributes()) {
           throw new IllegalArgumentException(

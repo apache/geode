@@ -9,20 +9,11 @@ package com.gemstone.gemfire.management.internal.web.controllers;
 
 import java.io.IOException;
 import java.util.Set;
+
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,6 +24,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.lang.ObjectUtils;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.web.domain.Link;
+import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
+import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
+import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
@@ -249,12 +250,7 @@ public class ShellCommandsController extends AbstractCommandsController {
       .add(new Link(CliStrings.STATUS_GATEWAYSENDER, toUri("/gateways/senders/{id}")))
       .add(new Link(CliStrings.STOP_GATEWAYRECEIVER, toUri("/gateways/receivers?op=stop"), HttpMethod.POST))
       .add(new Link(CliStrings.STOP_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=stop"), HttpMethod.POST))
-       // HDFS Store Commands
-       .add(new Link(CliStrings.LIST_HDFS_STORE, toUri("/hdfsstores"), HttpMethod.GET))
-       .add(new Link(CliStrings.DESCRIBE_HDFS_STORE, toUri("/hdfsstores/{name}"), HttpMethod.GET))
-       .add(new Link(CliStrings.CREATE_HDFS_STORE, toUri("/hdfsstores"), HttpMethod.POST))
-       .add(new Link(CliStrings.DESTROY_HDFS_STORE, toUri("/hdfsstores/{name}"), HttpMethod.DELETE))
-       .add(new Link(CliStrings.ALTER_HDFS_STORE,   toUri("/hdfsstores/{name}"), HttpMethod.PUT));
+      ;
   }
 
   @RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, value = "/ping")

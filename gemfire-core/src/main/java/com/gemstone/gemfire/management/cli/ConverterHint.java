@@ -41,5 +41,4 @@ public interface ConverterHint {
   public static final String LOG_LEVEL             = "converter.hint.log.levels";
 
   public static final String STRING_DISABLER       = "converter.hint.disable-string-converter";
-  public static final String HDFSSTORE_ALL         = "converter.hint.cluster.hdfsstore";
 }
