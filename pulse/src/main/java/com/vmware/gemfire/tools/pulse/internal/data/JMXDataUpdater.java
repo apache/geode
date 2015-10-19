@@ -1547,6 +1547,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         }
       }
 
+      /* GemfireXD related code
       try{// Added for Rolling upgrade
     	  CompositeData compositeData = (CompositeData) (this.mbs.invoke(mbeanName,
     	          PulseConstants.MBEAN_OPERATION_LISTREGIONATTRIBUTES, null, null));
@@ -1582,7 +1583,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             region.setCompressionCodec("NA");
            // LOGGER.info("Some of the Pulse elements are not available currently. There might be a GemFire upgrade going on.");
       }
-      
+      */
 
       // TODO : Uncomment below code when sql fire mbean attributes are
       // available
@@ -2346,7 +2347,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               attribute.getName()));
         }
       }
-
+      /* GemfireXD related code
       try{// Added for Rolling upgrade changes. Needs to removed once Rolling upgrade handled gracefully
     	  CompositeData compositeData = (CompositeData) (this.mbs.invoke(mbeanName,
     	          PulseConstants.MBEAN_OPERATION_LISTREGIONATTRIBUTES, null, null));
@@ -2375,7 +2376,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
      
 
-      /*// Remove deleted regions from member's regions list
+      // Remove deleted regions from member's regions list
       for (Iterator<String> it = cluster.getDeletedRegions().iterator(); it
           .hasNext();) {
         String deletedRegion = it.next();
