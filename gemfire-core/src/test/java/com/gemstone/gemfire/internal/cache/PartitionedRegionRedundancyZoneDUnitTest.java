@@ -27,7 +27,9 @@ import dunit.VM;
 
 public class PartitionedRegionRedundancyZoneDUnitTest extends CacheTestCase {
 
-  public static void caseTearDown() {
+  @Override
+  public void tearDown2() throws Exception {
+    super.tearDown2();
     // this makes sure we don't leave anything for the next tests
     // Tests that set redundancy zones causes other jvms connected
     // to the ds to have "enforce-unique-hosts" set to true.
