@@ -917,8 +917,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
-  
-  
   public void testDatastoreCommitsWithPutAllAndRI() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM accessor = host.getVM(0);
@@ -959,12 +957,24 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	    
 	    client.invoke(new SerializableCallable() {
 	      public Object call() throws Exception {
-	        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
+	        final Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
 //	        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
 //	        Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
-	        ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-	        assertTrue(cl.invoked);
-	        assertEquals("it should be 1 but its:"+cl.invokeCount,1,cl.invokeCount);
+	        final ClientListener cl = (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
+	        waitForCriterion(new WaitCriterion() {
+                  
+                  @Override
+                  public boolean done() {
+                    return cl.invoked;
+                  }
+                  
+                  @Override
+                  public String description() {
+                    return "Listener was not invoked in 30 seconds";
+                  }
+                }, 30000, 100, true);
+	        
+	        assertEquals(1,cl.invokeCount);
 	        return null;
 	      }
 	    });
