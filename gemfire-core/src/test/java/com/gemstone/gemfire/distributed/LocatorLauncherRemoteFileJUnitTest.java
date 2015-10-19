@@ -122,8 +122,6 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
       waitForFileToDelete(this.pidFile);
     } catch (Throwable e) {
       this.errorCollector.addError(e);
-    } finally {
-      new File(ProcessType.LOCATOR.getStatusRequestFileName()).delete(); // TODO: delete?
     }
   }
   
@@ -200,8 +198,6 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
       waitForFileToDelete(pidFile);
     } catch (Throwable e) {
       this.errorCollector.addError(e);
-    } finally {
-      new File(ProcessType.LOCATOR.getStopRequestFileName()).delete(); // TODO: delete?
     }
   }
 }

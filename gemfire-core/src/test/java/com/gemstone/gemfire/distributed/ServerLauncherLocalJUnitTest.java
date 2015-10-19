@@ -69,10 +69,13 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
 
   @Test
   public void testBuilderSetProperties() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     this.launcher = new Builder()
         .setDisableDefaultServer(true)
         .setForce(true)
         .setMemberName(getUniqueName())
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true")
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0")
@@ -116,11 +119,14 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   
   @Test
   public void testStartCreatesPidFile() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // build and start the Server locally
     final Builder builder = new Builder()
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -133,7 +139,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       assertEquals(Status.ONLINE, this.launcher.status().getStatus());
 
       // validate the pid file and its contents
-      this.pidFile = new File(builder.getWorkingDirectory(), ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
@@ -156,16 +162,18 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
 
   @Test
   public void testStartDeletesStaleControlFiles() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // create existing control files
-    this.stopRequestFile = new File(ProcessType.SERVER.getStopRequestFileName());
+    this.stopRequestFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getStopRequestFileName());
     this.stopRequestFile.createNewFile();
     assertTrue(this.stopRequestFile.exists());
 
-    this.statusRequestFile = new File(ProcessType.SERVER.getStatusRequestFileName());
+    this.statusRequestFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getStatusRequestFileName());
     this.statusRequestFile.createNewFile();
     assertTrue(this.statusRequestFile.exists());
 
-    this.statusFile = new File(ProcessType.SERVER.getStatusFileName());
+    this.statusFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getStatusFileName());
     this.statusFile.createNewFile();
     assertTrue(this.statusFile.exists());
     
@@ -174,6 +182,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -190,7 +199,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
     
     try {
       // validate the pid file and its contents
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
@@ -201,10 +210,6 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       assertFalse(this.stopRequestFile.exists());
       assertFalse(this.statusRequestFile.exists());
       assertFalse(this.statusFile.exists());
-      
-      // validate log file was created
-      final String logFileName = getUniqueName()+".log";
-      assertTrue("Log file should exist: " + logFileName, new File(logFileName).exists());
       
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -220,8 +225,10 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   
   @Test
   public void testStartOverwritesStalePidFile() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // create existing pid file
-    this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+    this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
     assertFalse("Integer.MAX_VALUE shouldn't be the same as local pid " + Integer.MAX_VALUE, Integer.MAX_VALUE == ProcessUtils.identifyPid());
     writePid(this.pidFile, Integer.MAX_VALUE);
 
@@ -230,6 +237,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -268,6 +276,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
    */
   @Test
   public void testStartUsingDisableDefaultServerLeavesPortFree() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // build and start the server
     assertTrue(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
@@ -276,6 +286,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
     
@@ -288,16 +299,12 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       waitForServerToStart(this.launcher);
 
       // validate the pid file and its contents
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
       assertEquals(getPid(), pid);
-
-      // validate log file was created
-      final String logFileName = getUniqueName()+".log";
-      assertTrue("Log file should exist: " + logFileName, new File(logFileName).exists());
 
       // verify server did not a port
       assertTrue(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
@@ -324,6 +331,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
    */
   @Test
   public void testStartUsingDisableDefaultServerSkipsPortCheck() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
@@ -333,6 +342,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -345,17 +355,13 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       waitForServerToStart(this.launcher);
 
       // validate the pid file and its contents
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
       assertEquals(getPid(), pid);
 
-      // validate log file was created
-      final String logFileName = getUniqueName()+".log";
-      assertTrue("Log file should exist: " + logFileName, new File(logFileName).exists());
-      
       final ServerState status = this.launcher.status();
       final String portString = status.getPort();
       assertEquals("Port should be \"\" instead of " + portString, "", portString);
@@ -449,6 +455,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   public void testStartUsingServerPortOverridesCacheXml() throws Throwable {
     // verifies part of the fix for #47664
     
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+    
     // generate two free ports
     final int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     assertTrue(AvailablePort.isPortAvailable(freeTCPPorts[0], AvailablePort.SOCKET));
@@ -474,6 +482,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .setServerPort(freeTCPPorts[1])
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -485,16 +494,12 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       waitForServerToStart(this.launcher);
   
       // validate the pid file and its contents
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
       assertEquals(getPid(), pid);
-
-      // validate log file was created
-      final String logFileName = getUniqueName()+".log";
-      assertTrue("Log file should exist: " + logFileName, new File(logFileName).exists());
 
       // verify server used --server-port instead of default or port in cache.xml
       assertTrue(AvailablePort.isPortAvailable(freeTCPPorts[0], AvailablePort.SOCKET));
@@ -524,6 +529,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
    */
   @Test
   public void testStartUsingServerPortUsedInsteadOfDefaultCacheXml() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // write out cache.xml with one port
     final CacheCreation creation = new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
@@ -544,6 +551,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .setServerPort(this.serverPort)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -555,16 +563,12 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       waitForServerToStart(this.launcher);
   
       // validate the pid file and its contents
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
       assertEquals(getPid(), pid);
-
-      // validate log file was created
-      final String logFileName = getUniqueName()+".log";
-      assertTrue("Log file should exist: " + logFileName, new File(logFileName).exists());
 
       // verify server used --server-port instead of default
       assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
@@ -587,6 +591,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
 
   @Test
   public void testStartWithDefaultPortInUseFails() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
@@ -595,6 +601,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
     final Builder builder = new Builder()
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -631,12 +638,12 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
     }
 
     try {
-      this.pidFile = new File (ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertFalse("Pid file should not exist: " + this.pidFile, this.pidFile.exists());
       
       // creation of log file seems to be random -- look into why sometime
       final String logFileName = getUniqueName()+".log";
-      assertFalse("Log file should not exist: " + logFileName, new File(logFileName).exists());
+      assertFalse("Log file should not exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
       
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -744,6 +751,8 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
    */
   @Test
   public void testStartUsingServerPortInUseFails() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
     final int freeTCPPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(freeTCPPort, 50, null, -1);
@@ -753,6 +762,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .setServerPort(freeTCPPort)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -781,18 +791,14 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
     }
 
     try {
-      this.pidFile = new File (ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertFalse("Pid file should not exist: " + this.pidFile, this.pidFile.exists());
-      
-      // creation of log file seems to be random -- look into why sometime
-      final String logFileName = getUniqueName()+".log";
-      assertFalse("Log file should not exist: " + logFileName, new File(logFileName).exists());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
     
     // just in case the launcher started...
-    ServerState status = null; // TODO: this could result in NPE later
+    ServerState status = null;
     try {
       status = this.launcher.stop();
     } catch (Throwable t) { 
@@ -809,11 +815,14 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   
   @Test
   public void testStatusUsingPid() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+    
     // build and start the server
     final Builder builder = new Builder()
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
     
@@ -826,7 +835,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       this.launcher.start();
       waitForServerToStart(this.launcher);
       
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
@@ -841,12 +850,10 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       assertEquals(Status.ONLINE, actualStatus.getStatus());
       assertEquals(pid, actualStatus.getPid().intValue());
       assertTrue(actualStatus.getUptime() > 0);
-      assertEquals(new File(System.getProperty("user.dir")).getCanonicalPath(), actualStatus.getWorkingDirectory());
-      //assertEquals(???, actualStatus.getJvmArguments());
+      // getWorkingDirectory returns user.dir instead of rootFolder because test is starting Server in this process (to move logFile and pidFile into temp dir)
       assertEquals(ManagementFactory.getRuntimeMXBean().getClassPath(), actualStatus.getClasspath());
       assertEquals(GemFireVersion.getGemFireVersion(), actualStatus.getGemFireVersion());
       assertEquals(System.getProperty("java.version"),  actualStatus.getJavaVersion());
-      assertEquals(new File(System.getProperty("user.dir")).getCanonicalPath() + File.separator + getUniqueName() + ".log", actualStatus.getLogFile());
       assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
       assertEquals(getUniqueName(), actualStatus.getMemberName());
       
@@ -874,11 +881,14 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   
   @Test
   public void testStatusUsingWorkingDirectory() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // build and start the server
     final Builder builder = new Builder()
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
     
@@ -891,14 +901,13 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       this.launcher.start();
       waitForServerToStart(this.launcher);
       
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertEquals(ProcessUtils.identifyPid(), pid);
   
-      final String workingDir = new File(System.getProperty("user.dir")).getCanonicalPath();
-      dirLauncher = new Builder().setWorkingDirectory(workingDir).build();
+      dirLauncher = new Builder().setWorkingDirectory(rootFolder).build();
       assertNotNull(dirLauncher);
       assertFalse(dirLauncher.isRunning());
 
@@ -907,12 +916,10 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       assertEquals(Status.ONLINE, actualStatus.getStatus());
       assertEquals(pid, actualStatus.getPid().intValue());
       assertTrue(actualStatus.getUptime() > 0);
-      assertEquals(new File(System.getProperty("user.dir")).getCanonicalPath(), actualStatus.getWorkingDirectory());
-      //assertEquals(???, actualStatus.getJvmArguments());
+      // getWorkingDirectory returns user.dir instead of rootFolder because test is starting Server in this process (to move logFile and pidFile into temp dir)
       assertEquals(ManagementFactory.getRuntimeMXBean().getClassPath(), actualStatus.getClasspath());
       assertEquals(GemFireVersion.getGemFireVersion(), actualStatus.getGemFireVersion());
       assertEquals(System.getProperty("java.version"),  actualStatus.getJavaVersion());
-      assertEquals(new File(System.getProperty("user.dir")).getCanonicalPath() + File.separator + getUniqueName() + ".log", actualStatus.getLogFile());
       assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
       assertEquals(getUniqueName(), actualStatus.getMemberName());
       
@@ -940,11 +947,14 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   
   @Test
   public void testStopUsingPid() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // build and start the server
     final Builder builder = new Builder()
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -959,7 +969,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       waitForServerToStart(this.launcher);
   
       // validate the pid file and its contents
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
@@ -986,7 +996,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
 
     try {
       // verify the PID file was deleted
-      waitForFileToDelete(this.pidFile); // TODO
+      waitForFileToDelete(this.pidFile);
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
@@ -994,11 +1004,14 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
   
   @Test
   public void testStopUsingWorkingDirectory() throws Throwable {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+
     // build and start the server
     final Builder builder = new Builder()
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
+        .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
         .set(DistributionConfig.MCAST_PORT_NAME, "0");
 
@@ -1012,14 +1025,13 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
       waitForServerToStart(this.launcher);
     
       // validate the pid file and its contents
-      this.pidFile = new File(ProcessType.SERVER.getPidFileName());
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
       assertTrue(this.pidFile.exists());
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertEquals(ProcessUtils.identifyPid(), pid);
 
-      final String workingDir = new File(System.getProperty("user.dir")).getCanonicalPath();
-      dirLauncher = new Builder().setWorkingDirectory(workingDir).build();
+      dirLauncher = new Builder().setWorkingDirectory(rootFolder).build();
       assertNotNull(dirLauncher);
       assertFalse(dirLauncher.isRunning());
       
@@ -1040,7 +1052,7 @@ public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTes
 
     try {
       // verify the PID file was deleted
-      waitForFileToDelete(this.pidFile); // TODO
+      waitForFileToDelete(this.pidFile);
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }

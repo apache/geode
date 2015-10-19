@@ -79,7 +79,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   @Ignore("TRAC bug #52304: test is broken and needs to be reworked")
   public void testRunningLocatorOutlivesForkingProcess() throws Exception {
   }/*
-    // TODO:KIRK: fix up this test
+    // TODO: fix up this test
     
     this.temporaryFolder.getRoot() = new File(getUniqueName());
     this.temporaryFolder.getRoot().mkdir();
@@ -967,7 +967,9 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
         
         Process forkedProcess = new ProcessBuilder(command).start();
 
+        @SuppressWarnings("unused")
         ProcessStreamReader processOutReader = new ProcessStreamReader.Builder(forkedProcess).inputStream(forkedProcess.getInputStream()).build().start();
+        @SuppressWarnings("unused")
         ProcessStreamReader processErrReader = new ProcessStreamReader.Builder(forkedProcess).inputStream(forkedProcess.getErrorStream()).build().start();
 
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main waiting for locator to start...");
