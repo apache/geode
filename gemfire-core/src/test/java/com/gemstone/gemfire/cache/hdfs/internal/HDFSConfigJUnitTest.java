@@ -72,7 +72,8 @@ public class HDFSConfigJUnitTest extends TestCase {
         HDFSStoreFactory hsf = this.c.createHDFSStoreFactory();
         HDFSStore store = hsf.create("myHDFSStore");
         RegionFactory rf1 = this.c.createRegionFactory(RegionShortcut.PARTITION);
-        Region r1 = rf1.setHDFSStoreName("myHDFSStore").create("r1");
+//        rf1.setHDFSStoreName("myHDFSStore");
+        Region r1 = rf1.create("r1");
        
         r1.put("k1", "v1");
         
@@ -89,8 +90,9 @@ public class HDFSConfigJUnitTest extends TestCase {
         hsf = this.c.createHDFSStoreFactory();
         hsf.create("myHDFSStore");
         
-        r1 = this.c.createRegionFactory(RegionShortcut.PARTITION).setHDFSStoreName("myHDFSStore")
-              .create("r1");
+        RegionFactory<Object, Object> rf = this.c.createRegionFactory(RegionShortcut.PARTITION);
+//        rf.setHDFSStoreName("myHDFSStore");
+        r1 = rf.create("r1");
        
         r1.put("k1", "v1");
         assertTrue("Mismatch in attributes, actual.batchsize: " + store.getBatchSize() + " and expected batchsize: 32", store.getBatchSize()== 32);
@@ -126,8 +128,9 @@ public class HDFSConfigJUnitTest extends TestCase {
         hsf.create("myHDFSStore");
         
         
-        r1 = this.c.createRegionFactory(RegionShortcut.PARTITION).setHDFSStoreName("myHDFSStore")
-            .setHDFSWriteOnly(true).create("r1");
+        rf = this.c.createRegionFactory(RegionShortcut.PARTITION);
+//        rf.setHDFSStoreName("myHDFSStore").setHDFSWriteOnly(true);
+        r1 = rf.create("r1");
        
         r1.put("k1", "v1");
         store = c.findHDFSStore(r1.getAttributes().getHDFSStoreName());
@@ -469,7 +472,8 @@ public class HDFSConfigJUnitTest extends TestCase {
       HDFSStoreImpl store = (HDFSStoreImpl) hsf.create("myHDFSStore");
       RegionFactory rf1 = this.c.createRegionFactory(RegionShortcut.PARTITION);
       //Create a region that evicts everything
-      LocalRegion r1 = (LocalRegion) rf1.setHDFSStoreName("myHDFSStore").setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1)).create("r1");
+//      rf1.setHDFSStoreName("myHDFSStore");
+      LocalRegion r1 = (LocalRegion) rf1.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1)).create("r1");
      
       //Populate about many times our block cache size worth of data
       //We want to try to cache at least 5 blocks worth of index and metadata

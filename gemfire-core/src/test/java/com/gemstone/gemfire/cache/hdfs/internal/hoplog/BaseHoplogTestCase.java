@@ -90,7 +90,7 @@ public abstract class BaseHoplogTestCase extends TestCase {
     hdfsStore = (HDFSStoreImpl) hsf.create(HDFS_STORE_NAME);
 
     regionfactory = cache.createRegionFactory(RegionShortcut.PARTITION);
-    regionfactory.setHDFSStoreName(HDFS_STORE_NAME);
+//    regionfactory.setHDFSStoreName(HDFS_STORE_NAME);
     region = regionfactory.create(getName());
     
     // disable compaction by default and clear existing queues

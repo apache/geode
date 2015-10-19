@@ -108,7 +108,7 @@ public class HDFSRegionOperationsJUnitTest extends TestCase {
     RegionFactory<Integer, String> rf = cache.createRegionFactory(RegionShortcut.PARTITION);
     PartitionAttributes prAttr = new PartitionAttributesFactory().setTotalNumBuckets(10).create();
     rf.setPartitionAttributes(prAttr);
-    rf.setHDFSStoreName(hdfsStore.getName());
+//    rf.setHDFSStoreName(hdfsStore.getName());
     Region<Integer, String> r = rf.create(regionName);
     
     ((PartitionedRegion) r).setQueryHDFS(true);
@@ -265,7 +265,7 @@ public class HDFSRegionOperationsJUnitTest extends TestCase {
 
   public void test050LRURegionAttributesForPR() {
     RegionFactory<Integer, String> rf = cache.createRegionFactory();
-    rf.setHDFSStoreName(hdfsStore.getName());
+//    rf.setHDFSStoreName(hdfsStore.getName());
     rf.setDataPolicy(DataPolicy.HDFS_PARTITION);
     verifyLRURegionAttributesForPR(rf.create(getName()));
   }

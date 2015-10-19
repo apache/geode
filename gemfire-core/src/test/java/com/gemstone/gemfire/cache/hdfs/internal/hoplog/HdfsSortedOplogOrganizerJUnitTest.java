@@ -744,7 +744,7 @@ public class HdfsSortedOplogOrganizerJUnitTest extends BaseHoplogTestCase {
     }
       
     // create region with store
-    regionfactory.setHDFSStoreName(HDFS_STORE_NAME);
+//    regionfactory.setHDFSStoreName(HDFS_STORE_NAME);
     Region<Object, Object> region1 = regionfactory.create("region-1");
     ExpectedException ex = DistributedTestCase.addExpectedException("CorruptHFileException");
     try {

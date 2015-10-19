@@ -59,7 +59,7 @@ public class HDFSRegionOperationsOffHeapJUnitTest extends HDFSRegionOperationsJU
     PartitionAttributes prAttr = new PartitionAttributesFactory().setTotalNumBuckets(10).create();
     rf.setPartitionAttributes(prAttr);
     rf.setOffHeap(true);
-    rf.setHDFSStoreName(hdfsStore.getName());
+//    rf.setHDFSStoreName(hdfsStore.getName());
     Region<Integer, String> r = rf.create(regionName);
 //    addListener(r);
     

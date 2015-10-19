@@ -902,31 +902,6 @@ public class RegionFactory<K,V>
     this.attrsFactory.addAsyncEventQueueId(asyncEventQueueId);
     return this;
   }
-  /**
-   * Sets the HDFSStore name attribute.
-   * This causes the region to belong to the HDFSStore.
-   * @param name the name of the hdfsstore
-   * @return a reference to this RegionFactory object
-   * 
-   * @see AttributesFactory#setHDFSStoreName
-   * @since 9.0
-   */
-  public RegionFactory<K,V> setHDFSStoreName(String name) {
-    this.attrsFactory.setHDFSStoreName(name);
-    return this;
-  }
-  
-  /**
-   * Sets the HDFS write only attribute. if the region
-   * is configured to be write only to HDFS, events that have 
-   * been evicted from memory cannot be read back from HDFS.
-   * Events are written to HDFS in the order in which they occurred.
-   * @since 9.0
-   */
-  public RegionFactory<K,V> setHDFSWriteOnly(boolean writeOnly) {
-    this.attrsFactory.setHDFSWriteOnly(writeOnly);
-    return this;
-  }
 
   /**
    * Set the compressor to be used by this region for compressing
