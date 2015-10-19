@@ -5,16 +5,10 @@
  * one or more patents listed at http://www.pivotal.io/patents.
  *=========================================================================
  */
-/*
- * IndexTest.java
- * JUnit based test
- *
- * Created on March 9, 2005, 3:30 PM
- */
-
 package com.gemstone.gemfire.cache.query.internal.index;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -46,11 +40,6 @@ import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
 import dunit.VM;
 
-/**
- * 
- * @author jhuynh
- *
- */
 public class CopyOnReadIndexDUnitTest extends CacheTestCase {
 
   VM vm0;
@@ -84,6 +73,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   //test different queries against partitioned region
   public void testPRQueryOnLocalNode() throws Exception {
     QueryTestUtils utils = new QueryTestUtils();
+    configureServers();
     helpTestPRQueryOnLocalNode(utils.queries.get("545"), 100, 100, true);
     helpTestPRQueryOnLocalNode(utils.queries.get("546"), 100, 100, true);
     helpTestPRQueryOnLocalNode(utils.queries.get("543"), 100, 100, true);
@@ -100,6 +90,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   //tests different queries with a transaction for replicated region
   public void testTransactionsOnReplicatedRegion() throws Exception {
     QueryTestUtils utils = new QueryTestUtils();
+    configureServers();
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("545"), 100, 100, true);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("546"), 100, 100, true);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("543"), 100, 100, true);
@@ -113,23 +104,28 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
     helpTestTransactionsOnReplicatedRegion("select * from /portfolios p where p.ID = 1", 100, 1, false);
   }
   
+  private void configureServers() throws Exception {
+    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
+    startCacheServer(vm0, port[0], mcastPort);
+    startCacheServer(vm1, port[1], mcastPort);
+    startCacheServer(vm2, port[2], mcastPort);
+
+  }
+  
   //The tests sets up a partition region across 2 servers
   //It does puts in each server, checking instance counts of portfolio objects
   //Querying the data will result in deserialization of portfolio objects.
   //In cases where index is present, the objects will be deserialized in the cache
   public void helpTestPRQueryOnLocalNode(final String queryString, final int numPortfolios, final int numExpectedResults, final boolean hasIndex) throws Exception {
-    
-    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     final int numPortfoliosPerVM = numPortfolios / 2;
-    
-    startCacheServer(vm0, port[0], mcastPort);
-    startCacheServer(vm1, port[1], mcastPort);
-    
+  
     resetInstanceCount(vm0);
     resetInstanceCount(vm1);
     
     createPartitionRegion(vm0, "portfolios");
+    createPartitionRegion(vm1, "portfolios");
+    
     if (hasIndex) {
       vm0.invoke(new SerializableCallable() {
         public Object call() throws Exception {
@@ -139,9 +135,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         }
       });
     }
-    
-    createPartitionRegion(vm1, "portfolios");
-
+   
     vm0.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
@@ -186,6 +180,10 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //numPortfoliosPerVM instances of Portfolio created for put operation
           //Due to index, we have deserialized all of the entries this vm currently host
           Index index = getCache().getQueryService().getIndex(region, "idIndex");
+          if (index == null) {
+            QueryTestUtils utils = new QueryTestUtils();
+            index = utils.createIndex("idIndex", "p.ID", "/portfolios p");
+          }
           DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)index.getStatistics().getNumberOfValues() + numPortfoliosPerVM), 5000, 200, true);
         }
         else {
@@ -204,7 +202,8 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         QueryService qs = getCache().getQueryService();
         Query query = qs.newQuery(queryString);
         SelectResults results = (SelectResults) query.execute();
-        assertEquals(numExpectedResults, results.size());
+        Iterator it = results.iterator();
+        assertEquals("Failed:" + queryString, numExpectedResults, results.size());
         for (Object o: results) {
           if (o instanceof Portfolio) {
             Portfolio p = (Portfolio) o;
@@ -288,15 +287,14 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         return null;
       }
     });
+    
+    destroyRegion("portfolio", vm0);
+    
   }
 
   
   public void helpTestTransactionsOnReplicatedRegion(final String queryString, final int numPortfolios, final int numExpectedResults, final boolean hasIndex) throws Exception {
-    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-    startCacheServer(vm0, port[0], mcastPort);
-    startCacheServer(vm1, port[1], mcastPort);
-    startCacheServer(vm2, port[2], mcastPort);
+
     resetInstanceCount(vm0);
     resetInstanceCount(vm1);
     resetInstanceCount(vm2);
@@ -530,6 +528,22 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         return null;
       }
     });
+    
+    destroyRegion("portfolio", vm0);
+  }
+  
+  private void destroyRegion(String regionName, VM ...vms) {
+    for (VM vm: vms) {
+      vm.invoke(new SerializableCallable() {
+        public Object call() throws Exception {
+          QueryTestUtils utils = new QueryTestUtils();
+          utils.getCache().getQueryService().removeIndexes();
+          Region region = getCache().getRegion("/portfolios");
+          region.destroyRegion();
+          return null;
+        }
+      });
+    }
   }
  
 
@@ -563,7 +577,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   private void startCacheServer(VM server, final int port, final int mcastPort) throws Exception {
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getServerProperties());
         
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
         cache.setCopyOnRead(true);
@@ -601,10 +615,9 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
     return p;
   }
 
-  protected Properties getServerProperties(int mcastPort) {
+  protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastPort+"");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
     return p;
   }
 
@@ -623,3 +636,4 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   
 
 }
+
