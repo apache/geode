@@ -72,7 +72,7 @@ public class HDFSEntriesSetJUnitTest extends TestCase {
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     paf.setTotalNumBuckets(1);
     
-    RegionFactory rf = cache.createRegionFactory(RegionShortcut.PARTITION_HDFS);
+    RegionFactory rf = cache.createRegionFactory(RegionShortcut.PARTITION);
     region = (PartitionedRegion) rf.setHDFSStoreName("test").setPartitionAttributes(paf.create()).create("test");
     
     // prime the region so buckets get created

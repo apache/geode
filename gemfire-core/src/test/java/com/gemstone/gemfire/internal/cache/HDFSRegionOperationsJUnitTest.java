@@ -105,7 +105,7 @@ public class HDFSRegionOperationsJUnitTest extends TestCase {
   }
 
   protected Region<Integer, String> createRegion(String regionName) {
-    RegionFactory<Integer, String> rf = cache.createRegionFactory(RegionShortcut.PARTITION_HDFS);
+    RegionFactory<Integer, String> rf = cache.createRegionFactory(RegionShortcut.PARTITION);
     PartitionAttributes prAttr = new PartitionAttributesFactory().setTotalNumBuckets(10).create();
     rf.setPartitionAttributes(prAttr);
     rf.setHDFSStoreName(hdfsStore.getName());

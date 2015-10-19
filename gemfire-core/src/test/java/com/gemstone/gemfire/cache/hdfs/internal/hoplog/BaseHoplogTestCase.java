@@ -89,7 +89,7 @@ public abstract class BaseHoplogTestCase extends TestCase {
     configureHdfsStoreFactory();
     hdfsStore = (HDFSStoreImpl) hsf.create(HDFS_STORE_NAME);
 
-    regionfactory = cache.createRegionFactory(RegionShortcut.PARTITION_HDFS);
+    regionfactory = cache.createRegionFactory(RegionShortcut.PARTITION);
     regionfactory.setHDFSStoreName(HDFS_STORE_NAME);
     region = regionfactory.create(getName());
     

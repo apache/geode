@@ -76,7 +76,7 @@ public class HDFSRegionMBeanAttributeJUnitTest extends TestCase {
     configureHdfsStoreFactory();
     hdfsStore = (HDFSStoreImpl) hsf.create(HDFS_STORE_NAME);
 
-    RegionFactory<Object, Object> regionfactory = cache.createRegionFactory(RegionShortcut.PARTITION_HDFS);
+    RegionFactory<Object, Object> regionfactory = cache.createRegionFactory(RegionShortcut.PARTITION);
     regionfactory.setHDFSStoreName(HDFS_STORE_NAME);
 
     // regionfactory.setCompressionCodec("Some");

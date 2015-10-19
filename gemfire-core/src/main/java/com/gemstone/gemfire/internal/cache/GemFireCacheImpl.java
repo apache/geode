@@ -4916,48 +4916,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         c.setRegionAttributes(pra.toString(), af.create());
         break;
       }
-      case PARTITION_HDFS: {
-    	  AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(false);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
-      case PARTITION_REDUNDANT_HDFS: {
-    	  AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          paf.setRedundantCopies(1);
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(false);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
-      case PARTITION_WRITEONLY_HDFS_STORE: {
-        AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(true);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
-      case PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE: {
-        AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          paf.setRedundantCopies(1);
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(true);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
       default:
         throw new IllegalStateException("unhandled enum " + pra);
       }

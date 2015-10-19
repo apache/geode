@@ -71,7 +71,7 @@ public class HDFSConfigJUnitTest extends TestCase {
       try {
         HDFSStoreFactory hsf = this.c.createHDFSStoreFactory();
         HDFSStore store = hsf.create("myHDFSStore");
-        RegionFactory rf1 = this.c.createRegionFactory(RegionShortcut.PARTITION_HDFS);
+        RegionFactory rf1 = this.c.createRegionFactory(RegionShortcut.PARTITION);
         Region r1 = rf1.setHDFSStoreName("myHDFSStore").create("r1");
        
         r1.put("k1", "v1");
@@ -89,7 +89,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         hsf = this.c.createHDFSStoreFactory();
         hsf.create("myHDFSStore");
         
-        r1 = this.c.createRegionFactory(RegionShortcut.PARTITION_WRITEONLY_HDFS_STORE).setHDFSStoreName("myHDFSStore")
+        r1 = this.c.createRegionFactory(RegionShortcut.PARTITION).setHDFSStoreName("myHDFSStore")
               .create("r1");
        
         r1.put("k1", "v1");
@@ -126,7 +126,7 @@ public class HDFSConfigJUnitTest extends TestCase {
         hsf.create("myHDFSStore");
         
         
-        r1 = this.c.createRegionFactory(RegionShortcut.PARTITION_WRITEONLY_HDFS_STORE).setHDFSStoreName("myHDFSStore")
+        r1 = this.c.createRegionFactory(RegionShortcut.PARTITION).setHDFSStoreName("myHDFSStore")
             .setHDFSWriteOnly(true).create("r1");
        
         r1.put("k1", "v1");
@@ -467,7 +467,7 @@ public class HDFSConfigJUnitTest extends TestCase {
       float percentage = 100 * (float) blockCacheSize / (float) heapSize;
       hsf.setBlockCacheSize(percentage);
       HDFSStoreImpl store = (HDFSStoreImpl) hsf.create("myHDFSStore");
-      RegionFactory rf1 = this.c.createRegionFactory(RegionShortcut.PARTITION_HDFS);
+      RegionFactory rf1 = this.c.createRegionFactory(RegionShortcut.PARTITION);
       //Create a region that evicts everything
       LocalRegion r1 = (LocalRegion) rf1.setHDFSStoreName("myHDFSStore").setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1)).create("r1");
      
