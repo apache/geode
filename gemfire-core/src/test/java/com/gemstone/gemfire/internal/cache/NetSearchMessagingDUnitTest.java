@@ -344,7 +344,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
     });
   }
   
-  private void waitForReceivedMessages(VM vm, long expected) {
+  private void waitForReceivedMessages(final VM vm, final long expected) {
     waitForCriterion(new WaitCriterion() {
       
       @Override
