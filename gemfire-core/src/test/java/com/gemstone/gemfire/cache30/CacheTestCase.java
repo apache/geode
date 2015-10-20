@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -45,6 +47,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.org.jgroups.Event;
 import com.gemstone.org.jgroups.JChannel;
 import com.gemstone.org.jgroups.stack.Protocol;
@@ -62,6 +65,7 @@ import dunit.VM;
  * @since 3.0
  */
 public abstract class CacheTestCase extends DistributedTestCase {
+  private static final Logger logger = LogService.getLogger();
 
   /** The Cache from which regions are obtained 
    * 
@@ -402,19 +406,8 @@ public abstract class CacheTestCase extends DistributedTestCase {
               }
             }
           }
-          try {
-            cache.close();
-          }
-          catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          }
-          catch (Throwable t) {
-          }
-          finally {
-          }
+          cache.close();
         }
-        // @todo darrel: destroy DiskStore files
       }
       finally {
         cache = null;
@@ -460,20 +453,13 @@ public abstract class CacheTestCase extends DistributedTestCase {
       try {
         closeCache();
       }
-      catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
+      finally {
+        try {
+          cleanDiskDirs();
+        } catch(Exception e) {
+          getLogWriter().error("Error cleaning disk dirs", e);
+        }
       }
-      catch (Throwable t) {
-        getLogWriter().error("Error in closing the cache ", t);
-        
-      }
-    }
-
-    try {
-      cleanDiskDirs();
-    } catch(IOException e) {
-      getLogWriter().error("Error cleaning disk dirs", e);
     }
   }
 
