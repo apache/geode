@@ -2,6 +2,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -63,7 +64,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.OSProcess;
@@ -76,8 +76,6 @@ import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class JGroupsMessenger implements Messenger {
 
@@ -124,9 +122,9 @@ public class JGroupsMessenger implements Messenger {
   
   private GMSPingPonger pingPonger = new GMSPingPonger();
   
-  private volatile long pingsReceived;
-  
   private volatile long pongsReceived;
+  
+  private boolean playingDead;
 
   
   static {
@@ -431,10 +429,12 @@ public class JGroupsMessenger implements Messenger {
 
   @Override
   public void playDead() {
+    playingDead = true;
   }
 
   @Override
   public void beHealthy() {
+    playingDead = false;
   }
 
   @Override
@@ -475,6 +475,17 @@ public class JGroupsMessenger implements Messenger {
     if (!myChannel.isConnected()) {
       logger.info("JGroupsMessenger channel is closed - messaging is not possible");
       throw new DistributedSystemDisconnectedException("Distributed System is shutting down");
+    }
+    
+    if (playingDead) {
+      Set result = new HashSet<>();
+      InternalDistributedMember[] rec = msg.getRecipients();
+      if (rec != null) {
+        for (int i=0; i<rec.length; i++) {
+          result.add(rec[i]);
+        }
+      }
+      return result;
     }
     
     filterOutgoingMessage(msg);
@@ -877,7 +888,6 @@ public class JGroupsMessenger implements Messenger {
       //Respond to ping messages sent from other systems that are in a auto reconnect state
       byte[] contents = jgmsg.getBuffer();
       if (pingPonger.isPingMessage(contents)) {
-        pingsReceived++;
         try {
           pingPonger.sendPongMessage(myChannel, jgAddress, jgmsg.getSrc());
         }

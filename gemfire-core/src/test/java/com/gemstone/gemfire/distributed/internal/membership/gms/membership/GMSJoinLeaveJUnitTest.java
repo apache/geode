@@ -292,7 +292,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
     prepareAndInstallView();
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
-    gmsJoinLeave.becomeCoordinator();
+    gmsJoinLeave.becomeCoordinatorForTest();
 
     LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), mockMembers[0], reason);
     msg.setSender(mockMembers[0]);
@@ -318,7 +318,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
-    gmsJoinLeave.becomeCoordinator();
+    gmsJoinLeave.becomeCoordinatorForTest();
     RemoveMemberMessage msg = new RemoveMemberMessage(gmsJoinLeave.getMemberID(), mockMembers[0], reason);
     msg.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(msg);
@@ -345,7 +345,7 @@ public class GMSJoinLeaveJUnitTest {
     prepareAndInstallView();
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);
-    gmsJoinLeave.becomeCoordinator();
+    gmsJoinLeave.becomeCoordinatorForTest();
     JoinRequestMessage msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null);
     msg.setSender(mockMembers[2]);
     gmsJoinLeave.processMessage(msg);
@@ -473,7 +473,7 @@ public class GMSJoinLeaveJUnitTest {
     NetView oldView = gmsJoinLeave.getView();
     oldView.add(gmsJoinLeaveMemberId);
     InternalDistributedMember creator = oldView.getCreator();
-    gmsJoinLeave.becomeCoordinator();
+    gmsJoinLeave.becomeCoordinatorForTest();
     NetView view = new NetView(2, gmsJoinLeave.getView().getViewId()+1);
     view.setCreator(creator);
     view.add(creator);

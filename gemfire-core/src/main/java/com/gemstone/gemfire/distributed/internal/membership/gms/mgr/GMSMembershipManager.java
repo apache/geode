@@ -2894,6 +2894,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
     services.setShutdownCause(shutdownCause);
     services.getCancelCriterion().cancel(reason);
 
+    AlertAppender.getInstance().shuttingDown();
+
     if (!inhibitForceDisconnectLogging) {
       logger.fatal(LocalizedMessage.create(
           LocalizedStrings.GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0, reason), shutdownCause);
@@ -2903,7 +2905,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
       saveCacheXmlForReconnect();
     }
     
-    AlertAppender.getInstance().shuttingDown();
 
     Thread reconnectThread = new Thread (new Runnable() {
       public void run() {

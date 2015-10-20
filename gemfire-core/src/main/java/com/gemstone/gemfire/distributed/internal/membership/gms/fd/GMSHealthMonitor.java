@@ -284,6 +284,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @return
    */
   private boolean doCheckMember(InternalDistributedMember pingMember) {
+    if (playingDead) {
+      return true;
+    }
     //TODO: need to some tcp check
     logger.trace("Checking member {}", pingMember);
     final CheckRequestMessage prm = constructCheckRequestMessage(pingMember);
@@ -543,10 +546,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public void beSick() {
     this.beingSick = true;
+    sendSuspectMessage(localAddress, "beSick invoked on GMSHealthMonitor");
   }
 
   @Override
   public void playDead() {
+    sendSuspectMessage(localAddress, "playDead invoked on GMSHealthMonitor");
     this.playingDead = true;
   }
 

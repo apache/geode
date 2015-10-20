@@ -103,16 +103,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /** have I connected to the distributed system? */
   private volatile boolean isJoined;
 
-  /** a lock governing GMS state */
-  private ReadWriteLock stateLock = new ReentrantReadWriteLock();
-  
-  /** guarded by stateLock */
+  /** guarded by viewInstallationLock */
   private boolean isCoordinator;
   
   /** a synch object that guards view installation */
   private final Object viewInstallationLock = new Object();
   
-  /** the currently installed view */
+  /** the currently installed view.  Guarded by viewInstallationLock */
   private volatile NetView currentView;
   
   /** the previous view **/
@@ -196,7 +193,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     
     try {
       if (Boolean.getBoolean(BYPASS_DISCOVERY)) {
-        becomeCoordinator();
+        synchronized(viewInstallationLock) {
+          becomeCoordinator();
+        }
         return true;
       }
       
@@ -216,7 +215,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           if (localAddress.getNetMember().preferredForCoordinator()
               && state.possibleCoordinator.equals(this.localAddress)) {
             if (tries > 2 || System.currentTimeMillis() < giveupTime ) {
-              becomeCoordinator();
+              synchronized(viewInstallationLock) {
+                becomeCoordinator();
+              }
               return true;
             }
           } else {
@@ -315,8 +316,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (response.getCurrentView() != null) {
         if (response.getBecomeCoordinator()) {
           logger.info("I am being told to become the membership coordinator by {}", coord);
-          this.currentView = response.getCurrentView();
-          becomeCoordinator(null);
+          synchronized(viewInstallationLock) {
+            this.currentView = response.getCurrentView();
+            becomeCoordinator(null);
+          }
         } else {
           this.birthViewId = response.getMemberID().getVmViewId();
           this.localAddress.setVmViewId(this.birthViewId);
@@ -420,7 +423,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         check.addCrashedMembers(removedMembers);
       }
       if (check.getCoordinator().equals(localAddress)) {
-        becomeCoordinator(incomingRequest.getMemberID());
+        synchronized(viewInstallationLock) {
+          becomeCoordinator(incomingRequest.getMemberID());
+        }
       }
     }
     else {
@@ -475,7 +480,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         check.removeAll(removedMembers);
       }
       if (check.getCoordinator().equals(localAddress)) {
-        becomeCoordinator(mbr);
+        synchronized(viewInstallationLock) {
+          becomeCoordinator(mbr);
+        }
       }
     }
     else {
@@ -515,65 +522,75 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     becomeCoordinator(null);
   }
   
+  
+  public void becomeCoordinatorForTest() {
+    synchronized(viewInstallationLock) {
+      becomeCoordinator();
+    }
+  }
+  
   /**
+   * Transitions this member into the coordinator role.  This must
+   * be invoked under a synch on viewInstallationLock that was held
+   * at the time the decision was made to become coordinator so that
+   * the decision is atomic with actually becoming coordinator.
    * @param oldCoordinator may be null
    */
   private void becomeCoordinator(InternalDistributedMember oldCoordinator) {
     boolean testing = unitTesting.contains("noRandomViewChange");
-    stateLock.writeLock().lock();
-    try {
-      if (isCoordinator) {
-        return;
-      }
-      logger.info("This member is becoming the membership coordinator with address {}", localAddress);
-      isCoordinator = true;
-      if (currentView == null) {
-        // create the initial membership view
-        NetView newView = new NetView(this.localAddress);
-        this.localAddress.setVmViewId(0);
-        installView(newView);
-        isJoined = true;
-        if (viewCreator == null || viewCreator.isShutdown()) {
-          viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
-          viewCreator.setDaemon(true);
-          viewCreator.start();
-        }
-      } else {
-        // create and send out a new view
-        NetView newView;
-        Set<InternalDistributedMember> leaving = new HashSet<>();
-        Set<InternalDistributedMember> removals;
-        synchronized(viewInstallationLock) {
-          int rand = testing? 0 : NetView.RANDOM.nextInt(10);
-          int viewNumber = currentView.getViewId() + 5 + rand;
-          if (this.localAddress.getVmViewId() < 0) {
-            this.localAddress.setVmViewId(viewNumber);
-          }
 
-          List<InternalDistributedMember> mbrs = new ArrayList<>(currentView.getMembers());
-          if (!mbrs.contains(localAddress)) {
-            mbrs.add(localAddress);
-          }
-          synchronized(this.removedMembers) {
-            removals = new HashSet<>(this.removedMembers);
-          }
-          if (oldCoordinator != null && !removals.contains(oldCoordinator)) {
-            leaving.add(oldCoordinator);
-          }
-          mbrs.removeAll(removals);
-          mbrs.removeAll(leaving);
-          newView = new NetView(this.localAddress, viewNumber, mbrs, leaving,
-              removals);
-        }
-        if (viewCreator == null || viewCreator.isShutdown()) {
-          viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
-          viewCreator.setInitialView(newView, leaving, removals);
-          viewCreator.setDaemon(true);
-          viewCreator.start();
-        }
+    assert Thread.holdsLock(viewInstallationLock);
+    
+    if (isCoordinator) {
+      return;
+    }
+    
+    logger.info("This member is becoming the membership coordinator with address {}", localAddress);
+    isCoordinator = true;
+    if (currentView == null) {
+      // create the initial membership view
+      NetView newView = new NetView(this.localAddress);
+      this.localAddress.setVmViewId(0);
+      installView(newView);
+      isJoined = true;
+      if (viewCreator == null || viewCreator.isShutdown()) {
+        viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
+        viewCreator.setDaemon(true);
+        viewCreator.start();
       }
-    } finally {
-      stateLock.writeLock().unlock();
+    } else {
+      // create and send out a new view
+      NetView newView;
+      Set<InternalDistributedMember> leaving = new HashSet<>();
+      Set<InternalDistributedMember> removals;
+      synchronized(viewInstallationLock) {
+        int rand = testing? 0 : NetView.RANDOM.nextInt(10);
+        int viewNumber = currentView.getViewId() + 5 + rand;
+        if (this.localAddress.getVmViewId() < 0) {
+          this.localAddress.setVmViewId(viewNumber);
+        }
+
+        List<InternalDistributedMember> mbrs = new ArrayList<>(currentView.getMembers());
+        if (!mbrs.contains(localAddress)) {
+          mbrs.add(localAddress);
+        }
+        synchronized(this.removedMembers) {
+          removals = new HashSet<>(this.removedMembers);
+        }
+        if (oldCoordinator != null && !removals.contains(oldCoordinator)) {
+          leaving.add(oldCoordinator);
+        }
+        mbrs.removeAll(removals);
+        mbrs.removeAll(leaving);
+        newView = new NetView(this.localAddress, viewNumber, mbrs, leaving,
+            removals);
+      }
+      if (viewCreator == null || viewCreator.isShutdown()) {
+        viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
+        viewCreator.setInitialView(newView, leaving, removals);
+        viewCreator.setDaemon(true);
+        viewCreator.start();
+      }
     }
   }
   
@@ -1016,13 +1033,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           becomeCoordinator();
         } else if (this.isCoordinator) {
           // stop being coordinator
-          stateLock.writeLock().lock();
-          try {
-            stopCoordinatorServices();
-            this.isCoordinator = false;
-          } finally {
-            stateLock.writeLock().unlock();
-          }
+          stopCoordinatorServices();
+          this.isCoordinator = false;
         }
       }
       if (!this.isCoordinator) {
@@ -1899,15 +1911,24 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       try {
         List<Future<InternalDistributedMember>> futures;
         futures = svc.invokeAll(checkers);
-
+        long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
         for (Future<InternalDistributedMember> future: futures) {
+          long now = System.currentTimeMillis();
           try {
-            InternalDistributedMember mbr = future.get(viewAckTimeout, TimeUnit.MILLISECONDS);
+            InternalDistributedMember mbr = null;
+            long timeToWait = giveUpTime - now;
+            if (timeToWait <= 0) {
+              // TODO if timeToWait==0 is future.get() guaranteed to return immediately?
+              // It looks like some code paths invoke Object.wait(0), which waits forever.
+              timeToWait = 1;
+            }
+            mbr = future.get(timeToWait, TimeUnit.MILLISECONDS);
             if (mbr != null) {
               mbrs.remove(mbr);
             }
           } catch (java.util.concurrent.TimeoutException e) {
-            // TODO should the member be removed if we can't verify it in time?
+            // timeout - member didn't pass the final check and will not be removed
+            // from the collection of members
           } catch (ExecutionException e) {
             logger.info("unexpected exception caught during member verification", e);
           }
