@@ -4090,10 +4090,20 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   return region.getEntry(key) == null;
                 }
                 public String description() {
-                  return "Entry for key " + key + " never expired (since it still exists)";
+                  LocalRegion lr = (LocalRegion) region;
+                  String expiryInfo = "";
+                  try {
+                    EntryExpiryTask eet = lr.getEntryExpiryTask(key);
+                    if (eet != null) {
+                      expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow();
+                    }
+                  } catch (EntryNotFoundException ex) {
+                    expiryInfo ="EntryNotFoundException when getting expiry task";
+                  }
+                  return "Entry for key " + key + " never expired (since it still exists) " + expiryInfo;
                 }
               };
-              DistributedTestCase.waitForCriterion(waitForUpdate, 3000, 1, true);
+              DistributedTestCase.waitForCriterion(waitForUpdate, 30000, 1, true);
             }
             assertNull(region.getEntry(key));
           }
