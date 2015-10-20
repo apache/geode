@@ -17,8 +17,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -60,7 +58,6 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 
 import dunit.AsyncInvocation;
@@ -1087,8 +1084,19 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
-  public void testRecoverRedundancyParallelAsyncEventQueueSimulation() {
-    recoverRedundancyParallelAsyncEventQueue(true);
+  public void testRecoverRedundancyParallelAsyncEventQueueSimulation() throws NoSuchFieldException, SecurityException {
+    invokeInEveryVM(new SerializableRunnable() {
+
+      @Override
+      public void run () {
+        System.setProperty("gemfire.LOG_REBALANCE", "true");
+      }
+    });
+    try {
+      recoverRedundancyParallelAsyncEventQueue(true);
+    } finally {
+      System.setProperty("gemfire.LOG_REBALANCE", "false");
+    }
   }
   
   public void testRecoverRedundancyParallelAsyncEventQueue() {
@@ -1862,17 +1870,6 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
    * are correct and we still rebalance correctly
    */
   public void testMoveBucketsOverflowToDisk() throws Throwable {
-    
-    System.setProperty("gemfire.LOG_REBALANCE", "true");
-    invokeInEveryVM(new SerializableCallable() {
-      
-      @Override
-      public Object call() throws Exception {
-        System.setProperty("gemfire.LOG_REBALANCE", "true");
-        return null;
-      }
-    });
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
