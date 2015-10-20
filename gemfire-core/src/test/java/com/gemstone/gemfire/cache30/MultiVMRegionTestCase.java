@@ -5410,6 +5410,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     final String name = this.getUniqueName();
 
+    disconnectAllFromDS(); // possible fix for GEODE-376
+
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
           public void run2() throws CacheException {
