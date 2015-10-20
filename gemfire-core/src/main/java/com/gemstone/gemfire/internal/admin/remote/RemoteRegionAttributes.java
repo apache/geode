@@ -152,7 +152,7 @@ public class RemoteRegionAttributes implements RegionAttributes,
     this.isDiskSynchronous = attr.isDiskSynchronous();
     this.gatewaySendersDescs = getDescs(attr.getGatewaySenderIds().toArray());
     this.asyncEventQueueDescs = getDescs(attr.getAsyncEventQueueIds().toArray());
-	this.hdfsStoreName = attr.getHDFSStoreName();
+  	this.hdfsStoreName = attr.getHDFSStoreName();
     this.hdfsWriteOnly = attr.getHDFSWriteOnly();
     this.compressorDesc = getDesc(attr.getCompressor());
     this.offHeap = attr.getOffHeap();

@@ -20,7 +20,6 @@ import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.AbstractRegion;
 import com.gemstone.gemfire.internal.cache.CustomEvictionAttributesImpl;
@@ -456,7 +455,6 @@ public class AttributesFactory<K,V> {
     this.regionAttributes.multicastEnabled = regionAttributes.getMulticastEnabled();
     this.regionAttributes.gatewaySenderIds = new CopyOnWriteArraySet<String>(regionAttributes.getGatewaySenderIds());
     this.regionAttributes.asyncEventQueueIds = new CopyOnWriteArraySet<String>(regionAttributes.getAsyncEventQueueIds());
-    this.regionAttributes.hdfsStoreName = regionAttributes.getHDFSStoreName();
     this.regionAttributes.isLockGrantor = regionAttributes.isLockGrantor(); // fix for bug 47067
     if (regionAttributes instanceof UserSpecifiedRegionAttributes) {
       this.regionAttributes.setIndexes(((UserSpecifiedRegionAttributes<K,V>) regionAttributes).getIndexes());
@@ -483,10 +481,6 @@ public class AttributesFactory<K,V> {
     }
     
     this.regionAttributes.compressor = regionAttributes.getCompressor();
-    this.regionAttributes.hdfsWriteOnly = regionAttributes.getHDFSWriteOnly();
-    if (regionAttributes instanceof UserSpecifiedRegionAttributes) {
-      this.regionAttributes.setHasHDFSWriteOnly(((UserSpecifiedRegionAttributes<K,V>) regionAttributes).hasHDFSWriteOnly());
-    }
     this.regionAttributes.offHeap = regionAttributes.getOffHeap();
   }
 
@@ -1285,31 +1279,6 @@ public class AttributesFactory<K,V> {
     this.regionAttributes.poolName = nm;
     this.regionAttributes.setHasPoolName(true);
     
-  }
-  
-  /**
-   * Sets the HDFSStore name attribute.
-   * This causes the region to use the {@link HDFSStore}.
-   * @param name the name of the HDFSstore
-   */
-  public void setHDFSStoreName(String name) {
-    //TODO:HDFS throw an exception if the region is already configured for a disk store and 
-    // vice versa
-    this.regionAttributes.hdfsStoreName = name;
-    this.regionAttributes.setHasHDFSStoreName(true);
-  }
-  
-  /**
-   * Sets the HDFS write only attribute. if the region
-   * is configured to be write only to HDFS, events that have 
-   * been evicted from memory cannot be read back from HDFS.
-   * Events are written to HDFS in the order in which they occurred.
-   */
-  public void setHDFSWriteOnly(boolean writeOnly) {
-    //TODO:HDFS throw an exception if the region is already configured for a disk store and 
-    // vice versa
-    this.regionAttributes.hdfsWriteOnly = writeOnly;
-    this.regionAttributes.setHasHDFSWriteOnly(true);
   }
   
   /**

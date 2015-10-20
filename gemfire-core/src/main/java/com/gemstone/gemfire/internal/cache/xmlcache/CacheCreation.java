@@ -83,7 +83,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSIntegrationUtil;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
@@ -1377,11 +1376,6 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     return extensionPoint;
   }
   
-  @Override
-  public HDFSStore findHDFSStore(String storeName) {
-    return (HDFSStore)this.hdfsStores.get(storeName);
-  }
-
   @Override
   public Collection<HDFSStoreImpl> getHDFSStores() {
     return this.hdfsStores.values();
