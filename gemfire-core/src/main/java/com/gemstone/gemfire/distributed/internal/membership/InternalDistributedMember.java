@@ -811,6 +811,13 @@ public final class InternalDistributedMember
     if ((flags & VERSION_MASK) != 0) {
       this.version = Version.readOrdinal(in);
       this.versionObj = Version.fromOrdinalNoThrow(this.version, false);
+    } else {
+      // prior to 7.1 member IDs did not serialize their version information
+      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+      if (v != null) {
+        this.versionObj = v;
+        this.version = v.ordinal();
+      }
     }
   }
 
@@ -907,7 +914,9 @@ public final class InternalDistributedMember
 
   public void toData(DataOutput out) throws IOException {
     toDataPre_GFE_9_0_0_0(out);
-    getNetMember().writeAdditionalData(out);
+    if (this.version >= Version.GFE_90.ordinal()) {
+      getNetMember().writeAdditionalData(out);
+    }
   }
   
   
