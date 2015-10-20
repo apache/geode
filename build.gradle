@@ -285,6 +285,7 @@ subprojects {
     compile 'org.springframework:spring-webmvc:3.2.12.RELEASE'
 
     testCompile 'com.github.stefanbirkner:system-rules:1.12.1'
+    testCompile 'com.jayway.awaitility:awaitility:1.6.5'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:1.01'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:2.1.0'

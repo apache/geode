@@ -327,7 +327,9 @@ public abstract class HostStatSampler
   }
   
   public final boolean isAlive() {
-    return statThread.isAlive();
+    synchronized (HostStatSampler.class) {
+      return statThread != null && statThread.isAlive();
+    }
   }
 
   /**
