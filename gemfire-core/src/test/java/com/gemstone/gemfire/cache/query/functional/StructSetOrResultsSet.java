@@ -368,8 +368,8 @@ public class StructSetOrResultsSet extends TestCase {
   private void checkResultSizes(Collection r1, Collection r2, String query) {
     if (r1.size() != r2.size()) {
       fail("FAILED:SelectResults size is different in both the cases. Size1="
-          + ((SelectResults) r1).size() + " Size2 = "
-          + ((SelectResults) r2).size() + "; failed query=" + query);
+          + r1.size() + " Size2 = "
+          + r2.size() + "; failed query=" + query);
     }
   }
   

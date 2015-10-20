@@ -26,6 +26,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -34,7 +35,6 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
@@ -430,8 +430,9 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
  public void testQueriesWithFilterKeysOnPRWithRebalancing() {
    addExpectedException("QueryInvocationTargetException");
    addExpectedException("java.net.SocketException");
-   Object[][] r = new Object[queries.length][2];
-   Set filter =  new HashSet();
+   addExpectedException("ServerConnectivityException");
+   addExpectedException("FunctionException");
+   addExpectedException("IOException");
 
    // Close cache on server1
    server1.invoke(new CacheSerializableRunnable("Set QueryObserver in cache on server1") {
@@ -478,9 +479,16 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
            //Should not come here, an exception is expected from above function call.
            fail("Function call did not fail for query with function context");
          } catch (FunctionException ex) {
-           //ex.printStackTrace();
-           if (!(ex.getCause() instanceof QueryInvocationTargetException)) {
-             fail("Should have received an QueryInvocationTargetException but recieved"+ex.getMessage());
+           if (!((ex.getCause() instanceof QueryInvocationTargetException) || (ex.getCause() instanceof ServerConnectivityException))) {
+             if (ex.getCause() instanceof FunctionException) {
+               FunctionException fe = (FunctionException)ex.getCause();
+               if (!fe.getMessage().startsWith("IOException")) {
+                 fail("Should have received an QueryInvocationTargetException but recieved"+ex.getMessage());
+               }
+             }
+             else {
+               fail("Should have received an QueryInvocationTargetException but recieved"+ex.getMessage());
+             }
            }
          }
        }//For loop ends here.
@@ -497,9 +505,8 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
  }
 
- // DISABLED due to high rate of failure in unit test runs.
- // See internal ticket #52270
- public void disabledtestNonColocatedRegionQueries() {
+ 
+ public void testNonColocatedRegionQueries() {
    addExpectedException("UnsupportedOperationException");
    client.invoke(new CacheSerializableRunnable("Test query on non-colocated regions on server") {
      @Override
