@@ -56,6 +56,7 @@ public class RangeIndexAPIJUnitTest {
   @Before
   public void setUp() throws java.lang.Exception {
     CacheUtils.startCache();
+    IndexManager.ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION = false;
     region = CacheUtils.createRegion("portfolios", Portfolio.class);
     for (int i = 0; i < 12; i++) {
       //CacheUtils.log(new Portfolio(i));
@@ -71,6 +72,7 @@ public class RangeIndexAPIJUnitTest {
 
   @After
   public void tearDown() throws java.lang.Exception {
+    IndexManager.ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION = true;
     CacheUtils.closeCache();
   }
 
