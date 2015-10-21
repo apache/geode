@@ -380,18 +380,24 @@ public class MiscellaneousCommands implements CommandMarker {
         }
 
         if(object != null){
-          Map<String, String> resultMap = (Map<String, String>) object;
-          toTabularResultData(resultTable, (String) resultMap.get("MemberId"),
-              (String) resultMap.get("HeapSizeBeforeGC"),
-              (String) resultMap.get("HeapSizeAfterGC"),
-              (String) resultMap.get("TimeSpentInGC"));
-        }else{
+          if (object instanceof String) {
+            // unexpected exception string - cache may be closed or something
+            return ResultBuilder.createUserErrorResult((String)object);
+          } else {
+            Map<String, String> resultMap = (Map<String, String>) object;
+            toTabularResultData(resultTable, (String) resultMap.get("MemberId"),
+                (String) resultMap.get("HeapSizeBeforeGC"),
+                (String) resultMap.get("HeapSizeAfterGC"),
+                (String) resultMap.get("TimeSpentInGC"));
+          }
+        } else {
           LogWrapper.getInstance().fine("ResultMap was null ");
         }
       }
     } catch (Exception e) {
-      LogWrapper.getInstance().info("GC exception is " + CliUtil.stackTraceAsString((Throwable)e));
-      return ResultBuilder.createGemFireErrorResult(e.getMessage());
+      String stack = CliUtil.stackTraceAsString(e);
+      LogWrapper.getInstance().info("GC exception is " + stack);
+      return ResultBuilder.createGemFireErrorResult(e.getMessage() + ": " + stack);
     }
     return ResultBuilder.buildResult(resultTable);
   }
