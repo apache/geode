@@ -65,7 +65,6 @@ import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.GemFireRethrowable;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.ToDataException;
@@ -76,7 +75,7 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -3475,7 +3474,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * distributed cache of a new <code>DataSerializer</code> being
    * registered.
    */
-  public static final class RegistrationMessage extends PooledDistributionMessage {
+  public static final class RegistrationMessage extends SerialDistributionMessage {
     /** The id of the <code>DataSerializer</code> that was
      * registered
      * since 5.7 an int instead of a byte
