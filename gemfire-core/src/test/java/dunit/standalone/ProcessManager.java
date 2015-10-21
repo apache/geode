@@ -53,6 +53,8 @@ public class ProcessManager {
   private File log4jConfig;
   private int pendingVMs;
   private Registry registry;
+  private int debugPort = Integer.getInteger("dunit.debug.basePort", 0);
+  private int suspendVM = Integer.getInteger("dunit.debug.suspendVM", -100);
 
   public ProcessManager(int namingPort, Registry registry) {
     this.namingPort = namingPort;
@@ -150,6 +152,15 @@ public class ProcessManager {
     String classPath = System.getProperty("java.class.path");
     //String tmpDir = System.getProperty("java.io.tmpdir");
     String agent = getAgentString();
+
+    String jdkDebug = "";
+    if (debugPort > 0) {
+      jdkDebug += ",address=" + debugPort;
+      debugPort++;
+    }
+
+    String jdkSuspend = vmNum == suspendVM ? "y" : "n";
+
     return new String[] {
       cmd, "-classpath", classPath,
       "-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort,
@@ -157,7 +168,7 @@ public class ProcessManager {
       "-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath(),
       "-DlogLevel=" + DUnitLauncher.LOG_LEVEL,
       "-Djava.library.path=" + System.getProperty("java.library.path"),
-      "-Xrunjdwp:transport=dt_socket,server=y,suspend=n",
+      "-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug,
       "-XX:+HeapDumpOnOutOfMemoryError",
       "-Xmx512m",
       "-XX:MaxPermSize=256M",
