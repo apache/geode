@@ -285,6 +285,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private boolean doCheckMember(InternalDistributedMember pingMember) {
     if (playingDead) {
+      // a member playingDead should not be sending messages to other
+      // members, so we avoid sending heartbeat requests or suspect
+      // messages by returning true.
       return true;
     }
     //TODO: need to some tcp check

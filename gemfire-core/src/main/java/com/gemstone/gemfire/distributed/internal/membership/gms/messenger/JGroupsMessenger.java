@@ -91,12 +91,12 @@ public class JGroupsMessenger implements Messenger {
   /**
    * The location (in the product) of the locator Jgroups config file.
    */
-  private static final String DEFAULT_JGROUPS_TCP_CONFIG = "com/gemstone/gemfire/distributed/internal/jgroups-config.xml";
+  private static final String DEFAULT_JGROUPS_TCP_CONFIG = "com/gemstone/gemfire/distributed/internal/membership/gms/messenger/jgroups-config.xml";
 
   /**
    * The location (in the product) of the mcast Jgroups config file.
    */
-  private static final String DEFAULT_JGROUPS_MCAST_CONFIG = "com/gemstone/gemfire/distributed/internal/jgroups-mcast.xml";
+  private static final String DEFAULT_JGROUPS_MCAST_CONFIG = "com/gemstone/gemfire/distributed/internal/membership/gms/messenger/jgroups-mcast.xml";
 
   /** JG magic numbers for types added to the JG ClassConfigurator */
   public static final short JGROUPS_TYPE_JGADDRESS = 2000;
