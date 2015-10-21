@@ -7,11 +7,6 @@
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
-
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.ClientSession;
 import com.gemstone.gemfire.cache.InterestRegistrationListener;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -20,6 +15,10 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -166,8 +165,7 @@ public class CacheServerCreation extends AbstractCacheServer {
   public boolean sameAs(CacheServer other) {
     ClientSubscriptionConfig cscThis = this.getClientSubscriptionConfig();
     ClientSubscriptionConfig cscOther = other.getClientSubscriptionConfig();
-    boolean result = 
-        this.getPort() == other.getPort() &&
+    boolean result = isCacheServerPortEquals(other) &&
         this.getSocketBufferSize() == other.getSocketBufferSize() &&
         this.getMaximumTimeBetweenPings() == other.getMaximumTimeBetweenPings() &&
         this.getNotifyBySubscription() == other.getNotifyBySubscription() &&
@@ -185,6 +183,18 @@ public class CacheServerCreation extends AbstractCacheServer {
       result = result && cscThis.getOverflowDirectory().equals(cscOther.getOverflowDirectory());
     }
     return result;
+  }
+
+  /**
+   * Compare configured cacheServer port against the running cacheServer port.
+   * If the current cacheServer port is set to 0 a random ephemeral
+   * port will be used so there is no need to compare returning <code>true</code>.
+   * If a port is specified, return the proper comparison.
+   * @param other CacheServer
+   * @return
+   */
+  private boolean isCacheServerPortEquals(CacheServer other) {
+    return (this.getPort() == 0) ? true : this.getPort() == other.getPort();
   }
 
   @Override

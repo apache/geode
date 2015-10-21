@@ -7,10 +7,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.xmlcache.*;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheTransactionManagerCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire
@@ -58,8 +62,9 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
 
     CacheServer bridge1 = cache.addCacheServer();
     setBridgeAttributes(bridge1);
+
     CacheServer bridge2 = cache.addCacheServer();
-    bridge2.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    setBridgeAttributes(bridge2);
 
     testXml(cache);
   }
@@ -70,7 +75,8 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    */
   public void setBridgeAttributes(CacheServer bridge1)
   {
-    bridge1.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    //@see http://docs.oracle.com/javase/7/docs/api/java/net/InetSocketAddress.html#InetSocketAddress(int)
+    bridge1.setPort(0);
   }
 
   /**
