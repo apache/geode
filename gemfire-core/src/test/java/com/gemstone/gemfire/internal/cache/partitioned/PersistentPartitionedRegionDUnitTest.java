@@ -1325,6 +1325,11 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   
   
   public void testRegisterInterestNoDataStores() {
+    //Closing the client may log a warning on the server
+    addExpectedException("Connection reset");
+    addExpectedException("SocketTimeoutException");
+    addExpectedException("ServerConnectivityException");
+    addExpectedException("Socket Closed");
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
