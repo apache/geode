@@ -293,10 +293,29 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
           final int countMembersPlusLocator = vmCount+1-1; // +1 for locator, -1 for OOOHME member
           final int countOtherMembers = vmCount-1-1; // -1 for self, -1 for OOOHME member
           
-          assertEquals(countMembersPlusLocator, ((InternalDistributedSystem)OutOfOffHeapMemoryDUnitTest
-              .system.get()).getDistributionManager().getDistributionManagerIds().size());
-          assertEquals(countOtherMembers, ((DistributedRegion)OutOfOffHeapMemoryDUnitTest
-              .cache.get().getRegion(name)).getDistributionAdvisor().getNumProfiles());
+          final WaitCriterion waitForDisconnect = new WaitCriterion() {
+            public boolean done() {
+              InternalDistributedSystem ids = (InternalDistributedSystem)OutOfOffHeapMemoryDUnitTest.system.get();
+              DistributedRegion dr = (DistributedRegion)OutOfOffHeapMemoryDUnitTest.cache.get().getRegion(name);
+              return countMembersPlusLocator == ids.getDistributionManager().getDistributionManagerIds().size()
+                  && countOtherMembers == dr.getDistributionAdvisor().getNumProfiles();
+            }
+            public String description() {
+              String msg = "";
+              InternalDistributedSystem ids = (InternalDistributedSystem)OutOfOffHeapMemoryDUnitTest.system.get();
+              int currentMemberCount = ids.getDistributionManager().getDistributionManagerIds().size();
+              if (countMembersPlusLocator != currentMemberCount) {
+                msg += " expected " + countMembersPlusLocator + " members but found " + currentMemberCount;
+              }
+              DistributedRegion dr = (DistributedRegion)OutOfOffHeapMemoryDUnitTest.cache.get().getRegion(name);
+              int profileCount = dr.getDistributionAdvisor().getNumProfiles();
+              if (countOtherMembers != profileCount) {
+                msg += " expected " + countOtherMembers + " profiles but found " + profileCount;
+              }
+              return msg;
+            }
+          };
+          waitForCriterion(waitForDisconnect, 30*1000, 10, true);
         }
       });
     }
