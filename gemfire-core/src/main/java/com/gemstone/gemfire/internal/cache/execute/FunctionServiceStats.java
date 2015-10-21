@@ -13,7 +13,6 @@ import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 public class FunctionServiceStats {
@@ -406,7 +405,7 @@ public class FunctionServiceStats {
       // Increment function execution with haveResult = true complete processing time
       this._stats.incLong(_functionExecutionsHasResultCompletedProcessingTimeId, elapsed);
     }
-    
+
   }
   
   /**

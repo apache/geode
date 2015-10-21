@@ -155,7 +155,26 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
       return Boolean.TRUE;
     }
   };
-  
+
+  /*
+   * This helper method prevents race conditions in local functions. Typically, when
+   * calling ResultCollector.getResult() one might expect the function to have completed.
+   * For local functions this is true, however, at this point the function stats may
+   * not have been updated yet thus any code which checks stats after calling getResult()
+   * may get wrong data.
+   */
+  private void waitNoFunctionsRunning(FunctionServiceStats stats) {
+    int count = 100;
+    while (stats.getFunctionExecutionsRunning() > 0 && count > 0) {
+      count--;
+      try {
+        Thread.sleep(50);
+      } catch (InterruptedException ex) {
+        // Ignored
+      }
+    }
+  }
+
   /*
    * 1-client 3-Servers 
    * Function : TEST_FUNCTION2 
@@ -250,6 +269,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         InternalDistributedSystem iDS = (InternalDistributedSystem)cache.getDistributedSystem();
         FunctionServiceStats functionServiceStats = iDS
             .getFunctionServiceStats();
+        waitNoFunctionsRunning(functionServiceStats);
+
         assertEquals(noOfExecutionCalls_Aggregate, functionServiceStats
             .getFunctionExecutionCalls());
         assertEquals(noOfExecutionsCompleted_Aggregate, functionServiceStats
@@ -286,7 +307,9 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
             .getDistributedSystem();
         FunctionServiceStats functionServiceStats = iDS
             .getFunctionServiceStats();
-        //functions are executed 3 times 
+        waitNoFunctionsRunning(functionServiceStats);
+
+        //functions are executed 3 times
         noOfExecutionCalls_Aggregate +=3;
         assertTrue(functionServiceStats
             .getFunctionExecutionCalls() >= noOfExecutionCalls_Aggregate);
@@ -507,7 +530,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
             .getDistributedSystem();
         FunctionServiceStats functionServiceStats = iDS
             .getFunctionServiceStats();
-        
+        waitNoFunctionsRunning(functionServiceStats);
+
         assertEquals(noOfExecutionCalls_Aggregate, functionServiceStats
             .getFunctionExecutionCalls());
         assertEquals(noOfExecutionsCompleted_Aggregate, functionServiceStats
@@ -609,6 +633,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
             .getDistributedSystem();
         FunctionServiceStats functionServiceStats = iDS
             .getFunctionServiceStats();
+        waitNoFunctionsRunning(functionServiceStats);
+
         assertEquals(noOfExecutionCalls_Aggregate, functionServiceStats
             .getFunctionExecutionCalls());
         assertEquals(noOfExecutionsCompleted_Aggregate, functionServiceStats
@@ -646,6 +672,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
             .getDistributedSystem();
         FunctionServiceStats functionServiceStats = iDS
             .getFunctionServiceStats();
+        waitNoFunctionsRunning(functionServiceStats);
+
         // functions are executed 2 times
         noOfExecutionCalls_Aggregate += 2;
         assertEquals(noOfExecutionCalls_Aggregate, functionServiceStats
@@ -827,6 +855,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         InternalDistributedSystem iDS = ((InternalDistributedSystem)getCache()
             .getDistributedSystem());
         FunctionServiceStats functionServiceStats = iDS.getFunctionServiceStats();
+        waitNoFunctionsRunning(functionServiceStats);
+
         assertEquals(noOfExecutionCalls_Aggregate, functionServiceStats
             .getFunctionExecutionCalls());
         assertEquals(noOfExecutionsCompleted_Aggregate, functionServiceStats
@@ -860,6 +890,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
             .getDistributedSystem());
         //3 Function Executions took place 
         FunctionServiceStats functionServiceStats = iDS.getFunctionServiceStats();
+        waitNoFunctionsRunning(functionServiceStats);
+
         noOfExecutionCalls_Aggregate += 3;
         noOfExecutionsCompleted_Aggregate += 3;
         assertEquals(noOfExecutionCalls_Aggregate, functionServiceStats
@@ -1119,7 +1151,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         "checkFunctionExecutionStatsForMember1") {
       public Object call() throws Exception {
         FunctionServiceStats functionServiceStats = ds.getFunctionServiceStats();
-        
+        waitNoFunctionsRunning(functionServiceStats);
+
         assertEquals(noOfExecutionCalls_Aggregate, functionServiceStats
             .getFunctionExecutionCalls());
         assertEquals(noOfExecutionsCompleted_Aggregate, functionServiceStats
@@ -1140,6 +1173,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
         "checkFunctionExecutionStatsForOtherMember") {
       public Object call() throws Exception {
         FunctionServiceStats functionServiceStats = ds.getFunctionServiceStats();
+        waitNoFunctionsRunning(functionServiceStats);
+
         // One function Execution took place on there members
         //noOfExecutionCalls_Aggregate++;
         //noOfExecutionsCompleted_Aggregate++;
