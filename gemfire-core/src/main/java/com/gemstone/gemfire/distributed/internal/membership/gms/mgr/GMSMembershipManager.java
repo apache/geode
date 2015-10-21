@@ -799,6 +799,10 @@ public class GMSMembershipManager implements MembershipManager, Manager
         logger.info(LogMarker.DISTRIBUTION, LocalizedMessage.create(
             LocalizedStrings.GroupMembershipService_CONNECTED_TO_JGROUPS_CHANNEL_TOOK__0__MS, delta));
 
+        NetView initialView = services.getJoinLeave().getView();
+        latestView = new NetView(initialView, initialView.getViewId());
+        listener.viewInstalled(latestView);
+        
       } catch (RuntimeException ex) {
         throw ex;
       }
