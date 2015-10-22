@@ -218,8 +218,8 @@ com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$1,false
 com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$2,false
 com/gemstone/gemfire/cache/snapshot/SnapshotOptions$SnapshotFormat,false
 com/gemstone/gemfire/cache/util/BoundedLinkedHashMap,true,-3419897166186852692,_maximumNumberOfEntries:int
-com/gemstone/gemfire/cache/wan/GatewaySender$OrderPolicy,false
 com/gemstone/gemfire/cache/util/Gateway$OrderPolicy,false
+com/gemstone/gemfire/cache/wan/GatewaySender$OrderPolicy,false
 com/gemstone/gemfire/compression/CompressionException,true,4118639654597191235
 com/gemstone/gemfire/compression/SnappyCompressor,true,496609875302446099
 com/gemstone/gemfire/distributed/AbstractLauncher$Status,false,description:java/lang/String
@@ -498,6 +498,7 @@ com/gemstone/gemfire/internal/redis/RedisCommandType$11,false,dataType:com/gemst
 com/gemstone/gemfire/internal/redis/RedisCommandType$110,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$111,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$112,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
+com/gemstone/gemfire/internal/redis/RedisCommandType$113,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$12,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$13,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$14,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
@@ -594,7 +595,6 @@ com/gemstone/gemfire/internal/redis/RedisCommandType$96,false,dataType:com/gemst
 com/gemstone/gemfire/internal/redis/RedisCommandType$97,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$98,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisCommandType$99,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
-com/gemstone/gemfire/internal/redis/RedisCommandType$113,false,dataType:com/gemstone/gemfire/internal/redis/RedisDataType,executor:com/gemstone/gemfire/internal/redis/Executor
 com/gemstone/gemfire/internal/redis/RedisDataType,false
 com/gemstone/gemfire/internal/redis/RedisDataType$1,false
 com/gemstone/gemfire/internal/redis/RedisDataType$2,false
@@ -632,17 +632,6 @@ com/gemstone/gemfire/internal/tcp/ImmutableByteBufferInputStream,false
 com/gemstone/gemfire/internal/tcp/MemberShunnedException,true,-8453126202477831557,member:com/gemstone/gemfire/internal/tcp/Stub
 com/gemstone/gemfire/internal/tcp/ReenteredConnectException,false
 com/gemstone/gemfire/internal/tcp/VersionedByteBufferInputStream,false,version:com/gemstone/gemfire/internal/Version
-com/gemstone/gemfire/internal/tools/gfsh/aggregator/AggregatorPartitionFunction,true,1
-com/gemstone/gemfire/internal/tools/gfsh/app/aggregator/AggregatorException,true,1,functionExceptions:java/lang/Throwable[]
-com/gemstone/gemfire/internal/tools/gfsh/app/cache/data/InvalidTypeException,false
-com/gemstone/gemfire/internal/tools/gfsh/app/cache/data/ListMap$ListEntry,false,key:java/lang/Object,value:java/lang/Object
-com/gemstone/gemfire/internal/tools/gfsh/app/cache/data/ListMap$ListSet,false,entryList:java/util/ArrayList
-com/gemstone/gemfire/internal/tools/gfsh/app/cache/index/LookupServiceException,true,1
-com/gemstone/gemfire/internal/tools/gfsh/app/command/CommandException,false
-com/gemstone/gemfire/internal/tools/gfsh/app/commands/index$TASK,false
-com/gemstone/gemfire/internal/tools/gfsh/app/function/command/index$DeleteType,false
-com/gemstone/gemfire/internal/tools/gfsh/app/pogo/InvalidKeyException,true,1
-com/gemstone/gemfire/internal/tools/gfsh/app/util/DBUtilException,true,1,errorCode:int
 com/gemstone/gemfire/internal/util/Breadcrumbs$CrumbType,false
 com/gemstone/gemfire/internal/util/SingletonValue$ValueState,false
 com/gemstone/gemfire/internal/util/SunAPINotFoundException,false
@@ -716,8 +705,6 @@ com/gemstone/gemfire/management/internal/cli/exceptions/CliCommandOptionValueMis
 com/gemstone/gemfire/management/internal/cli/exceptions/CliException,false
 com/gemstone/gemfire/management/internal/cli/exceptions/CreateSubregionException,true,4387344870743824916
 com/gemstone/gemfire/management/internal/cli/exceptions/IndexNotFoundException,true,1,indexName:java/lang/String,message:java/lang/String
-com/gemstone/gemfire/management/internal/cli/functions/AlterHDFSStoreFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/AlterHDFSStoreFunction$AlterHDFSStoreAttributes,true,1,batchInterval:java/lang/Integer,batchSize:java/lang/Integer,fileRolloverInterval:java/lang/Integer,hdfsUniqueName:java/lang/String,majorCompact:java/lang/Boolean,majorCompactionInterval:java/lang/Integer,majorCompactionThreads:java/lang/Integer,maxWriteonlyFileSize:java/lang/Integer,minorCompact:java/lang/Boolean,minorCompactionThreads:java/lang/Integer,purgeInterval:java/lang/Integer
 com/gemstone/gemfire/management/internal/cli/functions/AlterRuntimeConfigFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ChangeLogLevelFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CloseDurableClientFunction,true,1
@@ -727,7 +714,6 @@ com/gemstone/gemfire/management/internal/cli/functions/ContunuousQueryFunction$C
 com/gemstone/gemfire/management/internal/cli/functions/CreateAsyncEventQueueFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateDefinedIndexesFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateDiskStoreFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/CreateHDFSStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateIndexFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectExecStep,true,1
@@ -737,7 +723,6 @@ com/gemstone/gemfire/management/internal/cli/functions/DeployFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DescribeDiskStoreFunction,false
 com/gemstone/gemfire/management/internal/cli/functions/DescribeHDFSStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DestroyDiskStoreFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/DestroyHDFSStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DestroyIndexFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ExportConfigFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ExportDataFunction,true,1
@@ -763,8 +748,6 @@ com/gemstone/gemfire/management/internal/cli/functions/ListDeployedFunction,true
 com/gemstone/gemfire/management/internal/cli/functions/ListDiskStoresFunction,false
 com/gemstone/gemfire/management/internal/cli/functions/ListDurableCqNamesFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ListFunctionFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/ListHDFSStoresFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/ListHDFSStoresFunction$HdfsStoreDetails,true,1,memberId:java/lang/String,memberName:java/lang/String,storeName:java/lang/String
 com/gemstone/gemfire/management/internal/cli/functions/ListIndexFunction,false
 com/gemstone/gemfire/management/internal/cli/functions/LoadSharedConfigurationFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/LogFileFunction,true,1
@@ -777,7 +760,7 @@ com/gemstone/gemfire/management/internal/cli/functions/RebalanceFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/RegionAlterFunction,true,-4846425364943216425
 com/gemstone/gemfire/management/internal/cli/functions/RegionCreateFunction,true,8746830191680509335
 com/gemstone/gemfire/management/internal/cli/functions/RegionDestroyFunction,true,9172773671865750685
-com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs,true,-5158224572470173267,asyncEventQueueIds:java/util/Set,cacheListeners:java/util/Set,cacheLoader:java/lang/String,cacheWriter:java/lang/String,cloningEnabled:java/lang/Boolean,compressor:java/lang/String,concurrencyChecksEnabled:java/lang/Boolean,concurrencyLevel:java/lang/Integer,diskStore:java/lang/String,diskSynchronous:java/lang/Boolean,enableAsyncConflation:java/lang/Boolean,enableSubscriptionConflation:java/lang/Boolean,entryExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,entryExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,evictionMax:java/lang/Integer,gatewaySenderIds:java/util/Set,hdfsStoreName:java/lang/String,hdfsWriteOnly:java/lang/Boolean,isSetCloningEnabled:boolean,isSetCompressor:boolean,isSetConcurrencyChecksEnabled:boolean,isSetConcurrencyLevel:boolean,isSetDiskSynchronous:boolean,isSetEnableAsyncConflation:boolean,isSetEnableSubscriptionConflation:boolean,isSetHdfsWriteOnly:java/lang/Boolean,isSetOffHeap:boolean,isSetStatisticsEnabled:boolean,keyConstraint:java/lang/String,offHeap:java/lang/Boolean,partitionArgs:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,regionAttributes:com/gemstone/gemfire/cache/RegionAttributes,regionExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionPath:java/lang/String,regionShortcut:com/gemstone/gemfire/cache/RegionShortcut,skipIfExists:java/lang/Boolean,statisticsEnabled:java/lang/Boolean,useAttributesFrom:java/lang/String,valueConstraint:java/lang/String
+com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs,true,-5158224572470173267,asyncEventQueueIds:java/util/Set,cacheListeners:java/util/Set,cacheLoader:java/lang/String,cacheWriter:java/lang/String,cloningEnabled:java/lang/Boolean,compressor:java/lang/String,concurrencyChecksEnabled:java/lang/Boolean,concurrencyLevel:java/lang/Integer,diskStore:java/lang/String,diskSynchronous:java/lang/Boolean,enableAsyncConflation:java/lang/Boolean,enableSubscriptionConflation:java/lang/Boolean,entryExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,entryExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,evictionMax:java/lang/Integer,gatewaySenderIds:java/util/Set,isSetCloningEnabled:boolean,isSetCompressor:boolean,isSetConcurrencyChecksEnabled:boolean,isSetConcurrencyLevel:boolean,isSetDiskSynchronous:boolean,isSetEnableAsyncConflation:boolean,isSetEnableSubscriptionConflation:boolean,isSetOffHeap:boolean,isSetStatisticsEnabled:boolean,keyConstraint:java/lang/String,offHeap:java/lang/Boolean,partitionArgs:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,regionAttributes:com/gemstone/gemfire/cache/RegionAttributes,regionExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionPath:java/lang/String,regionShortcut:com/gemstone/gemfire/cache/RegionShortcut,skipIfExists:java/lang/Boolean,statisticsEnabled:java/lang/Boolean,useAttributesFrom:java/lang/String,valueConstraint:java/lang/String
 com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,true,1474255033398008062,action:com/gemstone/gemfire/cache/ExpirationAction,time:java/lang/Integer,type:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor
 com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor,false
 com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,true,5907052187323280919,hasPartitionAttributes:boolean,isSetPRLocalMaxMemory:boolean,isSetPRRecoveryDelay:boolean,isSetPRRedundantCopies:boolean,isSetPRStartupRecoveryDelay:boolean,isSetPRTotalMaxMemory:boolean,isSetPRTotalNumBuckets:boolean,prColocatedWith:java/lang/String,prLocalMaxMemory:int,prRecoveryDelay:long,prRedundantCopies:int,prStartupRecoveryDelay:long,prTotalMaxMemory:long,prTotalNumBuckets:int,userSpecifiedPartitionAttributes:java/util/Set
@@ -843,10 +826,6 @@ com/gemstone/gemfire/security/AuthenticationFailedException,true,-82028664722790
 com/gemstone/gemfire/security/AuthenticationRequiredException,true,4675976651103154919
 com/gemstone/gemfire/security/GemFireSecurityException,true,3814254578203076926
 com/gemstone/gemfire/security/NotAuthorizedException,true,419215768216387745,principal:java/security/Principal
-com/gemstone/java/util/concurrent/SynchronousQueueNoSpin,true,-3223113410248163686,qlock:java/util/concurrent/locks/ReentrantLock,waitingConsumers:com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$WaitQueue,waitingProducers:com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$WaitQueue
-com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$FifoWaitQueue,true,-3623113410248163686
-com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$LifoWaitQueue,true,-3633113410248163686
-com/gemstone/java/util/concurrent/SynchronousQueueNoSpin$WaitQueue,true,423369940180943459
 com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessage,true,-665975803997290697,messagePattern:java/lang/String,stringArgs:java/lang/String[]
 com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessageFactory,true,1
 com/gemstone/org/jgroups/ChannelClosedException,true,3183749334840801913
