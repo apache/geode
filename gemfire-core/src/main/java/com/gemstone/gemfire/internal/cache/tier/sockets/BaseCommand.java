@@ -369,6 +369,7 @@ public abstract class BaseCommand implements Command {
             new Object[] {servConn.getName(), servConn.getModRegion(), servConn.getModKey(), Integer.valueOf(transId)}));
         }
         else {
+          logger.debug("EOF exception", eof);
           logger.info(LocalizedMessage.create(
             LocalizedStrings.BaseCommand_0_CONNECTION_DISCONNECT_DETECTED_BY_EOF,
             servConn.getName()));

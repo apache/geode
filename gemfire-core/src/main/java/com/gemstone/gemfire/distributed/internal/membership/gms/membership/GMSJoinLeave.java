@@ -1904,7 +1904,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         @Override
         public Thread newThread(Runnable r) {
           return new Thread(Services.getThreadGroup(), r,
-              "Member verification thread " + i.incrementAndGet());
+              "GemFire View Creator verification thread " + i.incrementAndGet());
         }
       });
       
