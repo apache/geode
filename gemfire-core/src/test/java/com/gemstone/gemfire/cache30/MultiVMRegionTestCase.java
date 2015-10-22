@@ -5450,6 +5450,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           IntWrapper.IntWrapperSerializer serializer =
             (IntWrapper.IntWrapperSerializer)
             DataSerializer.register(c);
+          getLogWriter().info("Registered serializer id:" + serializer.getId()
+              + " class:" + c.getName());
 
           Region region = getRootRegion().getSubregion(name);
           region.put(key, new IntWrapper(intValue));
