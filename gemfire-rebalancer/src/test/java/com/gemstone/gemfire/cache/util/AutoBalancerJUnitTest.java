@@ -1,15 +1,23 @@
 package com.gemstone.gemfire.cache.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.Sequence;
+import org.jmock.api.Invocation;
+import org.jmock.lib.action.CustomAction;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
@@ -27,10 +35,13 @@ import com.gemstone.gemfire.cache.util.AutoBalancer.CacheOperationFacade;
 import com.gemstone.gemfire.cache.util.AutoBalancer.GeodeCacheFacade;
 import com.gemstone.gemfire.cache.util.AutoBalancer.OOBAuditor;
 import com.gemstone.gemfire.cache.util.AutoBalancer.SizeBasedOOBAuditor;
+import com.gemstone.gemfire.cache.util.AutoBalancer.TimeProvider;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.partitioned.InternalPRInfo;
+import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -40,6 +51,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class AutoBalancerJUnitTest {
   Mockery mockContext;
 
+  CacheOperationFacade mockCacheFacade;
+  OOBAuditor mockAuditor;
+  AuditScheduler mockScheduler;
+  TimeProvider mockClock;
+
   @Before
   public void setupMock() {
     mockContext = new Mockery() {
@@ -48,6 +64,11 @@ public class AutoBalancerJUnitTest {
         setThreadingPolicy(new Synchroniser());
       }
     };
+
+    mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
+    mockAuditor = mockContext.mock(OOBAuditor.class);
+    mockScheduler = mockContext.mock(AuditScheduler.class);
+    mockClock = mockContext.mock(TimeProvider.class);
   }
 
   @After
@@ -58,7 +79,6 @@ public class AutoBalancerJUnitTest {
 
   @Test
   public void testLockStatExecuteInSequence() throws InterruptedException {
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     final Sequence sequence = mockContext.sequence("sequence");
     mockContext.checking(new Expectations() {
       {
@@ -73,33 +93,12 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    AutoBalancer balancer = new AutoBalancer();
-    balancer.setCacheOperationFacade(mockCacheFacade);
-    balancer.getOOBAuditor().execute();
-  }
-
-  @Test
-  public void testReusePreAcquiredLock() throws InterruptedException {
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCacheFacade).acquireAutoBalanceLock();
-        will(returnValue(true));
-        exactly(2).of(mockCacheFacade).incrementAttemptCounter();
-        exactly(2).of(mockCacheFacade).getTotalTransferSize();
-        will(returnValue(0L));
-      }
-    });
-
-    AutoBalancer balancer = new AutoBalancer();
-    balancer.setCacheOperationFacade(mockCacheFacade);
-    balancer.getOOBAuditor().execute();
+    AutoBalancer balancer = new AutoBalancer(null, null, null, mockCacheFacade);
     balancer.getOOBAuditor().execute();
   }
 
   @Test
   public void testAcquireLockAfterReleasedRemotely() throws InterruptedException {
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     final Sequence sequence = mockContext.sequence("sequence");
     mockContext.checking(new Expectations() {
       {
@@ -115,15 +114,13 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    AutoBalancer balancer = new AutoBalancer();
-    balancer.setCacheOperationFacade(mockCacheFacade);
+    AutoBalancer balancer = new AutoBalancer(null, null, null, mockCacheFacade);
     balancer.getOOBAuditor().execute();
     balancer.getOOBAuditor().execute();
   }
 
   @Test
   public void testFailExecuteIfLockedElsewhere() throws InterruptedException {
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     mockContext.checking(new Expectations() {
       {
         oneOf(mockCacheFacade).acquireAutoBalanceLock();
@@ -132,40 +129,7 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        AutoBalancer balancer = new AutoBalancer();
-        balancer.setCacheOperationFacade(mockCacheFacade);
-        balancer.getOOBAuditor().execute();
-      }
-    });
-    thread.start();
-    thread.join();
-  }
-
-  @Test
-  public void testFailExecuteIfBalanced() throws InterruptedException {
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCacheFacade).acquireAutoBalanceLock();
-        will(returnValue(true));
-        never(mockCacheFacade).rebalance();
-        oneOf(mockCacheFacade).incrementAttemptCounter();
-      }
-    });
-
-    AutoBalancer balancer = new AutoBalancer();
-    balancer.setCacheOperationFacade(mockCacheFacade);
-
-    SizeBasedOOBAuditor auditor = balancer.new SizeBasedOOBAuditor() {
-      @Override
-      boolean needsRebalancing() {
-        return false;
-      }
-    };
-    balancer.setOOBAuditor(auditor);
+    AutoBalancer balancer = new AutoBalancer(null, null, null, mockCacheFacade);
     balancer.getOOBAuditor().execute();
   }
 
@@ -181,7 +145,6 @@ public class AutoBalancerJUnitTest {
     final long totalSize = 1000L;
 
     final Map<PartitionedRegion, InternalPRInfo> details = new HashMap<>();
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     mockContext.checking(new Expectations() {
       {
         allowing(mockCacheFacade).getRegionMemberDetails();
@@ -200,8 +163,7 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    AutoBalancer balancer = new AutoBalancer();
-    balancer.setCacheOperationFacade(mockCacheFacade);
+    AutoBalancer balancer = new AutoBalancer(null, null, null, mockCacheFacade);
     Properties config = getBasicConfig();
     config.put(AutoBalancer.MINIMUM_SIZE, "10");
     balancer.init(config);
@@ -218,7 +180,6 @@ public class AutoBalancerJUnitTest {
   public void testOOBWhenAboveThresholdButBelowMin() {
     final long totalSize = 1000L;
 
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     mockContext.checking(new Expectations() {
       {
         // first run
@@ -233,8 +194,7 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    AutoBalancer balancer = new AutoBalancer();
-    balancer.setCacheOperationFacade(mockCacheFacade);
+    AutoBalancer balancer = new AutoBalancer(null, null, null, mockCacheFacade);
     Properties config = getBasicConfig();
     config.put(AutoBalancer.MINIMUM_SIZE, "" + (totalSize * 5));
     balancer.init(config);
@@ -252,7 +212,6 @@ public class AutoBalancerJUnitTest {
     final long totalSize = 1000L;
 
     final Map<PartitionedRegion, InternalPRInfo> details = new HashMap<>();
-    final CacheOperationFacade mockCacheFacade = mockContext.mock(CacheOperationFacade.class);
     mockContext.checking(new Expectations() {
       {
         allowing(mockCacheFacade).getRegionMemberDetails();
@@ -274,8 +233,7 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    AutoBalancer balancer = new AutoBalancer();
-    balancer.setCacheOperationFacade(mockCacheFacade);
+    AutoBalancer balancer = new AutoBalancer(null, null, null, mockCacheFacade);
     Properties config = getBasicConfig();
     config.put(AutoBalancer.MINIMUM_SIZE, "10");
     balancer.init(config);
@@ -355,8 +313,6 @@ public class AutoBalancerJUnitTest {
     props.put(AutoBalancer.SCHEDULE, someSchedule);
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, 17);
 
-    final AuditScheduler mockScheduler = mockContext.mock(AuditScheduler.class);
-    final OOBAuditor mockAuditor = mockContext.mock(OOBAuditor.class);
     mockContext.checking(new Expectations() {
       {
         oneOf(mockScheduler).init(someSchedule);
@@ -364,10 +320,7 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    AutoBalancer autoR = new AutoBalancer();
-    autoR.setScheduler(mockScheduler);
-    autoR.setOOBAuditor(mockAuditor);
-
+    AutoBalancer autoR = new AutoBalancer(mockScheduler, mockAuditor, null, null);
     autoR.init(props);
   }
 
@@ -404,6 +357,8 @@ public class AutoBalancerJUnitTest {
 
     mockContext.checking(new Expectations() {
       {
+        oneOf(mockCache).isClosed();
+        will(returnValue(false));
         oneOf(mockCache).getResourceManager();
         will(returnValue(mockRM));
         oneOf(mockRM).createRebalanceFactory();
@@ -424,12 +379,7 @@ public class AutoBalancerJUnitTest {
       }
     });
 
-    GeodeCacheFacade facade = new GeodeCacheFacade() {
-      @Override
-      GemFireCacheImpl getCache() {
-        return mockCache;
-      }
-    };
+    GeodeCacheFacade facade = new GeodeCacheFacade(mockCache);
 
     return facade;
   }
@@ -446,19 +396,68 @@ public class AutoBalancerJUnitTest {
     final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
     mockContext.checking(new Expectations() {
       {
+        oneOf(mockCache).isClosed();
+        will(returnValue(false));
         oneOf(mockCache).getPartitionedRegions();
         will(returnValue(new HashSet<PartitionedRegion>()));
       }
     });
 
-    GeodeCacheFacade facade = new GeodeCacheFacade() {
-      @Override
-      GemFireCacheImpl getCache() {
-        return mockCache;
-      }
-    };
+    GeodeCacheFacade facade = new GeodeCacheFacade(mockCache);
 
     assertEquals(0, facade.getRegionMemberDetails().size());
+  }
+
+  @Test
+  public void testFacadeCollectMemberDetails2Regions() {
+    final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
+    final InternalResourceManager mockRM = mockContext.mock(InternalResourceManager.class);
+    final LoadProbe mockProbe = mockContext.mock(LoadProbe.class);
+
+    final PartitionedRegion mockR1 = mockContext.mock(PartitionedRegion.class, "r1");
+    final PartitionedRegion mockR2 = mockContext.mock(PartitionedRegion.class, "r2");
+    final HashSet<PartitionedRegion> regions = new HashSet<>();
+    regions.add(mockR1);
+    regions.add(mockR2);
+
+    final PRHARedundancyProvider mockRedundancyProviderR1 = mockContext.mock(PRHARedundancyProvider.class, "prhaR1");
+    final InternalPRInfo mockR1PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR1");
+
+    final PRHARedundancyProvider mockRedundancyProviderR2 = mockContext.mock(PRHARedundancyProvider.class, "prhaR2");
+    final InternalPRInfo mockR2PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR2");
+
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCache).isClosed();
+        will(returnValue(false));
+        oneOf(mockCache).getPartitionedRegions();
+        will(returnValue(regions));
+        exactly(2).of(mockCache).getResourceManager();
+        will(returnValue(mockRM));
+        exactly(2).of(mockRM).getLoadProbe();
+        will(returnValue(mockProbe));
+        allowing(mockR1).getFullPath();
+        oneOf(mockR1).getRedundancyProvider();
+        will(returnValue(mockRedundancyProviderR1));
+        allowing(mockR2).getFullPath();
+        oneOf(mockR2).getRedundancyProvider();
+        will(returnValue(mockRedundancyProviderR2));
+
+        oneOf(mockRedundancyProviderR1).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
+        will(returnValue(mockR1PRInfo));
+
+        oneOf(mockRedundancyProviderR2).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
+        will(returnValue(mockR2PRInfo));
+      }
+    });
+
+    GeodeCacheFacade facade = new GeodeCacheFacade(mockCache);
+
+    Map<PartitionedRegion, InternalPRInfo> map = facade.getRegionMemberDetails();
+    assertNotNull(map);
+    assertEquals(2, map.size());
+    assertEquals(map.get(mockR1), mockR1PRInfo);
+    assertEquals(map.get(mockR2), mockR2PRInfo);
   }
 
   @Test
@@ -512,6 +511,33 @@ public class AutoBalancerJUnitTest {
     };
 
     assertEquals(123 + 74 + 3475, facade.getTotalDataSize(details));
+  }
+
+  @Test
+  public void testAuditorInvocation() throws InterruptedException {
+    final CountDownLatch latch = new CountDownLatch(3);
+
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockAuditor).init(with(any(Properties.class)));
+        exactly(2).of(mockAuditor).execute();
+        allowing(mockClock).currentTimeMillis();
+        will(new CustomAction("returnTime") {
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            latch.countDown();
+            return 990L;
+          }
+        });
+      }
+    });
+
+    Properties props = AutoBalancerJUnitTest.getBasicConfig();
+
+    assertEquals(3, latch.getCount());
+    AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
+    autoR.init(props);
+    assertTrue(latch.await(1, TimeUnit.SECONDS));
   }
 
   static Properties getBasicConfig() {
