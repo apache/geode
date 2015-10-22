@@ -31,6 +31,7 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.SerialAckedMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -350,6 +351,22 @@ public class JGroupsMessengerJUnitTest {
     assertTrue(messenger.myChannel.isConnected());
     messenger.stop();
     assertFalse(messenger.myChannel.isConnected());
+  }
+  
+  /**
+   * Test whether DistributionMessage.isPreciousThread() recognizes
+   * that a UDP transport thread is "precious"
+   * @throws Exception
+   */
+  @Test
+  public void testPreciousThread() throws Exception {
+    String name = Thread.currentThread().getName();
+    try {
+      Thread.currentThread().setName(Transport.PRECIOUS_THREAD_NAME_PREFIX + " test thread");
+      assertTrue(DistributionMessage.isPreciousThread());
+    } finally {
+      Thread.currentThread().setName(name);
+    }
   }
   
   @Test

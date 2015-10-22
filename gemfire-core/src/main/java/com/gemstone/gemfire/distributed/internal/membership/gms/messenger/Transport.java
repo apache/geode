@@ -7,6 +7,11 @@ import org.jgroups.util.DefaultThreadFactory;
 import org.jgroups.util.LazyThreadFactory;
 
 public class Transport extends UDP {
+
+  /**
+   * This is the initial part of the name of all JGroups threads that deliver messages
+   */
+  public static final String PRECIOUS_THREAD_NAME_PREFIX = "Geode UDP";
   
   /*
    * (non-Javadoc)
@@ -49,10 +54,10 @@ public class Transport extends UDP {
   @Override
   public void init() throws Exception {
     global_thread_factory=new DefaultThreadFactory("Geode ", true);
-    timer_thread_factory=new LazyThreadFactory("Geode UDP Timer", true, true);
-    default_thread_factory=new DefaultThreadFactory("Geode UDP Incoming", true, true);
-    oob_thread_factory=new DefaultThreadFactory("Geode UDP OOB", true, true);
-    internal_thread_factory=new DefaultThreadFactory("Geode UDP INT", true, true);
+    timer_thread_factory=new LazyThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " Timer", true, true);
+    default_thread_factory=new DefaultThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " Incoming", true, true);
+    oob_thread_factory=new DefaultThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " OOB", true, true);
+    internal_thread_factory=new DefaultThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " INT", true, true);
     super.init();
   }
 

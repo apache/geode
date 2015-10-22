@@ -485,7 +485,7 @@ public abstract class DistributionMessage
    */
   public static boolean isPreciousThread() {
     String thrname = Thread.currentThread().getName();
-    return thrname.startsWith("GEODE UDP");
+    return thrname.startsWith("Geode UDP");
   }
 
 
