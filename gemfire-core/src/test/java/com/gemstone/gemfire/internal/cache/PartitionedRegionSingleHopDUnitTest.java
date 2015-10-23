@@ -830,6 +830,25 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath()); 
+    
+    //Fixes a race condition in GEODE-414 by retrying as 
+    //region.clientMetaDataLock.tryLock() may prevent fetching the 
+    //metadata through functional calls as only limited functions are executed in the test.
+    long start = System.currentTimeMillis();
+    do {
+      if ((prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() !=4)) {
+        //waiting if there is another thread holding the lock
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          //ignored.
+        }
+        cms.getClientPRMetadata((LocalRegion)region);
+      } else {
+        break;
+      }
+    } while (System.currentTimeMillis() - start < 60000);
+    
     wc = new WaitCriterion() {
       public boolean done() {
         return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4);
