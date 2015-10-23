@@ -180,8 +180,30 @@ public class PluckStacks {
     
     // check these first for efficiency
     
+    if (threadName.startsWith("Cache Client Updater Thread")) {
+      return stackSize == 13 && thread.get(2).contains("SocketInputStream.socketRead0");
+    }
+    if (threadName.startsWith("Client Message Dispatcher")) {
+      return stackSize == 13 && thread.get(1).contains("TIMED_WAITING");
+    }
     if (threadName.startsWith("Function Execution Processor")) {
       return isIdleExecutor(thread);
+    }
+    if (threadName.startsWith("GemFire Membership Timer")) {
+//      System.out.println("gf timer stack size = " + stackSize + "; frame = " + thread.get(1));
+      return stackSize < 9 && thread.get(1).contains("Thread.State: WAITING");
+    }
+    if (threadName.startsWith("GemFire Membership View Creator")) {
+//    System.out.println("gf view creator stack size = " + stackSize + "; frame = " + thread.get(1));
+    return stackSize < 8 && thread.get(1).contains("Thread.State: WAITING");
+  }
+    if (threadName.startsWith("GemFire Suspect Message Collector")) {
+//      System.out.println("gf suspect collector stack size = " + stackSize + "; frame = " + thread.get(1));
+      return stackSize <= 7 && thread.get(1).contains("Thread.State: WAITING");
+    }
+    if (threadName.startsWith("P2P Listener")) {
+//      System.out.println("p2p listener stack size = " + stackSize + "; frame = " + thread.get(2));
+      return (stackSize == 8 && thread.get(2).contains("SocketChannelImpl.accept"));
     }
     if (threadName.startsWith("P2P message reader")) {
       return (stackSize == 11 && 
@@ -206,8 +228,20 @@ public class PluckStacks {
     }
     if (threadName.startsWith("ServerConnection")) {
       if (thread.getFirstFrame().contains("socketRead")
-          && (stackSize > 5 && thread.get(5).contains("fetchHeader"))) return true; // reading from a client
+          && (stackSize > 6 && thread.get(6).contains("fetchHeader"))) return true; // reading from a client
       return isIdleExecutor(thread);
+    }
+    if (threadName.startsWith("Timer runner")) {
+//      System.out.println("timer runner stack size = " + stackSize + "; frame = " + thread.get(1));
+      return (stackSize <= 10 && thread.get(1).contains("TIMED_WAITING"));
+    }
+    if (threadName.startsWith("TransferQueueBundler")) {
+//      System.out.println("transfer bundler stack size = " + stackSize + "; frame = " + thread.get(2));
+      return (stackSize == 9 && thread.get(2).contains("sun.misc.Unsafe.park"));
+    }
+    if (threadName.startsWith("unicast receiver")) {
+//      System.out.println("unicast receiver stack size = " + stackSize + "; frame = " + thread.get(3));
+      return (stackSize > 2 && thread.get(2).contains("PlainDatagramSocketImpl.receive"));
     }
     
     /////////////////////////////////////////////////////////////////////////
