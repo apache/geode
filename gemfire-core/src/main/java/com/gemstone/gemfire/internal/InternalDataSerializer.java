@@ -3384,14 +3384,16 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * updates.  If the serialized bytes arrive at a VM before the
    * registration message does, the deserializer will wait an amount
    * of time for the registration message to arrive.
+   * Made public for unit test access.
    * @since 5.7
    */
-  static class GetMarker extends Marker {
+  public static class GetMarker extends Marker {
     /**
      * Number of milliseconds to wait. Also used by InternalInstantiator.
      * Note that some tests set this to a small amount to speed up failures.
+     * Made public for unit test access.
      */
-    static int WAIT_MS = Integer.getInteger("gemfire.InternalDataSerializer.WAIT_MS", 60 * 1000);
+    public static int WAIT_MS = Integer.getInteger("gemfire.InternalDataSerializer.WAIT_MS", 60 * 1000);
 
     /**
      * Returns the serializer associated with this marker.  If the

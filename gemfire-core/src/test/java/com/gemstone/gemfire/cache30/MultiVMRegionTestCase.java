@@ -5410,8 +5410,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     final String name = this.getUniqueName();
 
-    disconnectAllFromDS(); // possible fix for GEODE-376
-
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
           public void run2() throws CacheException {
@@ -5465,21 +5463,31 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     SerializableRunnable get = new CacheSerializableRunnable("Get int") {
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
-//          if (region.getAttributes().getScope().isDistributedNoAck()) {
-            // wait a while for the serializer to be registered
-            long end = System.currentTimeMillis() + 30000;
-            while (InternalDataSerializer.getSerializer((byte)120) == null) {
-              assertTrue("This test sometimes fails due to timing issues",
-                  System.currentTimeMillis() <= end);
-              try {
-                Thread.sleep(1000);
+          // wait a while for the serializer to be registered
+          // A race condition exists in the product in which
+          // this thread can be stuck waiting in getSerializer
+          // for 60 seconds. So it only calls getSerializer once
+          // causing it to fail intermittently (see GEODE-376).
+          // To workaround this the test wets WAIT_MS to 1 ms.
+          // So the getSerializer will only block for 1 ms.
+          // This allows the WaitCriterion to make multiple calls
+          // of getSerializer and the subsequent calls will find
+          // the DataSerializer.
+          final int savVal = InternalDataSerializer.GetMarker.WAIT_MS;
+          InternalDataSerializer.GetMarker.WAIT_MS = 1;
+          try {
+            WaitCriterion ev = new WaitCriterion() {
+              public boolean done() {
+                return InternalDataSerializer.getSerializer((byte)120) != null;
               }
-              catch (InterruptedException e) {
-                // no need to keep interrupt bit here
-                throw new CacheException("Test interrupted") { };
+              public String description() {
+                return "DataSerializer with id 120 was never registered";
               }
-            }
-//          }
+            };
+            DistributedTestCase.waitForCriterion(ev, 30 * 1000, 10, true);
+          } finally {
+            InternalDataSerializer.GetMarker.WAIT_MS = savVal;
+          }
           IntWrapper value = (IntWrapper) region.get(key);
           assertNotNull(InternalDataSerializer.getSerializer((byte)120));
           assertNotNull(value);
