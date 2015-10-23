@@ -69,8 +69,12 @@ public class FDDUnitTest extends CacheTestCase {
     vm1.invoke(CacheServerTestUtil.class, "closeCache");
     vm2.invoke(CacheServerTestUtil.class, "closeCache");
   }
+
+  public void testEmpty() {
+    //Ticket #GEODE-338.  Disable the test for now and rewrite as a junit test.
+  }
   
-  public void testFDSocketFixOnlyServers() throws Exception {
+  public void disable_testFDSocketFixOnlyServers() throws Exception {
     String os = System.getProperty("os.name");
     if (os != null) {
       if (os.indexOf("Windows") != -1) {
