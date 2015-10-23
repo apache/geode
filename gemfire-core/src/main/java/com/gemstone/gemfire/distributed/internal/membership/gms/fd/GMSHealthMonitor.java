@@ -4,6 +4,15 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.CHECK_REQUES
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.CHECK_RESPONSE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,11 +33,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
@@ -36,6 +47,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckRe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 
 /**
@@ -118,6 +131,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   /** test hook */
   boolean beingSick = false;
+  
+  // For TCP check
+  private ExecutorService serverSocketExecutor;
+  private static final int OK = 0x01;
+  private static final int ERROR = 0x02;  
+  private InetAddress ip;
+  private volatile int socketPort;
+  private volatile ServerSocket serverSocket;
+  private Map<InternalDistributedMember, InetSocketAddress> socketInfo = new ConcurrentHashMap<InternalDistributedMember, InetSocketAddress>();
 
   public GMSHealthMonitor() {
 
@@ -329,6 +351,64 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     return false;
   }
 
+  /**
+   * During final check, establish TCP connection between current member and suspect member.
+   * And exchange PING/PONG message to see if the suspect member is still alive.
+   * 
+   * @param suspectMember member that does not respond to CheckRequestMessage
+   * @return true if successfully exchanged PING/PONG with TCP connection, otherwise false.
+   */
+  private boolean doTCPCheckMember(InternalDistributedMember suspectMember, InetSocketAddress addr) {
+    logger.trace("Checking member {} with TCP socket connection.", suspectMember);
+    Socket clientSocket = new Socket();
+    try {
+      // establish TCP connection
+      for (Map.Entry<InternalDistributedMember, InetSocketAddress> entry : socketInfo.entrySet()) {
+        logger.info("socketInfo member:" + entry.getKey() + " port:" + entry.getValue().getPort());
+      }
+      logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, addr.getAddress(), addr.getPort());
+      clientSocket.connect(addr, (int) services.getConfig().getMemberTimeout());
+      if (clientSocket.isConnected()) {
+        clientSocket.setSoTimeout((int) services.getConfig().getMemberTimeout());
+        InputStream in = clientSocket.getInputStream();
+        DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());   
+        logger.info("TCP check: suspect member uuid: " + ((GMSMember) suspectMember.getNetMember()).getUUID());
+        out.writeShort(Version.CURRENT_ORDINAL);
+        out.writeLong(((GMSMember) suspectMember.getNetMember()).getUuidLSBs());
+        out.writeLong(((GMSMember) suspectMember.getNetMember()).getUuidMSBs());
+        out.flush();
+        clientSocket.shutdownOutput();
+        logger.debug("Send suspect member uuid to member {} with TCP socket connection.", suspectMember);
+        int b = in.read();
+        logger.debug("Received {} from member {} with TCP socket connection.", (b == OK ? "OK" : (b == ERROR ? "ERROR" : b)), suspectMember);
+        if (b == OK) {
+          CustomTimeStamp ts = memberVsLastMsgTS.get(suspectMember);
+          if (ts != null) {
+            ts.setTimeStamp(System.currentTimeMillis());
+          }
+          return true;
+        } else {
+          //received ERROR
+          return false;
+        }
+      } else {// cannot establish TCP connection with suspect member
+        return false;
+      }
+    } catch (IOException e) {
+      logger.trace("Unexpected exception", e);
+    } finally {
+      try {
+        if (clientSocket != null) {
+          clientSocket.close();
+        }
+      } catch (IOException e) {
+        logger.trace("Unexpected exception", e);
+      }
+    }
+
+    return false;
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -357,7 +437,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   public void start() {
-    {
+    {      
       scheduler = Executors.newScheduledThreadPool(1, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
@@ -397,6 +477,123 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }, MEMBER_SUSPECT_COLLECTION_INTERVAL);
       suspectRequestCollectorThread.setDaemon(true);
       suspectRequestCollectorThread.start();
+    }
+    
+    {
+      serverSocketExecutor = Executors.newCachedThreadPool(new ThreadFactory() {
+        AtomicInteger threadIdx = new AtomicInteger();
+
+        @Override
+        public Thread newThread(Runnable r) {
+          int id = threadIdx.getAndIncrement();
+          Thread th = new Thread(Services.getThreadGroup(), r, "TCP Check ServerSocket Thread " + id);
+          th.setDaemon(true);
+          return th;
+        }
+      });
+
+      serverSocketExecutor.execute(new Runnable() {
+        @Override
+        public void run() {
+          Socket socket = null;
+          try {
+            // start server socket for TCP check
+            if (serverSocket == null) {
+              localAddress = services.getMessenger().getMemberID();            
+              ip = localAddress.getInetAddress();
+              int[] portRange = services.getConfig().getMembershipPortRange();            
+              socketPort = AvailablePort.getAvailablePortInRange(portRange[0], portRange[1], AvailablePort.SOCKET);
+              if (socketPort == -1) {
+                throw new SystemConnectException("Unable to find a free port in the membership port range");
+              }
+              serverSocket = new ServerSocket();
+              serverSocket.bind(new InetSocketAddress(ip, socketPort));
+              logger.info("GMSHealthMonitor started server socket on {}:{}.", ip, socketPort);
+              socketInfo.put(localAddress, new InetSocketAddress(ip, socketPort));
+              while (!services.getCancelCriterion().isCancelInProgress() 
+                  && !GMSHealthMonitor.this.isStopping) {
+                try {
+                  socket = serverSocket.accept();
+                  if (GMSHealthMonitor.this.playingDead) {
+                    continue;
+                  }
+                  socket.setSoTimeout((int) services.getConfig().getMemberTimeout());
+                  new ClientSocketHandler(socket).start();
+                } catch (IOException e) {
+                  logger.trace("Unexpected exception", e);
+                  try {
+                    if (socket != null) {
+                      socket.close();
+                    }
+                  } catch (IOException ioe) {
+                    logger.trace("Unexpected exception", ioe);
+                  }
+                }
+              }
+              logger.info("GMSHealthMonitor server socket has done its jobs.");
+            }
+          } catch (IOException e) {
+            logger.trace("Unexpected exception", e);
+          } finally {
+            // close the server socket
+            if (serverSocket != null && !serverSocket.isClosed()) {
+              try {
+                serverSocket.close();
+                serverSocket = null;
+                logger.info("GMSHealthMonitor server socket closed.");
+              } catch (IOException e) {
+                logger.debug("Unexpected exception", e);
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  class ClientSocketHandler extends Thread {
+
+    private Socket socket;
+
+    public ClientSocketHandler(Socket socket) {
+      super(services.getThreadGroup(), "ClientSocketHandler");
+      this.socket = socket;
+      setDaemon(true);
+    }
+
+    public void run() {
+      try {
+        DataInputStream in = new DataInputStream(socket.getInputStream());
+        OutputStream out = socket.getOutputStream();
+        short version = in.readShort();
+        long uuidLSBs = in.readLong();
+        long uuidMSBs = in.readLong();
+        logger.debug("GMSHealthMonitor server socket received {} and {}.", uuidMSBs, uuidLSBs);
+        logger.debug("GMSHealthMonitor member uuid is {}", ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUUID());
+        if (uuidLSBs == ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUuidLSBs()
+            && uuidMSBs == ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUuidMSBs()) {
+          out.write(OK);
+          out.flush();
+          socket.shutdownOutput();
+          logger.debug("GMSHealthMonitor server socket replied OK.");
+        }
+        else {
+          out.write(ERROR);
+          out.flush();
+          socket.shutdownOutput();
+          logger.debug("GMSHealthMonitor server socket replied ERROR.");
+        }
+      } catch (IOException e) {
+        logger.trace("Unexpected exception", e);
+      } finally {
+        if (socket != null) {
+          try {
+            socket.close();
+          } catch (IOException e) {
+            logger.info("Unexpected exception", e);
+          }
+        }
+      }
     }
   }
 
@@ -521,6 +718,21 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       checkExecutor.shutdown();
     }
 
+    if (serverSocketExecutor != null) {
+      if (serverSocket != null && !serverSocket.isClosed()) {
+        try {
+          serverSocket.close();
+          serverSocket = null;
+          logger.info("GMSHealthMonitor server socket is closed in stopServices().");
+        }
+        catch (IOException e) {
+          logger.trace("Unexpected exception", e);
+        }
+      }      
+      serverSocketExecutor.shutdownNow();
+      logger.info("GMSHealthMonitor serverSocketExecutor is " + (serverSocketExecutor.isTerminated() ? "terminated" : "not terminated"));
+    }
+    
     if (suspectRequestCollectorThread != null) {
       suspectRequestCollectorThread.shutdown();
     }
@@ -530,7 +742,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * test method
    */
   public boolean isShutdown() {
-    return scheduler.isShutdown() && checkExecutor.isShutdown() && !suspectRequestCollectorThread.isAlive();
+    return scheduler.isShutdown() && checkExecutor.isShutdown() && serverSocketExecutor.isShutdown() && !suspectRequestCollectorThread.isAlive();
   }
 
   @Override
@@ -752,7 +964,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               memberVsLastMsgTS.put(mbr, ts);
 
               logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
-              boolean pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+              boolean pinged;
+              InetSocketAddress addr = socketInfo.get(mbr);
+              if (addr == null || addr.getPort() < 0) {
+                pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+              } else {
+                pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, addr);
+              }
               logger.info("Final check {}", pinged? "succeeded" : "failed");
               
               if (!pinged && !isStopping) {
@@ -919,4 +1137,20 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     // TODO Auto-generated method stub
     
   }
+  
+  public Map<InternalDistributedMember, InetSocketAddress> getSocketInfo() {
+    return this.socketInfo;
+  }
+
+  public void installSocketInfo(List<InternalDistributedMember> members, List<Integer> portsForMembers) {
+    logger.debug("installSocketInfo members=" + members + " portsForMembers=" + portsForMembers);    
+    for (int i = 0; i < members.size(); i++) {
+      if (portsForMembers.get(i).intValue() == -1) {
+        continue;
+      }
+      InetSocketAddress addr = new InetSocketAddress(members.get(i).getInetAddress(), portsForMembers.get(i).intValue());
+      socketInfo.put(members.get(i), addr);
+    }
+  }
+
 }
