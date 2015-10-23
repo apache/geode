@@ -2484,7 +2484,7 @@ public final class ServerLauncher extends AbstractLauncher<String> {
       }
       catch (GfJsonException e) {
         // TODO: or should we return OFFLINE?
-        throw new IllegalArgumentException("Unable to create ServerStatus from JSON: " + json);
+        throw new IllegalArgumentException("Unable to create ServerStatus from JSON: " + json, e);
       }
     }
 
