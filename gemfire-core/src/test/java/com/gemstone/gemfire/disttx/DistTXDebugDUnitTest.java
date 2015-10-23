@@ -37,7 +37,6 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
   VM dataStore1 = null;
   VM dataStore2 = null;
   VM dataStore3 = null;
-  protected static Cache cache = null;
 
   public DistTXDebugDUnitTest(String name) {
     super(name);
@@ -62,20 +61,10 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
       }
     });
     InternalResourceManager.setResourceObserver(null);
-    if (cache != null) {
-      cache.close();
-    }
   }
 
   public static void createCacheInVm() {
-    Properties props = new Properties();
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    // CacheFactory cf = new CacheFactory(props);
-    // new TxDUnit("temp").getCache(cf);
-    // new TxDUnit("temp").getCache();
-
-    InternalDistributedSystem ds = new DistTXDebugDUnitTest("temp").getSystem(props);
-    cache = CacheFactory.create(ds);
+    new DistTXDebugDUnitTest("temp").getCache();
   }
 
   protected void createCacheInAllVms() {
