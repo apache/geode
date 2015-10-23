@@ -77,7 +77,9 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     public void execute(FunctionContext context) {
       getLogWriter().fine("SWAP:1:executing OnGroupsFunction:"+invocationCount);
       InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-      invocationCount++;
+      synchronized (OnGroupsFunction.class) {
+    	  invocationCount++;
+      }
       ArrayList<String> l = (ArrayList<String>) context.getArguments();
       if (l != null) {
         assertFalse(Collections.disjoint(l, ds.getDistributedMember().getGroups()));
@@ -136,9 +138,12 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
       @Override
       public Object call() throws Exception {
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
-        assertEquals(count, f.invocationCount);
+        
         // assert succeeded, reset count
-        f.invocationCount = 0;
+        synchronized (OnGroupsFunction.class) {
+        	assertEquals(count, f.invocationCount);
+        	f.invocationCount = 0;
+        }
         return null;
       }
     });
@@ -149,8 +154,11 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
       @Override
       public Object call() throws Exception {
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
-        int count = f.invocationCount;
-        f.invocationCount = 0;
+        int count  = 0 ;
+        synchronized (OnGroupsFunction.class) {
+        	count = f.invocationCount;
+        	f.invocationCount = 0;
+        }
         return count;
       }
     });
@@ -161,8 +169,12 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
       @Override
       public Object call() throws Exception {
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
-        int count = f.invocationCount;
-        f.invocationCount = 0;
+        int count = 0;
+        synchronized (OnGroupsFunction.class) {
+        	count = f.invocationCount;
+            f.invocationCount = 0;
+		}
+        
         return count;
       }
     });
@@ -173,7 +185,9 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
       @Override
       public Object call() throws Exception {
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
-        f.invocationCount = 0;
+        synchronized (OnGroupsFunction.class) {
+        	f.invocationCount = 0;
+		}
         return null;
       }
     });
