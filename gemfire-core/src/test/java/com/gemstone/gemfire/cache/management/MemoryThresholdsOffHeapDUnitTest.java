@@ -53,6 +53,7 @@ import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.Resou
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
 import com.gemstone.gemfire.internal.cache.control.OffHeapMemoryMonitor;
+import com.gemstone.gemfire.internal.cache.control.OffHeapMemoryMonitor.OffHeapMemoryMonitorObserver;
 import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor;
 import com.gemstone.gemfire.internal.cache.control.ResourceListener;
 import com.gemstone.gemfire.internal.cache.control.TestMemoryThresholdListener;
@@ -1383,6 +1384,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
+    final Object bigKey = -1;
+    final Object smallKey = -2;
 
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
     final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
@@ -1394,20 +1397,52 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     doPutAlls(client, regionName, false/*catchServerException*/,
         false/*catchLowMemoryException*/, Range.DEFAULT);
 
+    
     //make the region sick in the server
-    server.invoke(new SerializableRunnable() {
-      public void run() {
+    final long bytesUsedAfterSmallKey = (long)server.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
         InternalResourceManager irm = ((GemFireCacheImpl)getCache()).getResourceManager();
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isNormal());
         getCache().getLoggerI18n().fine(addExpectedExString);
         final LocalRegion r = (LocalRegion) getRootRegion().getSubregion(regionName);
-        final Object key = 1;
-        r.put(key, new byte[943720]);
+        final long bytesUsedAfterSmallKey;
+        {
+          OffHeapMemoryMonitorObserverImpl _testHook = new OffHeapMemoryMonitorObserverImpl();
+          ohm.testHook = _testHook;
+          try {
+            r.put(smallKey, "1234567890");
+            bytesUsedAfterSmallKey = _testHook.verifyBeginUpdateMemoryUsed(false);
+          } finally {
+            ohm.testHook = null;
+          }
+        }
+        {
+          final OffHeapMemoryMonitorObserverImpl th = new OffHeapMemoryMonitorObserverImpl();
+          ohm.testHook = th;
+          try {
+            r.put(bigKey, new byte[943720]);
+            th.verifyBeginUpdateMemoryUsed(bytesUsedAfterSmallKey + 943720 + 8, true);
+            WaitCriterion waitForCritical = new WaitCriterion() {
+              public boolean done() {
+                return th.checkUpdateStateAndSendEventBeforeProcess(bytesUsedAfterSmallKey + 943720 + 8, MemoryState.EVICTION_DISABLED_CRITICAL);
+              }
+              @Override
+              public String description() {
+                return null;
+              }
+            };
+            waitForCriterion(waitForCritical, 30*1000, 9, false);
+            th.validateUpdateStateAndSendEventBeforeProcess(bytesUsedAfterSmallKey + 943720 + 8, MemoryState.EVICTION_DISABLED_CRITICAL);
+          } finally {
+            ohm.testHook = null;
+          }
+        }
         WaitCriterion wc;
         if (r instanceof PartitionedRegion) {
           final PartitionedRegion pr = (PartitionedRegion) r;
-          final int bucketId = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
+          final int bucketId = PartitionedRegionHelper.getHashKey(pr, null, bigKey, null, null);
           wc = new WaitCriterion() {
             @Override
             public String description() {
@@ -1419,7 +1454,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               if (!ohm.getState().isCritical()) return false;
               // Only done once the bucket has been marked sick
               try {
-                pr.getRegionAdvisor().checkIfBucketSick(bucketId, key);
+                pr.getRegionAdvisor().checkIfBucketSick(bucketId, bigKey);
                 return false;
               } catch (LowMemoryException ignore) {
                 return true;
@@ -1439,9 +1474,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             }
           };
         }
-        waitForCriterion(wc, 5000, 100, true);
+        waitForCriterion(wc, 30000, 9, true);
         getCache().getLoggerI18n().fine(removeExpectedExString);
-        return;
+        return bytesUsedAfterSmallKey;
       }
     });
 
@@ -1458,7 +1493,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isCritical());
         getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.addExpectedBelow);
-        getRootRegion().getSubregion(regionName).destroy(1);
+        OffHeapMemoryMonitorObserverImpl _testHook = new OffHeapMemoryMonitorObserverImpl();
+        ohm.testHook = _testHook;
+        try {
+          getRootRegion().getSubregion(regionName).destroy(bigKey);
+          _testHook.verifyBeginUpdateMemoryUsed(bytesUsedAfterSmallKey, true);
+        } finally {
+          ohm.testHook = null;
+        }
         WaitCriterion wc = new WaitCriterion() {
           @Override
           public String description() {
@@ -1470,13 +1512,83 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return ohm.getState().isNormal();
           }
         };
-        waitForCriterion(wc, 5000, 100, true);
+        waitForCriterion(wc, 30000, 9, true);
         getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.removeExpectedBelow);
         return;
       }
     });
   }
   
+  private static class OffHeapMemoryMonitorObserverImpl implements OffHeapMemoryMonitorObserver {
+    private boolean beginUpdateMemoryUsed;
+    private long beginUpdateMemoryUsed_bytesUsed;
+    private boolean beginUpdateMemoryUsed_willSendEvent;
+    @Override
+    public synchronized void beginUpdateMemoryUsed(long bytesUsed, boolean willSendEvent) {
+      beginUpdateMemoryUsed = true;
+      beginUpdateMemoryUsed_bytesUsed = bytesUsed;
+      beginUpdateMemoryUsed_willSendEvent = willSendEvent;
+    }
+    @Override
+    public synchronized void afterNotifyUpdateMemoryUsed(long bytesUsed) {
+    }
+    @Override
+    public synchronized void beginUpdateStateAndSendEvent(long bytesUsed, boolean willSendEvent) {
+    }
+    private boolean updateStateAndSendEventBeforeProcess;
+    private long updateStateAndSendEventBeforeProcess_bytesUsed;
+    private MemoryEvent updateStateAndSendEventBeforeProcess_event;
+    @Override
+    public synchronized void updateStateAndSendEventBeforeProcess(long bytesUsed, MemoryEvent event) {
+      updateStateAndSendEventBeforeProcess = true;
+      updateStateAndSendEventBeforeProcess_bytesUsed = bytesUsed;
+      updateStateAndSendEventBeforeProcess_event = event;
+    }
+    @Override
+    public synchronized void updateStateAndSendEventBeforeAbnormalProcess(long bytesUsed, MemoryEvent event) {
+    }
+    @Override
+    public synchronized void updateStateAndSendEventIgnore(long bytesUsed, MemoryState oldState, MemoryState newState, long mostRecentBytesUsed,
+        boolean deliverNextAbnormalEvent) {
+    }
+
+    public synchronized void verifyBeginUpdateMemoryUsed(long expected_bytesUsed, boolean expected_willSendEvent) {
+      if (!beginUpdateMemoryUsed) {
+        fail("beginUpdateMemoryUsed was not called");
+      }
+      assertEquals(expected_bytesUsed, beginUpdateMemoryUsed_bytesUsed);
+      assertEquals(expected_willSendEvent, beginUpdateMemoryUsed_willSendEvent);
+    }
+    /**
+     * Verify that beginUpdateMemoryUsed was called, event will be sent, and return the "bytesUsed" it recorded.
+     */
+    public synchronized long verifyBeginUpdateMemoryUsed(boolean expected_willSendEvent) {
+      if (!beginUpdateMemoryUsed) {
+        fail("beginUpdateMemoryUsed was not called");
+      }
+      assertEquals(expected_willSendEvent, beginUpdateMemoryUsed_willSendEvent);
+      return beginUpdateMemoryUsed_bytesUsed;
+    }
+    public synchronized boolean checkUpdateStateAndSendEventBeforeProcess(long expected_bytesUsed, MemoryState expected_memoryState) {
+      if (!updateStateAndSendEventBeforeProcess) {
+        return false;
+      }
+      if (expected_bytesUsed != updateStateAndSendEventBeforeProcess_bytesUsed) {
+        return false;
+      }
+      if (!expected_memoryState.equals(updateStateAndSendEventBeforeProcess_event.getState())) {
+        return false;
+      }
+      return true;
+    }
+    public synchronized void validateUpdateStateAndSendEventBeforeProcess(long expected_bytesUsed, MemoryState expected_memoryState) {
+      if (!updateStateAndSendEventBeforeProcess) {
+        fail("updateStateAndSendEventBeforeProcess was not called");
+      }
+      assertEquals(expected_bytesUsed, updateStateAndSendEventBeforeProcess_bytesUsed);
+      assertEquals(expected_memoryState, updateStateAndSendEventBeforeProcess_event.getState());
+    }
+   }
   private void registerTestMemoryThresholdListener(VM vm) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {

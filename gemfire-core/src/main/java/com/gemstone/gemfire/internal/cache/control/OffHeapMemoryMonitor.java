@@ -117,14 +117,47 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
     }
   }
 
+  public volatile OffHeapMemoryMonitorObserver testHook;
+  
+  /**
+   * Used by unit tests to be notified when OffHeapMemoryMonitor
+   * does something.
+   */
+  public static interface OffHeapMemoryMonitorObserver {
+    /**
+     * Called at the beginning of updateMemoryUsed.
+     * @param bytesUsed the number of bytes of off-heap memory currently used
+     * @param willSendEvent true if an event will be sent to the OffHeapMemoryUsageListener. 
+     */
+    public void beginUpdateMemoryUsed(long bytesUsed, boolean willSendEvent);
+    public void afterNotifyUpdateMemoryUsed(long bytesUsed);
+    /**
+     * Called at the beginning of updateStateAndSendEvent.
+     * @param bytesUsed the number of bytes of off-heap memory currently used
+     * @param willSendEvent true if an event will be sent to the OffHeapMemoryUsageListener. 
+     */
+    public void beginUpdateStateAndSendEvent(long bytesUsed, boolean willSendEvent);
+    public void updateStateAndSendEventBeforeProcess(long bytesUsed, MemoryEvent event);
+    public void updateStateAndSendEventBeforeAbnormalProcess(long bytesUsed, MemoryEvent event);
+    public void updateStateAndSendEventIgnore(long bytesUsed, MemoryState oldState, MemoryState newState, long mostRecentBytesUsed,
+        boolean deliverNextAbnormalEvent);
+  }
   @Override
   public void updateMemoryUsed(final long bytesUsed) {
-    if (!mightSendEvent(bytesUsed)) {
+    final boolean willSendEvent = mightSendEvent(bytesUsed);
+    final OffHeapMemoryMonitorObserver _testHook = this.testHook;
+    if (_testHook != null) {
+      _testHook.beginUpdateMemoryUsed(bytesUsed, willSendEvent);
+    }
+    if (!willSendEvent) {
       return;
     }
     synchronized (this.offHeapMemoryUsageListener) {
       this.offHeapMemoryUsageListener.offHeapMemoryUsed = bytesUsed;
       this.offHeapMemoryUsageListener.notifyAll();
+    }
+    if (_testHook != null) {
+      _testHook.afterNotifyUpdateMemoryUsed(bytesUsed);
     }
   }
   
@@ -242,11 +275,15 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
       final MemoryEvent mre = this.mostRecentEvent;
       final MemoryState oldState = mre.getState();
       final MemoryThresholds thresholds = this.thresholds;
+      final OffHeapMemoryMonitorObserver _testHook = this.testHook;
       MemoryState newState = thresholds.computeNextState(oldState, bytesUsed);
       if (oldState != newState) {
         this.currentState = newState;
         
         MemoryEvent event = new MemoryEvent(ResourceType.OFFHEAP_MEMORY, oldState, newState, this.cache.getMyId(), bytesUsed, true, thresholds);
+        if (_testHook != null) {
+          _testHook.updateStateAndSendEventBeforeProcess(bytesUsed, event);
+        }
         this.upcomingEvent.set(event);
 
         processLocalEvent(event);
@@ -257,8 +294,16 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
           && this.deliverNextAbnormalEvent) {
         this.deliverNextAbnormalEvent = false;
         MemoryEvent event = new MemoryEvent(ResourceType.OFFHEAP_MEMORY, oldState, newState, this.cache.getMyId(), bytesUsed, true, thresholds);
+        if (_testHook != null) {
+          _testHook.updateStateAndSendEventBeforeAbnormalProcess(bytesUsed, event);
+        }
         this.upcomingEvent.set(event);
         processLocalEvent(event);
+      } else {
+        if (_testHook != null) {
+          _testHook.updateStateAndSendEventIgnore(bytesUsed, oldState, newState, mre.getBytesUsed(), this.deliverNextAbnormalEvent);
+        }
+        
       }
     }
   }
@@ -452,6 +497,20 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
                   // The wait timed out. So tell the OffHeapMemoryMonitor
                   // that we need an event if the state is not normal.
                   deliverNextAbnormalEvent();
+                  // TODO: don't we need a "break" here?
+                  //       As it is we set deliverNextAbnormalEvent
+                  //       but then go back to sleep in wait.
+                  //       We need to call updateStateAndSendEvent
+                  //       which tests deliverNextAbnormalEvent.
+                  // But just adding a break is probably not enough.
+                  // We only set deliverNextAbnormalEvent if the wait
+                  // timed out which means that the amount of offHeapMemoryUsed
+                  // did not change.
+                  // But in updateStateAndSendEvent we only deliver an
+                  // abnormal event if the amount of memory changed.
+                  // This code needs to be reviewed with Swapnil but
+                  // it looks to Darrel like deliverNextAbnormalEvent
+                  // can be removed.
                 } else {
                   // we have been notified so exit the inner while loop
                   // and call updateStateAndSendEvent.
