@@ -23,6 +23,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import com.gemstone.gemfire.TXExpiryJUnitTest;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
 import com.gemstone.gemfire.cache.CacheEvent;
@@ -4083,13 +4084,15 @@ protected static class ClientListener extends CacheListenerAdapter {
         ExpiryTask.suspendExpiration();
         Region.Entry entry = null;
         long tilt;
+        EntryExpiryTask eet;
         try {
           r.put("key", "value");
+          LocalRegion lr = (LocalRegion) r;
           r.put("nonTXkey", "nonTXvalue");
           getCache().getCacheTransactionManager().begin();
           r.put("key", "newvalue");
-        } 
-        finally {
+          TXExpiryJUnitTest.waitForEntryExpiration(lr, "key");
+        } finally {
           ExpiryTask.permitExpiration();
         }
         TransactionId tx = getCache().getCacheTransactionManager().suspend();

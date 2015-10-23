@@ -242,7 +242,7 @@ public class TXExpiryJUnitTest {
     DistributedTestCase.waitForCriterion(waitForExpire, 3000, 10, true);
   }
   
-  private void waitForEntryExpiration(LocalRegion lr, String key) {
+  public static void waitForEntryExpiration(LocalRegion lr, String key) {
     try {
       ExpirationDetector detector;
       do {

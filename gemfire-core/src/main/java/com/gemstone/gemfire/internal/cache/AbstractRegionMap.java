@@ -1649,6 +1649,7 @@ RETRY_LOOP:
                 retry = true;
                 continue RETRY_LOOP;
               }
+              logger.info("DARREL: destroy " + re.getKey() + " event.isOriginRemote()=" + event.isOriginRemote() + " event.getOperation().isExpiration()=" + event.getOperation().isExpiration() + " re.isInUseByTransaction()=" + re.isInUseByTransaction());
               if (!event.isOriginRemote() && event.getOperation().isExpiration()) {
                 // If this expiration started locally then only do it if the RE is not being used by a tx.
                 if (re.isInUseByTransaction()) {
