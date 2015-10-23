@@ -1884,12 +1884,18 @@ public class Connection implements Runnable {
         }
         catch (ClosedChannelException e) {
           this.readerShuttingDown = true;
+          if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+            initiateSuspicionIfShared();
+          }
           try { 
             requestClose(LocalizedStrings.Connection_CLOSEDCHANNELEXCEPTION_IN_CHANNEL_READ_0.toLocalizedString(e));
           } catch (Exception ex) {}
           return;
         }
         catch (IOException e) {
+          if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+            initiateSuspicionIfShared();
+          }
           if (! isSocketClosed()
                 && !"Socket closed".equalsIgnoreCase(e.getMessage()) // needed for Solaris jdk 1.4.2_08
                 ) {
@@ -1902,7 +1908,6 @@ public class Connection implements Runnable {
               }
             }
           }
-          initiateSuspicionIfShared();
           this.readerShuttingDown = true;
           try { 
             requestClose(LocalizedStrings.Connection_IOEXCEPTION_IN_CHANNEL_READ_0.toLocalizedString(e));
@@ -1913,6 +1918,9 @@ public class Connection implements Runnable {
           this.owner.getConduit().getCancelCriterion().checkCancelInProgress(null); // bug 37101
           if (!stopped && ! isSocketClosed() ) {
             logger.fatal(LocalizedMessage.create(LocalizedStrings.Connection_0_EXCEPTION_IN_CHANNEL_READ, p2pReaderName()), e);
+          }
+          if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+            initiateSuspicionIfShared();
           }
           this.readerShuttingDown = true;
           try { 
@@ -2434,6 +2442,9 @@ public class Connection implements Runnable {
         this.stopped = true;
       }
       catch (IOException io) {
+        if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+          initiateSuspicionIfShared();
+        }
         boolean closed = isSocketClosed()
                 || "Socket closed".equalsIgnoreCase(io.getMessage()); // needed for Solaris jdk 1.4.2_08
         if (!closed) {
@@ -2441,7 +2452,6 @@ public class Connection implements Runnable {
             logger.debug("{} io exception for {}", p2pReaderName(), this, io);
           }
         }
-        initiateSuspicionIfShared();
         this.readerShuttingDown = true;
         try { 
           requestClose(LocalizedStrings.Connection_IOEXCEPTION_RECEIVED_0.toLocalizedString(io));
@@ -2468,6 +2478,7 @@ public class Connection implements Runnable {
         if (!stopped && !(e instanceof InterruptedException) ) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.Connection_0_EXCEPTION_RECEIVED, p2pReaderName()), e);
         }
+        initiateSuspicionIfShared();
         if (isSocketClosed()) {
           stopped = true;
         }

@@ -136,7 +136,7 @@ public class GMSJoinLeaveJUnitTest {
     mockMembers[1].setVmViewId(viewId-1);
     set.add(mockMembers[1]);
     state.alreadyTried = set;
-    state.hasContactedALocator = true;
+    state.hasContactedAJoinedLocator = true;
     
     // simulate a response being received
     InternalDistributedMember sender = mockMembers[2];

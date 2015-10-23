@@ -163,7 +163,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     Set<InternalDistributedMember> registrants = new HashSet<>();
     InternalDistributedMember possibleCoordinator;
     int viewId = -1;
-    boolean hasContactedALocator;
+    int locatorsContacted = 0;
+    boolean hasContactedAJoinedLocator;
     NetView view;
     Set<FindCoordinatorResponse> responses = new HashSet<>();
     
@@ -201,10 +202,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       
       SearchState state = searchState;
       
+      long locatorWaitTime = services.getConfig().getLocatorWaitTime() * 1000;
       long timeout = services.getConfig().getJoinTimeout();
       logger.debug("join timeout is set to {}", timeout);
       long retrySleep =  JOIN_RETRY_SLEEP;
       long startTime = System.currentTimeMillis();
+      long locatorGiveUpTime = startTime + locatorWaitTime;
       long giveupTime = startTime + timeout;
   
       for (int tries=0; !this.isJoined; tries++) {
@@ -232,7 +235,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             }
           }
         } else {
-          if (System.currentTimeMillis() > giveupTime) {
+          long now = System.currentTimeMillis();
+          if (state.locatorsContacted <= 0) {
+            if (now > locatorGiveUpTime) {
+              // break out of the loop and return false
+              break;
+            }
+            // reset the tries count and timer since we haven't actually tried to join yet
+            tries = 0;
+            giveupTime = now + timeout;
+          } else if (System.currentTimeMillis() > giveupTime) {
             break;
           }
         }
@@ -251,7 +263,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       
       // to preserve old behavior we need to throw a SystemConnectException if
       // unable to contact any of the locators
-      if (!this.isJoined && state.hasContactedALocator) {
+      if (!this.isJoined && state.hasContactedAJoinedLocator) {
         throw new SystemConnectException("Unable to join the distributed system in "
            + (System.currentTimeMillis()-startTime) + "ms");
       }
@@ -750,24 +762,27 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     
     assert this.localAddress != null;
     
-    // TODO - should we try more than one preferred coordinator
-    // before jumping to asking view-members who the coordinator is?
-    if ( !state.alreadyTried.isEmpty() && state.view != null) {
+    // If we've already tried to bootstrap from locators that
+    // haven't joined the system (e.g., a collocated locator)
+    // then jump to using the membership view to try to find
+    // the coordinator
+    if ( !state.hasContactedAJoinedLocator && state.view != null) {
       return findCoordinatorFromView();
     }
     
     FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, state.alreadyTried, state.viewId);
     Set<InternalDistributedMember> coordinators = new HashSet<InternalDistributedMember>();
-    long waitTime = services.getConfig().getLocatorWaitTime() * 1000;
-    if (waitTime <= 0) {
-      waitTime = services.getConfig().getMemberTimeout() * 2;
-    }
-    long giveUpTime = System.currentTimeMillis() + waitTime;
+    
+    long giveUpTime = System.currentTimeMillis() + services.getConfig().getLocatorWaitTime() * 1000;
+    
     int connectTimeout = (int)services.getConfig().getMemberTimeout();
     boolean anyResponses = false;
     boolean flagsSet = false;
     
     logger.debug("sending {} to {}", request, locators);
+
+    state.hasContactedAJoinedLocator = false;
+    state.locatorsContacted = 0;
     
     do {
       for (InetSocketAddress addr: locators) { 
@@ -776,42 +791,46 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               addr.getAddress(), addr.getPort(), request, connectTimeout, 
               true);
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse)o : null;
-          if (response != null && response.getCoordinator() != null) {
-            anyResponses = true;
-            NetView v = response.getView();
-            int viewId = v == null? -1 : v.getViewId();
-            if (viewId > state.viewId) {
-              // if the view has changed it is possible that a member
-              // that we already tried to join with will become coordinator
-              state.alreadyTried.clear();
-              state.viewId = viewId;
-              state.view = v;
-              state.registrants.clear();
-              if (response.getRegistrants() != null) {
-                state.registrants.addAll(response.getRegistrants());
-              }
+          // TODO we don't want to give up on the locators if we receive
+          // a response from a locator that's joined the system.  Otherwise
+          // we'll give up and cause a split-brain
+          if (response != null) {
+            state.locatorsContacted++;
+            if (response.getSenderId() != null && response.getSenderId().getVmViewId() >= 0) {
+              state.hasContactedAJoinedLocator = true;
             }
-            coordinators.add(response.getCoordinator());
-            if (!flagsSet) {
-              flagsSet = true;
-              inheritSettingsFromLocator(addr, response);
+            if (response.getCoordinator() != null) {
+              anyResponses = true;
+              NetView v = response.getView();
+              int viewId = v == null? -1 : v.getViewId();
+              if (viewId > state.viewId) {
+                // if the view has changed it is possible that a member
+                // that we already tried to join with will become coordinator
+                state.alreadyTried.clear();
+                state.viewId = viewId;
+                state.view = v;
+                state.registrants.clear();
+                if (response.getRegistrants() != null) {
+                  state.registrants.addAll(response.getRegistrants());
+                }
+              }
+              coordinators.add(response.getCoordinator());
+              if (!flagsSet) {
+                flagsSet = true;
+                inheritSettingsFromLocator(addr, response);
+              }
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
         }
       }
-      if (coordinators.isEmpty()) {
-        return false;
-      }
-      if (!anyResponses) {
-        try { Thread.sleep(1000); } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return false;
-        }
-      }
     } while (!anyResponses && System.currentTimeMillis() < giveUpTime);
     
     
+    if (coordinators.isEmpty()) {
+      return false;
+    }
+
     Iterator<InternalDistributedMember> it = coordinators.iterator();
     if (coordinators.size() == 1) {
       state.possibleCoordinator = it.next();

@@ -61,4 +61,19 @@ public class Transport extends UDP {
     super.init();
   }
 
+  /*
+   * (non-Javadoc)
+   * @see org.jgroups.protocols.UDP#stop()
+   * JGroups is not terminating its timer.  I contacted the jgroups-users
+   * email list about this.
+   */
+  @Override
+  public void stop() {
+    super.stop();
+    if (!getTimer().isShutdown()) {
+      getTimer().stop();
+    }
+  }
+
+
 }

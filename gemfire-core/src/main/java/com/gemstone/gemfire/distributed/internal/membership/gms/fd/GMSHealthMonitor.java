@@ -266,10 +266,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void sendSuspectMessage(InternalDistributedMember mbr, String reason) {
-    if (beingSick || playingDead) {
-      logger.debug("sick member is not sending suspect message concerning {}", mbr);
-      return;
-    }
     logger.info("Sending suspect request {} reason=\"{}\"", mbr, reason);
     SuspectRequest sr = new SuspectRequest(mbr, reason);
     List<SuspectRequest> sl = new ArrayList<SuspectRequest>();
