@@ -1110,7 +1110,19 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
     
-    Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+    
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return (regionMetaData.size() == 1);
+      }
+
+      public String description() {
+        return "expected metadata is ready";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
+    
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     
@@ -1134,7 +1146,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    WaitCriterion wc = new WaitCriterion() {
+    wc = new WaitCriterion() {
       public boolean done() {
         return (clientMap.size() == 4);
       }
