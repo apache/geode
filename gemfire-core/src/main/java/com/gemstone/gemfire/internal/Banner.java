@@ -1,11 +1,19 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal;
 
 import com.gemstone.gemfire.SystemFailure;
@@ -66,16 +74,25 @@ public class Banner {
         final String productName = GemFireVersion.getProductName();
         
 	out.println(SEPERATOR);
-	out.println();
 
-        out.println("  Copyright (C) 1997-2015 Pivotal Software, Inc. All rights reserved. This");
-        out.println("  product is protected by U.S. and international copyright and intellectual");
-        out.println("  property laws. Pivotal products are covered by one or more patents listed");
-        out.println("  at http://www.pivotal.io/patents.  Pivotal is a registered trademark");
-        out.println("  of trademark of Pivotal Software, Inc. in the United States and/or other");
-        out.println("  jurisdictions.  All other marks and names mentioned herein may be");
-        out.println("  trademarks of their respective companies.");
-        out.println();
+        out.println("  ");
+        out.println("  Licensed to the Apache Software Foundation (ASF) under one or more");
+        out.println("  contributor license agreements.  See the NOTICE file distributed with this");
+        out.println("  work for additional information regarding copyright ownership.");
+        out.println("   ");
+        out.println("  The ASF licenses this file to You under the Apache License, Version 2.0");
+        out.println("  (the \"License\"); you may not use this file except in compliance with the");
+        out.println("  License.  You may obtain a copy of the License at");
+        out.println("  ");
+        out.println("  http://www.apache.org/licenses/LICENSE-2.0");
+        out.println("  ");
+        out.println("  Unless required by applicable law or agreed to in writing, software");
+        out.println("  distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT");
+        out.println("  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the");
+        out.println("  License for the specific language governing permissions and limitations");
+        out.println("  under the License.");
+        out.println("  ");
+
         out.println(SEPERATOR);
 
 	GemFireVersion.print(out);

@@ -5,7 +5,7 @@
 
 <connector>
     <display-name>GFE JCA Adaptor</display-name>
-    <vendor-name>Pivotal Software</vendor-name>
+    <vendor-name></vendor-name>
     <spec-version>1.5</spec-version>
     <eis-type>GFE JCA</eis-type>
     <version>1.5</version>

@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.i18n;
 
@@ -1951,6 +1959,8 @@ public class CliStrings {
   public static final String VALIDATE_DISK_STORE__NAME__HELP = "Name of the disk store to be validated.";
   public static final String VALIDATE_DISK_STORE__DISKDIRS = "disk-dirs";
   public static final String VALIDATE_DISK_STORE__DISKDIRS__HELP = "Directories where data for the disk store was previously written.";
+  public static final String VALIDATE_DISK_STORE__J = "J";
+  public static final String VALIDATE_DISK_STORE__J__HELP = "Arguments passed to the Java Virtual Machine performing the compact operation on the disk store.";
   public static final String VALIDATE_DISK_STORE__MSG__NO_DIRS = VALIDATE_DISK_STORE__DISKDIRS + " is mandatory";
   public static final String VALIDATE_DISK_STORE__MSG__IO_ERROR = "Input/Output error in validating disk store {0} is : {1}";
   public static final String VALIDATE_DISK_STORE__MSG__ERROR = "Error in validating disk store {0} is : {1}";
