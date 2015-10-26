@@ -153,7 +153,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   /** a collection used to detect unit testing */
   Set<String> unitTesting = new HashSet<>();
-
+  
+  /** a test hook to make this member unresponsive */
+  private volatile boolean playingDead;
+  
   /** the view where quorum was most recently lost */
   NetView quorumLostView;
 
@@ -778,7 +781,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   private void ackView(InstallViewMessage m) {
-    if (m.getView().contains(m.getView().getCreator())) {
+    if (!playingDead && m.getView().contains(m.getView().getCreator())) {
       services.getMessenger().send(new ViewAckMessage(m.getSender(), m.getView().getViewId(), m.isPreparing()));
     }
   }
@@ -830,12 +833,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               addr.getAddress(), addr.getPort(), request, connectTimeout, 
               true);
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse)o : null;
-          // TODO we don't want to give up on the locators if we receive
-          // a response from a locator that's joined the system.  Otherwise
-          // we'll give up and cause a split-brain
           if (response != null) {
             state.locatorsContacted++;
             if (response.getSenderId() != null && response.getSenderId().getVmViewId() >= 0) {
+              logger.debug("Locator's address indicates it is part of a distributed system "
+                  + "so I will not become membership coordinator on this attempt to join");
               state.hasContactedAJoinedLocator = true;
             }
             if (response.getCoordinator() != null) {
@@ -1170,7 +1172,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     int oldWeight = currentView.memberWeight();
     int failedWeight = newView.getCrashedMemberWeight(currentView);
     if (failedWeight > 0) {
-      if (logger.isInfoEnabled() && !newView.getCreator().equals(localAddress)) { // view-creator logs this
+      if (logger.isInfoEnabled()
+          && newView.getCreator().equals(localAddress)) { // view-creator logs this
         newView.logCrashedMemberWeights(currentView, logger);
       }
       int failurePoint = (int) (Math.round(51 * oldWeight) / 100.0);
@@ -1205,9 +1208,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   public void playDead() {
+    playingDead = true;
   }
 
   public void beHealthy() {
+    playingDead = false;
   }
 
   @Override
@@ -1849,7 +1854,22 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           List<InternalDistributedMember> newMembers = new ArrayList<>(newView.getMembers());
           newMembers.removeAll(removalReqs);
           newView = new NetView(localAddress, newView.getViewId() + 1, newMembers, leaveReqs, removalReqs);
+          int size = failures.size();
+          List<String> reasons = new ArrayList<>(size);
+          for (int i=0; i<size; i++) {
+            reasons.add("Failed to acknowledge a new membership view and then failed tcp/ip connection attempt");
+          }
+          sendRemoveMessages(failures, reasons, newView);
         }
+        
+        // if there is no conflicting view then we can count
+        // the current state as being prepared.  All members
+        // who are going to ack have already done so or passed
+        // a liveness test
+        if (conflictingView == null) {
+          prepared = true;
+        }
+        
       } while (!prepared);
 
       lastConflictingView = null;

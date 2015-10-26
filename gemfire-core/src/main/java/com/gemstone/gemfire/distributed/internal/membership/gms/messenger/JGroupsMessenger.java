@@ -477,17 +477,6 @@ public class JGroupsMessenger implements Messenger {
       throw new DistributedSystemDisconnectedException("Distributed System is shutting down");
     }
     
-    if (playingDead) {
-      Set result = new HashSet<>();
-      InternalDistributedMember[] rec = msg.getRecipients();
-      if (rec != null) {
-        for (int i=0; i<rec.length; i++) {
-          result.add(rec[i]);
-        }
-      }
-      return result;
-    }
-    
     filterOutgoingMessage(msg);
     
     InternalDistributedMember[] destinations = msg.getRecipients();

@@ -141,6 +141,10 @@ public class GMSLocator implements Locator, NetLocator {
       logger.debug("Peer locator processing {}", request);
     }
     
+    if (localAddress == null && services != null) {
+      localAddress = services.getMessenger().getMemberID();
+    }
+    
     if (request instanceof GetViewRequest) {
       if (view != null) {
         response = new GetViewResponse(view);

@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
+import org.jgroups.util.UUID;
 
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -363,9 +364,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     Socket clientSocket = new Socket();
     try {
       // establish TCP connection
-      for (Map.Entry<InternalDistributedMember, InetSocketAddress> entry : socketInfo.entrySet()) {
-        logger.info("socketInfo member:" + entry.getKey() + " port:" + entry.getValue().getPort());
-      }
+//      for (Map.Entry<InternalDistributedMember, InetSocketAddress> entry : socketInfo.entrySet()) {
+//        logger.info("socketInfo member:" + entry.getKey() + " port:" + entry.getValue().getPort());
+//      }
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, addr.getAddress(), addr.getPort());
       clientSocket.connect(addr, (int) services.getConfig().getMemberTimeout());
       if (clientSocket.isConnected()) {
@@ -568,10 +569,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         short version = in.readShort();
         long uuidLSBs = in.readLong();
         long uuidMSBs = in.readLong();
-        logger.debug("GMSHealthMonitor server socket received {} and {}.", uuidMSBs, uuidLSBs);
-        logger.debug("GMSHealthMonitor member uuid is {}", ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUUID());
-        if (uuidLSBs == ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUuidLSBs()
-            && uuidMSBs == ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUuidMSBs()) {
+        logger.debug("GMSHealthMonitor received health check UUID {}:{}.", uuidMSBs, uuidLSBs);
+        UUID myUUID = ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUUID();
+        logger.debug("GMSHealthMonitor my UUID is {}:{}", myUUID.getMostSignificantBits(), myUUID.getLeastSignificantBits());
+        if (uuidLSBs == myUUID.getLeastSignificantBits()
+            && uuidMSBs == myUUID.getMostSignificantBits()) {
           out.write(OK);
           out.flush();
           socket.shutdownOutput();
@@ -967,6 +969,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               boolean pinged;
               InetSocketAddress addr = socketInfo.get(mbr);
               if (addr == null || addr.getPort() < 0) {
+                logger.info("Unable to locate failure detection port - requesting a heartbeat");
                 pinged = GMSHealthMonitor.this.doCheckMember(mbr);
               } else {
                 pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, addr);
@@ -1090,10 +1093,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void sendSuspectRequest(final List<SuspectRequest> requests) {
-    if (beingSick || playingDead) {
-      logger.debug("sick member is not sending suspect request");
-      return;
-    }
     logger.debug("Sending suspect request for members {}", requests);
     synchronized (suspectRequests) {
       if (suspectRequests.size() > 0) {
