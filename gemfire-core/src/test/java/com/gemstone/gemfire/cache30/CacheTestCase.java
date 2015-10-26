@@ -551,6 +551,16 @@ public abstract class CacheTestCase extends DistributedTestCase {
   throws RegionExistsException, TimeoutException {
     return getCache().createRegion(rootName, attrs);
   }
+  public final Region createExpiryRootRegion(String rootName, RegionAttributes attrs)
+  throws RegionExistsException, TimeoutException {
+    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
+    try {
+      return createRootRegion(rootName, attrs);
+    } finally {
+      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+    }
+  }
+
 
   /**
    * send an unordered message requiring an ack to all connected members 
