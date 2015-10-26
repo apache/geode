@@ -3385,7 +3385,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
       return this.block.getFreeListId();
     }
     public int getRefCount() {
-      return Chunk.getRefCount(getMemoryAddress());
+      return this.block.getRefCount(); // delegate to fix GEODE-489
     }
     public String getDataType() {
       if (this.block.getDataType() != null) {
