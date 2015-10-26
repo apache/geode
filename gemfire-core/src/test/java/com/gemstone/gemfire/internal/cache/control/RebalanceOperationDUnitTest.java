@@ -49,6 +49,7 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.control.ResourceManager;
@@ -1130,9 +1131,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         for(int i =0; i< 12; i++) {
           region.put(Integer.valueOf(i), "A", new byte[1024 * 512]);
         }
+        
+        // GEODE-244 - the async event queue uses asnychronous writes. Flush 
+        // the default disk store to make sure all values have overflowed
+        cache.findDiskStore(null).flush();
       }
     });
-    
     
     //check to make sure our redundancy is impaired
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
@@ -1150,6 +1154,8 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(12, details.getCreatedBucketCount());
         assertEquals(0,  details.getActualRedundantCopies());
         assertEquals(12,details.getLowRedundancyBucketCount());
+        AsyncEventQueue queue = cache.getAsyncEventQueue("parallelQueue");
+        assertEquals(12, queue.size());
       }
     };
     
