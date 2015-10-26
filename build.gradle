@@ -409,10 +409,13 @@ subprojects {
     }
   })
 
-  check.dependsOn integrationTest
-  check.dependsOn distributedTest 
+  // Make precheckin task run all validation tests for checking in code.
+  task precheckin (dependsOn: [ build, integrationTest, distributedTest ]) {
+    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, and distributedTest'
+  }
+
   check.dependsOn checkMissedTests
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest,checkMissedTests
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, checkMissedTests
   build.finalizedBy combineReports
   check.finalizedBy combineReports
   test.finalizedBy combineReports
