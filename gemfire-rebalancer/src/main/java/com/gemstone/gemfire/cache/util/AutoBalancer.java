@@ -225,12 +225,20 @@ public class AutoBalancer implements Declarable {
         public void run() {
           try {
             auditor.execute();
+          } catch (CacheClosedException e) {
+            logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs", e);
+            return;
           } catch (Exception e) {
             logger.warn("Error while executing out-of-balance audit.", e);
           }
           submitNext();
         }
       }, delay, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void destroy() {
+      trigger.shutdownNow();
     }
   }
 
@@ -502,6 +510,8 @@ public class AutoBalancer implements Declarable {
 
   interface AuditScheduler {
     void init(String schedule);
+
+    void destroy();
   }
 
   interface OOBAuditor {
@@ -536,5 +546,9 @@ public class AutoBalancer implements Declarable {
 
   public CacheOperationFacade getCacheOperationFacade() {
     return this.cacheFacade;
+  }
+
+  public void destroy() {
+    scheduler.destroy();
   }
 }

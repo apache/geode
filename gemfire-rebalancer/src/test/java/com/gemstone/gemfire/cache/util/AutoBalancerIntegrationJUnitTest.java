@@ -51,6 +51,11 @@ public class AutoBalancerIntegrationJUnitTest {
       DLockService.destroy(AutoBalancer.AUTO_BALANCER_LOCK_SERVICE_NAME);
     }
 
+    AutoBalancer autoBalancer = (AutoBalancer) cache.getInitializer();
+    if (autoBalancer != null) {
+      autoBalancer.destroy();
+    }
+
     if (cache != null && !cache.isClosed()) {
       try {
         final HostStatSampler statSampler = ((InternalDistributedSystem) cache.getDistributedSystem()).getStatSampler();

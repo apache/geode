@@ -556,6 +556,45 @@ public class AutoBalancerJUnitTest {
     assertTrue(latch.await(1, TimeUnit.SECONDS));
   }
 
+  @Test
+  public void destroyAutoBalancer() throws InterruptedException {
+    final CountDownLatch latch = new CountDownLatch(2);
+    final CountDownLatch timerLatch = new CountDownLatch(1);
+    final int timer = 20; // simulate 20 milliseconds
+
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockAuditor).init(with(any(Properties.class)));
+        allowing(mockAuditor).execute();
+        allowing(mockClock).currentTimeMillis();
+        will(new CustomAction("returnTime") {
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            latch.countDown();
+            if (latch.getCount() == 0) {
+              assertTrue(timerLatch.await(1, TimeUnit.SECONDS));
+              // scheduler is destroyed before wait is over
+              fail();
+            }
+            return 1000L - timer;
+          }
+        });
+      }
+    });
+
+    Properties props = AutoBalancerJUnitTest.getBasicConfig();
+
+    assertEquals(2, latch.getCount());
+    AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
+    autoR.init(props);
+    assertTrue(latch.await(1, TimeUnit.SECONDS));
+
+    // after destroy no more execute will be called.
+    autoR.destroy();
+    timerLatch.countDown();
+    TimeUnit.MILLISECONDS.sleep(2 * timer);
+  }
+
   static Properties getBasicConfig() {
     Properties props = new Properties();
     // every second schedule
