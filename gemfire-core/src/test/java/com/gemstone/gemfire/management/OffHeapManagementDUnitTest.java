@@ -29,6 +29,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -614,7 +615,8 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
     props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");    
     props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    
+    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+
     return props;
   }
 
@@ -635,10 +637,14 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * Removes off-heap region and disconnects.
    */
   protected void cleanup() {
-    Region region = getCache().getRegion(OFF_HEAP_REGION_NAME);
-    
-    if(null != region) {
-      region.destroyRegion();
+    Cache existingCache = basicGetCache();
+
+    if(null != existingCache && !existingCache.isClosed()) {
+      Region region = getCache().getRegion(OFF_HEAP_REGION_NAME);
+
+      if (null != region) {
+        region.destroyRegion();
+      }
     }
     
     disconnectFromDS();
