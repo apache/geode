@@ -382,7 +382,7 @@ subprojects {
         }
         
         maxHeapSize '768m'
-        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-XX:MaxPermSize=256M', '-ea']
+        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
 
         systemProperties = [
           'gemfire.DEFAULT_MAX_OPLOG_SIZE' : '10',

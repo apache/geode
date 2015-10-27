@@ -171,10 +171,8 @@ public class ProcessManager {
       "-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug,
       "-XX:+HeapDumpOnOutOfMemoryError",
       "-Xmx512m",
-      "-XX:MaxPermSize=256M",
       "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
       "-Dgemfire.disallowMcastDefaults=true",
-      "-XX:MaxPermSize=256M",
       "-ea",
       agent,
       "dunit.standalone.ChildVM"
