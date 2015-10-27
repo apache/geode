@@ -34,7 +34,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.cache.PoolStats;
-import com.gemstone.gemfire.internal.cache.execute.TransactionFunctionService;
 import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.logging.LogService;
 
@@ -59,7 +58,6 @@ public class EndpointManagerImpl implements EndpointManager {
     this.cancelCriterion = cancelCriterion;
     this.poolStats = poolStats;
     listener.addListener(new EndpointListenerForBridgeMembership());
-    listener.addListener(new TransactionFunctionService.ListenerForTransactionFunctionService());
   }
   
   /* (non-Javadoc)
