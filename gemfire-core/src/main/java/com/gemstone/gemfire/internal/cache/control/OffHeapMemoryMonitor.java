@@ -59,6 +59,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
   private boolean hasEvictionThreshold = false;
 
   private OffHeapMemoryUsageListener offHeapMemoryUsageListener;
+  private Thread memoryListenerThread;
   
   private final InternalResourceManager resourceManager;
   private final ResourceAdvisor resourceAdvisor;
@@ -93,11 +94,12 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
 
       this.offHeapMemoryUsageListener = new OffHeapMemoryUsageListener(getBytesUsed());
       ThreadGroup group = LoggingThreadGroup.createThreadGroup("OffHeapMemoryMonitor Threads", logger);
-      Thread memoryListenerThread = new Thread(group, this.offHeapMemoryUsageListener);
-      memoryListenerThread.setName(memoryListenerThread.getName() + " OffHeapMemoryListener");
-      memoryListenerThread.setPriority(Thread.MAX_PRIORITY);
-      memoryListenerThread.setDaemon(true);
-      memoryListenerThread.start();
+      Thread t = new Thread(group, this.offHeapMemoryUsageListener);
+      t.setName(t.getName() + " OffHeapMemoryListener");
+      t.setPriority(Thread.MAX_PRIORITY);
+      t.setDaemon(true);
+      t.start();
+      this.memoryListenerThread = t;
       
       this.memoryAllocator.addMemoryUsageListener(this);
       
@@ -110,6 +112,9 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
    */
   @Override
   public void stopMonitoring() {
+    stopMonitoring(false);
+  }
+  public void stopMonitoring(boolean waitForThread) {
     synchronized (this) {
       if (!this.started) {
         return;
@@ -122,6 +127,14 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
         this.offHeapMemoryUsageListener.notifyAll();
       }
 
+      if (waitForThread && this.memoryListenerThread != null) {
+        try {
+          this.memoryListenerThread.join();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+      this.memoryListenerThread = null;
       this.started = false;
     }
   }
