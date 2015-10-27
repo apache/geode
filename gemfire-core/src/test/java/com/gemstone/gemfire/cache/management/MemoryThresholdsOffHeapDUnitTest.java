@@ -1199,13 +1199,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         getCache().getLoggerI18n().fine(removeExpectedExString);
         WaitCriterion wc = new WaitCriterion() {
           public String description() {
-            return "verify critical state";
+            return "expected region " + r + " to set memoryThresholdReached";
           }
           public boolean done() {
             return r.memoryThresholdReached.get();
           }
         };
-        waitForCriterion(wc, 3000, 100, true);
+        waitForCriterion(wc, 30*1000, 10, true);
         { 
           Integer k = new Integer(2);
           assertEquals(k.toString(), r.get(k));
@@ -1220,13 +1220,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         getCache().getLoggerI18n().fine(removeExpectedBelow);
         wc = new WaitCriterion() {
           public String description() {
-            return "verify critical state";
+            return "expected region " + r + " to unset memoryThresholdReached";
           }
           public boolean done() {
             return !r.memoryThresholdReached.get();
           }
         };
-        waitForCriterion(wc, 3000, 100, true);
+        waitForCriterion(wc, 30*1000, 10, true);
         
         {
           Integer k = new Integer(3);
