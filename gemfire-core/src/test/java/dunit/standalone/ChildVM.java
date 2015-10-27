@@ -39,6 +39,7 @@ public class ChildVM {
   }
   
   private final static Logger logger = LogService.getLogger();
+  private static RemoteDUnitVM dunitVM;
   
   public static void main(String[] args) throws Throwable {
     try {
@@ -49,7 +50,8 @@ public class ChildVM {
       MasterRemote holder = (MasterRemote) Naming.lookup("//localhost:" + namingPort + "/" + DUnitLauncher.MASTER_PARAM);
       DUnitLauncher.init(holder);
       DUnitLauncher.locatorPort = holder.getLocatorPort();
-      Naming.rebind("//localhost:" + namingPort + "/vm" + vmNum, new RemoteDUnitVM());
+      dunitVM = new RemoteDUnitVM();
+      Naming.rebind("//localhost:" + namingPort + "/vm" + vmNum, dunitVM);
       holder.signalVMReady();
       //This loop is here so this VM will die even if the master is mean killed.
       while(true) {
