@@ -2241,12 +2241,24 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
   private void verifyMetadata() {
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    Map<String, ClientPartitionAdvisor> regionMetaData = cms
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms
         .getClientPRMetadata_TEST_ONLY();
+    
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return (regionMetaData.size() == 4);
+      }
+
+      public String description() {
+        return "expected PRAdvisor to be ready";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
+    
     assertEquals(4, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    WaitCriterion wc = new WaitCriterion() {
+    wc = new WaitCriterion() {
       public boolean done() {
         return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4);
       }
