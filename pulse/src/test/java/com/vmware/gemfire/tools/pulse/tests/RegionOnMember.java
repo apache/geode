@@ -16,24 +16,36 @@ package com.vmware.gemfire.tools.pulse.tests;
  */
 public class RegionOnMember extends JMXBaseBean implements RegionOnMemberMBean {
   private String fullPath = null;
+  private String member = null;
 
-  public RegionOnMember(String fullPath) {
+  public RegionOnMember(String fullPath, String member) {
     this.fullPath = fullPath;
+    this.member = member;
   }
 
   @Override
   protected String getKey(String propName) {
-    return "regionOnMember." + fullPath + "." + propName;
+    return "regionOnMember." + fullPath + "." + member + "." + propName;
   }
 
   @Override
-  public String getRegionFullPath(){
+  public String getFullPath(){
     return this.fullPath;
   }
 
   @Override
-  public String getMemberName(){
-    return getString("memberName");
+  public String getMember(){
+    return this.member;
+  }
+
+  @Override
+  public String getName(){
+    return getString("name");
+  }
+
+  @Override
+  public String getRegionType(){
+    return getString("regionType");
   }
 
   @Override
@@ -57,13 +69,13 @@ public class RegionOnMember extends JMXBaseBean implements RegionOnMemberMBean {
   }
 
   @Override
-  public float getDiskGetsRate(){
-    return getFloat("diskReadsRate");
+  public float getDiskReadsRate(){
+    return getFloat("diskGetsRate");
   }
 
   @Override
-  public float getDiskPutsRate(){
-    return getFloat("diskWritesRate");
+  public float getDiskWritesRate(){
+    return getFloat("diskPutsRate");
   }
 
   @Override

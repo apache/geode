@@ -25,8 +25,12 @@ public class PulseTestLocators {
 	public static class ClusterStatus {
 
 	}
-	
-	public static class TopologyView {
+
+	public static class MemberDetailsView {
+    public static final String gridButtonXpath = "//a[@id='btngridIcon']";
+  }
+
+  public static class TopologyView {
 
 		public static final String radioButtonId = "radio-default";
 		public static final String radioButtonXpath = "//label[text()='Topology']";
@@ -73,9 +77,9 @@ public class PulseTestLocators {
 		public static final String heapUsageXpath = "//a[text()='Heap Usage']";
 		public static final String cpuUsageXpath = "//a[text()='CPU Usage']";
 		public static final String graphTreeMapLblId = "//div[@id='GraphTreeMap-label']/child::node()";
-	
-		}
-	
+
+    }
+
 	public static class ServerGroups {
 
 		public static final String radioButtonId = "radio-servergroups";
@@ -197,9 +201,9 @@ public class PulseTestLocators {
 		
 		// History section		
 		public static final String historyIcon = "historyIcon";
-		public static final String historyLst = "//*[@id='detailsHistoryList']/div";
-		public static final String queryText = "//div[@id='detailsHistoryList']/div/div/div[3]";
-		public static final String historyDateTime = "//div[@id='detailsHistoryList']/div/div/div[4]";
+		public static final String historyLst = "//div[@id='detailsHistoryList']/div/div";
+		public static final String queryText = ".wrapHistoryContent";
+		public static final String historyDateTime = ".dateTimeHistory";
 		
 		//Clear button 
 		
