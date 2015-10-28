@@ -2,7 +2,6 @@
 #
 # /etc/init.d/gf_server
 #
-# Authors: Zac Hansen (Pivotal), Kyle Dunn (Pivotal)
 #
 # chkconfig: 345 98 90 
 # description: Starts or Stops Geode Server 
