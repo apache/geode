@@ -413,12 +413,12 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     assertEquals(r1.getEntry(k1).getValue(), client_k1);
     r1.put(k2, client_k2);
     assertEquals(r1.getEntry(k2).getValue(), client_k2);
+    r1.clear();
     try {
       Thread.sleep(10000);
     } catch (Exception e) {
       // sleep
     }
-    r1.clear();
 
   }
 
