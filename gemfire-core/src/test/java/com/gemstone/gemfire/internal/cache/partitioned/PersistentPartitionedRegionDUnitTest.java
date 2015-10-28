@@ -1339,6 +1339,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     addExpectedException("SocketTimeoutException");
     addExpectedException("ServerConnectivityException");
     addExpectedException("Socket Closed");
+    addExpectedException("Unexpected IOException");
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
