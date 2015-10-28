@@ -1086,11 +1086,8 @@ public class LocalRegion extends AbstractRegion
           }
         }
         success = true;
-      } catch (CancelException e) {
+      } catch (CancelException | RegionDestroyedException | RedundancyAlreadyMetException e) {
         // don't print a call stack
-        throw e;
-      } catch(RedundancyAlreadyMetException e) {
-        //don't log this
         throw e;
       } catch (final RuntimeException validationException) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_INITIALIZATION_FAILED_FOR_REGION_0,
