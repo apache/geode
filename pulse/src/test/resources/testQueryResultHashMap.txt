@@ -1,0 +1,8 @@
+{"result":[
+  ["java.util.HashMap",{
+    "3":["java.lang.String","THREE"],
+	"2":["java.lang.String","TWO"],
+	"1":["java.lang.String","ONE"],
+	"4":["java.lang.String","FOUR"]
+  }]
+]}
