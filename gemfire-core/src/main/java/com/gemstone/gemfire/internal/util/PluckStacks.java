@@ -206,7 +206,7 @@ public class PluckStacks {
       return (stackSize == 8 && thread.get(2).contains("SocketChannelImpl.accept"));
     }
     if (threadName.startsWith("P2P message reader")) {
-      return (stackSize == 11 && 
+      return (stackSize <= 12 && 
         (thread.getFirstFrame().contains("FileDispatcherImpl.read") ||
          thread.getFirstFrame().contains("FileDispatcher.read") ||
          thread.getFirstFrame().contains("SocketDispatcher.read")));
@@ -230,6 +230,9 @@ public class PluckStacks {
       if (thread.getFirstFrame().contains("socketRead")
           && (stackSize > 6 && thread.get(6).contains("fetchHeader"))) return true; // reading from a client
       return isIdleExecutor(thread);
+    }
+    if (threadName.startsWith("TCP Check ServerSocket Thread")) {
+      return (stackSize >= 3 && thread.get(2).contains("socketAccept"));
     }
     if (threadName.startsWith("Timer runner")) {
 //      System.out.println("timer runner stack size = " + stackSize + "; frame = " + thread.get(1));

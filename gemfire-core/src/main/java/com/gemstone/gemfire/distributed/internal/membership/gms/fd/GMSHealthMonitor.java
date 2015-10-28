@@ -569,21 +569,42 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         short version = in.readShort();
         long uuidLSBs = in.readLong();
         long uuidMSBs = in.readLong();
-        logger.debug("GMSHealthMonitor received health check UUID {}:{}.", uuidMSBs, uuidLSBs);
+        boolean debug = logger.isDebugEnabled();
+        if (debug) {
+          logger.debug("GMSHealthMonitor received health check UUID {},{}",
+              Long.toHexString(uuidMSBs),
+              Long.toHexString(uuidLSBs));
+        }
         UUID myUUID = ((GMSMember) GMSHealthMonitor.this.localAddress.getNetMember()).getUUID();
-        logger.debug("GMSHealthMonitor my UUID is {}:{}", myUUID.getMostSignificantBits(), myUUID.getLeastSignificantBits());
-        if (uuidLSBs == myUUID.getLeastSignificantBits()
+        if (debug) {
+          if (playingDead) {
+            logger.debug("simulating sick member in health check");
+          } else if (uuidLSBs == myUUID.getLeastSignificantBits()
+            && uuidMSBs == myUUID.getMostSignificantBits()) {
+            logger.debug("UUID matches my own - sending OK reply");
+          } else {
+            logger.debug("GMSHealthMonitor my UUID is                 {},{}",
+              Long.toHexString(myUUID.getMostSignificantBits()),
+              Long.toHexString(myUUID.getLeastSignificantBits()));
+          }
+        }
+        if (!playingDead
+            && uuidLSBs == myUUID.getLeastSignificantBits()
             && uuidMSBs == myUUID.getMostSignificantBits()) {
           out.write(OK);
           out.flush();
           socket.shutdownOutput();
-          logger.debug("GMSHealthMonitor server socket replied OK.");
+          if (debug) {
+            logger.debug("GMSHealthMonitor server socket replied OK.");
+          }
         }
         else {
           out.write(ERROR);
           out.flush();
           socket.shutdownOutput();
-          logger.debug("GMSHealthMonitor server socket replied ERROR.");
+          if (debug) {
+            logger.debug("GMSHealthMonitor server socket replied ERROR.");
+          }
         }
       } catch (IOException e) {
         logger.trace("Unexpected exception", e);

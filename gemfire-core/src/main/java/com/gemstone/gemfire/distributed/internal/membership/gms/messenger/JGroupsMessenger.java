@@ -118,14 +118,12 @@ public class JGroupsMessenger implements Messenger {
 
   private NetView view;
 
-  private View jgView;
-  
   private GMSPingPonger pingPonger = new GMSPingPonger();
   
   private volatile long pongsReceived;
   
-  private boolean playingDead;
-
+  private byte[] serializedNetMember;
+  
   
   static {
     // register classes that we've added to jgroups that are put on the wire
@@ -350,7 +348,6 @@ public class JGroupsMessenger implements Messenger {
     }
     ViewId vid = new ViewId(new JGAddress(v.getCoordinator()), v.getViewId());
     View jgv = new View(vid, new ArrayList<Address>(mbrs));
-    this.jgView = jgv;
     logger.trace("installing JGroups view: {}", jgv);
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
   }
@@ -429,12 +426,10 @@ public class JGroupsMessenger implements Messenger {
 
   @Override
   public void playDead() {
-    playingDead = true;
   }
 
   @Override
   public void beHealthy() {
-    playingDead = false;
   }
 
   @Override
@@ -461,8 +456,17 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public Set<InternalDistributedMember> send(DistributionMessage msg) {
+  public Set<InternalDistributedMember> sendUnreliably(DistributionMessage msg) {
+    return send(msg, false);
+  }
     
+  @Override
+  public Set<InternalDistributedMember> send(DistributionMessage msg) {
+    return send(msg, true);
+  }
+    
+  public Set<InternalDistributedMember> send(DistributionMessage msg, boolean reliably) {
+      
     // perform the same jgroups messaging as in 8.2's GMSMembershipManager.send() method
 
     // BUT: when marshalling messages we need to include the version of the product and
@@ -505,6 +509,9 @@ public class JGroupsMessenger implements Messenger {
         long startSer = theStats.startMsgSerialization();
         Message jmsg = createJGMessage(msg, local, Version.CURRENT_ORDINAL);
         jmsg.setTransientFlag(TransientFlag.DONT_LOOPBACK);
+        if (!reliably) {
+          jmsg.setFlag(Message.Flag.NO_RELIABILITY);
+        }
         theStats.endMsgSerialization(startSer);
         theStats.incSentBytes(jmsg.getLength());
         logger.trace("Sending JGroups message: {}", jmsg);
@@ -590,6 +597,9 @@ public class JGroupsMessenger implements Messenger {
           Exception problem = null;
           try {
             Message tmp = (i < (calculatedLen-1)) ? jmsg.copy(true) : jmsg;
+            if (!reliably) {
+              jmsg.setFlag(Message.Flag.NO_RELIABILITY);
+            }
             tmp.setDest(to);
             tmp.setSrc(this.jgAddress);
             logger.trace("Unicasting to {}", to);

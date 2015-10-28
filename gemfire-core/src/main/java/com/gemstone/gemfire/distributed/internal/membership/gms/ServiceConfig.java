@@ -112,7 +112,7 @@ public class ServiceConfig {
     this.dconfig = theConfig;
     this.transport = transport;
     
-    int defaultJoinTimeout = 17000;
+    int defaultJoinTimeout = 24000;
     if (theConfig.getLocators().length() > 0 && !Locator.hasLocators()) {
       defaultJoinTimeout = 60000;
     }

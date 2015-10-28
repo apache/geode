@@ -406,15 +406,15 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     int flags = 0;
     if (splitBrainEnabled) flags |= SB_ENABLED;
     if (preferredForCoordinator) flags |= PREFERRED_FOR_COORD;
-    out.writeInt(flags);
+    out.writeShort(flags);
 
     DataSerializer.writeInetAddress(inetAddr, out);
     out.writeInt(udpPort);
     out.writeInt(vmViewId);
     out.writeInt(directPort);
     out.writeByte(memberWeight);
+    out.writeByte(vmKind);
     out.writeInt(processId);
-    out.writeInt(vmKind);
     DataSerializer.writeString(name,  out);
     DataSerializer.writeStringArray(groups, out);
     out.writeLong(uuidMSBs);
@@ -425,7 +425,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.versionOrdinal = Version.readOrdinal(in);
     
-    int flags = in.readInt();
+    int flags = in.readShort();
     this.splitBrainEnabled = (flags & SB_ENABLED) != 0;
     this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD) != 0;
     
@@ -434,8 +434,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.vmViewId = in.readInt();
     this.directPort = in.readInt();
     this.memberWeight = in.readByte();
+    this.vmKind = in.readByte();
     this.processId = in.readInt();
-    this.vmKind = in.readInt();
     this.name = DataSerializer.readString(in);
     this.groups = DataSerializer.readStringArray(in);
     this.uuidMSBs = in.readLong();
