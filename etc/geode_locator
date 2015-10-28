@@ -21,7 +21,7 @@ GEODE=/opt/apache/geode/incubator-geode
 GFSH=$GEODE/bin/gfsh 
 GFSH_USER="geode"
 ## must add --properities-file=$GFSH_PROP in start() if not default
-# GFSH_PROP=<PATH TO GEODE>/gemfire.properties
+# GFSH_PROP=<PATH TO GEODE>/geode.properties
 GFSH_OPTIONS="locator --name=locator "
 #####################################################################################
 
