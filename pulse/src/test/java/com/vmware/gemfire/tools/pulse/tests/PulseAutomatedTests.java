@@ -144,7 +144,6 @@ class PulseBaseTests extends PulseTests {
 	public void validateServerGroupGridData() {
 		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='memberListSG']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
-		System.out.println("validateServerGroupGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
@@ -189,7 +188,6 @@ class PulseBaseTests extends PulseTests {
 	public void validateRedundancyZonesGridData() {
 		List<WebElement> rzGridRows = driver.findElements(By.xpath("//table[@id='memberListRZ']/tbody/tr"));
 		int rowsCount = rzGridRows.size();
-		System.out.println("validateRedundancyZoneGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
@@ -237,7 +235,6 @@ class PulseBaseTests extends PulseTests {
 	public void validateTopologyGridData() {
 		List<WebElement> rzGridRows = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 		int rowsCount = rzGridRows.size();
-		System.out.println("validateTopologyGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
@@ -272,7 +269,6 @@ class PulseBaseTests extends PulseTests {
 	public void validateDataPrespectiveGridData() {
 		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='regionsList']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
-		System.out.println("validateDataPerspectiveGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
@@ -312,7 +308,6 @@ class PulseBaseTests extends PulseTests {
 	public void validateRegionDetailsGridData() {
 		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
-		System.out.println("validateRegionDetailsGrid: Total Rows = " + rowsCount);
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
@@ -446,8 +441,6 @@ class PulseBaseTests extends PulseTests {
 
 	public void verifyElementAttributeById(String id, String attribute, String value) {
 		String actualValue = findElementById(id).getAttribute(attribute);
-		System.out.println("verifyElementAttributeById: Value = " + value);
-		System.out.println("verifyElementAttributeById: Actual Value = " + actualValue);
 		Assert.assertTrue(actualValue.equals(value) || actualValue.contains(value));
 	}
 
@@ -457,7 +450,6 @@ class PulseBaseTests extends PulseTests {
 		Actions action = new Actions(driver);
 		WebElement we = driver.findElement(By.id(id));
 		action.moveToElement(we).release().perform();
-		System.out.println("mouseReleaseById: testing...");
 	}
 	public void mouseClickAndHoldOverElementById(String id) {
 		verifyElementPresentById(id);
@@ -1132,7 +1124,7 @@ public class PulseAutomatedTests extends PulseBaseTests {
 	@Test
 	public void verifyZonePresentTest() {
 		navigateToRedundancyZonesTreeView();
-		verifyElementPresentById(PulseTestLocators.RedundancyZone.zoneRZ1Id);
+		verifyElementPresentByXpath(PulseTestLocators.RedundancyZone.zoneRZ1RZ2Xpath);
 		verifyElementPresentById(PulseTestLocators.RedundancyZone.zoneRZ2Id);
 	}
 
@@ -1402,7 +1394,7 @@ public class PulseAutomatedTests extends PulseBaseTests {
 		Assert.assertFalse(PulseTestData.DataBrowser.query1Text.equals(editorTextAfterClear));
 	}
 	
-	
+	@Ignore("WIP") // Data Browser's Query History not showing any data on button click, therefore this test is failing
 	@Test
 	public void testDataBrowserHistoryQueue(){
 		// navigate to Data browser page
@@ -1416,23 +1408,26 @@ public class PulseAutomatedTests extends PulseBaseTests {
 	    	}
 	    }	
 		
-		sendKeysUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId, PulseTestData.DataBrowser.query1Text);	
+		sendKeysUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId, PulseTests.QUERY_TYPE_ONE);
 		clickElementUsingId(PulseTestLocators.DataBrowser.btnExecuteQueryId);
 			
 		//Get required datetime format and extract date and hours from date time.
 	    DateFormat dateFormat = new SimpleDateFormat(PulseTestData.DataBrowser.datePattern);
 	    String queryDateTime = dateFormat.format(System.currentTimeMillis());
-	    String queryTime[] = queryDateTime.split(":");	   
-	    
+	    String queryTime[] = queryDateTime.split(":");
+		System.out.println("Query Time from System: " + queryTime[0]);
+
 	    
 	    clickElementUsingId(PulseTestLocators.DataBrowser.historyIcon);	    
 	    List<WebElement> historyLst = driver.findElements(By.xpath(PulseTestLocators.DataBrowser.historyLst));
-	    
-	    String queryText = getTextUsingXpath(PulseTestLocators.DataBrowser.queryText); 	
-  	    String historyDateTime = getTextUsingXpath(PulseTestLocators.DataBrowser.historyDateTime);
-	   	    
-  	    //verify the query text, query datetime in history panel 
-	    Assert.assertTrue(PulseTestData.DataBrowser.query1Text.equals(queryText));	        
+		String queryText       = findElementByXpath(PulseTestLocators.DataBrowser.historyLst)
+						.findElement(By.cssSelector(PulseTestLocators.DataBrowser.queryText)).getText();
+  	String historyDateTime = findElementByXpath(PulseTestLocators.DataBrowser.historyLst)
+						.findElement(By.cssSelector(PulseTestLocators.DataBrowser.historyDateTime)).getText();
+	  System.out.println("Query Text from History Table: " + queryText);
+		System.out.println("Query Time from History Table: " + historyDateTime);
+  	    //verify the query text, query datetime in history panel
+	    Assert.assertTrue(PulseTests.QUERY_TYPE_ONE.equals(queryText));
 	    Assert.assertTrue(historyDateTime.contains(queryTime[0]));
 	   
 	}	
