@@ -1,15 +1,11 @@
 apply plugin: 'war'
 
-sourceSets {// Force new dependencies only - do no inherit from parent project
+sourceSets {
   main {
     resources {
-      exclude('**/*.txt')
       exclude('**/gemfire*.properties')
       exclude('**/sqlfire.properties')
     }
-  }
-  test {
-    runtimeClasspath += fileTree("$projectDir/src/main/resources")
   }
 }
 
@@ -37,7 +33,7 @@ dependencies {
   provided 'org.mortbay.jetty:servlet-api:2.5-20081211'
   provided 'com.google.guava:guava:15.0'
 
-  testCompile 'junit:junit:4.10'
+  testCompile 'junit:junit:4.12'
   testCompile 'org.apache.tomcat.embed:tomcat-embed-core:7.0.30'
   testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.30'
   testCompile 'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.30'

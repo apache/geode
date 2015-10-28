@@ -1,0 +1,7 @@
+{"result":[
+ ["java.lang.Integer",45],
+ ["java.lang.Integer",12],
+ ["java.lang.Integer",34],
+ ["String","anystring"],
+ ["String","anotherstring"]
+]}

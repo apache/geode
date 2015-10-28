@@ -1,8 +1,0 @@
-{"result":[
-["int[]",[4,4,5]],
-["int[]",[1,1,2]],
-["java.util.ArrayList",{"0":["java.lang.String","value-18"],"1":["java.lang.String","value-28"]}],
-["java.util.ArrayList",{"0":["java.lang.String","value-17"],"1":["java.lang.String","value-27"]}],
-["java.util.ArrayList",{"0":["java.lang.String","value-16"],"1":["java.lang.String","value-26"]}],
-["java.util.ArrayList",{"0":["java.lang.String","value-15"],"1":["java.lang.String","value-25"]}]
-]}
