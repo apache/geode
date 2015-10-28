@@ -1,6 +1,6 @@
 #!/bin/bash  
 #
-# /etc/init.d/gf_locator
+# /etc/init.d/geode_locator
 #
 #
 # chkconfig: 345 96 92 
@@ -39,7 +39,7 @@ start() {
 
 stop() { 
     echo -n "Shutting down : Geode Locator " 
-    daemon "$GFSH -e \"connect\" -e \"stop $GFSH_OPTIONS\" >> /dev/null"  
+    daemon "$GFSH -e \"connect\" -e \"stop $GFSH_OPTIONS --dir=$LOCATOR_DIR\" >> /dev/null"  
     
     RETVAL=$?
     echo
