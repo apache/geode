@@ -85,7 +85,7 @@ public class PartitionedRegionOffHeapEvictionDUnitTest extends
     
     setEvictionPercentage(85);
     OffHeapMemoryMonitor ohmm = ((GemFireCacheImpl) getCache()).getResourceManager().getOffHeapMonitor();
-    ohmm.stopMonitoring(true);
+    ohmm.stopMonitoring();
 
     ohmm.updateStateAndSendEvent(94371840);
   }

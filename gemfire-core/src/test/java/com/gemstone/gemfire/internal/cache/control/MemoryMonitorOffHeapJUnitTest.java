@@ -92,7 +92,7 @@ public class MemoryMonitorOffHeapJUnitTest {
     
     monitor.setEvictionThreshold(50.0f);  
     monitor.setCriticalThreshold(75.0f);
-    monitor.stopMonitoring(true);
+    monitor.stopMonitoring();
     
     assertEquals(524288, internalManager.getStats().getOffHeapEvictionThreshold());
     assertEquals(786432, internalManager.getStats().getOffHeapCriticalThreshold());

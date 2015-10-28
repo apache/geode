@@ -78,7 +78,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitDisabledTest {
       getLogWriter().info("cache= " + cache);
       getLogWriter().info("cache closed= " + cache.isClosed());
       cache.getResourceManager().setEvictionOffHeapPercentage(85);
-      ((GemFireCacheImpl) cache).getResourceManager().getOffHeapMonitor().stopMonitoring(true);
+      ((GemFireCacheImpl) cache).getResourceManager().getOffHeapMonitor().stopMonitoring();
       getLogWriter().info("eviction= "+cache.getResourceManager().getEvictionOffHeapPercentage());
       getLogWriter().info("critical= "+cache.getResourceManager().getCriticalOffHeapPercentage());
     }
