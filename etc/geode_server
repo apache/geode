@@ -13,7 +13,7 @@
 export JAVA_HOME=/usr/java/jdk1.7.0_79
 
 ######################################################################################
-##                          GEODE PROPERTIES
+##                          APACHE GEODE PROPERTIES
 ######################################################################################
 ## if SERVER_PORT=0 then wildcard
 SERVER_PORT=0   
