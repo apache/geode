@@ -15,9 +15,13 @@ package com.vmware.gemfire.tools.pulse.tests;
  */
 public interface RegionOnMemberMBean {
 
-  public String getRegionFullPath();
+  public String getName();
 
-  public String getMemberName();
+  public String getRegionType(); // Ideally should be an Enum
+
+  public String getFullPath();
+
+  public String getMember();
 
   public long getEntrySize();
 
@@ -27,9 +31,9 @@ public interface RegionOnMemberMBean {
 
   public float getPutsRate();
 
-  public float getDiskGetsRate();
+  public float getDiskReadsRate();
 
-  public float getDiskPutsRate();
+  public float getDiskWritesRate();
 
   public int getLocalMaxMemory();
 }

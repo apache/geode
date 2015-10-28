@@ -290,35 +290,6 @@ public class PulseTests {
     Assert.assertEquals(totalclients, clusterClients);
   }
 
-  @Ignore("For Gemfire XD")
-  @Test
-  public void testClusterNumProcedures() {
-    String clusterProcedures = driver.findElement(By.id(CLUSTER_PROCEDURE_ID)).getText();
-    String totalprocedures = JMXProperties.getInstance().getProperty(
-        "gemfirexd.C1.ProcedureCallsInProgress");
-    Assert.assertEquals(totalprocedures, clusterProcedures);
-  }
-
-  @Ignore("For Gemfire XD")
-  @Test
-  public void testClusterTxnCommitted() {
-    String clusterTxnCommitted = driver.findElement(
-        By.id(CLUSTER_TXNCOMMITTED_ID)).getText();
-    String totaltxnCommitted = JMXProperties.getInstance().getProperty(
-        "server.S1.TransactionCommitted");
-    Assert.assertEquals(totaltxnCommitted, clusterTxnCommitted);
-  }
-
-  @Ignore("For Gemfire XD")
-  @Test
-  public void testClusterTxnRollback() {
-    String clusterTxnRollBack = driver.findElement(
-        By.id(CLUSTER_TXNROLLBACK_ID)).getText();
-    String totaltxnRollback = JMXProperties.getInstance().getProperty(
-        "server.S1.TransactionRolledBack");
-    Assert.assertEquals(totaltxnRollback, clusterTxnRollBack);
-  }
-
   @Test
   public void testClusterNumRunningFunction() {
     String clusterFunctions = driver.findElement(By.id(CLUSTER_FUNCTIONS_ID))
@@ -456,7 +427,7 @@ public class PulseTests {
   public void testMemberTotalRegionCount() throws InterruptedException{
 	testRgraphWidget();
     String RegionCount = driver.findElement(By.id(MEMBER_VIEW_REGION_ID)).getText();  
-    String memberRegionCount = JMXProperties.getInstance().getProperty("member.M1.totalRegionCount");   
+    String memberRegionCount = JMXProperties.getInstance().getProperty("member.M1.totalRegionCount");
     Assert.assertEquals(memberRegionCount, RegionCount);
   }
 
@@ -485,7 +456,7 @@ public class PulseTests {
     Assert.assertEquals(memberLoadAvg, LoadAvg);
   }
 
-  @Ignore("not part of pulse-Cedar 7.5")
+  @Ignore("WIP") // May be useful in near future
   @Test
   public void testOffHeapFreeSize(){	  
 	  
@@ -510,7 +481,7 @@ public class PulseTests {
  
   }
 
-  @Ignore("not part of pulse-Cedar 7.5")
+  @Ignore("WIP") // May be useful in near future
   @Test
   public void testOffHeapUsedSize() throws InterruptedException {
 	 
@@ -532,17 +503,6 @@ public class PulseTests {
     memberOffHeapUsedSize = Float.parseFloat(new DecimalFormat("##.##")
         .format(memberOffHeapUsedSize));
     Assert.assertEquals(memberOffHeapUsedSize, OffHeapUsedSize);
-  }
-   @Ignore("For Gemfire XD")
-   @Test  // conflict between UI and properties file
-  public void testMemberClients() {  
-    String Clients = driver.findElement(By.id(MEMBER_VIEW_CLIENTS_ID))
-        .getText();
-    
-    String memberClientsString = JMXProperties.getInstance().getProperty(
-        "gemfirexdmember.M1.NetworkServerClientConnectionStats");
-    String[] memberClients = memberClientsString.split(",");
-    Assert.assertEquals(memberClients[3], Clients);
   }
 
   @Test
@@ -583,22 +543,23 @@ public class PulseTests {
   }
  
 
- @Test   //'Name' and 'type' is displayed blank on UI
-  public void testMemberGridViewData(){	 
-    searchByIdAndClick("btngridIcon");
-    
-    // get the number of rows on the grid
+ @Test
+  public void testMemberGridViewData() throws InterruptedException {
+   searchByXPathAndClick(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
+   testRgraphWidget();
+   searchByXPathAndClick(PulseTestLocators.MemberDetailsView.gridButtonXpath);
+   // get the number of rows on the grid
     List<WebElement> noOfRows = driver.findElements(By.xpath("//table[@id='memberRegionsList']/tbody/tr"));    
     String MemberRegionName = driver.findElement(By.xpath("//table[@id='memberRegionsList']/tbody/tr[2]/td[1]")).getText();
-    String memberRegionName = JMXProperties.getInstance().getProperty("region.R2.name");
+    String memberRegionName = JMXProperties.getInstance().getProperty("region.R1.name");
     Assert.assertEquals(memberRegionName, MemberRegionName);
 
     String MemberRegionType = driver.findElement(By.xpath("//table[@id='memberRegionsList']/tbody/tr[2]/td[2]")).getText();
-    String memberRegionType = JMXProperties.getInstance().getProperty("region.R2.regionType");
+    String memberRegionType = JMXProperties.getInstance().getProperty("region.R1.regionType");
     Assert.assertEquals(memberRegionType, MemberRegionType);
     
     String MemberRegionEntryCount = driver.findElement(By.xpath("//table[@id='memberRegionsList']/tbody/tr[2]/td[3]")).getText();
-    String memberRegionEntryCount = JMXProperties.getInstance().getProperty("region.R2.systemRegionEntryCount");    
+    String memberRegionEntryCount = JMXProperties.getInstance().getProperty("regionOnMember./R1.M1.entryCount");
     Assert.assertEquals(memberRegionEntryCount, MemberRegionEntryCount);
   }
 
@@ -610,18 +571,18 @@ public class PulseTests {
     searchByLinkAndClick("M2");
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewRegionName() throws InterruptedException {
     searchByLinkAndClick(DATA_VIEW_LABEL);
     Thread.sleep(7000);
-    searchByIdAndClick("btngridIcon");
+    searchByIdAndClick("default_grid_button");
     String regionName = driver.findElement(By.id(REGION_NAME_LABEL)).getText();
     String dataviewregionname = JMXProperties.getInstance().getProperty("region.R1.name");
     Assert.assertEquals(dataviewregionname, regionName);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewRegionPath() {
     String regionPath = driver.findElement(By.id(REGION_PATH_LABEL)).getText();
@@ -630,7 +591,7 @@ public class PulseTests {
     Assert.assertEquals(dataviewregionpath, regionPath);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewRegionType() {
     String regionType = driver.findElement(By.id(REGION_TYPE_LABEL)).getText();
@@ -639,7 +600,7 @@ public class PulseTests {
     Assert.assertEquals(dataviewregiontype, regionType);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewEmptyNodes() {
     String regionEmptyNodes = driver.findElement(By.id(DATA_VIEW_EMPTYNODES))
@@ -649,7 +610,7 @@ public class PulseTests {
     Assert.assertEquals(dataviewEmptyNodes, regionEmptyNodes);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewSystemRegionEntryCount() {
     String regionEntryCount = driver.findElement(By.id(DATA_VIEW_ENTRYCOUNT))
@@ -659,7 +620,7 @@ public class PulseTests {
     Assert.assertEquals(dataviewEntryCount, regionEntryCount);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewPersistentEnabled() {
     String regionPersistence = driver.findElement(
@@ -669,7 +630,7 @@ public class PulseTests {
     Assert.assertEquals(dataviewregionpersistence, regionPersistence);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewDiskWritesRate() {
     String regionWrites = driver.findElement(By.id(DATA_VIEW_WRITEPERSEC))
@@ -679,7 +640,7 @@ public class PulseTests {
     Assert.assertEquals(dataviewRegionWrites, regionWrites);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewDiskReadsRate() {
     String regionReads = driver.findElement(By.id(DATA_VIEW_READPERSEC))
@@ -689,7 +650,7 @@ public class PulseTests {
     Assert.assertEquals(dataviewRegionReads, regionReads);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewDiskUsage() {
     String regionMemoryUsed = driver.findElement(By.id(DATA_VIEW_USEDMEMORY))
@@ -700,7 +661,7 @@ public class PulseTests {
     searchByLinkAndClick(QUERY_STATISTICS_LABEL);
   }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
+  @Ignore("WIP")
   @Test
   public void testDataViewGridValue() {
     String DataViewRegionName = driver.findElement(
@@ -859,7 +820,7 @@ public class PulseTests {
 	  
   }
 
-  @Ignore("Bad Test") // clusterDetails element not found on Data Browser page. No assertions in test
+  @Ignore("WIP") // clusterDetails element not found on Data Browser page. No assertions in test
   @Test
   public void testDataBrowserQueryValidation() throws IOException, InterruptedException {
 	  loadDataBrowserpage();
@@ -877,7 +838,6 @@ public class PulseTests {
 	  while((line = br.readLine()) != null)
 	  {
 		  countLine++;
-          //System.out.println(line);
           String[] words = line.split(" ");
 
           for (String word : words) {
@@ -989,1158 +949,7 @@ public class PulseTests {
 	  WebElement TreeMapMember = driver.findElement(By.id("GraphTreeMapClusterData-canvas"));
 	  TreeMapMember.click();
   }
-  
-  
-  
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
-  @Test
-  public void loadQueryStatisticspage() throws InterruptedException {
-    searchByLinkAndClick(QUERY_STATISTICS_LABEL);
-    Thread.sleep(7000);
-  }
 
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
-  @Test
-  public void testQueryDefinitionValidation() {
-
-    String QueryDefinition1 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[2]/td[1]"))
-        .getText();
-    String queryDefinition1 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q12.queryDefinition");
-    Assert.assertEquals(queryDefinition1, QueryDefinition1);
-
-    String QueryDefinition2 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[3]/td[1]"))
-        .getText();
-    String queryDefinition2 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q14.queryDefinition");
-    Assert.assertEquals(queryDefinition2, QueryDefinition2);
-
-    String QueryDefinition3 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[4]/td[1]"))
-        .getText();
-    String queryDefinition3 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q20.queryDefinition");
-    Assert.assertEquals(queryDefinition3, QueryDefinition3);
-
-    String QueryDefinition4 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[5]/td[1]"))
-        .getText();
-    String queryDefinition4 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q24.queryDefinition");
-    Assert.assertEquals(queryDefinition4, QueryDefinition4);
-
-    String QueryDefinition5 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[6]/td[1]"))
-        .getText();
-    String queryDefinition5 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q11.queryDefinition");
-    Assert.assertEquals(queryDefinition5, QueryDefinition5);
-
-    String QueryDefinition6 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[7]/td[1]"))
-        .getText();
-    String queryDefinition6 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q18.queryDefinition");
-    Assert.assertEquals(queryDefinition6, QueryDefinition6);
-
-    String QueryDefinition7 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[8]/td[1]"))
-        .getText();
-    String queryDefinition7 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q15.queryDefinition");
-    Assert.assertEquals(queryDefinition7, QueryDefinition7);
-
-    String QueryDefinition8 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[9]/td[1]"))
-        .getText();
-    String queryDefinition8 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q23.queryDefinition");
-    Assert.assertEquals(queryDefinition8, QueryDefinition8);
-
-    String QueryDefinition9 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[10]/td[1]"))
-        .getText();
-    String queryDefinition9 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q10.queryDefinition");
-    Assert.assertEquals(queryDefinition9, QueryDefinition9);
-
-    String QueryDefinition10 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[11]/td[1]"))
-        .getText();
-    String queryDefinition10 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q21.queryDefinition");
-    Assert.assertEquals(queryDefinition10, QueryDefinition10);
-
-    String QueryDefinition11 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[12]/td[1]"))
-        .getText();
-    String queryDefinition11 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q16.queryDefinition");
-    Assert.assertEquals(queryDefinition11, QueryDefinition11);
-
-    String QueryDefinition12 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[13]/td[1]"))
-        .getText();
-    String queryDefinition12 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q17.queryDefinition");
-    Assert.assertEquals(queryDefinition12, QueryDefinition12);
-
-    String QueryDefinition13 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[14]/td[1]"))
-        .getText();
-    String queryDefinition13 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q13.queryDefinition");
-    Assert.assertEquals(queryDefinition13, QueryDefinition13);
-
-    String QueryDefinition14 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[15]/td[1]"))
-        .getText();
-    String queryDefinition14 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q19.queryDefinition");
-    Assert.assertEquals(queryDefinition14, QueryDefinition14);
-
-    String QueryDefinition15 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[16]/td[1]"))
-        .getText();
-    String queryDefinition15 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q25.queryDefinition");
-    Assert.assertEquals(queryDefinition15, QueryDefinition15);
-
-    String QueryDefinition16 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[17]/td[1]"))
-        .getText();
-    String queryDefinition16 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q22.queryDefinition");
-    Assert.assertEquals(queryDefinition16, QueryDefinition16);
-
-    String QueryDefinition17 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[18]/td[1]"))
-        .getText();
-    String queryDefinition17 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q4.queryDefinition");
-    Assert.assertEquals(queryDefinition17, QueryDefinition17);
-
-    String QueryDefinition18 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[19]/td[1]"))
-        .getText();
-    String queryDefinition18 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q5.queryDefinition");
-    Assert.assertEquals(queryDefinition18, QueryDefinition18);
-
-    String QueryDefinition19 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[20]/td[1]"))
-        .getText();
-    String queryDefinition19 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q2.queryDefinition");
-    Assert.assertEquals(queryDefinition19, QueryDefinition19);
-
-    String QueryDefinition20 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[21]/td[1]"))
-        .getText();
-    String queryDefinition20 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q7.queryDefinition");
-    Assert.assertEquals(queryDefinition20, QueryDefinition20);
-
-    String QueryDefinition21 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[22]/td[1]"))
-        .getText();
-    String queryDefinition21 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q8.queryDefinition");
-    Assert.assertEquals(queryDefinition21, QueryDefinition21);
-
-    String QueryDefinition22 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[23]/td[1]"))
-        .getText();
-    String queryDefinition22 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q9.queryDefinition");
-    Assert.assertEquals(queryDefinition22, QueryDefinition22);
-
-    String QueryDefinition23 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[24]/td[1]"))
-        .getText();
-    String queryDefinition23 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q1.queryDefinition");
-    Assert.assertEquals(queryDefinition23, QueryDefinition23);
-
-    String QueryDefinition24 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[25]/td[1]"))
-        .getText();
-    String queryDefinition24 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q3.queryDefinition");
-    Assert.assertEquals(queryDefinition24, QueryDefinition24);
-
-    scrollbarVerticalDownScroll();
-
-    String QueryDefinition25 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[26]/td[1]"))
-        .getText();
-    String queryDefinition25 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q6.queryDefinition");
-    Assert.assertEquals(queryDefinition25, QueryDefinition25);
-  }
-
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
-  @Test
-  public void testNumExecution() throws InterruptedException {
-
-    String QueryNumExecution1 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[2]/td[2]"))
-        .getText();
-    String queryNumExecution1 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q12.numExecution");
-    Assert.assertEquals(queryNumExecution1, QueryNumExecution1);
-
-    String QueryNumExecution2 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[3]/td[2]"))
-        .getText();
-    String queryNumExecution2 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q14.numExecution");
-    Assert.assertEquals(queryNumExecution2, QueryNumExecution2);
-
-    String QueryNumExecution3 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[4]/td[2]"))
-        .getText();
-    String queryNumExecution3 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q20.numExecution");
-    Assert.assertEquals(queryNumExecution3, QueryNumExecution3);
-
-    String QueryNumExecution4 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[5]/td[2]"))
-        .getText();
-    String queryNumExecution4 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q24.numExecution");
-    Assert.assertEquals(queryNumExecution4, QueryNumExecution4);
-
-    String QueryNumExecution5 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[6]/td[2]"))
-        .getText();
-    String queryNumExecution5 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q11.numExecution");
-    Assert.assertEquals(queryNumExecution5, QueryNumExecution5);
-
-    String QueryNumExecution6 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[7]/td[2]"))
-        .getText();
-    String queryNumExecution6 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q18.numExecution");
-    Assert.assertEquals(queryNumExecution6, QueryNumExecution6);
-
-    String QueryNumExecution7 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[8]/td[2]"))
-        .getText();
-    String queryNumExecution7 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q15.numExecution");
-    Assert.assertEquals(queryNumExecution7, QueryNumExecution7);
-
-    String QueryNumExecution8 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[9]/td[2]"))
-        .getText();
-    String queryNumExecution8 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q23.numExecution");
-    Assert.assertEquals(queryNumExecution8, QueryNumExecution8);
-
-    String QueryNumExecution9 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[10]/td[2]"))
-        .getText();
-    String queryNumExecution9 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q10.numExecution");
-    Assert.assertEquals(queryNumExecution9, QueryNumExecution9);
-
-    String QueryNumExecution10 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[11]/td[2]"))
-        .getText();
-    String queryNumExecution10 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q21.numExecution");
-    Assert.assertEquals(queryNumExecution10, QueryNumExecution10);
-
-    String QueryNumExecution11 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[12]/td[2]"))
-        .getText();
-    String queryNumExecution11 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q16.numExecution");
-    Assert.assertEquals(queryNumExecution11, QueryNumExecution11);
-
-    String QueryNumExecution12 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[13]/td[2]"))
-        .getText();
-    String queryNumExecution12 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q17.numExecution");
-    Assert.assertEquals(queryNumExecution12, QueryNumExecution12);
-
-    String QueryNumExecution13 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[14]/td[2]"))
-        .getText();
-    String queryNumExecution13 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q13.numExecution");
-    Assert.assertEquals(queryNumExecution13, QueryNumExecution13);
-
-    String QueryNumExecution14 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[15]/td[2]"))
-        .getText();
-    String queryNumExecution14 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q19.numExecution");
-    Assert.assertEquals(queryNumExecution14, QueryNumExecution14);
-
-    String QueryNumExecution15 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[16]/td[2]"))
-        .getText();
-    String queryNumExecution15 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q25.numExecution");
-    Assert.assertEquals(queryNumExecution15, QueryNumExecution15);
-
-    String QueryNumExecution16 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[17]/td[2]"))
-        .getText();
-    String queryNumExecution16 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q22.numExecution");
-    Assert.assertEquals(queryNumExecution16, QueryNumExecution16);
-
-    String QueryNumExecution17 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[18]/td[2]"))
-        .getText();
-    String queryNumExecution17 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q4.numExecution");
-    Assert.assertEquals(queryNumExecution17, QueryNumExecution17);
-
-    String QueryNumExecution18 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[19]/td[2]"))
-        .getText();
-    String queryNumExecution18 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q5.numExecution");
-    Assert.assertEquals(queryNumExecution18, QueryNumExecution18);
-
-    String QueryNumExecution19 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[20]/td[2]"))
-        .getText();
-    String queryNumExecution19 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q2.numExecution");
-    Assert.assertEquals(queryNumExecution19, QueryNumExecution19);
-
-    String QueryNumExecution20 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[21]/td[2]"))
-        .getText();
-    String queryNumExecution20 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q7.numExecution");
-    Assert.assertEquals(queryNumExecution20, QueryNumExecution20);
-
-    String QueryNumExecution21 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[22]/td[2]"))
-        .getText();
-    String queryNumExecution21 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q8.numExecution");
-    Assert.assertEquals(queryNumExecution21, QueryNumExecution21);
-
-    String QueryNumExecution22 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[23]/td[2]"))
-        .getText();
-    String queryNumExecution22 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q9.numExecution");
-    Assert.assertEquals(queryNumExecution22, QueryNumExecution22);
-
-    String QueryNumExecution23 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[24]/td[2]"))
-        .getText();
-    String queryNumExecution23 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q1.numExecution");
-    Assert.assertEquals(queryNumExecution23, QueryNumExecution23);
-
-    String QueryNumExecution24 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[25]/td[2]"))
-        .getText();
-    String queryNumExecution24 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q3.numExecution");
-    Assert.assertEquals(queryNumExecution24, QueryNumExecution24);
-
-    scrollbarVerticalDownScroll();
-
-    String QueryNumExecution25 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[26]/td[2]"))
-        .getText();
-    String queryNumExecution25 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q6.numExecution");
-    Assert.assertEquals(queryNumExecution25, QueryNumExecution25);
-  }
-
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
-  @Test
-  public void testTotalExecutionTime() {
-
-    String QueryTotalExecutionTime1 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[2]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime1 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q12.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime1, QueryTotalExecutionTime1);
-
-    String QueryTotalExecutionTime2 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[3]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime2 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q14.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime2, QueryTotalExecutionTime2);
-
-    String QueryTotalExecutionTime3 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[4]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime3 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q20.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime3, QueryTotalExecutionTime3);
-
-    String QueryTotalExecutionTime4 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[5]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime4 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q24.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime4, QueryTotalExecutionTime4);
-
-    String QueryTotalExecutionTime5 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[6]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime5 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q11.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime5, QueryTotalExecutionTime5);
-
-    String QueryTotalExecutionTime6 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[7]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime6 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q18.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime6, QueryTotalExecutionTime6);
-
-    String QueryTotalExecutionTime7 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[8]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime7 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q15.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime7, QueryTotalExecutionTime7);
-
-    String QueryTotalExecutionTime8 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[9]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime8 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q23.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime8, QueryTotalExecutionTime8);
-
-    String QueryTotalExecutionTime9 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[10]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime9 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q10.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime9, QueryTotalExecutionTime9);
-
-    String QueryTotalExecutionTime10 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[11]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime10 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q21.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime10, QueryTotalExecutionTime10);
-
-    String QueryTotalExecutionTime11 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[12]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime11 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q16.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime11, QueryTotalExecutionTime11);
-
-    String QueryTotalExecutionTime12 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[13]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime12 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q17.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime12, QueryTotalExecutionTime12);
-
-    String QueryTotalExecutionTime13 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[14]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime13 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q13.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime13, QueryTotalExecutionTime13);
-
-    String QueryTotalExecutionTime14 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[15]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime14 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q19.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime14, QueryTotalExecutionTime14);
-
-    String QueryTotalExecutionTime15 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[16]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime15 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q25.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime15, QueryTotalExecutionTime15);
-
-    String QueryTotalExecutionTime16 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[17]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime16 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q22.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime16, QueryTotalExecutionTime16);
-
-    String QueryTotalExecutionTime17 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[18]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime17 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q4.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime17, QueryTotalExecutionTime17);
-
-    String QueryTotalExecutionTime18 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[19]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime18 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q5.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime18, QueryTotalExecutionTime18);
-
-    String QueryTotalExecutionTime19 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[20]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime19 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q2.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime19, QueryTotalExecutionTime19);
-
-    String QueryTotalExecutionTime20 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[21]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime20 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q7.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime20, QueryTotalExecutionTime20);
-
-    String QueryTotalExecutionTime21 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[22]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime21 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q8.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime21, QueryTotalExecutionTime21);
-
-    String QueryTotalExecutionTime22 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[23]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime22 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q9.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime22, QueryTotalExecutionTime22);
-
-    String QueryTotalExecutionTime23 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[24]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime23 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q1.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime23, QueryTotalExecutionTime23);
-
-    String QueryTotalExecutionTime24 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[25]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime24 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q3.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime24, QueryTotalExecutionTime24);
-
-    scrollbarVerticalDownScroll();
-
-    String QueryTotalExecutionTime25 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[26]/td[3]"))
-        .getText();
-    String queryTotalExecutionTime25 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q6.totalExecutionTime");
-    Assert.assertEquals(queryTotalExecutionTime25, QueryTotalExecutionTime25);
-  }
-
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
-  @Test
-  public void testNumExecutionsInProgress() {
-
-    String QueryNumExecutionsInProgress1 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[2]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress1 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q12.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress1,
-        QueryNumExecutionsInProgress1);
-
-    String QueryNumExecutionsInProgress2 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[3]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress2 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q14.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress2,
-        QueryNumExecutionsInProgress2);
-
-    String QueryNumExecutionsInProgress3 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[4]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress3 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q20.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress3,
-        QueryNumExecutionsInProgress3);
-
-    String QueryNumExecutionsInProgress4 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[5]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress4 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q24.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress4,
-        QueryNumExecutionsInProgress4);
-
-    String QueryNumExecutionsInProgress5 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[6]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress5 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q11.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress5,
-        QueryNumExecutionsInProgress5);
-
-    String QueryNumExecutionsInProgress6 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[7]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress6 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q18.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress6,
-        QueryNumExecutionsInProgress6);
-
-    String QueryNumExecutionsInProgress7 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[8]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress7 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q15.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress7,
-        QueryNumExecutionsInProgress7);
-
-    String QueryNumExecutionsInProgress8 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[9]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress8 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q23.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress8,
-        QueryNumExecutionsInProgress8);
-
-    String QueryNumExecutionsInProgress9 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[10]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress9 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q10.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress9,
-        QueryNumExecutionsInProgress9);
-
-    String QueryNumExecutionsInProgress10 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[11]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress10 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q21.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress10,
-        QueryNumExecutionsInProgress10);
-
-    String QueryNumExecutionsInProgress11 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[12]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress11 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q16.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress11,
-        QueryNumExecutionsInProgress11);
-
-    String QueryNumExecutionsInProgress12 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[13]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress12 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q17.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress12,
-        QueryNumExecutionsInProgress12);
-
-    String QueryNumExecutionsInProgress13 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[14]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress13 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q13.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress13,
-        QueryNumExecutionsInProgress13);
-
-    String QueryNumExecutionsInProgress14 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[15]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress14 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q19.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress14,
-        QueryNumExecutionsInProgress14);
-
-    String QueryNumExecutionsInProgress15 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[16]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress15 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q25.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress15,
-        QueryNumExecutionsInProgress15);
-
-    String QueryNumExecutionsInProgress16 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[17]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress16 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q22.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress16,
-        QueryNumExecutionsInProgress16);
-
-    String QueryNumExecutionsInProgress17 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[18]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress17 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q4.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress17,
-        QueryNumExecutionsInProgress17);
-
-    String QueryNumExecutionsInProgress18 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[19]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress18 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q5.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress18,
-        QueryNumExecutionsInProgress18);
-
-    String QueryNumExecutionsInProgress19 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[20]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress19 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q2.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress19,
-        QueryNumExecutionsInProgress19);
-
-    String QueryNumExecutionsInProgress20 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[21]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress20 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q7.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress20,
-        QueryNumExecutionsInProgress20);
-
-    String QueryNumExecutionsInProgress21 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[22]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress21 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q8.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress21,
-        QueryNumExecutionsInProgress21);
-
-    String QueryNumExecutionsInProgress22 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[23]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress22 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q9.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress22,
-        QueryNumExecutionsInProgress22);
-
-    String QueryNumExecutionsInProgress23 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[24]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress23 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q1.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress23,
-        QueryNumExecutionsInProgress23);
-
-    String QueryNumExecutionsInProgress24 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[25]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress24 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q3.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress24,
-        QueryNumExecutionsInProgress24);
-
-    scrollbarVerticalDownScroll();
-
-    String QueryNumExecutionsInProgress25 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[26]/td[4]"))
-        .getText();
-    String queryNumExecutionsInProgress25 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q6.numExecutionsInProgress");
-    Assert.assertEquals(queryNumExecutionsInProgress25,
-        QueryNumExecutionsInProgress25);
-  }
-
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
-  @Test
-  public void testNumTimesCompiled() {
-
-    String QueryNumTimesCompiled1 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[2]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled1 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q12.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled1, QueryNumTimesCompiled1);
-
-    String QueryNumTimesCompiled2 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[3]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled2 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q14.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled2, QueryNumTimesCompiled2);
-
-    String QueryNumTimesCompiled3 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[4]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled3 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q20.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled3, QueryNumTimesCompiled3);
-
-    String QueryNumTimesCompiled4 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[5]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled4 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q24.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled4, QueryNumTimesCompiled4);
-
-    String QueryNumTimesCompiled5 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[6]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled5 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q11.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled5, QueryNumTimesCompiled5);
-
-    String QueryNumTimesCompiled6 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[7]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled6 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q18.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled6, QueryNumTimesCompiled6);
-
-    String QueryNumTimesCompiled7 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[8]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled7 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q15.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled7, QueryNumTimesCompiled7);
-
-    String QueryNumTimesCompiled8 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[9]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled8 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q23.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled8, QueryNumTimesCompiled8);
-
-    String QueryNumTimesCompiled9 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[10]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled9 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q10.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled9, QueryNumTimesCompiled9);
-
-    String QueryNumTimesCompiled10 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[11]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled10 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q21.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled10, QueryNumTimesCompiled10);
-
-    String QueryNumTimesCompiled11 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[12]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled11 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q16.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled11, QueryNumTimesCompiled11);
-
-    String QueryNumTimesCompiled12 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[13]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled12 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q17.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled12, QueryNumTimesCompiled12);
-
-    String QueryNumTimesCompiled13 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[14]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled13 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q13.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled13, QueryNumTimesCompiled13);
-
-    String QueryNumTimesCompiled14 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[15]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled14 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q19.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled14, QueryNumTimesCompiled14);
-
-    String QueryNumTimesCompiled15 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[16]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled15 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q25.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled15, QueryNumTimesCompiled15);
-
-    String QueryNumTimesCompiled16 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[17]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled16 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q22.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled16, QueryNumTimesCompiled16);
-
-    String QueryNumTimesCompiled17 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[18]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled17 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q4.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled17, QueryNumTimesCompiled17);
-
-    String QueryNumTimesCompiled18 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[19]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled18 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q5.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled18, QueryNumTimesCompiled18);
-
-    String QueryNumTimesCompiled19 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[20]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled19 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q2.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled19, QueryNumTimesCompiled19);
-
-    String QueryNumTimesCompiled20 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[21]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled20 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q7.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled20, QueryNumTimesCompiled20);
-
-    String QueryNumTimesCompiled21 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[22]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled21 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q8.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled21, QueryNumTimesCompiled21);
-
-    String QueryNumTimesCompiled22 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[23]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled22 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q9.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled22, QueryNumTimesCompiled22);
-
-    String QueryNumTimesCompiled23 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[24]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled23 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q1.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled23, QueryNumTimesCompiled23);
-
-    String QueryNumTimesCompiled24 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[25]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled24 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q3.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled24, QueryNumTimesCompiled24);
-
-    scrollbarVerticalDownScroll();
-
-    String QueryNumTimesCompiled25 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[26]/td[5]"))
-        .getText();
-    String queryNumTimesCompiled25 = JMXProperties.getInstance().getProperty(
-        "aggregatestatement.Q6.numTimesCompiled");
-    Assert.assertEquals(queryNumTimesCompiled25, QueryNumTimesCompiled25);
-  }
-
-  @Ignore("Not part of Pulse-Cedar 7.5 release")
-  @Test
-  public void testNumTimesGlobalIndexLookup() {
-
-    String QueryNumTimesGlobalIndexLookup1 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[2]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup1 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q12.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup1,
-        QueryNumTimesGlobalIndexLookup1);
-
-    String QueryNumTimesGlobalIndexLookup2 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[3]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup2 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q14.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup2,
-        QueryNumTimesGlobalIndexLookup2);
-
-    String QueryNumTimesGlobalIndexLookup3 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[4]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup3 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q20.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup3,
-        QueryNumTimesGlobalIndexLookup3);
-
-    String QueryNumTimesGlobalIndexLookup4 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[5]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup4 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q24.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup4,
-        QueryNumTimesGlobalIndexLookup4);
-
-    String QueryNumTimesGlobalIndexLookup5 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[6]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup5 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q11.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup5,
-        QueryNumTimesGlobalIndexLookup5);
-
-    String QueryNumTimesGlobalIndexLookup6 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[7]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup6 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q18.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup6,
-        QueryNumTimesGlobalIndexLookup6);
-
-    String QueryNumTimesGlobalIndexLookup7 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[8]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup7 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q15.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup7,
-        QueryNumTimesGlobalIndexLookup7);
-
-    String QueryNumTimesGlobalIndexLookup8 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[9]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup8 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q23.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup8,
-        QueryNumTimesGlobalIndexLookup8);
-
-    String QueryNumTimesGlobalIndexLookup9 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[10]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup9 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q10.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup9,
-        QueryNumTimesGlobalIndexLookup9);
-
-    String QueryNumTimesGlobalIndexLookup10 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[11]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup10 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q21.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup10,
-        QueryNumTimesGlobalIndexLookup10);
-
-    String QueryNumTimesGlobalIndexLookup11 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[12]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup11 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q16.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup11,
-        QueryNumTimesGlobalIndexLookup11);
-
-    String QueryNumTimesGlobalIndexLookup12 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[13]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup12 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q17.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup12,
-        QueryNumTimesGlobalIndexLookup12);
-
-    String QueryNumTimesGlobalIndexLookup13 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[14]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup13 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q13.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup13,
-        QueryNumTimesGlobalIndexLookup13);
-
-    String QueryNumTimesGlobalIndexLookup14 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[15]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup14 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q19.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup14,
-        QueryNumTimesGlobalIndexLookup14);
-
-    String QueryNumTimesGlobalIndexLookup15 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[16]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup15 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q25.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup15,
-        QueryNumTimesGlobalIndexLookup15);
-
-    String QueryNumTimesGlobalIndexLookup16 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[17]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup16 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q22.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup16,
-        QueryNumTimesGlobalIndexLookup16);
-
-    String QueryNumTimesGlobalIndexLookup17 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[18]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup17 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q4.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup17,
-        QueryNumTimesGlobalIndexLookup17);
-
-    String QueryNumTimesGlobalIndexLookup18 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[19]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup18 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q5.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup18,
-        QueryNumTimesGlobalIndexLookup18);
-
-    String QueryNumTimesGlobalIndexLookup19 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[20]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup19 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q2.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup19,
-        QueryNumTimesGlobalIndexLookup19);
-
-    String QueryNumTimesGlobalIndexLookup20 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[21]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup20 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q7.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup20,
-        QueryNumTimesGlobalIndexLookup20);
-
-    String QueryNumTimesGlobalIndexLookup21 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[22]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup21 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q8.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup21,
-        QueryNumTimesGlobalIndexLookup21);
-
-    String QueryNumTimesGlobalIndexLookup22 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[23]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup22 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q9.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup22,
-        QueryNumTimesGlobalIndexLookup22);
-
-    String QueryNumTimesGlobalIndexLookup23 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[24]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup23 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q1.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup23,
-        QueryNumTimesGlobalIndexLookup23);
-
-    String QueryNumTimesGlobalIndexLookup24 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[25]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup24 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q3.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup24,
-        QueryNumTimesGlobalIndexLookup24);
-
-    scrollbarVerticalDownScroll();
-
-    String QueryNumTimesGlobalIndexLookup25 = driver.findElement(
-        By.xpath("//table[@id='queryStatisticsList']/tbody/tr[26]/td[6]"))
-        .getText();
-    String queryNumTimesGlobalIndexLookup25 = JMXProperties.getInstance()
-        .getProperty("aggregatestatement.Q6.numTimesGlobalIndexLookup");
-    Assert.assertEquals(queryNumTimesGlobalIndexLookup25,
-        QueryNumTimesGlobalIndexLookup25);
-  }
-  
   @Ignore("WIP")
   @Test
   public void testNumberOfRegions() throws InterruptedException{
@@ -2152,34 +961,23 @@ public class PulseTests {
 		 String regions = JMXProperties.getInstance().getProperty("regions");
 		 String []regionName = regions.split(" ");
 		 for (String string : regionName) {
-			System.out.println("Region name: " + string);
 		}
 		 //JMXProperties.getInstance().getProperty("region.R1.regionType");
 		int i=1; 
 		for (WebElement webElement : regionList) {
 			//webElement.getAttribute(arg0)
-			System.out.println(webElement.findElement(By.id("treeDemo_" + i + "_span")).getText());			
 			i++;
 		}
 		
 		driver.findElement(By.id("treeDemo_1_check")).click();		
 		
 		List<WebElement> memeberList = driver.findElements(By.xpath("//ul[@id='membersList']/li"));
-		System.out.println("Memeber List: "+memeberList.size());
 		int j=0;
 		for (WebElement webElement : memeberList) {
-			System.out.println(webElement.findElement(By.id("Member"+ j)).getAttribute("value"));
-			j++;			
+			j++;
 		}  
   }
-  
-  
-  
-  
-  
-  
-  
-  
+
   @Ignore("WIP")
   @Test
   public void testDataBrowser(){

@@ -7,6 +7,8 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -110,47 +112,11 @@ public class Server {
       }
     }
 
-    // Add GemFireXD Cluster
-    String[] gemFireXDClusters = getArrayProperty(props, "gemfirexdclusters");
-    for (String xdCluster : gemFireXDClusters) {
-      try {
-        addGemFireXDClusterMbean(xdCluster);
-      } catch (InstanceAlreadyExistsException e) {
-        e.printStackTrace();
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (NotCompliantMBeanException e) {
-        e.printStackTrace();
-      } catch (MalformedObjectNameException e) {
-        e.printStackTrace();
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
-    }
-
     // Add members
     String[] members = getArrayProperty(props, "members");
     for (String m : members) {
       try {
         addMemberMBean(m);
-      } catch (InstanceAlreadyExistsException e) {
-        e.printStackTrace();
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (NotCompliantMBeanException e) {
-        e.printStackTrace();
-      } catch (MalformedObjectNameException e) {
-        e.printStackTrace();
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
-    }
-
-    // Add GemFireXD members
-    String[] gemfirexdmember = getArrayProperty(props, "gemfirexdmembers");
-    for (String xdm : gemfirexdmember) {
-      try {
-        addGemFireXDMemberMBean(xdm);
       } catch (InstanceAlreadyExistsException e) {
         e.printStackTrace();
       } catch (MBeanRegistrationException e) {
@@ -181,45 +147,6 @@ public class Server {
         e.printStackTrace();
       }
     }
-
-    // Add GemFireXD Aggregate Tables
-    String[] aggTables = getArrayProperty(props, "tables");
-    for (String aggTable : aggTables) {
-      try {
-        addGemFireXDAggregateTableMBean(aggTable);
-      } catch (InstanceAlreadyExistsException e) {
-        e.printStackTrace();
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (NotCompliantMBeanException e) {
-        e.printStackTrace();
-      } catch (MalformedObjectNameException e) {
-        e.printStackTrace();
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
-    }
-
-    // Add aggregate queries
-    System.out.println("loading aggregate queries mbeans ...");
-    String[] aggregatequeries = getArrayProperty(props, "aggregatequeries");
-    for (String aggregateq : aggregatequeries) {
-      try {
-        System.out.println("adding mbean .. " + aggregateq);
-        addAggregateQueryMBean(aggregateq);
-      } catch (InstanceAlreadyExistsException e) {
-        e.printStackTrace();
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (NotCompliantMBeanException e) {
-        e.printStackTrace();
-      } catch (MalformedObjectNameException e) {
-        e.printStackTrace();
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
-    }
-    System.out.println("Finished registering # mbeans .. " + aggregatequeries.length);
   }
 
   private void addMemberMBean(String m) throws InstanceAlreadyExistsException,
@@ -245,25 +172,12 @@ public class Server {
       NullPointerException {
     Region regionObject = new Region(reg);
     mbs.registerMBean(regionObject, new ObjectName(Region.OBJECT_NAME + ",name=/" + reg));
-    System.out.println("Region Full path : " + regionObject.getFullPath());
 
     for (String member : regionObject.getMembers()) {
-      System.out.println("Adding Region on Member MBean for Region: " + reg + ", Member: " + member);
-      RegionOnMember regionOnMemberObject = new RegionOnMember(regionObject.getFullPath());
+      RegionOnMember regionOnMemberObject = new RegionOnMember(regionObject.getFullPath(), member);
       mbs.registerMBean(regionOnMemberObject, new ObjectName(
-          "GemFire:service=Region,name=/"+ regionObject.getFullPath() + ",type=Member,member=" + member));
-      System.out.println("Region on member properties retrieved : entryCount=" + regionOnMemberObject.getEntryCount() +",entrySize="
-          + regionOnMemberObject.getEntrySize() + ",localMaxMemory=" +regionOnMemberObject.getLocalMaxMemory());
+              PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObject.getFullPath() + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + member));
     }
-  }
-
-  // For GemFire XD
-  private void addGemFireXDAggregateTableMBean(String aggTable)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException,
-      NotCompliantMBeanException, MalformedObjectNameException,
-      NullPointerException {
-    GemFireXDAggregateTable tableObject = new GemFireXDAggregateTable(aggTable);
-    mbs.registerMBean(tableObject, new ObjectName(GemFireXDAggregateTable.OBJECT_NAME + aggTable));
   }
 
   private void addServerMBean(String server)
@@ -274,26 +188,6 @@ public class Server {
     mbs.registerMBean(so, new ObjectName(ServerObject.OBJECT_NAME));
   }
 
-  // For GemFire XD
-  private void addGemFireXDClusterMbean(String cluster)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException,
-      NotCompliantMBeanException, MalformedObjectNameException,
-      NullPointerException {
-    GemFireXDCluster xdco = new GemFireXDCluster(cluster);
-    mbs.registerMBean(xdco, new ObjectName(GemFireXDCluster.OBJECT_NAME));
-  }
-
-  private void addAggregateQueryMBean(String aggregateq)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException,
-      NotCompliantMBeanException, MalformedObjectNameException,
-      NullPointerException {
-    AggregateStatement aggregatestatement = new AggregateStatement(aggregateq);
-    System.out.println("created statement mbean ..." + aggregatestatement + ", query defn = " + ObjectName.quote(aggregatestatement.getQueryDefinition()));
-    System.out.println("qnRespDeSerTime ...qnRespDeSerTime = " + aggregatestatement.getQNRespDeSerTime());
-    Object returnObj = mbs.registerMBean(aggregatestatement, new ObjectName(AggregateStatementMBean.OBJECT_NAME + ",name=" + ObjectName.quote(aggregatestatement.getQueryDefinition())));
-    System.out.println("registered mbean ..." + returnObj );
-  }
-
   private String[] getArrayProperty(JMXProperties props, String propName) {
     String propVal = props.getProperty(propName, "");
     return propVal.split(" ");
@@ -302,7 +196,7 @@ public class Server {
   private void unregisterAll() {
     Set<ObjectName> thisSet = mbs.queryNames(null, null);
     for (ObjectName objectName : thisSet) {
-      System.out.println("Removing ..." + objectName.getCanonicalName());
+//      System.out.println("Removing ..." + objectName.getCanonicalName());
 
       /*try {
         mbs.unregisterMBean(objectName);
