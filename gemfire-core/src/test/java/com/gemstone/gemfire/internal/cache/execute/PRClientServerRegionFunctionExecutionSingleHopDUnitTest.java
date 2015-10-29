@@ -253,6 +253,8 @@ import dunit.DistributedTestCase;
      * After 5th attempt function will send Boolean as last result.
      */
     public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
+      addExpectedException("FunctionException: IOException while sending");
+      addExpectedException("java.net.SocketException: Software caused connection abort");
       createScenario();
       client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest.class,
           "serverMultiKeyExecution_FunctionInvocationTargetException");
