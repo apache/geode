@@ -152,6 +152,7 @@ public class NetView implements DataSerializableFixedID {
   }
   
   public void removeAll(Collection<InternalDistributedMember> ids) {
+    this.hashedMembers.removeAll(ids);
     this.members.removeAll(ids);
   }
 

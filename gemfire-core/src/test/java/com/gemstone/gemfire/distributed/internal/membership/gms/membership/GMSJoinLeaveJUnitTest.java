@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -11,6 +12,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -192,19 +194,19 @@ public class GMSJoinLeaveJUnitTest {
     verify(messenger).send(any(JoinResponseMessage.class));
   }
   
-  
-  private void prepareAndInstallView() throws IOException {
+  /**
+   * prepares and install a view
+   * @throws IOException
+   */
+  private void prepareAndInstallView(InternalDistributedMember coordinator, List<InternalDistributedMember> members) throws IOException {
     int viewId = 1;
-    List<InternalDistributedMember> mbrs = new LinkedList<>();
     Set<InternalDistributedMember> shutdowns = new HashSet<>();
     Set<InternalDistributedMember> crashes = new HashSet<>();
-    mbrs.add(mockMembers[0]);
-    mbrs.add(gmsJoinLeaveMemberId);
     
     when(services.getMessenger()).thenReturn(messenger);
     
     //prepare the view
-    NetView netView = new NetView(mockMembers[0], viewId, mbrs, shutdowns, crashes);
+    NetView netView = new NetView(coordinator, viewId, members, shutdowns, crashes);
     InstallViewMessage installViewMessage = new InstallViewMessage(netView, credentials, true);
     gmsJoinLeave.processMessage(installViewMessage);
     verify(messenger).send(any(ViewAckMessage.class));
@@ -215,10 +217,18 @@ public class GMSJoinLeaveJUnitTest {
     Assert.assertEquals(netView, gmsJoinLeave.getView());
   }
   
+  private List<InternalDistributedMember> createMemberList(InternalDistributedMember... members) {
+    List<InternalDistributedMember> memberList = new ArrayList<InternalDistributedMember>(members.length);
+    for(InternalDistributedMember member: members) {
+      memberList.add(member);
+    }
+    return memberList;
+  }
+  
   @Test
   public void testRemoveMember() throws Exception {
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     MethodExecuted removeMessageSent = new MethodExecuted();
     when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(removeMessageSent);
     gmsJoinLeave.remove(mockMembers[0], "removing for test");
@@ -266,7 +276,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test 
   public void testRejectOlderView() throws IOException {
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     
     List<InternalDistributedMember> mbrs = new LinkedList<>();
     Set<InternalDistributedMember> shutdowns = new HashSet<>();
@@ -286,7 +296,7 @@ public class GMSJoinLeaveJUnitTest {
     initMocks(true);//enabledNetworkPartition;
     Manager mockManager = mock(Manager.class);
     when(services.getManager()).thenReturn(mockManager);
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
 
     int viewId = 2;
     List<InternalDistributedMember> mbrs = new LinkedList<>();
@@ -320,7 +330,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testNonMemberCantRemoveMember() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     // test that a non-member can't remove another member
     RemoveMemberMessage msg = new RemoveMemberMessage(mockMembers[0], mockMembers[1], reason);
     msg.setSender(new InternalDistributedMember("localhost", 9000));
@@ -333,7 +343,7 @@ public class GMSJoinLeaveJUnitTest {
     String reason = "testing";
     initMocks();
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.becomeCoordinatorForTest();
 
@@ -357,7 +367,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testDuplicateRemoveRequestDoesNotCauseNewView() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
@@ -385,7 +395,7 @@ public class GMSJoinLeaveJUnitTest {
     when(healthMonitor.checkIfAvailable(any(InternalDistributedMember.class),
         any(String.class), any(Boolean.class))).thenReturn(true);
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);
     gmsJoinLeave.becomeCoordinatorForTest();
@@ -433,7 +443,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testRemoveCausesForcedDisconnect() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId)); 
     gmsJoinLeave.getView().add(mockMembers[1]);
     RemoveMemberMessage msg = new RemoveMemberMessage(mockMembers[0], gmsJoinLeave.getMemberID(), reason);
     msg.setSender(mockMembers[1]);
@@ -445,7 +455,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testLeaveCausesForcedDisconnect() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);
     LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), gmsJoinLeave.getMemberID(), reason);
@@ -458,7 +468,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testLeaveOfNonMemberIsNoOp() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     mockMembers[1].setVmViewId(gmsJoinLeave.getView().getViewId()-1);
     LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), mockMembers[1], reason);
     msg.setSender(mockMembers[1]);
@@ -481,7 +491,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testBecomeCoordinator() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     NetView view = gmsJoinLeave.getView();
     view.add(gmsJoinLeaveMemberId);
     InternalDistributedMember creator = view.getCreator();
@@ -495,7 +505,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testBecomeCoordinatorThroughRemove() throws Exception {
     String reason = "testing";
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     NetView view = gmsJoinLeave.getView();
     view.add(gmsJoinLeaveMemberId);
     InternalDistributedMember creator = view.getCreator();
@@ -508,7 +518,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testBecomeCoordinatorThroughViewChange() throws Exception {
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     NetView oldView = gmsJoinLeave.getView();
     oldView.add(gmsJoinLeaveMemberId);
     NetView view = new NetView(oldView, oldView.getViewId()+1);
@@ -523,7 +533,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testBecomeParticipantThroughViewChange() throws Exception {
     initMocks();
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     NetView oldView = gmsJoinLeave.getView();
     oldView.add(gmsJoinLeaveMemberId);
     InternalDistributedMember creator = oldView.getCreator();
@@ -541,7 +551,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test 
   public void testNetworkPartitionDetected() throws IOException {
     initMocks(true);
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     
     // set up a view with sufficient members, then create a new view
     // where enough weight is lost to cause a network partition
@@ -577,7 +587,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test 
   public void testQuorumLossNotificationWithNetworkPartitionDetectionDisabled() throws IOException {
     initMocks(false);
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     
     // set up a view with sufficient members, then create a new view
     // where enough weight is lost to cause a network partition
@@ -613,7 +623,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testConflictingPrepare() throws Exception {
     initMocks(true);
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     
     NetView gmsView = gmsJoinLeave.getView();
     NetView newView = new NetView(gmsView, gmsView.getViewId()+6);
@@ -632,7 +642,7 @@ public class GMSJoinLeaveJUnitTest {
     initMocks(true);
     when(healthMonitor.checkIfAvailable(any(InternalDistributedMember.class),
         any(String.class), any(Boolean.class))).thenReturn(false);
-    prepareAndInstallView();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     NetView oldView = gmsJoinLeave.getView();
     NetView newView = new NetView(oldView, oldView.getViewId()+1);
     
@@ -653,7 +663,81 @@ public class GMSJoinLeaveJUnitTest {
     assertTrue(gmsJoinLeave.isCoordinator());
     verify(messenger, times(2)).send(any(RemoveMemberMessage.class));
   }
+
+  /**
+   * This tests a member shutdown using the memberShutdown call (simulating the call from DistributionManager)
+   * The gmsJoinLeaveMemberId is not the coordinator but should
+   * now become the coordinator.
+   */
+  @Test
+  public void testCoordinatorShutsdownAndWeBecomeCoordinatorAndSendOutCorrectView() throws Exception {
+    initMocks(false);
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId, mockMembers[1], mockMembers[2], mockMembers[3]));
+    Assert.assertFalse(gmsJoinLeave.isCoordinator());
+    
+    //The coordinator shuts down
+    gmsJoinLeave.memberShutdown(mockMembers[0], "Shutdown");
+    NetView nextView = gmsJoinLeave.getViewCreator().initialView;
+
+    assertTrue(gmsJoinLeave.isCoordinator());
+    assertTrue(nextView.getCoordinator().equals(gmsJoinLeaveMemberId));
+    assertTrue(nextView.getMembers().contains(mockMembers[1]));
+    assertTrue(nextView.getMembers().contains(mockMembers[2]));
+    assertTrue(nextView.getMembers().contains(mockMembers[3]));
+  }
   
   
+  /**
+   * This tests a member shutdown using the memberShutdown call (simulating the call from DistributionManager)
+   * The gmsJoinLeaveMemberId is not the coordinator but should
+   * now become the coordinator and remove all members that have sent us leave requests prior to us becoming coordinator
+   */
+  @Test
+  public void testCoordinatorAndOthersShutdownAndWeBecomeCoordinatorProcessQueuedUpLeaveMessages() throws Exception {
+    initMocks(false);
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], mockMembers[1], mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
+    Assert.assertFalse(gmsJoinLeave.isCoordinator());
+    //The coordinator and other members shutdown
+    gmsJoinLeave.memberShutdown(mockMembers[1], "Shutdown");
+    gmsJoinLeave.memberShutdown(mockMembers[2], "Shutdown");
+    gmsJoinLeave.memberShutdown(mockMembers[0], "Shutdown");
+    NetView nextView = gmsJoinLeave.getViewCreator().initialView;
+    
+    assertTrue(gmsJoinLeave.isCoordinator());
+    assertTrue(nextView.getCoordinator().equals(gmsJoinLeaveMemberId));
+    Assert.assertFalse(nextView.getMembers().contains(mockMembers[1]));
+    Assert.assertFalse(nextView.getMembers().contains(mockMembers[2]));
+    assertTrue(nextView.getMembers().contains(mockMembers[3]));
+  }
+  
+  /**
+   * In a scenario where we have a member leave at the same time as an install view
+   * The member that left should be recorded on all members, if the coordinator also
+   * happens to leave, the new coordinator should be able to process the new view correctly
+   */
+  @Test
+  public void testTimingWhereInstallViewComeAndDoesNotClearOutLeftMembersList() throws Exception {
+    initMocks(false);
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], mockMembers[1], mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
+    Assert.assertFalse(gmsJoinLeave.isCoordinator());
+    //The coordinator and other members shutdown
+    gmsJoinLeave.memberShutdown(mockMembers[1], "Shutdown");
+    gmsJoinLeave.memberShutdown(mockMembers[2], "Shutdown");
+    
+    //Install a view that still contains one of the left members (as if something like a new member, triggered a new view before coordinator leaves)
+    NetView netView = new NetView(mockMembers[0], 3/*new view id*/, createMemberList(mockMembers[0], gmsJoinLeaveMemberId, mockMembers[1], mockMembers[3]), new HashSet(), new HashSet());
+    InstallViewMessage installViewMessage = new InstallViewMessage(netView, credentials, false);
+    gmsJoinLeave.processMessage(installViewMessage);
+    
+    //Now coordinator leaves
+    gmsJoinLeave.memberShutdown(mockMembers[0], "Shutdown");
+    NetView nextView = gmsJoinLeave.getViewCreator().initialView;
+    
+    assertTrue(gmsJoinLeave.isCoordinator());
+    assertTrue(nextView.getCoordinator().equals(gmsJoinLeaveMemberId));
+    Assert.assertFalse(nextView.getMembers().contains(mockMembers[1]));
+    Assert.assertFalse(nextView.getMembers().contains(mockMembers[2]));
+    assertTrue(nextView.getMembers().contains(mockMembers[3]));
+  }
 }
 

@@ -120,6 +120,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   private final Set<InternalDistributedMember> removedMembers = new HashSet<>();
 
+  /** members who we've received a leave message from **/
+  private final Set<InternalDistributedMember> leftMembers = new HashSet<>();
+
   /** a new view being installed */
   private NetView preparedView;
 
@@ -460,6 +463,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         check.removeAll(removedMembers);
         check.addCrashedMembers(removedMembers);
       }
+      synchronized(leftMembers) {
+        leftMembers.add(mbr);
+        check.removeAll(leftMembers);
+      }
       if (check.getCoordinator().equals(localAddress)) {
         synchronized(viewInstallationLock) {
           becomeCoordinator(incomingRequest.getMemberID());
@@ -514,6 +521,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         check = new NetView(v, v.getViewId());
         check.addCrashedMembers(removedMembers);
         check.removeAll(removedMembers);
+      }
+      synchronized(leftMembers) {
+        check.removeAll(leftMembers);
       }
       if (check.getCoordinator().equals(localAddress)) {
         synchronized(viewInstallationLock) {
@@ -626,6 +636,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         synchronized(this.removedMembers) {
           removals = new HashSet<>(this.removedMembers);
         }
+        synchronized(this.leftMembers) {
+          leaving.addAll(leftMembers);
+        }
         if (oldCoordinator != null && !removals.contains(oldCoordinator)) {
           leaving.add(oldCoordinator);
         }
@@ -633,6 +646,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         mbrs.removeAll(leaving);
         newView = new NetView(this.localAddress, viewNumber, mbrs, leaving,
             removals);
+
       }
       if (viewCreator == null || viewCreator.isShutdown()) {
         viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
@@ -1154,7 +1168,19 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
     }
     synchronized (removedMembers) {
-      removedMembers.clear();
+      removeMembersFromCollectionIfNotInView(removedMembers, currentView);
+    }
+    synchronized(leftMembers) {
+      removeMembersFromCollectionIfNotInView(leftMembers, currentView);
+    }
+  }
+
+  private void removeMembersFromCollectionIfNotInView(Collection<InternalDistributedMember> members, NetView currentView) {
+    Iterator<InternalDistributedMember> iterator = members.iterator();
+    while (iterator.hasNext()) {
+      if (!currentView.contains(iterator.next())) {
+          iterator.remove();
+      }
     }
   }
 
@@ -1338,11 +1364,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   @Override
   public void memberShutdown(DistributedMember mbr, String reason) {
-
-    if (this.isCoordinator) {
-      LeaveRequestMessage msg = new LeaveRequestMessage(Collections.singleton(this.localAddress), (InternalDistributedMember) mbr, reason);
-      recordViewRequest(msg);
-    }
+    LeaveRequestMessage msg = new LeaveRequestMessage(Collections.singleton(this.localAddress), (InternalDistributedMember)mbr, reason);
+    processLeaveRequest(msg);
   }
 
   @Override

@@ -278,7 +278,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           GMSHealthMonitor.this.sendSuspectMessage(mbr, reason);
           currentSuspects.add(mbr);
         } else {
-          logger.trace("Setting next neighbor as member {} has not responded.", mbr);
+          logger.trace("Setting next neighbor as member {} has responded.", mbr);
           currentSuspects.remove(mbr);
           // back to previous one
           setNextNeighbor(GMSHealthMonitor.this.currentView, null);
