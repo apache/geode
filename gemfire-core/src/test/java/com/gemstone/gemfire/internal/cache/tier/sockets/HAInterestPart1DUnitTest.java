@@ -167,6 +167,7 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
    */
   public void testInterstRegistrationOnRecoveredEPbyDSM() throws Exception {
     addExpectedException("SocketException");
+    addExpectedException("Unexpected IOException");
 
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
