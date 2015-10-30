@@ -1509,22 +1509,8 @@ public class AttributesFactory<K,V> {
       ((PartitionAttributesImpl)pa).validateWhenAllAttributesAreSet(attrs instanceof RegionAttributesCreation);
       ExpirationAttributes regionIdleTimeout = attrs.getRegionIdleTimeout();
       ExpirationAttributes regionTimeToLive = attrs.getRegionTimeToLive();
-      if ((regionIdleTimeout.getAction().isInvalidate() && regionIdleTimeout.getTimeout() > 0)
-          || (regionIdleTimeout.getAction().isLocalInvalidate() && regionIdleTimeout.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isInvalidate() && regionTimeToLive.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isLocalInvalidate()) && regionTimeToLive.getTimeout() > 0 ) {
-        throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
-      }
-      
-      if ((regionIdleTimeout.getAction().isDestroy() && regionIdleTimeout.getTimeout() > 0)
-          || (regionIdleTimeout.getAction().isLocalDestroy() && regionIdleTimeout.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isDestroy() && regionTimeToLive.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isLocalDestroy() && regionTimeToLive.getTimeout() > 0)) {
-        throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR
-                .toLocalizedString());
-      }
+      AbstractRegion.validatePRRegionExpirationAttributes(regionIdleTimeout);
+      AbstractRegion.validatePRRegionExpirationAttributes(regionTimeToLive);
       
       ExpirationAttributes entryIdleTimeout = attrs.getEntryIdleTimeout();
       ExpirationAttributes entryTimeToLive = attrs.getEntryTimeToLive();

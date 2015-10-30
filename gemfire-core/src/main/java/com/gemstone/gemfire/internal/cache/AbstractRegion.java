@@ -1300,12 +1300,24 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return old;
   }
 
-  public ExpirationAttributes setRegionIdleTimeout(
-      ExpirationAttributes idleTimeout)
-  {
+  public static void validatePRRegionExpirationAttributes(ExpirationAttributes expAtts) {
+    if (expAtts.getTimeout() > 0) {
+      ExpirationAction expAction = expAtts.getAction();
+      if (expAction.isInvalidate() || expAction.isLocalInvalidate()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      } else if (expAction.isDestroy() || expAction.isLocalDestroy()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      }
+    }
+  }
+
+  public ExpirationAttributes setRegionIdleTimeout(ExpirationAttributes idleTimeout) {
     checkReadiness();
     if (idleTimeout == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_IDLETIMEOUT_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {
@@ -1322,12 +1334,13 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return oldAttrs;
   }
 
-  public ExpirationAttributes setRegionTimeToLive(
-      ExpirationAttributes timeToLive)
-  {
+  public ExpirationAttributes setRegionTimeToLive(ExpirationAttributes timeToLive) {
     checkReadiness();
     if (timeToLive == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {

@@ -3750,11 +3750,14 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testRegionExpirationAfterMutate()
   throws CacheException, InterruptedException {
 
+    if (getRegionAttributes().getPartitionAttributes() != null) {
+      return;
+    }
+
     final String name = this.getUniqueName();
-            ;
     final Object key = "KEY";
     final Object value = "VALUE";
-    
+
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     factory.setStatisticsEnabled(true);
     RegionAttributes attrs = factory.create();
@@ -3768,30 +3771,33 @@ public abstract class RegionTestCase extends CacheTestCase {
       // Now go from no timeout to a timeout
       Region.Entry entry = region.getEntry(key);
       assertEquals(value, entry.getValue());
-      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(12000/*ms*/, ExpirationAction.INVALIDATE));
+      region.getAttributesMutator().setRegionIdleTimeout(
+          new ExpirationAttributes(12000/*ms*/, ExpirationAction.INVALIDATE));
       region.put(key, value);
       long tilt = System.currentTimeMillis();
 
       ExpiryTask expiryTask = region.getRegionIdleExpiryTask();
       long mediumExpiryTime = expiryTask.getExpirationTime();
-      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(999000/*ms*/, ExpirationAction.INVALIDATE));
+      region.getAttributesMutator().setRegionIdleTimeout(
+          new ExpirationAttributes(999000/*ms*/, ExpirationAction.INVALIDATE));
       expiryTask = region.getRegionIdleExpiryTask();
       long hugeExpiryTime = expiryTask.getExpirationTime();
       ExpiryTask.suspendExpiration();
       long shortExpiryTime;
       try {
-        region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(20/*ms*/, ExpirationAction.INVALIDATE));
+        region.getAttributesMutator().setRegionIdleTimeout(
+            new ExpirationAttributes(20/*ms*/, ExpirationAction.INVALIDATE));
         expiryTask = region.getRegionIdleExpiryTask();
         shortExpiryTime = expiryTask.getExpirationTime();
-        } 
-      finally {
+      } finally {
         ExpiryTask.permitExpiration();
       }
-      waitForInvalidate(entry, tilt+20, 10);
-      assertTrue("expected hugeExpiryTime=" + hugeExpiryTime + " to be > than mediumExpiryTime=" + mediumExpiryTime, (hugeExpiryTime - mediumExpiryTime) > 0);
-      assertTrue("expected mediumExpiryTime=" + mediumExpiryTime + " to be > than shortExpiryTime=" + shortExpiryTime, (mediumExpiryTime - shortExpiryTime) > 0);
-    }
-    finally {
+      waitForInvalidate(entry, tilt + 20, 10);
+      assertTrue("expected hugeExpiryTime=" + hugeExpiryTime + " to be > than mediumExpiryTime=" + mediumExpiryTime,
+          (hugeExpiryTime - mediumExpiryTime) > 0);
+      assertTrue("expected mediumExpiryTime=" + mediumExpiryTime + " to be > than shortExpiryTime=" + shortExpiryTime,
+          (mediumExpiryTime - shortExpiryTime) > 0);
+    } finally {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
   }

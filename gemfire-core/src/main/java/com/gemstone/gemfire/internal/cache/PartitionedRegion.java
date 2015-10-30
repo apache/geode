@@ -100,7 +100,6 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSEntriesSet.HDFSIterator;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.CompactionStatus;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSFlushQueueFunction;
@@ -166,7 +165,6 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.ServerBucketProfile;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DestroyPartitionedRegionMessage.DestroyPartitionedRegionResponse;
-import com.gemstone.gemfire.internal.cache.DistributedRegion.DiskPage;
 import com.gemstone.gemfire.internal.cache.PutAllPartialResultException.PutAllPartialResult;
 import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
@@ -177,7 +175,6 @@ import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.cache.execute.FunctionExecutionNodePruner;
 import com.gemstone.gemfire.internal.cache.execute.FunctionRemoteContext;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
-import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
 import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
 import com.gemstone.gemfire.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import com.gemstone.gemfire.internal.cache.execute.PartitionedRegionFunctionResultSender;
@@ -215,13 +212,10 @@ import com.gemstone.gemfire.internal.cache.partitioned.InterestEventMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.InterestEventMessage.InterestEventResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.InvalidateMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.InvalidateMessage.InvalidateResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
 import com.gemstone.gemfire.internal.cache.partitioned.PREntriesIterator;
 import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
 import com.gemstone.gemfire.internal.cache.partitioned.PRSanityCheckMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PRUpdateEntryVersionMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.BucketVisitor;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PRUpdateEntryVersionMessage.UpdateEntryVersionResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage.PartitionResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver;
@@ -232,11 +226,11 @@ import com.gemstone.gemfire.internal.cache.partitioned.PutMessage.PutResult;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.BucketVisitor;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
+import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveIndexesMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.SizeMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.SizeMessage.SizeResponse;
 import com.gemstone.gemfire.internal.cache.persistence.PRPersistentConfig;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -10279,7 +10273,25 @@ public class PartitionedRegion extends LocalRegion implements
         bucketRegion.getAttributesMutator().setEntryTimeToLive(timeToLive);
       }
     }
+    updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
     return attr;
+  }
+
+  private PartitionRegionConfig getPRConfigWithLatestExpirationAttributes(){
+    PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
+    PartitionRegionConfig newConfig = new PartitionRegionConfig(
+        prConfig.getPRId(),
+        prConfig.getFullPath(),
+        prConfig.getPartitionAttrs(),
+        prConfig.getScope(),
+        prConfig.getEvictionAttributes(),
+        this.getRegionIdleTimeout(),
+        this.getRegionTimeToLive(),
+        this.getEntryIdleTimeout(),
+        this.getEntryTimeToLive(),
+        prConfig.getGatewaySenderIds());
+
+    return newConfig;
   }
 
   /**
@@ -10333,6 +10345,7 @@ public class PartitionedRegion extends LocalRegion implements
         bucketRegion.getAttributesMutator().setEntryIdleTimeout(idleTimeout);
       }
     }
+    updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
     return attr;
   }
 
