@@ -41,15 +41,9 @@ public interface HealthMonitor extends Service {
   public void memberShutdown(DistributedMember mbr, String reason);
   
   /**
-   * Returns a map that describes the members and their server sockets
+   * Returns the failure detection port for this member, or -1 if
+   * there is no such port
    */
-  public Map<InternalDistributedMember, InetSocketAddress> getSocketInfo();
+  public int getFailureDetectionPort();
 
-  /**
-   * Update the information of the members and their server sockets
-   * 
-   * @param members
-   * @param portsForMembers List of socket ports for each member
-   */
-  public void installSocketInfo(List<InternalDistributedMember> members, List<Integer> portsForMembers);
 }

@@ -22,7 +22,6 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
   private Object messengerData;
   private boolean becomeCoordinator;
-  private List<Integer> portsForMembers = Collections.<Integer>emptyList();
   
   public JoinResponseMessage(InternalDistributedMember memberID, NetView view) {
     this.currentView = view;
@@ -78,7 +77,6 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   public String toString() {
     return getShortClassName() + "("+memberID + "; "
         + (currentView==null? "" : currentView.toString())
-        + "portsForMembers: " + portsForMembers
         + (rejectionMessage==null? "" : ("; "+rejectionMessage))
         + (becomeCoordinator? "; becomeCoordinator" : "")
         + ")";
@@ -94,43 +92,10 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     return JOIN_RESPONSE;
   }
 
-  private void writeListOfInteger(List<Integer> list, DataOutput out) throws IOException {
-    int size;
-    if (list == null) {
-      size = -1;
-    } else {
-      size = list.size();
-    }
-    InternalDataSerializer.writeArrayLength(size, out);
-    if (size > 0) {
-      for (int i = 0; i < size; i++) {
-        out.writeInt(list.get(i).intValue());
-      }
-    }
-  }
-  
-  private List<Integer> readListOfInteger(DataInput in) throws IOException {
-    int size = InternalDataSerializer.readArrayLength(in);
-    if (size > 0) {
-      List<Integer> list = new ArrayList<Integer>(size);
-      for (int i = 0; i < size; i++) {
-        list.add(Integer.valueOf(in.readInt()));
-      }
-      return list;
-    }
-    else if (size == 0) {
-      return Collections.<Integer>emptyList();
-    }
-    else {
-      return null;
-    }
-  }
-  
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(currentView, out);
     DataSerializer.writeObject(memberID, out);
-    writeListOfInteger(portsForMembers, out);
     out.writeBoolean(becomeCoordinator);
     DataSerializer.writeString(rejectionMessage, out);
     DataSerializer.writeObject(messengerData, out);
@@ -140,17 +105,9 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     currentView = DataSerializer.readObject(in);
     memberID = DataSerializer.readObject(in);
-    portsForMembers = readListOfInteger(in);
     becomeCoordinator = in.readBoolean();
     rejectionMessage = DataSerializer.readString(in);
     messengerData = DataSerializer.readObject(in);
   }
 
-  public void setPortsForMembers(List<Integer> portsForMembers) {
-    this.portsForMembers = portsForMembers;
-  }
-
-  public List<Integer> getPortsForMembers() {
-    return this.portsForMembers;
-  }
 }

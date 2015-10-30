@@ -11,6 +11,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
@@ -36,16 +36,17 @@ import com.gemstone.gemfire.internal.Version;
  * @since 5.5
  */
 public class NetView implements DataSerializableFixedID {
-  private static final long serialVersionUID = -8888347937416039434L;
 
   private int viewId;
   private List<InternalDistributedMember> members;
+  private int[] failureDetectionPorts = new int[10];
   private Set<InternalDistributedMember> shutdownMembers;
   private Set<InternalDistributedMember> crashedMembers;
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
   static public final Random RANDOM = new Random();
 
+  
   public NetView() {
     viewId = 0;
     members = new ArrayList<InternalDistributedMember>(4);
@@ -53,27 +54,29 @@ public class NetView implements DataSerializableFixedID {
     shutdownMembers = Collections.emptySet();
     crashedMembers = new HashSet<>();
     creator = null;
+    Arrays.fill(failureDetectionPorts, -1);
   }
 
   public NetView(InternalDistributedMember creator) {
     viewId = 0;
     members = new ArrayList<InternalDistributedMember>(4);
     members.add(creator);
-    this.hashedMembers = new HashSet<>(members);
+    hashedMembers = new HashSet<>(members);
     shutdownMembers = new HashSet<>();
     crashedMembers = Collections.emptySet();
     this.creator = creator;
-    int seed = creator.hashCode() + (int) System.currentTimeMillis();
+    Arrays.fill(failureDetectionPorts, -1);
   }
 
   // legacy method for JGMM
   public NetView(int size, long viewId) {
     this.viewId = (int) viewId;
     members = new ArrayList<InternalDistributedMember>(size);
-    this.hashedMembers = new HashSet<InternalDistributedMember>(members);
+    this.hashedMembers = new HashSet<InternalDistributedMember>();
     shutdownMembers = new HashSet<>();
     crashedMembers = Collections.emptySet();
     creator = null;
+    Arrays.fill(failureDetectionPorts, -1);
   }
 
   public NetView(NetView other, int viewId) {
@@ -81,6 +84,8 @@ public class NetView implements DataSerializableFixedID {
     this.viewId = viewId;
     this.members = new ArrayList<InternalDistributedMember>(other.members);
     this.hashedMembers = new HashSet<InternalDistributedMember>(other.members);
+    this.failureDetectionPorts = new int[other.failureDetectionPorts.length];
+    System.arraycopy(other.failureDetectionPorts, 0, this.failureDetectionPorts, 0, other.failureDetectionPorts.length);
     this.shutdownMembers = new HashSet<InternalDistributedMember>(other.shutdownMembers);
     this.crashedMembers = new HashSet<InternalDistributedMember>(other.crashedMembers);
   }
@@ -93,6 +98,8 @@ public class NetView implements DataSerializableFixedID {
     this.hashedMembers = new HashSet<InternalDistributedMember>(mbrs);
     this.shutdownMembers = shutdowns;
     this.crashedMembers = crashes;
+    this.failureDetectionPorts = new int[mbrs.size()+10];
+    Arrays.fill(this.failureDetectionPorts, -1);
   }
 
   public int getViewId() {
@@ -106,7 +113,45 @@ public class NetView implements DataSerializableFixedID {
   public void setCreator(InternalDistributedMember creator) {
     this.creator = creator;
   }
+  
+  public int[] getFailureDetectionPorts() {
+    return this.failureDetectionPorts;
+  }
+  
+  public int getFailureDetectionPort(InternalDistributedMember mbr) {
+    int idx = members.indexOf(mbr);
+    if (idx < 0 || failureDetectionPorts == null || idx >= failureDetectionPorts.length) {
+      return -1;
+    }
+    return failureDetectionPorts[idx];
+  }
+  
+  public void setFailureDetectionPort(InternalDistributedMember mbr, int port) {
+    int idx = members.indexOf(mbr);
+    if (idx < 0) {
+      throw new IllegalArgumentException("element not found in members list:" + mbr);
+    }
+    ensureFDCapacity(idx);
+    failureDetectionPorts[idx] = port;
+  }
 
+  /**
+   * ensures that there is a slot at idx to store an int
+   */
+  private void ensureFDCapacity(int idx) {
+    if (failureDetectionPorts == null) {
+      failureDetectionPorts = new int[idx+10];
+      Arrays.fill(failureDetectionPorts, -1);
+    } else if (idx >= failureDetectionPorts.length) {
+      int[] p = new int[idx+10];
+      if (failureDetectionPorts.length > 0) {
+        System.arraycopy(failureDetectionPorts, 0, p, 0, failureDetectionPorts.length);
+      }
+      Arrays.fill(p, idx, idx+9, -1);
+      failureDetectionPorts = p;
+    }
+  }
+  
   public List<InternalDistributedMember> getMembers() {
     return Collections.unmodifiableList(this.members);
   }
@@ -140,6 +185,9 @@ public class NetView implements DataSerializableFixedID {
   public void add(InternalDistributedMember mbr) {
     this.hashedMembers.add(mbr);
     this.members.add(mbr);
+    int idx = members.size()-1;
+    ensureFDCapacity(idx);
+    this.failureDetectionPorts[idx] = -1;
   }
   
   public void addCrashedMembers(Set<InternalDistributedMember> mbr) {
@@ -148,12 +196,19 @@ public class NetView implements DataSerializableFixedID {
 
   public boolean remove(InternalDistributedMember mbr) {
     this.hashedMembers.remove(mbr);
+    int idx = this.members.indexOf(mbr);
+    if (idx >= 0) {
+      System.arraycopy(failureDetectionPorts, idx+1, failureDetectionPorts, idx, failureDetectionPorts.length-idx-1);
+      failureDetectionPorts[failureDetectionPorts.length-1] = -1;
+    }
     return this.members.remove(mbr);
   }
   
   public void removeAll(Collection<InternalDistributedMember> ids) {
     this.hashedMembers.removeAll(ids);
-    this.members.removeAll(ids);
+    for (InternalDistributedMember mbr: ids) {
+      remove(mbr);
+    }
   }
 
   public boolean contains(InternalDistributedMember mbr) {
@@ -442,6 +497,7 @@ public class NetView implements DataSerializableFixedID {
     writeAsArrayList(members, out);
     InternalDataSerializer.writeSet(shutdownMembers, out);
     InternalDataSerializer.writeSet(crashedMembers, out);
+    DataSerializer.writeIntArray(failureDetectionPorts, out);
   }
 
   @Override
@@ -452,6 +508,7 @@ public class NetView implements DataSerializableFixedID {
     this.hashedMembers = new HashSet<InternalDistributedMember>(members);
     shutdownMembers = InternalDataSerializer.readHashSet(in);
     crashedMembers = InternalDataSerializer.readHashSet(in);
+    failureDetectionPorts = DataSerializer.readIntArray(in);
   }
 
   /** this will deserialize as an ArrayList */

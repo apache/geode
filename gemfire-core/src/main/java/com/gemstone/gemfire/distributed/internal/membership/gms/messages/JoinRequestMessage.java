@@ -13,14 +13,15 @@ import com.gemstone.gemfire.internal.Version;
 public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
   private Object credentials;
-  private int socketPort = -1;
+  private int failureDetectionPort = -1;
   
   public JoinRequestMessage(InternalDistributedMember coord,
-      InternalDistributedMember id, Object credentials) {
+      InternalDistributedMember id, Object credentials, int fdPort) {
     super();
     setRecipient(coord);
     this.memberID = id;
     this.credentials = credentials;
+    this.failureDetectionPort = fdPort;
   }
   
   public JoinRequestMessage() {
@@ -47,7 +48,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   
   @Override
   public String toString() {
-    return getShortClassName() + "(" + memberID + (credentials==null? ")" : "; with credentials)") + " socketPort:" + socketPort;
+    return getShortClassName() + "(" + memberID + (credentials==null? ")" : "; with credentials)") + " failureDetectionPort:" + failureDetectionPort;
   }
 
   @Override
@@ -59,7 +60,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(memberID, out);
     DataSerializer.writeObject(credentials, out);
-    DataSerializer.writePrimitiveInt(socketPort, out);
+    DataSerializer.writePrimitiveInt(failureDetectionPort, out);
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
     out.writeBoolean(getMulticast());
@@ -69,16 +70,12 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = DataSerializer.readObject(in);
     credentials = DataSerializer.readObject(in);
-    socketPort = DataSerializer.readPrimitiveInt(in);
+    failureDetectionPort = DataSerializer.readPrimitiveInt(in);
     setMulticast(in.readBoolean());
   }
 
-  public int getSocketPort() {
-    return socketPort;
+  public int getFailureDetectionPort() {
+    return failureDetectionPort;
   }
 
-  public void setSocketPort(int socketPort) {
-    this.socketPort = socketPort;
-  }
-  
 }

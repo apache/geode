@@ -191,7 +191,9 @@ public class PluckStacks {
     }
     if (threadName.startsWith("GemFire Membership Timer")) {
 //      System.out.println("gf timer stack size = " + stackSize + "; frame = " + thread.get(1));
-      return stackSize < 9 && thread.get(1).contains("Thread.State: WAITING");
+      return stackSize < 9 &&
+          (thread.get(1).contains("Thread.State: WAITING")
+              || thread.get(1).contains("Thread.State: TIMED_WAITING"));
     }
     if (threadName.startsWith("GemFire Membership View Creator")) {
 //    System.out.println("gf view creator stack size = " + stackSize + "; frame = " + thread.get(1));

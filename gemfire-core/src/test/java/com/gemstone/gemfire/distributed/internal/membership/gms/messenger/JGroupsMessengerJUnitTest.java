@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -20,6 +21,8 @@ import junit.framework.Assert;
 
 import org.jgroups.Event;
 import org.jgroups.Message;
+import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.UNICAST3;
 import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Test;
@@ -151,7 +154,7 @@ public class JGroupsMessengerJUnitTest {
     when(joinLeave.getView()).thenReturn(v);
 
     InternalDistributedMember sender = createAddress(8888);
-    JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null);
+    JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null, -1);
     
     Message jmsg = messenger.createJGMessage(msg, messenger.jgAddress, Version.CURRENT_ORDINAL);
     interceptor.up(new Event(Event.MSG, jmsg));
@@ -191,7 +194,7 @@ public class JGroupsMessengerJUnitTest {
     NetView v = new NetView(sender);
     when(joinLeave.getView()).thenReturn(v);
     messenger.installView(v);
-    JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null);
+    JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null, -1);
     if (mcastMsg) {
       msg.setMulticast(true);
     }
@@ -203,13 +206,95 @@ public class JGroupsMessengerJUnitTest {
         sentMessages == 1);
 
     // send a big message and expect fragmentation
-    msg = new JoinRequestMessage(messenger.localAddress, sender, new byte[(int)(services.getConfig().getDistributionConfig().getUdpFragmentSize()*(1.5))]);
+    msg = new JoinRequestMessage(messenger.localAddress, sender, new byte[(int)(services.getConfig().getDistributionConfig().getUdpFragmentSize()*(1.5))], -1);
+
+    // configure an incoming message handler for JoinRequestMessage
+    final DistributionMessage[] messageReceived = new DistributionMessage[1];
+    MessageHandler handler = new MessageHandler() {
+      @Override
+      public void processMessage(DistributionMessage m) {
+        messageReceived[0] = m;
+      }
+    };
+    messenger.addHandler(JoinRequestMessage.class, handler);
     
+    // configure the outgoing message interceptor
     interceptor.unicastSentDataMessages = 0;
+    interceptor.collectMessages = true;
+    interceptor.collectedMessages.clear();
+    
     messenger.send(msg);
+    
     assertTrue("expected 2 messages to be sent but found "+ interceptor.unicastSentDataMessages,
         interceptor.unicastSentDataMessages == 2);
     
+    List<Message> messages = new ArrayList<>(interceptor.collectedMessages);
+    UUID fakeMember = new UUID(50, 50);
+    short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
+    int seqno = 1;
+    for (Message m: messages) {
+      m.setSrc(fakeMember);
+      UNICAST3.Header oldHeader = (UNICAST3.Header)m.getHeader(unicastHeaderId);
+      if (oldHeader == null) continue;
+      UNICAST3.Header newHeader = UNICAST3.Header.createDataHeader(seqno, oldHeader.connId(), seqno==1);
+      seqno += 1;
+      m.putHeader(unicastHeaderId, newHeader);
+      interceptor.up(new Event(Event.MSG, m));
+    }
+    Thread.sleep(5000);
+    System.out.println("received message = " + messageReceived[0]);
+  }
+  
+  @Test  
+  public void testDefragmentation() throws Exception {
+    initMocks(false);
+    MessageHandler mh = mock(MessageHandler.class);
+    messenger.addHandler(JoinRequestMessage.class, mh);
+    
+    InternalDistributedMember sender = messenger.getMemberID();
+    NetView v = new NetView(sender);
+    when(joinLeave.getView()).thenReturn(v);
+    messenger.installView(v);
+
+    // configure an incoming message handler for JoinRequestMessage
+    final DistributionMessage[] messageReceived = new DistributionMessage[1];
+    MessageHandler handler = new MessageHandler() {
+      @Override
+      public void processMessage(DistributionMessage m) {
+        messageReceived[0] = m;
+      }
+    };
+    messenger.addHandler(JoinRequestMessage.class, handler);
+    
+    // configure the outgoing message interceptor
+    interceptor.unicastSentDataMessages = 0;
+    interceptor.collectMessages = true;
+    interceptor.collectedMessages.clear();
+    
+    JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, new byte[(int)(services.getConfig().getDistributionConfig().getUdpFragmentSize()*(1.5))], -1);
+    messenger.send(msg);
+    
+    assertTrue("expected 2 messages to be sent but found "+ interceptor.unicastSentDataMessages,
+        interceptor.unicastSentDataMessages == 2);
+    
+    // take the fragments and mess with them so they are coming from a new
+    // "fakeMember", feeding them back up the JGroups stack so that the messenger
+    // will receive them
+    List<Message> messages = new ArrayList<>(interceptor.collectedMessages);
+    UUID fakeMember = new UUID(50, 50);
+    short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
+    int seqno = 1;
+    for (Message m: messages) {
+      m.setSrc(fakeMember);
+      UNICAST3.Header oldHeader = (UNICAST3.Header)m.getHeader(unicastHeaderId);
+      if (oldHeader == null) continue;
+      UNICAST3.Header newHeader = UNICAST3.Header.createDataHeader(seqno, oldHeader.connId(), seqno==1);
+      seqno += 1;
+      m.putHeader(unicastHeaderId, newHeader);
+      interceptor.up(new Event(Event.MSG, m));
+    }
+    Thread.sleep(5000);
+    System.out.println("received message = " + messageReceived[0]);
   }
   
   

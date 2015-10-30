@@ -2,6 +2,8 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.jgroups.Address;
@@ -34,6 +36,9 @@ public class InterceptUDP extends Protocol {
   int unicastSentDataMessages;
   int mcastSentDataMessages;
   
+  boolean collectMessages = false;
+  List<Message> collectedMessages = new LinkedList<>();
+  
   public InterceptUDP() {
 //    uuid = new UUID();
 //    try {
@@ -64,6 +69,9 @@ public class InterceptUDP extends Protocol {
   }
   
   private void handleMessage(Message msg) {
+    if (collectMessages) {
+      collectedMessages.add(msg);
+    }
     Object o = msg.getHeader(nakackHeaderId);
     if (o != null) {
       mcastSentDataMessages++;

@@ -4,6 +4,8 @@ import org.apache.logging.log4j.Logger;
 import org.jgroups.Event;
 import org.jgroups.Message;
 import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.FRAG2;
+import org.jgroups.protocols.FragHeader;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.protocols.pbcast.NakAckHeader2;
@@ -30,6 +32,7 @@ public class StatRecorder extends Protocol {
   
   private final short nakackHeaderId = ClassConfigurator.getProtocolId(NAKACK2.class);
   private final short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
+  private final short frag2HeaderId = ClassConfigurator.getProtocolId(FRAG2.class);
   
   /**
    * set the statistics object to modify when events are detected
@@ -46,6 +49,7 @@ public class StatRecorder extends Protocol {
       Message msg = (Message)evt.getArg();
       processForMulticast(msg, INCOMING);
       processForUnicast(msg, INCOMING);
+      filter(msg, INCOMING);
     }
     return up_prot.up(evt);
   }
@@ -57,6 +61,7 @@ public class StatRecorder extends Protocol {
       Message msg = (Message)evt.getArg();
       processForMulticast(msg, OUTGOING);
       processForUnicast(msg, OUTGOING);
+      filter(msg, OUTGOING);
       break;
     }
     return down_prot.down(evt);
@@ -104,6 +109,14 @@ public class StatRecorder extends Protocol {
         }
         break;
       }
+    }
+  }
+  
+  private void filter(Message msg, int direction) {
+    FragHeader hdr = (FragHeader)msg.getHeader(frag2HeaderId);
+    if (hdr != null) {
+      String str = direction == OUTGOING? "sending" : "receiving";
+      logger.debug("{} fragment {} msg offset {} msg size {}", str, hdr, msg.getOffset(), msg.getLength());
     }
   }
 }

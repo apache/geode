@@ -18,7 +18,6 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   private NetView view;
   private Object credentials;
   private boolean preparing;
-  private List<Integer> portsForMembers = Collections.<Integer>emptyList();
 
   public InstallViewMessage(NetView view, Object credentials) {
     this.view = view;
@@ -58,45 +57,12 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
     throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
-  private void writeListOfInteger(List<Integer> list, DataOutput out) throws IOException {
-    int size;
-    if (list == null) {
-      size = -1;
-    } else {
-      size = list.size();
-    }
-    InternalDataSerializer.writeArrayLength(size, out);
-    if (size > 0) {
-      for (int i = 0; i < size; i++) {
-        out.writeInt(list.get(i).intValue());
-      }
-    }
-  }
-  
-  private List<Integer> readListOfInteger(DataInput in) throws IOException {
-    int size = InternalDataSerializer.readArrayLength(in);
-    if (size > 0) {
-      List<Integer> list = new ArrayList<Integer>(size);
-      for (int i = 0; i < size; i++) {
-        list.add(Integer.valueOf(in.readInt()));
-      }
-      return list;
-    }
-    else if (size == 0) {
-      return Collections.<Integer>emptyList();
-    }
-    else {
-      return null;
-    }
-  }
-  
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.view, out);
     DataSerializer.writeObject(this.credentials, out);
     out.writeBoolean(preparing);
-    writeListOfInteger(portsForMembers, out);
   }
 
   @Override
@@ -105,22 +71,13 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
     this.view = DataSerializer.readObject(in);
     this.credentials = DataSerializer.readObject(in);
     this.preparing = in.readBoolean();
-    this.portsForMembers = readListOfInteger(in);
   }
 
   @Override
   public String toString() {
     return "InstallViewMessage(preparing="+this.preparing+"; "+this.view
             +"; cred="+(credentials==null?"null": "not null")
-            + "portsForMembers: " + portsForMembers
              +")";
   }
 
-  public List<Integer> getPortsForMembers() {
-    return this.portsForMembers;
-  }
-
-  public void setPortsForMembers(List<Integer> portsForMembers) {
-    this.portsForMembers = portsForMembers;
-  }
 }

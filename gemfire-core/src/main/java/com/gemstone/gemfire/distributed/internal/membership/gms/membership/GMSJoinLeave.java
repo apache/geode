@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -23,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -305,14 +305,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     // send a join request to the coordinator and wait for a response
     InternalDistributedMember coord = state.possibleCoordinator;
     if (state.alreadyTried.contains(coord)) {
-      logger.info("Probably coordinator is still {} - waiting for a join-response");
+      logger.info("Probable coordinator is still {} - waiting for a join-response", coord);
     } else {
       logger.info("Attempting to join the distributed system through coordinator " + coord + " using address " + this.localAddress);
-      JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress, services.getAuthenticator().getCredentials(coord));
-      // add server socket port in the join request
-      if (services.getHealthMonitor().getSocketInfo().get(localAddress) != null) {
-        req.setSocketPort(services.getHealthMonitor().getSocketInfo().get(localAddress).getPort());
-      }
+      int port = services.getHealthMonitor().getFailureDetectionPort();
+      JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress, services.getAuthenticator().getCredentials(coord), port);
       services.getMessenger().send(req);
     }
 
@@ -356,7 +353,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           this.localAddress.setVmViewId(this.birthViewId);
           GMSMember me = (GMSMember) this.localAddress.getNetMember();
           me.setBirthViewId(birthViewId);
-          services.getHealthMonitor().installSocketInfo(response.getCurrentView().getMembers(), response.getPortsForMembers());
           installView(response.getCurrentView());
         }
 
@@ -408,18 +404,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (!this.localAddress.getNetMember().preferredForCoordinator() && 
         incomingRequest.getMemberID().getNetMember().preferredForCoordinator()) {
       JoinResponseMessage m = new JoinResponseMessage(incomingRequest.getMemberID(), currentView, true);
-      // add socket ports of all members to join response
-      List<Integer> portsForMembers = new ArrayList<Integer>(currentView.size());
-      Map<InternalDistributedMember, InetSocketAddress> socketInfo = services.getHealthMonitor().getSocketInfo();
-      for (InternalDistributedMember mbr : currentView.getMembers()) {
-        InetSocketAddress addr = socketInfo.get(mbr);
-        if (addr != null) {
-          portsForMembers.add(Integer.valueOf(addr.getPort()));
-        } else {
-          portsForMembers.add(Integer.valueOf(-1));
-        }
-      }
-      m.setPortsForMembers(portsForMembers);
       services.getMessenger().send(m);
       return;
     }
@@ -646,7 +630,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         mbrs.removeAll(leaving);
         newView = new NetView(this.localAddress, viewNumber, mbrs, leaving,
             removals);
-
+        newView.setFailureDetectionPort(this.localAddress, services.getHealthMonitor().getFailureDetectionPort());
       }
       if (viewCreator == null || viewCreator.isShutdown()) {
         viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
@@ -658,10 +642,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
-  private void sendJoinResponses(List<InternalDistributedMember> newMbrs, NetView newView, List<Integer> portsForMembers) {
+  private void sendJoinResponses(List<InternalDistributedMember> newMbrs, NetView newView) {
     for (InternalDistributedMember mbr : newMbrs) {
       JoinResponseMessage response = new JoinResponseMessage(mbr, newView);
-      response.setPortsForMembers(portsForMembers);
       services.getMessenger().send(response);
     }
   }
@@ -674,55 +657,18 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
-  boolean prepareView(NetView view, List<InternalDistributedMember> newMembers, List<DistributionMessage> requests) {
-    return sendView(view, newMembers, true, this.prepareProcessor, requests);
+  boolean prepareView(NetView view, List<InternalDistributedMember> newMembers) {
+    return sendView(view, newMembers, true, this.prepareProcessor);
   }
 
-  void sendView(NetView view, List<InternalDistributedMember> newMembers, List<DistributionMessage> requests) {
-    sendView(view, newMembers, false, this.viewProcessor, requests);
+  void sendView(NetView view, List<InternalDistributedMember> newMembers) {
+    sendView(view, newMembers, false, this.viewProcessor);
   }
 
-  /**
-   * Build a list of socket ports for messages, e.g. InstallViewMessage, JoinResponseMessage
-   * @param view
-   * @param requests
-   * @return
-   */
-  private void addPorts(NetView view, List<DistributionMessage> requests, List<Integer> portsForMembers) {
-    Map<InternalDistributedMember, InetSocketAddress> socketInfo = services.getHealthMonitor().getSocketInfo();
-    Map<InternalDistributedMember, Integer> portMap = new ConcurrentHashMap<InternalDistributedMember, Integer>();
-    for (DistributionMessage req : requests) {
-      if (req.getDSFID() == JOIN_REQUEST) {
-        JoinRequestMessage joinReq = (JoinRequestMessage) req;
-        portMap.put(joinReq.getMemberID(), Integer.valueOf(joinReq.getSocketPort()));
-      }
-    }
-    for (InternalDistributedMember mbr : view.getMembers()) {
-      InetSocketAddress addr = socketInfo.get(mbr);
-      if (addr != null) {
-        portsForMembers.add(Integer.valueOf(addr.getPort()));
-      } else {
-        Integer port = portMap.get(mbr);
-        if (port != null) {
-          portsForMembers.add(port);
-        } else {
-          portsForMembers.add(Integer.valueOf(-1));
-        }
-      }
-    }    
-  }
-  
-  boolean sendView(NetView view, List<InternalDistributedMember> newMembers, boolean preparing, ViewReplyProcessor rp,
-      List<DistributionMessage> requests) {
+  boolean sendView(NetView view, List<InternalDistributedMember> newMembers, boolean preparing, ViewReplyProcessor rp) {
     int id = view.getViewId();
     InstallViewMessage msg = new InstallViewMessage(view, services.getAuthenticator().getCredentials(this.localAddress), preparing);
     Set<InternalDistributedMember> recips = new HashSet<>(view.getMembers());
-    // add socket ports of all members to InstallViewMessage
-    List<Integer> portsForMembers = new ArrayList<Integer>(view.size());
-    if (requests != null) {
-      addPorts(view, requests, portsForMembers);
-      msg.setPortsForMembers(portsForMembers);
-    }
 
     // a recent member was seen not to receive a new view - I think this is why
     // recips.removeAll(newMembers); // new members get the view in a JoinResponseMessage
@@ -736,9 +682,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     if (preparing) {
       this.preparedView = view;
-      if (requests != null) {
-        services.getHealthMonitor().installSocketInfo(view.getMembers(), portsForMembers);
-      }
     } else {
       installView(view);
     }
@@ -765,8 +708,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       // a prepared view announcing the new member
       if (!(isNetworkPartition(view) && quorumRequired)) {
         List<Integer> newPorts = new ArrayList<Integer>(view.size());
-        addPorts(view, requests, newPorts);
-        sendJoinResponses(newMembers, view, portsForMembers);
+        sendJoinResponses(newMembers, view);
       }
 
       logger.debug("waiting for view responses");
@@ -809,9 +751,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         services.getMessenger().send(new ViewAckMessage(m.getSender(), this.preparedView));
       } else {
         this.preparedView = view;
-        if (!m.getPortsForMembers().isEmpty()) {
-          services.getHealthMonitor().installSocketInfo(view.getMembers(), m.getPortsForMembers());
-        }
         ackView(m);
       }
     } else { // !preparing
@@ -1102,13 +1041,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   public void installView(NetView newView) {
 
-    logger.info("received new view: {}\nold view is: {}", newView, currentView);
-
     synchronized (viewInstallationLock) {
       if (currentView != null && currentView.getViewId() >= newView.getViewId()) {
         // old view - ignore it
         return;
       }
+
+      logger.info("received new view: {}\nold view is: {}", newView, currentView);
 
       if (currentView == null && !this.isJoined) {
         for (InternalDistributedMember mbr : newView.getMembers()) {
@@ -1117,6 +1056,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             this.localAddress.setVmViewId(this.birthViewId);
             GMSMember me = (GMSMember) this.localAddress.getNetMember();
             me.setBirthViewId(birthViewId);
+            me.setSplitBrainEnabled(mbr.getNetMember().splitBrainEnabled());
             isJoined = true;
             break;
           }
@@ -1633,13 +1573,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         Collection<InternalDistributedMember> recips = new ArrayList<>(v.size() + v.getCrashedMembers().size());
         recips.addAll(v.getMembers());
         recips.addAll(v.getCrashedMembers());
-        List<Integer> ports = new ArrayList<>(v.size());
-        for (InternalDistributedMember mbr: v.getMembers()) {
-          InetSocketAddress addr = services.getHealthMonitor().getSocketInfo().get(mbr);
-          int port = addr==null? -1 : addr.getPort();
-          ports.add(Integer.valueOf(port));
-        }
-        msg.setPortsForMembers(ports);
         msg.setRecipients(recips);
         services.getMessenger().send(msg);
       }
@@ -1694,7 +1627,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (initialView != null) {
         try {
           prepareAndSendView(initialView, Collections.<InternalDistributedMember>emptyList(), initialLeaving,
-              initialRemovals, Collections.<DistributionMessage>emptyList());
+              initialRemovals);
         } finally {
           this.initialView = null;
           this.initialLeaving = null;
@@ -1773,10 +1706,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * Returns false if the view cannot be prepared successfully, true otherwise
      */
     void createAndSendView(List<DistributionMessage> requests) {
-      List<InternalDistributedMember> joinReqs = new ArrayList<>();
-      Set<InternalDistributedMember> leaveReqs = new HashSet<>();
-      List<InternalDistributedMember> removalReqs = new ArrayList<>();
-      List<String> removalReasons = new ArrayList<String>();
+      List<InternalDistributedMember> joinReqs = new ArrayList<>(10);
+      Map<InternalDistributedMember, Integer> joinPorts = new HashMap<>(10);
+      Set<InternalDistributedMember> leaveReqs = new HashSet<>(10);
+      List<InternalDistributedMember> removalReqs = new ArrayList<>(10);
+      List<String> removalReasons = new ArrayList<String>(10);
 
       NetView oldView = currentView;
       List<InternalDistributedMember> oldMembers;
@@ -1793,7 +1727,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         InternalDistributedMember mbr = null;
         switch (msg.getDSFID()) {
         case JOIN_REQUEST:
-          mbr = ((JoinRequestMessage) msg).getMemberID();
+          JoinRequestMessage jmsg = (JoinRequestMessage)msg; 
+          mbr = jmsg.getMemberID();
+          int port = jmsg.getFailureDetectionPort();
           // see if an old member ID is being reused. If
           // so we'll remove it from the new view
           for (InternalDistributedMember m : oldMembers) {
@@ -1804,6 +1740,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
           if (!joinReqs.contains(mbr)) {
             joinReqs.add(mbr);
+            joinPorts.put(mbr, port);
           }
           break;
         case LEAVE_REQUEST_MESSAGE:
@@ -1857,15 +1794,43 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         int viewNumber = 0;
         List<InternalDistributedMember> mbrs;
         if (currentView == null) {
-          mbrs = new ArrayList<InternalDistributedMember>(joinReqs.size());
+          mbrs = new ArrayList<InternalDistributedMember>(joinReqs);
         } else {
           viewNumber = currentView.getViewId() + 1;
           mbrs = new ArrayList<InternalDistributedMember>(oldMembers);
+          mbrs.addAll(joinReqs);
         }
-        mbrs.addAll(joinReqs);
         mbrs.removeAll(leaveReqs);
         mbrs.removeAll(removalReqs);
         newView = new NetView(localAddress, viewNumber, mbrs, leaveReqs, new HashSet<InternalDistributedMember>(removalReqs));
+        int size = joinReqs.size();
+        for (InternalDistributedMember mbr: joinReqs) {
+          if (mbrs.contains(mbr)) {
+            newView.setFailureDetectionPort(mbr, joinPorts.get(mbr));
+          }
+        }
+        if (currentView != null) {
+          int[] ports = currentView.getFailureDetectionPorts();
+          if (ports != null) {
+            int idx = 0;
+            int portsSize = ports.length;
+            for (InternalDistributedMember mbr: currentView.getMembers()) {
+              if (newView.contains(mbr)) {
+                // unit tests create views w/o failure detection ports, so we must check the length
+                // of the array
+                if (idx < portsSize) {
+                  newView.setFailureDetectionPort(mbr, ports[idx]);
+                } else {
+                  newView.setFailureDetectionPort(mbr, -1);
+                }
+              }
+              idx += 1;
+            }
+          }
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("Established failure detection ports for new view: {}", newView.getFailureDetectionPorts());
+        }
       }
 
       // if there are no membership changes then abort creation of
@@ -1883,7 +1848,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       // getting messages from members that have been kicked out
       sendRemoveMessages(removalReqs, removalReasons, newView);
 
-      prepareAndSendView(newView, joinReqs, leaveReqs, newView.getCrashedMembers(), requests);
+      prepareAndSendView(newView, joinReqs, leaveReqs, newView.getCrashedMembers());
 
       return;
     }
@@ -1892,7 +1857,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * This handles the 2-phase installation of the view
      */
     void prepareAndSendView(NetView newView, List<InternalDistributedMember> joinReqs, Set<InternalDistributedMember> leaveReqs,
-        Set<InternalDistributedMember> removalReqs, List<DistributionMessage> requests) {
+        Set<InternalDistributedMember> removalReqs) {
       boolean prepared = false;
       do {
         if (this.shutdown || Thread.currentThread().isInterrupted()) {
@@ -1914,7 +1879,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           return;
         }
 
-        prepared = prepareView(newView, joinReqs, requests);
+        prepared = prepareView(newView, joinReqs);
         logger.debug("view preparation phase completed.  prepared={}", prepared);
 
         NetView conflictingView = prepareProcessor.getConflictingView();
@@ -1944,18 +1909,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           logger.info("adding these crashed members from a conflicting view to the crash-set for the next view: {}\nconflicting view: {}", unresponsive,
               conflictingView);
           failures.addAll(conflictingView.getCrashedMembers());
-          List<InternalDistributedMember> newMembers = prepareProcessor.getConflictingView().getNewMembers();
+          List<InternalDistributedMember> newMembers = conflictingView.getNewMembers();
           if (!newMembers.isEmpty()) {
             logger.info("adding these new members from a conflicting view to the new view: {}", newMembers);
             for (InternalDistributedMember mbr: newMembers) {
-              InetSocketAddress addr = services.getHealthMonitor().getSocketInfo().get(mbr);
-              // TODO: re-factor health monitor ports to be in the NetView so we don't need
-              // to create a fake JoinRequestMessage here
-              int port = addr==null? -1 : addr.getPort();
-              JoinRequestMessage msg = new JoinRequestMessage(localAddress, mbr, null);
-              msg.setSocketPort(port);
-              requests.add(msg);
+              int port = conflictingView.getFailureDetectionPort(mbr);
+              JoinRequestMessage msg = new JoinRequestMessage(localAddress, mbr, null, port);
               newView.add(mbr);
+              newView.setFailureDetectionPort(mbr, port);
               joinReqs.add(mbr);
             }
           }
@@ -1995,7 +1956,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       lastConflictingView = null;
 
-      sendView(newView, joinReqs, requests);
+      sendView(newView, joinReqs);
     }
 
     /**

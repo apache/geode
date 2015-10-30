@@ -33,6 +33,7 @@ import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2660,6 +2661,46 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
   }
 
+  /**
+   * Serializes a list of Integers.  The argument may be null.  Deserialize with
+   * readListOfIntegers().
+   */
+  public void writeListOfIntegers(List<Integer> list, DataOutput out) throws IOException {
+    int size;
+    if (list == null) {
+      size = -1;
+    } else {
+      size = list.size();
+    }
+    InternalDataSerializer.writeArrayLength(size, out);
+    if (size > 0) {
+      for (int i = 0; i < size; i++) {
+        out.writeInt(list.get(i).intValue());
+      }
+    }
+  }
+
+  /**
+   * Reads a list of integers serialized by writeListOfIntegers.  This
+   * will return null if the object serialized by writeListOfIntegers was null. 
+   */
+  public List<Integer> readListOfIntegers(DataInput in) throws IOException {
+    int size = InternalDataSerializer.readArrayLength(in);
+    if (size > 0) {
+      List<Integer> list = new ArrayList<Integer>(size);
+      for (int i = 0; i < size; i++) {
+        list.add(Integer.valueOf(in.readInt()));
+      }
+      return list;
+    }
+    else if (size == 0) {
+      return Collections.<Integer>emptyList();
+    }
+    else {
+      return null;
+    }
+  }
+  
   /**
    * Reads and discards an array of <code>byte</code>s from a
    * <code>DataInput</code>.

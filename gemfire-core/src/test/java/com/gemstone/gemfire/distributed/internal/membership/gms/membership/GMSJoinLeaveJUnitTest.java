@@ -165,7 +165,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testProcessJoinMessageRejectOldMemberVersion() throws IOException {
     initMocks();
  
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockOldMember, mockOldMember, null));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockOldMember, mockOldMember, null, -1));
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
@@ -177,7 +177,7 @@ public class GMSJoinLeaveJUnitTest {
     when(authenticator.authenticate(mockMembers[0], credentials)).thenThrow(new AuthenticationFailedException("we want to fail auth here"));
     when(services.getMessenger()).thenReturn(messenger);
          
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials, -1));
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
@@ -189,7 +189,7 @@ public class GMSJoinLeaveJUnitTest {
     when(authenticator.authenticate(mockMembers[0], null)).thenThrow(new AuthenticationFailedException("we want to fail auth here"));
     when(services.getMessenger()).thenReturn(messenger);
       
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null, -1));
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
@@ -399,10 +399,10 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.getView().add(gmsJoinLeaveMemberId);
     gmsJoinLeave.getView().add(mockMembers[1]);
     gmsJoinLeave.becomeCoordinatorForTest();
-    JoinRequestMessage msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null);
+    JoinRequestMessage msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null, -1);
     msg.setSender(mockMembers[2]);
     gmsJoinLeave.processMessage(msg);
-    msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null);
+    msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null, -1);
     msg.setSender(mockMembers[2]);
     gmsJoinLeave.processMessage(msg);
     

@@ -116,7 +116,7 @@ public class JGroupsMessenger implements Messenger {
   
   Object nakackDigest;
 
-  private NetView view;
+  private volatile NetView view;
 
   private GMSPingPonger pingPonger = new GMSPingPonger();
   
@@ -863,8 +863,18 @@ public class JGroupsMessenger implements Messenger {
   }
   
   public QuorumChecker getQuorumChecker() {    
+    NetView view = this.view;
+    if (view == null) {
+      view = services.getJoinLeave().getView();
+      if (view == null) {
+        view = services.getJoinLeave().getPreviousView();
+        if (view == null) {
+          return null;
+        }
+      }
+    }
     GMSQuorumChecker qc = new GMSQuorumChecker(
-          services.getJoinLeave().getPreviousView(), services.getConfig().getLossThreshold(),
+          view, services.getConfig().getLossThreshold(),
           this.myChannel);
     qc.initialize();
     return qc;

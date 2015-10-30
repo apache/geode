@@ -1336,6 +1336,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     dsProps.setProperty("locators", locators);
     dsProps.setProperty("mcast-port", "0");
     dsProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+//    dsProps.setProperty("log-level", "finest");
     final String uniqueName = getUniqueName();
 
     vm0.invoke(new SerializableRunnable("Start locator on " + port1) {
