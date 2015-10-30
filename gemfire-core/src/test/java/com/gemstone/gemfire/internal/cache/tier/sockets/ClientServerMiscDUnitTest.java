@@ -707,6 +707,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
    */
   public void testBug35380() throws Exception
   {
+    //work around GEODE-477
+    addExpectedException("Connection reset");
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
