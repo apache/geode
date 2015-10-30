@@ -4078,6 +4078,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               while (retry-- > 0) {
                 try {
                   l.assertCount(1, 0, 0, 0);
+                  // TODO: a race exists in which assertCount may also see a destroyCount of 1
+                  logger.info("DEBUG: saw create");
                   break;
                 } catch (AssertionFailedError e) {
                   if (retry > 0) {
@@ -4096,7 +4098,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               // The previous code would fail after 100ms; now we wait 3000ms.
               WaitCriterion waitForUpdate = new WaitCriterion() {
                 public boolean done() {
-                  return region.getEntry(key) == null;
+                  Region.Entry re = region.getEntry(key);
+                  if (re != null) {
+                    LocalRegion lr = (LocalRegion) region;
+                    EntryExpiryTask eet = lr.getEntryExpiryTask(key);
+                    if (eet != null) {
+                      logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis());
+                    } else {
+                      logger.info("DEBUG: waiting for expire destroy but expiry task is null");
+                    }
+                  }
+                  return re == null;
                 }
                 public String description() {
                   LocalRegion lr = (LocalRegion) region;
@@ -4104,7 +4116,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   try {
                     EntryExpiryTask eet = lr.getEntryExpiryTask(key);
                     if (eet != null) {
-                      expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow();
+                      expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis();
                     }
                   } catch (EntryNotFoundException ex) {
                     expiryInfo ="EntryNotFoundException when getting expiry task";
