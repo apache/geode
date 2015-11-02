@@ -17,9 +17,9 @@
 package com.gemstone.gemfire.internal.lang;
 
 import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.Thread.State;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
@@ -163,8 +163,8 @@ public class ThreadUtilsJUnitTest {
     final long sleepDuration = ThreadUtils.sleep(500);
     final long t1 = System.currentTimeMillis();
 
-    assertTrue((t1 - t0) >= 500);
-    assertTrue(sleepDuration >= 500);
+    assertTrue(t1 > t0);
+    assertTrue(sleepDuration > 0);
   }
 
   @Test
@@ -174,39 +174,40 @@ public class ThreadUtilsJUnitTest {
 
   protected static final class SleepInterruptedMultithreadedTestCase extends MultithreadedTestCase {
 
-    private final long expectedSleepDuration;
-    private volatile long actualSleepDuration;
-
-    private final CountDownLatch latch;
+    private final long sleepDuration;
 
     private volatile Thread sleeperThread;
-
-    public SleepInterruptedMultithreadedTestCase(final long expectedSleepDuration) {
-      assert expectedSleepDuration > 0 : "The duration of sleep must be greater than equal to 0!";
-      this.expectedSleepDuration = expectedSleepDuration;
-      this.latch = new CountDownLatch(1);
+    private volatile boolean sleeperWasInterrupted;
+    private volatile long actualSleepDuration;
+    
+    public SleepInterruptedMultithreadedTestCase(final long sleepDuration) {
+      assert sleepDuration > 0 : "The duration of sleep must be greater than equal to 0!";
+      this.sleepDuration = sleepDuration;
     }
 
     public void thread1() {
       assertTick(0);
-
       sleeperThread = Thread.currentThread();
       sleeperThread.setName("Sleeper Thread");
-      this.latch.countDown();
-      actualSleepDuration = ThreadUtils.sleep(expectedSleepDuration);
+      waitForTick(1);
+      actualSleepDuration = ThreadUtils.sleep(sleepDuration);
+      sleeperWasInterrupted = sleeperThread.isInterrupted();
+      assertTick(2);
     }
 
     public void thread2() throws Exception {
       assertTick(0);
-
       Thread.currentThread().setName("Interrupting Thread");
-      this.latch.await();
+      waitForTick(1);
+      waitForTick(2);
       sleeperThread.interrupt();
+      assertTick(2);
     }
 
     @Override
     public void finish() {
-      assertTrue(actualSleepDuration + " should be <= " + expectedSleepDuration, actualSleepDuration <= expectedSleepDuration);
+      assertThat(sleeperWasInterrupted).isTrue();
+      assertThat(actualSleepDuration).isGreaterThan(0);
     }
   }
 
