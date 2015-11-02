@@ -4100,8 +4100,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 public boolean done() {
                   Region.Entry re = region.getEntry(key);
                   if (re != null) {
-                    LocalRegion lr = (LocalRegion) region;
-                    EntryExpiryTask eet = lr.getEntryExpiryTask(key);
+                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
                     if (eet != null) {
                       logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis());
                     } else {
@@ -4111,10 +4110,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   return re == null;
                 }
                 public String description() {
-                  LocalRegion lr = (LocalRegion) region;
                   String expiryInfo = "";
                   try {
-                    EntryExpiryTask eet = lr.getEntryExpiryTask(key);
+                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
                     if (eet != null) {
                       expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis();
                     }
@@ -4138,6 +4136,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(value, entry.getValue());
           }
         });
+    }
+    
+    private static EntryExpiryTask getEntryExpiryTask(Region r, Object key) {
+      EntryExpiryTask result = null;
+      try {
+        LocalRegion lr = (LocalRegion) r;
+        result = lr.getEntryExpiryTask(key);
+      } catch (EntryNotFoundException ignore) {
+      }
+      return result;
     }
 
     /**
