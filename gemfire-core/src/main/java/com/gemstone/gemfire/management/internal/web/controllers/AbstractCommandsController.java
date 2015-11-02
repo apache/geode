@@ -57,6 +57,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common functionality across all
@@ -255,12 +256,14 @@ public abstract class AbstractCommandsController {
    * Converts the URI relative path to an absolute path based on the Servlet context information.
    * 
    * @param path the URI relative path to append to the Servlet context path.
+   * @param scheme the scheme to use for the URI
    * @return a URI constructed with all component path information.
    * @see java.net.URI
    * @see org.springframework.web.servlet.support.ServletUriComponentsBuilder
    */
-  protected /*static*/ URI toUri(final String path) {
-    return ServletUriComponentsBuilder.fromCurrentContextPath().path(REST_API_VERSION).path(path).build().toUri();
+  protected /*static*/ URI toUri(final String path, final String scheme) {
+    return ServletUriComponentsBuilder.fromCurrentContextPath()
+        .path(REST_API_VERSION).path(path).scheme(scheme).build().toUri();
   }
 
   /**

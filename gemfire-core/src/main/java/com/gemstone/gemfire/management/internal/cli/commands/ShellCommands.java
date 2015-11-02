@@ -206,10 +206,13 @@ public class ShellCommands implements CommandMarker {
             url = url.replace("http:", "https:");
           }
         }
-        
+
+        // This is so that SSL termination results in https URLs being returned
+        String query = (url.startsWith("https")) ? "?scheme=https" : "";
+
         LogWrapper.getInstance().warning(String.format("Sending HTTP request for Link Index at (%1$s)...", url.concat("/index")));
 
-        LinkIndex linkIndex = new SimpleHttpRequester(CONNECT_LOCATOR_TIMEOUT_MS).get(url.concat("/index"), LinkIndex.class);
+        LinkIndex linkIndex = new SimpleHttpRequester(CONNECT_LOCATOR_TIMEOUT_MS).get(url.concat("/index").concat(query), LinkIndex.class);
 
         LogWrapper.getInstance().warning(String.format("Received Link Index (%1$s)", linkIndex.toString()));
 

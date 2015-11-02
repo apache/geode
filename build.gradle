@@ -78,8 +78,8 @@ subprojects {
   gradle.taskGraph.whenReady( { graph ->
     tasks.withType(JavaCompile).each { javac ->
       javac.configure {
-        sourceCompatibility '1.7'
-        targetCompatibility '1.7'
+        sourceCompatibility '1.8'
+        targetCompatibility '1.8'
         options.encoding = 'UTF-8'
       }
     }
@@ -382,7 +382,7 @@ subprojects {
         }
         
         maxHeapSize '768m'
-        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-XX:MaxPermSize=256M', '-ea']
+        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
 
         systemProperties = [
           'gemfire.DEFAULT_MAX_OPLOG_SIZE' : '10',
@@ -409,10 +409,13 @@ subprojects {
     }
   })
 
-  check.dependsOn integrationTest
-  check.dependsOn distributedTest 
+  // Make precheckin task run all validation tests for checking in code.
+  task precheckin (dependsOn: [ build, integrationTest, distributedTest ]) {
+    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, and distributedTest'
+  }
+
   check.dependsOn checkMissedTests
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest,checkMissedTests
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, checkMissedTests
   build.finalizedBy combineReports
   check.finalizedBy combineReports
   test.finalizedBy combineReports

@@ -18,7 +18,7 @@
 package com.gemstone.gemfire.cache;
 
 /**
- * Gemfire Context passed to <code>PartitionedResolver</code> to compute the
+ * Gemfire Context passed to <code>PartitionResolver</code> to compute the
  * data location
  * 
  * @author Yogesh Mahajan
