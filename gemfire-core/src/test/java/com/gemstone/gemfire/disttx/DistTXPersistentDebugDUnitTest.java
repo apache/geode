@@ -24,31 +24,10 @@ import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.DistributedMemberDUnitTest;
-import com.gemstone.gemfire.distributed.DistributedSystemDUnitTest;
-import com.gemstone.gemfire.distributed.LocatorDUnitTest;
-import com.gemstone.gemfire.distributed.RoleDUnitTest;
-import com.gemstone.gemfire.distributed.SystemAdminDUnitTest;
-import com.gemstone.gemfire.distributed.internal.Bug40751DUnitTest;
-import com.gemstone.gemfire.distributed.internal.ConsoleDistributionManagerDUnitTest;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisorDUnitTest;
-import com.gemstone.gemfire.distributed.internal.DistributionManagerDUnitTest;
-import com.gemstone.gemfire.distributed.internal.GemFireTimeSyncServiceDUnitTest;
-import com.gemstone.gemfire.distributed.internal.ProductUseLogDUnitTest;
-import com.gemstone.gemfire.distributed.internal.deadlock.GemFireDeadlockDetectorDUnitTest;
-import com.gemstone.gemfire.distributed.internal.streaming.StreamingOperationManyDUnitTest;
-import com.gemstone.gemfire.distributed.internal.streaming.StreamingOperationOneDUnitTest;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
-import com.gemstone.gemfire.pdx.DistributedSystemIdDUnitTest;
-import com.gemstone.gemfire.pdx.JSONPdxClientServerDUnitTest;
-import com.gemstone.gemfire.pdx.PdxDeserializationDUnitTest;
-import com.gemstone.gemfire.pdx.PdxSerializableDUnitTest;
-
 import dunit.SerializableCallable;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
 

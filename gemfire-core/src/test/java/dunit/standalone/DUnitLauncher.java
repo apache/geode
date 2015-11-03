@@ -98,6 +98,8 @@ public class DUnitLauncher {
 
   private static final String LAUNCHED_PROPERTY = "gemfire.DUnitLauncher.LAUNCHED";
 
+  private static Master master;
+
   private DUnitLauncher() {
   }
   
@@ -159,7 +161,7 @@ public class DUnitLauncher {
     Registry registry = LocateRegistry.createRegistry(namingPort);
 
     final ProcessManager processManager = new ProcessManager(namingPort, registry);
-    Master master = new Master(registry, processManager);
+    master = new Master(registry, processManager);
     registry.bind(MASTER_PARAM, master);
 
     Runtime.getRuntime().addShutdownHook(new Thread() {

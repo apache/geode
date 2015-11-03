@@ -1906,7 +1906,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
             gfJsonObject.getString(JSON_MEMBERNAME));
       }
       catch (GfJsonException e) {
-        throw new IllegalArgumentException("Unable to create LocatorStatus from JSON: ".concat(json));
+        throw new IllegalArgumentException("Unable to create LocatorStatus from JSON: ".concat(json), e);
       }
     }
 

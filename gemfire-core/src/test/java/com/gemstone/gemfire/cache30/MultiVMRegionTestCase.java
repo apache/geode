@@ -87,6 +87,7 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
@@ -3998,6 +3999,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();
       final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null ||
            getRegionAttributes().getDataPolicy().withPartitioning();
+      if (!mirrored) {
+        // This test fails intermittently because the DSClock we inherit from the existing
+        // distributed system is stuck in the "stopped" state.
+        // The DSClock is going away when java groups is merged and at that
+        // time this following can be removed.
+        disconnectAllFromDS();
+      }
 
       final String name = this.getUniqueName();
       final int timeout = 10; // ms
@@ -4078,6 +4086,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               while (retry-- > 0) {
                 try {
                   l.assertCount(1, 0, 0, 0);
+                  // TODO: a race exists in which assertCount may also see a destroyCount of 1
+                  logger.info("DEBUG: saw create");
                   break;
                 } catch (AssertionFailedError e) {
                   if (retry > 0) {
@@ -4096,15 +4106,24 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               // The previous code would fail after 100ms; now we wait 3000ms.
               WaitCriterion waitForUpdate = new WaitCriterion() {
                 public boolean done() {
-                  return region.getEntry(key) == null;
+                  Region.Entry re = region.getEntry(key);
+                  if (re != null) {
+                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
+                    if (eet != null) {
+                      long stopTime = ((InternalDistributedSystem)(region.getCache().getDistributedSystem())).getClock().getStopTime();
+                      logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
+                    } else {
+                      logger.info("DEBUG: waiting for expire destroy but expiry task is null");
+                    }
+                  }
+                  return re == null;
                 }
                 public String description() {
-                  LocalRegion lr = (LocalRegion) region;
                   String expiryInfo = "";
                   try {
-                    EntryExpiryTask eet = lr.getEntryExpiryTask(key);
+                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
                     if (eet != null) {
-                      expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow();
+                      expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis();
                     }
                   } catch (EntryNotFoundException ex) {
                     expiryInfo ="EntryNotFoundException when getting expiry task";
@@ -4126,6 +4145,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(value, entry.getValue());
           }
         });
+    }
+    
+    private static EntryExpiryTask getEntryExpiryTask(Region r, Object key) {
+      EntryExpiryTask result = null;
+      try {
+        LocalRegion lr = (LocalRegion) r;
+        result = lr.getEntryExpiryTask(key);
+      } catch (EntryNotFoundException ignore) {
+      }
+      return result;
     }
 
     /**

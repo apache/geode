@@ -416,6 +416,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     
     // restart R, to make sure the unfinished op is handled correctly
     forceGC(R, 1); // for bug 47616
+    waitForToVerifyRVV(P, memberR, 6, null, 5); // P's rvv=R6, gc=5
+    waitForToVerifyRVV(R, memberR, 6, null, 5); // P's rvv=R6, gc=5
     
     closeCache(R);
     createDistributedRegion(R);

@@ -176,6 +176,8 @@ public class Bug36995DUnitTest extends DistributedTestCase
    */
   public void testBug36995_UserSpecified()
   {
+    //work around GEODE-507
+    addExpectedException("Connection reset");
     Integer port1 = ((Integer)server1.invoke(Bug36995DUnitTest.class,
         "createServerCache"));
     Integer port2 = ((Integer)server2.invoke(Bug36995DUnitTest.class,

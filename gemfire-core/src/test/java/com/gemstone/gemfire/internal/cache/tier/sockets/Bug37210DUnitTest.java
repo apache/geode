@@ -151,8 +151,12 @@ public class Bug37210DUnitTest extends DistributedTestCase
     client.invoke(Bug37210DUnitTest.class, "createClientCache",
         new Object[] { getServerHostName(Host.getHost(0)), new Integer(PORT) });
     server.invoke(Bug37210DUnitTest.class, "doEntryOperations");
+    
     server.invoke(Bug37210DUnitTest.class,
         "closeCacheClientProxyAndVerifyStats");
+    client.invoke(Bug37210DUnitTest.class, "closeCache");
+    server.invoke(Bug37210DUnitTest.class,
+            "closeCacheClientProxyAndVerifyStats2");
     getLogWriter().info("testHAStatsCleanup : END");
   }
 
@@ -242,17 +246,21 @@ public class Bug37210DUnitTest extends DistributedTestCase
         .getClientProxies().iterator();
     assertTrue("No proxy found",proxies.hasNext());
     CacheClientProxy proxy = (CacheClientProxy)proxies.next();
-    
-    proxy.close();
-
-    HARegionQueue rq = proxy.getHARegionQueue();
     Map dispatchedMsgMap = HARegionQueue.getDispatchedMessagesMapForTesting();
+    HARegionQueue rq = proxy.getHARegionQueue();
+    Object value = dispatchedMsgMap.get(rq.getRegion().getName());
+    proxy.close();
 
     assertTrue("HARegionQueue stats were not closed on proxy.close()", rq
         .getStatistics().isClosed());
-    assertFalse(
-        "HARegionQueue.dispatchedMessagesMap contains entry for the region even after proxy.close()",
-        dispatchedMsgMap.containsKey(rq.getRegion().getName()));
+    
+  }
+  
+  public static void closeCacheClientProxyAndVerifyStats2() {
+	  Map dispatchedMsgMap = HARegionQueue.getDispatchedMessagesMapForTesting();
+	  assertTrue(
+		        "HARegionQueue.dispatchedMessagesMap contains entry for the region even after proxy.close()",
+		        dispatchedMsgMap.size() == 0);  
   }
 
   /**

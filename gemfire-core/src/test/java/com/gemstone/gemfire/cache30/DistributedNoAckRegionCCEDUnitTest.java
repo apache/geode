@@ -140,7 +140,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends
 //    if (a0failed && a1failed) {
 //      fail("neither member saw event conflation - check stats for " + name);
 //    }
-    
+    pause(2000);//this test has with noack, thus we should wait before validating entries
     // check consistency of the regions
     Map r0Contents = (Map)vm0.invoke(this.getClass(), "getCCRegionContents");
     Map r1Contents = (Map)vm1.invoke(this.getClass(), "getCCRegionContents");

@@ -4093,7 +4093,6 @@ protected static class ClientListener extends CacheListenerAdapter {
         ExpiryTask.suspendExpiration();
         Region.Entry entry = null;
         long tilt;
-        EntryExpiryTask eet;
         try {
           r.put("key", "value");
           LocalRegion lr = (LocalRegion) r;

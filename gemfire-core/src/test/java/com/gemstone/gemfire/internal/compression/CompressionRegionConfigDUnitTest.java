@@ -485,6 +485,7 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
   private Region<String,String> createServerRegion(String name,DataPolicy dataPolicy,Compressor compressor) throws IOException {
     Region<String,String> region = getCache().<String,String>createRegionFactory().setDataPolicy(dataPolicy).setCloningEnabled(true).setCompressor(compressor).create(name);
     CacheServer server = getCache().addCacheServer();
+    server.setPort(0);
     server.start();
     
     return region;

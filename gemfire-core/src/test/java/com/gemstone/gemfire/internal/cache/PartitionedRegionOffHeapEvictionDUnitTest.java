@@ -80,16 +80,18 @@ public class PartitionedRegionOffHeapEvictionDUnitTest extends
     return ((GemFireCacheImpl)region.getRegionService()).getOffHeapEvictor();
   }
   
+  @Override
   protected void raiseFakeNotification() {
     ((GemFireCacheImpl) getCache()).getOffHeapEvictor().testAbortAfterLoopCount = 1;
     
     setEvictionPercentage(85);
     OffHeapMemoryMonitor ohmm = ((GemFireCacheImpl) getCache()).getResourceManager().getOffHeapMonitor();
-    ohmm.stopMonitoring();
+    ohmm.stopMonitoring(true);
 
     ohmm.updateStateAndSendEvent(94371840);
   }
   
+  @Override
   protected void cleanUpAfterFakeNotification() {
     ((GemFireCacheImpl) getCache()).getOffHeapEvictor().testAbortAfterLoopCount = Integer.MAX_VALUE;
   }
