@@ -88,7 +88,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     try {
       byte[] bytes = msg.getPart(0).getSerializedForm();
       functionState = bytes[0];
-      if (bytes.length >= 5 && servConn.getClientVersion().ordinal() >= Version.GFE_81.ordinal()) {
+      if (bytes.length >= 5 && servConn.getClientVersion().ordinal() >= Version.GFE_8009.ordinal()) {
         functionTimeout = Part.decodeInt(bytes, 1);
       }
       if(functionState != 1) {
