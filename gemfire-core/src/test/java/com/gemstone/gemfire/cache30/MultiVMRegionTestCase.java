@@ -87,6 +87,7 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
@@ -3998,6 +3999,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();
       final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null ||
            getRegionAttributes().getDataPolicy().withPartitioning();
+      if (!mirrored) {
+        // This test fails intermittently because the DSClock we inherit from the existing
+        // distributed system is stuck in the "stopped" state.
+        // The DSClock is going away when java groups is merged and at that
+        // time this following can be removed.
+        disconnectAllFromDS();
+      }
 
       final String name = this.getUniqueName();
       final int timeout = 10; // ms
@@ -4102,7 +4110,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   if (re != null) {
                     EntryExpiryTask eet = getEntryExpiryTask(region, key);
                     if (eet != null) {
-                      logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis());
+                      long stopTime = ((InternalDistributedSystem)(region.getCache().getDistributedSystem())).getClock().getStopTime();
+                      logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
                     } else {
                       logger.info("DEBUG: waiting for expire destroy but expiry task is null");
                     }

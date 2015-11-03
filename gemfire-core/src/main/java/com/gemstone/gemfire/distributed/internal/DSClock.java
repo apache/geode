@@ -223,7 +223,7 @@ public class DSClock {
     }
   }
 
-  private long getStopTime() {
+  public long getStopTime() {
     return this.suspendedTime.get();
   }
 
