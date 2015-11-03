@@ -17,8 +17,21 @@ dependencies {
 
   provided project(path: ':gemfire-junit', configuration: 'testOutput')
 }
-eclipse.classpath.minusConfigurations += [ project(':gemfire-core').configurations.classesOutput ]
-idea.module.scopes.PROVIDED.minus += [ project(':gemfire-core').configurations.classesOutput ]
+
+//Remove the gradle output directories from the eclipse classpath. These
+//are added by the classesOutput configuration, above. Unfortunately, using
+//minusConfigurations does not work here, because it removes the entire
+//gemfire-core project
+eclipse.classpath.file {
+    whenMerged { classpath ->
+        classpath.entries.removeAll { entry -> entry.path.contains('gemfire-core/build')}
+    }
+}
+idea.module.iml {
+  whenMerged {module ->
+     module.dependencies.removeAll { entry -> entry.toString().contains('gemfire-core/build')}
+  }
+}
 
 artifacts {
   archives jar
