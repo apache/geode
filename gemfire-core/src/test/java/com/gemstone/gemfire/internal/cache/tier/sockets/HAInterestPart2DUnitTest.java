@@ -272,12 +272,28 @@ public class HAInterestPart2DUnitTest extends HAInterestBaseTest {
       public boolean done() {
         Region.Entry e1 = r1.getEntry(k1);
         Region.Entry e2 = r1.getEntry(k2);
-        if (e1 == null || !server_k1_updated.equals(e1.getValue())) {
-          excuse = "k1=" + (e1 == null ? "null" : e1.getValue());
+        Object v1 = null;
+        if (e1 != null) {
+          try {
+            v1 = e1.getValue();
+          } catch (EntryDestroyedException ignore) {
+            // handled to fix GEODE-296
+          }
+        }
+        if (e1 == null || !server_k1_updated.equals(v1)) {
+          excuse = "v1=" + v1;
           return false;
         }
-        if (e2 == null || !server_k2.equals(e2.getValue())) {
-          excuse = "k2=" + (e2 == null ? "null" : e2.getValue());
+        Object v2 = null;
+        if (e2 != null) {
+          try {
+            v2 = e2.getValue();
+          } catch (EntryDestroyedException ignore) {
+            // handled to fix GEODE-296
+          }
+        }
+        if (e2 == null || !server_k2.equals(v2)) {
+          excuse = "v2=" + v2;
           return false;
         }
         return true;
