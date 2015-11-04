@@ -19,6 +19,3 @@ build-eclipse/
 *.swp
 # bruce: my synch settings for windows->linux transfers
 transferhost.txt
-/bin/
-# daveb: ignore javadocs output
-doc/
