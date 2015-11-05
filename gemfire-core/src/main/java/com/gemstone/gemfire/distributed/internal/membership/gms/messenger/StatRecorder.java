@@ -2,6 +2,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Event;
+import org.jgroups.Header;
 import org.jgroups.Message;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.FRAG2;
@@ -12,6 +13,7 @@ import org.jgroups.protocols.pbcast.NakAckHeader2;
 import org.jgroups.stack.Protocol;
 
 import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 
 /**
@@ -113,10 +115,32 @@ public class StatRecorder extends Protocol {
   }
   
   private void filter(Message msg, int direction) {
-    FragHeader hdr = (FragHeader)msg.getHeader(frag2HeaderId);
-    if (hdr != null) {
-      String str = direction == OUTGOING? "sending" : "receiving";
-      logger.debug("{} fragment {} msg offset {} msg size {}", str, hdr, msg.getOffset(), msg.getLength());
+    if (direction == INCOMING) {
+      Header h = msg.getHeader(frag2HeaderId);
+      boolean copyBuffer = false;
+      if (h != null && h instanceof FragHeader) {
+        copyBuffer = true;
+//      String str = direction == OUTGOING? "sending" : "receiving";
+//      logger.debug("{} fragment {} msg buffer hash {}  offset {} msg size {} first bytes=\n{}", str, hdr, 
+//          msg.getRawBuffer().hashCode(), msg.getOffset(), msg.getLength(),
+//          GMSUtil.formatBytes(msg.getRawBuffer(), msg.getOffset(),
+//              Math.min(200, msg.getLength())));
+      } else {
+        h = msg.getHeader(unicastHeaderId);
+        if (h instanceof UNICAST3.Header) {
+          copyBuffer = true;
+        } else {
+          h = msg.getHeader(nakackHeaderId);
+          if (h instanceof NakAckHeader2) {
+            copyBuffer = true;
+          }
+        }
+      }
+      if (copyBuffer) {
+        // JGroups doesn't copy its message buffer when thread pools are
+        // disabled.  This causes Frag2 fragments to become corrupted
+        msg.setBuffer(msg.getBuffer(), 0, msg.getLength());
+      }
     }
   }
 }

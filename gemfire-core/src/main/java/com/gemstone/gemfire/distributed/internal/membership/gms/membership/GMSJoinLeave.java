@@ -13,6 +13,7 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.VIEW_ACK_MES
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -362,9 +363,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         logger.info("received join response with no membership view: {}", response);
       }
     } else {
-      logger.debug("received no join response");
+      if (!isJoined) {
+        logger.debug("received no join response");
+      }
     }
-    return false;
+    return isJoined;
   }
 
   /**
@@ -422,6 +425,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     logger.info("received leave request from {} for {}", incomingRequest.getSender(), incomingRequest.getMemberID());
 
     NetView v = currentView;
+    if (v == null) {
+      recordViewRequest(incomingRequest);
+      return;
+    }
+    
+    
     InternalDistributedMember mbr = incomingRequest.getMemberID();
 
     if (logger.isDebugEnabled()) {
@@ -593,11 +602,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (currentView == null) {
       // create the initial membership view
       NetView newView = new NetView(this.localAddress);
+      newView.setFailureDetectionPort(localAddress, services.getHealthMonitor().getFailureDetectionPort());
       this.localAddress.setVmViewId(0);
       installView(newView);
       isJoined = true;
       if (viewCreator == null || viewCreator.isShutdown()) {
-        viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
+        viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
         viewCreator.setDaemon(true);
         viewCreator.start();
         startViewBroadcaster();
@@ -633,7 +643,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         newView.setFailureDetectionPort(this.localAddress, services.getHealthMonitor().getFailureDetectionPort());
       }
       if (viewCreator == null || viewCreator.isShutdown()) {
-        viewCreator = new ViewCreator("GemFire Membership View Creator", Services.getThreadGroup());
+        viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
         viewCreator.setInitialView(newView, leaving, removals);
         viewCreator.setDaemon(true);
         viewCreator.start();
@@ -691,7 +701,17 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return true;
     }
 
-    logger.info((preparing ? "preparing" : "sending") + " new view " + view);
+    StringBuilder s = new StringBuilder();
+    int[] ports = view.getFailureDetectionPorts();
+    int numMembers = view.size();
+    for (int i=0; i<numMembers; i++) {
+      if (i > 0) {
+        s.append(' ');
+      }
+      s.append(ports[i]);
+    }
+    logger.info((preparing ? "preparing" : "sending") + " new view " + view
+        + "\nfailure detection ports: " + s.toString());
 
     msg.setRecipients(recips);
 
@@ -736,8 +756,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   private void processViewMessage(InstallViewMessage m) {
 
-    logger.debug("Membership: processing {}", m);
-
     NetView view = m.getView();
 
     if (currentView != null && view.getViewId() < currentView.getViewId()) {
@@ -752,6 +770,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       } else {
         this.preparedView = view;
         ackView(m);
+        if (!this.isJoined) {
+          // if we're still waiting for a join response and we're in this view we
+          // should install the view so join() can finish its work
+          for (InternalDistributedMember mbr: view.getMembers()) {
+            if (localAddress.compareTo(mbr) == 0) {
+              installView(view);
+              break;
+            }
+          }
+        }
       }
     } else { // !preparing
       if (currentView != null && !view.contains(this.localAddress)) {
@@ -759,7 +787,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           forceDisconnect("This node is no longer in the membership view");
         }
       } else {
-        ackView(m);
+        if (!m.isRebroadcast()) { // no need to ack a rebroadcast view
+          ackView(m);
+        }
         installView(view);
       }
     }
@@ -1057,13 +1087,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             GMSMember me = (GMSMember) this.localAddress.getNetMember();
             me.setBirthViewId(birthViewId);
             me.setSplitBrainEnabled(mbr.getNetMember().splitBrainEnabled());
-            isJoined = true;
             break;
           }
         }
       }
 
-      if (isNetworkPartition(newView)) {
+      if (isJoined && isNetworkPartition(newView)) {
         if (quorumRequired) {
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
           forceDisconnect(LocalizedStrings.Network_partition_detected.toLocalizedString(crashes.size(), crashes));
@@ -1075,6 +1104,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       preparedView = null;
       lastConflictingView = null;
       services.installView(newView);
+
+      isJoined = true;
+      synchronized(joinResponse) {
+        joinResponse.notify();
+      }
 
       if (!newView.getCreator().equals(this.localAddress)) {
         if (newView.shouldBeCoordinator(this.localAddress)) {
@@ -1357,7 +1391,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (isStopping) {
       return;
     }
-    logger.debug("JoinLeave processing {}", m);
+    logger.debug("processing {}", m);
     switch (m.getDSFID()) {
     case JOIN_REQUEST:
       processJoinRequest((JoinRequestMessage) m);
@@ -1572,9 +1606,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         InstallViewMessage msg = new InstallViewMessage(v, services.getAuthenticator().getCredentials(localAddress));
         Collection<InternalDistributedMember> recips = new ArrayList<>(v.size() + v.getCrashedMembers().size());
         recips.addAll(v.getMembers());
+        recips.remove(localAddress);
         recips.addAll(v.getCrashedMembers());
         msg.setRecipients(recips);
-        services.getMessenger().send(msg);
+        // use sendUnreliably since we are sending to crashed members &
+        // don't want any retransmission tasks set up for them
+        services.getMessenger().sendUnreliably(msg);
       }
     }
     
@@ -1669,7 +1706,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               if (System.currentTimeMillis() < okayToCreateView) {
                 // sleep to let more requests arrive
                 try {
-                  sleep(100);
+                  viewRequests.wait(100);
                   continue;
                 } catch (InterruptedException e) {
                   return;
@@ -1828,9 +1865,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             }
           }
         }
-        if (logger.isDebugEnabled()) {
-          logger.debug("Established failure detection ports for new view: {}", newView.getFailureDetectionPorts());
-        }
       }
 
       // if there are no membership changes then abort creation of
@@ -1935,7 +1969,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           removalReqs.addAll(failures);
           List<InternalDistributedMember> newMembers = new ArrayList<>(newView.getMembers());
           newMembers.removeAll(removalReqs);
-          newView = new NetView(localAddress, newView.getViewId() + 1, newMembers, leaveReqs, removalReqs);
+          NetView nextView = new NetView(localAddress, newView.getViewId() + 1, newMembers, leaveReqs, removalReqs);
+          for (InternalDistributedMember mbr: newView.getMembers()) {
+            nextView.setFailureDetectionPort(mbr, newView.getFailureDetectionPort(mbr));
+          }
           int size = failures.size();
           List<String> reasons = new ArrayList<>(size);
           for (int i=0; i<size; i++) {
@@ -2025,7 +2062,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         @Override
         public Thread newThread(Runnable r) {
           return new Thread(Services.getThreadGroup(), r,
-              "GemFire View Creator verification thread " + i.incrementAndGet());
+              "Geode View Creator verification thread " + i.incrementAndGet());
         }
       });
 

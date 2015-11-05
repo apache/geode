@@ -1434,6 +1434,10 @@ public class HandShake implements ClientHandShake
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
     ByteArrayInputStream bais = new ByteArrayInputStream(memberBytes);
     DataInputStream dis = new DataInputStream(bais);
+    Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
+    if (v != null) {
+      dis = new VersionedDataInputStream(dis, v);
+    }
     try {
       return (DistributedMember)DataSerializer.readObject(dis);
     }

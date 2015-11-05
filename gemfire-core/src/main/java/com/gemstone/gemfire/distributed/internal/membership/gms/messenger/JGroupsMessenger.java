@@ -246,8 +246,6 @@ public class JGroupsMessenger implements Messenger {
     // create the configuration XML string for JGroups
     String properties = this.jgStackConfig;
     
-    logger.debug("JGroups configuration: {}", properties);
-    
     long start = System.currentTimeMillis();
     
     // start the jgroups channel and establish the membership ID
@@ -255,10 +253,22 @@ public class JGroupsMessenger implements Messenger {
     try {
       Object oldChannel = services.getConfig().getTransport().getOldDSMembershipInfo();
       if (oldChannel != null) {
+        logger.debug("Reusing JGroups channel from previous system", properties);
+        
         myChannel = (JChannel)oldChannel;
+        // scrub the old channel
+        ViewId vid = new ViewId(new JGAddress(), 0);
+        View jgv = new View(vid, new ArrayList<Address>());
+        this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
+        UUID logicalAddress = (UUID)myChannel.getAddress();
+        if (logicalAddress instanceof JGAddress) {
+          ((JGAddress)logicalAddress).setVmViewId(-1);
+        }
         reconnecting = true;
       }
       else {
+        logger.debug("JGroups configuration: {}", properties);
+        
         checkForWindowsIPv6();
         InputStream is = new ByteArrayInputStream(properties.getBytes("UTF-8"));
         myChannel = new JChannel(is);
@@ -291,7 +301,7 @@ public class JGroupsMessenger implements Messenger {
     
     establishLocalAddress();
     
-    logger.info("JGroups channel created (took {}ms)", System.currentTimeMillis()-start);
+    logger.info("JGroups channel {} (took {}ms)", (reconnecting? "reinitialized" : "created"), System.currentTimeMillis()-start);
     
   }
   
@@ -492,7 +502,7 @@ public class JGroupsMessenger implements Messenger {
           && (msg.getMulticast() || allDestinations);
     }
     
-    if (logger.isDebugEnabled()) {
+    if (logger.isDebugEnabled() && reliably) {
       String recips = "multicast";
       if (!useMcast) {
         recips = Arrays.toString(msg.getRecipients());
@@ -728,10 +738,10 @@ public class JGroupsMessenger implements Messenger {
     InternalDistributedMember sender = null;
 
     Exception problem = null;
+    byte[] buf = jgmsg.getRawBuffer();
     try {
       long start = services.getStatistics().startMsgDeserialization();
       
-      byte[] buf = jgmsg.getRawBuffer();
       DataInputStream dis = new DataInputStream(new ByteArrayInputStream(buf, 
           jgmsg.getOffset(), jgmsg.getLength()));
 
@@ -751,9 +761,6 @@ public class JGroupsMessenger implements Messenger {
       }
       
       services.getStatistics().endMsgDeserialization(start);
-
-      logger.trace("JGroupsReceiver deserialized {}", result);
-
     }
     catch (ClassNotFoundException | IOException | RuntimeException e) {
       problem = e;

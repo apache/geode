@@ -51,6 +51,6 @@ public class SuspectRequest {
 
   @Override
   public String toString() {
-    return "SuspectRequest [suspectMemebr=" + suspectMember + ", reason=" + reason + "]";
+    return "SuspectRequest [member=" + suspectMember + ", reason=" + reason + "]";
   }
 }

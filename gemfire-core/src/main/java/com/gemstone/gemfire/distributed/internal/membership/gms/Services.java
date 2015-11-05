@@ -56,7 +56,7 @@ public class Services {
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
   
-  private Timer timer = new Timer("GemFire Membership Timer", true);
+  private Timer timer = new Timer("Geode Membership Timer", true);
   
   
 

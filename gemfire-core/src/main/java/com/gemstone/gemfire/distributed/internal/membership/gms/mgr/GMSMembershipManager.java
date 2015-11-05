@@ -1255,7 +1255,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         return;
       }
     }
-    processMessage(msg);
+    dispatchMessage(msg);
   }
   
   public void warnShun(DistributedMember m) {
@@ -1276,6 +1276,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
     logger.warn(LocalizedMessage.create(LocalizedStrings.GroupMembershipService_MEMBERSHIP_DISREGARDING_SHUNNED_MEMBER_0, m));
   }
   
+  @Override
+  public void processMessage(DistributionMessage msg) {
+    handleOrDeferMessage(msg);
+  }
+  
   /**
    * Logic for processing a distribution message.  
    * <p>
@@ -1283,7 +1288,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * We handle this here, and generate an uplevel event if necessary
    * @param msg the message
    */
-  public void processMessage(DistributionMessage msg) {
+  public void dispatchMessage(DistributionMessage msg) {
     boolean isNew = false;
     InternalDistributedMember m = msg.getSender();
     boolean shunned = false;
@@ -2090,6 +2095,16 @@ public class GMSMembershipManager implements MembershipManager, Manager
           services.getCancelCriterion().generateCancelledException(null));
     }
     
+    if (playingDead) { // wellness test hook
+      while (playingDead && !shutdownInProgress) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+    
     if (isJoining()) {
       // If we get here, we are starting up, so just report a failure.
       if (allDestinations)
@@ -2891,6 +2906,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (GMSMembershipManager.this.shutdownInProgress  || isJoining()) {
       return; // probably a race condition
     }
+    
+    setShutdown();
     
     final Exception shutdownCause = new ForcedDisconnectException(reason);
 

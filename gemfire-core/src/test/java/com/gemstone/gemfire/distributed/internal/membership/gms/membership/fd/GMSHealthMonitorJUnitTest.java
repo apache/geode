@@ -1,4 +1,20 @@
-package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
+package com.gemstone.gemfire.distributed.internal.membership.gms.membership.fd;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -7,16 +23,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -27,9 +33,9 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.CheckResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
 import com.gemstone.gemfire.internal.SocketCreator;
@@ -81,6 +87,7 @@ public class GMSHealthMonitorJUnitTest {
       }
     }
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(3));
+    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
     gmsHealthMonitor = new GMSHealthMonitor();
     gmsHealthMonitor.init(services);
     gmsHealthMonitor.start();
@@ -94,31 +101,12 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testHMServiceStarted() throws IOException {
 
-    MethodExecuted messageSent = new MethodExecuted();
     InternalDistributedMember mbr = new InternalDistributedMember(SocketCreator.getLocalHost(), 12345);
     when(messenger.getMemberID()).thenReturn(mbr);
-    when(messenger.send(any(CheckResponseMessage.class))).thenAnswer(messageSent);
     gmsHealthMonitor.started();
 
-    gmsHealthMonitor.processMessage(new CheckRequestMessage(mbr, 1));
-    Assert.assertTrue("Check Response should have been sent", messageSent.isMethodExecuted());
-  }
-
-  /**
-   * checks whether we get local member id or not to set next neighbor
-   */
-  @Test
-  public void testHMNextNeighbor() throws IOException {
-
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
-
-    MethodExecuted messageSent = new MethodExecuted();
-    when(services.getMessenger().getMemberID()).thenAnswer(messageSent);
-    gmsHealthMonitor.started();
-
-    gmsHealthMonitor.installView(v);
-
-    Assert.assertTrue("It should have got memberID from services.getMessenger().getMemberID()", messageSent.isMethodExecuted());
+    gmsHealthMonitor.processMessage(new HeartbeatRequestMessage(mbr, 1));
+    verify(messenger, atLeastOnce()).send(any(HeartbeatMessage.class));
   }
 
   /**
@@ -140,7 +128,7 @@ public class GMSHealthMonitorJUnitTest {
 
   @Test
   public void testHMNextNeighborAfterTimeout() throws Exception {
-
+    System.out.println("testHMNextNeighborAfterTimeout starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
 //    System.out.printf("memberID is %s view is %s\n", mockMembers.get(3), v);
@@ -153,7 +141,7 @@ public class GMSHealthMonitorJUnitTest {
 
     // allow the monitor to give up on the initial "next neighbor" and
     // move on to the one after it
-    long giveup = System.currentTimeMillis() + memberTimeout + 5;
+    long giveup = System.currentTimeMillis() + memberTimeout + 500;
     InternalDistributedMember expected = mockMembers.get(5);
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
     while (System.currentTimeMillis() < giveup && neighbor != expected) {
@@ -162,17 +150,17 @@ public class GMSHealthMonitorJUnitTest {
     }
 
     // neighbor should change to 5th
-    Assert.assertEquals("expected " + mockMembers.get(5) + " but found " + neighbor
-        + ".  view="+v, mockMembers.get(5), neighbor);
+    System.out.println("testHMNextNeighborAfterTimeout ending");
+    Assert.assertEquals("expected " + expected + " but found " + neighbor
+        + ".  view="+v, expected, neighbor);
   }
 
   /**
-   * it checks neighbor before membertiemout, it should be same
+   * it checks neighbor before member-timeout, it should be same
    */
 
   @Test
   public void testHMNextNeighborBeforeTimeout() throws IOException {
-
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     // 3rd is current member
@@ -182,11 +170,16 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.installView(v);
 
     try {
-      // member-timeout is 1000 ms, so next neighbor should be same
-      Thread.sleep(memberTimeout - 200);
+      // member-timeout is 1000 ms.  We initiate a check and choose
+      // a new neighbor at 500 ms
+      Thread.sleep(memberTimeout/GMSHealthMonitor.LOGICAL_INTERVAL - 100);
     } catch (InterruptedException e) {
     }
     // neighbor should be same
+    System.out.println("next neighbor is " + gmsHealthMonitor.getNextNeighbor() +
+        "\nmy address is " + mockMembers.get(3) +
+        "\nview is " + v);
+
     Assert.assertEquals(mockMembers.get(4), gmsHealthMonitor.getNextNeighbor());
   }
 
@@ -194,26 +187,22 @@ public class GMSHealthMonitorJUnitTest {
    * checks whether member-check thread sends suspectMembers message
    */
   @Test
-  public void testSuspectMembersCalledThroughMemberCheckThread() {
+  public void testSuspectMembersCalledThroughMemberCheckThread() throws Exception {
+    System.out.println("testSuspectMembersCalledThroughMemberCheckThread starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
     gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
 
-    when(messenger.send(any(SuspectMembersMessage.class))).thenAnswer(messageSent);
+    // when the view is installed we start a heartbeat timeout.  After
+    // that expires we request a heartbeat
+    Thread.sleep(3*memberTimeout + 100);
 
-    try {
-      // member-timeout is 1000 ms + ping timeout 100ms
-      // plus wait 100 ms for ack
-      Thread.sleep(memberTimeout + 100);
-    } catch (InterruptedException e) {
-    }
-
-    Assert.assertTrue("SuspectMembersMessage should have sent", messageSent.isMethodExecuted());
+    System.out.println("testSuspectMembersCalledThroughMemberCheckThread ending");
+    assertTrue(gmsHealthMonitor.isSuspectMember(mockMembers.get(4)));
   }
 
   /***
@@ -221,16 +210,14 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testSuspectMembersNotCalledThroughPingThreadBeforeTimeout() {
-
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-
+    gmsHealthMonitor.started();
+    
     gmsHealthMonitor.installView(v);
-
-    when(messenger.send(any(SuspectMembersMessage.class))).thenAnswer(messageSent);
+    InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
 
     try {
       // member-timeout is 1000 ms
@@ -239,7 +226,7 @@ public class GMSHealthMonitorJUnitTest {
     } catch (InterruptedException e) {
     }
 
-    Assert.assertTrue("SuspectMembersMessage shouldn't have sent", !messageSent.isMethodExecuted());
+    assertFalse(gmsHealthMonitor.isSuspectMember(neighbor));
   }
 
   /***
@@ -249,19 +236,16 @@ public class GMSHealthMonitorJUnitTest {
   public void testSuspectMembersCalledThroughSuspectThread() throws Exception {
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
     
-    MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-    
+
     gmsHealthMonitor.installView(v);
 
     gmsHealthMonitor.suspect(mockMembers.get(1), "Not responding");
 
-    when(messenger.send(any(SuspectMembersMessage.class))).thenAnswer(messageSent);
-
     Thread.sleep(GMSHealthMonitor.MEMBER_SUSPECT_COLLECTION_INTERVAL + 1000);
 
-    Assert.assertTrue("SuspectMembersMessage should have sent", messageSent.isMethodExecuted());
+    verify(messenger, atLeastOnce()).send(any(SuspectMembersMessage.class));
   }
 
   /***
@@ -280,7 +264,7 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.suspect(mockMembers.get(1), "Not responding");
 
-    when(messenger.send(any(SuspectMembersMessage.class))).thenAnswer(messageSent);
+    when(messenger.send(isA(SuspectMembersMessage.class))).thenAnswer(messageSent);
 
     try {
       // suspect thread timeout is 200 ms
@@ -288,23 +272,24 @@ public class GMSHealthMonitorJUnitTest {
     } catch (InterruptedException e) {
     }
 
-    Assert.assertTrue("SuspectMembersMessage shouldn't have sent", !messageSent.isMethodExecuted());
+    assertTrue("SuspectMembersMessage shouldn't have sent", !messageSent.isMethodExecuted());
   }
 
   /***
    * Send remove member message after doing final check, ping Timeout
    */
   @Test
-  public void testRemoveMemberCalled() {
-
+  public void testRemoveMemberCalled() throws Exception {
+    System.out.println("testRemoveMemberCalled starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
     gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
+    
+    Thread.sleep(memberTimeout/GMSHealthMonitor.LOGICAL_INTERVAL);
 
     ArrayList<InternalDistributedMember> recipient = new ArrayList<InternalDistributedMember>();
     recipient.add(mockMembers.get(0));
@@ -314,17 +299,12 @@ public class GMSHealthMonitorJUnitTest {
     SuspectMembersMessage sm = new SuspectMembersMessage(recipient, as);
     sm.setSender(mockMembers.get(0));
 
-    when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(messageSent);
-
     gmsHealthMonitor.processMessage(sm);
 
-    try {
-      // this happens after final check, ping timeout
-      Thread.sleep(memberTimeout);
-    } catch (InterruptedException e) {
-    }
+    Thread.sleep(2*memberTimeout + 200);
 
-    Assert.assertTrue("RemoveMemberMessage should have sent", messageSent.isMethodExecuted());
+    System.out.println("testRemoveMemberCalled ending");
+    verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class), any(String.class));
   }
 
   /***
@@ -332,12 +312,12 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testRemoveMemberNotCalledBeforeTimeout() {
-
+    System.out.println("testRemoveMemberNotCalledBeforeTimeout starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
+    when(joinLeave.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
     gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
@@ -350,17 +330,16 @@ public class GMSHealthMonitorJUnitTest {
     SuspectMembersMessage sm = new SuspectMembersMessage(recipient, as);
     sm.setSender(mockMembers.get(0));
 
-    when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(messageSent);
-
     gmsHealthMonitor.processMessage(sm);
 
     try {
       // this happens after final check, ping timeout
-      Thread.sleep(memberTimeout);
+      Thread.sleep(memberTimeout-100);
     } catch (InterruptedException e) {
     }
 
-    Assert.assertTrue("RemoveMemberMessage should have sent", messageSent.isMethodExecuted());
+    System.out.println("testRemoveMemberNotCalledBeforeTimeout ending");
+    verify(joinLeave, never()).remove(any(InternalDistributedMember.class), any(String.class));
   }
 
   /***
@@ -368,16 +347,17 @@ public class GMSHealthMonitorJUnitTest {
    * This test trying to remove coordinator
    */
   @Test
-  public void testRemoveMemberCalledAfterDoingFinalCheckOnCoordinator() {
+  public void testRemoveMemberCalledAfterDoingFinalCheckOnCoordinator() throws Exception {
 
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    MethodExecuted messageSent = new MethodExecuted();
     // preferred coordinators are 0 and 1
     when(messenger.getMemberID()).thenReturn(mockMembers.get(1));// next preferred coordinator
     gmsHealthMonitor.started();
 
     gmsHealthMonitor.installView(v);
+    
+    Thread.sleep(memberTimeout/GMSHealthMonitor.LOGICAL_INTERVAL);
 
     ArrayList<InternalDistributedMember> recipient = new ArrayList<InternalDistributedMember>();
     recipient.add(mockMembers.get(0));
@@ -388,17 +368,12 @@ public class GMSHealthMonitorJUnitTest {
     SuspectMembersMessage sm = new SuspectMembersMessage(recipient, as);
     sm.setSender(mockMembers.get(4));// member 4 sends suspect message
 
-    when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(messageSent);// member 1 will process
-
     gmsHealthMonitor.processMessage(sm);
 
-    try {
-      // this happens after final check, ping timeout = 1000 ms
-      Thread.sleep(memberTimeout);
-    } catch (InterruptedException e) {
-    }
+    // this happens after final check, ping timeout = 1000 ms
+    Thread.sleep(memberTimeout + 200);
 
-    Assert.assertTrue("RemoveMemberMessage should have sent.", messageSent.isMethodExecuted());
+    verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class), any(String.class));
   }
 
   /***
@@ -420,8 +395,8 @@ public class GMSHealthMonitorJUnitTest {
 
     long timeTaken = System.currentTimeMillis() - startTime;
 
-    Assert.assertTrue("This should have taken member ping timeout 100ms ", timeTaken > 90);
-    Assert.assertTrue("CheckIfAvailable should have return false", !retVal);
+    assertTrue("This should have taken member ping timeout 100ms ", timeTaken > 90);
+    assertTrue("CheckIfAvailable should have return false", !retVal);
   }
 
   @Test
@@ -429,7 +404,6 @@ public class GMSHealthMonitorJUnitTest {
 
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
 
@@ -443,7 +417,7 @@ public class GMSHealthMonitorJUnitTest {
     } catch (InterruptedException e) {
     }
 
-    Assert.assertTrue("HeathMonitor should have shutdown", gmsHealthMonitor.isShutdown());
+    assertTrue("HeathMonitor should have shutdown", gmsHealthMonitor.isShutdown());
 
   }
 

@@ -15,24 +15,31 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 
 public class InstallViewMessage extends HighPriorityDistributionMessage {
 
+  enum messageType {
+    INSTALL, PREPARE, SYNC
+  }
   private NetView view;
   private Object credentials;
-  private boolean preparing;
+  private messageType kind;
 
   public InstallViewMessage(NetView view, Object credentials) {
     this.view = view;
-    this.preparing = false;
+    this.kind = messageType.INSTALL;
     this.credentials = credentials;
   }
 
   public InstallViewMessage(NetView view, Object credentials, boolean preparing) {
     this.view = view;
-    this.preparing = preparing;
+    this.kind = preparing? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
   }
   
   public InstallViewMessage() {
     // no-arg constructor for serialization
+  }
+  
+  public boolean isRebroadcast() {
+    return kind == messageType.SYNC;
   }
 
   public NetView getView() {
@@ -44,7 +51,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   }
 
   public boolean isPreparing() {
-    return preparing;
+    return kind == messageType.PREPARE;
   }
 
   @Override
@@ -60,22 +67,22 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
+    out.writeInt(kind.ordinal());
     DataSerializer.writeObject(this.view, out);
     DataSerializer.writeObject(this.credentials, out);
-    out.writeBoolean(preparing);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
+    this.kind = messageType.values()[in.readInt()];
     this.view = DataSerializer.readObject(in);
     this.credentials = DataSerializer.readObject(in);
-    this.preparing = in.readBoolean();
   }
 
   @Override
   public String toString() {
-    return "InstallViewMessage(preparing="+this.preparing+"; "+this.view
+    return "InstallViewMessage(type="+this.kind+"; "+this.view
             +"; cred="+(credentials==null?"null": "not null")
              +")";
   }

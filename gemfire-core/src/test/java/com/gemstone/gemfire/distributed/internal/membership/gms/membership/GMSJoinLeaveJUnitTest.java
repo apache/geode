@@ -90,6 +90,7 @@ public class GMSJoinLeaveJUnitTest {
     manager = mock(Manager.class);
     
     healthMonitor = mock(HealthMonitor.class);
+    when(healthMonitor.getFailureDetectionPort()).thenReturn(Integer.valueOf(-1));
     
     services = mock(Services.class);
     when(services.getAuthenticator()).thenReturn(authenticator);
@@ -241,6 +242,7 @@ public class GMSJoinLeaveJUnitTest {
     // simultaneous leave & remove requests for a member
     // should not result in it's being seen as a crashed member
     initMocks();
+    final int viewInstallationTime = 15000;
 
     when(healthMonitor.checkIfAvailable(any(InternalDistributedMember.class),
         any(String.class), any(Boolean.class))).thenReturn(true);
@@ -249,7 +251,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.becomeCoordinatorForTest();
 
     NetView oldView = null;
-    long giveup = System.currentTimeMillis() + 10000;
+    long giveup = System.currentTimeMillis() + viewInstallationTime;
     while (System.currentTimeMillis() < giveup  &&  oldView == null) {
       Thread.sleep(500);
       oldView = gmsJoinLeave.getView();
@@ -264,7 +266,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.memberShutdown(mockMembers[1], "shutting down for test");
     gmsJoinLeave.remove(mockMembers[1], "removing for test");
     
-    giveup = System.currentTimeMillis() + 10000;
+    giveup = System.currentTimeMillis() + viewInstallationTime;
     while (System.currentTimeMillis() < giveup  &&  gmsJoinLeave.getView().getViewId() == newView.getViewId()) {
       Thread.sleep(500);
     }

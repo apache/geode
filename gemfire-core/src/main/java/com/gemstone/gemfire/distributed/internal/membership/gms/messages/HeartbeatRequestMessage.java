@@ -4,51 +4,61 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Version;
 
-public class CheckResponseMessage extends HighPriorityDistributionMessage {
+public class HeartbeatRequestMessage extends HighPriorityDistributionMessage{
+
   int requestId;
+  InternalDistributedMember target;
   
-  public CheckResponseMessage(int id) {
+  public HeartbeatRequestMessage(InternalDistributedMember neighbour, int id) {
     requestId = id;
+    this.target = neighbour;
   }
-
-  public CheckResponseMessage(){}
   
-  public int getRequestId() {
-    return requestId;
+  public HeartbeatRequestMessage(){}
+  
+  public InternalDistributedMember getTarget() {
+    return target;
   }
-
-
+  
   @Override
   public int getDSFID() {
-    return CHECK_RESPONSE;
+    return HEARTBEAT_REQUEST;
   }
 
   @Override
   protected void process(DistributionManager dm) {
     throw new IllegalStateException("this message is not intended to execute in a thread pool");
-  }
- 
+  }   
+
   @Override
   public String toString() {
-    return "CheckResponseMessage [requestId=" + requestId + "]";
+    return getClass().getSimpleName()+" [requestId=" + requestId + "]";
+  }
+
+  public int getRequestId() {
+    return requestId;
   }
 
   @Override
   public Version[] getSerializationVersions() {
     return null;
   }  
-
+  
   @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(requestId);
+    DataSerializer.writeObject(target, out);
   }
   
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     requestId = in.readInt();
+    target = DataSerializer.readObject(in);
   }
 }

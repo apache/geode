@@ -189,26 +189,35 @@ public class PluckStacks {
     if (threadName.startsWith("Function Execution Processor")) {
       return isIdleExecutor(thread);
     }
-    if (threadName.startsWith("GemFire Membership Timer")) {
+    if (threadName.startsWith("Geode Failure Detection Server thread")) {
+      return stackSize < 11 && thread.get(1).contains("Thread.State: WAITING");
+    }
+    if (threadName.startsWith("Geode Membership Timer")) {
 //      System.out.println("gf timer stack size = " + stackSize + "; frame = " + thread.get(1));
       return stackSize < 9 &&
           (thread.get(1).contains("Thread.State: WAITING")
               || thread.get(1).contains("Thread.State: TIMED_WAITING"));
     }
-    if (threadName.startsWith("GemFire Membership View Creator")) {
+    if (threadName.startsWith("Geode Membership View Creator")) {
 //    System.out.println("gf view creator stack size = " + stackSize + "; frame = " + thread.get(1));
     return stackSize < 8 && thread.get(1).contains("Thread.State: WAITING");
-  }
-    if (threadName.startsWith("GemFire Suspect Message Collector")) {
-//      System.out.println("gf suspect collector stack size = " + stackSize + "; frame = " + thread.get(1));
-      return stackSize <= 7 && thread.get(1).contains("Thread.State: WAITING");
     }
+    if (threadName.startsWith("Geode Heartbeat Sender")) {
+      return stackSize <= 8 && thread.get(1).contains("Thread.State: WAITING");
+    }
+    // thread currently disabled
+//    if (threadName.startsWith("Geode Suspect Message Collector")) {
+//      return stackSize <= 7 && thread.get(1).contains("Thread.State: WAITING");
+//    }
+    if (threadName.startsWith("multicast receiver")) {
+    return (stackSize > 2 && thread.get(2).contains("PlainDatagramSocketImpl.receive"));
+  }
     if (threadName.startsWith("P2P Listener")) {
 //      System.out.println("p2p listener stack size = " + stackSize + "; frame = " + thread.get(2));
       return (stackSize == 8 && thread.get(2).contains("SocketChannelImpl.accept"));
     }
     if (threadName.startsWith("P2P message reader")) {
-      return (stackSize <= 12 && 
+      return (stackSize <= 14 && 
         (thread.getFirstFrame().contains("FileDispatcherImpl.read") ||
          thread.getFirstFrame().contains("FileDispatcher.read") ||
          thread.getFirstFrame().contains("SocketDispatcher.read")));
@@ -279,15 +288,6 @@ public class PluckStacks {
     }
     if (threadName.startsWith("Event Processor for GatewaySender")) {
       return !thread.isRunnable() && thread.get(3).contains("ConcurrentParallelGatewaySenderQueue.peek"); 
-    }
-    if (threadName.startsWith("FD_SOCK ClientConnectionHandler")) {
-      return true;
-    }
-    if (threadName.startsWith("FD_SOCK Ping thread")) {
-      return (stackSize <= 9 && thread.getFirstFrame().contains("socketRead"));
-    }
-    if (threadName.startsWith("FD_SOCK listener thread")) {
-      return (stackSize <= 9  && thread.getFirstFrame().contains("socketAccept"));
     }
     if (threadName.startsWith("GC Daemon")) {
       return !thread.isRunnable() && stackSize <= 6;
@@ -368,25 +368,10 @@ public class PluckStacks {
     if (threadName.startsWith("TimeScheduler.Thread")) {
       return !thread.isRunnable() && (stackSize <= 8 && thread.getFirstFrame().contains("Object.wait"));
     }
-    if (threadName.startsWith("UDP Loopback Message Handler")) {
-      return !thread.isRunnable() && (stackSize <= 9 && thread.getFirstFrame().contains("Object.wait"));
-    }
-    if (threadName.startsWith("UDP ucast receiver")) {
-      return (stackSize == 11 && thread.getFirstFrame().contains("SocketImpl.receive"));
-    }
-    if (threadName.startsWith("VERIFY_SUSPECT")) {
-      return !thread.isRunnable() && (stackSize <=9 && thread.getFirstFrame().contains("Object.wait"));
-    }
-    if (threadName.startsWith("View Message Processor")) {
-      return isIdleExecutor(thread);
-    }
     if (threadName.startsWith("vfabric-license-heartbeat")) {
       if (thread.isRunnable()) return false;
       if (stackSize == 6 && thread.getFirstFrame().contains("Thread.sleep")) return true;
       return (stackSize <= 7 && thread.getFirstFrame().contains("Object.wait"));
-    }
-    if (threadName.startsWith("ViewHandler")) {
-      return !thread.isRunnable() && (stackSize <= 8);
     }
     if (threadName.equals("WAN Locator Discovery Thread")) {
       return (!thread.isRunnable() && thread.get(3).contains("exchangeRemoteLocators"));

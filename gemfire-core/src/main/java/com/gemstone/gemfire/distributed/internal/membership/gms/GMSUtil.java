@@ -103,15 +103,16 @@ public class GMSUtil {
    * Formats the bytes in a buffer into hex octets, 50 per
    * line
    */
-  private String formatBytes(byte[] buf) {
+  public static String formatBytes(byte[] buf, int startIndex, int length) {
     StringBuilder w = new StringBuilder(20000);
-    for (int i=0; i<buf.length; i++) {
+    int count = 0;
+    for (int i=startIndex; i<length; i++, count++) {
       String s = Integer.toHexString(buf[i]&0xff);
       if (s.length() == 1) {
         w.append('0');
       }
       w.append(s).append(' ');
-      if ( (i%50) == 49 ) {
+      if ( (count%50) == 49 ) {
         w.append("\n");
       }
     }

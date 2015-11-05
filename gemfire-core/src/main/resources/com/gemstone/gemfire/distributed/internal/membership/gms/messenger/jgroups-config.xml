@@ -22,7 +22,7 @@
   timer.keep_alive_time="3000"
   timer.queue_max_size="500"
 
-  thread_pool.enabled="true"
+  thread_pool.enabled="false"
   thread_pool.min_threads="1"
   thread_pool.max_threads="4"
   thread_pool.keep_alive_time="5000"
@@ -30,7 +30,7 @@
   thread_pool.queue_max_size="10000"
   thread_pool.rejection_policy="discard"
 
-  oob_thread_pool.enabled="true"
+  oob_thread_pool.enabled="false"
   oob_thread_pool.min_threads="1"
   oob_thread_pool.max_threads="4"
   oob_thread_pool.keep_alive_time="5000"

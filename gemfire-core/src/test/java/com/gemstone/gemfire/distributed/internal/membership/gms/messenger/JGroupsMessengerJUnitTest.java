@@ -245,59 +245,6 @@ public class JGroupsMessengerJUnitTest {
     System.out.println("received message = " + messageReceived[0]);
   }
   
-  @Test  
-  public void testDefragmentation() throws Exception {
-    initMocks(false);
-    MessageHandler mh = mock(MessageHandler.class);
-    messenger.addHandler(JoinRequestMessage.class, mh);
-    
-    InternalDistributedMember sender = messenger.getMemberID();
-    NetView v = new NetView(sender);
-    when(joinLeave.getView()).thenReturn(v);
-    messenger.installView(v);
-
-    // configure an incoming message handler for JoinRequestMessage
-    final DistributionMessage[] messageReceived = new DistributionMessage[1];
-    MessageHandler handler = new MessageHandler() {
-      @Override
-      public void processMessage(DistributionMessage m) {
-        messageReceived[0] = m;
-      }
-    };
-    messenger.addHandler(JoinRequestMessage.class, handler);
-    
-    // configure the outgoing message interceptor
-    interceptor.unicastSentDataMessages = 0;
-    interceptor.collectMessages = true;
-    interceptor.collectedMessages.clear();
-    
-    JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, new byte[(int)(services.getConfig().getDistributionConfig().getUdpFragmentSize()*(1.5))], -1);
-    messenger.send(msg);
-    
-    assertTrue("expected 2 messages to be sent but found "+ interceptor.unicastSentDataMessages,
-        interceptor.unicastSentDataMessages == 2);
-    
-    // take the fragments and mess with them so they are coming from a new
-    // "fakeMember", feeding them back up the JGroups stack so that the messenger
-    // will receive them
-    List<Message> messages = new ArrayList<>(interceptor.collectedMessages);
-    UUID fakeMember = new UUID(50, 50);
-    short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
-    int seqno = 1;
-    for (Message m: messages) {
-      m.setSrc(fakeMember);
-      UNICAST3.Header oldHeader = (UNICAST3.Header)m.getHeader(unicastHeaderId);
-      if (oldHeader == null) continue;
-      UNICAST3.Header newHeader = UNICAST3.Header.createDataHeader(seqno, oldHeader.connId(), seqno==1);
-      seqno += 1;
-      m.putHeader(unicastHeaderId, newHeader);
-      interceptor.up(new Event(Event.MSG, m));
-    }
-    Thread.sleep(5000);
-    System.out.println("received message = " + messageReceived[0]);
-  }
-  
-  
   @Test
   public void testSendToMultipleMembers() throws Exception {
     initMocks(false);
@@ -436,22 +383,6 @@ public class JGroupsMessengerJUnitTest {
     assertTrue(messenger.myChannel.isConnected());
     messenger.stop();
     assertFalse(messenger.myChannel.isConnected());
-  }
-  
-  /**
-   * Test whether DistributionMessage.isPreciousThread() recognizes
-   * that a UDP transport thread is "precious"
-   * @throws Exception
-   */
-  @Test
-  public void testPreciousThread() throws Exception {
-    String name = Thread.currentThread().getName();
-    try {
-      Thread.currentThread().setName(Transport.PRECIOUS_THREAD_NAME_PREFIX + " test thread");
-      assertTrue(DistributionMessage.isPreciousThread());
-    } finally {
-      Thread.currentThread().setName(name);
-    }
   }
   
   @Test

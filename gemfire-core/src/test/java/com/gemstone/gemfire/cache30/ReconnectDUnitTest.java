@@ -80,8 +80,7 @@ public class ReconnectDUnitTest extends CacheTestCase
           }
           locatorPort = locPort;
           Properties props = getDistributedSystemProperties();
-          props.put("log-file", "autoReconnectLocatorVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
-          locator = Locator.startLocatorAndDS(locatorPort, null, props);
+          locator = Locator.startLocatorAndDS(locatorPort, new File(""), props);
           addExpectedException("com.gemstone.gemfire.ForcedDisconnectException||Possible loss of quorum");
 //          MembershipManagerHelper.getMembershipManager(InternalDistributedSystem.getConnectedInstance()).setDebugJGroups(true);
         } catch (IOException e) {
@@ -118,7 +117,7 @@ public class ReconnectDUnitTest extends CacheTestCase
   {
     try {
       super.tearDown2();
-      Host.getHost(0).getVM(3).invoke(new SerializableRunnable("stop locator") {
+      Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("stop locator") {
         public void run() {
           if (locator != null) {
             getLogWriter().info("stopping locator " + locator);
@@ -155,106 +154,6 @@ public class ReconnectDUnitTest extends CacheTestCase
     return factory.create();
   }
 
-  /**
-   * (comment from Bruce: this test doesn't seem to really do anything)
-   * </p>
-   * Test reconnect with the max-time-out of 200 and max-number-of-tries
-   * 1. The test first creates an xml file and then use it to create
-   * cache and regions. The test then fires reconnect in one of the
-   * vms. The reconnect uses xml file to create and intialize cache.
-   * @throws Exception 
-   * */
-  
-  public void testReconnect() throws TimeoutException, CacheException,
-      IOException
-  {
-    final int locPort = this.locatorPort;
-    
-    final String xmlFileLoc = (new File(".")).getAbsolutePath();
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-
-    VM vm1 = host.getVM(1);
-    //VM vm2 = host.getVM(2);
-
-    SerializableRunnable create1 = new CacheSerializableRunnable(
-        "Create Cache and Regions from cache.xml") {
-      public void run2() throws CacheException
-      {
-        //      DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
-        locatorPort = locPort;
-        Properties props = getDistributedSystemProperties();
-        props.put("cache-xml-file", xmlFileLoc+"/MyDisconnect-cache.xml");
-        props.put("max-wait-time-reconnect", "200");
-        props.put("max-num-reconnect-tries", "1");
-        getLogWriter().info("test is creating distributed system");
-        getSystem(props);
-        getLogWriter().info("test is creating cache");
-        Cache cache = getCache();
-        Region myRegion = cache.getRegion("root/myRegion");
-        myRegion.put("MyKey1", "MyValue1");
-        // myRegion.put("Mykey2", "MyValue2");
-
-      }
-    };
-
-    SerializableRunnable create2 = new CacheSerializableRunnable(
-        "Create Cache and Regions from cache.xml") {
-      public void run2() throws CacheException
-      {
-        //            DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
-        locatorPort = locPort;
-        Properties props = getDistributedSystemProperties();
-        props.put("cache-xml-file", xmlFileLoc+"/MyDisconnect-cache.xml");
-        props.put("max-wait-time-reconnect", "200");
-        props.put("max-num-reconnect-tries", "1");
-        getSystem(props);
-        Cache cache = getCache();
-        Region myRegion = cache.getRegion("root/myRegion");
-        //myRegion.put("MyKey1", "MyValue1");
-        myRegion.put("Mykey2", "MyValue2");
-        assertNotNull(myRegion.get("MyKey1"));
-        //getLogWriter().fine("MyKey1 value is : "+myRegion.get("MyKey1"));
-
-      }
-    };
-
-    vm0.invoke(create1);
-    vm1.invoke(create2);
-
-    SerializableRunnable reconnect = new CacheSerializableRunnable(
-        "Create Region") {
-      public void run2() throws CacheException
-      {
-        //        DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
-       // closeCache();
-       // getSystem().disconnect();
-        locatorPort = locPort;
-        Properties props = getDistributedSystemProperties();
-        props.put("cache-xml-file", xmlFileLoc+"/MyDisconnect-cache.xml");
-        props.put("max-wait-time-reconnect", "200");
-        props.put("max-num-reconnect-tries", "1");
-        getSystem(props);
-        Cache cache = getCache();
-        //getLogWriter().fine("Cache type : "+cache.getClass().getName());
-        Region reg = cache.getRegion("root/myRegion");
-        //getLogWriter().fine("The reg type : "+reg);
-        assertNotNull(reg.get("MyKey1"));
-        getLogWriter().fine("MyKey1 Value after disconnect : "
-            + reg.get("MyKey1"));
-        
-        //closeCache();
-        //disconnectFromDS();
-
-      }
-    };
-
-    vm1.invoke(reconnect);
-
-  }
-  
-  
   // quorum check fails, then succeeds
   public void testReconnectWithQuorum() throws Exception {
     addExpectedException("killing member's ds");
@@ -326,7 +225,7 @@ public class ReconnectDUnitTest extends CacheTestCase
     }
   }
   
-  public void disabledtestReconnectOnForcedDisconnect() throws Exception  {
+  public void testReconnectOnForcedDisconnect() throws Exception  {
     doTestReconnectOnForcedDisconnect(false);
   }
   
@@ -365,7 +264,7 @@ public class ReconnectDUnitTest extends CacheTestCase
         props.put("cache-xml-file", xmlFileLoc+"/MyDisconnect-cache.xml");
         props.put("max-wait-time-reconnect", "1000");
         props.put("max-num-reconnect-tries", "2");
-        props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
+//        props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
         Cache cache = new CacheFactory(props).create();
         Region myRegion = cache.getRegion("root/myRegion");
         ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
@@ -387,7 +286,7 @@ public class ReconnectDUnitTest extends CacheTestCase
         props.put("max-num-reconnect-tries", "2");
         props.put("start-locator", "localhost["+secondLocPort+"]");
         props.put("locators", props.get("locators")+",localhost["+secondLocPort+"]");
-        props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
+//        props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
         getSystem(props);
 //        MembershipManagerHelper.getMembershipManager(system).setDebugJGroups(true);
         final Cache cache = getCache();
