@@ -115,10 +115,9 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   
   private void configureServers() throws Exception {
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-    startCacheServer(vm0, port[0], mcastPort);
-    startCacheServer(vm1, port[1], mcastPort);
-    startCacheServer(vm2, port[2], mcastPort);
+    startCacheServer(vm0, port[0]);
+    startCacheServer(vm1, port[1]);
+    startCacheServer(vm2, port[2]);
 
   }
   
@@ -127,6 +126,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   //Querying the data will result in deserialization of portfolio objects.
   //In cases where index is present, the objects will be deserialized in the cache
   public void helpTestPRQueryOnLocalNode(final String queryString, final int numPortfolios, final int numExpectedResults, final boolean hasIndex) throws Exception {
+    final int numPortfoliosPerVM = numPortfolios / 2;
   
     resetInstanceCount(vm0);
     resetInstanceCount(vm1);
