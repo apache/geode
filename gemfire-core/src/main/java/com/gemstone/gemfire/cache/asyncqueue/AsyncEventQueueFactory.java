@@ -137,7 +137,7 @@ public interface AsyncEventQueueFactory {
   public AsyncEventQueueFactory setDispatcherThreads(int numThreads);
 
   /**
-   * Removes a <code>GatewayEventFilter</code> to the attributes of
+   * Adds a <code>GatewayEventFilter</code> to the attributes of
    * AsyncEventQueue being created by factory.
    * 
    * @param filter

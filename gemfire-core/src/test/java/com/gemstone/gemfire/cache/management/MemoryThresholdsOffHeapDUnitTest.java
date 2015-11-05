@@ -660,13 +660,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         r.put("oh3", new byte[157287]);
         WaitCriterion wc = new WaitCriterion() {
           public String description() {
-            return "verify critical state";
+            return "expected region " + r + " to set memoryThreshold";
           }
           public boolean done() {
             return r.memoryThresholdReached.get();
           }
         };
-        waitForCriterion(wc, 3000, 100, true);
+        waitForCriterion(wc, 30*1000, 10, true);
         {
           Integer k = new Integer(5);
           assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
@@ -675,13 +675,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         r.destroy("oh3");
         wc = new WaitCriterion() {
           public String description() {
-            return "verify critical state";
+            return "expected region " + r + " to unset memoryThreshold";
           }
           public boolean done() {
             return !r.memoryThresholdReached.get();
           }
         };
-        waitForCriterion(wc, 3000, 100, true);
+        waitForCriterion(wc, 30*1000, 10, true);
         {
           Integer k = new Integer(6);
           assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
@@ -1009,7 +1009,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return false;
           }
         };
-        waitForCriterion(wc, 3000, 100, true);
+        waitForCriterion(wc, 30*1000, 10, true);
         
         final Integer k = new Integer(2); // reload with same key again and again
         final Integer expectedInvocations3 = new Integer(expectedInvocations.getAndIncrement());
@@ -1054,7 +1054,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return !r.memoryThresholdReached.get();
           }
         };
-        waitForCriterion(wc, 3000, 100, true);
+        waitForCriterion(wc, 30*1000, 10, true);
         
         Integer k = new Integer(3); // same key as previously used, this time is should stick
         Integer expectedInvocations8 = new Integer(expectedInvocations.incrementAndGet());
