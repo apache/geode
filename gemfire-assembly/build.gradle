@@ -220,7 +220,7 @@ def coreJar = [publicationName:'coreJar', project:project(":gemfire-core").name]
 def jgroupsJar = [publicationName:'jgroupsJar', project:project(":gemfire-jgroups").name]
 def jsonJar = [publicationName:'jsonJar', project:project(":gemfire-json").name]
 def joptsimpleJar = [publicationName:'joptsimpleJar', project:project(":gemfire-joptsimple").name]
-def MavenJars = [ coreJar, jgroupsJar, jsonJar, joptsimpleJar ]
+def MavenJars = [ coreJar, jgroupsJar, jsonJar, joptsimpleJar, commonJar ]
 
 afterEvaluate {
   publishing {
