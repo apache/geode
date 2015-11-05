@@ -1969,10 +1969,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           removalReqs.addAll(failures);
           List<InternalDistributedMember> newMembers = new ArrayList<>(newView.getMembers());
           newMembers.removeAll(removalReqs);
-          NetView nextView = new NetView(localAddress, newView.getViewId() + 1, newMembers, leaveReqs, removalReqs);
+          NetView tempView = new NetView(localAddress, newView.getViewId() + 1, newMembers, leaveReqs, removalReqs);
           for (InternalDistributedMember mbr: newView.getMembers()) {
-            nextView.setFailureDetectionPort(mbr, newView.getFailureDetectionPort(mbr));
+            tempView.setFailureDetectionPort(mbr, newView.getFailureDetectionPort(mbr));
           }
+          newView = tempView;
           int size = failures.size();
           List<String> reasons = new ArrayList<>(size);
           for (int i=0; i<size; i++) {
