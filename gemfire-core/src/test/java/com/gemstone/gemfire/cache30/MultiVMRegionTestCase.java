@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
@@ -78,6 +87,7 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
@@ -3989,6 +3999,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();
       final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null ||
            getRegionAttributes().getDataPolicy().withPartitioning();
+      if (!mirrored) {
+        // This test fails intermittently because the DSClock we inherit from the existing
+        // distributed system is stuck in the "stopped" state.
+        // The DSClock is going away when java groups is merged and at that
+        // time this following can be removed.
+        disconnectAllFromDS();
+      }
 
       final String name = this.getUniqueName();
       final int timeout = 10; // ms
@@ -4059,16 +4076,18 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       
       vm0.invoke(new CacheSerializableRunnable("Check local destroy") {
           public void run2() throws CacheException {
-            Region region =
+            final Region region =
               getRootRegion().getSubregion(name);
             // make sure we created the entry
             {
               CountingDistCacheListener l = (CountingDistCacheListener)
                 region.getAttributes().getCacheListeners()[0];
-              int retry = 100;
+              int retry = 1000;
               while (retry-- > 0) {
                 try {
                   l.assertCount(1, 0, 0, 0);
+                  // TODO: a race exists in which assertCount may also see a destroyCount of 1
+                  logger.info("DEBUG: saw create");
                   break;
                 } catch (AssertionFailedError e) {
                   if (retry > 0) {
@@ -4081,11 +4100,38 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
 
             { // now make sure it expires
-              // this should happen really fast since timeout is 10 ms
-              int retry = 10;
-              while (retry-- > 0 && region.getEntry(key) != null) {
-                pause(timeout);
-              }
+              // this should happen really fast since timeout is 10 ms.
+              // But it may take longer in some cases because of thread
+              // scheduling delays and machine load (see GEODE-410).
+              // The previous code would fail after 100ms; now we wait 3000ms.
+              WaitCriterion waitForUpdate = new WaitCriterion() {
+                public boolean done() {
+                  Region.Entry re = region.getEntry(key);
+                  if (re != null) {
+                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
+                    if (eet != null) {
+                      long stopTime = ((InternalDistributedSystem)(region.getCache().getDistributedSystem())).getClock().getStopTime();
+                      logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
+                    } else {
+                      logger.info("DEBUG: waiting for expire destroy but expiry task is null");
+                    }
+                  }
+                  return re == null;
+                }
+                public String description() {
+                  String expiryInfo = "";
+                  try {
+                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
+                    if (eet != null) {
+                      expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis();
+                    }
+                  } catch (EntryNotFoundException ex) {
+                    expiryInfo ="EntryNotFoundException when getting expiry task";
+                  }
+                  return "Entry for key " + key + " never expired (since it still exists) " + expiryInfo;
+                }
+              };
+              DistributedTestCase.waitForCriterion(waitForUpdate, 30000, 1, true);
             }
             assertNull(region.getEntry(key));
           }
@@ -4099,6 +4145,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(value, entry.getValue());
           }
         });
+    }
+    
+    private static EntryExpiryTask getEntryExpiryTask(Region r, Object key) {
+      EntryExpiryTask result = null;
+      try {
+        LocalRegion lr = (LocalRegion) r;
+        result = lr.getEntryExpiryTask(key);
+      } catch (EntryNotFoundException ignore) {
+      }
+      return result;
     }
 
     /**
@@ -5430,6 +5486,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           IntWrapper.IntWrapperSerializer serializer =
             (IntWrapper.IntWrapperSerializer)
             DataSerializer.register(c);
+          getLogWriter().info("Registered serializer id:" + serializer.getId()
+              + " class:" + c.getName());
 
           Region region = getRootRegion().getSubregion(name);
           region.put(key, new IntWrapper(intValue));
@@ -5443,21 +5501,31 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     SerializableRunnable get = new CacheSerializableRunnable("Get int") {
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
-//          if (region.getAttributes().getScope().isDistributedNoAck()) {
-            // wait a while for the serializer to be registered
-            long end = System.currentTimeMillis() + 30000;
-            while (InternalDataSerializer.getSerializer((byte)120) == null) {
-              assertTrue("This test sometimes fails due to timing issues",
-                  System.currentTimeMillis() <= end);
-              try {
-                Thread.sleep(1000);
+          // wait a while for the serializer to be registered
+          // A race condition exists in the product in which
+          // this thread can be stuck waiting in getSerializer
+          // for 60 seconds. So it only calls getSerializer once
+          // causing it to fail intermittently (see GEODE-376).
+          // To workaround this the test wets WAIT_MS to 1 ms.
+          // So the getSerializer will only block for 1 ms.
+          // This allows the WaitCriterion to make multiple calls
+          // of getSerializer and the subsequent calls will find
+          // the DataSerializer.
+          final int savVal = InternalDataSerializer.GetMarker.WAIT_MS;
+          InternalDataSerializer.GetMarker.WAIT_MS = 1;
+          try {
+            WaitCriterion ev = new WaitCriterion() {
+              public boolean done() {
+                return InternalDataSerializer.getSerializer((byte)120) != null;
               }
-              catch (InterruptedException e) {
-                // no need to keep interrupt bit here
-                throw new CacheException("Test interrupted") { };
+              public String description() {
+                return "DataSerializer with id 120 was never registered";
               }
-            }
-//          }
+            };
+            DistributedTestCase.waitForCriterion(ev, 30 * 1000, 10, true);
+          } finally {
+            InternalDataSerializer.GetMarker.WAIT_MS = savVal;
+          }
           IntWrapper value = (IntWrapper) region.get(key);
           assertNotNull(InternalDataSerializer.getSerializer((byte)120));
           assertNotNull(value);

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -106,14 +115,14 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
   public void tearDown2() throws Exception {
     try {
-
+      /* fixes GEODE-444, really close client cache first by using super.tearDown2();
       // close the clients first
       member0.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       member1.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       member2.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       member3.invoke(PartitionedRegionSingleHopDUnitTest.class, "closeCache");
       closeCache();
-
+      */
       super.tearDown2();
 
       member0 = null;
@@ -755,7 +764,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     pause(5000);
     assertFalse(cms.isRefreshMetadataTestOnly());
   }
-  
+
   public void testServerLocationRemovalThroughPing() {
     Integer port0 = (Integer)member0.invoke(
         PartitionedRegionSingleHopDUnitTest.class, "createServer",
@@ -830,6 +839,25 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath()); 
+    
+    //Fixes a race condition in GEODE-414 by retrying as 
+    //region.clientMetaDataLock.tryLock() may prevent fetching the 
+    //metadata through functional calls as only limited functions are executed in the test.
+    long start = System.currentTimeMillis();
+    do {
+      if ((prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() !=4)) {
+        //waiting if there is another thread holding the lock
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          //ignored.
+        }
+        cms.getClientPRMetadata((LocalRegion)region);
+      } else {
+        break;
+      }
+    } while (System.currentTimeMillis() - start < 60000);
+    
     wc = new WaitCriterion() {
       public boolean done() {
         return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4);
@@ -842,7 +870,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
 //    assertEquals(4/*numBuckets*/, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());    
   }
-  
+
   public void testMetadataFetchOnlyThroughputAll() {
     Integer port0 = (Integer)member0.invoke(
         PartitionedRegionSingleHopDUnitTest.class, "createServer",
@@ -1091,7 +1119,19 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
     
-    Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+    
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return (regionMetaData.size() == 1);
+      }
+
+      public String description() {
+        return "expected metadata is ready";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
+    
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     
@@ -1115,7 +1155,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    WaitCriterion wc = new WaitCriterion() {
+    wc = new WaitCriterion() {
       public boolean done() {
         return (clientMap.size() == 4);
       }
@@ -2201,12 +2241,24 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
   private void verifyMetadata() {
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    Map<String, ClientPartitionAdvisor> regionMetaData = cms
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms
         .getClientPRMetadata_TEST_ONLY();
+    
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return (regionMetaData.size() == 4);
+      }
+
+      public String description() {
+        return "expected PRAdvisor to be ready";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 60000, 1000, true);
+    
     assertEquals(4, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    WaitCriterion wc = new WaitCriterion() {
+    wc = new WaitCriterion() {
       public boolean done() {
         return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4);
       }

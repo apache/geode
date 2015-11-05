@@ -78,8 +78,8 @@ subprojects {
   gradle.taskGraph.whenReady( { graph ->
     tasks.withType(JavaCompile).each { javac ->
       javac.configure {
-        sourceCompatibility '1.7'
-        targetCompatibility '1.7'
+        sourceCompatibility '1.8'
+        targetCompatibility '1.8'
         options.encoding = 'UTF-8'
       }
     }
@@ -95,7 +95,7 @@ subprojects {
             "Created-By"        : System.getProperty("user.name"),
             "Title"             : rootProject.name,
             "Version"           : version,
-            "Vendor"            : "Pivotal Software, Inc."
+            "Organization"      : "Apache Software Foundation (ASF)"
           )
         }
       }
@@ -285,6 +285,7 @@ subprojects {
     compile 'org.springframework:spring-webmvc:3.2.12.RELEASE'
 
     testCompile 'com.github.stefanbirkner:system-rules:1.12.1'
+    testCompile 'com.jayway.awaitility:awaitility:1.6.5'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:1.01'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:2.1.0'
@@ -384,7 +385,7 @@ subprojects {
         }
         
         maxHeapSize '768m'
-        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-XX:MaxPermSize=256M', '-ea']
+        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
 
         systemProperties = [
           'gemfire.DEFAULT_MAX_OPLOG_SIZE' : '10',
@@ -411,10 +412,13 @@ subprojects {
     }
   })
 
-  check.dependsOn integrationTest
-  check.dependsOn distributedTest 
+  // Make precheckin task run all validation tests for checking in code.
+  task precheckin (dependsOn: [ build, integrationTest, distributedTest ]) {
+    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, and distributedTest'
+  }
+
   check.dependsOn checkMissedTests
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest,checkMissedTests
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, checkMissedTests
   build.finalizedBy combineReports
   check.finalizedBy combineReports
   test.finalizedBy combineReports

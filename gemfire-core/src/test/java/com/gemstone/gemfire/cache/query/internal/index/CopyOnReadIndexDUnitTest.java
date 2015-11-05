@@ -1,20 +1,23 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
- */
 /*
- * IndexTest.java
- * JUnit based test
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Created on March 9, 2005, 3:30 PM
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.gemstone.gemfire.cache.query.internal.index;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -46,11 +49,6 @@ import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
 import dunit.VM;
 
-/**
- * 
- * @author jhuynh
- *
- */
 public class CopyOnReadIndexDUnitTest extends CacheTestCase {
 
   VM vm0;
@@ -84,6 +82,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   //test different queries against partitioned region
   public void testPRQueryOnLocalNode() throws Exception {
     QueryTestUtils utils = new QueryTestUtils();
+    configureServers();
     helpTestPRQueryOnLocalNode(utils.queries.get("545"), 100, 100, true);
     helpTestPRQueryOnLocalNode(utils.queries.get("546"), 100, 100, true);
     helpTestPRQueryOnLocalNode(utils.queries.get("543"), 100, 100, true);
@@ -100,6 +99,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   //tests different queries with a transaction for replicated region
   public void testTransactionsOnReplicatedRegion() throws Exception {
     QueryTestUtils utils = new QueryTestUtils();
+    configureServers();
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("545"), 100, 100, true);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("546"), 100, 100, true);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("543"), 100, 100, true);
@@ -113,22 +113,27 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
     helpTestTransactionsOnReplicatedRegion("select * from /portfolios p where p.ID = 1", 100, 1, false);
   }
   
+  private void configureServers() throws Exception {
+    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
+    startCacheServer(vm0, port[0], mcastPort);
+    startCacheServer(vm1, port[1], mcastPort);
+    startCacheServer(vm2, port[2], mcastPort);
+
+  }
+  
   //The tests sets up a partition region across 2 servers
   //It does puts in each server, checking instance counts of portfolio objects
   //Querying the data will result in deserialization of portfolio objects.
   //In cases where index is present, the objects will be deserialized in the cache
   public void helpTestPRQueryOnLocalNode(final String queryString, final int numPortfolios, final int numExpectedResults, final boolean hasIndex) throws Exception {
-    
-    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int numPortfoliosPerVM = numPortfolios / 2;
-    
-    startCacheServer(vm0, port[0]);
-    startCacheServer(vm1, port[1]);
-    
+  
     resetInstanceCount(vm0);
     resetInstanceCount(vm1);
     
     createPartitionRegion(vm0, "portfolios");
+    createPartitionRegion(vm1, "portfolios");
+    
     if (hasIndex) {
       vm0.invoke(new SerializableCallable() {
         public Object call() throws Exception {
@@ -138,9 +143,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         }
       });
     }
-    
-    createPartitionRegion(vm1, "portfolios");
-
+   
     vm0.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
@@ -185,6 +188,10 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
           //numPortfoliosPerVM instances of Portfolio created for put operation
           //Due to index, we have deserialized all of the entries this vm currently host
           Index index = getCache().getQueryService().getIndex(region, "idIndex");
+          if (index == null) {
+            QueryTestUtils utils = new QueryTestUtils();
+            index = utils.createIndex("idIndex", "p.ID", "/portfolios p");
+          }
           DistributedTestCase.waitForCriterion(verifyPortfolioCount((int)index.getStatistics().getNumberOfValues() + numPortfoliosPerVM), 5000, 200, true);
         }
         else {
@@ -203,7 +210,8 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         QueryService qs = getCache().getQueryService();
         Query query = qs.newQuery(queryString);
         SelectResults results = (SelectResults) query.execute();
-        assertEquals(numExpectedResults, results.size());
+        Iterator it = results.iterator();
+        assertEquals("Failed:" + queryString, numExpectedResults, results.size());
         for (Object o: results) {
           if (o instanceof Portfolio) {
             Portfolio p = (Portfolio) o;
@@ -287,14 +295,14 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         return null;
       }
     });
+    
+    destroyRegion("portfolio", vm0);
+    
   }
 
   
   public void helpTestTransactionsOnReplicatedRegion(final String queryString, final int numPortfolios, final int numExpectedResults, final boolean hasIndex) throws Exception {
-    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    startCacheServer(vm0, port[0]);
-    startCacheServer(vm1, port[1]);
-    startCacheServer(vm2, port[2]);
+
     resetInstanceCount(vm0);
     resetInstanceCount(vm1);
     resetInstanceCount(vm2);
@@ -528,6 +536,22 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
         return null;
       }
     });
+    
+    destroyRegion("portfolio", vm0);
+  }
+  
+  private void destroyRegion(String regionName, VM ...vms) {
+    for (VM vm: vms) {
+      vm.invoke(new SerializableCallable() {
+        public Object call() throws Exception {
+          QueryTestUtils utils = new QueryTestUtils();
+          utils.getCache().getQueryService().removeIndexes();
+          Region region = getCache().getRegion("/portfolios");
+          region.destroyRegion();
+          return null;
+        }
+      });
+    }
   }
  
 
@@ -561,7 +585,6 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   private void startCacheServer(VM server, final int port) throws Exception {
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        disconnectFromDS();
         getSystem(getServerProperties());
         
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
@@ -621,3 +644,4 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   
 
 }
+

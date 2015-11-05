@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.i18n;
@@ -1572,6 +1581,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
 
   //4922-4999 are now unused 
 
+<<<<<<< HEAD
   public static final StringId CacheXmlParser_NULL_DiskStoreName = new StringId(5000, "Disk Store name is configured to use null name.");
   public static final StringId CacheXmlParser_A_0_MUST_BE_DEFINED_IN_THE_CONTEXT_OF_REGIONATTRIBUTES_OR_DISKSTORE = new StringId(5001, "A  {0}  must be defined in the context of region-attributes or disk-store.");
   public static final StringId DiskStoreAttributesCreation_NUMBER_OF_DISKSIZES_IS_0_WHICH_IS_NOT_EQUAL_TO_NUMBER_OF_DISK_DIRS_WHICH_IS_1 = new StringId(5002, "Number of diskSizes is  {0}  which is not equal to number of disk Dirs which is  {1}");
@@ -1707,6 +1717,279 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId DistributedRegion_INITIALIZING_REGION_0 = new StringId(5130, "Initializing region {0}");
 
   public static final StringId CacheXmlParser_CACHEXMLPARSERENDINDEXINDEX_CREATION_ATTRIBUTE_NOT_CORRECTLY_SPECIFIED = new StringId(5131, "CacheXmlParser::endIndex:Index creation attribute not correctly specified.");
+||||||| merged common ancestors
+  public static final StringId CacheXmlParser_NULL_DiskStoreName = new StringIdImpl(5000, "Disk Store name is configured to use null name.");
+  public static final StringId CacheXmlParser_A_0_MUST_BE_DEFINED_IN_THE_CONTEXT_OF_REGIONATTRIBUTES_OR_DISKSTORE = new StringIdImpl(5001, "A  {0}  must be defined in the context of region-attributes or disk-store.");
+  public static final StringId DiskStoreAttributesCreation_NUMBER_OF_DISKSIZES_IS_0_WHICH_IS_NOT_EQUAL_TO_NUMBER_OF_DISK_DIRS_WHICH_IS_1 = new StringIdImpl(5002, "Number of diskSizes is  {0}  which is not equal to number of disk Dirs which is  {1}");
+  public static final StringId DiskStoreAttributesCreation_AUTOCOMPACT_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5003, "AutoCompact of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_COMPACTIONTHRESHOLD_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5004, "CompactionThreshold of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_ALLOWFORCECOMPACTION_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5005, "AllowForceCompaction of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId SystemAdmin_REMOVE_OPTION_HELP = new StringIdImpl(5006, "Causes the region specified by the -region=<regionName> to be removed from a disk store. Any records in the disk store for this region become garbage and will be deleted from the disk store files if compact-disk-store is called. Note that this option writes to the disk store files so use it with care.");
+  public static final StringId DiskStoreAttributesCreation_MAXOPLOGSIZE_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5007, "MaxOpLogSize of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_TIMEINTERVAL_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5008, "TimeInterval of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_WRITEBUFFERSIZE_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5009, "WriteBufferSize of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_QUEUESIZE_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5010, "QueueSize of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_DISK_DIRS_OF_0_ARE_NOT_THE_SAME = new StringIdImpl(5011, "Disk Dirs of disk store {0} are not the same");
+  public static final StringId DiskStoreAttributesCreation_DISK_DIR_SIZES_OF_0_ARE_NOT_THE_SAME = new StringIdImpl(5012, "Disk Dir Sizes of disk store {0} are not the same");
+  public static final StringId DiskStoreAttributesCreation_0_WAS_NOT_AN_EXISTING_DIRECTORY_FOR_DISKSTORE_1 = new StringIdImpl(5013, "\"{0}\" was not an existing directory for disk store {1}.");
+  public static final StringId DiskStoreAttributesCreation_DIR_SIZE_CANNOT_BE_NEGATIVE_0_FOR_DISKSTORE_1 = new StringIdImpl(5014, "Dir size cannot be negative :  {0} for disk store {1}");
+  public static final StringId DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1 = new StringIdImpl(5015, "Deprecated API {0} cannot be used with DiskStore {1}");
+  public static final StringId PartitionedRegion_REGION_WITH_PRID_0_FAILED_INITIALIZATION_ON_THIS_NODE = new StringIdImpl(5016, "Region with prId= {0}  failed initialization on this node");
+  public static final StringId PersistenceAdvisorImpl_MEMBER_REVOKED = new StringIdImpl(5017, "The following persistent member has been revoked:\n{0}");
+  public static final StringId CreatePersistentRegionProcessor_DONE_WAITING_FOR_BUCKET_MEMBERS = new StringIdImpl(5018, "Region {0} has successfully completed waiting for other members to recover the latest data.\nMy persistent member information:{1}");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_OFFLINE_BUCKET_MEMBERS = new StringIdImpl(5019, "Region {0} (and any colocated sub-regions) has potentially stale data.  Buckets {1} are waiting for another offline member to recover the latest data.\nMy persistent id is:{2}\nOffline members with potentially new data:\n{3}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId CreatePersistentRegionProcessor_SPLIT_DISTRIBUTED_SYSTEM = new StringIdImpl(5020, "Region {0} remote member {1} with persistent data {2} was not part of the same distributed system as the local data from {3}");
+  public static final StringId CreatePersistentRegionProcessor_INITIALIZING_FROM_OLD_DATA = new StringIdImpl(5021, "Region {0} refusing to initialize from member {1} with persistent data {2} which was offline when the local data from {3} was last online");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_LATEST_MEMBER = new StringIdImpl(5022, "Region {0} has potentially stale data. It is waiting for another member to recover the latest data.\nMy persistent id:\n{1}\nMembers with potentially new data:\n{2}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId PersistenceAdvisorImpl_UNABLE_TO_PERSIST_MEMBERSHIP_CHANGE = new StringIdImpl(5023, "Unable to persist membership change");
+  public static final StringId DistributedRegion_ERROR_CLEANING_UP_FAILED_INITIALIZATION = new StringIdImpl(5024, "Error cleaning up after failed region initialization of region {0}");
+  public static final StringId PartitionedRegionDataStore_DATA_OFFLINE_MESSAGE = new StringIdImpl(5025, "Region {0} bucket {1} has persistent data that is no longer online stored at these locations: {2}");
+  public static final StringId PersistenceAdvisorImpl_FINISHING_INCOMPLETE_DESTROY = new StringIdImpl(5026, "Region {0} crashed during a region destroy. Finishing the destroy.");
+  public static final StringId CacheCreation_DISKSTORE_NOTFOUND_0 = new StringIdImpl(5027, "Disk store {0} not found");
+  public static final StringId FetchEntriesMessage_ERROR_DESERIALIZING_VALUES = new StringIdImpl(5028, "Error deserializing values");
+  public static final StringId DistributedRegion_INITIALIZED_FROM_DISK = new StringIdImpl(5030, "Region {0} recovered from the local disk. Old persistent ID: {1}, new persistent ID {2}");
+  public static final StringId BackupManager_README = new StringIdImpl(5031, "This directory contains a backup of the persistent data for a single gemfire VM. The layout is:\n\ndiskstores\n\tA backup of the persistent disk stores in the VM\nuser\n\tAny files specified by the backup element in the cache.xml file.\nconfig\n\tThe cache.xml and gemfire.properties for the backed up member.\nrestore.[sh|bat]\n\tA script to restore the backup.\n\nPlease note that the config is not restored, only the diskstores and user files.");
+  public static final StringId PartitionedRegion_MULTIPLE_TARGET_NODE_FOUND_FOR = new StringIdImpl(5032, "Multiple target nodes found for single hop operation");
+  public static final StringId CqQueryImpl_Null_CQ_Result_Key_Cache_0 = new StringIdImpl(5033, "The CQ Result key cache is Null. This should not happen as the call to isPartOfCqResult() is based on the condition cqResultsCacheInitialized.");
+  public static final StringId TXState_DELTA_WITHOUT_CLONING_CANNOT_BE_USED_IN_TX = new StringIdImpl(5034, "Delta without cloning cannot be used in transaction");
+  public static final StringId SearchLoadAndWriteProcessor_UNEXPECTED_EXCEPTION = new StringIdImpl(5035, "Unexpected exception creating net search reply");
+  public static final StringId FunctionService_FUNCTION_ATTRIBUTE_MISMATCH  = new StringIdImpl(5036, "For Functions with isHA true, hasResult must also be true.");
+  public static final StringId FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER  = new StringIdImpl(5037, "Function attributes at client and server don''t match");
+  public static final StringId Region_PutAll_Applied_PartialKeys_0_1 = new StringIdImpl(5038, "Region {0} putAll: {1}");
+  public static final StringId Region_PutAll_Applied_PartialKeys_At_Server_0 = new StringIdImpl(5039, "Region {0} putAll at server applied partial keys due to exception.");
+  public static final StringId BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER = new StringIdImpl(5040, "Region {0}, bucket {1} has potentially stale data.  It is waiting for another member to recover the latest data.\nMy persistent id:\n{2}\nMembers with potentially new data:\n{3}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+
+  public static final StringId AgentConfigImpl_TCP_PORT = new StringIdImpl(5041, "TCP/IP port number to use in the agent''s distributed system");
+
+  public static final StringId PartitionRegionConfigValidator_CACHE_LOADER_IS_NULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5042, "Incompatible CacheLoader. CacheLoader is null in partitionedRegion {0} on another datastore.");
+  public static final StringId PartitionRegionConfigValidator_CACHE_LOADER_IS_NOTNULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5043, "Incompatible CacheLoader. CacheLoader is not null in partitionedRegion {0} on another datastore.");
+  public static final StringId PartitionRegionConfigValidator_CACHE_WRITER_IS_NULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5044, "Incompatible CacheWriter. CacheWriter is null in partitionedRegion {0} on another datastore.");
+  public static final StringId PartitionRegionConfigValidator_CACHE_WRITER_IS_NOTNULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5045, "Incompatible CacheWriter. CacheWriter is not null in partitionedRegion {0} on another datastore.");
+
+  public static final StringId PutAllOp_Retry_OtherException_0 = new StringIdImpl(5049, "PutAllOp : Retry failed with exception. Send back the saved succeeded keys: {0}");
+  public static final StringId CacheServerLauncher_SERVER_PORT = new StringIdImpl(5050, "<server-port>  Port the server is to listen on for client connections. This overrides the port set in the <cache-server> element of the \"cache-xml-file\"");
+  public static final StringId CacheServerLauncher_SERVER_BIND_ADDRESS = new StringIdImpl(5051, "<server-bind-address>  Address the server is to listen on for client connections. This overrides the bind-address set in the <cache-server> element of the \"cache-xml-file\"");
+  public static final StringId CacheServerLauncher_SERVER_PORT_MORE_THAN_ONE_CACHE_SERVER = new StringIdImpl(5052,"When using \"-server-port\" or \"-server-bind-address\" arguments, the \"cache-xml-file\" can not have more than one cache-server defined.");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0 = new StringIdImpl(5053, "Exception occurred for operation: {0}");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1 = new StringIdImpl(5054, "Exception occurred for operation: {0} for member: {1}");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING = new StringIdImpl(5055, "Exception occurred while intializing.");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING = new StringIdImpl(5056, "Exception occurred while intializing : {0}. Contiuning with next  ...");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_REGISTERING_NOTIFICATION_LISTENER_FOR_0 = new StringIdImpl(5057, "Exception while registering notification listener for: {0}");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0 = new StringIdImpl(5058, "Exception while unregistering notification listener for: {0}");
+  public static final StringId AgentImpl_FAILED_TO_INITIALIZE_MEMBERINFOWITHSTATSMBEAN = new StringIdImpl(5059, "Failed to initialize MemberInfoWithStatsMBean.");
+
+
+  public static final StringId PoolManagerImpl_ONLY_DURABLE_CLIENTS_SHOULD_CALL_READYFOREVENTS = new StringIdImpl(5060, "Only durable clients should call readyForEvents()");
+  public static final StringId LocalRegion_DURABLE_FLAG_ONLY_APPLICABLE_FOR_DURABLE_CLIENTS = new StringIdImpl(5061, "Durable flag only applicable for durable clients.");
+  public static final StringId DistributedRegion_NEW_PERSISTENT_REGION_CREATED = new StringIdImpl(5062, "Region {0} was created on this member with the persistent id {1}.");
+  public static final StringId InitialImageOperation_REGION_0_INITIALIZED_PERSISTENT_REGION_WITH_ID_1_FROM_2 = new StringIdImpl(5063, "Region {0} initialized persistent id: {1} with data from {2}.");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0 = new StringIdImpl(5064, "Exception while initializing statistics for: {0}");
+  public static final StringId MemberInfoWithStatsMBean_REINITIALIZING_STATS_FOR_0 = new StringIdImpl(5065, "Re-initializing statistics for: {0}");
+
+  public static final StringId PartitionAttributesImpl_FIXED_PARTITION_NAME_CANNOT_BE_NULL = new StringIdImpl(5066, "Fixed partition name cannot be null");
+  public static final StringId PartitionAttributesImpl_PARTITION_NAME_0_CAN_BE_ADDED_ONLY_ONCE_IN_FIXED_PARTITION_ATTRIBUTES = new StringIdImpl(5067, "Partition name \"{0}\" can be added only once in FixedPartitionAttributes");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_SAME_PARTITION_NAME_1_CANNOT_BE_DEFINED_AS_PRIMARY_ON_MORE_THAN_ONE_NODE = new StringIdImpl(5068, "For region \"{0}\", same partition name \"{1}\" can not be defined as primary on more than one node.");
+  public static final StringId PartitionAttributesImpl_FIXED_PARTITION_ATTRBUTES_0_CANNOT_BE_DEFINED_FOR_ACCESSOR = new StringIdImpl(5069, "FixedPartitionAttributes \"{0}\" can not be defined for accessor");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_NUMBER_OF_SECONDARY_PARTITIONS_1_OF_A_PARTITION_2_SHOULD_NEVER_EXCEED_NUMBER_OF_REDUNDANT_COPIES_3 = new StringIdImpl(5070, "For region \"{0}\", number of secondary partitions {1} of a partition \"{2}\" should never exceed number of redundant copies {3}.");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_SUM_OF_NUM_BUCKETS_1_FOR_DIFFERENT_PRIMARY_PARTITIONS_SHOULD_NOT_BE_GREATER_THAN_TOTAL_NUM_BUCKETS_2 = new StringIdImpl(5071, "For region \"{0}\",sum of num-buckets {1} for different primary partitions should not be greater than total-num-buckets {2}.");
+  public static final StringId FOR_FIXED_PARTITION_REGION_0_PARTITION_1_IS_NOT_YET_INITIALIZED_ON_DATASTORE = new StringIdImpl(5072, "For FixedPartitionedRegion \"{0}\", Partition \"{1}\" is not yet initialized on datastore");
+  public static final StringId AbstractDistributionConfig_MEMCACHED_PROTOCOL_MUST_BE_ASCII_OR_BINARY = new StringIdImpl(5073, "memcached-protocol must be \"ASCII\" or \"BINARY\" ");
+
+  public static final StringId Disk_Store_Exception_During_Cache_Close = new StringIdImpl(5074, "Cache close caught an exception during disk store close");
+  public static final StringId PoolManagerImpl_ONLY_DURABLE_CLIENTS_SHOULD_CALL_GETPENDINGEVENTCOUNT = new StringIdImpl(5075, "Only durable clients should call getPendingEventCount()");
+  public static final StringId PartitionAttributesImpl_IF_COLOCATED_WITH_IS_SPECFIED_THEN_FIXED_PARTITION_ATTRIBUTES_CAN_NOT_BE_SPECIFIED = new StringIdImpl(5077, "FixedPartitionAttributes \"{0}\" can not be specified in PartitionAttributesFactory if colocated-with is specified. ");
+  public static final StringId PartitionedRegionHelper_FOR_REGION_0_FOR_PARTITION_1_PARTITIION_NUM_BUCKETS_ARE_SET_TO_0_BUCKETS_CANNOT_BE_CREATED_ON_THIS_MEMBER = new StringIdImpl(5078, "For region \"{0}\", For partition \"{1}\" partition-num-buckets is set to 0. Buckets cann not be created on this partition.");
+  public static final StringId PartitionedRegionHelper_FOR_REGION_0_PARTITION_NAME_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE = new StringIdImpl(5079, "For region \"{0}\", partition name \"{1}\" is not available on any datastore.");
+  public static final StringId PartitionedRegionHelper_FOR_REGION_0_PARTITIONRESOLVER_1_RETURNED_PARTITION_NAME_NULL = new StringIdImpl(5080, "For region \"{0}\", partition resolver {1} returned partition name null");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_FOR_PARTITION_1_NUM_BUCKETS_ARE_NOT_SAME_ACROSS_NODES = new StringIdImpl(5081, "For region \"{0}\",for partition \"{1}\", num-buckets are not same ({2}, {3})across nodes.");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_RESOLVER_IS_NOT_AVAILABLE = new StringIdImpl(5082, "For FixedPartitionedRegion \"{0}\", FixedPartitionResolver is not available (neither through the partition attribute partition-resolver nor key/callbackArg implementing FixedPartitionResolver)");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_RESOLVER_DEFINED_1_IS_NOT_AN_INSTANCE_OF_FIXEDPARTITIONRESOLVER = new StringIdImpl(5083, "For FixedPartitionedRegion \"{0}\", Resolver defined {1} is not an instance of FixedPartitionResolver");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_IS_NOT_AVAILABLE_FOR_BUCKET_1_ON_ANY_DATASTORE = new StringIdImpl(5084, "For FixedPartitionedRegion \"{0}\", Fixed partition is not defined for bucket id {1} on any datastore");
+  public static final StringId PartitionedRegionConfigValidator_FIXED_PARTITION_REGION_ONE_DATASTORE_IS_WITHOUTFPA = new StringIdImpl(5085, "Region \"{0}\" uses fixed partitioning but at least one datastore node (localMaxMemory > 0) has no fixed partitions. Please make sure that each datastore creating this region is configured with at least one fixed partition.");
+  public static final StringId FixedPartitionManager_BUCKETID_ARG_PR_ARG2 = new StringIdImpl(5086, "Bucket id {0} is not part of any primary partition on this node for the FixedPartitionRegion {1}.");
+  public static final StringId LocalDataSet_THE_FOLLOWING_EXCEPTION_OCCURRED_ATTEMPTING_TO_GET_KEY_0 = new StringIdImpl(5087, "The following exception occurred attempting to get key={0}");
+  public static final StringId PartitionRegionHelper_ARGUMENT_REGION_IS_NULL= new StringIdImpl(5088, "Argument ''Region'' is null");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE = new StringIdImpl(5089, "For FixedPartitionedRegion \"{0}\", partition \"{1}\" is not available on any datastore.");
+  public static final StringId CacheServerLauncher_DISABLE_DEFAULT_SERVER = new StringIdImpl(5090, "-disable-default-server  Do not add a default <cache-server>");
+  public static final StringId Oplog_REMOVING_INCOMPLETE_KRF = new StringIdImpl(5091, "Removing incomplete krf {0} for oplog {1}, disk store \"{2}\"");
+  public static final StringId PlaceHolderDiskRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_RECOVERING_FROM_DISK = new StringIdImpl(5092, "A DiskAccessException has occurred while recovering values asynchronously from disk for region {0}.");
+  public static final StringId PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2 = new StringIdImpl(5093, "For partition region \"{0}\",total-num-buckets {1} should not be changed. Previous configured number is {2}.");
+  public static final StringId GatewayImpl_UnknownHost = new StringIdImpl(5094, "Unknown Host");
+  public static final StringId PR_CONTAINSVALUE_WARNING = new StringIdImpl(5095, "PR containsValue warning. Got an exception while executing function");
+  public static final StringId MultiUserSecurityEnabled_USE_POOL_API = new StringIdImpl(5096,"Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
+  public static final StringId SystemMemberJmxImpl_EXCEPTION_OCCURRED_WHILE_INITIALIZING_0_MBEANS_FOR_1 = new StringIdImpl(5097, "Exception occurred while initializing {0} MBean for member: {1}");
+  public static final StringId SystemMemberJmxImpl_CACHE_INSTANCE_NOT_FOUND_IN_0 = new StringIdImpl(5098, "Cache instance not found in {0}");
+  public static final StringId GetFunctionAttribute_THE_INPUT_0_FOR_GET_FUNCTION_ATTRIBUTE_REQUEST_IS_NULL = new StringIdImpl(5099, "The input {0} for GetFunctionAttributes request is null");
+  public static final StringId GetFunctionAttribute_THE_FUNCTION_IS_NOT_REGISTERED_FOR_FUNCTION_ID_0 = new StringIdImpl(5100, "The function is not registered for function id {0}");
+  public static final StringId CacheXmlPropertyResolver_UNSEROLVAVLE_STRING_FORMAT_ERROR__0 = new StringIdImpl(5101, "Format of the string \"{0}\" used for perameterization is unresolvable");
+  public static final StringId CacheXmlPropertyResolverHelper_SOME_UNRESOLVED_STRING_REPLACED_CIRCULAR_ERROR__0 = new StringIdImpl(5102, "Some still unresolved string \"{0}\"was replaced by resolver, leading to circular references.");
+  public static final StringId AgentLauncher_UNABLE_TO_DELETE_FILE_0 = new StringIdImpl(5103,"Unable to delete file {0}.");
+  public static final StringId AgentLauncher_0_IS_NOT_RUNNING_IN_SPECIFIED_WORKING_DIRECTORY_1 = new StringIdImpl(5104,"{0} is not running in the specified working directory: ({1}).");
+  public static final StringId AgentLauncher_SEE_LOG_FILE_FOR_DETAILS = new StringIdImpl(5105, "See log file for details.");
+  public static final StringId AgentLauncher_SHUTDOWN_PENDING_AFTER_FAILED_STARTUP = new StringIdImpl(5106, "shutdown pending after failed startup");
+  public static final StringId MBeanUtil_MBEAN_SERVER_NOT_INITIALIZED_YET = new StringIdImpl(5107, "MBean Server is not initialized yet.");
+  public static final StringId MBeanUtil_FAILED_TO_FIND_0 = new StringIdImpl(5108, "Failed to find {0}");
+  public static final StringId MBeanUtil_FAILED_TO_LOAD_0 = new StringIdImpl(5109, "Failed to load metadata from {0}");
+  public static final StringId MBeanUtil_COULDNT_FIND_MBEAN_REGISTERED_WITH_OBJECTNAME_0 = new StringIdImpl(5110, "Could not find a MBean registered with ObjectName: {0}.");
+  public static final StringId MBeanUtil_COULD_NOT_FIND_REGISTERED_REFRESHTIMER_INSTANCE = new StringIdImpl(5111, "Could not find registered RefreshTimer instance.");
+  public static final StringId MBeanUtil_FAILED_TO_CREATE_REFRESH_TIMER = new StringIdImpl(5112, "Failed to create/register/start refresh timer.");
+  public static final StringId MBeanUtil_FAILED_TO_REGISTER_SERVERNOTIFICATIONLISTENER = new StringIdImpl(5113, "Failed to register ServerNotificationListener.");
+  public static final StringId AbstractDistributionConfig_USERDEFINED_PREFIX_NAME = new StringIdImpl(5114, "Prefix for \"user defined\" properties which are used for replacements in Cache.xml. Neither key nor value can be NULL. Legal tags can be [custom-any-string] and Legal values can be any string data.");
+  public static final StringId DataSerializer_COULD_NOT_DESERIALIZE_PDX_INSTANCE_WITH_STREAM_0 = new StringIdImpl(5115, "Could not deserialize PDX instance with stream {0}");
+  public static final StringId DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0 = new StringIdImpl(5116, "Could not create an instance of a class {0}");
+  public static final StringId StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_DISTRIBUTED_SYSTEM_ID_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_2_IT_IS_ATTEMPTING_TO_JOIN = new StringIdImpl(5117, "Rejected new system node {0} because distributed-system-id={1} does not match the distributed system {2} it is attempting to join.");
+  public static final StringId CacheXmlParser_A_0_IS_NOT_AN_INSTANCE_OF_A_PDX_SERIALIZER = new StringIdImpl(5118, "A  {0}  is not an instance of a PdxSerializer.");
+  public static final StringId DistributionManager_RUNNING_IN_VMWARE_VM = new StringIdImpl(5119, "This member is running in a VMWare VM. Using physical host token {0} for redundancy zone");
+  public static final StringId MBeanUtil_FAILED_WHILE_UNREGISTERING_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5120, "Failed while unregistering MBean with ObjectName : {0}");
+  public static final StringId MBeanUtil_WHILE_UNREGISTERING_COULDNT_FIND_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5121, "While unregistering, could not find MBean with ObjectName : {0}");
+  public static final StringId MBeanUtil_COULD_NOT_UNREGISTER_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5122, "Could not un-register MBean with ObjectName : {0}");
+  public static final StringId AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_REQUEST_REJECTED_BY_POOL = new StringIdImpl(5123, "Rejected connection from {0} because incoming request was rejected by pool possibly due to thread exhaustion");
+  public static final StringId GatewayImpl_GATEWAY_SOCKET_READ_TIMEOUT_DISABLED = new StringIdImpl(5124, "Setting the socket read timeout on a gateway is currently disabled. Please contact Pivotal support for assistance.");
+  public static final StringId EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION = new StringIdImpl(5125, "Function execution without result encountered an Exception on server.");
+  public static final StringId ConnectionFactoryImpl_POOL_0_IS_NOT_AVAILABLE = new StringIdImpl(5126, "Pool {0} is not available");
+  public static final StringId CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3 = new StringIdImpl(5128, "Cannot create region {0} with off-heap={1} because another cache ({2}) has the same region with off-heap={3}.");
+
+  public static final StringId ConnectionTable_OUT_OF_FILE_DESCRIPTORS_USING_SHARED_CONNECTION = new StringIdImpl(5129, "This process is out of file descriptors.\nThis will hamper communications and slow down the system.\nAny conserve-sockets setting is now being ignored.\nPlease consider raising the descriptor limit.\nThis alert is only issued once per process.");
+  public static final StringId DistributedRegion_INITIALIZING_REGION_0 = new StringIdImpl(5130, "Initializing region {0}");
+
+  public static final StringId CacheXmlParser_CACHEXMLPARSERENDINDEXINDEX_CREATION_ATTRIBUTE_NOT_CORRECTLY_SPECIFIED = new StringIdImpl(5131, "CacheXmlParser::endIndex:Index creation attribute not correctly specified.");
+=======
+  public static final StringId CacheXmlParser_NULL_DiskStoreName = new StringIdImpl(5000, "Disk Store name is configured to use null name.");
+  public static final StringId CacheXmlParser_A_0_MUST_BE_DEFINED_IN_THE_CONTEXT_OF_REGIONATTRIBUTES_OR_DISKSTORE = new StringIdImpl(5001, "A  {0}  must be defined in the context of region-attributes or disk-store.");
+  public static final StringId DiskStoreAttributesCreation_NUMBER_OF_DISKSIZES_IS_0_WHICH_IS_NOT_EQUAL_TO_NUMBER_OF_DISK_DIRS_WHICH_IS_1 = new StringIdImpl(5002, "Number of diskSizes is  {0}  which is not equal to number of disk Dirs which is  {1}");
+  public static final StringId DiskStoreAttributesCreation_AUTOCOMPACT_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5003, "AutoCompact of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_COMPACTIONTHRESHOLD_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5004, "CompactionThreshold of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_ALLOWFORCECOMPACTION_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5005, "AllowForceCompaction of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId SystemAdmin_REMOVE_OPTION_HELP = new StringIdImpl(5006, "Causes the region specified by the -region=<regionName> to be removed from a disk store. Any records in the disk store for this region become garbage and will be deleted from the disk store files if compact-disk-store is called. Note that this option writes to the disk store files so use it with care.");
+  public static final StringId DiskStoreAttributesCreation_MAXOPLOGSIZE_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5007, "MaxOpLogSize of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_TIMEINTERVAL_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5008, "TimeInterval of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_WRITEBUFFERSIZE_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5009, "WriteBufferSize of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_QUEUESIZE_OF_0_IS_NOT_THE_SAME_THIS_1_OTHER_2 = new StringIdImpl(5010, "QueueSize of disk store {0} is not the same: this:  {1}  other:  {2}");
+  public static final StringId DiskStoreAttributesCreation_DISK_DIRS_OF_0_ARE_NOT_THE_SAME = new StringIdImpl(5011, "Disk Dirs of disk store {0} are not the same");
+  public static final StringId DiskStoreAttributesCreation_DISK_DIR_SIZES_OF_0_ARE_NOT_THE_SAME = new StringIdImpl(5012, "Disk Dir Sizes of disk store {0} are not the same");
+  public static final StringId DiskStoreAttributesCreation_0_WAS_NOT_AN_EXISTING_DIRECTORY_FOR_DISKSTORE_1 = new StringIdImpl(5013, "\"{0}\" was not an existing directory for disk store {1}.");
+  public static final StringId DiskStoreAttributesCreation_DIR_SIZE_CANNOT_BE_NEGATIVE_0_FOR_DISKSTORE_1 = new StringIdImpl(5014, "Dir size cannot be negative :  {0} for disk store {1}");
+  public static final StringId DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1 = new StringIdImpl(5015, "Deprecated API {0} cannot be used with DiskStore {1}");
+  public static final StringId PartitionedRegion_REGION_WITH_PRID_0_FAILED_INITIALIZATION_ON_THIS_NODE = new StringIdImpl(5016, "Region with prId= {0}  failed initialization on this node");
+  public static final StringId PersistenceAdvisorImpl_MEMBER_REVOKED = new StringIdImpl(5017, "The following persistent member has been revoked:\n{0}");
+  public static final StringId CreatePersistentRegionProcessor_DONE_WAITING_FOR_BUCKET_MEMBERS = new StringIdImpl(5018, "Region {0} has successfully completed waiting for other members to recover the latest data.\nMy persistent member information:{1}");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_OFFLINE_BUCKET_MEMBERS = new StringIdImpl(5019, "Region {0} (and any colocated sub-regions) has potentially stale data.  Buckets {1} are waiting for another offline member to recover the latest data.\nMy persistent id is:{2}\nOffline members with potentially new data:\n{3}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId CreatePersistentRegionProcessor_SPLIT_DISTRIBUTED_SYSTEM = new StringIdImpl(5020, "Region {0} remote member {1} with persistent data {2} was not part of the same distributed system as the local data from {3}");
+  public static final StringId CreatePersistentRegionProcessor_INITIALIZING_FROM_OLD_DATA = new StringIdImpl(5021, "Region {0} refusing to initialize from member {1} with persistent data {2} which was offline when the local data from {3} was last online");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_LATEST_MEMBER = new StringIdImpl(5022, "Region {0} has potentially stale data. It is waiting for another member to recover the latest data.\nMy persistent id:\n{1}\nMembers with potentially new data:\n{2}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId PersistenceAdvisorImpl_UNABLE_TO_PERSIST_MEMBERSHIP_CHANGE = new StringIdImpl(5023, "Unable to persist membership change");
+  public static final StringId DistributedRegion_ERROR_CLEANING_UP_FAILED_INITIALIZATION = new StringIdImpl(5024, "Error cleaning up after failed region initialization of region {0}");
+  public static final StringId PartitionedRegionDataStore_DATA_OFFLINE_MESSAGE = new StringIdImpl(5025, "Region {0} bucket {1} has persistent data that is no longer online stored at these locations: {2}");
+  public static final StringId PersistenceAdvisorImpl_FINISHING_INCOMPLETE_DESTROY = new StringIdImpl(5026, "Region {0} crashed during a region destroy. Finishing the destroy.");
+  public static final StringId CacheCreation_DISKSTORE_NOTFOUND_0 = new StringIdImpl(5027, "Disk store {0} not found");
+  public static final StringId FetchEntriesMessage_ERROR_DESERIALIZING_VALUES = new StringIdImpl(5028, "Error deserializing values");
+  public static final StringId DistributedRegion_INITIALIZED_FROM_DISK = new StringIdImpl(5030, "Region {0} recovered from the local disk. Old persistent ID: {1}, new persistent ID {2}");
+  public static final StringId BackupManager_README = new StringIdImpl(5031, "This directory contains a backup of the persistent data for a single gemfire VM. The layout is:\n\ndiskstores\n\tA backup of the persistent disk stores in the VM\nuser\n\tAny files specified by the backup element in the cache.xml file.\nconfig\n\tThe cache.xml and gemfire.properties for the backed up member.\nrestore.[sh|bat]\n\tA script to restore the backup.\n\nPlease note that the config is not restored, only the diskstores and user files.");
+  public static final StringId PartitionedRegion_MULTIPLE_TARGET_NODE_FOUND_FOR = new StringIdImpl(5032, "Multiple target nodes found for single hop operation");
+  public static final StringId CqQueryImpl_Null_CQ_Result_Key_Cache_0 = new StringIdImpl(5033, "The CQ Result key cache is Null. This should not happen as the call to isPartOfCqResult() is based on the condition cqResultsCacheInitialized.");
+  public static final StringId TXState_DELTA_WITHOUT_CLONING_CANNOT_BE_USED_IN_TX = new StringIdImpl(5034, "Delta without cloning cannot be used in transaction");
+  public static final StringId SearchLoadAndWriteProcessor_UNEXPECTED_EXCEPTION = new StringIdImpl(5035, "Unexpected exception creating net search reply");
+  public static final StringId FunctionService_FUNCTION_ATTRIBUTE_MISMATCH  = new StringIdImpl(5036, "For Functions with isHA true, hasResult must also be true.");
+  public static final StringId FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER  = new StringIdImpl(5037, "Function attributes at client and server don''t match");
+  public static final StringId Region_PutAll_Applied_PartialKeys_0_1 = new StringIdImpl(5038, "Region {0} putAll: {1}");
+  public static final StringId Region_PutAll_Applied_PartialKeys_At_Server_0 = new StringIdImpl(5039, "Region {0} putAll at server applied partial keys due to exception.");
+  public static final StringId BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER = new StringIdImpl(5040, "Region {0}, bucket {1} has potentially stale data.  It is waiting for another member to recover the latest data.\nMy persistent id:\n{2}\nMembers with potentially new data:\n{3}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+
+  public static final StringId AgentConfigImpl_TCP_PORT = new StringIdImpl(5041, "TCP/IP port number to use in the agent''s distributed system");
+
+  public static final StringId PartitionRegionConfigValidator_CACHE_LOADER_IS_NULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5042, "Incompatible CacheLoader. CacheLoader is null in partitionedRegion {0} on another datastore.");
+  public static final StringId PartitionRegionConfigValidator_CACHE_LOADER_IS_NOTNULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5043, "Incompatible CacheLoader. CacheLoader is not null in partitionedRegion {0} on another datastore.");
+  public static final StringId PartitionRegionConfigValidator_CACHE_WRITER_IS_NULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5044, "Incompatible CacheWriter. CacheWriter is null in partitionedRegion {0} on another datastore.");
+  public static final StringId PartitionRegionConfigValidator_CACHE_WRITER_IS_NOTNULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE = new StringIdImpl(5045, "Incompatible CacheWriter. CacheWriter is not null in partitionedRegion {0} on another datastore.");
+
+  public static final StringId PutAllOp_Retry_OtherException_0 = new StringIdImpl(5049, "PutAllOp : Retry failed with exception. Send back the saved succeeded keys: {0}");
+  public static final StringId CacheServerLauncher_SERVER_PORT = new StringIdImpl(5050, "<server-port>  Port the server is to listen on for client connections. This overrides the port set in the <cache-server> element of the \"cache-xml-file\"");
+  public static final StringId CacheServerLauncher_SERVER_BIND_ADDRESS = new StringIdImpl(5051, "<server-bind-address>  Address the server is to listen on for client connections. This overrides the bind-address set in the <cache-server> element of the \"cache-xml-file\"");
+  public static final StringId CacheServerLauncher_SERVER_PORT_MORE_THAN_ONE_CACHE_SERVER = new StringIdImpl(5052,"When using \"-server-port\" or \"-server-bind-address\" arguments, the \"cache-xml-file\" can not have more than one cache-server defined.");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0 = new StringIdImpl(5053, "Exception occurred for operation: {0}");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1 = new StringIdImpl(5054, "Exception occurred for operation: {0} for member: {1}");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING = new StringIdImpl(5055, "Exception occurred while intializing.");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING = new StringIdImpl(5056, "Exception occurred while intializing : {0}. Contiuning with next  ...");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_REGISTERING_NOTIFICATION_LISTENER_FOR_0 = new StringIdImpl(5057, "Exception while registering notification listener for: {0}");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0 = new StringIdImpl(5058, "Exception while unregistering notification listener for: {0}");
+  public static final StringId AgentImpl_FAILED_TO_INITIALIZE_MEMBERINFOWITHSTATSMBEAN = new StringIdImpl(5059, "Failed to initialize MemberInfoWithStatsMBean.");
+
+
+  public static final StringId PoolManagerImpl_ONLY_DURABLE_CLIENTS_SHOULD_CALL_READYFOREVENTS = new StringIdImpl(5060, "Only durable clients should call readyForEvents()");
+  public static final StringId LocalRegion_DURABLE_FLAG_ONLY_APPLICABLE_FOR_DURABLE_CLIENTS = new StringIdImpl(5061, "Durable flag only applicable for durable clients.");
+  public static final StringId DistributedRegion_NEW_PERSISTENT_REGION_CREATED = new StringIdImpl(5062, "Region {0} was created on this member with the persistent id {1}.");
+  public static final StringId InitialImageOperation_REGION_0_INITIALIZED_PERSISTENT_REGION_WITH_ID_1_FROM_2 = new StringIdImpl(5063, "Region {0} initialized persistent id: {1} with data from {2}.");
+  public static final StringId MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0 = new StringIdImpl(5064, "Exception while initializing statistics for: {0}");
+  public static final StringId MemberInfoWithStatsMBean_REINITIALIZING_STATS_FOR_0 = new StringIdImpl(5065, "Re-initializing statistics for: {0}");
+
+  public static final StringId PartitionAttributesImpl_FIXED_PARTITION_NAME_CANNOT_BE_NULL = new StringIdImpl(5066, "Fixed partition name cannot be null");
+  public static final StringId PartitionAttributesImpl_PARTITION_NAME_0_CAN_BE_ADDED_ONLY_ONCE_IN_FIXED_PARTITION_ATTRIBUTES = new StringIdImpl(5067, "Partition name \"{0}\" can be added only once in FixedPartitionAttributes");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_SAME_PARTITION_NAME_1_CANNOT_BE_DEFINED_AS_PRIMARY_ON_MORE_THAN_ONE_NODE = new StringIdImpl(5068, "For region \"{0}\", same partition name \"{1}\" can not be defined as primary on more than one node.");
+  public static final StringId PartitionAttributesImpl_FIXED_PARTITION_ATTRBUTES_0_CANNOT_BE_DEFINED_FOR_ACCESSOR = new StringIdImpl(5069, "FixedPartitionAttributes \"{0}\" can not be defined for accessor");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_NUMBER_OF_SECONDARY_PARTITIONS_1_OF_A_PARTITION_2_SHOULD_NEVER_EXCEED_NUMBER_OF_REDUNDANT_COPIES_3 = new StringIdImpl(5070, "For region \"{0}\", number of secondary partitions {1} of a partition \"{2}\" should never exceed number of redundant copies {3}.");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_SUM_OF_NUM_BUCKETS_1_FOR_DIFFERENT_PRIMARY_PARTITIONS_SHOULD_NOT_BE_GREATER_THAN_TOTAL_NUM_BUCKETS_2 = new StringIdImpl(5071, "For region \"{0}\",sum of num-buckets {1} for different primary partitions should not be greater than total-num-buckets {2}.");
+  public static final StringId FOR_FIXED_PARTITION_REGION_0_PARTITION_1_IS_NOT_YET_INITIALIZED_ON_DATASTORE = new StringIdImpl(5072, "For FixedPartitionedRegion \"{0}\", Partition \"{1}\" is not yet initialized on datastore");
+  public static final StringId AbstractDistributionConfig_MEMCACHED_PROTOCOL_MUST_BE_ASCII_OR_BINARY = new StringIdImpl(5073, "memcached-protocol must be \"ASCII\" or \"BINARY\" ");
+
+  public static final StringId Disk_Store_Exception_During_Cache_Close = new StringIdImpl(5074, "Cache close caught an exception during disk store close");
+  public static final StringId PoolManagerImpl_ONLY_DURABLE_CLIENTS_SHOULD_CALL_GETPENDINGEVENTCOUNT = new StringIdImpl(5075, "Only durable clients should call getPendingEventCount()");
+  public static final StringId PartitionAttributesImpl_IF_COLOCATED_WITH_IS_SPECFIED_THEN_FIXED_PARTITION_ATTRIBUTES_CAN_NOT_BE_SPECIFIED = new StringIdImpl(5077, "FixedPartitionAttributes \"{0}\" can not be specified in PartitionAttributesFactory if colocated-with is specified. ");
+  public static final StringId PartitionedRegionHelper_FOR_REGION_0_FOR_PARTITION_1_PARTITIION_NUM_BUCKETS_ARE_SET_TO_0_BUCKETS_CANNOT_BE_CREATED_ON_THIS_MEMBER = new StringIdImpl(5078, "For region \"{0}\", For partition \"{1}\" partition-num-buckets is set to 0. Buckets cann not be created on this partition.");
+  public static final StringId PartitionedRegionHelper_FOR_REGION_0_PARTITION_NAME_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE = new StringIdImpl(5079, "For region \"{0}\", partition name \"{1}\" is not available on any datastore.");
+  public static final StringId PartitionedRegionHelper_FOR_REGION_0_PARTITIONRESOLVER_1_RETURNED_PARTITION_NAME_NULL = new StringIdImpl(5080, "For region \"{0}\", partition resolver {1} returned partition name null");
+  public static final StringId PartitionedRegionConfigValidator_FOR_REGION_0_FOR_PARTITION_1_NUM_BUCKETS_ARE_NOT_SAME_ACROSS_NODES = new StringIdImpl(5081, "For region \"{0}\",for partition \"{1}\", num-buckets are not same ({2}, {3})across nodes.");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_RESOLVER_IS_NOT_AVAILABLE = new StringIdImpl(5082, "For FixedPartitionedRegion \"{0}\", FixedPartitionResolver is not available (neither through the partition attribute partition-resolver nor key/callbackArg implementing FixedPartitionResolver)");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_RESOLVER_DEFINED_1_IS_NOT_AN_INSTANCE_OF_FIXEDPARTITIONRESOLVER = new StringIdImpl(5083, "For FixedPartitionedRegion \"{0}\", Resolver defined {1} is not an instance of FixedPartitionResolver");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_IS_NOT_AVAILABLE_FOR_BUCKET_1_ON_ANY_DATASTORE = new StringIdImpl(5084, "For FixedPartitionedRegion \"{0}\", Fixed partition is not defined for bucket id {1} on any datastore");
+  public static final StringId PartitionedRegionConfigValidator_FIXED_PARTITION_REGION_ONE_DATASTORE_IS_WITHOUTFPA = new StringIdImpl(5085, "Region \"{0}\" uses fixed partitioning but at least one datastore node (localMaxMemory > 0) has no fixed partitions. Please make sure that each datastore creating this region is configured with at least one fixed partition.");
+  public static final StringId FixedPartitionManager_BUCKETID_ARG_PR_ARG2 = new StringIdImpl(5086, "Bucket id {0} is not part of any primary partition on this node for the FixedPartitionRegion {1}.");
+  public static final StringId LocalDataSet_THE_FOLLOWING_EXCEPTION_OCCURRED_ATTEMPTING_TO_GET_KEY_0 = new StringIdImpl(5087, "The following exception occurred attempting to get key={0}");
+  public static final StringId PartitionRegionHelper_ARGUMENT_REGION_IS_NULL= new StringIdImpl(5088, "Argument ''Region'' is null");
+  public static final StringId PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE = new StringIdImpl(5089, "For FixedPartitionedRegion \"{0}\", partition \"{1}\" is not available on any datastore.");
+  public static final StringId CacheServerLauncher_DISABLE_DEFAULT_SERVER = new StringIdImpl(5090, "-disable-default-server  Do not add a default <cache-server>");
+  public static final StringId Oplog_REMOVING_INCOMPLETE_KRF = new StringIdImpl(5091, "Removing incomplete krf {0} for oplog {1}, disk store \"{2}\"");
+  public static final StringId PlaceHolderDiskRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_RECOVERING_FROM_DISK = new StringIdImpl(5092, "A DiskAccessException has occurred while recovering values asynchronously from disk for region {0}.");
+  public static final StringId PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2 = new StringIdImpl(5093, "For partition region \"{0}\",total-num-buckets {1} should not be changed. Previous configured number is {2}.");
+  public static final StringId GatewayImpl_UnknownHost = new StringIdImpl(5094, "Unknown Host");
+  public static final StringId PR_CONTAINSVALUE_WARNING = new StringIdImpl(5095, "PR containsValue warning. Got an exception while executing function");
+  public static final StringId MultiUserSecurityEnabled_USE_POOL_API = new StringIdImpl(5096,"Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
+  public static final StringId SystemMemberJmxImpl_EXCEPTION_OCCURRED_WHILE_INITIALIZING_0_MBEANS_FOR_1 = new StringIdImpl(5097, "Exception occurred while initializing {0} MBean for member: {1}");
+  public static final StringId SystemMemberJmxImpl_CACHE_INSTANCE_NOT_FOUND_IN_0 = new StringIdImpl(5098, "Cache instance not found in {0}");
+  public static final StringId GetFunctionAttribute_THE_INPUT_0_FOR_GET_FUNCTION_ATTRIBUTE_REQUEST_IS_NULL = new StringIdImpl(5099, "The input {0} for GetFunctionAttributes request is null");
+  public static final StringId GetFunctionAttribute_THE_FUNCTION_IS_NOT_REGISTERED_FOR_FUNCTION_ID_0 = new StringIdImpl(5100, "The function is not registered for function id {0}");
+  public static final StringId CacheXmlPropertyResolver_UNSEROLVAVLE_STRING_FORMAT_ERROR__0 = new StringIdImpl(5101, "Format of the string \"{0}\" used for perameterization is unresolvable");
+  public static final StringId CacheXmlPropertyResolverHelper_SOME_UNRESOLVED_STRING_REPLACED_CIRCULAR_ERROR__0 = new StringIdImpl(5102, "Some still unresolved string \"{0}\"was replaced by resolver, leading to circular references.");
+  public static final StringId AgentLauncher_UNABLE_TO_DELETE_FILE_0 = new StringIdImpl(5103,"Unable to delete file {0}.");
+  public static final StringId AgentLauncher_0_IS_NOT_RUNNING_IN_SPECIFIED_WORKING_DIRECTORY_1 = new StringIdImpl(5104,"{0} is not running in the specified working directory: ({1}).");
+  public static final StringId AgentLauncher_SEE_LOG_FILE_FOR_DETAILS = new StringIdImpl(5105, "See log file for details.");
+  public static final StringId AgentLauncher_SHUTDOWN_PENDING_AFTER_FAILED_STARTUP = new StringIdImpl(5106, "shutdown pending after failed startup");
+  public static final StringId MBeanUtil_MBEAN_SERVER_NOT_INITIALIZED_YET = new StringIdImpl(5107, "MBean Server is not initialized yet.");
+  public static final StringId MBeanUtil_FAILED_TO_FIND_0 = new StringIdImpl(5108, "Failed to find {0}");
+  public static final StringId MBeanUtil_FAILED_TO_LOAD_0 = new StringIdImpl(5109, "Failed to load metadata from {0}");
+  public static final StringId MBeanUtil_COULDNT_FIND_MBEAN_REGISTERED_WITH_OBJECTNAME_0 = new StringIdImpl(5110, "Could not find a MBean registered with ObjectName: {0}.");
+  public static final StringId MBeanUtil_COULD_NOT_FIND_REGISTERED_REFRESHTIMER_INSTANCE = new StringIdImpl(5111, "Could not find registered RefreshTimer instance.");
+  public static final StringId MBeanUtil_FAILED_TO_CREATE_REFRESH_TIMER = new StringIdImpl(5112, "Failed to create/register/start refresh timer.");
+  public static final StringId MBeanUtil_FAILED_TO_REGISTER_SERVERNOTIFICATIONLISTENER = new StringIdImpl(5113, "Failed to register ServerNotificationListener.");
+  public static final StringId AbstractDistributionConfig_USERDEFINED_PREFIX_NAME = new StringIdImpl(5114, "Prefix for \"user defined\" properties which are used for replacements in Cache.xml. Neither key nor value can be NULL. Legal tags can be [custom-any-string] and Legal values can be any string data.");
+  public static final StringId DataSerializer_COULD_NOT_DESERIALIZE_PDX_INSTANCE_WITH_STREAM_0 = new StringIdImpl(5115, "Could not deserialize PDX instance with stream {0}");
+  public static final StringId DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0 = new StringIdImpl(5116, "Could not create an instance of a class {0}");
+  public static final StringId StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_DISTRIBUTED_SYSTEM_ID_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_2_IT_IS_ATTEMPTING_TO_JOIN = new StringIdImpl(5117, "Rejected new system node {0} because distributed-system-id={1} does not match the distributed system {2} it is attempting to join.");
+  public static final StringId CacheXmlParser_A_0_IS_NOT_AN_INSTANCE_OF_A_PDX_SERIALIZER = new StringIdImpl(5118, "A  {0}  is not an instance of a PdxSerializer.");
+  public static final StringId DistributionManager_RUNNING_IN_VMWARE_VM = new StringIdImpl(5119, "This member is running in a VMWare VM. Using physical host token {0} for redundancy zone");
+  public static final StringId MBeanUtil_FAILED_WHILE_UNREGISTERING_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5120, "Failed while unregistering MBean with ObjectName : {0}");
+  public static final StringId MBeanUtil_WHILE_UNREGISTERING_COULDNT_FIND_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5121, "While unregistering, could not find MBean with ObjectName : {0}");
+  public static final StringId MBeanUtil_COULD_NOT_UNREGISTER_MBEAN_WITH_OBJECTNAME_0 = new StringIdImpl(5122, "Could not un-register MBean with ObjectName : {0}");
+  public static final StringId AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_REQUEST_REJECTED_BY_POOL = new StringIdImpl(5123, "Rejected connection from {0} because incoming request was rejected by pool possibly due to thread exhaustion");
+  public static final StringId GatewayImpl_GATEWAY_SOCKET_READ_TIMEOUT_DISABLED = new StringIdImpl(5124, "Setting the socket read timeout on a gateway is currently disabled.");
+  public static final StringId EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION = new StringIdImpl(5125, "Function execution without result encountered an Exception on server.");
+  public static final StringId ConnectionFactoryImpl_POOL_0_IS_NOT_AVAILABLE = new StringIdImpl(5126, "Pool {0} is not available");
+  public static final StringId CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3 = new StringIdImpl(5128, "Cannot create region {0} with off-heap={1} because another cache ({2}) has the same region with off-heap={3}.");
+
+  public static final StringId ConnectionTable_OUT_OF_FILE_DESCRIPTORS_USING_SHARED_CONNECTION = new StringIdImpl(5129, "This process is out of file descriptors.\nThis will hamper communications and slow down the system.\nAny conserve-sockets setting is now being ignored.\nPlease consider raising the descriptor limit.\nThis alert is only issued once per process.");
+  public static final StringId DistributedRegion_INITIALIZING_REGION_0 = new StringIdImpl(5130, "Initializing region {0}");
+
+  public static final StringId CacheXmlParser_CACHEXMLPARSERENDINDEXINDEX_CREATION_ATTRIBUTE_NOT_CORRECTLY_SPECIFIED = new StringIdImpl(5131, "CacheXmlParser::endIndex:Index creation attribute not correctly specified.");
+>>>>>>> origin/develop
   //OK to reuse 5132
   public static final StringId GatewayParallel_0_CREATED_1_GATEWAYS_2 = new StringId(5133, "{0}: Created {1} parallel gateways named {2}");
   public static final StringId CacheXmlParser_UNKNOWN_GATEWAY_ORDER_POLICY_0_1 = new StringId(5134, "An invalid order-policy value ({1}) was configured for gateway {0}");

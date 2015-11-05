@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.management.internal.web.controllers;
@@ -48,6 +57,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common functionality across all
@@ -246,12 +256,14 @@ public abstract class AbstractCommandsController {
    * Converts the URI relative path to an absolute path based on the Servlet context information.
    * 
    * @param path the URI relative path to append to the Servlet context path.
+   * @param scheme the scheme to use for the URI
    * @return a URI constructed with all component path information.
    * @see java.net.URI
    * @see org.springframework.web.servlet.support.ServletUriComponentsBuilder
    */
-  protected /*static*/ URI toUri(final String path) {
-    return ServletUriComponentsBuilder.fromCurrentContextPath().path(REST_API_VERSION).path(path).build().toUri();
+  protected /*static*/ URI toUri(final String path, final String scheme) {
+    return ServletUriComponentsBuilder.fromCurrentContextPath()
+        .path(REST_API_VERSION).path(path).scheme(scheme).build().toUri();
   }
 
   /**

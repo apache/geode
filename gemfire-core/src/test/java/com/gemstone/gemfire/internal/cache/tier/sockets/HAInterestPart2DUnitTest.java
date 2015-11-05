@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
@@ -263,12 +272,28 @@ public class HAInterestPart2DUnitTest extends HAInterestBaseTest {
       public boolean done() {
         Region.Entry e1 = r1.getEntry(k1);
         Region.Entry e2 = r1.getEntry(k2);
-        if (e1 == null || !server_k1_updated.equals(e1.getValue())) {
-          excuse = "k1=" + (e1 == null ? "null" : e1.getValue());
+        Object v1 = null;
+        if (e1 != null) {
+          try {
+            v1 = e1.getValue();
+          } catch (EntryDestroyedException ignore) {
+            // handled to fix GEODE-296
+          }
+        }
+        if (e1 == null || !server_k1_updated.equals(v1)) {
+          excuse = "v1=" + v1;
           return false;
         }
-        if (e2 == null || !server_k2.equals(e2.getValue())) {
-          excuse = "k2=" + (e2 == null ? "null" : e2.getValue());
+        Object v2 = null;
+        if (e2 != null) {
+          try {
+            v2 = e2.getValue();
+          } catch (EntryDestroyedException ignore) {
+            // handled to fix GEODE-296
+          }
+        }
+        if (e2 == null || !server_k2.equals(v2)) {
+          excuse = "v2=" + v2;
           return false;
         }
         return true;

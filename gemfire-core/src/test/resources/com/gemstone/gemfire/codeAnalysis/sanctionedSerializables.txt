@@ -704,8 +704,6 @@ com/gemstone/gemfire/management/internal/cli/exceptions/CliCommandOptionValueMis
 com/gemstone/gemfire/management/internal/cli/exceptions/CliException,false
 com/gemstone/gemfire/management/internal/cli/exceptions/CreateSubregionException,true,4387344870743824916
 com/gemstone/gemfire/management/internal/cli/exceptions/IndexNotFoundException,true,1,indexName:java/lang/String,message:java/lang/String
-com/gemstone/gemfire/management/internal/cli/functions/AlterHDFSStoreFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/AlterHDFSStoreFunction$AlterHDFSStoreAttributes,true,1,batchInterval:java/lang/Integer,batchSize:java/lang/Integer,fileRolloverInterval:java/lang/Integer,hdfsUniqueName:java/lang/String,majorCompact:java/lang/Boolean,majorCompactionInterval:java/lang/Integer,majorCompactionThreads:java/lang/Integer,maxWriteonlyFileSize:java/lang/Integer,minorCompact:java/lang/Boolean,minorCompactionThreads:java/lang/Integer,purgeInterval:java/lang/Integer
 com/gemstone/gemfire/management/internal/cli/functions/AlterRuntimeConfigFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ChangeLogLevelFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CloseDurableClientFunction,true,1
@@ -715,7 +713,6 @@ com/gemstone/gemfire/management/internal/cli/functions/ContunuousQueryFunction$C
 com/gemstone/gemfire/management/internal/cli/functions/CreateAsyncEventQueueFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateDefinedIndexesFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateDiskStoreFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/CreateHDFSStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateIndexFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectExecStep,true,1
@@ -725,7 +722,6 @@ com/gemstone/gemfire/management/internal/cli/functions/DeployFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DescribeDiskStoreFunction,false
 com/gemstone/gemfire/management/internal/cli/functions/DescribeHDFSStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DestroyDiskStoreFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/DestroyHDFSStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DestroyIndexFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ExportConfigFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ExportDataFunction,true,1
@@ -751,8 +747,6 @@ com/gemstone/gemfire/management/internal/cli/functions/ListDeployedFunction,true
 com/gemstone/gemfire/management/internal/cli/functions/ListDiskStoresFunction,false
 com/gemstone/gemfire/management/internal/cli/functions/ListDurableCqNamesFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/ListFunctionFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/ListHDFSStoresFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/ListHDFSStoresFunction$HdfsStoreDetails,true,1,memberId:java/lang/String,memberName:java/lang/String,storeName:java/lang/String
 com/gemstone/gemfire/management/internal/cli/functions/ListIndexFunction,false
 com/gemstone/gemfire/management/internal/cli/functions/LoadSharedConfigurationFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/LogFileFunction,true,1
@@ -765,7 +759,7 @@ com/gemstone/gemfire/management/internal/cli/functions/RebalanceFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/RegionAlterFunction,true,-4846425364943216425
 com/gemstone/gemfire/management/internal/cli/functions/RegionCreateFunction,true,8746830191680509335
 com/gemstone/gemfire/management/internal/cli/functions/RegionDestroyFunction,true,9172773671865750685
-com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs,true,-5158224572470173267,asyncEventQueueIds:java/util/Set,cacheListeners:java/util/Set,cacheLoader:java/lang/String,cacheWriter:java/lang/String,cloningEnabled:java/lang/Boolean,compressor:java/lang/String,concurrencyChecksEnabled:java/lang/Boolean,concurrencyLevel:java/lang/Integer,diskStore:java/lang/String,diskSynchronous:java/lang/Boolean,enableAsyncConflation:java/lang/Boolean,enableSubscriptionConflation:java/lang/Boolean,entryExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,entryExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,evictionMax:java/lang/Integer,gatewaySenderIds:java/util/Set,hdfsStoreName:java/lang/String,hdfsWriteOnly:java/lang/Boolean,isSetCloningEnabled:boolean,isSetCompressor:boolean,isSetConcurrencyChecksEnabled:boolean,isSetConcurrencyLevel:boolean,isSetDiskSynchronous:boolean,isSetEnableAsyncConflation:boolean,isSetEnableSubscriptionConflation:boolean,isSetHdfsWriteOnly:java/lang/Boolean,isSetMcastEnabled:boolean,isSetOffHeap:boolean,isSetStatisticsEnabled:boolean,keyConstraint:java/lang/String,mcastEnabled:java/lang/Boolean,offHeap:java/lang/Boolean,partitionArgs:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,regionAttributes:com/gemstone/gemfire/cache/RegionAttributes,regionExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionPath:java/lang/String,regionShortcut:com/gemstone/gemfire/cache/RegionShortcut,skipIfExists:java/lang/Boolean,statisticsEnabled:java/lang/Boolean,useAttributesFrom:java/lang/String,valueConstraint:java/lang/String
+com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs,true,-5158224572470173267,asyncEventQueueIds:java/util/Set,cacheListeners:java/util/Set,cacheLoader:java/lang/String,cacheWriter:java/lang/String,cloningEnabled:java/lang/Boolean,compressor:java/lang/String,concurrencyChecksEnabled:java/lang/Boolean,concurrencyLevel:java/lang/Integer,diskStore:java/lang/String,diskSynchronous:java/lang/Boolean,enableAsyncConflation:java/lang/Boolean,enableSubscriptionConflation:java/lang/Boolean,entryExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,entryExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,evictionMax:java/lang/Integer,gatewaySenderIds:java/util/Set,isSetCloningEnabled:boolean,isSetCompressor:boolean,isSetConcurrencyChecksEnabled:boolean,isSetConcurrencyLevel:boolean,isSetDiskSynchronous:boolean,isSetEnableAsyncConflation:boolean,isSetEnableSubscriptionConflation:boolean,isSetOffHeap:boolean,isSetStatisticsEnabled:boolean,keyConstraint:java/lang/String,offHeap:java/lang/Boolean,partitionArgs:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,regionAttributes:com/gemstone/gemfire/cache/RegionAttributes,regionExpirationIdleTime:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionExpirationTTL:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,regionPath:java/lang/String,regionShortcut:com/gemstone/gemfire/cache/RegionShortcut,skipIfExists:java/lang/Boolean,statisticsEnabled:java/lang/Boolean,useAttributesFrom:java/lang/String,valueConstraint:java/lang/String
 com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,true,1474255033398008062,action:com/gemstone/gemfire/cache/ExpirationAction,time:java/lang/Integer,type:com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor
 com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor,false
 com/gemstone/gemfire/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,true,5907052187323280919,hasPartitionAttributes:boolean,isSetPRLocalMaxMemory:boolean,isSetPRRecoveryDelay:boolean,isSetPRRedundantCopies:boolean,isSetPRStartupRecoveryDelay:boolean,isSetPRTotalMaxMemory:boolean,isSetPRTotalNumBuckets:boolean,prColocatedWith:java/lang/String,prLocalMaxMemory:int,prRecoveryDelay:long,prRedundantCopies:int,prStartupRecoveryDelay:long,prTotalMaxMemory:long,prTotalNumBuckets:int,userSpecifiedPartitionAttributes:java/util/Set

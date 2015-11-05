@@ -1,10 +1,18 @@
 /*
- * ========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /**
@@ -72,48 +80,8 @@ public class RegionFunctionArgs implements Serializable {
   private final boolean isSetCompressor;
   private Boolean offHeap;
   private final boolean isSetOffHeap;
-  private String hdfsStoreName;
-  private Boolean isSetHdfsWriteOnly = false;
-  private Boolean hdfsWriteOnly;
-
   private RegionAttributes<?, ?> regionAttributes;
 
-  public RegionFunctionArgs(String regionPath,
-	      RegionShortcut regionShortcut, String useAttributesFrom,
-	      boolean skipIfExists, String keyConstraint, String valueConstraint,
-	      Boolean statisticsEnabled, 
-	      RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime, 
-	      RegionFunctionArgs.ExpirationAttrs entryExpirationTTL, 
-	      RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime, 
-	      RegionFunctionArgs.ExpirationAttrs regionExpirationTTL, String diskStore,
-	      Boolean diskSynchronous, Boolean enableAsyncConflation,
-	      Boolean enableSubscriptionConflation, String[] cacheListeners,
-	      String cacheLoader, String cacheWriter, String[] asyncEventQueueIds,
-	      String[] gatewaySenderIds, Boolean concurrencyChecksEnabled,
-	      Boolean cloningEnabled, Integer concurrencyLevel, String prColocatedWith,
-	      Integer prLocalMaxMemory, Long prRecoveryDelay,
-	      Integer prRedundantCopies, Long prStartupRecoveryDelay,
-	      Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax,
-	      String compressor, Boolean offHeap , String hdfsStoreName , Boolean hdfsWriteOnly, Boolean mcastEnabled) {	
-		this(regionPath, regionShortcut, useAttributesFrom, skipIfExists,
-				keyConstraint, valueConstraint, statisticsEnabled,
-				entryExpirationIdleTime, entryExpirationTTL,
-				regionExpirationIdleTime, regionExpirationTTL, diskStore,
-				diskSynchronous, enableAsyncConflation,
-				enableSubscriptionConflation, cacheListeners, cacheLoader,
-				cacheWriter, asyncEventQueueIds, gatewaySenderIds,
-				concurrencyChecksEnabled, cloningEnabled, concurrencyLevel,
-				prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
-				prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory,
-				prTotalNumBuckets, evictionMax, compressor, offHeap, mcastEnabled);	
-		this.isSetHdfsWriteOnly = hdfsWriteOnly != null;
-		if (isSetHdfsWriteOnly) {
-			this.hdfsWriteOnly = hdfsWriteOnly;
-		}
-		if (hdfsStoreName != null ) {
-		  this.hdfsStoreName = hdfsStoreName;
-		}
-  }
   public RegionFunctionArgs(String regionPath,
       RegionShortcut regionShortcut, String useAttributesFrom,
       boolean skipIfExists, String keyConstraint, String valueConstraint,
@@ -226,7 +194,7 @@ public class RegionFunctionArgs implements Serializable {
       Integer prLocalMaxMemory, Long prRecoveryDelay,
       Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, 
-      Boolean offHeap, String hdfsStoreName , Boolean hdfsWriteOnly , 
+      Boolean offHeap,
       Boolean mcastEnabled, RegionAttributes<?, ?> regionAttributes) {   
     this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint,
         valueConstraint, statisticsEnabled, entryExpirationIdleTime,
@@ -237,7 +205,7 @@ public class RegionFunctionArgs implements Serializable {
         concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
         prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
         prRedundantCopies, prStartupRecoveryDelay,
-        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap , hdfsStoreName , hdfsWriteOnly, mcastEnabled);
+        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap , mcastEnabled);
     this.regionAttributes = regionAttributes;
   }
 
@@ -283,28 +251,6 @@ public class RegionFunctionArgs implements Serializable {
     return this.keyConstraint;
   }  
 
-  /**
-   * @return the hdfsStoreName
-   */
-  public String getHDFSStoreName() {
-    return this.hdfsStoreName;
-  }  
-
-  /**
-   * @return the hdfsWriteOnly
-   */
-  public Boolean getHDFSWriteOnly() {
-    return this.hdfsWriteOnly;
-  }
-  
-  /**
-   * @return the isSetHDFSWriteOnly
-   */
-  public Boolean isSetHDFSWriteOnly() {
-    return this.isSetHdfsWriteOnly;
-  }
-  
-  
   /**
    * @return the valueConstraint
    */

@@ -1,15 +1,22 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,8 +34,6 @@ import com.gemstone.gemfire.distributed.ServerLauncher.Command;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.support.DistributedSystemAdapter;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
@@ -39,9 +44,7 @@ import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -60,38 +63,11 @@ import org.junit.experimental.categories.Category;
  * @see org.junit.Test
  * @since 7.0
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "unused"})
 @Category(UnitTest.class)
 public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
 
-//  private static final String GEMFIRE_PROPERTIES_FILE_NAME = "gemfire.properties";
-//  private static final String TEMPORARY_FILE_NAME = "beforeServerLauncherJUnitTest_" + GEMFIRE_PROPERTIES_FILE_NAME;
-
   private Mockery mockContext;
-
-//  @BeforeClass
-//  public static void testSuiteSetup() {
-//    if (SystemUtils.isWindows()) {
-//      return;
-//    }
-//    File file = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-//    if (file.exists()) {
-//      File dest = new File(TEMPORARY_FILE_NAME);
-//      assertTrue(file.renameTo(dest));
-//    }
-//  }
-//
-//  @AfterClass
-//  public static void testSuiteTearDown() {
-//    if (SystemUtils.isWindows()) {
-//      return;
-//    }
-//    File file = new File(TEMPORARY_FILE_NAME);
-//    if (file.exists()) {
-//      File dest = new File(GEMFIRE_PROPERTIES_FILE_NAME);
-//      assertTrue(file.renameTo(dest));
-//    }
-//  }
 
   @Before
   public void setup() {
@@ -109,10 +85,11 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
 
   @Test
   public void testParseArguments() throws Exception {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath().toString();
     Builder builder = new Builder();
 
     builder.parseArguments("start", "serverOne", "--assign-buckets", "--disable-default-server", "--debug", "--force",
-      "--rebalance", "--redirect-output", "--dir=" + ServerLauncher.DEFAULT_WORKING_DIRECTORY, "--pid=1234",
+      "--rebalance", "--redirect-output", "--dir=" + rootFolder, "--pid=1234",
         "--server-bind-address=" + InetAddress.getLocalHost().getHostAddress(), "--server-port=11235", "--hostname-for-clients=192.168.99.100");
 
     assertEquals(Command.START, builder.getCommand());
@@ -125,7 +102,7 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
     assertFalse(Boolean.TRUE.equals(builder.getHelp()));
     assertTrue(builder.getRebalance());
     assertTrue(builder.getRedirectOutput());
-    assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
+    assertEquals(rootFolder, builder.getWorkingDirectory());
     assertEquals(1234, builder.getPid().intValue());
     assertEquals(InetAddress.getLocalHost(), builder.getServerBindAddress());
     assertEquals(11235, builder.getServerPort().intValue());
@@ -346,13 +323,13 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testSetAndGetWorkingDirectory() {
+  public void testSetAndGetWorkingDirectory() throws Exception {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath().toString();
     Builder builder = new Builder();
 
     assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(System.getProperty("java.io.tmpdir")));
-    assertEquals(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(System.getProperty("java.io.tmpdir"))),
-      builder.getWorkingDirectory());
+    assertSame(builder, builder.setWorkingDirectory(rootFolder));
+    assertEquals(rootFolder, builder.getWorkingDirectory());
     assertSame(builder, builder.setWorkingDirectory("  "));
     assertEquals(ServerLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
     assertSame(builder, builder.setWorkingDirectory(""));
@@ -574,6 +551,8 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
 
   @Test
   public void testBuild() throws Exception {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath().toString();
+    
     ServerLauncher launcher = new Builder()
       .setCommand(Command.STOP)
       .setAssignBuckets(true)
@@ -582,7 +561,7 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
       .setRebalance(true)
       .setServerBindAddress(InetAddress.getLocalHost().getHostAddress())
       .setServerPort(11235)
-      .setWorkingDirectory(System.getProperty("java.io.tmpdir"))
+      .setWorkingDirectory(rootFolder)
       .setCriticalHeapPercentage(90.0f)
       .setEvictionHeapPercentage(75.0f)
       .setMaxConnections(100)
@@ -604,8 +583,7 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
     assertEquals("serverOne", launcher.getMemberName());
     assertEquals(InetAddress.getLocalHost(), launcher.getServerBindAddress());
     assertEquals(11235, launcher.getServerPort().intValue());
-    assertEquals(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(System.getProperty("java.io.tmpdir"))),
-      launcher.getWorkingDirectory());
+    assertEquals(rootFolder, launcher.getWorkingDirectory());
     assertEquals(90.0f, launcher.getCriticalHeapPercentage().floatValue(), 0.0f);
     assertEquals(75.0f, launcher.getEvictionHeapPercentage().floatValue(), 0.0f);
     assertEquals(100, launcher.getMaxConnections().intValue());
@@ -689,11 +667,11 @@ public class ServerLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testBuildWithInvalidWorkingDirectoryOnStart() {
+  public void testBuildWithInvalidWorkingDirectoryOnStart() throws Exception {
     try {
       new Builder().setCommand(Command.START)
         .setMemberName("serverOne")
-        .setWorkingDirectory(System.getProperty("java.io.tmpdir"))
+        .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath().toString())
         .build();
     }
     catch (IllegalStateException expected) {

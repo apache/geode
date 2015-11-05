@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2013 VMware, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. VMware products are covered by
- * more patents listed at http://www.vmware.com/go/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.control;
 
@@ -50,6 +59,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
   private boolean hasEvictionThreshold = false;
 
   private OffHeapMemoryUsageListener offHeapMemoryUsageListener;
+  private Thread memoryListenerThread;
   
   private final InternalResourceManager resourceManager;
   private final ResourceAdvisor resourceAdvisor;
@@ -84,11 +94,12 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
 
       this.offHeapMemoryUsageListener = new OffHeapMemoryUsageListener(getBytesUsed());
       ThreadGroup group = LoggingThreadGroup.createThreadGroup("OffHeapMemoryMonitor Threads", logger);
-      Thread memoryListenerThread = new Thread(group, this.offHeapMemoryUsageListener);
-      memoryListenerThread.setName(memoryListenerThread.getName() + " OffHeapMemoryListener");
-      memoryListenerThread.setPriority(Thread.MAX_PRIORITY);
-      memoryListenerThread.setDaemon(true);
-      memoryListenerThread.start();
+      Thread t = new Thread(group, this.offHeapMemoryUsageListener);
+      t.setName(t.getName() + " OffHeapMemoryListener");
+      t.setPriority(Thread.MAX_PRIORITY);
+      t.setDaemon(true);
+      t.start();
+      this.memoryListenerThread = t;
       
       this.memoryAllocator.addMemoryUsageListener(this);
       
@@ -101,6 +112,9 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
    */
   @Override
   public void stopMonitoring() {
+    stopMonitoring(false);
+  }
+  public void stopMonitoring(boolean waitForThread) {
     synchronized (this) {
       if (!this.started) {
         return;
@@ -113,18 +127,59 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
         this.offHeapMemoryUsageListener.notifyAll();
       }
 
+      if (waitForThread && this.memoryListenerThread != null) {
+        try {
+          this.memoryListenerThread.join();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+      this.memoryListenerThread = null;
       this.started = false;
     }
   }
 
+  public volatile OffHeapMemoryMonitorObserver testHook;
+  
+  /**
+   * Used by unit tests to be notified when OffHeapMemoryMonitor
+   * does something.
+   */
+  public static interface OffHeapMemoryMonitorObserver {
+    /**
+     * Called at the beginning of updateMemoryUsed.
+     * @param bytesUsed the number of bytes of off-heap memory currently used
+     * @param willSendEvent true if an event will be sent to the OffHeapMemoryUsageListener. 
+     */
+    public void beginUpdateMemoryUsed(long bytesUsed, boolean willSendEvent);
+    public void afterNotifyUpdateMemoryUsed(long bytesUsed);
+    /**
+     * Called at the beginning of updateStateAndSendEvent.
+     * @param bytesUsed the number of bytes of off-heap memory currently used
+     * @param willSendEvent true if an event will be sent to the OffHeapMemoryUsageListener. 
+     */
+    public void beginUpdateStateAndSendEvent(long bytesUsed, boolean willSendEvent);
+    public void updateStateAndSendEventBeforeProcess(long bytesUsed, MemoryEvent event);
+    public void updateStateAndSendEventBeforeAbnormalProcess(long bytesUsed, MemoryEvent event);
+    public void updateStateAndSendEventIgnore(long bytesUsed, MemoryState oldState, MemoryState newState, long mostRecentBytesUsed,
+        boolean deliverNextAbnormalEvent);
+  }
   @Override
   public void updateMemoryUsed(final long bytesUsed) {
-    if (!mightSendEvent(bytesUsed)) {
+    final boolean willSendEvent = mightSendEvent(bytesUsed);
+    final OffHeapMemoryMonitorObserver _testHook = this.testHook;
+    if (_testHook != null) {
+      _testHook.beginUpdateMemoryUsed(bytesUsed, willSendEvent);
+    }
+    if (!willSendEvent) {
       return;
     }
     synchronized (this.offHeapMemoryUsageListener) {
       this.offHeapMemoryUsageListener.offHeapMemoryUsed = bytesUsed;
       this.offHeapMemoryUsageListener.notifyAll();
+    }
+    if (_testHook != null) {
+      _testHook.afterNotifyUpdateMemoryUsed(bytesUsed);
     }
   }
   
@@ -242,11 +297,15 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
       final MemoryEvent mre = this.mostRecentEvent;
       final MemoryState oldState = mre.getState();
       final MemoryThresholds thresholds = this.thresholds;
+      final OffHeapMemoryMonitorObserver _testHook = this.testHook;
       MemoryState newState = thresholds.computeNextState(oldState, bytesUsed);
       if (oldState != newState) {
         this.currentState = newState;
         
         MemoryEvent event = new MemoryEvent(ResourceType.OFFHEAP_MEMORY, oldState, newState, this.cache.getMyId(), bytesUsed, true, thresholds);
+        if (_testHook != null) {
+          _testHook.updateStateAndSendEventBeforeProcess(bytesUsed, event);
+        }
         this.upcomingEvent.set(event);
 
         processLocalEvent(event);
@@ -257,8 +316,16 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
           && this.deliverNextAbnormalEvent) {
         this.deliverNextAbnormalEvent = false;
         MemoryEvent event = new MemoryEvent(ResourceType.OFFHEAP_MEMORY, oldState, newState, this.cache.getMyId(), bytesUsed, true, thresholds);
+        if (_testHook != null) {
+          _testHook.updateStateAndSendEventBeforeAbnormalProcess(bytesUsed, event);
+        }
         this.upcomingEvent.set(event);
         processLocalEvent(event);
+      } else {
+        if (_testHook != null) {
+          _testHook.updateStateAndSendEventIgnore(bytesUsed, oldState, newState, mre.getBytesUsed(), this.deliverNextAbnormalEvent);
+        }
+        
       }
     }
   }
@@ -452,13 +519,27 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
                   // The wait timed out. So tell the OffHeapMemoryMonitor
                   // that we need an event if the state is not normal.
                   deliverNextAbnormalEvent();
+                  // TODO: don't we need a "break" here?
+                  //       As it is we set deliverNextAbnormalEvent
+                  //       but then go back to sleep in wait.
+                  //       We need to call updateStateAndSendEvent
+                  //       which tests deliverNextAbnormalEvent.
+                  // But just adding a break is probably not enough.
+                  // We only set deliverNextAbnormalEvent if the wait
+                  // timed out which means that the amount of offHeapMemoryUsed
+                  // did not change.
+                  // But in updateStateAndSendEvent we only deliver an
+                  // abnormal event if the amount of memory changed.
+                  // This code needs to be reviewed with Swapnil but
+                  // it looks to Darrel like deliverNextAbnormalEvent
+                  // can be removed.
                 } else {
                   // we have been notified so exit the inner while loop
                   // and call updateStateAndSendEvent.
                   lastOffHeapMemoryUsed = this.offHeapMemoryUsed;
                   break;
                 }
-              } while (true);
+              } while (!this.stopRequested);
             } catch (InterruptedException iex) {
               getLogWriter().warning("OffHeapMemoryUsageListener was interrupted " + this);
               this.stopRequested = true;

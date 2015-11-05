@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.distributed;
 
 import static org.junit.Assert.*;
@@ -79,7 +95,7 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
   @Ignore("TRAC bug #52304: test is broken and needs to be reworked")
   public void testRunningLocatorOutlivesForkingProcess() throws Exception {
   }/*
-    // TODO:KIRK: fix up this test
+    // TODO: fix up this test
     
     this.temporaryFolder.getRoot() = new File(getUniqueName());
     this.temporaryFolder.getRoot().mkdir();
@@ -967,7 +983,9 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
         
         Process forkedProcess = new ProcessBuilder(command).start();
 
+        @SuppressWarnings("unused")
         ProcessStreamReader processOutReader = new ProcessStreamReader.Builder(forkedProcess).inputStream(forkedProcess.getInputStream()).build().start();
+        @SuppressWarnings("unused")
         ProcessStreamReader processErrReader = new ProcessStreamReader.Builder(forkedProcess).inputStream(forkedProcess.getErrorStream()).build().start();
 
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main waiting for locator to start...");

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
@@ -3741,11 +3750,14 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testRegionExpirationAfterMutate()
   throws CacheException, InterruptedException {
 
+    if (getRegionAttributes().getPartitionAttributes() != null) {
+      return;
+    }
+
     final String name = this.getUniqueName();
-            ;
     final Object key = "KEY";
     final Object value = "VALUE";
-    
+
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     factory.setStatisticsEnabled(true);
     RegionAttributes attrs = factory.create();
@@ -3759,30 +3771,33 @@ public abstract class RegionTestCase extends CacheTestCase {
       // Now go from no timeout to a timeout
       Region.Entry entry = region.getEntry(key);
       assertEquals(value, entry.getValue());
-      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(12000/*ms*/, ExpirationAction.INVALIDATE));
+      region.getAttributesMutator().setRegionIdleTimeout(
+          new ExpirationAttributes(12000/*ms*/, ExpirationAction.INVALIDATE));
       region.put(key, value);
       long tilt = System.currentTimeMillis();
 
       ExpiryTask expiryTask = region.getRegionIdleExpiryTask();
       long mediumExpiryTime = expiryTask.getExpirationTime();
-      region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(999000/*ms*/, ExpirationAction.INVALIDATE));
+      region.getAttributesMutator().setRegionIdleTimeout(
+          new ExpirationAttributes(999000/*ms*/, ExpirationAction.INVALIDATE));
       expiryTask = region.getRegionIdleExpiryTask();
       long hugeExpiryTime = expiryTask.getExpirationTime();
       ExpiryTask.suspendExpiration();
       long shortExpiryTime;
       try {
-        region.getAttributesMutator().setRegionIdleTimeout(new ExpirationAttributes(20/*ms*/, ExpirationAction.INVALIDATE));
+        region.getAttributesMutator().setRegionIdleTimeout(
+            new ExpirationAttributes(20/*ms*/, ExpirationAction.INVALIDATE));
         expiryTask = region.getRegionIdleExpiryTask();
         shortExpiryTime = expiryTask.getExpirationTime();
-        } 
-      finally {
+      } finally {
         ExpiryTask.permitExpiration();
       }
-      waitForInvalidate(entry, tilt+20, 10);
-      assertTrue("expected hugeExpiryTime=" + hugeExpiryTime + " to be > than mediumExpiryTime=" + mediumExpiryTime, (hugeExpiryTime - mediumExpiryTime) > 0);
-      assertTrue("expected mediumExpiryTime=" + mediumExpiryTime + " to be > than shortExpiryTime=" + shortExpiryTime, (mediumExpiryTime - shortExpiryTime) > 0);
-    }
-    finally {
+      waitForInvalidate(entry, tilt + 20, 10);
+      assertTrue("expected hugeExpiryTime=" + hugeExpiryTime + " to be > than mediumExpiryTime=" + mediumExpiryTime,
+          (hugeExpiryTime - mediumExpiryTime) > 0);
+      assertTrue("expected mediumExpiryTime=" + mediumExpiryTime + " to be > than shortExpiryTime=" + shortExpiryTime,
+          (mediumExpiryTime - shortExpiryTime) > 0);
+    } finally {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
     }
   }

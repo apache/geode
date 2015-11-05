@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache;
@@ -226,54 +235,4 @@ public enum RegionShortcut {
    * The actual RegionAttributes for a REPLICATE_PROXY region set the {@link DataPolicy} to {@link DataPolicy#EMPTY} and {@link Scope} to {@link Scope#DISTRIBUTED_ACK}.
    */
   REPLICATE_PROXY,  
-  
-  /**
-   * A PARTITION_HDFS has local state that is partitioned across each peer member 
-   * that created the region. 
-   * In addition its state is written to HDFS.
-   * The random access to the data in HDFS is also enabled. 
-   * The actual RegionAttributes for a PARTITION_HDFS region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION}.
-   * The HDFS event queue's property random-access is set to true. 
-   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
-   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
-   */
-  PARTITION_HDFS,  
-  
-  /**
-   * A PARTITION_REDUNDANT_HDFS has local state that is partitioned across each peer member 
-   * that created the region. 
-   * In addition its state is written to HDFS and recovered from HDFS when the region is 
-   * created. The random access to the data in HDFS is also enabled. 
-   * In addition an extra copy of the data is kept in memory.
-   * The actual RegionAttributes for a PARTITION_REDUNDANT_HDFS region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION} 
-   * and the redundant-copies to 1. The HDFS event queue's property random-access is set to true.
-   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
-   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
-   */
-  PARTITION_REDUNDANT_HDFS,  
-  
-  /**
-   * A PARTITION_WRITEONLY_HDFS_STORE has local state that is partitioned across each peer member 
-   * that created the region. 
-   * In addition its state is written to HDFS and recovered from HDFS when the region is 
-   * created. The random access to the data in HDFS is disabled. 
-   * The actual RegionAttributes for a PARTITION_WRITEONLY_HDFS_STORE region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION}. 
-   * The HDFS event queue's property write only is set as true. 
-   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
-   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
-   */
-  PARTITION_WRITEONLY_HDFS_STORE,  
-  
-  /**
-   * A PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE has local state that is partitioned across each peer member 
-   * that created the region. 
-   * In addition its state is written to HDFS and recovered from HDFS when the region is 
-   * created. The random access to the data in HDFS is disabled. 
-   * In addition an extra copy of the data is kept in memory.
-   * The actual RegionAttributes for a PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE region set the {@link DataPolicy} to {@link DataPolicy#HDFS_PARTITION} 
-   * and the redundant-copies to 1. The HDFS event queue's property write only is set as true.
-   * The {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP}
-   * with {@link EvictionAction#OVERFLOW_TO_DISK}.
-   */
-  PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE
 }

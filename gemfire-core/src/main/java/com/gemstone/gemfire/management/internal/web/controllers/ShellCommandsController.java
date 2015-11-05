@@ -1,28 +1,28 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.web.controllers;
 
 import java.io.IOException;
 import java.util.Set;
+
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,6 +33,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.lang.ObjectUtils;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.web.domain.Link;
+import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
+import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
+import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
@@ -134,7 +144,7 @@ public class ShellCommandsController extends AbstractCommandsController {
    * 
    * @return a LinkIndex containing Links for all web service endpoints, REST API calls in GemFire.
    * @see com.gemstone.gemfire.management.internal.cli.i18n.CliStrings
-   * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController#toUri(String)
+   * @see AbstractCommandsController#toUri(String, String)
    * @see com.gemstone.gemfire.management.internal.web.domain.Link
    * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
    * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
@@ -143,118 +153,117 @@ public class ShellCommandsController extends AbstractCommandsController {
   // the Spring Web MVC Controller RequestMapping Annotations.
   @RequestMapping(method = RequestMethod.GET, value = "/index", produces = MediaType.APPLICATION_XML_VALUE)
   @ResponseBody
-  public LinkIndex index() {
+  public LinkIndex index(@RequestParam(value = "scheme", required = false, defaultValue = "http") final String scheme) {
     //logger.warning(String.format("Returning Link Index for Context Path (%1$s).",
     //  ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()));
     return new LinkIndex()
       // Cluster Commands
-      .add(new Link(CliStrings.STATUS_SHARED_CONFIG, toUri("/services/cluster-config")))
+      .add(new Link(CliStrings.STATUS_SHARED_CONFIG, toUri("/services/cluster-config",
+          scheme)))
       // Member Commands
-      .add(new Link(CliStrings.LIST_MEMBER, toUri("/members")))
-      .add(new Link(CliStrings.DESCRIBE_MEMBER, toUri("/members/{name}")))
+      .add(new Link(CliStrings.LIST_MEMBER, toUri("/members", scheme)))
+      .add(new Link(CliStrings.DESCRIBE_MEMBER, toUri("/members/{name}", scheme)))
       // Region Commands
-      .add(new Link(CliStrings.LIST_REGION, toUri("/regions")))
-      .add(new Link(CliStrings.DESCRIBE_REGION, toUri("/regions/{name}")))
-      .add(new Link(CliStrings.ALTER_REGION, toUri("/regions/{name}"), HttpMethod.PUT))
-      .add(new Link(CliStrings.CREATE_REGION, toUri("/regions"), HttpMethod.POST))
-      .add(new Link(CliStrings.DESTROY_REGION, toUri("/regions/{name}"), HttpMethod.DELETE))
+      .add(new Link(CliStrings.LIST_REGION, toUri("/regions", scheme)))
+      .add(new Link(CliStrings.DESCRIBE_REGION, toUri("/regions/{name}", scheme)))
+      .add(new Link(CliStrings.ALTER_REGION, toUri("/regions/{name}", scheme), HttpMethod.PUT))
+      .add(new Link(CliStrings.CREATE_REGION, toUri("/regions", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.DESTROY_REGION, toUri("/regions/{name}", scheme), HttpMethod.DELETE))
       // Index Commands
-      .add(new Link(CliStrings.LIST_INDEX, toUri("/indexes")))
-      .add(new Link(CliStrings.CLEAR_DEFINED_INDEXES, toUri("/indexes?op=clear-defined"), HttpMethod.DELETE))
-      .add(new Link(CliStrings.CREATE_INDEX, toUri("/indexes"), HttpMethod.POST))
-      .add(new Link(CliStrings.CREATE_DEFINED_INDEXES, toUri("/indexes?op=create-defined"), HttpMethod.POST))
-      .add(new Link(CliStrings.DEFINE_INDEX, toUri("/indexes?op=define"), HttpMethod.POST))
-      .add(new Link(CliStrings.DESTROY_INDEX, toUri("/indexes"), HttpMethod.DELETE))
-      .add(new Link(CliStrings.DESTROY_INDEX, toUri("/indexes/{name}"), HttpMethod.DELETE))
+      .add(new Link(CliStrings.LIST_INDEX, toUri("/indexes", scheme)))
+      .add(new Link(CliStrings.CLEAR_DEFINED_INDEXES, toUri("/indexes?op=clear-defined",
+          scheme), HttpMethod.DELETE))
+      .add(new Link(CliStrings.CREATE_INDEX, toUri("/indexes", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.CREATE_DEFINED_INDEXES, toUri("/indexes?op=create-defined",
+          scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.DEFINE_INDEX, toUri("/indexes?op=define", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.DESTROY_INDEX, toUri("/indexes", scheme), HttpMethod.DELETE))
+      .add(new Link(CliStrings.DESTROY_INDEX, toUri("/indexes/{name}", scheme), HttpMethod.DELETE))
         // Data Commands
-      .add(new Link(CliStrings.GET, toUri("/regions/{region}/data"), HttpMethod.GET))
-      .add(new Link(CliStrings.PUT, toUri("/regions/{region}/data"), HttpMethod.PUT))
-      .add(new Link(CliStrings.REMOVE, toUri("/regions/{region}/data"), HttpMethod.DELETE))
-      .add(new Link(CliStrings.EXPORT_DATA, toUri("/members/{member}/regions/{region}/data"), HttpMethod.GET))
-      .add(new Link(CliStrings.IMPORT_DATA, toUri("/members/{member}/regions/{region}/data"), HttpMethod.POST))
-      .add(new Link(CliStrings.LOCATE_ENTRY, toUri("/regions/{region}/data/location"), HttpMethod.GET))
-      .add(new Link(CliStrings.QUERY, toUri("/regions/data/query"), HttpMethod.GET))
-      .add(new Link(CliStrings.REBALANCE, toUri("/regions/data?op=rebalance"), HttpMethod.POST))
+      .add(new Link(CliStrings.GET, toUri("/regions/{region}/data", scheme), HttpMethod.GET))
+      .add(new Link(CliStrings.PUT, toUri("/regions/{region}/data", scheme), HttpMethod.PUT))
+      .add(new Link(CliStrings.REMOVE, toUri("/regions/{region}/data", scheme), HttpMethod.DELETE))
+      .add(new Link(CliStrings.EXPORT_DATA, toUri("/members/{member}/regions/{region}/data", scheme), HttpMethod.GET))
+      .add(new Link(CliStrings.IMPORT_DATA, toUri("/members/{member}/regions/{region}/data", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.LOCATE_ENTRY, toUri("/regions/{region}/data/location", scheme), HttpMethod.GET))
+      .add(new Link(CliStrings.QUERY, toUri("/regions/data/query", scheme), HttpMethod.GET))
+      .add(new Link(CliStrings.REBALANCE, toUri("/regions/data?op=rebalance", scheme), HttpMethod.POST))
       // Function Commands
-      .add(new Link(CliStrings.LIST_FUNCTION, toUri("/functions")))
-      .add(new Link(CliStrings.DESTROY_FUNCTION, toUri("/functions/{id}"), HttpMethod.DELETE))
-      .add(new Link(CliStrings.EXECUTE_FUNCTION, toUri("/functions/{id}"), HttpMethod.POST))
+      .add(new Link(CliStrings.LIST_FUNCTION, toUri("/functions", scheme)))
+      .add(new Link(CliStrings.DESTROY_FUNCTION, toUri("/functions/{id}", scheme), HttpMethod.DELETE))
+      .add(new Link(CliStrings.EXECUTE_FUNCTION, toUri("/functions/{id}", scheme), HttpMethod.POST))
       // Client Commands
-      .add(new Link(CliStrings.LIST_CLIENTS, toUri("/clients")))
-      .add(new Link(CliStrings.DESCRIBE_CLIENT, toUri("/clients/{clientID}")))
+      .add(new Link(CliStrings.LIST_CLIENTS, toUri("/clients", scheme)))
+      .add(new Link(CliStrings.DESCRIBE_CLIENT, toUri("/clients/{clientID}", scheme)))
       // Config Commands
-      .add(new Link(CliStrings.ALTER_RUNTIME_CONFIG, toUri("/config"), HttpMethod.POST))
-      .add(new Link(CliStrings.DESCRIBE_CONFIG, toUri("/members/{member}/config")))
-      .add(new Link(CliStrings.EXPORT_CONFIG, toUri("/config")))
-      .add(new Link(CliStrings.EXPORT_SHARED_CONFIG, toUri("/config/cluster")))
-      .add(new Link(CliStrings.IMPORT_SHARED_CONFIG, toUri("/config/cluster"), HttpMethod.POST))
+      .add(new Link(CliStrings.ALTER_RUNTIME_CONFIG, toUri("/config", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.DESCRIBE_CONFIG, toUri("/members/{member}/config", scheme)))
+      .add(new Link(CliStrings.EXPORT_CONFIG, toUri("/config", scheme)))
+      .add(new Link(CliStrings.EXPORT_SHARED_CONFIG, toUri("/config/cluster", scheme)))
+      .add(new Link(CliStrings.IMPORT_SHARED_CONFIG, toUri("/config/cluster", scheme), HttpMethod.POST))
       // Deploy Commands
-      .add(new Link(CliStrings.LIST_DEPLOYED, toUri("/deployed")))
-      .add(new Link(CliStrings.DEPLOY, toUri("/deployed"), HttpMethod.POST))
-      .add(new Link(CliStrings.UNDEPLOY, toUri("/deployed"), HttpMethod.DELETE))
+      .add(new Link(CliStrings.LIST_DEPLOYED, toUri("/deployed", scheme)))
+      .add(new Link(CliStrings.DEPLOY, toUri("/deployed", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.UNDEPLOY, toUri("/deployed", scheme), HttpMethod.DELETE))
       // Disk Store Commands
-      .add(new Link(CliStrings.LIST_DISK_STORE, toUri("/diskstores")))
-      .add(new Link(CliStrings.BACKUP_DISK_STORE, toUri("/diskstores?op=backup"), HttpMethod.POST))
-      .add(new Link(CliStrings.COMPACT_DISK_STORE, toUri("/diskstores/{name}?op=compact"), HttpMethod.POST))
-      .add(new Link(CliStrings.CREATE_DISK_STORE, toUri("/diskstores"), HttpMethod.POST))
-      .add(new Link(CliStrings.DESCRIBE_DISK_STORE, toUri("/diskstores/{name}")))
-      .add(new Link(CliStrings.DESTROY_DISK_STORE, toUri("/diskstores/{name}"), HttpMethod.DELETE))
-      .add(new Link(CliStrings.REVOKE_MISSING_DISK_STORE, toUri("/diskstores/{id}?op=revoke"), HttpMethod.POST))
-      .add(new Link(CliStrings.SHOW_MISSING_DISK_STORE, toUri("/diskstores/missing")))
+      .add(new Link(CliStrings.LIST_DISK_STORE, toUri("/diskstores", scheme)))
+      .add(new Link(CliStrings.BACKUP_DISK_STORE, toUri("/diskstores?op=backup", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.COMPACT_DISK_STORE, toUri("/diskstores/{name}?op=compact",
+          scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.CREATE_DISK_STORE, toUri("/diskstores", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.DESCRIBE_DISK_STORE, toUri("/diskstores/{name}", scheme)))
+      .add(new Link(CliStrings.DESTROY_DISK_STORE, toUri("/diskstores/{name}", scheme), HttpMethod.DELETE))
+      .add(new Link(CliStrings.REVOKE_MISSING_DISK_STORE, toUri("/diskstores/{id}?op=revoke", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.SHOW_MISSING_DISK_STORE, toUri("/diskstores/missing", scheme)))
       // Durable Client Commands
-      .add(new Link(CliStrings.LIST_DURABLE_CQS, toUri("/durable-clients/{durable-client-id}/cqs")))
-      .add(new Link(CliStrings.COUNT_DURABLE_CQ_EVENTS, toUri("/durable-clients/{durable-client-id}/cqs/events")))
-      .add(new Link(CliStrings.COUNT_DURABLE_CQ_EVENTS, toUri("/durable-clients/{durable-client-id}/cqs/{durable-cq-name}/events")))
-      .add(new Link(CliStrings.CLOSE_DURABLE_CLIENTS, toUri("/durable-clients/{durable-client-id}?op=close"), HttpMethod.POST))
-      .add(new Link(CliStrings.CLOSE_DURABLE_CQS, toUri("/durable-clients/{durable-client-id}/cqs/{durable-cq-name}?op=close"), HttpMethod.POST))
+      .add(new Link(CliStrings.LIST_DURABLE_CQS, toUri("/durable-clients/{durable-client-id}/cqs", scheme)))
+      .add(new Link(CliStrings.COUNT_DURABLE_CQ_EVENTS, toUri("/durable-clients/{durable-client-id}/cqs/events", scheme)))
+      .add(new Link(CliStrings.COUNT_DURABLE_CQ_EVENTS, toUri("/durable-clients/{durable-client-id}/cqs/{durable-cq-name}/events", scheme)))
+      .add(new Link(CliStrings.CLOSE_DURABLE_CLIENTS, toUri("/durable-clients/{durable-client-id}?op=close", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.CLOSE_DURABLE_CQS, toUri("/durable-clients/{durable-client-id}/cqs/{durable-cq-name}?op=close", scheme), HttpMethod.POST))
       // Launcher Lifecycle Commands
-      .add(new Link(CliStrings.STATUS_LOCATOR, toUri("/members/{name}/locator")))
-      .add(new Link(CliStrings.STATUS_SERVER, toUri("/members/{name}/server")))
+      .add(new Link(CliStrings.STATUS_LOCATOR, toUri("/members/{name}/locator", scheme)))
+      .add(new Link(CliStrings.STATUS_SERVER, toUri("/members/{name}/server", scheme)))
       // Miscellaneous Commands
-      .add(new Link(CliStrings.CHANGE_LOGLEVEL, toUri("/groups/{groups}/loglevel"), HttpMethod.POST))
-      .add(new Link(CliStrings.CHANGE_LOGLEVEL, toUri("/members/{members}/loglevel"), HttpMethod.POST))
-      .add(new Link(CliStrings.CHANGE_LOGLEVEL, toUri("/members/{members}/groups/{groups}/loglevel"), HttpMethod.POST))
-      .add(new Link(CliStrings.EXPORT_LOGS, toUri("/logs")))
-      .add(new Link(CliStrings.EXPORT_STACKTRACE, toUri("/stacktraces")))
-      .add(new Link(CliStrings.GC, toUri("/gc"), HttpMethod.POST))
-      .add(new Link(CliStrings.GC, toUri("/members/{member}/gc"), HttpMethod.POST))
-      .add(new Link(CliStrings.NETSTAT, toUri("/netstat")))
-      .add(new Link(CliStrings.SHOW_DEADLOCK, toUri("/deadlocks")))
-      .add(new Link(CliStrings.SHOW_LOG, toUri("/members/{member}/log")))
-      .add(new Link(CliStrings.SHOW_METRICS, toUri("/metrics")))
-      .add(new Link(CliStrings.SHUTDOWN, toUri("/shutdown"), HttpMethod.POST)) // verb!
+      .add(new Link(CliStrings.CHANGE_LOGLEVEL, toUri("/groups/{groups}/loglevel", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.CHANGE_LOGLEVEL, toUri("/members/{members}/loglevel", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.CHANGE_LOGLEVEL, toUri("/members/{members}/groups/{groups}/loglevel", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.EXPORT_LOGS, toUri("/logs", scheme)))
+      .add(new Link(CliStrings.EXPORT_STACKTRACE, toUri("/stacktraces", scheme)))
+      .add(new Link(CliStrings.GC, toUri("/gc", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.GC, toUri("/members/{member}/gc", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.NETSTAT, toUri("/netstat", scheme)))
+      .add(new Link(CliStrings.SHOW_DEADLOCK, toUri("/deadlocks", scheme)))
+      .add(new Link(CliStrings.SHOW_LOG, toUri("/members/{member}/log", scheme)))
+      .add(new Link(CliStrings.SHOW_METRICS, toUri("/metrics", scheme)))
+      .add(new Link(CliStrings.SHUTDOWN, toUri("/shutdown", scheme), HttpMethod.POST)) // verb!
       // Queue Commands
-      .add(new Link(CliStrings.CREATE_ASYNC_EVENT_QUEUE, toUri("/async-event-queues"), HttpMethod.POST))
-      .add(new Link(CliStrings.LIST_ASYNC_EVENT_QUEUES, toUri("/async-event-queues")))
+      .add(new Link(CliStrings.CREATE_ASYNC_EVENT_QUEUE, toUri("/async-event-queues", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.LIST_ASYNC_EVENT_QUEUES, toUri("/async-event-queues", scheme)))
       // PDX Commands
-      .add(new Link(CliStrings.CONFIGURE_PDX, toUri("/pdx"), HttpMethod.POST))
+      .add(new Link(CliStrings.CONFIGURE_PDX, toUri("/pdx", scheme), HttpMethod.POST))
       //.add(new Link(CliStrings.PDX_DELETE_FIELD, toUri("/pdx/type/field"), HttpMethod.DELETE))
-      .add(new Link(CliStrings.PDX_RENAME, toUri("/pdx/type"), HttpMethod.POST))
+      .add(new Link(CliStrings.PDX_RENAME, toUri("/pdx/type", scheme), HttpMethod.POST))
       // Shell Commands
-      .add(new Link(MBEAN_ATTRIBUTE_LINK_RELATION, toUri("/mbean/attribute")))
-      .add(new Link(MBEAN_OPERATION_LINK_RELATION, toUri("/mbean/operation"), HttpMethod.POST))
-      .add(new Link(MBEAN_QUERY_LINK_RELATION, toUri("/mbean/query"), HttpMethod.POST))
-      .add(new Link(PING_LINK_RELATION, toUri("/ping"), HttpMethod.GET))
-      .add(new Link(CliStrings.VERSION, toUri("/version")))
+      .add(new Link(MBEAN_ATTRIBUTE_LINK_RELATION, toUri("/mbean/attribute", scheme)))
+      .add(new Link(MBEAN_OPERATION_LINK_RELATION, toUri("/mbean/operation", scheme), HttpMethod.POST))
+      .add(new Link(MBEAN_QUERY_LINK_RELATION, toUri("/mbean/query", scheme), HttpMethod.POST))
+      .add(new Link(PING_LINK_RELATION, toUri("/ping", scheme), HttpMethod.GET))
+      .add(new Link(CliStrings.VERSION, toUri("/version", scheme)))
       // WAN Gateway Commands
-      .add(new Link(CliStrings.LIST_GATEWAY, toUri("/gateways")))
-      .add(new Link(CliStrings.CREATE_GATEWAYRECEIVER, toUri("/gateways/receivers"), HttpMethod.POST))
-      .add(new Link(CliStrings.CREATE_GATEWAYSENDER, toUri("/gateways/senders"), HttpMethod.POST))
-      .add(new Link(CliStrings.LOAD_BALANCE_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=load-balance"), HttpMethod.POST))
-      .add(new Link(CliStrings.PAUSE_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=pause"), HttpMethod.POST))
-      .add(new Link(CliStrings.RESUME_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=resume"), HttpMethod.POST))
-      .add(new Link(CliStrings.START_GATEWAYRECEIVER, toUri("/gateways/receivers?op=start"), HttpMethod.POST))
-      .add(new Link(CliStrings.START_GATEWAYSENDER, toUri("/gateways/senders?op=start"), HttpMethod.POST))
-      .add(new Link(CliStrings.STATUS_GATEWAYRECEIVER, toUri("/gateways/receivers")))
-      .add(new Link(CliStrings.STATUS_GATEWAYSENDER, toUri("/gateways/senders/{id}")))
-      .add(new Link(CliStrings.STOP_GATEWAYRECEIVER, toUri("/gateways/receivers?op=stop"), HttpMethod.POST))
-      .add(new Link(CliStrings.STOP_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=stop"), HttpMethod.POST))
-       // HDFS Store Commands
-       .add(new Link(CliStrings.LIST_HDFS_STORE, toUri("/hdfsstores"), HttpMethod.GET))
-       .add(new Link(CliStrings.DESCRIBE_HDFS_STORE, toUri("/hdfsstores/{name}"), HttpMethod.GET))
-       .add(new Link(CliStrings.CREATE_HDFS_STORE, toUri("/hdfsstores"), HttpMethod.POST))
-       .add(new Link(CliStrings.DESTROY_HDFS_STORE, toUri("/hdfsstores/{name}"), HttpMethod.DELETE))
-       .add(new Link(CliStrings.ALTER_HDFS_STORE,   toUri("/hdfsstores/{name}"), HttpMethod.PUT));
+      .add(new Link(CliStrings.LIST_GATEWAY, toUri("/gateways", scheme)))
+      .add(new Link(CliStrings.CREATE_GATEWAYRECEIVER, toUri("/gateways/receivers", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.CREATE_GATEWAYSENDER, toUri("/gateways/senders", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.LOAD_BALANCE_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=load-balance", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.PAUSE_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=pause", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.RESUME_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=resume", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.START_GATEWAYRECEIVER, toUri("/gateways/receivers?op=start", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.START_GATEWAYSENDER, toUri("/gateways/senders?op=start", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.STATUS_GATEWAYRECEIVER, toUri("/gateways/receivers", scheme)))
+      .add(new Link(CliStrings.STATUS_GATEWAYSENDER, toUri("/gateways/senders/{id}", scheme)))
+      .add(new Link(CliStrings.STOP_GATEWAYRECEIVER, toUri("/gateways/receivers?op=stop", scheme), HttpMethod.POST))
+      .add(new Link(CliStrings.STOP_GATEWAYSENDER, toUri("/gateways/senders/{id}?op=stop", scheme), HttpMethod.POST))
+        ;
   }
 
   @RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, value = "/ping")

@@ -1,11 +1,18 @@
 /*
- * =========================================================================
- * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * $Id: AbstractIndex.java,v 1.2 2005/02/09 10:05:47 vaibhav Exp $
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
@@ -17,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -1744,7 +1752,7 @@ public abstract class AbstractIndex implements IndexProtocol
   {
     protected Map map;
     private boolean useList;
-    private volatile int numValues = 0;
+    private AtomicInteger numValues = new AtomicInteger(0);
 
     RegionEntryToValuesMap(boolean useList) {
       this.map = new ConcurrentHashMap(2, 0.75f, 1);
@@ -1793,7 +1801,7 @@ public abstract class AbstractIndex implements IndexProtocol
         coll.add(value);
         map.put(entry, coll);
       }
-      this.numValues++;
+      numValues.incrementAndGet();
     }
 
     public void addAll(RegionEntry entry, Collection values)
@@ -1803,7 +1811,7 @@ public abstract class AbstractIndex implements IndexProtocol
         Collection coll = useList?new ArrayList(values.size()):new IndexConcurrentHashSet(values.size(), 0.75f, 1);
         coll.addAll(values);
         map.put(entry, coll);
-        this.numValues = this.numValues + values.size();
+        numValues.addAndGet(values.size());
       } else if (object instanceof Collection) {
         Collection coll = (Collection) object;
         // If its a list query might get ConcurrentModificationException.
@@ -1822,7 +1830,7 @@ public abstract class AbstractIndex implements IndexProtocol
         coll.add(object);
         map.put(entry, coll);
       }
-      this.numValues = this.numValues + values.size();
+      numValues.addAndGet(values.size());
     }
 
     public Object get(RegionEntry entry)
@@ -1860,14 +1868,14 @@ public abstract class AbstractIndex implements IndexProtocol
           if (coll.size() == 0) {
             map.remove(entry);
           }
-          this.numValues--;
+          numValues.decrementAndGet();
         }
       }
       else {
         if (object.equals(value)) {
           map.remove(entry);
         }
-        this.numValues--;
+        this.numValues.decrementAndGet();
       }
     }
 
@@ -1875,8 +1883,8 @@ public abstract class AbstractIndex implements IndexProtocol
     {
       Object retVal = map.remove(entry);
       if (retVal != null) {
-            this.numValues = (retVal instanceof Collection) ? this.numValues
-                - ((Collection) retVal).size() : this.numValues - 1;
+            numValues.addAndGet((retVal instanceof Collection) ?
+              - ((Collection) retVal).size() : -1 );
       }
       return retVal;
     }
@@ -1896,7 +1904,7 @@ public abstract class AbstractIndex implements IndexProtocol
 
     public int getNumValues()
     {
-      return this.numValues;
+      return this.numValues.get();
     }
 
     public int getNumEntries()
@@ -2158,7 +2166,7 @@ public abstract class AbstractIndex implements IndexProtocol
     public void clear()
     {
       map.clear();
-      this.numValues = 0;
+      this.numValues.set(0);
     }
 
     public Set entrySet()
@@ -2175,7 +2183,7 @@ public abstract class AbstractIndex implements IndexProtocol
     public void replace(RegionEntry entry, Object values) {
       int numOldValues = getNumValues(entry);
       this.map.put(entry, values);
-      this.numValues += (((values instanceof Collection) ? ((Collection) values)
+      this.numValues.addAndGet(((values instanceof Collection) ? ((Collection) values)
           .size() : 1) - numOldValues);
     }
   }

@@ -1,16 +1,29 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.xmlcache.*;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheTransactionManagerCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire
@@ -58,8 +71,9 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
 
     CacheServer bridge1 = cache.addCacheServer();
     setBridgeAttributes(bridge1);
+
     CacheServer bridge2 = cache.addCacheServer();
-    bridge2.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    setBridgeAttributes(bridge2);
 
     testXml(cache);
   }
@@ -70,7 +84,8 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    */
   public void setBridgeAttributes(CacheServer bridge1)
   {
-    bridge1.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    //@see http://docs.oracle.com/javase/7/docs/api/java/net/InetSocketAddress.html#InetSocketAddress(int)
+    bridge1.setPort(0);
   }
 
   /**
