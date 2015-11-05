@@ -33,7 +33,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import dunit.AsyncInvocation;
 import dunit.DistributedTestCase;
@@ -897,11 +896,6 @@ public class PartitionedRegionCreationDUnitTest extends
             "IllegalStateException</ExpectedException>");
       }
       
-      Properties globalProps = new Properties();
-      globalProps.setProperty(
-          PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY, ""
-              + totalNumBuckets);
-      paf.setGlobalProperties(globalProps);
       attr.setPartitionAttributes(paf.create());
       accessor = (PartitionedRegion)cache.createRegion("PR2", attr.create());
       assertEquals(accessor.getTotalNumberOfBuckets(), totalNumBuckets);

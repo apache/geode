@@ -24,7 +24,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -239,11 +238,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     return this.totalNumBuckets;
   }
 
-  // deprecated method
-  public long getTotalSize() {
-    return this.getTotalMaxMemory();
-  }
-    
   public long getTotalMaxMemory() {
     return this.totalMaxMemory;
   }
@@ -303,14 +297,7 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   public String getColocatedWith() {
     return this.colocatedRegionName;
   }
-  public Properties getLocalProperties() {
-    return this.localProperties;
-  }
 
-  public Properties getGlobalProperties() {
-    return this.globalProperties;
-  }
-  
   public long getStartupRecoveryDelay() {
     return startupRecoveryDelay;
   }
@@ -456,8 +443,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
         || this.totalMaxMemory != other.getTotalMaxMemory()
         || this.startupRecoveryDelay != other.getStartupRecoveryDelay()
         || this.recoveryDelay != other.getRecoveryDelay()
-//          || ! this.localProperties.equals(other.getLocalProperties())
-//          || ! this.globalProperties.equals(other.getGlobalProperties())
         || ((this.partitionResolver == null) != (other.getPartitionResolver() == null))
         || (this.partitionResolver != null && !this.partitionResolver
           .equals(other.getPartitionResolver()))
@@ -509,48 +494,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     this.hasRedundancy = true;
   }
 
-  /**
-   * Set local properties 
-   * @deprecated use {@link #setLocalMaxMemory(int)} in GemFire 5.1 and later releases
-   * @param localProps those properties for the local VM
-   */
-  @Deprecated
-  public void setLocalProperties(Properties localProps) {
-    this.localProperties = localProps;
-    if (localProps.get(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY) != null) {
-      setLocalMaxMemory(Integer.parseInt((String)localProps.get(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY)));
-    }
-  }
-
-  /**
-   * Set global properties
-   * @deprecated use {@link #setTotalMaxMemory(long)} and 
-   *  {@link #setTotalNumBuckets(int)} in GemFire 5.1 and later releases
-   * @param globalProps those properties for the entire Partitioned Region
-   */
-  @Deprecated
-  public void setGlobalProperties(Properties globalProps) {
-    this.globalProperties = globalProps;
-    String propVal = globalProps.getProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY);
-    if (propVal != null) {
-      try {
-        setTotalMaxMemory(Integer.parseInt(propVal)); 
-      }
-      catch (RuntimeException e) {
-        this.totalMaxMemory = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
-      }
-    }
-    propVal = globalProps.getProperty(PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY);
-    if (propVal != null) {
-      try {
-        this.setTotalNumBuckets(Integer.parseInt(propVal));
-      }
-      catch (RuntimeException e) {
-        this.totalNumBuckets = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
-      }
-    }
-  }
-
   public void addFixedPartitionAttributes(FixedPartitionAttributes fpa) {
     if (this.fixedPAttrs == null) {
       this.fixedPAttrs = new ArrayList<FixedPartitionAttributesImpl>(1);
@@ -591,23 +534,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
       throw new IllegalStateException(
         LocalizedStrings.PartitionAttributesImpl_REDUNDANTCOPIES_0_IS_AN_ILLEGAL_VALUE_PLEASE_CHOOSE_A_VALUE_BETWEEN_0_AND_3
           .toLocalizedString(Integer.valueOf(this.redundancy)));
-    }
-    for (Iterator it=this.getLocalProperties().keySet().iterator(); it.hasNext(); ) {
-      String propName = (String)it.next();
-      if (!PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY.equals(propName)) {
-        throw new IllegalStateException(
-          LocalizedStrings.PartitionAttributesImpl_UNKNOWN_LOCAL_PROPERTY_0
-            .toLocalizedString(propName));
-      }
-    }
-    for (Iterator it=this.getGlobalProperties().keySet().iterator(); it.hasNext(); ) {
-      String propName = (String)it.next();
-      if (!PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY.equals(propName)
-          && !PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY.equals(propName)) {
-        throw new IllegalStateException(
-          LocalizedStrings.PartitionAttributesImpl_UNKNOWN_GLOBAL_PROPERTY_0
-           .toLocalizedString(propName));
-      }
     }
     if (this.recoveryDelay < -1) {
       throw new IllegalStateException(
@@ -765,8 +691,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   public void setAll(@SuppressWarnings("rawtypes")
   PartitionAttributes pa) {
     setRedundantCopies(pa.getRedundantCopies());
-    setLocalProperties(pa.getLocalProperties());
-    setGlobalProperties(pa.getGlobalProperties());
     setLocalMaxMemory(pa.getLocalMaxMemory());
     setTotalMaxMemory(pa.getTotalMaxMemory());
     setTotalNumBuckets(pa.getTotalNumBuckets());

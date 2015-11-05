@@ -3236,12 +3236,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       else if (qName.equals(FIXED_PARTITION_ATTRIBUTES)) {
         endFixedPartitionAttributes();
       }
-      else if (qName.equals(LOCAL_PROPERTIES)) {
-        endPartitionProperites(LOCAL_PROPERTIES);
-      }
-      else if (qName.equals(GLOBAL_PROPERTIES)) {
-        endPartitionProperites(GLOBAL_PROPERTIES);
-      }
       else if (qName.equals(MEMBERSHIP_ATTRIBUTES)) {
         endMembershipAttributes();
       }
@@ -3552,34 +3546,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @since 5.7
    */
   private void endClientHaQueue() {
-  }
-
-  /**
-   * Process either the <code>local-properties</code> or <code>global-properties</code> for a
-   * {@link com.gemstone.gemfire.internal.cache.PartitionedRegion}
-   * @param globalOrLocal either the string {@link CacheXml#LOCAL_PROPERTIES} or {@link CacheXml#GLOBAL_PROPERTIES}
-   */
-  private void endPartitionProperites(String globalOrLocal)
-  {
-    Properties props = new Properties();
-    Object top = stack.pop();
-    while (! top.equals(globalOrLocal)) {
-      if (!(top instanceof Parameter)) {
-        throw new CacheXmlException(LocalizedStrings.CacheXmlParser_ONLY_A_PARAMETER_IS_ALLOWED_IN_THE_CONTEXT_OF_0.toLocalizedString(globalOrLocal));
-      }
-      Parameter param = (Parameter) top;
-      props.put(param.getName(), param.getValue());
-      top = stack.pop();
-    }
-    if (globalOrLocal.equals(GLOBAL_PROPERTIES)) {
-      PartitionAttributesImpl pai = peekPartitionAttributesImpl(GLOBAL_PROPERTIES);
-      pai.setGlobalProperties(props);
-    } else if (globalOrLocal.equals(LOCAL_PROPERTIES)) {
-      PartitionAttributesImpl pai = peekPartitionAttributesImpl(LOCAL_PROPERTIES);
-      pai.setLocalProperties(props);
-    } else {
-      Assert.assertTrue(false, "Argument globalOrLocal has unexpected value " + globalOrLocal);
-    }
   }
 
   public void characters(char[] ch, int start, int length) throws SAXException {

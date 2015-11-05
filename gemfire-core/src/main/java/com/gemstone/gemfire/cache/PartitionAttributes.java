@@ -18,9 +18,7 @@
 package com.gemstone.gemfire.cache;
 
 import java.util.List;
-import java.util.Properties;
 
-import com.gemstone.gemfire.cache.PartitionResolver;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 
 /**
@@ -67,14 +65,6 @@ public interface PartitionAttributes<K,V>
   public int getRedundantCopies();
 
   /**
-   * This method returns the maximum total size of the region in megabytes.
-   * @deprecated use getTotalMaxMemory() instead
-   * @return total size in megabytes.
-   */
-  @Deprecated
-  public long getTotalSize();
-  
-  /**
    * This method returns the maximum total size of the region, in megabytes.
    * Default value is Integer.MAX_VALUE.
    * @return maximum size of the partitioned region, in megabytes
@@ -101,26 +91,6 @@ public interface PartitionAttributes<K,V>
    * @since 6.0
    */
   public String getColocatedWith();
-
-  /**
-   * This method returns local properties.  There are currently no local
-   * properties defined that are not also deprecated.
-   * 
-   * @deprecated use {@link #getLocalMaxMemory()} in GemFire 5.1 and later releases
-   * @return localProperties
-   */
-  @Deprecated
-  public Properties getLocalProperties();
-
-  /**
-   * This method returns global properties.  There are currently no global
-   * properties defined that are not also deprecated.
-   * 
-   * @deprecated use {@link #getTotalMaxMemory()} and {@link #getTotalNumBuckets()} in GemFire 5.1 and later releases
-   * @return globalProperties
-   */
-  @Deprecated
-  public Properties getGlobalProperties();
 
   /**
    * Returns the PartitionResolver set for custom partitioning

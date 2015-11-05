@@ -73,10 +73,10 @@ public class PartitionRegionConfigValidator {
     final PartitionAttributes userPA = pr.getAttributes()
         .getPartitionAttributes();
 
-    if (userPA.getTotalSize() != prconfPA.getTotalSize()) {
+    if (userPA.getTotalMaxMemory() != prconfPA.getTotalMaxMemory()) {
       throw new IllegalStateException(
           LocalizedStrings.PartitionedRegion_TOTAL_SIZE_IN_PARTITIONATTRIBUTES_IS_INCOMPATIBLE_WITH_GLOBALLY_SET_TOTAL_SIZE_SET_THE_TOTAL_SIZE_TO_0MB
-              .toLocalizedString(Long.valueOf(prconfPA.getTotalSize())));
+              .toLocalizedString(Long.valueOf(prconfPA.getTotalMaxMemory())));
     }
     if (userPA.getRedundantCopies() != prconfPA.getRedundantCopies()) {
       throw new IllegalStateException(

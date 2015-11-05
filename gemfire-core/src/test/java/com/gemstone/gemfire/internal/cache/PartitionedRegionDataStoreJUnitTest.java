@@ -88,8 +88,7 @@ public class PartitionedRegionDataStoreJUnitTest
 
     PartitionedRegion pr = null;
     pr = (PartitionedRegion)cache.createRegion("PR2", ra);
-    paf.setLocalProperties(null)
-        .create();
+    paf.create();
     /* PartitionedRegionDataStore prDS = */ new PartitionedRegionDataStore(pr);
    /* PartitionedRegionHelper.removeGlobalMetadataForFailedNode(PartitionedRegion.node,
         prDS.partitionedRegion.getRegionIdentifier(), prDS.partitionedRegion.cache);*/
