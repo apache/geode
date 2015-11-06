@@ -1971,7 +1971,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           newMembers.removeAll(removalReqs);
           NetView tempView = new NetView(localAddress, newView.getViewId() + 1, newMembers, leaveReqs, removalReqs);
           for (InternalDistributedMember mbr: newView.getMembers()) {
-            tempView.setFailureDetectionPort(mbr, newView.getFailureDetectionPort(mbr));
+            if (tempView.contains(mbr)) {
+              tempView.setFailureDetectionPort(mbr, newView.getFailureDetectionPort(mbr));
+            }
           }
           newView = tempView;
           int size = failures.size();
