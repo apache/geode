@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -77,17 +76,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   private long totalMaxMemory = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
   private transient boolean hasTotalMaxMemory;
 
-  /** local settings
-   *  GLOBAL_MAX_MEMORY_PROPERTY - deprecated, use setTotalMaxMemory
-   *  GLOBAL_MAX_BUCKETS_PROPERTY - deprecated, use setTotalNumBuckets
-   */
-  private Properties localProperties = new Properties();
-
-  /** non-local settings
-   *  LOCAL_MAX_MEMORY_PROPERTY - deprecated, use setLocalMaxMemory
-   */
-  private Properties globalProperties = new Properties();
-  
   /*
    * This is used to artificially set the amount of available off-heap memory
    * when no distributed system is available. This value works the same way as
@@ -143,22 +131,16 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   
   public void setTotalNumBuckets(int maxNumberOfBuckets) {
     this.totalNumBuckets = maxNumberOfBuckets;
-    this.globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY,
-                                      String.valueOf(this.totalNumBuckets));
     this.hasTotalNumBuckets = true;
   }
     
   public void setTotalMaxMemory(long maximumMB) {
     this.totalMaxMemory = maximumMB;
-    this.globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY,
-                                      String.valueOf(maximumMB));
     this.hasTotalMaxMemory = true;
   }
     
   public void setLocalMaxMemory(int maximumMB) {
     this.localMaxMemory = maximumMB;
-    this.localProperties.setProperty(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY,
-                                     String.valueOf(this.localMaxMemory));
     this.hasLocalMaxMemory = true;
     this.localMaxMemoryExists = true;
   }
@@ -392,8 +374,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     out.writeInt(getLocalMaxMemory()); // call the gettor to force it to be computed in the offheap case
     out.writeInt(this.totalNumBuckets);
     DataSerializer.writeString(this.colocatedRegionName, out);
-    DataSerializer.writeObject(this.localProperties, out);
-    DataSerializer.writeObject(this.globalProperties, out);
     out.writeLong(this.recoveryDelay);
     out.writeLong(this.startupRecoveryDelay);
     DataSerializer.writeObject(this.fixedPAttrs, out);
@@ -405,8 +385,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     this.localMaxMemory = in.readInt();
     this.totalNumBuckets = in.readInt();
     this.colocatedRegionName = DataSerializer.readString(in);
-    this.localProperties = (Properties)DataSerializer.readObject(in);
-    this.globalProperties = (Properties)DataSerializer.readObject(in);
     this.recoveryDelay = in.readLong();
     this.startupRecoveryDelay = in.readLong();
     this.fixedPAttrs = DataSerializer.readObject(in);
