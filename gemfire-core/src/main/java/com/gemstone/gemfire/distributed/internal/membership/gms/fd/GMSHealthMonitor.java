@@ -17,6 +17,7 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -119,6 +120,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * Members currently being suspected and the view they were suspected in
    */
   final private ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberInView = new ConcurrentHashMap<>();
+  
+  /**
+   * Members undergoing final checks
+   */
+  final private List<InternalDistributedMember> membersInFinalCheck = Collections.synchronizedList(new ArrayList<>(30));
 
   /**
    * Replies to messages
@@ -1090,27 +1096,32 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private void doFinalCheck(final InternalDistributedMember initiator,
       List<SuspectRequest> sMembers, NetView cv, InternalDistributedMember localAddress) {
-    for (int i = 0; i < sMembers.size(); i++) {
-      final SuspectRequest sr = sMembers.get(i);
-      final InternalDistributedMember mbr = sr.getSuspectMember();
 
-      if (!cv.contains(mbr)) {
-        continue;
-      }
+    List<InternalDistributedMember> membersChecked = new ArrayList<>(10);
+    try {
+      for (int i = 0; i < sMembers.size(); i++) {
+        final SuspectRequest sr = sMembers.get(i);
+        final InternalDistributedMember mbr = sr.getSuspectMember();
 
-      if (mbr.equals(localAddress)) {
-        continue;// self
-      }
+        if (!cv.contains(mbr) || membersInFinalCheck.contains(mbr)) {
+          continue;
+        }
 
-      // suspectMemberInView is now set by the heartbeat monitoring code
-      // to allow us to move on from watching members we've already
-      // suspected.  Since that code is updating this collection we
-      // cannot use it here as an indication that a member is currently
-      // undergoing a final check.
-//      NetView view;
-//      view = suspectedMemberInView.putIfAbsent(mbr, cv);
+        if (mbr.equals(localAddress)) {
+          continue;// self
+        }
+        
+        membersChecked.add(mbr);
 
-//      if (view == null || !view.equals(cv)) {
+        // suspectMemberInView is now set by the heartbeat monitoring code
+        // to allow us to move on from watching members we've already
+        // suspected.  Since that code is updating this collection we
+        // cannot use it here as an indication that a member is currently
+        // undergoing a final check.
+        //      NetView view;
+        //      view = suspectedMemberInView.putIfAbsent(mbr, cv);
+
+        //      if (view == null || !view.equals(cv)) {
         final String reason = sr.getReason();
         logger.debug("Scheduling final check for member {}; reason={}", mbr, reason);
         // its a coordinator
@@ -1138,7 +1149,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               } else {
                 pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
               }
-              
+
               boolean failed = false;
               if (!pinged && !isStopping) {
                 TimeStamp ts = memberTimeStamps.get(mbr);
@@ -1166,7 +1177,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             }
           }
         });
-//      }// scheduling for final check and removing it..
+        //      }// scheduling for final check and removing it..
+      }
+    } finally {
+      membersInFinalCheck.removeAll(membersChecked);
     }
   }
 
