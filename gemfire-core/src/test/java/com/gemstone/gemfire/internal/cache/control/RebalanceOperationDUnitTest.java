@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.control;
 
@@ -17,8 +26,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -42,6 +49,7 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.control.ResourceManager;
@@ -60,7 +68,6 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 
 import dunit.AsyncInvocation;
@@ -1087,8 +1094,19 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
-  public void testRecoverRedundancyParallelAsyncEventQueueSimulation() {
-    recoverRedundancyParallelAsyncEventQueue(true);
+  public void testRecoverRedundancyParallelAsyncEventQueueSimulation() throws NoSuchFieldException, SecurityException {
+    invokeInEveryVM(new SerializableRunnable() {
+
+      @Override
+      public void run () {
+        System.setProperty("gemfire.LOG_REBALANCE", "true");
+      }
+    });
+    try {
+      recoverRedundancyParallelAsyncEventQueue(true);
+    } finally {
+      System.setProperty("gemfire.LOG_REBALANCE", "false");
+    }
   }
   
   public void testRecoverRedundancyParallelAsyncEventQueue() {
@@ -1113,9 +1131,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         for(int i =0; i< 12; i++) {
           region.put(Integer.valueOf(i), "A", new byte[1024 * 512]);
         }
+        
+        // GEODE-244 - the async event queue uses asnychronous writes. Flush 
+        // the default disk store to make sure all values have overflowed
+        cache.findDiskStore(null).flush();
       }
     });
-    
     
     //check to make sure our redundancy is impaired
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
@@ -1133,6 +1154,8 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(12, details.getCreatedBucketCount());
         assertEquals(0,  details.getActualRedundantCopies());
         assertEquals(12,details.getLowRedundancyBucketCount());
+        AsyncEventQueue queue = cache.getAsyncEventQueue("parallelQueue");
+        assertEquals(12, queue.size());
       }
     };
     
@@ -1862,17 +1885,6 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
    * are correct and we still rebalance correctly
    */
   public void testMoveBucketsOverflowToDisk() throws Throwable {
-    
-    System.setProperty("gemfire.LOG_REBALANCE", "true");
-    invokeInEveryVM(new SerializableCallable() {
-      
-      @Override
-      public Object call() throws Exception {
-        System.setProperty("gemfire.LOG_REBALANCE", "true");
-        return null;
-      }
-    });
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

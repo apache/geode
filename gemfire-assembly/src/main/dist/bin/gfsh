@@ -134,5 +134,5 @@ fi
 # This enables job control and monitoring, effectively switching on the trap
 # handler to run when the java exe exits, regardless of how (even if killed).
 set -bm
-"$GF_JAVA" -Dgfsh=true -Dlog4j.configurationFile=/com/gemstone/gemfire/internal/logging/log4j/log4j2-cli.xml ${JLINE_TERMINAL} -classpath "${CLASSPATH}" $JAVA_ARGS $LAUNCHER  "$@"
+"$GF_JAVA" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml ${JLINE_TERMINAL} -classpath "${CLASSPATH}" $JAVA_ARGS $LAUNCHER  "$@"
 exit $?

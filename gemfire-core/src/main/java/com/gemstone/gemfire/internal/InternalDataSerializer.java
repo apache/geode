@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
 
@@ -65,7 +74,6 @@ import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.GemFireRethrowable;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.ToDataException;
@@ -76,7 +84,7 @@ import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -3385,14 +3393,16 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * updates.  If the serialized bytes arrive at a VM before the
    * registration message does, the deserializer will wait an amount
    * of time for the registration message to arrive.
+   * Made public for unit test access.
    * @since 5.7
    */
-  static class GetMarker extends Marker {
+  public static class GetMarker extends Marker {
     /**
      * Number of milliseconds to wait. Also used by InternalInstantiator.
      * Note that some tests set this to a small amount to speed up failures.
+     * Made public for unit test access.
      */
-    static int WAIT_MS = Integer.getInteger("gemfire.InternalDataSerializer.WAIT_MS", 60 * 1000);
+    public static int WAIT_MS = Integer.getInteger("gemfire.InternalDataSerializer.WAIT_MS", 60 * 1000);
 
     /**
      * Returns the serializer associated with this marker.  If the
@@ -3475,7 +3485,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * distributed cache of a new <code>DataSerializer</code> being
    * registered.
    */
-  public static final class RegistrationMessage extends PooledDistributionMessage {
+  public static final class RegistrationMessage extends SerialDistributionMessage {
     /** The id of the <code>DataSerializer</code> that was
      * registered
      * since 5.7 an int instead of a byte

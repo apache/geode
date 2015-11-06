@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
 
@@ -1028,45 +1037,7 @@ public class SocketCreator  implements com.gemstone.org.jgroups.util.SockCreator
 //         rw.readLock().unlock();
 //       }
   }
-  
-  /** has the isReachable method been looked up already? */
-  volatile boolean isReachableChecked;
-  
-  /** InetAddress.isReachable() is in v1.5 and later */
-  volatile Method isReachableMethod;
-  
-  public boolean isHostReachable(InetAddress host) {
-    boolean result = true;
-    try {
-      Method m = null;
-      if (isReachableChecked) {
-        m = isReachableMethod;
-      }
-      else {
-        // deadcoded - InetAddress.isReachable uses the ECHO port
-        // if we don't have root permission, and the ECHO port may
-        // be blocked
-        //m = InetAddress.class.getMethod("isReachable", new Class[] { int.class });
-        //isReachableMethod = m;
-        isReachableChecked = true;
-      }
-      if (m != null) {
-        result = ((Boolean)m.invoke(host, new Object[] {Integer.valueOf(250)})).booleanValue();
-        return result;
-      }
-    }
-    catch (InvocationTargetException e) {
-    }
-//    catch (NoSuchMethodException e) {
-//    }
-    catch (IllegalAccessException e) {
-    }
-    // any other bright ideas?  attempts to connect a socket to a missing
-    // machine may hang, so don't try the echo port or anything requiring
-    // full Sockets
-    return result;
-  }
-  
+
   /** Will be a server socket... this one simply registers the listeners. */
   public void configureServerSSLSocket( Socket socket ) throws IOException {
 //       rw.readLock().lockInterruptibly();

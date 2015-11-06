@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package batterytest.greplogs;
 
@@ -32,7 +41,10 @@ public class LogConsumer {
   private static final Pattern ExpectedExceptionPattern = Pattern.compile("<ExpectedException action=(add|remove)>(.*)</ExpectedException>");
   private static final Pattern logPattern = Pattern.compile("^\\[(?:fatal|error|warn|info|debug|trace|severe|warning|fine|finer|finest)");
   private static final Pattern blankPattern = Pattern.compile("^\\s*$");
-  private static final Pattern infoOrBelowPattern = Pattern.compile("^\\[(?:info|debug|trace|fine|finer|finest)");
+  /**
+   * Any messages at these levels will be skipped
+   */
+  private static final Pattern skipLevelPattern = Pattern.compile("^\\[(?:warn|warning|info|debug|trace|fine|finer|finest)");
   private static final Pattern fatalOrErrorPattern = Pattern.compile("^\\[(?:fatal|error|severe)");
   private static final Pattern causedByPattern = Pattern.compile("Caused by");
   private static final Pattern shortErrPattern = Pattern.compile("^\\[[^\\]]+\\](.*)$", Pattern.MULTILINE | Pattern.DOTALL);
@@ -46,7 +58,7 @@ public class LogConsumer {
   private static final Pattern misformatedI18nMessagePattern = Pattern.compile("[^\\d]\\{\\d+\\}");
   private static final Pattern rvvBitSetMessagePattern = Pattern.compile("RegionVersionVector.+bsv\\d+.+bs=\\{\\d+\\}");
   /** Limit long errors to this many lines */
-  private static int ERROR_BUFFER_LIMIT = 50;
+  private static int ERROR_BUFFER_LIMIT = 128;
   
   
   
@@ -85,7 +97,7 @@ public class LogConsumer {
           return null;
         }
       }
-      if (infoOrBelowPattern.matcher(line).find()){
+      if (skipLevelPattern.matcher(line).find()){
         infoMsgFlag = true;
         return null;
       }
@@ -112,20 +124,14 @@ public class LogConsumer {
           }
         } else {
           if (causedByPattern.matcher(line).find()) {
-            tmpErrFlag = false;
-            tmpErrLines = 0;
-            saveFlag = false;
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("-----------------------------------------------------------------------\n");
-            buffer.append("Found suspect string in ")
-                   .append(fileName)
-                   .append(" at line ")
-                   .append(savelinenum).append("\n\n")
-                   .append(all.toString());
-            return buffer;
+            // This code used to stop appending if a causedBy was seen.
+            // But we want the causedBy stack trace to also be included
+            // in the suspect StringBuilder.
+            // The main thing is we do not want to call checkExpectedStrs
+            // with this "caused by" line.
           } else if (checkExpectedStrs(line, expectedExceptions)) {
             // reset the counters and throw it all away if it matches 
-            // one of the registered ignorable strings
+            // one of the registered expected strings
             tmpErrFlag = false;
             tmpErrLines = 0;
             saveFlag = false; 
@@ -190,7 +196,7 @@ public class LogConsumer {
       } else if (exceptionPattern.matcher(line).find()
                  || javaLangErrorPattern.matcher(line).find()
                  || (misformatedI18nMessagePattern.matcher(line).find()
-                     && !(infoOrBelowPattern.matcher(line).find()
+                     && !(skipLevelPattern.matcher(line).find()
                          && rvvBitSetMessagePattern.matcher(line).find())) ) {
         if(! checkExpectedStrs(line, expectedExceptions)) {
           // it's the Exception colon that we want to find
@@ -201,7 +207,7 @@ public class LogConsumer {
           Matcher m2 = exceptionPattern2.matcher(line);
           Matcher m3 = exceptionPattern3.matcher(line);
           Matcher m4 = exceptionPattern4.matcher(line);
-          String shortName = "";
+          String shortName = null;
            
           if(m2.find()) {
             shortName = m2.group(1);
@@ -210,6 +216,7 @@ public class LogConsumer {
           } else if (m4.find()) {
             shortName = m4.group(1);
           }
+          if (shortName != null) {
           Integer i = (Integer) individalErrorCount.get(shortName);
           Integer occurances = 
             new Integer((i == null) ? 1 : i.intValue() + 1);
@@ -218,6 +225,9 @@ public class LogConsumer {
                             line + "\n", 
                             lineNumber,
                             fileName);
+          } else {
+            return enforceErrorLimit(1, line + "\n", lineNumber, fileName);
+          }
         }
       }
     }
@@ -233,15 +243,7 @@ public class LogConsumer {
       // we're still trying to save lines
       
       saveFlag = false;
-      StringBuilder buffer = new StringBuilder();
-      buffer.append("\n-----------------------------------------------------------------------\n")
-            .append("Found suspect string in ")
-            .append(fileName)
-            .append(" at line ")
-            .append(savelinenum)
-            .append("\n\n")
-            .append(all);
-      return buffer;
+      return enforceErrorLimit(1, all.toString(), savelinenum, fileName);
     }
     return null;
   }

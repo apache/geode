@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -18,15 +27,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import junit.framework.Assert;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,6 +58,7 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.Oplog.OPLOG_TYPE;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.jayway.awaitility.Awaitility;
 
 import dunit.DistributedTestCase;
 import dunit.DistributedTestCase.WaitCriterion;
@@ -3797,8 +3810,8 @@ public class OplogJUnitTest extends DiskRegionTestingBase
     return sum;
   }
    
-  // disabled - this test frequently fails.  See bug #52213
-  public void disabledtestMagicSeqPresence() throws Exception {
+  @Test
+  public void testMagicSeqPresence() throws Exception {
     final int MAX_OPLOG_SIZE = 200;
     diskProps.setMaxOplogSize(MAX_OPLOG_SIZE);
     diskProps.setPersistBackup(true);
@@ -3806,34 +3819,35 @@ public class OplogJUnitTest extends DiskRegionTestingBase
     diskProps.setSynchronous(true);
     diskProps.setOverflow(false);
     diskProps.setDiskDirsAndSizes(new File[] { dirs[0] }, new int[] { 4000 });
-    region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps,
-        Scope.LOCAL);
+    region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
-    // at least 3 kinds of files will be verified
-    assertEquals(3, verifyOplogHeader(dirs[0]));
+    // 3 types of oplog files will be verified
+    verifyOplogHeader(dirs[0], ".if", ".crf", ".drf");
 
     try {
       LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
-      for (int i = 0; i < 10; ++i) {
-        region.put("key-" + i, "value-");
-      }
-      assertEquals(4, verifyOplogHeader(dirs[0]));
+      IntStream.range(0, 20).forEach(i -> region.put("key-" + i, "value-" + i));
+      // krf is created, so 4 types of oplog files will be verified
+      verifyOplogHeader(dirs[0], ".if", ".crf", ".drf", ".krf");
 
       region.close();
-      region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
-          diskProps, Scope.LOCAL);
+      region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
-      assertEquals(4, verifyOplogHeader(dirs[0]));
+      verifyOplogHeader(dirs[0], ".if", ".crf", ".drf", ".krf");
       region.close();
     } finally {
       LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
     }
   }
 
-  /*
-   * returns number of types of files verified
-   */
-  private int verifyOplogHeader(File dir) throws IOException {
+  private void verifyOplogHeader(File dir, String ... oplogTypes) throws IOException {
+    
+    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+      List<String> types = new ArrayList<>(Arrays.asList(oplogTypes));
+      Arrays.stream(dir.listFiles()).map(File::getName).map(f -> f.substring(f.indexOf("."))).forEach(types::remove);
+      return types.isEmpty();
+    });
+    
     File[] files = dir.listFiles();
      HashSet<String> verified = new HashSet<String>();
      for (File file : files) {
@@ -3871,7 +3885,8 @@ public class OplogJUnitTest extends DiskRegionTestingBase
        assertEquals("expected a read to return 8 but it returned " + count + " for file " + file, 8, count);
        assertTrue(Arrays.equals(expect, buf));
      }
-    return verified.size();
+     
+     assertEquals(oplogTypes.length, verified.size());
   }
   
    /**

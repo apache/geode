@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire;
 
@@ -185,7 +194,7 @@ public class TXExpiryJUnitTest {
       }
       assertTrue(!exprReg.containsKey("key0"));
       // key1 is the canary for the rest of the entries
-      assertTrue(!exprReg.containsKey("key1"));
+      waitForEntryToBeDestroyed(exprReg, "key1");
 
       // rollback and failed commit test, ensure expiration continues
       for(int j=0; j<2; j++) {
@@ -222,7 +231,7 @@ public class TXExpiryJUnitTest {
         }
         assertTrue(!exprReg.containsKey("key0"));
         // key1 is the canary for the rest of the entries
-        assertTrue(!exprReg.containsKey("key1"));
+        waitForEntryToBeDestroyed(exprReg, "key1");
       }
     } finally {
       mutator.removeCacheListener(cl);
@@ -230,22 +239,40 @@ public class TXExpiryJUnitTest {
     }
   }
   
-  private void waitForEntryExpiration(LocalRegion lr, String key) {
-    ExpirationDetector detector = new ExpirationDetector(lr.getEntryExpiryTask(key));
-    ExpiryTask.expiryTaskListener = detector;
+  private void waitForEntryToBeDestroyed(final Region r, final String key) {
+    WaitCriterion waitForExpire = new WaitCriterion() {
+      public boolean done() {
+        return r.getEntry(key) == null;
+      }
+      public String description() {
+        return "never saw entry destroy of " + key;
+      }
+    };
+    DistributedTestCase.waitForCriterion(waitForExpire, 3000, 10, true);
+  }
+  
+  public static void waitForEntryExpiration(LocalRegion lr, String key) {
     try {
-      ExpiryTask.permitExpiration();
-      DistributedTestCase.waitForCriterion(detector, 3000, 2, true);
+      ExpirationDetector detector;
+      do {
+        detector = new ExpirationDetector(lr.getEntryExpiryTask(key));
+        ExpiryTask.expiryTaskListener = detector;
+        ExpiryTask.permitExpiration();
+        DistributedTestCase.waitForCriterion(detector, 3000, 2, true);
+      } while (!detector.hasExpired() && detector.wasRescheduled());
     } finally {
       ExpiryTask.expiryTaskListener = null;
     }
   }
   private void waitForRegionExpiration(LocalRegion lr, boolean ttl) {
-    ExpirationDetector detector = new ExpirationDetector(ttl ? lr.getRegionTTLExpiryTask() : lr.getRegionIdleExpiryTask());
-    ExpiryTask.expiryTaskListener = detector;
     try {
-      ExpiryTask.permitExpiration();
-      DistributedTestCase.waitForCriterion(detector, 3000, 2, true);
+      ExpirationDetector detector;
+      do {
+        detector = new ExpirationDetector(ttl ? lr.getRegionTTLExpiryTask() : lr.getRegionIdleExpiryTask());
+        ExpiryTask.expiryTaskListener = detector;
+        ExpiryTask.permitExpiration();
+        DistributedTestCase.waitForCriterion(detector, 3000, 2, true);
+      } while (!detector.hasExpired() && detector.wasRescheduled());
     } finally {
       ExpiryTask.expiryTaskListener = null;
     }
@@ -256,11 +283,22 @@ public class TXExpiryJUnitTest {
    * Used to detect that a particular ExpiryTask has expired.
    */
   public static class ExpirationDetector implements ExpiryTaskListener, WaitCriterion {
+    private volatile boolean ran = false;
     private volatile boolean expired = false;
-    private final ExpiryTask et;
+    private volatile boolean rescheduled = false;
+    public final ExpiryTask et;
     public ExpirationDetector(ExpiryTask et) {
       assertNotNull(et);
       this.et = et;
+    }
+    @Override
+    public void afterReschedule(ExpiryTask et) {
+      if (et == this.et) {
+        if (!hasExpired()) {
+          ExpiryTask.suspendExpiration();
+        }
+        this.rescheduled = true;
+      }
     }
     @Override
     public void afterExpire(ExpiryTask et) {
@@ -269,12 +307,24 @@ public class TXExpiryJUnitTest {
       }
     }
     @Override
+    public void afterTaskRan(ExpiryTask et) {
+      if (et == this.et) {
+        this.ran = true;
+      }
+    }
+    @Override
     public boolean done() {
-      return this.expired;
+      return this.ran;
     }
     @Override
     public String description() {
-      return "the expiry task " + this.et + " did not expire";
+      return "the expiry task " + this.et + " never ran";
+    }
+    public boolean wasRescheduled() {
+      return this.rescheduled;
+    }
+    public boolean hasExpired() {
+      return this.expired;
     }
   }
 

@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.management;
 
 import java.util.ArrayList;
@@ -13,6 +29,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -598,7 +615,8 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
     props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");    
     props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    
+    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+
     return props;
   }
 
@@ -619,10 +637,14 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * Removes off-heap region and disconnects.
    */
   protected void cleanup() {
-    Region region = getCache().getRegion(OFF_HEAP_REGION_NAME);
-    
-    if(null != region) {
-      region.destroyRegion();
+    Cache existingCache = basicGetCache();
+
+    if(null != existingCache && !existingCache.isClosed()) {
+      Region region = getCache().getRegion(OFF_HEAP_REGION_NAME);
+
+      if (null != region) {
+        region.destroyRegion();
+      }
     }
     
     disconnectFromDS();

@@ -1,10 +1,18 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed;
 
@@ -120,7 +128,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
 
     @SuppressWarnings("unused")
     File file = new File(this.temporaryFolder.getRoot(), ServerLauncherForkingProcess.class.getSimpleName().concat(".log"));
-    //-logger.info("KIRK: log file is " + file);
+    //-logger.info("log file is " + file);
     
     final ProcessWrapper pw = new ProcessWrapper.Builder().mainClass(ServerLauncherForkingProcess.class).build();
     pw.execute(null, this.temporaryFolder.getRoot()).waitFor(true);
@@ -882,7 +890,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
     this.errorCollector.checkThat(outputContainedExpectedString.get(), is(equalTo(true)));
 
     // just in case the launcher started...
-    ServerState status = null; // TODO: this could throw NPE later
+    ServerState status = null;
     try {
       status = dirLauncher.stop();
     } catch (Throwable t) { 
@@ -1360,7 +1368,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
   public static class ServerLauncherForkingProcess {
 
     public static void main(final String... args) throws IOException, PidUnavailableException {
-      //-System.out.println("KIRK inside main");
+      //-System.out.println("inside main");
       File file = new File(System.getProperty("user.dir"), ServerLauncherForkingProcess.class.getSimpleName().concat(".log"));
       file.createNewFile();
       LocalLogWriter logWriter = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, new PrintStream(new FileOutputStream(file, true)));
@@ -1387,7 +1395,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main command: " + command);
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main starting...");
 
-        //-System.out.println("KIRK launching " + command);
+        //-System.out.println("launching " + command);
         
         @SuppressWarnings("unused")
         Process forkedProcess = new ProcessBuilder(command).start();
@@ -1398,7 +1406,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
 //        logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main waiting for Server to start...");
 //
 //        File workingDir = new File(System.getProperty("user.dir"));
-//        System.out.println("KIRK waiting for server to start in " + workingDir);
+//        System.out.println("waiting for server to start in " + workingDir);
 //        final ServerLauncher dirLauncher = new ServerLauncher.Builder()
 //            .setWorkingDirectory(workingDir.getCanonicalPath())
 //            .build();
@@ -1406,7 +1414,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
 
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
-        //-System.out.println("KIRK exiting");
+        //-System.out.println("exiting");
         System.exit(0);
       }
       catch (Throwable t) {

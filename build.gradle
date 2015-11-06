@@ -1,5 +1,11 @@
 apply plugin: 'wrapper'
 
+
+// Load all properties in dependency-version.properties as project properties, so all projects can read them
+Properties dependencyVersions = new Properties()
+dependencyVersions.load(new FileInputStream("${project.projectDir}/gradle/dependency-versions.properties"))
+dependencyVersions.keys().each{ k -> project.ext[k] = dependencyVersions[k]}
+
 allprojects {
   version = versionNumber + '-' + releaseType
   // We want to see all test results.  This is equivalatent to setting --continue
@@ -78,8 +84,8 @@ subprojects {
   gradle.taskGraph.whenReady( { graph ->
     tasks.withType(JavaCompile).each { javac ->
       javac.configure {
-        sourceCompatibility '1.7'
-        targetCompatibility '1.7'
+        sourceCompatibility '1.8'
+        targetCompatibility '1.8'
         options.encoding = 'UTF-8'
       }
     }
@@ -95,7 +101,7 @@ subprojects {
             "Created-By"        : System.getProperty("user.name"),
             "Title"             : rootProject.name,
             "Version"           : version,
-            "Vendor"            : "Pivotal Software, Inc."
+            "Organization"      : "Apache Software Foundation (ASF)"
           )
         }
       }
@@ -275,29 +281,30 @@ subprojects {
   javadoc.classpath += configurations.provided
   
   dependencies {
-    compile 'org.springframework:spring-aop:3.2.12.RELEASE'
-    compile 'org.springframework:spring-beans:3.2.12.RELEASE'
-    compile 'org.springframework:spring-context:3.2.12.RELEASE'
-    compile 'org.springframework:spring-context-support:3.2.12.RELEASE'
-    compile 'org.springframework:spring-core:3.2.12.RELEASE'
-    compile 'org.springframework:spring-expression:3.2.12.RELEASE'
-    compile 'org.springframework:spring-web:3.2.12.RELEASE'
-    compile 'org.springframework:spring-webmvc:3.2.12.RELEASE'
+    compile 'org.springframework:spring-aop:' + project.'springframework.version'
+    compile 'org.springframework:spring-beans:' + project.'springframework.version'
+    compile 'org.springframework:spring-context:' + project.'springframework.version'
+    compile 'org.springframework:spring-context-support:' + project.'springframework.version'
+    compile 'org.springframework:spring-core:' + project.'springframework.version'
+    compile 'org.springframework:spring-expression:' + project.'springframework.version'
+    compile 'org.springframework:spring-web:' + project.'springframework.version'
+    compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
 
-    testCompile 'com.github.stefanbirkner:system-rules:1.9.0'
-    testCompile 'edu.umd.cs.mtc:multithreadedtc:1.01'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.assertj:assertj-core:2.1.0'
-    testCompile 'org.mockito:mockito-core:1.10.19'
-    testCompile 'org.hamcrest:hamcrest-all:1.3'
-    testCompile 'org.jmock:jmock:2.8.1'
-    testCompile 'org.jmock:jmock-junit4:2.8.1'
-    testCompile 'org.jmock:jmock-legacy:2.8.1'
-    testCompile 'pl.pragmatists:JUnitParams:1.0.4'
+    testCompile 'com.jayway.awaitility:awaitility:' + project.'awaitility.version'
+    testCompile 'com.github.stefanbirkner:system-rules:' + project.'system-rules.version'
+    testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
+    testCompile 'junit:junit:' + project.'junit.version'
+    testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
+    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+    testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
+    testCompile 'org.jmock:jmock:' + project.'jmock.version'
+    testCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
+    testCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
+    testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
     
-    testRuntime 'cglib:cglib:3.1'
-    testRuntime 'org.objenesis:objenesis:2.1'
-    testRuntime 'org.ow2.asm:asm:5.0.3'
+    testRuntime 'cglib:cglib:' + project.'cglib.version'
+    testRuntime 'org.objenesis:objenesis:' + project.'objenesis.version'
+    testRuntime 'org.ow2.asm:asm:' + project.'asm.version'
   }
 
   test {
@@ -381,7 +388,7 @@ subprojects {
         }
         
         maxHeapSize '768m'
-        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-XX:MaxPermSize=256M', '-ea']
+        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
 
         systemProperties = [
           'gemfire.DEFAULT_MAX_OPLOG_SIZE' : '10',
@@ -408,10 +415,13 @@ subprojects {
     }
   })
 
-  check.dependsOn integrationTest
-  check.dependsOn distributedTest 
+  // Make precheckin task run all validation tests for checking in code.
+  task precheckin (dependsOn: [ build, integrationTest, distributedTest ]) {
+    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, and distributedTest'
+  }
+
   check.dependsOn checkMissedTests
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest,checkMissedTests
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, checkMissedTests
   build.finalizedBy combineReports
   check.finalizedBy combineReports
   test.finalizedBy combineReports

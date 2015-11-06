@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
 
@@ -709,7 +718,7 @@ public class DistributionManager
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      if (closeInProgress) {
+      if (isCloseInProgress()) {
         logger.debug("Caught unusual exception during shutdown: {}", t.getMessage(), t);
       }
       else {
@@ -2477,7 +2486,7 @@ public class DistributionManager
       try {
         listener.memberJoined(id);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2494,7 +2503,7 @@ public class DistributionManager
       try  {
         listener.memberJoined(id);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2506,6 +2515,20 @@ public class DistributionManager
       }
     }
   }
+  /**
+   * Returns true if this DM or the DistributedSystem owned by
+   * it is closing or is closed.
+   */
+  private boolean isCloseInProgress() {
+    if (closeInProgress) {
+      return true;
+    }
+    InternalDistributedSystem ds = getSystem();
+    if (ds != null && ds.isDisconnecting()) {
+      return true;
+    }
+    return false;
+  }
   private void handleCrashEvent(MemberCrashedEvent ev) {
     InternalDistributedMember id = ev.getId();
     for (Iterator iter = membershipListeners.keySet().iterator();
@@ -2514,7 +2537,7 @@ public class DistributionManager
       try {
         listener.memberDeparted(id, true/*crashed*/);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2531,7 +2554,7 @@ public class DistributionManager
       try {
         listener.memberDeparted(id, true/*crashed*/);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2553,7 +2576,7 @@ public class DistributionManager
       try {
         listener.memberDeparted(id, false);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2570,7 +2593,7 @@ public class DistributionManager
       try {
         listener.memberDeparted(id, false);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2591,7 +2614,7 @@ public class DistributionManager
       try {
         listener.memberSuspect(id, whoSuspected);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2608,7 +2631,7 @@ public class DistributionManager
       try {
         listener.memberSuspect(id, whoSuspected);
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2635,7 +2658,7 @@ public class DistributionManager
       try {
         listener.quorumLost(ev.getFailures(), ev.getRemaining());
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2652,7 +2675,7 @@ public class DistributionManager
       try {
         listener.quorumLost(ev.getFailures(), ev.getRemaining());
       } catch (CancelException e) {
-        if (closeInProgress) {
+        if (isCloseInProgress()) {
           if (logger.isTraceEnabled()) {
             logger.trace("MemberEventInvoker: cancelled");
           }
@@ -2755,7 +2778,7 @@ public class DistributionManager
           handleMemberEvent(ev);
         }
         catch (InterruptedException e) {
-          if (closeInProgress) {
+          if (isCloseInProgress()) {
             if (logger.isTraceEnabled()) {
               logger.trace("MemberEventInvoker: InterruptedException during shutdown");
             }
@@ -2769,7 +2792,7 @@ public class DistributionManager
           break;
         }
         catch (CancelException e) {
-          if (closeInProgress) {
+          if (isCloseInProgress()) {
             if (logger.isTraceEnabled()) {
               logger.trace("MemberEventInvoker: cancelled");
             }
@@ -3604,7 +3627,7 @@ public class DistributionManager
         this.stats.incNodes(-1);
       }
       StringId msg;
-      if (crashed && ! this.closeInProgress) {
+      if (crashed && ! isCloseInProgress()) {
         msg = LocalizedStrings.DistributionManager_MEMBER_AT_0_UNEXPECTEDLY_LEFT_THE_DISTRIBUTED_CACHE_1;
         addMemberEvent(new MemberCrashedEvent(theId, reason));
       } else {

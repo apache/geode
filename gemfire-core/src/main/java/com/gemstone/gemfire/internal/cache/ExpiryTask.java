@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -223,7 +232,11 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   {
     ExpirationAction action = getAction();
     if (action == null) return false;
-    return expire(action, isPending);
+    boolean result = expire(action, isPending);
+    if (result && expiryTaskListener != null) {
+      expiryTaskListener.afterExpire(this);
+    }
+    return result;
   }
   
   /** Why did this expire?
@@ -380,7 +393,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
        logger.fatal(LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
     } finally {
       if (expiryTaskListener != null) {
-        expiryTaskListener.afterExpire(this);
+        expiryTaskListener.afterTaskRan(this);
       }
     }
   }
@@ -502,6 +515,22 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * to an ExpiryTask have happened.
    */
   public interface ExpiryTaskListener {
+    /**
+     * Called after the given expiry task has run.
+     * This means that the time it was originally
+     * scheduled to run has elapsed and the scheduler
+     * has run the task. While running the task it
+     * may decide to expire it or reschedule it.
+     */
+    public void afterTaskRan(ExpiryTask et);
+    /**
+     * Called after the given expiry task has been
+     * rescheduled. afterTaskRan can still be called
+     * on the same task.
+     * In some cases a task is rescheduled without expiring it.
+     * In others it is expired and rescheduled.
+     */
+    public void afterReschedule(ExpiryTask et);
     /**
      * Called after the given expiry task has expired.
      */

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -102,7 +111,6 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
     
   }
   
-  
   public void testNetSearchNormals() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -125,7 +133,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
       assertEquals(null, get(vm3, "a"));
 
       //Make sure we only processed one message
-      assertEquals(vm3Count + 3, getReceivedMessages(vm3));
+      waitForReceivedMessages(vm3, vm3Count + 3);
 
       //Make sure the normal guys each saw 1 query message.
       assertEquals(vm0Count + vm1Count + vm2Count + 3, getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
@@ -144,17 +152,9 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
       assertEquals("b", get(vm3, "a"));
 
       //Make sure we only processed one message
-      assertEquals(vm2Count + 1, getReceivedMessages(vm2));
+      waitForReceivedMessages(vm2, vm2Count + 1);
 
-      //Make sure we only processed one message
-      DistributedTestCase.waitForCriterion(new WaitCriterion() {
-        public boolean done() {
-          return getReceivedMessages(vm3) == vm3Count + 3;
-        }
-        public String description() {
-          return "expected " + (vm3Count+3) + " but was " + getReceivedMessages(vm3);
-        }
-      }, 2000, 100, true);
+      waitForReceivedMessages(vm3, vm3Count + 3);
 
       //Make sure the normal guys each saw 1 query message.
       assertEquals(vm0Count + vm1Count + vm2Count + 3, getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
@@ -351,6 +351,21 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
         return region.get(key);
       }
     });
+  }
+  
+  private void waitForReceivedMessages(final VM vm, final long expected) {
+    waitForCriterion(new WaitCriterion() {
+      
+      @Override
+      public boolean done() {
+        return getReceivedMessages(vm) == expected;
+      }
+      
+      @Override
+      public String description() {
+        return "Expected " + expected + " but got " + getReceivedMessages(vm);
+      }
+    }, 2000, 100, true);
   }
   
   private long getReceivedMessages(VM vm) {

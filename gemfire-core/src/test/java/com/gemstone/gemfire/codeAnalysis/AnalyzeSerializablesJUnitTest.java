@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.codeAnalysis;
 
@@ -20,8 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,7 +51,6 @@ import com.gemstone.gemfire.util.test.TestUtil;
 public class AnalyzeSerializablesJUnitTest {
   /** all loaded classes */
   protected static Map<String, CompiledClass> classes = new HashMap<String, CompiledClass>();
-  protected static boolean DISABLED = true;
   private static boolean ClassesNotFound;
   
   public AnalyzeSerializablesJUnitTest() {
@@ -48,17 +58,15 @@ public class AnalyzeSerializablesJUnitTest {
   
   @Before
   public void loadClasses() throws Exception {
+    String version = System.getProperty("java.runtime.version");
+    boolean jdk17 = version != null && version.startsWith("1.8");
+      // sanctioned info is based on a 1.7 compiler
+    Assume.assumeTrue("AnalyzeSerializables requires a Java 7 but tests are running with v"+version, jdk17);
     if (classes.size() > 0) {
       return;
     }
     System.out.println("loadClasses starting");
-    String version = System.getProperty("java.runtime.version");
-    if (version == null || !version.startsWith("1.7")) {
-      // sanctioned info is based on a 1.7 compiler
-      System.out.println("AnalyzeSerializables requires a Java 7 but tests are running with v"+version);
-      DISABLED=true;
-      return;
-    }
+    
     List<String> excludedClasses = loadExcludedClasses(new File(TestUtil.getResourcePath(AnalyzeSerializablesJUnitTest.class, "excludedClasses.txt")));
     List<String> openBugs = loadOpenBugs(new File(TestUtil.getResourcePath(AnalyzeSerializablesJUnitTest.class, "openBugs.txt")));
     excludedClasses.addAll(openBugs);
@@ -94,7 +102,6 @@ public class AnalyzeSerializablesJUnitTest {
     else {
       fail("unable to find geode classes");
     }
-    DISABLED = false;
   }
   
   @AfterClass
@@ -129,7 +136,6 @@ public class AnalyzeSerializablesJUnitTest {
     else {
       fail("unable to find jgroups jar");
     }
-    DISABLED = false;
   }
   
   protected static List<String> loadExcludedClasses(File exclusionsFile) throws Exception {
@@ -162,7 +168,6 @@ public class AnalyzeSerializablesJUnitTest {
         if (line.length() > 0 && !line.startsWith("#")) {
           String[] split = line.split(",");
           if (split.length != 2) {
-            DISABLED = true; // don't run the other tests
             fail("unable to load classes due to misformatted line in openBugs.txt: " + line);
           }
           excludedClasses.add(line.split(",")[1].trim());
@@ -187,10 +192,6 @@ public class AnalyzeSerializablesJUnitTest {
     System.out.println("testDataSerializables starting");
     if (ClassesNotFound) {
       System.out.println("... test not run due to not being able to locate product class files");
-      return;
-    }
-    if (DISABLED) {
-      System.out.println("... test is disabled");
       return;
     }
     String compareToFileName = TestUtil.getResourcePath(getClass(), "sanctionedDataSerializables.txt");
@@ -231,10 +232,6 @@ public class AnalyzeSerializablesJUnitTest {
     System.out.flush();
     if (ClassesNotFound) {
       System.out.println("... test not run due to not being able to locate product class files");
-      return;
-    }
-    if (DISABLED) {
-      System.out.println("... test is disabled");
       return;
     }
     String compareToFileName = TestUtil.getResourcePath(getClass(), "sanctionedSerializables.txt");

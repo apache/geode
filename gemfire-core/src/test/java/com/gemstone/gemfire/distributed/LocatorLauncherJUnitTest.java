@@ -1,14 +1,23 @@
 /*
- * =========================================================================
- *  Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- *  This product is protected by U.S. and international copyright
- *  and intellectual property laws. Pivotal products are covered by
- *  more patents listed at http://www.pivotal.io/patents.
- * ========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,7 +30,6 @@ import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import joptsimple.OptionException;
@@ -48,7 +56,7 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
 
   @Test
   public void testBuilderParseArguments() throws Exception {
-    String expectedWorkingDirectory = System.getProperty("user.dir");
+    String expectedWorkingDirectory = this.temporaryFolder.getRoot().getCanonicalPath().toString();
     Builder builder = new Builder();
 
     builder.parseArguments("start", "memberOne", "--bind-address", InetAddress.getLocalHost().getHostAddress(),
@@ -67,8 +75,8 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testBuilderParseArgumentsWithCommandInArguments() {
-    String expectedWorkingDirectory = System.getProperty("user.dir");
+  public void testBuilderParseArgumentsWithCommandInArguments() throws Exception {
+    String expectedWorkingDirectory = this.temporaryFolder.getRoot().getCanonicalPath().toString();
     Builder builder = new Builder();
 
     builder.parseArguments("start", "--dir=" + expectedWorkingDirectory, "--port", "12345", "memberOne");
@@ -299,7 +307,8 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testSetAndGetWorkingDirectory() {
+  public void testSetAndGetWorkingDirectory() throws Exception {
+    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath().toString();
     Builder builder = new Builder();
 
     assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
@@ -309,11 +318,8 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
     assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
     assertSame(builder, builder.setWorkingDirectory("  "));
     assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(System.getProperty("user.dir")));
-    assertEquals(System.getProperty("user.dir"), builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(System.getProperty("java.io.tmpdir")));
-    assertEquals(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(System.getProperty("java.io.tmpdir"))),
-      builder.getWorkingDirectory());
+    assertSame(builder, builder.setWorkingDirectory(rootFolder));
+    assertEquals(rootFolder, builder.getWorkingDirectory());
     assertSame(builder, builder.setWorkingDirectory(null));
     assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
   }
@@ -354,7 +360,7 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testBuild() {
+  public void testBuild() throws Exception {
     Builder builder = new Builder();
 
     LocatorLauncher launcher = builder.setCommand(Command.START)
@@ -362,7 +368,6 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
       .setHostnameForClients("beanstock.vmware.com")
       .setMemberName("Beanstock")
       .setPort(8192)
-      .setWorkingDirectory(AbstractLauncher.DEFAULT_WORKING_DIRECTORY)
       .build();
 
     assertNotNull(launcher);
@@ -438,11 +443,11 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testBuildWithMismatchingCurrentAndWorkingDirectoryOnStart() {
+  public void testBuildWithMismatchingCurrentAndWorkingDirectoryOnStart() throws Exception {
     try {
       new Builder().setCommand(Command.START)
         .setMemberName("memberOne")
-        .setWorkingDirectory(System.getProperty("java.io.tmpdir"))
+        .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath().toString())
         .build();
     }
     catch (IllegalStateException expected) {

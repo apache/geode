@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.cache.util;
 
 import java.util.Date;
@@ -17,6 +33,7 @@ import org.quartz.CronExpression;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 
 import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
@@ -51,7 +68,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * <P>
  * {@link AutoBalancer} can be controlled using the following configurations
  * <OL>
- * <LI> {@link AutoBalancer#SCHEDULE}
+ * <LI>{@link AutoBalancer#SCHEDULE}
  * <LI>TBD THRESHOLDS
  * 
  * @author Ashvin Agrawal
@@ -119,13 +136,24 @@ public class AutoBalancer implements Declarable {
 
   public static final Object AUTO_BALANCER_LOCK = "__AUTO_B_LOCK";
 
-  private AuditScheduler scheduler = new CronScheduler();
-  private OOBAuditor auditor = new SizeBasedOOBAuditor();
-  private TimeProvider clock = new SystemClockTimeProvider();
-  private CacheOperationFacade cacheFacade = new GeodeCacheFacade();
-  private AtomicBoolean isLockAcquired = new AtomicBoolean(false);
+  private final AuditScheduler scheduler;
+  private final OOBAuditor auditor;
+  private final TimeProvider clock;
+  private final CacheOperationFacade cacheFacade;
 
   private static final Logger logger = LogService.getLogger();
+
+  public AutoBalancer() {
+    this(null, null, null, null);
+  }
+
+  public AutoBalancer(AuditScheduler scheduler, OOBAuditor auditor, TimeProvider clock,
+      CacheOperationFacade cacheFacade) {
+    this.cacheFacade = cacheFacade == null ? new GeodeCacheFacade() : cacheFacade;
+    this.scheduler = scheduler == null ? new CronScheduler() : scheduler;
+    this.auditor = auditor == null ? new SizeBasedOOBAuditor(this.cacheFacade) : auditor;
+    this.clock = clock == null ? new SystemClockTimeProvider() : clock;
+  }
 
   @Override
   public void init(Properties props) {
@@ -197,12 +225,20 @@ public class AutoBalancer implements Declarable {
         public void run() {
           try {
             auditor.execute();
+          } catch (CacheClosedException e) {
+            logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs", e);
+            return;
           } catch (Exception e) {
             logger.warn("Error while executing out-of-balance audit.", e);
           }
           submitNext();
         }
       }, delay, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void destroy() {
+      trigger.shutdownNow();
     }
   }
 
@@ -215,9 +251,15 @@ public class AutoBalancer implements Declarable {
    * <LI>updates auto-balance stat
    * <LI>release lock
    */
-  class SizeBasedOOBAuditor implements OOBAuditor {
+  static class SizeBasedOOBAuditor implements OOBAuditor {
     private int sizeThreshold = DEFAULT_SIZE_THRESHOLD_PERCENT;
     private int sizeMinimum = DEFAULT_MINIMUM_SIZE;
+
+    final CacheOperationFacade cache;
+
+    public SizeBasedOOBAuditor(CacheOperationFacade cache) {
+      this.cache = cache;
+    }
 
     @Override
     public void init(Properties props) {
@@ -243,24 +285,16 @@ public class AutoBalancer implements Declarable {
 
     @Override
     public void execute() {
-      if (!isLockAcquired.get()) {
-        synchronized (isLockAcquired) {
-          if (!isLockAcquired.get()) {
-            boolean result = cacheFacade.acquireAutoBalanceLock();
-            if (result) {
-              isLockAcquired.set(true);
-            } else {
-              if (logger.isDebugEnabled()) {
-                logger.debug("Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
-              }
-              return;
-            }
-          }
+      boolean result = cache.acquireAutoBalanceLock();
+      if (!result) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
         }
+        return;
       }
 
-      cacheFacade.incrementAttemptCounter();
-      boolean result = needsRebalancing();
+      cache.incrementAttemptCounter();
+      result = needsRebalancing();
       if (!result) {
         if (logger.isDebugEnabled()) {
           logger.debug("Rebalancing is not needed");
@@ -268,7 +302,7 @@ public class AutoBalancer implements Declarable {
         return;
       }
 
-      cacheFacade.rebalance();
+      cache.rebalance();
     }
 
     /**
@@ -284,13 +318,13 @@ public class AutoBalancer implements Declarable {
      */
     boolean needsRebalancing() {
       // test cluster level status
-      long transferSize = cacheFacade.getTotalTransferSize();
+      long transferSize = cache.getTotalTransferSize();
       if (transferSize <= sizeMinimum) {
         return false;
       }
 
-      Map<PartitionedRegion, InternalPRInfo> details = cacheFacade.getRegionMemberDetails();
-      long totalSize = cacheFacade.getTotalDataSize(details);
+      Map<PartitionedRegion, InternalPRInfo> details = cache.getRegionMemberDetails();
+      long totalSize = cache.getTotalDataSize(details);
 
       if (totalSize > 0) {
         int transferPercent = (int) ((100.0 * transferSize) / totalSize);
@@ -318,6 +352,18 @@ public class AutoBalancer implements Declarable {
    * auto-balancing
    */
   static class GeodeCacheFacade implements CacheOperationFacade {
+    private final AtomicBoolean isLockAcquired = new AtomicBoolean(false);
+
+    private GemFireCacheImpl cache;
+
+    public GeodeCacheFacade() {
+      this(null);
+    }
+
+    public GeodeCacheFacade(GemFireCacheImpl cache) {
+      this.cache = cache;
+    }
+
     @Override
     public Map<PartitionedRegion, InternalPRInfo> getRegionMemberDetails() {
       GemFireCacheImpl cache = getCache();
@@ -354,12 +400,12 @@ public class AutoBalancer implements Declarable {
         RebalanceOperation operation = getCache().getResourceManager().createRebalanceFactory().simulate();
         RebalanceResults result = operation.getResults();
         if (logger.isDebugEnabled()) {
-          logger.debug("Rebalance estimate: RebalanceResultsImpl [TotalBucketCreateBytes="
-              + result.getTotalBucketCreateBytes() + ", TotalBucketCreatesCompleted="
-              + result.getTotalBucketCreatesCompleted() + ", TotalBucketTransferBytes="
-              + result.getTotalBucketTransferBytes() + ", TotalBucketTransfersCompleted="
-              + result.getTotalBucketTransfersCompleted() + ", TotalPrimaryTransfersCompleted="
-              + result.getTotalPrimaryTransfersCompleted() + "]");
+          logger.debug(
+              "Rebalance estimate: RebalanceResultsImpl [TotalBucketCreateBytes=" + result.getTotalBucketCreateBytes()
+                  + ", TotalBucketCreatesCompleted=" + result.getTotalBucketCreatesCompleted()
+                  + ", TotalBucketTransferBytes=" + result.getTotalBucketTransferBytes()
+                  + ", TotalBucketTransfersCompleted=" + result.getTotalBucketTransfersCompleted()
+                  + ", TotalPrimaryTransfersCompleted=" + result.getTotalPrimaryTransfersCompleted() + "]");
         }
         return result.getTotalBucketTransferBytes();
       } catch (CancellationException e) {
@@ -390,9 +436,8 @@ public class AutoBalancer implements Declarable {
             + result.getTotalBucketCreatesCompleted() + ", TotalBucketTransferBytes="
             + result.getTotalBucketTransferBytes() + ", TotalBucketTransferTime=" + result.getTotalBucketTransferTime()
             + ", TotalBucketTransfersCompleted=" + +result.getTotalBucketTransfersCompleted()
-            + ", TotalPrimaryTransferTime=" + result.getTotalPrimaryTransferTime()
-            + ", TotalPrimaryTransfersCompleted=" + result.getTotalPrimaryTransfersCompleted() + ", TotalTime="
-            + result.getTotalTime() + "]");
+            + ", TotalPrimaryTransferTime=" + result.getTotalPrimaryTransferTime() + ", TotalPrimaryTransfersCompleted="
+            + result.getTotalPrimaryTransfersCompleted() + ", TotalTime=" + result.getTotalTime() + "]");
       } catch (CancellationException e) {
         logger.info("Error rebalancing the cluster", e);
       } catch (InterruptedException e) {
@@ -401,22 +446,44 @@ public class AutoBalancer implements Declarable {
     }
 
     GemFireCacheImpl getCache() {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
-        throw new IllegalStateException("Missing cache instance.");
+        synchronized (this) {
+          if (cache == null) {
+            cache = GemFireCacheImpl.getInstance();
+            if (cache == null) {
+              throw new IllegalStateException("Missing cache instance.");
+            }
+          }
+        }
+      }
+      if (cache.isClosed()) {
+        throw new CacheClosedException();
       }
       return cache;
     }
 
     @Override
     public boolean acquireAutoBalanceLock() {
-      DistributedLockService dls = getDLS();
+      if (!isLockAcquired.get()) {
+        synchronized (isLockAcquired) {
+          if (!isLockAcquired.get()) {
+            DistributedLockService dls = getDLS();
 
-      boolean result = dls.lock(AUTO_BALANCER_LOCK, 0, -1);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Grabbed AutoBalancer lock? " + result);
+            boolean result = dls.lock(AUTO_BALANCER_LOCK, 0, -1);
+            if (result) {
+              isLockAcquired.set(true);
+              if (logger.isDebugEnabled()) {
+                logger.debug("Grabbed AutoBalancer lock");
+              }
+            } else {
+              if (logger.isDebugEnabled()) {
+                logger.debug("Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
+              }
+            }
+          }
+        }
       }
-      return result;
+      return isLockAcquired.get();
     }
 
     @Override
@@ -443,6 +510,8 @@ public class AutoBalancer implements Declarable {
 
   interface AuditScheduler {
     void init(String schedule);
+
+    void destroy();
   }
 
   interface OOBAuditor {
@@ -471,42 +540,15 @@ public class AutoBalancer implements Declarable {
     long getTotalTransferSize();
   }
 
-  /**
-   * Test hook to inject custom triggers
-   */
-  void setScheduler(AuditScheduler trigger) {
-    logger.info("Setting custom AuditScheduler");
-    this.scheduler = trigger;
-  }
-
-  /**
-   * Test hook to inject custom auditors
-   */
-  void setOOBAuditor(OOBAuditor auditor) {
-    logger.info("Setting custom Auditor");
-    this.auditor = auditor;
-  }
-
   OOBAuditor getOOBAuditor() {
     return auditor;
   }
 
-  /**
-   * Test hook to inject a clock
-   */
-  void setTimeProvider(TimeProvider clock) {
-    logger.info("Setting custom TimeProvider");
-    this.clock = clock;
-  }
-
-  /**
-   * Test hook to inject a Cache operation facade
-   */
-  public void setCacheOperationFacade(CacheOperationFacade facade) {
-    this.cacheFacade = facade;
-  }
-
   public CacheOperationFacade getCacheOperationFacade() {
     return this.cacheFacade;
+  }
+
+  public void destroy() {
+    scheduler.destroy();
   }
 }

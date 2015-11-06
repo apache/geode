@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -1291,12 +1300,24 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return old;
   }
 
-  public ExpirationAttributes setRegionIdleTimeout(
-      ExpirationAttributes idleTimeout)
-  {
+  public static void validatePRRegionExpirationAttributes(ExpirationAttributes expAtts) {
+    if (expAtts.getTimeout() > 0) {
+      ExpirationAction expAction = expAtts.getAction();
+      if (expAction.isInvalidate() || expAction.isLocalInvalidate()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      } else if (expAction.isDestroy() || expAction.isLocalDestroy()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      }
+    }
+  }
+
+  public ExpirationAttributes setRegionIdleTimeout(ExpirationAttributes idleTimeout) {
     checkReadiness();
     if (idleTimeout == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_IDLETIMEOUT_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {
@@ -1313,12 +1334,13 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return oldAttrs;
   }
 
-  public ExpirationAttributes setRegionTimeToLive(
-      ExpirationAttributes timeToLive)
-  {
+  public ExpirationAttributes setRegionTimeToLive(ExpirationAttributes timeToLive) {
     checkReadiness();
     if (timeToLive == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {

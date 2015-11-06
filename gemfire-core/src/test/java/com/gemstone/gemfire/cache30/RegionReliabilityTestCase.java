@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
@@ -17,7 +26,9 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.internal.cache.*;
 
 import java.util.concurrent.locks.Lock;
+
 import dunit.*;
+import dunit.DistributedTestCase.WaitCriterion;
 
 import java.io.*;
 import java.util.*;
@@ -517,7 +528,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     fac.setScope(getRegionScope());
     fac.setStatisticsEnabled(true);
     RegionAttributes attr = fac.create();
-    Region region = createRootRegion(name, attr);
+    final Region region = createExpiryRootRegion(name, attr);
     
     // wait for memberTimeout to expire
     waitForMemberTimeout();
@@ -548,7 +559,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     AttributesMutator mutator = region.getAttributesMutator();
     mutator.setEntryTimeToLive(
       new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
-    sleep(2000);
+    sleep(200);
 
     // make sure no values were expired
     Set entries = ((LocalRegion) region).basicEntries(false);
@@ -564,10 +575,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       }
     });
     
-    // sleep and make sure value expires
-    sleep(2000);
-    assertEquals(null, region.get("expireMe"));
-    assertTrue(region.size() == 0);
+    waitForEntryDestroy(region, "expireMe");
   }
   
   /**
@@ -601,7 +609,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     fac.setScope(getRegionScope());
     fac.setStatisticsEnabled(true);
     RegionAttributes attr = fac.create();
-    Region region = createRootRegion(name, attr);
+    final Region region = createExpiryRootRegion(name, attr);
     
     // wait for memberTimeout to expire
     waitForMemberTimeout();
@@ -611,7 +619,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
       
     // sleep and make sure region does not expire
-    sleep(2000);
+    sleep(200);
     assertFalse(region.isDestroyed());
     
     // create region in vm1
@@ -625,9 +633,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       }
     });
     
-    // sleep and make sure region expires
-    sleep(2000);
-    assertTrue(region.isDestroyed());
+    waitForRegionDestroy(region);
   }
   
   /**
@@ -744,8 +750,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     fac.setScope(getRegionScope());
     fac.setStatisticsEnabled(true);
     RegionAttributes attr = fac.create();
-    Region region = createRootRegion(name, attr);
-    
+    final Region region = createExpiryRootRegion(name, attr);
+     
     // wait for memberTimeout to expire
     waitForMemberTimeout();
 
@@ -775,12 +781,16 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     AttributesMutator mutator = region.getAttributesMutator();
     mutator.setEntryTimeToLive(
       new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
-    sleep(2000);
+    WaitCriterion wc1 = new WaitCriterion() {
+      public boolean done() {
+        return ((LocalRegion) region).basicEntries(false).size() == 0;
+      }
+      public String description() {
+        return "expected zero entries but have " + ((LocalRegion) region).basicEntries(false).size();
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc1, 30*1000, 10, true);
 
-    // make sure values was expired
-    Set entries = ((LocalRegion) region).basicEntries(false);
-    assertTrue(entries.size() == 0);
-    
     // create region again
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
       public void run2() throws CacheException {
@@ -792,11 +802,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
     
     region.put("expireMe", "expireMe");
-    assertTrue(region.size() == 1);
     
-    // sleep and make sure value expires again
-    sleep(2000);
-    assertEquals(null, region.get("expireMe"));
+    waitForEntryDestroy(region, "expireMe");
     assertTrue(region.size() == 0);
   }
   
@@ -831,7 +838,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     fac.setScope(getRegionScope());
     fac.setStatisticsEnabled(true);
     RegionAttributes attr = fac.create();
-    Region region = createRootRegion(name, attr);
+    final Region region = createExpiryRootRegion(name, attr);
     
     // wait for memberTimeout to expire
     waitForMemberTimeout();
@@ -840,9 +847,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     mutator.setRegionTimeToLive(
       new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
       
-    // sleep and make sure region does expire
-    sleep(2000);
-    assertTrue(region.isDestroyed());
+    waitForRegionDestroy(region);
   }
   
   /**
@@ -939,7 +944,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     fac.setScope(getRegionScope());
     fac.setStatisticsEnabled(true);
     RegionAttributes attr = fac.create();
-    Region region = createRootRegion(name, attr);
+    final Region region = createExpiryRootRegion(name, attr);
     
     // wait for memberTimeout to expire
     waitForMemberTimeout();
@@ -952,11 +957,33 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     AttributesMutator mutator = region.getAttributesMutator();
     mutator.setEntryTimeToLive(
       new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
-    sleep(2000);
 
-    // make sure value was expired
-    assertNull(region.get("expireMe"));
+    waitForEntryDestroy(region, "expireMe");
     assertTrue(region.size() == 0);
+  }
+  
+  public static void waitForRegionDestroy(final Region region) {
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return region.isDestroyed();
+      }
+      public String description() {
+        return "expected region " + region + " to be destroyed";
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 30*1000, 10, true);
+  }
+  
+  public static void waitForEntryDestroy(final Region region, final Object key) {
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        return region.get(key) == null;
+      }
+      public String description() {
+        return "expected entry " + key + " to not exist but it has the value " + region.get(key);
+      }
+    };
+    DistributedTestCase.waitForCriterion(wc, 30*1000, 10, true);
   }
   
   /**
@@ -989,7 +1016,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     fac.setScope(getRegionScope());
     fac.setStatisticsEnabled(true);
     RegionAttributes attr = fac.create();
-    Region region = createRootRegion(name, attr);
+    final Region region = createExpiryRootRegion(name, attr);
     
     // wait for memberTimeout to expire
     waitForMemberTimeout();
@@ -998,9 +1025,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     mutator.setRegionTimeToLive(
       new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
       
-    // sleep and make sure region does expire
-    sleep(2000);
-    assertTrue(region.isDestroyed());
+    waitForRegionDestroy(region);
   }
   
   protected static Boolean[] detectedDeparture_testCommitDistributionException = 

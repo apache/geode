@@ -1,17 +1,21 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
-
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.ClientSession;
 import com.gemstone.gemfire.cache.InterestRegistrationListener;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -20,6 +24,10 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -166,8 +174,7 @@ public class CacheServerCreation extends AbstractCacheServer {
   public boolean sameAs(CacheServer other) {
     ClientSubscriptionConfig cscThis = this.getClientSubscriptionConfig();
     ClientSubscriptionConfig cscOther = other.getClientSubscriptionConfig();
-    boolean result = 
-        this.getPort() == other.getPort() &&
+    boolean result = isCacheServerPortEquals(other) &&
         this.getSocketBufferSize() == other.getSocketBufferSize() &&
         this.getMaximumTimeBetweenPings() == other.getMaximumTimeBetweenPings() &&
         this.getNotifyBySubscription() == other.getNotifyBySubscription() &&
@@ -185,6 +192,18 @@ public class CacheServerCreation extends AbstractCacheServer {
       result = result && cscThis.getOverflowDirectory().equals(cscOther.getOverflowDirectory());
     }
     return result;
+  }
+
+  /**
+   * Compare configured cacheServer port against the running cacheServer port.
+   * If the current cacheServer port is set to 0 a random ephemeral
+   * port will be used so there is no need to compare returning <code>true</code>.
+   * If a port is specified, return the proper comparison.
+   * @param other CacheServer
+   * @return
+   */
+  private boolean isCacheServerPortEquals(CacheServer other) {
+    return (this.getPort() == 0) ? true : this.getPort() == other.getPort();
   }
 
   @Override

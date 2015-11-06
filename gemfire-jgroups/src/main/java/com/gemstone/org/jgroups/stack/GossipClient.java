@@ -283,8 +283,7 @@ public class GossipClient  {
                 if(log.isTraceEnabled())
                     log.trace("REGISTER_REQ --> " + entry.getIpAddress() + ':' + entry.getPort());
                 //sock=new Socket(entry.getIpAddress(), entry.getPort());
-                // GemStoneAddition - use SocketCreator
-                if (JChannel.getGfFunctions().getSockCreator().isHostReachable(entry.getIpAddress())) {
+                {
 
                   // Get GemFire version from IPAddress first
                   _getVersionForAddress(entry);
@@ -550,8 +549,7 @@ public class GossipClient  {
       if (log.isTraceEnabled())
         log.trace("GEMFIRE_VERSION --> " + entry.getIpAddress() + ':'
                 + +entry.getPort());
-      if (JChannel.getGfFunctions().getSockCreator()
-              .isHostReachable(entry.getIpAddress())) {
+      {
   
         ConnectTimerTask timeoutTask = new ConnectTimerTask(); // GemStoneAddition
         Socket socket = JChannel.getGfFunctions().getSockCreator().connect(

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.client.internal;
 
@@ -20,8 +29,10 @@ import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
 import com.gemstone.gemfire.cache.client.internal.ServerBlackList.FailureTracker;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientUpdater;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -51,6 +62,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   private final boolean usedByGateway;
   private final ServerBlackList blackList;
   private final CancelCriterion cancelCriterion;
+  private final SocketCreator socketCreator;
   private ConnectionSource source;
   private int readTimeout;
   private InternalDistributedSystem ds;
@@ -85,6 +97,22 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     this.blackList = new ServerBlackList(pingInterval);
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
+    DistributionConfig config = InternalDistributedSystem.getConnectedInstance().getConfig();
+    if (this.usedByGateway || (this.gatewaySender != null)) {
+      this.socketCreator = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
+          config.getGatewaySSLRequireAuthentication(), config.getGatewaySSLProtocols(),
+          config.getGatewaySSLCiphers(), config.getGatewaySSLProperties());
+      if (sender!= null && !sender.getGatewayTransportFilters().isEmpty()) {
+        this.socketCreator.initializeTransportFilterClientSocketFactory(sender);
+      }
+    } else {
+      //If configured use SSL properties for cache-server
+      this.socketCreator = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
+          config.getServerSSLRequireAuthentication(),
+          config.getServerSSLProtocols(),
+          config.getServerSSLCiphers(),
+          config.getServerSSLProperties());
+    }
   }
   
   public void start(ScheduledExecutorService background) {
@@ -114,7 +142,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     try {
       HandShake connHandShake = new HandShake(handshake);
       connection.connect(endpointManager, location, connHandShake,
-                         socketBufferSize, handShakeTimeout, readTimeout, getCommMode(forQueue), this.gatewaySender);
+                         socketBufferSize, handShakeTimeout, readTimeout, 
+                         getCommMode(forQueue), this.gatewaySender, this.socketCreator);
       failureTracker.reset();
       connection.setHandShake(connHandShake);
       authenticateIfRequired(connection);
@@ -271,7 +300,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 //  Launch the thread
     CacheClientUpdater updater = new CacheClientUpdater(clientUpdateName,
         endpoint.getLocation(), isPrimary, ds, new HandShake(this.handshake), qManager,
-        endpointManager, endpoint, handShakeTimeout);
+        endpointManager, endpoint, handShakeTimeout, this.socketCreator);
     
     if(!updater.isConnected()) {
       return null;

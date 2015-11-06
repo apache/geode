@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache;
 
@@ -900,31 +909,6 @@ public class RegionFactory<K,V>
    */
   public RegionFactory<K,V> addAsyncEventQueueId(String asyncEventQueueId) {
     this.attrsFactory.addAsyncEventQueueId(asyncEventQueueId);
-    return this;
-  }
-  /**
-   * Sets the HDFSStore name attribute.
-   * This causes the region to belong to the HDFSStore.
-   * @param name the name of the hdfsstore
-   * @return a reference to this RegionFactory object
-   * 
-   * @see AttributesFactory#setHDFSStoreName
-   * @since 9.0
-   */
-  public RegionFactory<K,V> setHDFSStoreName(String name) {
-    this.attrsFactory.setHDFSStoreName(name);
-    return this;
-  }
-  
-  /**
-   * Sets the HDFS write only attribute. if the region
-   * is configured to be write only to HDFS, events that have 
-   * been evicted from memory cannot be read back from HDFS.
-   * Events are written to HDFS in the order in which they occurred.
-   * @since 9.0
-   */
-  public RegionFactory<K,V> setHDFSWriteOnly(boolean writeOnly) {
-    this.attrsFactory.setHDFSWriteOnly(writeOnly);
     return this;
   }
 

@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
@@ -77,6 +86,7 @@ public class PartitionedRegionRebalanceOp {
   private static final Logger logger = LogService.getLogger();
   
   private static final int MAX_PARALLEL_OPERATIONS = Integer.getInteger("gemfire.MAX_PARALLEL_BUCKET_RECOVERIES", 8);
+  private final boolean DEBUG = Boolean.getBoolean("gemfire.LOG_REBALANCE");
   
   private final boolean simulate;
   private final boolean replaceOfflineData;
@@ -197,9 +207,7 @@ public class PartitionedRegionRebalanceOp {
           membershipChange = false;
           //refetch the partitioned region details after
           //a membership change.
-          if (logger.isDebugEnabled()) {
-            logger.debug("Rebalancing {} detected membership changes. Refetching details", leaderRegion);
-          }
+          debug("Rebalancing {} detected membership changes. Refetching details", leaderRegion);
           if(this.stats != null) {
             this.stats.incRebalanceMembershipChanges(1);
           }
@@ -222,9 +230,7 @@ public class PartitionedRegionRebalanceOp {
         }
       }
       
-      if (logger.isDebugEnabled()) {
-        logger.debug("Rebalancing {} complete. Model:{}\n", leaderRegion, model);
-      }
+      debug("Rebalancing {} complete. Model:{}\n", leaderRegion, model);
       long end = System.nanoTime();
       
       for(PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
@@ -444,22 +450,20 @@ public class PartitionedRegionRebalanceOp {
     int totalNumberOfBuckets = leaderRegion.getTotalNumberOfBuckets();
     Set<InternalDistributedMember> criticalMembers = resourceManager.getResourceAdvisor().adviseCritialMembers();;
     boolean removeOverRedundancy = true;
+    
+    debug("Building Model for rebalancing " + leaderRegion
+        + ". redundantCopies=" + redundantCopies + ", totalNumBuckets="
+        + totalNumberOfBuckets + ", criticalMembers=" + criticalMembers
+        + ", simulate=" + simulate);
+
+    
     model = new PartitionedRegionLoadModel(operator, redundantCopies, 
         totalNumberOfBuckets, comparor, criticalMembers, leaderRegion);
 
     for (Map.Entry<PartitionedRegion, InternalPRInfo> entry : detailsMap.entrySet()) {
       PartitionedRegion region = entry.getKey();
       InternalPRInfo details = entry.getValue();
-      if (isDebugEnabled) {
-        logger.debug("Added Region to model region={} details=", region);
-      }
-      for(PartitionMemberInfo memberDetails: details.getPartitionMemberInfo()) {
-        if (isDebugEnabled) {
-          logger.debug("Member: {} LOAD={}", memberDetails.getDistributedMember(), ((InternalPartitionDetails) memberDetails).getPRLoad());
-        }
-      }
-      Set<InternalPartitionDetails> memberDetailSet = 
-          details.getInternalPartitionDetails();
+      
       OfflineMemberDetails offlineDetails;
       if(replaceOfflineData) {
         offlineDetails = OfflineMemberDetails.EMPTY_DETAILS;
@@ -467,13 +471,38 @@ public class PartitionedRegionRebalanceOp {
         offlineDetails = details.getOfflineMembers();
       }
       boolean enforceLocalMaxMemory = !region.isEntryEvictionPossible();
+
+      debug("Added Region to model region=" + region + ", offlineDetails=" + offlineDetails 
+          + ", enforceLocalMaxMemory=" + enforceLocalMaxMemory);
+
+      for(PartitionMemberInfo memberDetails: details.getPartitionMemberInfo()) {
+        debug(
+            "For Region: " + region + ", Member: " + memberDetails.getDistributedMember() + "LOAD="
+                + ((InternalPartitionDetails) memberDetails).getPRLoad() 
+                +", equivalentMembers=" 
+                + dm.getMembersInSameZone((InternalDistributedMember) memberDetails.getDistributedMember()));
+      }
+      Set<InternalPartitionDetails> memberDetailSet = 
+          details.getInternalPartitionDetails();
+      
       model.addRegion(region.getFullPath(), memberDetailSet, offlineDetails, enforceLocalMaxMemory);
     }
     
     model.initialize();
     
+    debug("Rebalancing {} starting. Model:\n{}", leaderRegion, model);
+    
     return model;
   }
+  private void debug(String message, Object ...params) {
+    if(logger.isDebugEnabled()) {
+      logger.debug(message, params);
+    } else if(logger.isInfoEnabled() && DEBUG) {
+      logger.info(message, params);
+    }
+    
+  }
+
   /**
    * Create a redundant bucket on the target member
    * 
