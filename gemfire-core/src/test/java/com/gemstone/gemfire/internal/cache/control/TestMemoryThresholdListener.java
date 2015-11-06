@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+
 
 public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent>{
   private int normalCalls = 0;
@@ -26,6 +28,14 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
   private long bytesFromThreshold = 0;
   private int currentHeapPercentage = 0;
   private int allCalls = 0;
+  private final boolean logOnEventCalls;
+  
+  public TestMemoryThresholdListener() {
+    this(false);
+  }
+  public TestMemoryThresholdListener(boolean log) {
+    this.logOnEventCalls = log;
+  }
 
   public  long getBytesFromThreshold() {
     synchronized (this) {
@@ -100,6 +110,9 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
    */
   @Override
   public void onEvent(MemoryEvent event) {
+    if (this.logOnEventCalls) {
+      InternalDistributedSystem.getAnyInstance().getLogWriter().info("TestMemoryThresholdListener onEvent " + event);
+    }
     synchronized (this) {
       if (event.getState().isNormal()) {
         this.normalCalls++;
