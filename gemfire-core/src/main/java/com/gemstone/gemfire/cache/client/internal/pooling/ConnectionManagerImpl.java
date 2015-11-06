@@ -43,6 +43,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.org.jgroups.util.StringId;
 
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1171,6 +1172,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
         if (!pc.isDestroyed()) {
           try {
             pc.internalClose(keepAlive);
+          } catch(SocketException se) {
+              logger.info(LocalizedMessage.create(
+                      LocalizedStrings.ConnectionManagerImpl_ERROR_CLOSING_CONNECTION_TO_SERVER_0,
+                      pc.getServer()), se);
           } catch(Exception e) {
             logger.warn(LocalizedMessage.create(
                 LocalizedStrings.ConnectionManagerImpl_ERROR_CLOSING_CONNECTION_TO_SERVER_0, 
