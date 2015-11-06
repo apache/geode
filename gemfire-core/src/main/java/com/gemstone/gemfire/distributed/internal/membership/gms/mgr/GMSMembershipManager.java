@@ -1428,7 +1428,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     
     if (o.isDistributionMessage()) { // normal message
       try {
-        processMessage(o.dmsg);
+        dispatchMessage(o.dmsg);
       }
       catch (MemberShunnedException e) {
         // message from non-member - ignore
