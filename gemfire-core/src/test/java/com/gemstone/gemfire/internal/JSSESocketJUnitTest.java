@@ -102,7 +102,7 @@ public class JSSESocketJUnitTest {
       System.setProperty( "gemfire.mcast-port", "0");
       System.setProperty( "gemfire.ssl-enabled", "true" );
       System.setProperty( "gemfire.ssl-require-authentication", "true" );
-      System.setProperty( "gemfire.ssl-ciphers", "SSL_RSA_WITH_RC4_128_MD5" );
+      System.setProperty( "gemfire.ssl-ciphers", "any" );
       System.setProperty( "gemfire.ssl-protocols", "TLSv1.2" );
       
       File jks = findTestJKS();
