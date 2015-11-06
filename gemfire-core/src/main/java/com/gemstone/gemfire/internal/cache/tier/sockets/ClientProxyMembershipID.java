@@ -104,7 +104,9 @@ public final class ClientProxyMembershipID
 
   protected int uniqueId;
   
-  private transient Version clientVersion;
+  //Version information is not available during the handshake
+  //see comments in HandShake.write()
+  private transient static final Version clientVersion = Version.GFE_82;
 
   // private final String proxyIDStr;
   // private final String clientIdStr ;
@@ -348,27 +350,13 @@ public final class ClientProxyMembershipID
 //          "serializing a client ID with zero port: " + this.toString(),
 //          new Exception("Stack trace"));
 //    }
-    Version v = InternalDataSerializer.getVersionForDataStream(out);
-    if (v.compareTo(Version.GFE_90) >= 0) {
-      if (clientVersion == null) {
-        clientVersion = Version.CURRENT;
-      }
-      clientVersion.writeOrdinal(out, true);
-    }
     DataSerializer.writeByteArray(this.identity, out);
     out.writeInt(this.uniqueId);
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException
   {
-    this.clientVersion = InternalDataSerializer.getVersionForDataStream(in);
     
-    // client IDs are not always carefully serialized/deserialized so they
-    // must know their own version.  If this ID was serialized with 9.0
-    // then it carries the version of the client
-    if (this.clientVersion.compareTo(Version.GFE_90) >= 0) {
-      this.clientVersion = Version.readVersion(in, false);
-    }
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
 //    {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}
