@@ -198,21 +198,19 @@ public class PluckStacks {
     if (threadName.startsWith("Function Execution Processor")) {
       return isIdleExecutor(thread);
     }
-    if (threadName.startsWith("Geode Failure Detection Server thread")) {
-      return stackSize < 11 && thread.get(1).contains("Thread.State: WAITING");
+    if (threadName.startsWith("Geode Failure Detection Server")) {
+      return stackSize < 11 && thread.getFirstFrame().contains("socketAccept");
     }
     if (threadName.startsWith("Geode Membership Timer")) {
 //      System.out.println("gf timer stack size = " + stackSize + "; frame = " + thread.get(1));
-      return stackSize < 9 &&
-          (thread.get(1).contains("Thread.State: WAITING")
-              || thread.get(1).contains("Thread.State: TIMED_WAITING"));
+      return stackSize < 9 && !thread.isRunnable();
     }
     if (threadName.startsWith("Geode Membership View Creator")) {
 //    System.out.println("gf view creator stack size = " + stackSize + "; frame = " + thread.get(1));
-    return stackSize < 8 && thread.get(1).contains("Thread.State: WAITING");
+    return stackSize < 8 && !thread.isRunnable();
     }
     if (threadName.startsWith("Geode Heartbeat Sender")) {
-      return stackSize <= 8 && thread.get(1).contains("Thread.State: WAITING");
+      return stackSize <= 8 && !thread.isRunnable();
     }
     // thread currently disabled
 //    if (threadName.startsWith("Geode Suspect Message Collector")) {
