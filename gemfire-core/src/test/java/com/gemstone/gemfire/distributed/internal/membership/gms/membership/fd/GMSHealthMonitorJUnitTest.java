@@ -32,8 +32,9 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
@@ -49,8 +50,9 @@ public class GMSHealthMonitorJUnitTest {
   private DistributionConfig mockDistConfig;
   private List<InternalDistributedMember> mockMembers;
   private Messenger messenger;
-  private GMSJoinLeave joinLeave;
+  private JoinLeave joinLeave;
   private GMSHealthMonitor gmsHealthMonitor;
+  private Manager manager;
   final long memberTimeout = 1000l;
   private int[] portRange= new int[]{0, 65535};
 
@@ -60,7 +62,8 @@ public class GMSHealthMonitorJUnitTest {
     mockDistConfig = mock(DistributionConfig.class);
     mockConfig = mock(ServiceConfig.class);
     messenger = mock(Messenger.class);
-    joinLeave = mock(GMSJoinLeave.class);
+    joinLeave = mock(JoinLeave.class);
+    manager = mock(Manager.class);
     services = mock(Services.class);
     Stopper stopper = mock(Stopper.class);
 
@@ -71,6 +74,7 @@ public class GMSHealthMonitorJUnitTest {
     when(services.getMessenger()).thenReturn(messenger);
     when(services.getJoinLeave()).thenReturn(joinLeave);
     when(services.getCancelCriterion()).thenReturn(stopper);
+    when(services.getManager()).thenReturn(manager);
     when(stopper.isCancelInProgress()).thenReturn(false);
     
 
@@ -182,7 +186,7 @@ public class GMSHealthMonitorJUnitTest {
 
     Assert.assertEquals(mockMembers.get(4), gmsHealthMonitor.getNextNeighbor());
   }
-
+  
   /***
    * checks whether member-check thread sends suspectMembers message
    */
