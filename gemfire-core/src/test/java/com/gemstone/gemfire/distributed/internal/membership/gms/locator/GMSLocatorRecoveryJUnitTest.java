@@ -138,6 +138,7 @@ public class GMSLocatorRecoveryJUnitTest {
       nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
       nonDefault.put(DistributionConfig.LOCATORS_NAME, localHost.getHostName()+'['+port+']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
+      nonDefault.put(DistributionConfig.BIND_ADDRESS_NAME, localHost.getHostName());
       RemoteTransportConfig transport = new RemoteTransportConfig(config,
           DistributionManager.NORMAL_DM_TYPE);
 
