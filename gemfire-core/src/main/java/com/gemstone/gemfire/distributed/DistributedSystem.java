@@ -623,6 +623,18 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *   <dd><U>Default</U>: "false"</dd>
  * </dl>
  * 
+ * <dl>
+ *   <a name="max-wait-time-reconnect"><dt>max-wait-time-reconnect</dt></a>
+ *   <dd><U>Description</U>: Specifies the time in milliseconds to wait before each reconnect attempt when
+ *   a member of the distributed system is forced out of the system and auto-reconnect
+ *   is enabled (see <a href="#disable-auto-reconnect"><code>disable-auto-reconnect</code></a>) or if the deprecated required-roles
+ *   feature is being used and a role-loss has triggered a shutdown and reconnect.
+ *   </dd>
+ *   <dd><U>Default</U>: "60000"</dd>
+ *   <dd><U>Since</U>: 5.0</dd>
+ * </dl>
+ *
+ *
  * <b>Redundancy Management</b>
  * 
  * <dl>
@@ -772,10 +784,10 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *
  * <dl>
  *   <a name="max-wait-time-reconnect"><dt>max-wait-time-reconnect</dt></a>
- *   <dd><U>Description</U>: Specifies the maximum number of milliseconds
- *   to wait for the distributed system to reconnect in case of required role
- *   loss or forced disconnect. The system will attempt to <a href="#max-num-reconnect-tries">reconnect
- *   more than once</a>, and this timeout period applies to each reconnection attempt.
+ *   <dd><U>Description</U>: Specifies the time in milliseconds to wait before each reconnect attempt when
+ *   a member of the distributed system is forced out of the system and auto-reconnect
+ *   is enabled (see <a href="#disable-auto-reconnect"><code>disable-auto-reconnect</code></a>) or if the deprecated required-roles
+ *   feature is being used and a role-loss has triggered a shutdown and reconnect.
  *   </dd>
  *   <dd><U>Default</U>: "60000"</dd>
  *   <dd><U>Since</U>: 5.0</dd>
