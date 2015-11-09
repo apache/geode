@@ -2,17 +2,18 @@ package com.gemstone.gemfire.cache.lucene;
 
 import java.util.List;
 
+import com.gemstone.gemfire.annotations.Experimental;
+
 /**
  * <p>
  * Defines the interface for a container of lucene query result collected from function execution.<br>
  * 
  * @author Xiaojian Zhou
- * @since 8.5
  * 
  * @param <K> The type of the key
  * @param <V> The type of the value
  */
-
+@Experimental
 public interface LuceneQueryResults<K, V> {
   /**
    * @return total number of hits for this query

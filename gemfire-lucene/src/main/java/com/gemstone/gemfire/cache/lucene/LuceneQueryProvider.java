@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.apache.lucene.search.Query;
 
+import com.gemstone.gemfire.annotations.Experimental;
 import com.gemstone.gemfire.cache.query.QueryException;
 
 /**
@@ -14,6 +15,7 @@ import com.gemstone.gemfire.cache.query.QueryException;
  * distributed system. Implementation of DataSerializable can provide a zero-argument constructor that will be invoked
  * when they are read with DataSerializer.readObject.
  */
+@Experimental
 public interface LuceneQueryProvider extends Serializable {
   /**
    * @return A Lucene Query object which could be used for executing Lucene Search on indexed data

@@ -3,6 +3,7 @@ package com.gemstone.gemfire.cache.lucene.internal.distributed;
 import java.io.IOException;
 import java.util.Collection;
 
+import com.gemstone.gemfire.annotations.Experimental;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 
@@ -16,6 +17,7 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollecto
  * 
  * @param <C> Type of IndexResultCollector created by this manager
  */
+@Experimental
 public interface CollectorManager<C extends IndexResultCollector> {
   /**
    * @param name Name/Identifier for this collector. For e.g. region/bucketId.

@@ -21,10 +21,8 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 
-import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.annotations.Experimental;
 import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
 
 /**
  * LuceneService instance is a singleton for each cache. It will be created in cache 
@@ -70,6 +68,7 @@ import com.gemstone.gemfire.internal.cache.extension.Extensible;
  * @author Xiaojian Zhou
  *
  */
+@Experimental
 public interface LuceneService {
   
   /**

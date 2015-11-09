@@ -18,6 +18,8 @@ package com.gemstone.gemfire.cache.lucene;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
+import com.gemstone.gemfire.annotations.Experimental;
+
 /**
  * Factory for creating instances of {@link LuceneQuery}.
  * To get an instance of this factory call {@link LuceneService#createLuceneQueryFactory}.
@@ -26,8 +28,8 @@ import org.apache.lucene.queryparser.classic.ParseException;
  * call {@link #create} to produce a {@link LuceneQuery} instance.
  * 
  * @author Xiaojian Zhou
- * @since 8.5
  */
+@Experimental
 public interface LuceneQueryFactory {
   
   /**

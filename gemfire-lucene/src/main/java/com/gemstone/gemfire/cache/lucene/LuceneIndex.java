@@ -21,6 +21,8 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 
+import com.gemstone.gemfire.annotations.Experimental;
+
 
 /**
  * An lucene index is built over the data stored in a GemFire Region.
@@ -31,8 +33,8 @@ import org.apache.lucene.analysis.Analyzer;
  * <p>
  * 
  * @author Xiaojian Zhou
- * @since 8.5
  */
+@Experimental
 public interface LuceneIndex {
 
   /**

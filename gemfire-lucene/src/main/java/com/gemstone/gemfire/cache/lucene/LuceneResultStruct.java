@@ -16,14 +16,15 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
+import com.gemstone.gemfire.annotations.Experimental;
 
 /**
  * <p>
  * Abstract data structure for one item in query result.
  * 
  * @author Xiaojian Zhou
- * @since 8.5
  */
+@Experimental
 public interface LuceneResultStruct<K, V> {
   /**
    * Return the value associated with the given field name

@@ -16,12 +16,15 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
+import com.gemstone.gemfire.annotations.Experimental;
+
 /**
  * Provides wrapper object of Lucene's Query object and execute the search. 
  * <p>Instances of this interface are created using
  * {@link LuceneQueryFactory#create}.
  * 
  */
+@Experimental
 public interface LuceneQuery<K, V> {
   /**
    * Execute the search and get results. 

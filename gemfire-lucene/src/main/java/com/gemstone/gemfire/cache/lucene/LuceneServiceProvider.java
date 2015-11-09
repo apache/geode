@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.cache.lucene;
 
+import com.gemstone.gemfire.annotations.Experimental;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
 import com.gemstone.gemfire.internal.cache.InternalCache;
@@ -9,6 +10,7 @@ import com.gemstone.gemfire.internal.cache.InternalCache;
  * instance of the LuceneService.
  *
  */
+@Experimental
 public class LuceneServiceProvider {
   
   /**
