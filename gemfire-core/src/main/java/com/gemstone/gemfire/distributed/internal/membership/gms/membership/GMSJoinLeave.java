@@ -782,10 +782,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
       }
     } else { // !preparing
-      if (currentView != null && !view.contains(this.localAddress)) {
-        if (quorumRequired) {
-          forceDisconnect("This node is no longer in the membership view");
-        }
+      if (isJoined && currentView != null && !view.contains(this.localAddress)) {
+        forceDisconnect("This node is no longer in the membership view");
       } else {
         if (!m.isRebroadcast()) { // no need to ack a rebroadcast view
           ackView(m);

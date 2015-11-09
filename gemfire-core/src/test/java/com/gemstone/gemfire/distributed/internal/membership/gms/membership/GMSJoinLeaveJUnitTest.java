@@ -1,5 +1,6 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -7,12 +8,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -170,7 +171,19 @@ public class GMSJoinLeaveJUnitTest {
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
-  
+  @Test
+  public void testViewWithoutMemberInitiatesForcedDisconnect() throws Exception {
+    initMocks();
+    gmsJoinLeave.becomeCoordinatorForTest();
+    List<InternalDistributedMember> members = Arrays.asList(mockMembers);
+    Set<InternalDistributedMember> empty = Collections.<InternalDistributedMember>emptySet();
+    NetView v = new NetView(mockMembers[0], 2, members, empty, empty);
+    InstallViewMessage message = new InstallViewMessage(v, null);
+    gmsJoinLeave.processMessage(message);
+    verify(manager).forceDisconnect(any(String.class));
+  }
+
+
   @Test
   public void testProcessJoinMessageWithBadAuthentication() throws IOException {
     initMocks();

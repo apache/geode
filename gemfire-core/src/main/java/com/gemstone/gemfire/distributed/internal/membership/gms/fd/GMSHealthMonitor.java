@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +56,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Heartbe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.ConnectionWatcher;
+import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 
 /**
@@ -262,6 +266,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       try {
         DataInputStream in = new DataInputStream(socket.getInputStream());
         OutputStream out = socket.getOutputStream();
+        @SuppressWarnings("unused")
         short version = in.readShort();
         int  vmViewId = in.readInt();
         long uuidLSBs = in.readLong();
@@ -309,7 +314,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }
         }
       } catch (IOException e) {
-        logger.trace("Unexpected exception", e);
+        logger.debug("Unexpected exception", e);
+      } catch (RuntimeException e) {
+        logger.debug("Unexpected runtime exception", e);
+        throw e;
+      } catch (Error e) {
+        logger.debug("Unexpected error", e);
+        throw e;
       } finally {
         if (socket != null) {
           try {
@@ -369,7 +380,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (!pinged) {
           suspectedMemberInView.put(mbr, currentView);
           String reason = "Member isn't responding to heartbeat requests";
-          GMSHealthMonitor.this.sendSuspectMessage(mbr, reason);
+          GMSHealthMonitor.this.initiateSuspicion(mbr, reason);
         } else {
           logger.trace("Setting next neighbor as member {} has responded.", mbr);
           suspectedMemberInView.remove(mbr);
@@ -381,7 +392,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   }
 
-  private void sendSuspectMessage(InternalDistributedMember mbr, String reason) {
+  private void initiateSuspicion(InternalDistributedMember mbr, String reason) {
     SuspectRequest sr = new SuspectRequest(mbr, reason);
     List<SuspectRequest> sl = new ArrayList<SuspectRequest>();
     sl.add(sr);
@@ -418,16 +429,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           TimeStamp ts = memberTimeStamps.get(member);
           if (pingResp.getResponseMsg() == null) {
             // double check the activity map
-            long now = System.currentTimeMillis();
             if (isStopping) {
               return true;
             }
-            if (ts != null && (now - ts.getTime()) <= memberTimeout) {
-              logger.trace("detected message traffic from member {}ms ago.  member-timeout is {}", now - ts.getTime(),
-                  memberTimeout);
+            if (checkRecentActivity(member)) {
               return true;
             }
-            logger.trace("no heartbeat response received from {}", member);
+            logger.trace("no heartbeat response received from {} and no recent activity", member);
             return false;
           } else {
             logger.trace("received heartbeat from {}", member);
@@ -447,6 +455,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   /**
+   * Check for recent messaging activity from the given member
+   * @param suspectMember
+   * @return whether there has been activity within memberTimeout ms
+   */
+  private boolean checkRecentActivity(InternalDistributedMember suspectMember) {
+    TimeStamp ts = memberTimeStamps.get(suspectMember);
+    return (ts != null && (System.currentTimeMillis() - ts.getTime()) <= memberTimeout);
+  }
+
+  /**
    * During final check, establish TCP connection between current member and suspect member.
    * And exchange PING/PONG message to see if the suspect member is still alive.
    * 
@@ -454,15 +472,19 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @return true if successfully exchanged PING/PONG with TCP connection, otherwise false.
    */
   private boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
-    Socket clientSocket = new Socket();
+    Socket clientSocket = null;
+    // first check for a recent timestamp
+    if (checkRecentActivity(suspectMember)) {
+      return true;
+    }
     try {
       // establish TCP connection
 //      for (Map.Entry<InternalDistributedMember, InetSocketAddress> entry : socketInfo.entrySet()) {
 //        logger.info("socketInfo member:" + entry.getKey() + " port:" + entry.getValue().getPort());
 //      }
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, suspectMember.getInetAddress(), port);
-      InetSocketAddress addr = new InetSocketAddress(suspectMember.getInetAddress(), port);
-      clientSocket.connect(addr, (int) services.getConfig().getMemberTimeout());
+      clientSocket = SocketCreator.getDefaultInstance().connect(suspectMember.getInetAddress(), port,
+          (int)memberTimeout, new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
       if (clientSocket.isConnected()) {
         clientSocket.setSoTimeout((int) services.getConfig().getMemberTimeout());
         InputStream in = clientSocket.getInputStream();
@@ -485,15 +507,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           return true;
         } else {
           //received ERROR
-          return false;
+          return checkRecentActivity(suspectMember);
         }
       } else {// cannot establish TCP connection with suspect member
-        return false;
+        return checkRecentActivity(suspectMember);
       }
     } catch (SocketTimeoutException e) {
+      logger.debug("tcp/ip connection timed out");
       return false;
     } catch (IOException e) {
-      logger.trace("Unexpected exception", e);
+      logger.debug("Unexpected exception", e);
     } finally {
       try {
         if (clientSocket != null) {
@@ -515,7 +538,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   @Override
   public void suspect(InternalDistributedMember mbr, String reason) {
-    sendSuspectMessage(mbr, reason);
+    initiateSuspicion(mbr, reason);
     // Background suspect-collecting thread is currently disabled - it takes too long
 //    synchronized (suspectRequests) {
 //      SuspectRequest sr = new SuspectRequest((InternalDistributedMember) mbr, reason);
@@ -898,13 +921,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public void beSick() {
     this.beingSick = true;
-    sendSuspectMessage(localAddress, "beSick invoked on GMSHealthMonitor");
+    initiateSuspicion(localAddress, "beSick invoked on GMSHealthMonitor");
   }
 
   @Override
   public void playDead() {
     this.playingDead = true;
-    sendSuspectMessage(localAddress, "playDead invoked on GMSHealthMonitor");
+    initiateSuspicion(localAddress, "playDead invoked on GMSHealthMonitor");
   }
 
   @Override
@@ -1163,11 +1186,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               }
               if (!failed) {
                 logger.info("Final check passed");
+                contactedBy(mbr);
               }
               // whether it's alive or not, at this point we allow it to
               // be watched again
               suspectedMemberInView.remove(mbr);
-              contactedBy(mbr);
             } catch (DistributedSystemDisconnectedException e) {
               return;
             } catch (Exception e) {
@@ -1182,6 +1205,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     } finally {
       membersInFinalCheck.removeAll(membersChecked);
     }
+  }
+  @Override
+  public void memberShutdown(DistributedMember mbr, String reason) {
+  }
+  
+  @Override
+  public int getFailureDetectionPort() {
+    return this.socketPort;
   }
 
   interface Callback<T> {
@@ -1318,13 +1349,37 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
   }
 
-  @Override
-  public void memberShutdown(DistributedMember mbr, String reason) {
+  private static class ConnectTimeoutTask extends TimerTask implements ConnectionWatcher {
+    Timer scheduler;
+    Socket socket;
+    long timeout;
+    
+    ConnectTimeoutTask(Timer scheduler, long timeout) {
+      this.scheduler = scheduler;
+      this.timeout = timeout;
+    }
+    
+    @Override
+    public void beforeConnect(Socket socket) {
+      this.socket = socket;
+      scheduler.schedule(this, timeout);
+    }
+
+    @Override
+    public void afterConnect(Socket socket) {
+      cancel();
+    }
+    
+    @Override
+    public void run() {
+      try {
+        if (socket != null) {
+          socket.close();
+        }
+      } catch (IOException e) {
+        // ignored - nothing useful to do here
+      }
+    }
+    
   }
-  
-  @Override
-  public int getFailureDetectionPort() {
-    return this.socketPort;
-  }
-  
 }
