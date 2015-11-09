@@ -405,7 +405,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
-    registerTestMemoryThresholdListener(server1);
+    registerLoggingTestMemoryThresholdListener(server1);
     registerTestMemoryThresholdListener(server2);
 
     //NORMAL -> CRITICAL
@@ -418,6 +418,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         return null;
       }
     });
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 1, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 0, true);
 
     //make sure we get two events on remote server
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
@@ -434,6 +437,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         return null;
       }
     });
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 0, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 0, true);;
@@ -446,6 +452,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         return null;
       }
     });
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 0, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 0, true);
@@ -459,10 +468,14 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       }
     });
 
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 1, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 1, true);
     
+    this.getLogWriter().info("before NORMAL->CRITICAL->NORMAL");
     //NORMAL -> EVICTION -> NORMAL
     server2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -472,7 +485,11 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         return null;
       }
     });
+    this.getLogWriter().info("after NORMAL->CRITICAL->NORMAL");
 
+    verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 2, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 2, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 3, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 2, true);
@@ -486,6 +503,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       }
     });
 
+    verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 4, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 2, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 2, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 4, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 2, true);
@@ -1444,6 +1464,18 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         TestMemoryThresholdListener listener = new TestMemoryThresholdListener();
+        InternalResourceManager irm = ((GemFireCacheImpl)getCache()).getResourceManager();
+        irm.addResourceListener(ResourceType.HEAP_MEMORY, listener);
+        assertTrue(irm.getResourceListeners(ResourceType.HEAP_MEMORY).contains(listener));
+        return null;
+      }
+    });
+  }
+
+  private void registerLoggingTestMemoryThresholdListener(VM vm) {
+    vm.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        TestMemoryThresholdListener listener = new TestMemoryThresholdListener(true);
         InternalResourceManager irm = ((GemFireCacheImpl)getCache()).getResourceManager();
         irm.addResourceListener(ResourceType.HEAP_MEMORY, listener);
         assertTrue(irm.getResourceListeners(ResourceType.HEAP_MEMORY).contains(listener));

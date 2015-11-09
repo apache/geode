@@ -209,18 +209,6 @@ public class BasicI18nJUnitTest extends TestCase {
     StringIdImpl.setLocale(DEFAULT_LOCALE);
   }
 
-  public void testDefaults() {
-    Locale l = getCurrentLocale();
-    AbstractStringIdResourceBundle r = getActiveResourceBundle();
-    assertNotNull(l);
-    assertNotNull(r);
-    final String currentLang = l.getLanguage();
-    final String expectedLang = new Locale("en", "", "").getLanguage();
-    final String frenchLang = new Locale("fr", "", "").getLanguage();
-    // TODO this will fail if run under a locale with a language other than french or english
-    assertTrue(currentLang.equals(expectedLang) || currentLang.equals(frenchLang));
-  }
-
   public void testSetLocale() {
     //Verify we are starting in a known state
     assertTrue(DEFAULT_LOCALE.equals(getCurrentLocale()));
