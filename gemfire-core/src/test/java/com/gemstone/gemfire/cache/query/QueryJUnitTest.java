@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /******
 * THIS FILE IS ENCODED IN UTF-8 IN ORDER TO TEST UNICODE IN FIELD NAMES.
@@ -23,7 +32,11 @@ import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,9 +44,14 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import util.TestException;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -353,5 +371,87 @@ public class QueryJUnitTest {
     }
     assertEquals("Incorrect result size ", 1, sr.size());
   }
+
+  @Test
+  public void testThreadSafetyOfCompiledSelectScopeId() throws Exception {
+    try {
+      Cache cache = CacheUtils.getCache();
+      RegionFactory<Integer, Portfolio> rf = cache
+          .createRegionFactory(RegionShortcut.PARTITION);
+      Region r = rf.create("keyzset");
+      for (int i = 0; i < 100; i++) {
+        r.put(i, new Portfolio(i));
+      }
+      ScopeThreadingTestHook scopeIDTestHook = new ScopeThreadingTestHook(3);
+      DefaultQuery.testHook = scopeIDTestHook;
+      QueryService qs = cache.getQueryService();
+      Query q = qs
+          .newQuery("SELECT DISTINCT * FROM /keyzset.keySet key WHERE key.id > 0 AND key.id <= 0 ORDER BY key asc LIMIT $3");
+      Thread q1 = new Thread(new QueryRunnable(q, new Object[] { 10, 20, 10 }));
+      Thread q2 = new Thread(new QueryRunnable(q, new Object[] { 5, 10, 5 }));
+      Thread q3 = new Thread(new QueryRunnable(q, new Object[] { 2, 10, 8 }));
+      q1.start();
+      q2.start();
+      q3.start();
+      q1.join();
+      q2.join();
+      q3.join();
+      assertEquals("Exceptions were thrown due to DefaultQuery not being thread-safe", true, scopeIDTestHook.isOk());
+    }
+    finally {
+      DefaultQuery.testHook = null;
+    }
+  }
+
+  private class QueryRunnable implements Runnable {
+    private Query q;
+    private Object[] params;
+
+    public QueryRunnable(Query q, Object[] params) {
+      this.q = q;
+      this.params = params;
+    }
+
+    public void run() {
+      try {
+        q.execute(params);
+      } catch (Exception e) {
+        throw new TestException("exception occured while executing query", e);
+      }
+    }
+  }
+
+  public class ScopeThreadingTestHook implements DefaultQuery.TestHook {
+    private CyclicBarrier barrier;
+    private List<Exception> exceptionsThrown = new LinkedList<Exception>();
+
+    public ScopeThreadingTestHook(int numThreads) {
+      barrier = new CyclicBarrier(numThreads);
+    }
+
+    @Override
+    public void doTestHook(int spot) {
+      this.doTestHook(spot + "");
+    }
+
+    @Override
+    public void doTestHook(String spot) {
+      if (spot.equals("1")) {
+        try {
+          barrier.await(8, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          exceptionsThrown.add(e);
+          Thread.currentThread().interrupt();
+        } catch (Exception e) {
+          exceptionsThrown.add(e);
+        }
+      }
+    }
+
+    public boolean isOk() {
+      return exceptionsThrown.size() == 0;
+    }
+  }
+
   
 }

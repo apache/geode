@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -67,7 +76,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
    */
   
   private void attachBridgeServer() throws IOException {
-    BridgeServerImpl server = (BridgeServerImpl)cache.addBridgeServer();
+    CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
@@ -80,7 +89,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
         Region.SEPARATOR + regionName).getAttributes().getEvictionAttributes();
     assertTrue("Eviction Algorithm is not LIFO", ea.isLIFO());
     // The CacheClientNotifier is a singleton. 
-    if (cache.getBridgeServers().size() <= 1) {
+    if (cache.getCacheServers().size() <= 1) {
       assertTrue("client messages region name should not be present ", (regionNames).add(regionName));
     } else {
       assertTrue("client messages region name should have been already present ", (regionNames).contains(regionName));      
@@ -106,7 +115,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
    * Attach bridge server
    */
   private void attachmentOfBridgeServer() {
-    if (cache.getBridgeServers().size() < brigeNum) {
+    if (cache.getCacheServers().size() < brigeNum) {
       try {
         // attaching and starting bridge server
         attachBridgeServer();
@@ -122,8 +131,8 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
    */
   private void dettachmentOfBridgeServer() {
     // detach all bridge server to test destroy of client_messages_region
-    for (Iterator itr = cache.getBridgeServers().iterator(); itr.hasNext();) {
-      BridgeServerImpl server = (BridgeServerImpl)itr.next();
+    for (Iterator itr = cache.getCacheServers().iterator(); itr.hasNext();) {
+      CacheServerImpl server = (CacheServerImpl)itr.next();
       String rName = ((HAContainerWrapper)server.getAcceptor().getCacheClientNotifier().getHaContainer()).getName();
       assertNotNull("client messages region is null ", cache.getRegion(Region.SEPARATOR + rName));
       server.stop();

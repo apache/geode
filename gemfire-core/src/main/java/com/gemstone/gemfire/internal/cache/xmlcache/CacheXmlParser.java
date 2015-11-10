@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
@@ -85,7 +94,6 @@ import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
@@ -874,25 +882,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String poolName = (String)stack.pop();
     String disableRegisterInterest = (String)stack.pop();
     String disablePersistBackup = (String)stack.pop();
-    CacheWriter cw = attrs.getCacheWriter();
-    if(poolName !=null && cw != null) {
-      throw new CacheXmlException("You cannot specify both a poolName and a cacheWriter for a dynamic-region-factory.");
-    }
-    if (cw != null && !(cw instanceof BridgeWriter)) {
-      throw new CacheXmlException(LocalizedStrings.CacheXmlParser_THE_DYNAMICREGIONFACTORY_CACHEWRITER_MUST_BE_AN_INSTANCE_OF_BRIDGEWRITER.toLocalizedString());
-    }
     DynamicRegionFactory.Config cfg;
-    if(poolName != null) {
-      cfg =
-        new DynamicRegionFactory.Config(dir, poolName,
+    cfg = new DynamicRegionFactory.Config(dir, poolName,
             !Boolean.valueOf(disablePersistBackup).booleanValue(),
             !Boolean.valueOf(disableRegisterInterest).booleanValue());
-    } else {
-      cfg =
-        new DynamicRegionFactory.Config(dir, (BridgeWriter)cw,
-          !Boolean.valueOf(disablePersistBackup).booleanValue(),
-          !Boolean.valueOf(disableRegisterInterest).booleanValue());
-    }
     CacheCreation cache = (CacheCreation)stack.peek();
     cache.setDynamicRegionFactoryConfig(cfg);
   }
@@ -1276,12 +1269,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (dp.equals(PERSISTENT_PARTITION_DP)) {
         attrs.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-      }
-      else if (dp.equals(HDFS_PARTITION_DP)) {
-        attrs.setDataPolicy(DataPolicy.HDFS_PARTITION);
-      }
-      else if (dp.equals(HDFS_PERSISTENT_PARTITION_DP)) {
-        attrs.setDataPolicy(DataPolicy.HDFS_PERSISTENT_PARTITION);
       }
       else {
         throw new InternalGemFireException(LocalizedStrings.CacheXmlParser_UNKNOWN_DATA_POLICY_0.toLocalizedString(dp));

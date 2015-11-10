@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /*
  * Created on Feb 3, 2006
@@ -31,11 +40,13 @@ import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PutOp;
 import com.gemstone.gemfire.cache.client.internal.QueueStateImpl.SequenceIdAndExpirationObject;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -64,7 +75,7 @@ public class ConnectionProxyJUnitTest
 
   Cache cache;
 
-  BridgePoolImpl proxy = null;
+  PoolImpl proxy = null;
   
   SequenceIdAndExpirationObject seo = null;
   
@@ -100,7 +111,7 @@ public class ConnectionProxyJUnitTest
     
     this.system.disconnect();
     if (proxy != null)
-      proxy.close();
+      proxy.destroy();
   }
 
   /**
@@ -121,7 +132,7 @@ public class ConnectionProxyJUnitTest
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     Region testRegion = null ;
     try {
-      BridgeServer server = this.cache.addBridgeServer();
+      CacheServer server = this.cache.addCacheServer();
       server.setMaximumTimeBetweenPings(10000);
       server.setPort(port3);
       server.start();
@@ -131,16 +142,18 @@ public class ConnectionProxyJUnitTest
       fail("Failed to create server");
     }
     try {
-      Properties props = new Properties();
-      props.setProperty("retryAttempts", "1");
-      props.setProperty("endpoints", "ep1=localhost:"+port3);
-      props.setProperty("establishCallbackConnection", "false");
-      props.setProperty("LBPolicy", "Sticky");
-      props.setProperty("readTimeout", "2000");
-      props.setProperty("socketBufferSize", "32768");
-      props.setProperty("retryInterval", "10000");
-      props.setProperty("connectionsPerServer", "2");
-      props.setProperty("redundancyLevel", "-1");
+      PoolFactory pf = PoolManager.createFactory();
+      pf.addServer("localhost", port3);
+      pf.setSubscriptionEnabled(false);
+      pf.setSubscriptionRedundancy(-1);
+      pf.setReadTimeout(2000);
+      pf.setThreadLocalConnections(true);
+      pf.setSocketBufferSize(32768);
+      pf.setRetryAttempts(1);
+      pf.setPingInterval(10000);
+      
+      proxy = (PoolImpl) pf.create("clientPool");
+
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setCacheListener(new CacheListenerAdapter() {
@@ -156,8 +169,6 @@ public class ConnectionProxyJUnitTest
           }
         }
       });
-      proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
-
       RegionAttributes attrs = factory.create();
       testRegion = cache.createRegion("testregion", attrs);
 
@@ -200,17 +211,17 @@ public class ConnectionProxyJUnitTest
     
 //    final int maxWaitTime = 10000;    
     try {
-      Properties props = new Properties();
-      props.setProperty("retryAttempts", "1");
-      props.setProperty("endpoints", "ep1=localhost:"+port3);
-      props.setProperty("establishCallbackConnection", "false");
-      props.setProperty("LBPolicy", "Sticky");
-      props.setProperty("readTimeout", "2000");
-      props.setProperty("socketBufferSize", "32768");
-      props.setProperty("retryInterval", "500");
-      props.setProperty("connectionsPerServer", "1");
+      PoolFactory pf = PoolManager.createFactory();
+      pf.addServer("localhost", port3);
+      pf.setSubscriptionEnabled(false);
+      pf.setReadTimeout(2000);
+      pf.setThreadLocalConnections(true);
+      pf.setMinConnections(1);
+      pf.setSocketBufferSize(32768);
+      pf.setRetryAttempts(1);
+      pf.setPingInterval(500);
       
-      proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
+      proxy = (PoolImpl) pf.create("clientPool");
     }catch (Exception ex) {
       ex.printStackTrace();
       fail("Failed to initialize client");
@@ -230,10 +241,10 @@ public class ConnectionProxyJUnitTest
 //    long start = System.currentTimeMillis();
     assertEquals(0, proxy.getConnectedServerCount());
     //start the server
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
       server.setMaximumTimeBetweenPings(15000);
       server.setPort(port3);
       server.start();
@@ -272,16 +283,16 @@ public class ConnectionProxyJUnitTest
     
 //    final int maxWaitTime = 10000;    
     try {
-      Properties props = new Properties();
-      props.setProperty("retryAttempts", "1");
-      props.setProperty("endpoints", "ep1=localhost:"+port3);
-      props.setProperty("establishCallbackConnection", "false");
-      props.setProperty("LBPolicy", "Sticky");
-      props.setProperty("readTimeout", "2000");
-      props.setProperty("socketBufferSize", "32768");
-      props.setProperty("retryInterval", "500");
-      props.setProperty("connectionsPerServer", "1");
-      proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);      
+      PoolFactory pf = PoolManager.createFactory();
+      pf.addServer("localhost", port3);
+      pf.setSubscriptionEnabled(false);
+      pf.setReadTimeout(2000);
+      pf.setThreadLocalConnections(true);
+      pf.setMinConnections(1);
+      pf.setSocketBufferSize(32768);
+      pf.setRetryAttempts(1);
+      pf.setPingInterval(500);
+      proxy = (PoolImpl) pf.create("clientPool");
     }catch (Exception ex) {
       ex.printStackTrace();
       fail("Failed to initialize client");
@@ -291,10 +302,10 @@ public class ConnectionProxyJUnitTest
 //    long start = System.currentTimeMillis();
     assertEquals(0, proxy.getConnectedServerCount());
     //start the server
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
       server.setMaximumTimeBetweenPings(15000);
       server.setPort(port3);
       server.start();
@@ -324,10 +335,10 @@ public class ConnectionProxyJUnitTest
   public void testThreadIdToSequenceIdMapCreation()
   {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
       server.setMaximumTimeBetweenPings(10000);
       server.setPort(port3);
       server.start();
@@ -337,11 +348,11 @@ public class ConnectionProxyJUnitTest
       fail("Failed to create server");
     }
     try {
-      Properties props = new Properties();
-      props.setProperty("endpoints", "ep1=localhost:" + port3);
-      props.setProperty("establishCallbackConnection", "true");
-      props.setProperty("redundancyLevel", "-1");
-      proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
+      PoolFactory pf = PoolManager.createFactory();
+      pf.addServer("localhost", port3);
+      pf.setSubscriptionEnabled(true);
+      pf.setSubscriptionRedundancy(-1);
+      proxy = (PoolImpl) pf.create("clientPool");
       if (proxy.getThreadIdToSequenceIdMap() == null) {
         fail(" ThreadIdToSequenceIdMap is null. ");
       }
@@ -368,10 +379,10 @@ public class ConnectionProxyJUnitTest
   public void testThreadIdToSequenceIdMapExpiryPositive()
  {
    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setMaximumTimeBetweenPings(10000);
      server.setPort(port3);
      server.start();
@@ -381,14 +392,13 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port3);
-     props.setProperty("redundancyLevel", "-1");
-     props.setProperty("clientAckInterval", "2000");
-     props.setProperty("messageTrackingTimeout", "4000");
-     props.setProperty("establishCallbackConnection", "true");
-     
-     proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port3);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(-1);
+     pf.setSubscriptionMessageTrackingTimeout(4000);
+     pf.setSubscriptionAckInterval(2000);
+     proxy = (PoolImpl) pf.create("clientPool");
 
      EventID eid = new EventID(new byte[0],1,1);
      if(proxy.verifyIfDuplicate(eid)){
@@ -419,10 +429,10 @@ public class ConnectionProxyJUnitTest
   public void testThreadIdToSequenceIdMapExpiryNegative()
  {
    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setMaximumTimeBetweenPings(10000);     
      server.setPort(port3);
      server.start();
@@ -432,12 +442,13 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port3);
-     props.setProperty("establishCallbackConnection", "true");
-     props.setProperty("redundancyLevel", "-1");
-     props.setProperty("messageTrackingTimeout", "10000");
-     proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port3);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(-1);
+     pf.setSubscriptionMessageTrackingTimeout(10000);
+     
+     proxy = (PoolImpl) pf.create("clientPool");
 
      final EventID eid = new EventID(new byte[0],1,1);
      if(proxy.verifyIfDuplicate(eid)){
@@ -470,10 +481,10 @@ public class ConnectionProxyJUnitTest
   public void testThreadIdToSequenceIdMapConcurrency()
  {
    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setMaximumTimeBetweenPings(10000);
      server.setPort(port3);
      server.start();
@@ -483,14 +494,14 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port3);
-     props.setProperty("redundancyLevel", "-1");
-     props.setProperty("clientAckInterval", "2000");
-     props.setProperty("messageTrackingTimeout", "5000");
-     props.setProperty("establishCallbackConnection", "true");
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port3);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(-1);
+     pf.setSubscriptionMessageTrackingTimeout(5000);
+     pf.setSubscriptionAckInterval(2000);
+     proxy = (PoolImpl) pf.create("clientPool");
      
-     proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
      final int EVENT_ID_COUNT = 10000; // why 10,000?
      EventID[] eid = new EventID[EVENT_ID_COUNT];
      for (int i = 0; i < EVENT_ID_COUNT; i++) {
@@ -525,10 +536,10 @@ public class ConnectionProxyJUnitTest
   public void testDuplicateSeqIdLesserThanCurrentSeqIdBeingIgnored()
  {
    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setMaximumTimeBetweenPings(10000);
      server.setPort(port3);
      server.start();
@@ -538,12 +549,13 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port3);
-     props.setProperty("establishCallbackConnection", "true");
-     props.setProperty("redundancyLevel", "-1");
-     props.setProperty("messageTrackingTimeout", "100000");
-     proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port3);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(-1);
+     pf.setSubscriptionMessageTrackingTimeout(100000);
+     proxy = (PoolImpl) pf.create("clientPool");
+     
      EventID eid1 = new EventID(new byte[0],1,5);
      if(proxy.verifyIfDuplicate(eid1)){
        fail(" eid1 can never be duplicate, it is being created for the first time! ");
@@ -562,7 +574,7 @@ public class ConnectionProxyJUnitTest
      }
 
      assertTrue(!proxy.getThreadIdToSequenceIdMap().isEmpty());
-     proxy.close();
+     proxy.destroy();
    }
    catch (Exception ex) {
      ex.printStackTrace();
@@ -583,10 +595,10 @@ public class ConnectionProxyJUnitTest
   public void testCleanCloseOfThreadIdToSeqId()
  {
    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setMaximumTimeBetweenPings(10000);
      server.setPort(port3);
      server.start();
@@ -596,12 +608,13 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port3);
-     props.setProperty("establishCallbackConnection", "true");
-     props.setProperty("redundancyLevel", "-1");
-     props.setProperty("messageTrackingTimeout", "100000");
-     proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port3);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(-1);
+     pf.setSubscriptionMessageTrackingTimeout(100000);
+     proxy = (PoolImpl) pf.create("clientPool");
+     
      EventID eid1 = new EventID(new byte[0],1,2);
      if(proxy.verifyIfDuplicate(eid1)){
          fail(" eid can never be duplicate, it is being created for the first time! ");
@@ -640,10 +653,10 @@ public class ConnectionProxyJUnitTest
   public void testTwoClientsHavingDifferentThreadIdMaps()
  {
    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setMaximumTimeBetweenPings(10000);
      server.setPort(port3);
      server.start();
@@ -653,22 +666,28 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port3);
-     props.setProperty("establishCallbackConnection", "true");
-     props.setProperty("redundancyLevel", "-1");
-     props.setProperty("messageTrackingTimeout", "100000");
-     BridgePoolImpl proxy1 = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
-     BridgePoolImpl proxy2 = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port3);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(-1);
+     pf.setSubscriptionMessageTrackingTimeout(100000);
+     
+     PoolImpl proxy1 = (PoolImpl) pf.create("clientPool1");
+     try {
+     PoolImpl proxy2 = (PoolImpl) pf.create("clientPool2");
+     try {
 
      Map map1 = proxy1.getThreadIdToSequenceIdMap();
      Map map2 = proxy2.getThreadIdToSequenceIdMap();
 
      assertTrue(!(map1==map2));
 
-      // Close the proxies to remove them from the set of all proxies
-     proxy1.close();
-     proxy2.close();
+     } finally {
+       proxy2.destroy();
+     }
+     } finally {
+       proxy1.destroy();
+     }
     }
    catch (Exception ex) {
      ex.printStackTrace();
@@ -686,10 +705,10 @@ public class ConnectionProxyJUnitTest
   public void testPeriodicAckSendByClient()
  {
    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setPort(port);
      server.start();
    }
@@ -698,15 +717,15 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port);
-     props.setProperty("establishCallbackConnection", "true");
-     props.setProperty("redundancyLevel", "1");
-     props.setProperty("readTimeout", "20000");
-     props.setProperty("messageTrackingTimeout", "15000");
-     props.setProperty("clientAckInterval", "5000");
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(1);
+     pf.setReadTimeout(20000);
+     pf.setSubscriptionMessageTrackingTimeout(15000);
+     pf.setSubscriptionAckInterval(5000);
      
-     proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);   
+     proxy = (PoolImpl) pf.create("clientPool");
      
      EventID eid = new EventID(new byte[0],1,1);
      
@@ -757,10 +776,10 @@ public class ConnectionProxyJUnitTest
   public void testNoAckSendByClient()
  {
    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-   BridgeServer server = null;
+   CacheServer server = null;
    try {
    try {
-     server = this.cache.addBridgeServer();
+     server = this.cache.addCacheServer();
      server.setPort(port);
      server.start();
    }
@@ -769,14 +788,15 @@ public class ConnectionProxyJUnitTest
      fail("Failed to create server");
    }
    try {
-     Properties props = new Properties();
-     props.setProperty("endpoints", "ep1=localhost:"+port);     
-     props.setProperty("readTimeout", "20000");
-     props.setProperty("messageTrackingTimeout", "8000");
-     props.setProperty("clientAckInterval", "2000");
-     props.setProperty("establishCallbackConnection", "true");
+     PoolFactory pf = PoolManager.createFactory();
+     pf.addServer("localhost", port);
+     pf.setSubscriptionEnabled(true);
+     pf.setSubscriptionRedundancy(1);
+     pf.setReadTimeout(20000);
+     pf.setSubscriptionMessageTrackingTimeout(8000);
+     pf.setSubscriptionAckInterval(2000);
      
-     proxy = BridgePoolImpl.create(props, true/*useByBridgeWriter*/);     
+     proxy = (PoolImpl) pf.create("clientPool");
      
      EventID eid = new EventID(new byte[0],1,1);
      

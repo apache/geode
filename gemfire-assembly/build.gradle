@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'org.hibernate.build.gradle', name: 'gradle-maven-publish-auth', version: '2.0.1'
+        classpath group: 'org.hibernate.build.gradle', name: 'gradle-maven-publish-auth', version: project.'gradle-maven-publish-auth.version'
     }
 }
 
@@ -21,6 +21,7 @@ configurations {
 dependencies {
   provided project(':gemfire-core')
   
+  archives project(':gemfire-common')  
   archives project(':gemfire-json')  
   archives project(':gemfire-joptsimple')  
   archives project(':gemfire-jgroups')  
@@ -155,16 +156,17 @@ distributions {
       into ('config') {
         from defaultCacheConfig
         from defaultDistributionConfig
-
-        from (project(':gemfire-core').sourceSets.main.resources.files.find { 
-          it.name == 'log4j2-default.xml' 
-        }) {
-          rename 'log4j2-default.xml', 'log4j2.xml'
-        }
+        from (project(':gemfire-core').sourceSets.main.resources.files.find {
+          it.name == 'log4j2.xml' 
+        })
       }
       
       into ('lib') {
         exclude 'annotation*.jar'
+
+        from project(":gemfire-common").configurations.runtime
+        from project(":gemfire-common").configurations.archives.allArtifacts.files
+
         from project(":gemfire-jgroups").configurations.runtime
         from project(":gemfire-jgroups").configurations.archives.allArtifacts.files
 
@@ -220,11 +222,12 @@ def springExtReleaseLocalRepo = [ id:'ext-release-local', name:'Spring Maven ext
 def MavenRepos = [ springReleaseRepo, springSnapshotRepo, springLibsReleaseRepo, springExtReleaseLocalRepo ]
 
 // Jars to be published via Maven
+def commonJar = [publicationName:'commonJar', project:project(":gemfire-common").name]
 def coreJar = [publicationName:'coreJar', project:project(":gemfire-core").name]
 def jgroupsJar = [publicationName:'jgroupsJar', project:project(":gemfire-jgroups").name]
 def jsonJar = [publicationName:'jsonJar', project:project(":gemfire-json").name]
 def joptsimpleJar = [publicationName:'joptsimpleJar', project:project(":gemfire-joptsimple").name]
-def MavenJars = [ coreJar, jgroupsJar, jsonJar, joptsimpleJar ]
+def MavenJars = [ coreJar, jgroupsJar, jsonJar, joptsimpleJar, commonJar ]
 
 afterEvaluate {
   publishing {

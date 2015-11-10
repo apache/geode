@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
@@ -22,14 +31,14 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeObserverAdapter;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -98,23 +107,23 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
 
-      setBridgeObserver();
+      setClientServerObserver();
 
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
 
       waitForPrimaryIdentification();
       //primary
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
-      unSetBridgeObserver();
+      unSetClientServerObserver();
       //secondary
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
 
-      setBridgeObserver();
+      setClientServerObserver();
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
       //primary
       waitForPrimaryIdentification();
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
-      unSetBridgeObserver();
+      unSetClientServerObserver();
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
       // All servers are dead at this point , no primary in the system.
       verifyDeadAndLiveServers(3,0);
@@ -146,7 +155,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       //secondary
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
 
-      setBridgeObserver();
+      setClientServerObserver();
 
       //stop new primary
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
@@ -156,7 +165,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       //newly selectd primary
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
 
-      unSetBridgeObserver();
+      unSetClientServerObserver();
     }
 
     /**
@@ -174,7 +183,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       // secondaries
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
-      setBridgeObserver();
+      setClientServerObserver();
 
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
       //stop ProbablePrimary
@@ -185,7 +194,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       waitForPrimaryIdentification();
       //new primary
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
-      unSetBridgeObserver();
+      unSetClientServerObserver();
 
     }
 
@@ -212,10 +221,10 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsNotAlive");
-      setBridgeObserver();
+      setClientServerObserver();
       server1.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
       waitForPrimaryIdentification();
-      unSetBridgeObserver();
+      unSetClientServerObserver();
       verifyDeadAndLiveServers(1,2);
       server2.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
      }
@@ -288,31 +297,6 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       verifyDeadAndLiveServers(1,2);
     }
 
-
-  // darrel: this following is an invalid test.
-  // A "primary" is only identified when you have a callback connection
-//     /**
-//      * Tests failover initialization by cache operation Threads on Primary
-//      */
-//     public void testInitiateFailoverByCacheOperationThreads_Primary() throws Exception
-//     {
-//       // create a client with large retry interval for server monitors and no client updater thread
-//       // so that only cache operation can detect a server failure and should initiate failover
-//       createClientCacheWithLargeRetryIntervalAndWithoutCallbackConnection(this.getName());
-//       setBridgeObserver();
-//       server1.invoke(HAStartupAndFailoverDUnitTest.class, "stopServer");
-//       releaseConnection();//Added by Jason
-//       put();
-//       waitForPrimaryIdentification();
-//       unSetBridgeObserver();
-//       verifyDeadAndLiveServers(1,2);
-//     }
-//     public static void releaseConnection() {
-//       Region r1 = cache.getRegion("/" + REGION_NAME);
-//       BridgeWriter bw = (BridgeWriter)r1.getAttributes().getCacheWriter();
-//       bw.release();
-//     }
-
     public static void put()
     {
       try {
@@ -357,9 +341,9 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
 //     start = System.currentTimeMillis();
   }
  
-    public static void setBridgeObserver() {
+    public static void setClientServerObserver() {
         PoolImpl.AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
-        BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+        ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
             public void afterPrimaryIdentificationFromBackup(ServerLocation primaryEndpoint) {
                 synchronized (HAStartupAndFailoverDUnitTest.class) {
                   HAStartupAndFailoverDUnitTest.identifiedPrimary = true;
@@ -369,12 +353,12 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
         });
     }
 
-    public static void unSetBridgeObserver()
+    public static void unSetClientServerObserver()
   {
       synchronized (HAStartupAndFailoverDUnitTest.class) {
           PoolImpl.AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
           HAStartupAndFailoverDUnitTest.identifiedPrimary = false;
-          BridgeObserverHolder.setInstance(new BridgeObserverAdapter());
+          ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter());
       }
 
   }
@@ -383,8 +367,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     {
     try {
       assertEquals("Expected exactly one BridgeServer", 1, cache
-          .getBridgeServers().size());
-      BridgeServerImpl bs = (BridgeServerImpl)cache.getBridgeServers()
+          .getCacheServers().size());
+      CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
           .iterator().next();
       assertNotNull(bs);
       bs.stop();
@@ -430,8 +414,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     try {
       Cache c = CacheFactory.getAnyInstance();
       assertEquals("Expected exactly one BridgeServer", 1,
-          c.getBridgeServers().size());
-      BridgeServerImpl bs = (BridgeServerImpl) c.getBridgeServers()
+          c.getCacheServers().size());
+      CacheServerImpl bs = (CacheServerImpl) c.getCacheServers()
           .iterator().next();
       assertNotNull(bs);
       bs.start();
@@ -473,7 +457,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
-          return cache.getBridgeServers().size() == 1;
+          return cache.getCacheServers().size() == 1;
         }
         public String description() {
           return excuse;
@@ -481,7 +465,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       };
       DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      BridgeServerImpl bs = (BridgeServerImpl)cache.getBridgeServers()
+      CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
           .iterator().next();
       assertNotNull(bs);
       assertNotNull(bs.getAcceptor());
@@ -529,11 +513,11 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     try {
       Cache c = CacheFactory.getAnyInstance();
       // assertEquals("More than one BridgeServer", 1,
-      // c.getBridgeServers().size());
+      // c.getCacheServers().size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
-          return cache.getBridgeServers().size() == 1;
+          return cache.getCacheServers().size() == 1;
         }
         public String description() {
           return excuse;
@@ -541,7 +525,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       };
       DistributedTestCase.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      BridgeServerImpl bs = (BridgeServerImpl)c.getBridgeServers().iterator()
+      CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
           .next();
       assertNotNull(bs);
       assertNotNull(bs.getAcceptor());
@@ -714,7 +698,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
     server1.setPort(port);
     // ensures updates to be sent instead of invalidations

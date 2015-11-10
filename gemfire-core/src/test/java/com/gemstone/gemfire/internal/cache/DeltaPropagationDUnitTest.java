@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  * 
@@ -37,7 +46,7 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -877,7 +886,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
   public static void confirmEviction(Integer port) {
     final EnableLRU cc = ((VMLRURegionMap)((LocalRegion)cache
         .getRegion(Region.SEPARATOR
-            + BridgeServerImpl.generateNameForClientMsgsRegion(port))).entries)
+            + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries)
         ._getCCHelper();
 
     WaitCriterion wc = new WaitCriterion() {
@@ -1376,7 +1385,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
     props.setProperty(DistributionConfig.CLIENT_CONFLATION_PROP_NAME, conflate);
     new DeltaPropagationDUnitTest("temp").createCache(props);
     AttributesFactory factory = new AttributesFactory();
-    pool = BridgeTestCase.configureConnectionPool(factory, "localhost", ports,
+    pool = ClientServerTestCase.configureConnectionPool(factory, "localhost", ports,
         true, Integer.parseInt(rLevel), 2, null, 1000, 250, false, -2);
 
     factory.setScope(Scope.LOCAL);
@@ -1423,7 +1432,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
     try {
       // Get the clientMessagesRegion and check the size.
       Region region = (Region)cache.getRegion("/" + regionName);
-      Region msgsRegion = (Region)cache.getRegion(BridgeServerImpl
+      Region msgsRegion = (Region)cache.getRegion(CacheServerImpl
           .generateNameForClientMsgsRegion(port.intValue()));
       logger.fine("size<serverRegion, clientMsgsRegion>: " + region.size()
           + ", " + msgsRegion.size());

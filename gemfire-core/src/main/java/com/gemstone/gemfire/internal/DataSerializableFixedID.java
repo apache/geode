@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal;
 
@@ -135,7 +144,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PR_FUNCTION_REPLY_MESSAGE = -93;
 
   public static final byte PROFILES_REPLY_MESSAGE = -92;
-  public static final byte BRIDGE_SERVER_PROFILE = -91;
+  public static final byte CACHE_SERVER_PROFILE = -91;
   public static final byte CONTROLLER_PROFILE = -90;
 
   public static final byte CREATE_REGION_MESSAGE = -89;
@@ -341,12 +350,12 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PARTITION_PROFILE = 18;
 
   public static final byte ROLE_EVENT = 19;
-  public static final byte BRIDGE_REGION_EVENT = 20;
+  public static final byte CLIENT_REGION_EVENT = 20;
 
   public static final byte CONCURRENT_HASH_MAP = 21;
   public static final byte FIND_DURABLE_QUEUE = 22;
   public static final byte FIND_DURABLE_QUEUE_REPLY = 23;
-  public static final byte BRIDGE_SERVER_LOAD_MESSAGE = 24;
+  public static final byte CACHE_SERVER_LOAD_MESSAGE = 24;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>ObjectPartList</code>.

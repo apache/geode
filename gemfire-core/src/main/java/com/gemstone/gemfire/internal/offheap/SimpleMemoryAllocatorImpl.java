@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.internal.offheap;
 
 import java.io.ByteArrayOutputStream;
@@ -42,6 +58,7 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.DSCODE;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
@@ -524,6 +541,27 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
         Object objToSend = (byte[]) getDeserializedForReading(); // deserialized as a byte[]
         DataSerializer.writeObject(objToSend, out);
       }
+    }
+
+    @Override
+    public void sendAsByteArray(DataOutput out) throws IOException {
+      byte[] bytes;
+      if (isSerialized()) {
+        bytes = getSerializedValue();
+      } else {
+        bytes = (byte[]) getDeserializedForReading();
+      }
+      DataSerializer.writeByteArray(bytes, out);
+      
+    }
+    
+    @Override
+    public void sendAsCachedDeserializable(DataOutput out) throws IOException {
+      if (!isSerialized()) {
+        throw new IllegalStateException("sendAsCachedDeserializable can only be called on serialized StoredObjects");
+      }
+      InternalDataSerializer.writeDSFIDHeader(DataSerializableFixedID.VM_CACHED_DESERIALIZABLE, out);
+      sendAsByteArray(out);
     }
 
     @Override
@@ -1815,6 +1853,20 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
         }
       }
       super.sendTo(out);
+    }
+    
+    @Override
+    public void sendAsByteArray(DataOutput out) throws IOException {
+      if (!isCompressed() && out instanceof HeapDataOutputStream) {
+        ByteBuffer bb = createDirectByteBuffer();
+        if (bb != null) {
+          HeapDataOutputStream hdos = (HeapDataOutputStream) out;
+          InternalDataSerializer.writeArrayLength(bb.remaining(), hdos);
+          hdos.write(bb);
+          return;
+        }
+      }
+      super.sendAsByteArray(out);
     }
        
     private static volatile Class dbbClass = null;
@@ -3333,7 +3385,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
       return this.block.getFreeListId();
     }
     public int getRefCount() {
-      return Chunk.getRefCount(getMemoryAddress());
+      return this.block.getRefCount(); // delegate to fix GEODE-489
     }
     public String getDataType() {
       if (this.block.getDataType() != null) {

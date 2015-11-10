@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.management;
 
@@ -47,7 +56,7 @@ import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.BridgeTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -84,7 +93,7 @@ import dunit.VM;
  * @author Mitch Thomas
  * @since 6.0
  */
-public class MemoryThresholdsDUnitTest extends BridgeTestCase {
+public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   
   public static class Range implements Serializable {
     public final static Range DEFAULT = new Range(0, 20);
@@ -255,7 +264,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
             return dr.getMemoryThresholdReachedMembers().size() == 0;
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });
@@ -396,7 +405,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     ServerPorts ports2 = startCacheServer(server2, ports1.getMcastPort(), 80f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
-    registerTestMemoryThresholdListener(server1);
+    registerLoggingTestMemoryThresholdListener(server1);
     registerTestMemoryThresholdListener(server2);
 
     //NORMAL -> CRITICAL
@@ -409,6 +418,9 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
         return null;
       }
     });
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 1, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 0, true);
 
     //make sure we get two events on remote server
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
@@ -425,6 +437,9 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
         return null;
       }
     });
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 0, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 0, true);;
@@ -437,6 +452,9 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
         return null;
       }
     });
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 0, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 0, true);
@@ -450,10 +468,14 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
       }
     });
 
+    verifyListenerValue(server2, MemoryState.CRITICAL, 1, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 2, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 1, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 1, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 1, true);
     
+    this.getLogWriter().info("before NORMAL->CRITICAL->NORMAL");
     //NORMAL -> EVICTION -> NORMAL
     server2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -463,7 +485,11 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
         return null;
       }
     });
+    this.getLogWriter().info("after NORMAL->CRITICAL->NORMAL");
 
+    verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 2, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 2, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 3, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 2, true);
@@ -477,6 +503,9 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
       }
     });
 
+    verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 4, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 2, true);
     verifyListenerValue(server1, MemoryState.CRITICAL, 2, true);
     verifyListenerValue(server1, MemoryState.EVICTION, 4, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 2, true);
@@ -618,7 +647,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
             return keyFoundOnSickMember && caughtException;
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });
@@ -671,7 +700,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
             return done;
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });
@@ -1443,6 +1472,18 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
     });
   }
 
+  private void registerLoggingTestMemoryThresholdListener(VM vm) {
+    vm.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        TestMemoryThresholdListener listener = new TestMemoryThresholdListener(true);
+        InternalResourceManager irm = ((GemFireCacheImpl)getCache()).getResourceManager();
+        irm.addResourceListener(ResourceType.HEAP_MEMORY, listener);
+        assertTrue(irm.getResourceListeners(ResourceType.HEAP_MEMORY).contains(listener));
+        return null;
+      }
+    });
+  }
+
   /**
    * Verifies that the test listener value on the given vm is what is expected
    * Note that for remote events useWaitCriterion must be true
@@ -1543,7 +1584,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
             throw new IllegalStateException("Unknown memory state");
         }
         if (useWaitCriterion) {
-          waitForCriterion(wc, 5000, 100, true);
+          waitForCriterion(wc, 30000, 10, true);
         }
         return null;
       }
@@ -1563,7 +1604,7 @@ public class MemoryThresholdsDUnitTest extends BridgeTestCase {
             return numberOfProfiles == ra.adviseGeneric().size();
           }
         };
-        waitForCriterion(wc, 10000, 10, true);
+        waitForCriterion(wc, 30000, 10, true);
         return null;
       }
     });

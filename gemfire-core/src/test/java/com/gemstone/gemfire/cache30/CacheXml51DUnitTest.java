@@ -1,19 +1,28 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 
 import dunit.Host;
 import dunit.VM;
@@ -148,7 +157,7 @@ public void testMessageSyncInterval() throws CacheException {
 public void testBridgeAttributesRelatedToClientQueuesHA() throws CacheException {
   CacheCreation cache = new CacheCreation();
   cache.setMessageSyncInterval(3445);
-  BridgeServer bs = cache.addBridgeServer();
+  CacheServer bs = cache.addCacheServer();
   bs.setMaximumMessageCount(12345);
   bs.setMessageTimeToLive(56789);
   bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
@@ -158,7 +167,7 @@ public void testBridgeAttributesRelatedToClientQueuesHA() throws CacheException 
   testXml(cache);
   Cache c = getCache();
   assertNotNull(c);
-  BridgeServer server = (BridgeServer)cache.getBridgeServers().iterator().next();
+  CacheServer server = (CacheServer)cache.getCacheServers().iterator().next();
   assertNotNull(server);
   assertEquals(12345,server.getMaximumMessageCount());
   assertEquals(56789,server.getMessageTimeToLive());     
@@ -199,7 +208,7 @@ public void testBridgeAttributesRelatedToClientQueuesHA() throws CacheException 
   {
     CacheCreation cache = new CacheCreation();
 
-    BridgeServer bs = cache.addBridgeServer();
+    CacheServer bs = cache.addCacheServer();
     bs.setMaxThreads(37);
     bs.setMaxConnections(999);
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());

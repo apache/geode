@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -11,8 +20,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.BindException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -58,7 +65,7 @@ import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -90,8 +97,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from
  * the edge and starts up threads to process requests from these.
- * 
- * @see com.gemstone.gemfire.cache.util.BridgeServer
  * 
  * @author Sudhir Menon
  * @since 2.0.2
@@ -272,6 +277,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
 
   private boolean isGatewayReceiver;
   private List<GatewayTransportFilter> gatewayTransportFilters;
+  private final SocketCreator socketCreator; 
   /**
    * Initializes this acceptor thread to listen for connections on the given
    * port.
@@ -328,7 +334,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
     }
     {
       int tmp_maxThreads = maxThreads;
-      if (maxThreads == BridgeServer.DEFAULT_MAX_THREADS) {
+      if (maxThreads == CacheServer.DEFAULT_MAX_THREADS) {
         // consult system properties for 5.0.2 backwards compatibility
         if (DEPRECATED_SELECTOR) {
           tmp_maxThreads = DEPRECATED_SELECTOR_POOL_SIZE;
@@ -388,43 +394,20 @@ public class AcceptorImpl extends Acceptor implements Runnable
 
     {
       final int backLog = Integer.getInteger(BACKLOG_PROPERTY_NAME, DEFAULT_BACKLOG).intValue();
-      SocketCreator sc = null;
       DistributionConfig config = ((InternalDistributedSystem)c.getDistributedSystem()).getConfig();
       if(!isGatewayReceiver) {
         //If configured use SSL properties for cache-server
-        sc = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
+        this.socketCreator = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
             config.getServerSSLRequireAuthentication(),
             config.getServerSSLProtocols(),
             config.getServerSSLCiphers(),
             config.getServerSSLProperties());
-        if(config.getServerSSLEnabled()) {
-          StringWriter sw = new StringWriter();
-          PrintWriter writer = new PrintWriter(sw);
-          config.getServerSSLProperties().list(writer);          
-          logger.info(
-              "Starting CacheServer with SSL config : Authentication Required {} Ciphers {} Protocols {} Other Properties {} ",
-                  config.getServerSSLRequireAuthentication(),
-                  config.getServerSSLCiphers(),
-                  config.getServerSSLProtocols(),
-                  sw.toString());
-        }
       } else {
-        sc = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
+        this.socketCreator = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
             config.getGatewaySSLRequireAuthentication(),
             config.getGatewaySSLProtocols(),
             config.getGatewaySSLCiphers(),
             config.getGatewaySSLProperties());
-        if(config.getGatewaySSLEnabled()) {
-          StringWriter sw = new StringWriter();
-          PrintWriter writer = new PrintWriter(sw);
-          config.getGatewaySSLProperties().list(writer);          
-          logger.info(
-              "Starting Gateway with SSL config : Authentication Required {} Ciphers {} Protocols {} Other Properties {} ",
-                  config.getGatewaySSLRequireAuthentication(),
-                  config.getGatewaySSLCiphers(),
-                  config.getGatewaySSLProtocols(),
-                  sw.toString());
-        }
       }
       
       final GemFireCacheImpl gc;
@@ -437,7 +420,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       final long tilt = System.currentTimeMillis() + 120 * 1000;
 
       if (isSelector()) {
-        if (sc.useSSL()) {
+        if (this.socketCreator.useSSL()) {
           throw new IllegalArgumentException(LocalizedStrings.AcceptorImpl_SELECTOR_THREAD_POOLING_CAN_NOT_BE_USED_WITH_CLIENTSERVER_SSL_THE_SELECTOR_CAN_BE_DISABLED_BY_SETTING_MAXTHREADS0.toLocalizedString());
         }
         ServerSocketChannel channel = ServerSocketChannel.open();
@@ -488,7 +471,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         // immediately restarted, which sometimes results in a bind exception
         for (;;) {
           try {
-            this.serverSock = sc.createServerSocket(port, backLog,
+            this.serverSock = this.socketCreator.createServerSocket(port, backLog,
                 getBindAddress(), this.gatewayTransportFilters,
                 socketBufferSize);
             break;
@@ -534,7 +517,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       this.localPort = port;
       String sockName = this.serverSock.getLocalSocketAddress().toString();
       logger.info(LocalizedMessage.create(
-          LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_CONNECTION_LISTENER_BOUND_TO_ADDRESS_0_WITH_BACKLOG_1,
+          LocalizedStrings.AcceptorImpl_CACHE_SERVER_CONNECTION_LISTENER_BOUND_TO_ADDRESS_0_WITH_BACKLOG_1,
           new Object[] {sockName, Integer.valueOf(backLog)}));
       if(isGatewayReceiver){
         this.stats = GatewayReceiverStats.createGatewayReceiverStats(sockName);
@@ -1325,7 +1308,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
             break;
           }
         }
-        SocketCreator.getDefaultInstance().configureServerSSLSocket(s);
+        this.socketCreator.configureServerSSLSocket(s);
         this.loggedAcceptError = false;
 
         handOffNewClientConnection(s);
@@ -1357,7 +1340,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         if (isRunning()) {
           if (!this.loggedAcceptError) {
             this.loggedAcceptError = true;
-            logger.error(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_UNEXPECTED_IOEXCEPTION_FROM_ACCEPT, e));
+            logger.error(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_UNEXPECTED_IOEXCEPTION_FROM_ACCEPT, e));
           }
           // Why sleep?
           // try {Thread.sleep(3000);} catch (InterruptedException ie) {}
@@ -1370,7 +1353,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       catch (Exception e) {
         closeSocket(s);
         if (isRunning()) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_UNEXPECTED_EXCEPTION, e));
+          logger.fatal(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_UNEXPECTED_EXCEPTION, e));
         }
       }
     }
@@ -1410,10 +1393,10 @@ public class AcceptorImpl extends Acceptor implements Runnable
                 if (!AcceptorImpl.this.loggedAcceptError) {
                   AcceptorImpl.this.loggedAcceptError = true;
                   if (ex instanceof SocketTimeoutException) {
-                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION_DUE_TO_SOCKET_TIMEOUT));
+                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION_DUE_TO_SOCKET_TIMEOUT));
                   }
                   else {
-                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION__0, ex), ex);
+                    logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_FAILED_ACCEPTING_CLIENT_CONNECTION__0, ex), ex);
                   }
                 }
               }
@@ -1487,7 +1470,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
           @Override
           public void run2() {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_TIMED_OUT_WAITING_FOR_HANDSHAKE_FROM__0, s.getRemoteSocketAddress()));
+            logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_TIMED_OUT_WAITING_FOR_HANDSHAKE_FROM__0, s.getRemoteSocketAddress()));
             closeSocket(s);
           }
         };
@@ -1636,7 +1619,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
     try {
       synchronized (syncLock) {
         this.shutdown = true;
-        logger.info(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_BRIDGE_SERVER_ON_PORT_0_IS_SHUTTING_DOWN, this.localPort)); 
+        logger.info(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_ON_PORT_0_IS_SHUTTING_DOWN, this.localPort)); 
         if (this.thread != null) {
           this.thread.interrupt();
         }

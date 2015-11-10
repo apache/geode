@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.cache;
@@ -20,7 +29,6 @@ import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.AbstractRegion;
 import com.gemstone.gemfire.internal.cache.CustomEvictionAttributesImpl;
@@ -456,7 +464,6 @@ public class AttributesFactory<K,V> {
     this.regionAttributes.multicastEnabled = regionAttributes.getMulticastEnabled();
     this.regionAttributes.gatewaySenderIds = new CopyOnWriteArraySet<String>(regionAttributes.getGatewaySenderIds());
     this.regionAttributes.asyncEventQueueIds = new CopyOnWriteArraySet<String>(regionAttributes.getAsyncEventQueueIds());
-    this.regionAttributes.hdfsStoreName = regionAttributes.getHDFSStoreName();
     this.regionAttributes.isLockGrantor = regionAttributes.isLockGrantor(); // fix for bug 47067
     if (regionAttributes instanceof UserSpecifiedRegionAttributes) {
       this.regionAttributes.setIndexes(((UserSpecifiedRegionAttributes<K,V>) regionAttributes).getIndexes());
@@ -483,10 +490,6 @@ public class AttributesFactory<K,V> {
     }
     
     this.regionAttributes.compressor = regionAttributes.getCompressor();
-    this.regionAttributes.hdfsWriteOnly = regionAttributes.getHDFSWriteOnly();
-    if (regionAttributes instanceof UserSpecifiedRegionAttributes) {
-      this.regionAttributes.setHasHDFSWriteOnly(((UserSpecifiedRegionAttributes<K,V>) regionAttributes).hasHDFSWriteOnly());
-    }
     this.regionAttributes.offHeap = regionAttributes.getOffHeap();
   }
 
@@ -501,11 +504,6 @@ public class AttributesFactory<K,V> {
    */
   public void setCacheLoader(CacheLoader<K,V> cacheLoader)
   {
-    if (cacheLoader != null) {
-      if (AbstractRegion.isBridgeLoader(cacheLoader) && this.regionAttributes.getPoolName() != null) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeLoader or BridgeClient. Please use pools OR BridgeClient.");
-      }
-    }
     this.regionAttributes.cacheLoader = cacheLoader;
     this.regionAttributes.setHasCacheLoader(true);
   }
@@ -519,11 +517,6 @@ public class AttributesFactory<K,V> {
    */
   public void setCacheWriter(CacheWriter<K,V> cacheWriter)
   {
-    if (cacheWriter != null) {
-      if (AbstractRegion.isBridgeWriter(cacheWriter) &&  this.regionAttributes.getPoolName() != null) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeWriter or BridgeClient. Please use pools OR BridgeClient.");
-      }
-    }
     this.regionAttributes.cacheWriter = cacheWriter;
     this.regionAttributes.setHasCacheWriter(true);
   }
@@ -1285,8 +1278,6 @@ public class AttributesFactory<K,V> {
    * @param name the name of the connection pool to use; if <code>null</code>
    * or <code>""</code> then the connection pool is disabled for regions
    * using these attributes.
-   * @throws IllegalStateException if a cache loader or cache writer has already
-   * been set.
    * @since 5.7
    */
   public void setPoolName(String name) {
@@ -1294,45 +1285,9 @@ public class AttributesFactory<K,V> {
     if ("".equals(nm)) {
       nm = null;
     }
-    if (nm != null) {
-      // make sure a cache listener or writer has not already been installed
-      if (this.regionAttributes.getCacheLoader() != null 
-          && AbstractRegion.isBridgeLoader(this.regionAttributes.getCacheLoader())) {
-        throw new IllegalStateException("A region with a bridge loader can not have a pool name.");
-      }
-      if (this.regionAttributes.getCacheWriter() != null 
-          && AbstractRegion.isBridgeWriter(this.regionAttributes.getCacheWriter())) {
-        throw new IllegalStateException("A region with a bridge writer can not have a pool name.");
-      }
-    }
     this.regionAttributes.poolName = nm;
     this.regionAttributes.setHasPoolName(true);
     
-  }
-  
-  /**
-   * Sets the HDFSStore name attribute.
-   * This causes the region to use the {@link HDFSStore}.
-   * @param name the name of the HDFSstore
-   */
-  public void setHDFSStoreName(String name) {
-    //TODO:HDFS throw an exception if the region is already configured for a disk store and 
-    // vice versa
-    this.regionAttributes.hdfsStoreName = name;
-    this.regionAttributes.setHasHDFSStoreName(true);
-  }
-  
-  /**
-   * Sets the HDFS write only attribute. if the region
-   * is configured to be write only to HDFS, events that have 
-   * been evicted from memory cannot be read back from HDFS.
-   * Events are written to HDFS in the order in which they occurred.
-   */
-  public void setHDFSWriteOnly(boolean writeOnly) {
-    //TODO:HDFS throw an exception if the region is already configured for a disk store and 
-    // vice versa
-    this.regionAttributes.hdfsWriteOnly = writeOnly;
-    this.regionAttributes.setHasHDFSWriteOnly(true);
   }
   
   /**
@@ -1547,14 +1502,6 @@ public class AttributesFactory<K,V> {
         throw new IllegalStateException(LocalizedStrings.AttributesFactory_IF_THE_MEMBERSHIP_ATTRIBUTES_HAS_REQUIRED_ROLES_THEN_SCOPE_MUST_NOT_BE_LOCAL.toLocalizedString());
       }
     }
-    if (attrs.getPoolName() != null) {
-      if (attrs.getCacheLoader() != null && AbstractRegion.isBridgeLoader(attrs.getCacheLoader())) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeLoader or BridgeClient. Please use pools OR BridgeClient.");
-      }
-      if (attrs.getCacheWriter() != null && AbstractRegion.isBridgeWriter(attrs.getCacheWriter())) {
-        throw new IllegalStateException("A region with a pool name can not have a BridgeWriter or BridgeClient. Please use pools OR BridgeClient.");
-      }
-    }
     
     final PartitionAttributes pa = attrs.getPartitionAttributes();
     // Validations for PartitionRegion Attributes
@@ -1562,22 +1509,8 @@ public class AttributesFactory<K,V> {
       ((PartitionAttributesImpl)pa).validateWhenAllAttributesAreSet(attrs instanceof RegionAttributesCreation);
       ExpirationAttributes regionIdleTimeout = attrs.getRegionIdleTimeout();
       ExpirationAttributes regionTimeToLive = attrs.getRegionTimeToLive();
-      if ((regionIdleTimeout.getAction().isInvalidate() && regionIdleTimeout.getTimeout() > 0)
-          || (regionIdleTimeout.getAction().isLocalInvalidate() && regionIdleTimeout.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isInvalidate() && regionTimeToLive.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isLocalInvalidate()) && regionTimeToLive.getTimeout() > 0 ) {
-        throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
-      }
-      
-      if ((regionIdleTimeout.getAction().isDestroy() && regionIdleTimeout.getTimeout() > 0)
-          || (regionIdleTimeout.getAction().isLocalDestroy() && regionIdleTimeout.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isDestroy() && regionTimeToLive.getTimeout() > 0)
-          || (regionTimeToLive.getAction().isLocalDestroy() && regionTimeToLive.getTimeout() > 0)) {
-        throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR
-                .toLocalizedString());
-      }
+      AbstractRegion.validatePRRegionExpirationAttributes(regionIdleTimeout);
+      AbstractRegion.validatePRRegionExpirationAttributes(regionTimeToLive);
       
       ExpirationAttributes entryIdleTimeout = attrs.getEntryIdleTimeout();
       ExpirationAttributes entryTimeToLive = attrs.getEntryTimeToLive();

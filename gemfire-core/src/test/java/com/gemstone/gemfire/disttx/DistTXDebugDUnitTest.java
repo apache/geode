@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.disttx;
 
 import java.io.DataInput;
@@ -37,7 +53,6 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
   VM dataStore1 = null;
   VM dataStore2 = null;
   VM dataStore3 = null;
-  protected static Cache cache = null;
 
   public DistTXDebugDUnitTest(String name) {
     super(name);
@@ -62,20 +77,10 @@ public class DistTXDebugDUnitTest extends CacheTestCase {
       }
     });
     InternalResourceManager.setResourceObserver(null);
-    if (cache != null) {
-      cache.close();
-    }
   }
 
   public static void createCacheInVm() {
-    Properties props = new Properties();
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    // CacheFactory cf = new CacheFactory(props);
-    // new TxDUnit("temp").getCache(cf);
-    // new TxDUnit("temp").getCache();
-
-    InternalDistributedSystem ds = new DistTXDebugDUnitTest("temp").getSystem(props);
-    cache = CacheFactory.create(ds);
+    new DistTXDebugDUnitTest("temp").getCache();
   }
 
   protected void createCacheInAllVms() {

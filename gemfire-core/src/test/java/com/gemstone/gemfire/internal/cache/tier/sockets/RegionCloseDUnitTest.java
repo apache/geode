@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
@@ -16,12 +25,12 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.cache.client.*;
 
@@ -125,7 +134,7 @@ public class RegionCloseDUnitTest extends DistributedTestCase
     factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    BridgeServer server = cache.addBridgeServer();
+    CacheServer server = cache.addCacheServer();
     assertNotNull(server);
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
@@ -137,10 +146,10 @@ public class RegionCloseDUnitTest extends DistributedTestCase
   public static void VerifyClientProxyOnServerBeforeClose()
   {
     Cache c = CacheFactory.getAnyInstance();
-    assertEquals("More than one BridgeServer", 1, c.getBridgeServers().size());
+    assertEquals("More than one CacheServer", 1, c.getCacheServers().size());
 
 
-    final BridgeServerImpl bs = (BridgeServerImpl) c.getBridgeServers().iterator().next();
+    final CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return bs.getAcceptor().getCacheClientNotifier().getClientProxies().size() == 1;
@@ -182,7 +191,7 @@ public class RegionCloseDUnitTest extends DistributedTestCase
     final Cache c = CacheFactory.getAnyInstance();
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        return c.getBridgeServers().size() == 1;
+        return c.getCacheServers().size() == 1;
       }
       public String description() {
         return null;
@@ -190,7 +199,7 @@ public class RegionCloseDUnitTest extends DistributedTestCase
     };
     DistributedTestCase.waitForCriterion(ev, 40 * 1000, 200, true);
 
-    final BridgeServerImpl bs = (BridgeServerImpl)c.getBridgeServers().iterator()
+    final CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
         .next();
     ev = new WaitCriterion() {
       public boolean done() {

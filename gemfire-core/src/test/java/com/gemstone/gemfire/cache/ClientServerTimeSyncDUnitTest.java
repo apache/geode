@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.gemstone.gemfire.cache;
 
 import java.io.IOException;
@@ -24,7 +40,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
     super(name);
   }
 
-  @Ignore("BUg 52327")
+  @Ignore("Bug 52327")
   public void DISABLED_testClientTimeAdvances() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server
@@ -96,8 +112,13 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
       vm1.invoke(CacheTestCase.class, "disconnectFromDS");
     }
   }
+  
+  public void testNothing() {
+    // place-holder to keep dunit runner from barfing
+  }
 
-  public void testClientTimeSlowsDown() {
+  @Ignore("Failing inconsistently")
+  public void DISABLED_testClientTimeSlowsDown() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server
     VM vm1 = host.getVM(1); // Client

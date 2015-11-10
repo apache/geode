@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
@@ -12,7 +21,7 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import java.io.*;
 import java.util.*;
@@ -55,8 +64,8 @@ public final class BridgeServerResponse extends AdminResponse {
         int operation = request.getOperation();
         switch (operation) {
         case BridgeServerRequest.ADD_OPERATION: {
-          BridgeServerImpl bridge =
-            (BridgeServerImpl) cache.addBridgeServer();
+          CacheServerImpl bridge =
+            (CacheServerImpl) cache.addCacheServer();
           m.bridgeInfo = new RemoteBridgeServer(bridge);
           break;
         }
@@ -65,9 +74,9 @@ public final class BridgeServerResponse extends AdminResponse {
           int id = request.getBridgeId();
           // Note that since this is only an informational request
           // it is not necessary to synchronize on allBridgeServersLock
-          for (Iterator iter = cache.getBridgeServers().iterator();
+          for (Iterator iter = cache.getCacheServers().iterator();
                iter.hasNext(); ) {
-            BridgeServerImpl bridge = (BridgeServerImpl) iter.next();
+            CacheServerImpl bridge = (CacheServerImpl) iter.next();
             if (System.identityHashCode(bridge) == id) {
               m.bridgeInfo = new RemoteBridgeServer(bridge);
               break;
@@ -81,9 +90,9 @@ public final class BridgeServerResponse extends AdminResponse {
 
         case BridgeServerRequest.START_OPERATION: {
           RemoteBridgeServer config = request.getBridgeInfo();
-          for (Iterator iter = cache.getBridgeServers().iterator();
+          for (Iterator iter = cache.getCacheServers().iterator();
                iter.hasNext(); ) {
-            BridgeServerImpl bridge = (BridgeServerImpl) iter.next();
+            CacheServerImpl bridge = (CacheServerImpl) iter.next();
             if (System.identityHashCode(bridge) == config.getId()) {
               bridge.configureFrom(config);
               bridge.start();
@@ -99,9 +108,9 @@ public final class BridgeServerResponse extends AdminResponse {
 
         case BridgeServerRequest.STOP_OPERATION: {
           RemoteBridgeServer config = request.getBridgeInfo();
-          for (Iterator iter = cache.getBridgeServers().iterator();
+          for (Iterator iter = cache.getCacheServers().iterator();
                iter.hasNext(); ) {
-            BridgeServerImpl bridge = (BridgeServerImpl) iter.next();
+            CacheServerImpl bridge = (CacheServerImpl) iter.next();
             if (System.identityHashCode(bridge) == config.getId()) {
               bridge.stop();
               m.bridgeInfo = new RemoteBridgeServer(bridge);

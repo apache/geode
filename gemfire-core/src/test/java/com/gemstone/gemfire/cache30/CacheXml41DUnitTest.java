@@ -1,15 +1,25 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
+
 import java.io.*;
 
 import org.xml.sax.SAXException;
@@ -40,7 +50,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
   // ////// Test methods
 
   
-  public void setBridgeAttributes(BridgeServer bridge1)
+  public void setBridgeAttributes(CacheServer bridge1)
   {
     super.setBridgeAttributes(bridge1);
     bridge1.setMaximumTimeBetweenPings(12345);
@@ -548,7 +558,6 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
     assertEquals(true, DynamicRegionFactory.get().getConfig().getPersistBackup());
     assertEquals(true, DynamicRegionFactory.get().isOpen());
     assertEquals(null, DynamicRegionFactory.get().getConfig().getDiskDir());
-    assertEquals(null, DynamicRegionFactory.get().getConfig().getBridgeWriter());
     Region dr = getCache().getRegion("__DynamicRegions");    
     if(dr != null) {
         dr.localDestroyRegion();      
@@ -557,7 +566,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
   }
   public void testDynamicRegionFactoryNonDefault() throws CacheException {
     CacheCreation cache = new CacheCreation();
-    cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config((File)null, (com.gemstone.gemfire.cache.util.BridgeWriter)null, false, false));
+    cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config((File)null, null, false, false));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     cache.createRegion("root", attrs);
     // note that testXml can't check if they are same because enabling
@@ -567,7 +576,6 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
     assertEquals(false, DynamicRegionFactory.get().getConfig().getPersistBackup());
     assertEquals(true, DynamicRegionFactory.get().isOpen());
     assertEquals(null, DynamicRegionFactory.get().getConfig().getDiskDir());
-    assertEquals(null, DynamicRegionFactory.get().getConfig().getBridgeWriter());    
     Region dr = getCache().getRegion("__DynamicRegions");    
     if(dr != null) {
         dr.localDestroyRegion();      
@@ -582,7 +590,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
     CacheCreation cache = new CacheCreation();
     File f = new File("diskDir");
     f.mkdirs();
-    cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config(f, null));
+    cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config(f, null, true, true));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     cache.createRegion("root", attrs);
     // note that testXml can't check if they are same because enabling
@@ -590,27 +598,10 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
     testXml(cache, false);
     assertEquals(true, DynamicRegionFactory.get().isOpen());
     assertEquals(f.getAbsoluteFile(), DynamicRegionFactory.get().getConfig().getDiskDir());
-    assertEquals(null, DynamicRegionFactory.get().getConfig().getBridgeWriter());
     Region dr =getCache().getRegion("__DynamicRegions");    
     if(dr != null) {
         dr.localDestroyRegion();      
     }
-  }
-  /**
-   * disabled test because it can only be done from a bridge client cache.
-   */
-  public void _testDynamicRegionFactoryCacheWriter() throws CacheException {
-    CacheCreation cache = new CacheCreation();
-    CacheWriter writer = new MyTestCacheWriter();
-    cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config(null, (com.gemstone.gemfire.cache.util.BridgeWriter)writer));
-    RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    cache.createRegion("root", attrs);
-    // note that testXml can't check if they are same because enabling
-    // dynamic regions causes a meta region to be produced.
-    testXml(cache, false);
-    assertEquals(true, DynamicRegionFactory.get().isOpen());
-    assertEquals(null, DynamicRegionFactory.get().getConfig().getDiskDir());
-    assertEquals(writer, DynamicRegionFactory.get().getConfig().getBridgeWriter());
   }
 
   /**

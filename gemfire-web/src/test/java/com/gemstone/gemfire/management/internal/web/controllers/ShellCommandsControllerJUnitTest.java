@@ -1,16 +1,24 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.web.controllers;
 
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,9 +37,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * The ShellCommandsControllerJUnitTest class is a test suite of test cases testing the contract and functionality of the
@@ -50,11 +64,10 @@ public class ShellCommandsControllerJUnitTest {
 
   @BeforeClass
   public static void setupBeforeClass() {
-    controller = new ShellCommandsController() {
-      @Override protected URI toUri(final String path) {
-        return URI.create(UriUtils.encode(path));
-      }
-    };
+    controller = new ShellCommandsController();
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setContextPath("gemfire");
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
   }
 
   @AfterClass
@@ -90,6 +103,10 @@ public class ShellCommandsControllerJUnitTest {
   }
 
   protected List<String> getControllerWebServiceEndpoints() {
+    RequestAttributes requestAttrs = RequestContextHolder.getRequestAttributes();
+    HttpServletRequest servletRequest = ((ServletRequestAttributes) requestAttrs).getRequest();
+    String scheme = servletRequest.getScheme();
+
     try {
       Set<Class<?>> controllerClasses = ClasspathScanLoadHelper.loadAndGet(
         "com.gemstone.gemfire.management.internal.web.controllers", AbstractCommandsController.class, true);
@@ -103,7 +120,7 @@ public class ShellCommandsControllerJUnitTest {
               RequestMapping requestMappingAnnotation = method.getAnnotation(RequestMapping.class);
 
               String webServiceEndpoint = String.format("%1$s %2$s", requestMappingAnnotation.method()[0],
-                requestMappingAnnotation.value()[0]);
+                UriUtils.decode(controller.toUri(requestMappingAnnotation.value()[0], scheme).toString()));
 
               String[] requestParameters = requestMappingAnnotation.params();
 
@@ -127,7 +144,7 @@ public class ShellCommandsControllerJUnitTest {
 
   @Test
   public void testUniqueIndex() {
-    LinkIndex linkIndex = controller.index();
+    LinkIndex linkIndex = controller.index("https");
 
     List<String> conflicts = new ArrayList<>();
     Map<String, String> uriRelationMapping = new HashMap<>(linkIndex.size());
@@ -152,7 +169,7 @@ public class ShellCommandsControllerJUnitTest {
     assertNotNull(commands);
     assertFalse(commands.isEmpty());
 
-    LinkIndex linkIndex = controller.index();
+    LinkIndex linkIndex = controller.index("https");
 
     assertNotNull(linkIndex);
     assertFalse(linkIndex.isEmpty());
@@ -181,7 +198,7 @@ public class ShellCommandsControllerJUnitTest {
     assertNotNull(controllerWebServiceEndpoints);
     assertFalse(controllerWebServiceEndpoints.isEmpty());
 
-    LinkIndex linkIndex = controller.index();
+    LinkIndex linkIndex = controller.index("http");
 
     assertNotNull(linkIndex);
     assertFalse(linkIndex.isEmpty());
@@ -199,8 +216,25 @@ public class ShellCommandsControllerJUnitTest {
     missingControllerWebServiceEndpoints.removeAll(controllerWebServiceEndpoints);
 
     assertTrue(String.format(
-      "The Management REST API Web Service Controllers in (%1$s) are missing the following REST API Web Service Endpoint(s): %2$s!",
+        "The Management REST API Web Service Controllers in (%1$s) are missing the following REST API Web Service Endpoint(s): %2$s!",
         getClass().getPackage().getName(), missingControllerWebServiceEndpoints), missingControllerWebServiceEndpoints.isEmpty());
   }
 
+  @Test
+  public void testIndexUrisHaveCorrectScheme() {
+    String versionCmd = "version";
+    List<String> controllerWebServiceEndpoints = getControllerWebServiceEndpoints();
+
+    assertNotNull(controllerWebServiceEndpoints);
+    assertFalse(controllerWebServiceEndpoints.isEmpty());
+
+    String testScheme = "xyz";
+    LinkIndex linkIndex = controller.index(testScheme);
+
+    assertNotNull(linkIndex);
+    assertFalse(linkIndex.isEmpty());
+
+    assertTrue(String.format("Link does not have correct scheme %1$s", linkIndex.find(versionCmd)),
+        testScheme.equals(linkIndex.find(versionCmd).getHref().getScheme()));
+  }
 }

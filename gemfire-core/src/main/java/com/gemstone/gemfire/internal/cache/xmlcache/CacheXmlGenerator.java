@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
@@ -85,7 +94,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.BridgePoolImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -95,9 +103,6 @@ import com.gemstone.gemfire.cache.query.internal.index.HashIndex;
 import com.gemstone.gemfire.cache.query.internal.index.PrimaryKeyIndex;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.util.BridgeClient;
-import com.gemstone.gemfire.cache.util.BridgeLoader;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
@@ -1223,8 +1228,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (this.version.compareTo(CacheXmlVersion.VERSION_5_7) < 0) {
       return;
     }
-    if (cp instanceof BridgePoolImpl || ((PoolImpl)cp).isUsedByGateway()) {
-      // no need to generate xml for bridge pools
+    if (((PoolImpl)cp).isUsedByGateway()) {
+      // no need to generate xml for gateway pools
       return;
     }
     AttributesImpl atts = new AttributesImpl();
@@ -1387,12 +1392,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         String name = generateDefaults() ? dir.getAbsolutePath() : dir.getPath();
         handler.characters(name.toCharArray(), 0, name.length());
         handler.endElement("", DISK_DIR, DISK_DIR);
-      }
-    }
-    {
-      BridgeWriter bw = cfg.getBridgeWriter();
-      if (bw != null) {
-        generate(CACHE_WRITER, bw);
       }
     }
     handler.endElement("", DYNAMIC_REGION_FACTORY, DYNAMIC_REGION_FACTORY);
@@ -1914,10 +1913,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           dpString = PERSISTENT_REPLICATE_DP;
         } else if (dp == DataPolicy.PERSISTENT_PARTITION) {
           dpString = PERSISTENT_PARTITION_DP;
-        } else if (dp == DataPolicy.HDFS_PARTITION) {
-          dpString = HDFS_PARTITION_DP;
-        } else if (dp == DataPolicy.HDFS_PERSISTENT_PARTITION) {
-          dpString = HDFS_PERSISTENT_PARTITION_DP;
         } else if (dp.isPartition()) {
           if (this.version.compareTo(CacheXmlVersion.VERSION_5_1) >= 0) {
             dpString = PARTITION_DP;
@@ -2194,22 +2189,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    if (attrs.getCacheWriter() == attrs.getCacheLoader()
-        && attrs.getCacheWriter() instanceof BridgeClient) {
-      // just do the writer; the single instance will be made both loader and writer
-      if ((!(attrs instanceof RegionAttributesCreation) ||
-           ((RegionAttributesCreation) attrs).hasCacheWriter())) {
-        generate(CACHE_WRITER, attrs.getCacheWriter());
-      }
-    } else {
-      if ((!(attrs instanceof RegionAttributesCreation)
-           || ((RegionAttributesCreation) attrs).hasCacheLoader())) {
-        generate(CACHE_LOADER, attrs.getCacheLoader());
-      }
-      if ((!(attrs instanceof RegionAttributesCreation) ||
-           ((RegionAttributesCreation) attrs).hasCacheWriter())) {
-        generate(CACHE_WRITER, attrs.getCacheWriter());
-      }
+    if ((!(attrs instanceof RegionAttributesCreation)
+        || ((RegionAttributesCreation) attrs).hasCacheLoader())) {
+      generate(CACHE_LOADER, attrs.getCacheLoader());
+    }
+    if ((!(attrs instanceof RegionAttributesCreation) ||
+        ((RegionAttributesCreation) attrs).hasCacheWriter())) {
+      generate(CACHE_WRITER, attrs.getCacheWriter());
     }
     if ((!(attrs instanceof RegionAttributesCreation) ||
          ((RegionAttributesCreation) attrs).hasCacheListeners())) {
@@ -2254,10 +2240,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     Properties props = null;
     if (callback instanceof Declarable2) {
       props = ((Declarable2) callback).getConfig();
-    } else if (callback instanceof BridgeWriter) {
-      props = ((BridgeWriter) callback).getProperties();
-    } else if (callback instanceof BridgeLoader) {
-      props = ((BridgeLoader) callback).getProperties();
     } else if (callback instanceof ReflectionBasedAutoSerializer) {
       props = ((ReflectionBasedAutoSerializer) callback).getConfig();
     } else if (callback instanceof Declarable  && cache instanceof GemFireCacheImpl) {

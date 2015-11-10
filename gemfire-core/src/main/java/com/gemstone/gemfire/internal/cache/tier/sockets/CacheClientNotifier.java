@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -73,13 +82,14 @@ import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
+import com.gemstone.gemfire.internal.SocketCloser;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeRegionEventImpl;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheClientStatus;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
@@ -1102,7 +1112,7 @@ public class CacheClientNotifier {
           removeClientProxy(proxy);
 
           if (PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG) {
-            BridgeObserver bo = BridgeObserverHolder.getInstance();
+            ClientServerObserver bo = ClientServerObserverHolder.getInstance();
             bo.afterQueueDestroyMessage();
           }
 
@@ -1158,8 +1168,8 @@ public class CacheClientNotifier {
       RegionEventImpl regionEvent = (RegionEventImpl)event;
       callbackArgument = regionEvent.getRawCallbackArgument();
       eventIdentifier = regionEvent.getEventId();
-      if (event instanceof BridgeRegionEventImpl) {
-        BridgeRegionEventImpl bridgeEvent = (BridgeRegionEventImpl)event;
+      if (event instanceof ClientRegionEventImpl) {
+        ClientRegionEventImpl bridgeEvent = (ClientRegionEventImpl)event;
         membershipID = bridgeEvent.getContext();
       }
     }
@@ -1668,6 +1678,8 @@ public class CacheClientNotifier {
 
       // Close the statistics
       this._statistics.close();
+      
+      this.socketCloser.close();
     } 
   }
 
@@ -2120,6 +2132,7 @@ public class CacheClientNotifier {
     // Set the Cache
     this.setCache((GemFireCacheImpl)cache);
     this.acceptorStats = acceptorStats;
+    this.socketCloser = new SocketCloser(1, 50); // we only need one thread per client and wait 50ms for close
 
     // Set the LogWriter
     this.logWriter = (InternalLogWriter)cache.getLogger();
@@ -2134,7 +2147,7 @@ public class CacheClientNotifier {
         && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributesList
             .get(0))) {
       haContainer = new HAContainerRegion(cache.getRegion(Region.SEPARATOR
-          + BridgeServerImpl.clientMessagesRegion((GemFireCacheImpl)cache,
+          + CacheServerImpl.clientMessagesRegion((GemFireCacheImpl)cache,
               (String)overflowAttributesList.get(0),
               ((Integer)overflowAttributesList.get(1)).intValue(),
               ((Integer)overflowAttributesList.get(2)).intValue(),
@@ -2383,6 +2396,10 @@ public class CacheClientNotifier {
  
   public CacheServerStats getAcceptorStats() {
     return this.acceptorStats;
+  }
+  
+  public SocketCloser getSocketCloser() {
+    return this.socketCloser;
   }
   
   public void addCompiledQuery(DefaultQuery query){
@@ -2650,6 +2667,8 @@ public class CacheClientNotifier {
   private final Object lockIsCompiledQueryCleanupThreadStarted = new Object();
 
   private SystemTimer.SystemTimerTask clientPingTask;
+  
+  private final SocketCloser socketCloser;
   
   private static final long CLIENT_PING_TASK_PERIOD =
     Long.getLong("gemfire.serverToClientPingPeriod", 60000);

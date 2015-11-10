@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
@@ -21,7 +29,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.tier.ConnectionProxy;
@@ -46,9 +54,6 @@ public class RedundancyLevelJUnitTest
   /** The distributed system */
   Cache cache;
 
-  /** The proxy instance */
-  ConnectionProxy proxy = null;
-
   /**
    * Close the cache and proxy instances for a test and disconnect from the
    * distributed system.
@@ -70,9 +75,6 @@ public class RedundancyLevelJUnitTest
       system.getLogWriter().info(removeExpectedREM);
       
       system.disconnect();
-    }
-    if (proxy != null) {
-      proxy.close();
     }
   }
 
@@ -114,16 +116,14 @@ public class RedundancyLevelJUnitTest
         assertNotNull("cache was null", cache);
         Region region = cache.getRegion("/root/exampleRegion");
         assertNotNull(region);
-        BridgeWriter writer = (BridgeWriter)region.getAttributes()
-            .getCacheWriter();
-        Pool pool = (Pool)writer.getConnectionProxy();
+        Pool pool = PoolManager.find("clientPool");
         assertEquals(
             "Redundancy level not matching the one specified in cache-xml", 6,
             pool.getSubscriptionRedundancy());
       } finally {
         final String removeExpected =
           "<ExpectedException action=remove>" + expected + "</ExpectedException>";
-        cache.getLogger().info(removeExpected);
+        system.getLogWriter().info(removeExpected);
       }
   }
 

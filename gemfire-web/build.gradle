@@ -1,21 +1,37 @@
 apply plugin: 'war'
 
 dependencies {
-  runtime 'org.springframework:spring-aspects:3.2.12.RELEASE'
-  runtime 'org.springframework:spring-oxm:3.2.12.RELEASE'
-  runtime 'commons-fileupload:commons-fileupload:1.3.1'
+  runtime 'org.springframework:spring-aspects:' + project.'springframework.version'
+  runtime 'org.springframework:spring-oxm:' + project.'springframework.version'
+  runtime 'commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version'
+
+  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
   
-  provided 'javax.servlet:javax.servlet-api:3.1.0'
-  
+  provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+   
   // have to use output since we exclude the dependent classes from jar :(
   provided project(path: ':gemfire-core', configuration: 'classesOutput')
   
-  provided project(':gemfire-core')
+  testRuntime project(':gemfire-common')
+  testRuntime project(':gemfire-core')
 
   provided project(path: ':gemfire-junit', configuration: 'testOutput')
 }
-eclipse.classpath.minusConfigurations += [ project(':gemfire-core').configurations.classesOutput ]
-idea.module.scopes.PROVIDED.minus += [ project(':gemfire-core').configurations.classesOutput ]
+
+//Remove the gradle output directories from the eclipse classpath. These
+//are added by the classesOutput configuration, above. Unfortunately, using
+//minusConfigurations does not work here, because it removes the entire
+//gemfire-core project
+eclipse.classpath.file {
+    whenMerged { classpath ->
+        classpath.entries.removeAll { entry -> entry.path.contains('gemfire-core/build')}
+    }
+}
+idea.module.iml {
+  whenMerged {module ->
+     module.dependencies.removeAll { entry -> entry.toString().contains('gemfire-core/build')}
+  }
+}
 
 artifacts {
   archives jar

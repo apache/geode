@@ -1,10 +1,18 @@
 /*
- * ========================================================================= 
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved. 
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * =========================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -92,7 +100,6 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSEntriesSet.HDFSIterator;
 import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.CompactionStatus;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSFlushQueueFunction;
@@ -158,7 +165,6 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.ServerBucketProfile;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DestroyPartitionedRegionMessage.DestroyPartitionedRegionResponse;
-import com.gemstone.gemfire.internal.cache.DistributedRegion.DiskPage;
 import com.gemstone.gemfire.internal.cache.PutAllPartialResultException.PutAllPartialResult;
 import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
@@ -169,7 +175,6 @@ import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.cache.execute.FunctionExecutionNodePruner;
 import com.gemstone.gemfire.internal.cache.execute.FunctionRemoteContext;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
-import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
 import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
 import com.gemstone.gemfire.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import com.gemstone.gemfire.internal.cache.execute.PartitionedRegionFunctionResultSender;
@@ -207,13 +212,10 @@ import com.gemstone.gemfire.internal.cache.partitioned.InterestEventMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.InterestEventMessage.InterestEventResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.InvalidateMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.InvalidateMessage.InvalidateResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
 import com.gemstone.gemfire.internal.cache.partitioned.PREntriesIterator;
 import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
 import com.gemstone.gemfire.internal.cache.partitioned.PRSanityCheckMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PRUpdateEntryVersionMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.BucketVisitor;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PRUpdateEntryVersionMessage.UpdateEntryVersionResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage.PartitionResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver;
@@ -224,11 +226,11 @@ import com.gemstone.gemfire.internal.cache.partitioned.PutMessage.PutResult;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.BucketVisitor;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
+import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveIndexesMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.SizeMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.SizeMessage.SizeResponse;
 import com.gemstone.gemfire.internal.cache.persistence.PRPersistentConfig;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -5457,9 +5459,6 @@ public class PartitionedRegion extends LocalRegion implements
   protected void cacheWriterChanged(CacheWriter p_oldWriter) {
     CacheWriter oldWriter = p_oldWriter;
     super.cacheWriterChanged(oldWriter);
-    if (isBridgeWriter(oldWriter)) {
-      oldWriter = null;
-    }
     if (oldWriter == null ^ basicGetWriter() == null) {
       new UpdateAttributesProcessor(this).distribute();
     }
@@ -5469,9 +5468,6 @@ public class PartitionedRegion extends LocalRegion implements
   @Override
   protected void cacheLoaderChanged(CacheLoader oldLoader) {
     CacheLoader myOldLoader = oldLoader;
-    if (isBridgeLoader(oldLoader)) {
-      myOldLoader = null;
-    }
     this.dataStore.cacheLoaderChanged(basicGetLoader(), myOldLoader);
     super.cacheLoaderChanged(oldLoader);
     if (myOldLoader == null ^ basicGetLoader() == null) {
@@ -5902,7 +5898,7 @@ public class PartitionedRegion extends LocalRegion implements
     Collections.addAll(localServerGroups, MemberAttributes.parseGroups(null, c.getSystem().getConfig().getGroups()));
     
     for (Object object : servers) {
-      BridgeServerImpl server = (BridgeServerImpl)object;
+      CacheServerImpl server = (CacheServerImpl)object;
       if (server.isRunning() && (server.getExternalAddress() != null)) {
         Collections.addAll(localServerGroups, server.getGroups());
       }
@@ -10277,7 +10273,25 @@ public class PartitionedRegion extends LocalRegion implements
         bucketRegion.getAttributesMutator().setEntryTimeToLive(timeToLive);
       }
     }
+    updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
     return attr;
+  }
+
+  private PartitionRegionConfig getPRConfigWithLatestExpirationAttributes(){
+    PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
+    PartitionRegionConfig newConfig = new PartitionRegionConfig(
+        prConfig.getPRId(),
+        prConfig.getFullPath(),
+        prConfig.getPartitionAttrs(),
+        prConfig.getScope(),
+        prConfig.getEvictionAttributes(),
+        this.getRegionIdleTimeout(),
+        this.getRegionTimeToLive(),
+        this.getEntryIdleTimeout(),
+        this.getEntryTimeToLive(),
+        prConfig.getGatewaySenderIds());
+
+    return newConfig;
   }
 
   /**
@@ -10331,6 +10345,7 @@ public class PartitionedRegion extends LocalRegion implements
         bucketRegion.getAttributesMutator().setEntryIdleTimeout(idleTimeout);
       }
     }
+    updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
     return attr;
   }
 

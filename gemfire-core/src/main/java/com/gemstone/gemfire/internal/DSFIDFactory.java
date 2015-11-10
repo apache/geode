@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal;
@@ -30,7 +39,7 @@ import com.gemstone.gemfire.admin.internal.PrepareBackupResponse;
 import com.gemstone.gemfire.admin.internal.SystemMemberCacheEventProcessor;
 import com.gemstone.gemfire.admin.jmx.internal.StatAlertNotification;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.client.internal.BridgeServerLoadMessage;
+import com.gemstone.gemfire.cache.client.internal.CacheServerLoadMessage;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientReplacementRequest;
@@ -180,8 +189,8 @@ import com.gemstone.gemfire.internal.admin.remote.VersionInfoResponse;
 import com.gemstone.gemfire.internal.admin.statalerts.GaugeThresholdDecoratorImpl;
 import com.gemstone.gemfire.internal.admin.statalerts.NumberThresholdDecoratorImpl;
 import com.gemstone.gemfire.internal.cache.AddCacheServerProfileMessage;
-import com.gemstone.gemfire.internal.cache.BridgeRegionEventImpl;
-import com.gemstone.gemfire.internal.cache.BridgeServerAdvisor.BridgeServerProfile;
+import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
 import com.gemstone.gemfire.internal.cache.CloseCacheMessage;
@@ -820,7 +829,7 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(GATEWAY_SENDER_PROFILE,
         GatewaySenderAdvisor.GatewaySenderProfile.class);
     registerDSFID(ROLE_EVENT, RoleEventImpl.class);
-    registerDSFID(BRIDGE_REGION_EVENT, BridgeRegionEventImpl.class);
+    registerDSFID(CLIENT_REGION_EVENT, ClientRegionEventImpl.class);
     registerDSFID(PR_INVALIDATE_MESSAGE, InvalidateMessage.class);
     registerDSFID(PR_INVALIDATE_REPLY_MESSAGE,
         InvalidateMessage.InvalidateReplyMessage.class);
@@ -860,8 +869,8 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(ALERTS_NOTIF_MESSAGE, AlertsNotificationMessage.class);
     registerDSFID(FIND_DURABLE_QUEUE, FindDurableQueueMessage.class);
     registerDSFID(FIND_DURABLE_QUEUE_REPLY, FindDurableQueueReply.class);
-    registerDSFID(BRIDGE_SERVER_LOAD_MESSAGE, BridgeServerLoadMessage.class);
-    registerDSFID(BRIDGE_SERVER_PROFILE, BridgeServerProfile.class);
+    registerDSFID(CACHE_SERVER_LOAD_MESSAGE, CacheServerLoadMessage.class);
+    registerDSFID(CACHE_SERVER_PROFILE, CacheServerProfile.class);
     registerDSFID(CONTROLLER_PROFILE, ControllerProfile.class);
     registerDSFID(DLOCK_QUERY_MESSAGE,
         DLockQueryProcessor.DLockQueryMessage.class);

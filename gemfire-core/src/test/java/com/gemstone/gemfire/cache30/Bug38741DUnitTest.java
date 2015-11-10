@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
@@ -27,7 +36,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
@@ -51,7 +60,7 @@ import dunit.VM;
  * @author Mitch Thomas
  * @since bugfix5.7
  */
-public class Bug38741DUnitTest extends BridgeTestCase {
+public class Bug38741DUnitTest extends ClientServerTestCase {
   private static final long serialVersionUID = 1L;
 
   protected RegionAttributes getRegionAttributes() {
@@ -151,7 +160,7 @@ public class Bug38741DUnitTest extends BridgeTestCase {
         getCache();
         
         AttributesFactory factory = new AttributesFactory();
-        BridgeTestCase.configureConnectionPool(factory, serverHostName, ports, true,-1,1,null);
+        ClientServerTestCase.configureConnectionPool(factory, serverHostName, ports, true,-1,1,null);
         factory.setScope(Scope.LOCAL);
         Region r = createRootRegion(rName, factory.create());
         SerializationCountingKey ks1 = new SerializationCountingKey(k1);
@@ -177,8 +186,8 @@ public class Bug38741DUnitTest extends BridgeTestCase {
     server.invoke(new CacheSerializableRunnable("Assert copy behavior after client is setup") {
       public void run2() throws CacheException {
         Region r = getRootRegion(rName);
-        BridgeServerImpl bsi = (BridgeServerImpl)
-          getCache().getBridgeServers().iterator().next();
+        CacheServerImpl bsi = (CacheServerImpl)
+          getCache().getCacheServers().iterator().next();
         Collection cp = bsi.getAcceptor().getCacheClientNotifier().getClientProxies();
         // Should only be one because only one client is connected
         assertEquals(1, cp.size());

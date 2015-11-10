@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
@@ -16,6 +25,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -44,6 +56,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.org.jgroups.Event;
 import com.gemstone.org.jgroups.JChannel;
 import com.gemstone.org.jgroups.stack.Protocol;
@@ -61,6 +74,7 @@ import dunit.VM;
  * @since 3.0
  */
 public abstract class CacheTestCase extends DistributedTestCase {
+  private static final Logger logger = LogService.getLogger();
 
   /** The Cache from which regions are obtained 
    * 
@@ -401,19 +415,8 @@ public abstract class CacheTestCase extends DistributedTestCase {
               }
             }
           }
-          try {
-            cache.close();
-          }
-          catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          }
-          catch (Throwable t) {
-          }
-          finally {
-          }
+          cache.close();
         }
-        // @todo darrel: destroy DiskStore files
       }
       finally {
         cache = null;
@@ -453,51 +456,22 @@ public abstract class CacheTestCase extends DistributedTestCase {
   protected synchronized static void remoteTearDown() {
     try {
       DistributionMessageObserver.setInstance(null);
-      if (cache != null && !cache.isClosed()) {
-        //try to destroy the root regions first so that
-        //we clean up any persistent files.
-        for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
-          Region root = (Region)itr.next();
-//          String name = root.getName();
-          //for colocated regions you can't locally destroy a partitioned
-          //region.
-	  if(root.isDestroyed() || root instanceof HARegion || root instanceof PartitionedRegion) {
-            continue;
-          }
-          try {
-            root.localDestroyRegion("teardown");
-          }
-          catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          }
-          catch (Throwable t) {
-            getLogWriter().error(t);
-          }
-        }
-      }
+      destroyRegions(cache);
     }
     finally {
       try {
         closeCache();
       }
-      catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
+      finally {
+        try {
+          cleanDiskDirs();
+        } catch(Exception e) {
+          getLogWriter().error("Error cleaning disk dirs", e);
+        }
       }
-      catch (Throwable t) {
-        getLogWriter().error("Error in closing the cache ", t);
-        
-      }
-    }
-
-    try {
-      cleanDiskDirs();
-    } catch(IOException e) {
-      getLogWriter().error("Error cleaning disk dirs", e);
     }
   }
-  
+
   /**
    * Returns a region with the given name and attributes
    */
@@ -577,6 +551,16 @@ public abstract class CacheTestCase extends DistributedTestCase {
   throws RegionExistsException, TimeoutException {
     return getCache().createRegion(rootName, attrs);
   }
+  public final Region createExpiryRootRegion(String rootName, RegionAttributes attrs)
+  throws RegionExistsException, TimeoutException {
+    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
+    try {
+      return createRootRegion(rootName, attrs);
+    } finally {
+      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+    }
+  }
+
 
   /**
    * send an unordered message requiring an ack to all connected members 

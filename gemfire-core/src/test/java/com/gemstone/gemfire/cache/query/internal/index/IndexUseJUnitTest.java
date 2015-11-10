@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /*
  * IndexTest.java
@@ -29,6 +38,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.Index;
@@ -1740,6 +1751,51 @@ public class IndexUseJUnitTest
       }
     }
 
+    @Test
+    public void testBug52444() throws Exception {
+        // Create partitioned region
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        AttributesFactory af = new AttributesFactory();
+        af.setPartitionAttributes(paf.create());
+        Region region = CacheUtils.createRegion("testBug52444", af.create(), false);
+
+        // Add index
+        PartitionedIndex index = (PartitionedIndex) qs.createIndex("statusIndex", "status", region.getFullPath());
+
+        // Do puts
+        for (int i=0; i<200; i++) {
+          region.put(i, new Portfolio(i));
+        }
+        
+        // Initialize query observer
+        QueryObserverImpl observer = new QueryObserverImpl();
+        QueryObserverHolder.setInstance(observer);
+        
+        // Create and run query
+        Query query = qs.newQuery("SELECT * FROM " + region.getFullPath() + " where status = 'active'");
+        query.execute();
+
+        // Verify index was used
+        assertTrue(observer.isIndexesUsed);
+
+        // Get the first index entry in the PartitionedIndex bucketIndexes and delete the index from it (to simulate what happens when a bucket is moved)
+        Map.Entry<Region,List<Index>> firstIndexEntry = index.getFirstBucketIndex();
+        assertTrue(!firstIndexEntry.getValue().isEmpty());
+        index.removeFromBucketIndexes(firstIndexEntry.getKey(), firstIndexEntry.getValue().iterator().next());
+        
+        // Verify the index was removed from the entry and the entry was removed from the bucket indexes
+        assertTrue(firstIndexEntry.getValue().isEmpty());      
+        Map.Entry<Region,List<Index>> nextFirstIndexEntry = index.getFirstBucketIndex();
+        assertTrue(!nextFirstIndexEntry.getValue().isEmpty());
+        
+        // Run query again
+        observer.reset();
+        query.execute();
+        
+        // Verify index was still used
+        assertTrue(observer.isIndexesUsed);
+      }
+
   class QueryObserverImpl extends QueryObserverAdapter
   {
     boolean isIndexesUsed = false;
@@ -1754,6 +1810,11 @@ public class IndexUseJUnitTest
       if (results != null) {
         isIndexesUsed = true;
       }
+    }
+    
+    public void reset() {
+      this.isIndexesUsed = false;
+      this.indexesUsed.clear();
     }
   }
   

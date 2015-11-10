@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache30;
 
@@ -39,7 +48,6 @@ import com.gemstone.gemfire.cache.MirrorType;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.util.BridgeClient;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -221,132 +229,6 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
     cache.createRegion("root", attrs);
 
     testXml(cache);
-  }
-
-  public static class TestBridgeClient extends BridgeClient {
-    public boolean equals(Object obj)
-    {
-      return obj instanceof BridgeClient; // needed for sameAs comparison
-    }
-  }
-  /**
-   * Tests a bridge client and special setCacheWriter behavior on 
-   * region attributes
-   */
-  public void testBridgeClientAsLoader() throws CacheException {
-    getSystem();
-    CacheCreation cache = new CacheCreation();
-    RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-
-    BridgeClient bc = new TestBridgeClient();
-    Properties props = new Properties();
-    props.setProperty("endpoints", "server=" + 
-      DistributedTestCase.getIPLiteral() + ":" + ports[0]);
-    bc.init(props);
-    
-    attrs.setCacheLoader(bc);
-
-    cache.createRegion("root", attrs);
-
-    addExpectedException("Connection refused: connect");
-    testXml(cache);
-    final Region ro = cache.getRegion("root");
-    assertSame(ro.getAttributes().getCacheLoader(), ro.getAttributes().getCacheWriter());
-    assertTrue(ro.getAttributes().getCacheLoader() instanceof TestBridgeClient);
-    // now that a BridgeLoader creates its own pool make sure it exists
-    assertEquals("pools="+PoolManager.getAll(), 1, PoolManager.getAll().size());
-  }
-
-  /**
-   * Tests a bridge client and special setCacheWriter over-ride behavior on 
-   * region attributes
-   */
-  public void testBridgeClientWriterOverride() throws CacheException {
-    getSystem();
-    CacheCreation cache = new CacheCreation();
-    RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-
-    BridgeClient bc = new TestBridgeClient();
-    Properties props = new Properties();
-    props.setProperty("endpoints", "server="
-      + DistributedTestCase.getIPLiteral() + ":" + ports[0]);
-    bc.init(props);
-    
-    attrs.setCacheLoader(bc);
-    attrs.setCacheWriter(new MyTestCacheWriter());
-
-    cache.createRegion("root", attrs);
-
-    addExpectedException("Connection refused: connect");
-    testXml(cache);
-    
-    final Region ro = cache.getRegion("root");
-    assertTrue(ro.getAttributes().getCacheLoader() instanceof BridgeClient);
-    assertTrue(ro.getAttributes().getCacheWriter() instanceof MyTestCacheWriter);
-    // now that a BridgeLoader creates its own pool make sure it exists
-    assertEquals("pools="+PoolManager.getAll(), 1, PoolManager.getAll().size());
-  }
-
-  
-  /**
-   * Tests a bridge client and special setCacheLoader over-ride behavior on 
-   * region attributes
-   */
-  public void testBridgeClientLoaderOverride() throws CacheException {
-    getSystem();
-    CacheCreation cache = new CacheCreation();
-    RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-
-    BridgeClient bc = new TestBridgeClient();
-    Properties props = new Properties();
-    props.setProperty("endpoints", "server=" 
-      + DistributedTestCase.getIPLiteral() + ":" + ports[0]);
-    bc.init(props);
-    
-    attrs.setCacheWriter(bc);
-    attrs.setCacheLoader(new CacheLoaderWithDeclarables());
-
-    cache.createRegion("root", attrs);
-
-    addExpectedException("Connection refused: connect");
-    testXml(cache);
-    final Region ro = cache.getRegion("root");
-    assertTrue(ro.getAttributes().getCacheWriter() instanceof BridgeClient);
-    assertTrue(ro.getAttributes().getCacheLoader() instanceof CacheLoaderWithDeclarables);
-    // now that a BridgeLoader creates its own pool make sure it exists
-    assertEquals("pools="+PoolManager.getAll(), 1, PoolManager.getAll().size());
-  }
-
-  /**
-   * Tests a bridge client and special setCacheWriter behavior on 
-   * region attributes
-   */
-  public void testBridgeClientAsWriter() throws CacheException {
-    getSystem();
-    CacheCreation cache = new CacheCreation();
-    RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-
-    BridgeClient bc = new TestBridgeClient();
-    Properties props = new Properties();
-    props.setProperty("endpoints", "server=" 
-      + DistributedTestCase.getIPLiteral() + ":" + ports[0]);
-    bc.init(props);
-    
-    attrs.setCacheWriter(bc);
-
-    cache.createRegion("root", attrs);
-
-    addExpectedException("Connection refused: connect");
-    testXml(cache);
-    final Region ro = cache.getRegion("root");
-    assertSame(ro.getAttributes().getCacheLoader(), ro.getAttributes().getCacheWriter());
-    assertTrue(ro.getAttributes().getCacheWriter() instanceof TestBridgeClient);
-    // now that a BridgeLoader creates its own pool make sure it exists
-    assertEquals("pools="+PoolManager.getAll(), 1, PoolManager.getAll().size());
   }
 
   /**

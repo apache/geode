@@ -1,10 +1,18 @@
-/*=========================================================================
- * Copyright Copyright (c) 2000-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- * $Id: CompiledSelect.java,v 1.2 2005/02/01 17:19:20 vaibhav Exp $
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.query.internal;
 
@@ -59,7 +67,6 @@ public class CompiledSelect extends AbstractCompiledValue {
      // 0 is projection name, 1 is the CompiledValue for the expression 
   private boolean distinct;
   private boolean count;
-  private int scopeID;
   //Asif: limits the SelectResults by the number specified.
   private CompiledValue limit;
   //Shobhit: counts the no of results satisfying where condition for
@@ -72,17 +79,10 @@ public class CompiledSelect extends AbstractCompiledValue {
   protected boolean transformationDone = false;
   protected ObjectType cachedElementTypeForOrderBy = null;
   private boolean hasUnmappedOrderByCols = false; 
-  
 
-  /** 
-   * Identifies the scope ID assosciated with the Select. The CompiledSelect object
-   * is shared across by multiple query executing threads, but since the scopeID 
-   * which gets assigned in the computeDependency phase & is obtained from 
-   * ExecutionContext, it will not differ across threads. This field may get reassigned
-   * by various threads, but still the value will be consistent.
-   * It is also therefore not needed to make this field volatile
-   * Asif
-   */
+  //used as a key in a context to identify the scope of this CompiledSelect 
+  private Object scopeID = new Object(); 
+
   public CompiledSelect(boolean distinct, boolean count, CompiledValue whereClause,
                         List iterators, List projAttrs,List<CompiledSortCriterion> orderByAttrs, CompiledValue limit,
                         List<String> hints, List<CompiledValue> groupByClause) {
@@ -170,10 +170,9 @@ public class CompiledSelect extends AbstractCompiledValue {
          AmbiguousNameException,
          NameResolutionException {
     // bind iterators in new scope in order to determine dependencies
-    //int scopeID = context.assosciateScopeID(this);
-    this.scopeID = context.assosciateScopeID();
-    context.newScope(scopeID);
-    context.pushExecCache(scopeID);
+    context.cachePut(scopeID, context.assosciateScopeID());
+    context.newScope((Integer)context.cacheGet(scopeID));
+    context.pushExecCache((Integer)context.cacheGet(scopeID));
     try {
       Iterator iter = this.iterators.iterator();
       while (iter.hasNext()) {
@@ -365,8 +364,8 @@ public class CompiledSelect extends AbstractCompiledValue {
   throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     ExecutionContext context = new QueryExecutionContext(parameters, cache, query);
     computeDependencies(context);
-    context.newScope(this.scopeID);
-    context.pushExecCache(scopeID);
+    context.newScope((Integer)context.cacheGet(scopeID));
+    context.pushExecCache((Integer)context.cacheGet(scopeID));
     SelectResults results = null;
     try {
       Iterator iter = iterators.iterator();
@@ -390,9 +389,8 @@ public class CompiledSelect extends AbstractCompiledValue {
   
   public SelectResults evaluate(ExecutionContext context) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-   // context.newScope(context.getScopeID(this));
-    context.newScope(this.scopeID);
-    context.pushExecCache(scopeID);
+    context.newScope((Integer)context.cacheGet(scopeID));
+    context.pushExecCache((Integer)context.cacheGet(scopeID));
     context.setDistinct(this.distinct);
     if(this.hasUnmappedOrderByCols && context.getBucketList() != null) {
       throw new QueryInvalidException(LocalizedStrings.DefaultQuery_ORDER_BY_ATTRIBS_NOT_PRESENT_IN_PROJ.toLocalizedString()); 
@@ -1477,8 +1475,8 @@ public class CompiledSelect extends AbstractCompiledValue {
       return true;
     }
 
-    context.newScope(this.scopeID);
-    context.pushExecCache(scopeID);
+    context.newScope((Integer)context.cacheGet(scopeID));
+    context.pushExecCache((Integer)context.cacheGet(scopeID));
     try {
       CompiledIteratorDef iterDef = (CompiledIteratorDef) iterators.get(0);
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);

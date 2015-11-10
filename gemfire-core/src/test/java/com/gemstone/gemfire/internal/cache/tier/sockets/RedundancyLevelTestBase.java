@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2010-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
@@ -24,15 +33,14 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
-import com.gemstone.gemfire.cache.util.BridgeServer;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeObserver;
-import com.gemstone.gemfire.internal.cache.BridgeObserverAdapter;
-import com.gemstone.gemfire.internal.cache.BridgeObserverHolder;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -77,7 +85,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
 
   static PoolImpl pool = null;  
 
-  static BridgeObserver oldBo = null;
+  static ClientServerObserver oldBo = null;
   
   static boolean FailOverDetectionByCCU = false;
   
@@ -151,12 +159,12 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   public static void verifyDispatcherIsAlive()
   {
     try {
-//      assertEquals("More than one BridgeServer", 1, cache.getBridgeServers()
+//      assertEquals("More than one BridgeServer", 1, cache.getCacheServers()
 //          .size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
-          return cache.getBridgeServers().size() == 1;
+          return cache.getCacheServers().size() == 1;
         }
         public String description() {
           return excuse;
@@ -164,7 +172,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       };
       DistributedTestCase.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
 
-      BridgeServerImpl bs = (BridgeServerImpl)cache.getBridgeServers()
+      CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
           .iterator().next();
       assertNotNull(bs);
       assertNotNull(bs.getAcceptor());
@@ -211,11 +219,11 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   {
     try {
       // assertEquals("More than one BridgeServer", 1,
-      // cache.getBridgeServers().size());
+      // cache.getCacheServers().size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
-          return cache.getBridgeServers().size() == 1;
+          return cache.getCacheServers().size() == 1;
         }
         public String description() {
           return excuse;
@@ -223,7 +231,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       };
       DistributedTestCase.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
 
-      BridgeServerImpl bs = (BridgeServerImpl)cache.getBridgeServers()
+      CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
           .iterator().next();
       assertNotNull(bs);
       assertNotNull(bs.getAcceptor());
@@ -351,9 +359,9 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   
   public static void verifyNoCCP()
   {
-    assertEquals("More than one BridgeServer", 1, cache.getBridgeServers()
+    assertEquals("More than one BridgeServer", 1, cache.getCacheServers()
         .size());
-    BridgeServerImpl bs = (BridgeServerImpl)cache.getBridgeServers()
+    CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
         .iterator().next();
     assertNotNull(bs);
     assertNotNull(bs.getAcceptor());
@@ -369,7 +377,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
-          return cache.getBridgeServers().size() == 1;
+          return cache.getCacheServers().size() == 1;
         }
         public String description() {
           return excuse;
@@ -377,7 +385,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       };
       DistributedTestCase.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
       
-      BridgeServerImpl bs = (BridgeServerImpl)cache.getBridgeServers()
+      CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
           .iterator().next();
       
       assertNotNull(bs);
@@ -406,16 +414,16 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     try {
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
-          return cache.getBridgeServers().size() == 1;
+          return cache.getCacheServers().size() == 1;
         }
         public String description() {
           return "Number of bridge servers (" 
-              + cache.getBridgeServers().size() + ") never became 1";
+              + cache.getCacheServers().size() + ") never became 1";
         }
       };
       DistributedTestCase.waitForCriterion(wc, 180 * 1000, 2000, true);
 
-      BridgeServerImpl bs = (BridgeServerImpl)cache.getBridgeServers()
+      CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
           .iterator().next();
       assertNotNull(bs);
       assertNotNull(bs.getAcceptor());
@@ -475,9 +483,9 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   public static void stopServer()
   {
     try {
-      Iterator iter = cache.getBridgeServers().iterator();
+      Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        BridgeServer server = (BridgeServer)iter.next();
+        CacheServer server = (CacheServer)iter.next();
         server.stop();
       }
     }
@@ -490,7 +498,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   {
     try {
       Cache c = CacheFactory.getAnyInstance();
-      BridgeServerImpl bs = (BridgeServerImpl)c.getBridgeServers().iterator()
+      CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
           .next();
       assertNotNull(bs);
       bs.start();
@@ -526,7 +534,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     
     if(!FailOverDetectionByCCU)
     {
-        oldBo = BridgeObserverHolder.setInstance(new BridgeObserverAdapter() {
+        oldBo = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
         public void beforeFailoverByCacheClientUpdater(ServerLocation epFailed)
         {
           try {
@@ -580,7 +588,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     RegionAttributes attrs = factory.createRegionAttributes();
     cache.createVMRegion(REGION_NAME, attrs);
 
-    BridgeServer server1 = cache.addBridgeServer();
+    CacheServer server1 = cache.addCacheServer();
     
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setMaximumTimeBetweenPings(180000);
@@ -618,7 +626,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       super.tearDown2();
     
       if(!FailOverDetectionByCCU)
-        BridgeObserverHolder.setInstance(oldBo);   
+        ClientServerObserverHolder.setInstance(oldBo);   
     
       FailOverDetectionByCCU = false;
     

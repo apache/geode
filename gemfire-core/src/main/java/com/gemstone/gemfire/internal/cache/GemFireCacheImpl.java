@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -136,7 +145,6 @@ import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceProvider;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
@@ -371,11 +379,11 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   private volatile DistributionAdvisee sqlfAdvisee;
 
   /**
-   * the list of all bridge servers. CopyOnWriteArrayList is used to allow concurrent add, remove and retrieval
-   * operations. It is assumed that the traversal operations on bridge servers list vastly outnumber the mutative
+   * the list of all cache servers. CopyOnWriteArrayList is used to allow concurrent add, remove and retrieval
+   * operations. It is assumed that the traversal operations on cache servers list vastly outnumber the mutative
    * operations such as add, remove.
    */
-  private volatile List allBridgeServers = new CopyOnWriteArrayList();
+  private volatile List allCacheServers = new CopyOnWriteArrayList();
 
   /**
    * Controls updates to the list of all gateway senders
@@ -664,7 +672,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     sb.append("; lockLease = " + this.lockLease);
     sb.append("; lockTimeout = " + this.lockTimeout);
     // sb.append("; rootRegions = (" + this.rootRegions + ")");
-    // sb.append("; bridgeServers = (" + this.bridgeServers + ")");
+    // sb.append("; cacheServers = (" + this.cacheServers + ")");
     // sb.append("; regionAttributes = (" + this.listRegionAttributes());
     // sb.append("; gatewayHub = " + gatewayHub);
     if (this.creationStack != null) {
@@ -1513,7 +1521,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * Close the distributed system, bridge servers, and gateways. Clears the rootRegions and partitionedRegions map.
+   * Close the distributed system, cache servers, and gateways. Clears the rootRegions and partitionedRegions map.
    * Marks the cache as closed.
    *
    * @see SystemFailure#emergencyClose()
@@ -1546,14 +1554,14 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     inst.disconnectCause = SystemFailure.getFailure();
     inst.isClosing = true;
 
-    // Clear bridge servers
+    // Clear cache servers
     if (DEBUG) {
-      System.err.println("DEBUG: Close bridge servers");
+      System.err.println("DEBUG: Close cache servers");
     }
     {
-      Iterator allBridgeServersItr = inst.allBridgeServers.iterator();
-      while (allBridgeServersItr.hasNext()) {
-        BridgeServerImpl bs = (BridgeServerImpl) allBridgeServersItr.next();
+      Iterator allCacheServersItr = inst.allCacheServers.iterator();
+      while (allCacheServersItr.hasNext()) {
+        CacheServerImpl bs = (CacheServerImpl) allCacheServersItr.next();
         AcceptorImpl ai = bs.getAcceptor();
         if (ai != null) {
           ai.emergencyClose();
@@ -1986,7 +1994,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       TXStateProxy tx = null;
       try {
         this.keepAlive = keepalive;
-        PoolManagerImpl.setKeepAlive(keepalive);
 
         if (this.txMgr != null) {
           tx = this.txMgr.internalSuspend();
@@ -2044,7 +2051,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
           stopRedisServer();
 
           // no need to track PR instances since we won't create any more
-          // bridgeServers or gatewayHubs
+          // cacheServers or gatewayHubs
           if (this.partitionedRegions != null) {
             if (isDebugEnabled) {
               logger.debug("{}: clearing partitioned regions...", this);
@@ -2616,12 +2623,12 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     if (isDebugEnabled) {
-      logger.debug("{}: stopping bridge servers...", this);
+      logger.debug("{}: stopping cache servers...", this);
     }
-    boolean stoppedBridgeServer = false;
-    Iterator allBridgeServersIterator = this.allBridgeServers.iterator();
-    while (allBridgeServersIterator.hasNext()) {
-      BridgeServerImpl bridge = (BridgeServerImpl) allBridgeServersIterator.next();
+    boolean stoppedCacheServer = false;
+    Iterator allCacheServersIterator = this.allCacheServers.iterator();
+    while (allCacheServersIterator.hasNext()) {
+      CacheServerImpl bridge = (CacheServerImpl) allCacheServersIterator.next();
       if (isDebugEnabled) {
         logger.debug("stopping bridge {}", bridge);
       }
@@ -2632,11 +2639,11 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
           logger.debug("Ignored cache closure while closing bridge {}", bridge, e);
         }
       }
-      allBridgeServers.remove(bridge);
-      stoppedBridgeServer = true;
+      allCacheServers.remove(bridge);
+      stoppedCacheServer = true;
     }
-    if (stoppedBridgeServer) {
-      // now that all the bridge servers have stopped empty the static pool of commBuffers it might have used.
+    if (stoppedCacheServer) {
+      // now that all the cache servers have stopped empty the static pool of commBuffers it might have used.
       ServerConnection.emptyCommBufferPool();
     }
     
@@ -3784,10 +3791,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     return this.eventThreadPool;
   }
 
-  public BridgeServer addBridgeServer() {
-    return (BridgeServer) addCacheServer();
-  }
-
   public CacheServer addCacheServer() {
     return addCacheServer(false);
   }
@@ -3798,8 +3801,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
     stopper.checkCancelInProgress(null);
 
-    BridgeServerImpl bridge = new BridgeServerImpl(this, isGatewayReceiver);
-    allBridgeServers.add(bridge);
+    CacheServerImpl bridge = new CacheServerImpl(this, isGatewayReceiver);
+    allCacheServers.add(bridge);
 
     sendAddCacheServerProfileMessage();
     return bridge;
@@ -3972,33 +3975,29 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
   }
 
-  public List getBridgeServers() {
-    return getCacheServers();
-  }
-
   public List getCacheServers() {
-    List bridgeServersWithoutReceiver = null;
-    if (!allBridgeServers.isEmpty()) {
-    Iterator allBridgeServersIterator = allBridgeServers.iterator();
-    while (allBridgeServersIterator.hasNext()) {
-      BridgeServerImpl bridgeServer = (BridgeServerImpl) allBridgeServersIterator.next();
-      // If BridgeServer is a GatewayReceiver, don't return as part of CacheServers
-      if (!bridgeServer.isGatewayReceiver()) {
-        if (bridgeServersWithoutReceiver == null) {
-          bridgeServersWithoutReceiver = new ArrayList();
+    List cacheServersWithoutReceiver = null;
+    if (!allCacheServers.isEmpty()) {
+    Iterator allCacheServersIterator = allCacheServers.iterator();
+    while (allCacheServersIterator.hasNext()) {
+      CacheServerImpl cacheServer = (CacheServerImpl) allCacheServersIterator.next();
+      // If CacheServer is a GatewayReceiver, don't return as part of CacheServers
+      if (!cacheServer.isGatewayReceiver()) {
+        if (cacheServersWithoutReceiver == null) {
+          cacheServersWithoutReceiver = new ArrayList();
         }
-        bridgeServersWithoutReceiver.add(bridgeServer);
+        cacheServersWithoutReceiver.add(cacheServer);
       }
     }
     }
-    if (bridgeServersWithoutReceiver == null) {
-      bridgeServersWithoutReceiver = Collections.emptyList();
+    if (cacheServersWithoutReceiver == null) {
+      cacheServersWithoutReceiver = Collections.emptyList();
     }
-    return bridgeServersWithoutReceiver;
+    return cacheServersWithoutReceiver;
   }
 
-  public List getBridgeServersAndGatewayReceiver() {
-    return allBridgeServers;
+  public List getCacheServersAndGatewayReceiver() {
+    return allCacheServers;
   }
 
   /**
@@ -4126,9 +4125,9 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       boolean hasSerialSenders = hasSerialSenders(r);
       boolean result = hasSerialSenders;
       if (!result) {
-        Iterator allBridgeServersIterator = allBridgeServers.iterator();
-        while (allBridgeServersIterator.hasNext()) {
-          BridgeServerImpl server = (BridgeServerImpl) allBridgeServersIterator.next();
+        Iterator allCacheServersIterator = allCacheServers.iterator();
+        while (allCacheServersIterator.hasNext()) {
+          CacheServerImpl server = (CacheServerImpl) allCacheServersIterator.next();
           if (!server.getNotifyBySubscription()) {
             result = true;
             break;
@@ -4182,7 +4181,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     stopper.checkCancelInProgress(null);
 
     if (!this.isServer) {
-      return (this.allBridgeServers.size() > 0);
+      return (this.allCacheServers.size() > 0);
     } else {
       return true;
     }
@@ -4926,48 +4925,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         c.setRegionAttributes(pra.toString(), af.create());
         break;
       }
-      case PARTITION_HDFS: {
-    	  AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(false);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
-      case PARTITION_REDUNDANT_HDFS: {
-    	  AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          paf.setRedundantCopies(1);
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(false);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
-      case PARTITION_WRITEONLY_HDFS_STORE: {
-        AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(true);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
-      case PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE: {
-        AttributesFactory af = new AttributesFactory();
-          af.setDataPolicy(DataPolicy.HDFS_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          paf.setRedundantCopies(1);
-          af.setPartitionAttributes(paf.create());
-          af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
-          af.setHDFSWriteOnly(true);
-          c.setRegionAttributes(pra.toString(), af.create());
-          break;
-        }
       default:
         throw new IllegalStateException("unhandled enum " + pra);
       }
@@ -5359,12 +5316,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     if (loc != null) {
       loc.startJmxManagerLocationService(this);
     }
-  }
-  
-  @Override
-  public HDFSStoreFactory createHDFSStoreFactory() {
-    // TODO Auto-generated method stub
-    return new HDFSStoreFactoryImpl(this);
   }
   
   public HDFSStoreFactory createHDFSStoreFactory(HDFSStoreCreation creation) {

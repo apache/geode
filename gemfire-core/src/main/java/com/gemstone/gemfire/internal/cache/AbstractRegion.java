@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache;
@@ -74,9 +83,6 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeClient;
-import com.gemstone.gemfire.cache.util.BridgeLoader;
-import com.gemstone.gemfire.cache.util.BridgeWriter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -486,9 +492,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    */
   public CacheLoader basicGetLoader() {
     CacheLoader result = this.cacheLoader;
-    if (isBridgeLoader(result)) {
-      result = null;
-    }
     return result;
   }
   /**
@@ -498,9 +501,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    */
   public CacheWriter basicGetWriter() {
     CacheWriter result = this.cacheWriter;
-    if (isBridgeWriter(result)) {
-      result = null;
-    }
     return result;
   }
   
@@ -1200,11 +1200,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   // synchronized so not reentrant
   public synchronized CacheLoader setCacheLoader(CacheLoader cl) {
     checkReadiness();
-    if (cl != null && isBridgeLoader(cl)) {
-      if (getPoolName() != null) {
-        throw new IllegalStateException("A region with a connection pool can not have a BridgeLoader.");
-      }
-    }
     CacheLoader oldLoader = this.cacheLoader;
     assignCacheLoader(cl);
     cacheLoaderChanged(oldLoader);
@@ -1213,24 +1208,12 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   private synchronized void assignCacheLoader(CacheLoader cl) {
     this.cacheLoader = cl;
-    if (cl instanceof BridgeLoader) {
-      BridgeLoader bl = (BridgeLoader) cl;
-      bl.attach(this);
-    } else if (cl instanceof BridgeClient) {
-      BridgeClient bc = (BridgeClient)cl;
-      bc.attach(this);
-    }
   }
 
   // synchronized so not reentrant
   public synchronized CacheWriter setCacheWriter(CacheWriter cacheWriter)
   {
     checkReadiness();
-    if (cacheWriter != null && isBridgeWriter(cacheWriter)) {
-      if (getPoolName() != null) {
-        throw new IllegalStateException("A region with a connection pool can not have a BridgeWriter.");
-      }
-    }
     CacheWriter oldWriter = this.cacheWriter;
     assignCacheWriter(cacheWriter);
     cacheWriterChanged(oldWriter);
@@ -1240,10 +1223,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   private synchronized void assignCacheWriter(CacheWriter cacheWriter)
   {
     this.cacheWriter = cacheWriter;
-    if (cacheWriter instanceof BridgeWriter) {
-      BridgeWriter bw = (BridgeWriter)cacheWriter;
-      bw.attach(this);
-    }
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
@@ -1321,12 +1300,24 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return old;
   }
 
-  public ExpirationAttributes setRegionIdleTimeout(
-      ExpirationAttributes idleTimeout)
-  {
+  public static void validatePRRegionExpirationAttributes(ExpirationAttributes expAtts) {
+    if (expAtts.getTimeout() > 0) {
+      ExpirationAction expAction = expAtts.getAction();
+      if (expAction.isInvalidate() || expAction.isLocalInvalidate()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      } else if (expAction.isDestroy() || expAction.isLocalDestroy()) {
+        throw new IllegalStateException(LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+      }
+    }
+  }
+
+  public ExpirationAttributes setRegionIdleTimeout(ExpirationAttributes idleTimeout) {
     checkReadiness();
     if (idleTimeout == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_IDLETIMEOUT_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {
@@ -1343,12 +1334,13 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return oldAttrs;
   }
 
-  public ExpirationAttributes setRegionTimeToLive(
-      ExpirationAttributes timeToLive)
-  {
+  public ExpirationAttributes setRegionTimeToLive(ExpirationAttributes timeToLive) {
     checkReadiness();
     if (timeToLive == null) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
+    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+      validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.dataPolicy.withReplication()) {
@@ -1572,15 +1564,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   protected void closeCacheCallback(CacheCallback cb)
   {
     if (cb != null) {
-      if (cb instanceof BridgeWriter) {
-        BridgeWriter bw = (BridgeWriter)cb;
-        bw.detach(this);
-      }
-      else if (cb instanceof BridgeLoader) {
-        BridgeLoader bl = (BridgeLoader)cb;
-        bl.detach(this);
-      }
-
       try {
         cb.close();
       }
@@ -1608,19 +1591,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   protected void cacheListenersChanged(boolean nowHasListener)
   {
     // nothing needed by default
-  }
-
-  /**
-   * @since 5.7
-   */
-  public static boolean isBridgeLoader(CacheLoader cl) {
-    return cl instanceof BridgeLoader || cl instanceof BridgeClient;
-  }
-  /**
-   * @since 5.7
-   */
-  public static boolean isBridgeWriter(CacheWriter cw) {
-    return cw instanceof BridgeWriter;
   }
 
   protected void cacheWriterChanged(CacheWriter oldWriter)

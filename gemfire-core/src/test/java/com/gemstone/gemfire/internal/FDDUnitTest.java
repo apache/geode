@@ -1,10 +1,19 @@
 /*
- * IndexTest.java
- * JUnit based test
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Created on March 9, 2005, 3:30 PM
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal;
 
 import java.util.Properties;
@@ -69,8 +78,12 @@ public class FDDUnitTest extends CacheTestCase {
     vm1.invoke(CacheServerTestUtil.class, "closeCache");
     vm2.invoke(CacheServerTestUtil.class, "closeCache");
   }
+
+  public void testEmpty() {
+    //Ticket #GEODE-338.  Disable the test for now and rewrite as a junit test.
+  }
   
-  public void testFDSocketFixOnlyServers() throws Exception {
+  public void disable_testFDSocketFixOnlyServers() throws Exception {
     String os = System.getProperty("os.name");
     if (os != null) {
       if (os.indexOf("Windows") != -1) {
@@ -81,9 +94,10 @@ public class FDDUnitTest extends CacheTestCase {
       }
     }
     try {
+      StringBuffer incaseOfFailure = new StringBuffer();
       final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
       final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-      int numThreads = 10;
+      int numThreads = 30;
 
       startCacheServer(vm0, port[0], mcastPort);
       startCacheServer(vm1, port[1], mcastPort);
@@ -99,6 +113,7 @@ public class FDDUnitTest extends CacheTestCase {
       doPuts(vm0, numThreads, "portfolios");
       long endFDs = checkFD(vm0);
       long numFDs = endFDs - startingFDs;
+      incaseOfFailure.append("NoSelectorPooling startFDs: " + startingFDs + " endFDs: " + endFDs + " diff:" + numFDs + " ");
 
       // run test with selector pooling
       setUseSelectorPooling(vm0, true);
@@ -106,7 +121,8 @@ public class FDDUnitTest extends CacheTestCase {
       doPuts(vm0, numThreads, "portfolios");
       long endFDsWithPooling = checkFD(vm0);
       long numFDsWithPooling = endFDsWithPooling - startingFDsWithPooling;
-      assertTrue(numFDsWithPooling < numFDs);
+      incaseOfFailure.append("SelectorPooling#1 startFDs: " + startingFDsWithPooling + " endFDs: " + endFDsWithPooling + " diff:" + numFDsWithPooling + " ");
+      assertTrue(incaseOfFailure.toString(), numFDsWithPooling < numFDs);
 
       // run it again and see if the number still is below
       startingFDsWithPooling = checkFD(vm0);
@@ -115,7 +131,8 @@ public class FDDUnitTest extends CacheTestCase {
       numFDsWithPooling = endFDsWithPooling - startingFDsWithPooling;
       // if you see these asserts failing, it could be that we are not using the
       // selector pool
-      assertTrue(numFDsWithPooling < numFDs);
+      incaseOfFailure.append("SelectorPooling#2 startFDs: " + startingFDsWithPooling + " endFDs: " + endFDsWithPooling + " diff:" + numFDsWithPooling + " ");
+      assertTrue(incaseOfFailure.toString(), numFDsWithPooling < numFDs);
 
     } finally {
       setUseSelectorPooling(vm0, true);
@@ -151,7 +168,7 @@ public class FDDUnitTest extends CacheTestCase {
           for (int i = 0; i < numThreads; i++) {
             executor.execute(new Runnable() {
               public void run() {
-                  for (int i = 0; i < 20; i++) {
+                  for (int i = 0; i < 10; i++) {
                     String myValue = "string" + i;
                     region.put("k" + i, myValue);
                     try {

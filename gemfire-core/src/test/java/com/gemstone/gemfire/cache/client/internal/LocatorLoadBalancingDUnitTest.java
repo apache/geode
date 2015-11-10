@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.client.internal;
 
@@ -27,14 +36,14 @@ import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRespons
 import com.gemstone.gemfire.cache.server.ServerLoad;
 import com.gemstone.gemfire.cache.server.ServerLoadProbeAdapter;
 import com.gemstone.gemfire.cache.server.ServerMetrics;
-import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.ServerLocator;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.BridgeServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
@@ -241,8 +250,8 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     Runnable checkConnectionCount = new SerializableRunnable("checkConnectionCount") {
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
-        final BridgeServerImpl server = (BridgeServerImpl)
-            cache.getBridgeServers().get(0);
+        final CacheServerImpl server = (CacheServerImpl)
+            cache.getCacheServers().get(0);
         WaitCriterion wc = new WaitCriterion() {
           String excuse;
           public boolean done() {
@@ -456,7 +465,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
-        BridgeServer server = (BridgeServer) cache.getBridgeServers().get(0);
+        CacheServer server = (CacheServer) cache.getCacheServers().get(0);
         MyLoadProbe probe = (MyLoadProbe) server.getLoadProbe();
         probe.setLoad(newLoad);
       }

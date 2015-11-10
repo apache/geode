@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.server.internal;
 
@@ -14,12 +23,12 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.client.internal.BridgeServerLoadMessage;
+import com.gemstone.gemfire.cache.client.internal.CacheServerLoadMessage;
 import com.gemstone.gemfire.cache.server.ServerLoad;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.internal.cache.BridgeServerAdvisor;
+import com.gemstone.gemfire.internal.cache.CacheServerAdvisor;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -41,14 +50,14 @@ public class LoadMonitor implements ConnectionListener {
   
   private final ServerLoadProbe probe;
   private final ServerMetricsImpl metrics;
-  protected final BridgeServerAdvisor advisor;
+  protected final CacheServerAdvisor advisor;
   protected ServerLocation location;
   private final PollingThread pollingThread;
   protected volatile ServerLoad lastLoad;
   protected CacheServerStats stats;
 
   public LoadMonitor(ServerLoadProbe probe, int maxConnections,
-      long pollInterval, int forceUpdateFrequency, BridgeServerAdvisor advisor) {
+      long pollInterval, int forceUpdateFrequency, CacheServerAdvisor advisor) {
     this.probe = probe;
     this.metrics = new ServerMetricsImpl(maxConnections);
     this.pollingThread = new PollingThread(pollInterval, forceUpdateFrequency);
@@ -195,8 +204,8 @@ public class LoadMonitor implements ConnectionListener {
             
             stats.setLoad(load);
             if (locators != null) {
-              BridgeServerLoadMessage message =
-                new BridgeServerLoadMessage(load, location, myClientIds);
+              CacheServerLoadMessage message =
+                new CacheServerLoadMessage(load, location, myClientIds);
               message.setRecipients(locators);
               MembershipManager mgr = advisor.getDistributionManager().getMembershipManager();
               if (mgr == null || !mgr.isBeingSick()) { // test hook

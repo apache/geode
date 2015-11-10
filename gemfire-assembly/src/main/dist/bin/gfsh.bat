@@ -69,5 +69,5 @@ REM  Consider java is from JDK
 @if defined JAVA_ARGS (
 @set JAVA_ARGS="%JAVA_ARGS%"
 )
-@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=/com/gemstone/gemfire/internal/logging/log4j/log4j2-cli.xml %JAVA_ARGS% %LAUNCHER% %*
+@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml %JAVA_ARGS% %LAUNCHER% %*
 :done

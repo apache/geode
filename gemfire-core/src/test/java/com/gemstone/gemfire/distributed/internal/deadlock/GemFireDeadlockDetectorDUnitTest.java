@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal.deadlock;
 
@@ -22,8 +31,10 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedLockService;
+import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 
+import dunit.AsyncInvocation;
 import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.SerializableRunnable;
@@ -41,11 +52,22 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   
   @Override
   public void tearDown2() throws Exception {
+    disconnectAllFromDS();
+  }
+
+  private void stopStuckThreads() {
     invokeInEveryVM(new SerializableRunnable() {
       
       public void run() {
         for(Thread thread: stuckThreads) {
           thread.interrupt();
+          disconnectFromDS();
+          try {
+            thread.join(30000);
+            assertTrue(!thread.isAlive());
+          } catch (InterruptedException e) {
+            fail("interrupted", e);
+          }
         }
       }
     });
@@ -74,7 +96,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   private static final Lock lock = new ReentrantLock();
   
   
-  public void testDistributedDeadlockWithFunction() throws InterruptedException {
+  public void testDistributedDeadlockWithFunction() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -86,21 +108,24 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     
     
     //This thread locks the lock member1 first, then member2.
-    lockTheLocks(vm0, member2);
+    AsyncInvocation async1 = lockTheLocks(vm0, member2);
     //This thread locks the lock member2 first, then member1.
-    lockTheLocks(vm1, member1);
+    AsyncInvocation async2 = lockTheLocks(vm1, member1);
     
     Thread.sleep(5000);
     GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
     LinkedList<Dependency> deadlock = detect.find().findCycle();
     getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
     assertEquals(8, deadlock.size());
+    stopStuckThreads();
+    async1.getResult(30000);
+    async2.getResult(30000);
   }
   
   
 
-  private void lockTheLocks(VM vm0, final InternalDistributedMember member) {
-    vm0.invokeAsync(new SerializableRunnable() {
+  private AsyncInvocation lockTheLocks(VM vm0, final InternalDistributedMember member) {
+    return vm0.invokeAsync(new SerializableRunnable() {
 
       public void run() {
         lock.lock();
@@ -117,13 +142,13 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     });
   }
   
-  public void testDistributedDeadlockWithDLock() throws InterruptedException {
+  public void testDistributedDeadlockWithDLock() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     
-    lockTheDLocks(vm0, "one", "two");
-    lockTheDLocks(vm1, "two", "one");
+    AsyncInvocation async1 = lockTheDLocks(vm0, "one", "two");
+    AsyncInvocation async2 = lockTheDLocks(vm1, "two", "one");
     getSystem();
     GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
     
@@ -139,10 +164,14 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     assertTrue(deadlock != null);
     getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
     assertEquals(4, deadlock.size());
+    stopStuckThreads();
+    disconnectAllFromDS();
+    async1.getResult(30000);
+    async2.getResult(30000);
   } 
 
-  private void lockTheDLocks(VM vm, final String first, final String second) {
-    vm.invokeAsync(new SerializableRunnable() {
+  private AsyncInvocation lockTheDLocks(VM vm, final String first, final String second) {
+    return vm.invokeAsync(new SerializableRunnable() {
       
       public void run() {
         getCache();
@@ -154,7 +183,11 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
-        dls.lock(second, 10 * 1000, -1);
+        try {
+          dls.lock(second, 10 * 1000, -1);
+        } catch(LockServiceDestroyedException expected) {
+          //this is ok, the test is terminating
+        }
         
       }
     });
@@ -186,6 +219,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
       } catch (InterruptedException e) {
         //ingore
       }
+      stuckThreads.remove(Thread.currentThread());
       context.getResultSender().lastResult(null);
     }
 

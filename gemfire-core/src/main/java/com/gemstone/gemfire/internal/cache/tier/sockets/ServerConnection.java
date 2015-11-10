@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
@@ -47,7 +56,7 @@ import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
 import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.InternalBridgeMembership;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.command.Default;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -571,7 +580,7 @@ public class ServerConnection implements Runnable {
       this.crHelper.checkCancelInProgress(null);
       if (clientJoined && isFiringMembershipEvents()) {
         // This is a new client. Notify bridge membership and heartbeat monitor.
-        InternalBridgeMembership.notifyJoined(this.proxyId.getDistributedMember(),
+        InternalClientMembership.notifyJoined(this.proxyId.getDistributedMember(),
             true);
         }
 
@@ -871,9 +880,9 @@ public class ServerConnection implements Runnable {
         // the heartbeat monitor; other wise just remove the connection.
         if (clientDeparted && isFiringMembershipEvents()) {
           if (this.clientDisconnectedCleanly && !forceClientCrashEvent) {
-            InternalBridgeMembership.notifyLeft(proxyId.getDistributedMember(), true);
+            InternalClientMembership.notifyLeft(proxyId.getDistributedMember(), true);
           } else {
-            InternalBridgeMembership.notifyCrashed(this.proxyId.getDistributedMember(), true);
+            InternalClientMembership.notifyCrashed(this.proxyId.getDistributedMember(), true);
           }
           // The client has departed. Remove this last connection and unregister it.
         }

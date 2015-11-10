@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.gemstone.gemfire.cache.client.internal;
 
@@ -20,12 +29,12 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.BridgeMembership;
-import com.gemstone.gemfire.cache.util.BridgeMembershipEvent;
-import com.gemstone.gemfire.cache.util.BridgeMembershipListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.management.membership.ClientMembership;
+import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
+import com.gemstone.gemfire.management.membership.ClientMembershipListenerAdapter;
 
 import dunit.Host;
 import dunit.SerializableCallable;
@@ -269,7 +278,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     final String locators = getServerHostName(vm0.getHost()) + "[" + locatorPort + "]";
     
     final int serverPort1 =startBridgeServerInVM(vm1, new String[] {"group1"}, locators);
-    final int serverPort2 =addBridgeServerInVM(vm1, new String[] {"group2"});
+    final int serverPort2 =addCacheServerInVM(vm1, new String[] {"group2"});
     
     startBridgeClientInVM(vm2, "group2", getServerHostName(vm0.getHost()), locatorPort);
     
@@ -282,7 +291,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     checkEndpoints(vm2, new int[] {serverPort1});
   }
   
-  public void testBridgeMembershipListener() throws Exception {
+  public void testClientMembershipListener() throws Exception {
     final Host host = Host.getHost(0);
     VM locatorVM = host.getVM(0);
     VM bridge1VM = host.getVM(1);
@@ -452,7 +461,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     vm.invoke(new SerializableRunnable("Add membership listener") {
       public void run() {
         MyListener listener = new MyListener();
-        BridgeMembership.registerBridgeMembershipListener(listener);
+        ClientMembership.registerClientMembershipListener(listener);
         remoteObjects.put(BRIDGE_LISTENER, listener);
       }
     });
@@ -541,12 +550,13 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     });
   }
   
-  public static class MyListener extends BridgeMembershipListenerAdapter implements Serializable {
+  public static class MyListener extends ClientMembershipListenerAdapter implements Serializable {
     protected int crashes = 0;
     protected int joins = 0;
     protected int departures= 0;
 
-    public synchronized void memberCrashed(BridgeMembershipEvent event) {
+    @Override
+    public synchronized void memberCrashed(ClientMembershipEvent event) {
       crashes++;
       notifyAll();
     }
@@ -557,12 +567,14 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       departures = 0;
     }
 
-    public synchronized void memberJoined(BridgeMembershipEvent event) {
+    @Override
+    public synchronized void memberJoined(ClientMembershipEvent event) {
       joins++;
       notifyAll();
     }
 
-    public synchronized void memberLeft(BridgeMembershipEvent event) {
+    @Override
+    public synchronized void memberLeft(ClientMembershipEvent event) {
       departures++;
       notifyAll();
     }

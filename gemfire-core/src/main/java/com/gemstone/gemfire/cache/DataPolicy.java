@@ -1,9 +1,18 @@
-/*=========================================================================
- * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -88,18 +97,6 @@ public class DataPolicy implements java.io.Serializable {
    */
   public static final DataPolicy PERSISTENT_PARTITION = new DataPolicy(6, "PERSISTENT_PARTITION");
   
-  /**
-   * In addition to <code>PARTITION</code> also causes data to be stored to
-   * HDFS. The region initialization may use the data stored on HDFS.
-   */
-  public static final DataPolicy HDFS_PARTITION = new DataPolicy(7, "HDFS_PARTITION");
-  
-  /**
-   * In addition to <code>HDFS_PARTITION</code> also causes data to be stored on local
-   * disk. The data can be evicted from the local disk and still be read
-   * from HDFS.
-   */
-  public static final DataPolicy HDFS_PERSISTENT_PARTITION = new DataPolicy(10, "HDFS_PERSISTENT_PARTITION");
    /**
    * The data policy used by default; it is {@link #NORMAL}.
    */
@@ -169,7 +166,7 @@ public class DataPolicy implements java.io.Serializable {
    * @since 6.5
    */
   public boolean withPersistence() {
-    return this == PERSISTENT_PARTITION || this == PERSISTENT_REPLICATE || this == HDFS_PERSISTENT_PARTITION;
+    return this == PERSISTENT_PARTITION || this == PERSISTENT_REPLICATE;
   }
 
   /** Return whether this policy does partitioning.
@@ -179,7 +176,7 @@ public class DataPolicy implements java.io.Serializable {
    * @since 6.5
    */
   public boolean withPartitioning() {
-    return this == PARTITION || this == PERSISTENT_PARTITION || this == HDFS_PARTITION || this==HDFS_PERSISTENT_PARTITION;
+    return this == PARTITION || this == PERSISTENT_PARTITION;
   }
 
   /** Return whether this policy does preloaded.
@@ -254,7 +251,8 @@ public class DataPolicy implements java.io.Serializable {
    * @see #HDFS_PARTITION
    */
   public boolean withHDFS() {
-	  return this == HDFS_PARTITION || this == HDFS_PERSISTENT_PARTITION;
+//    return this == HDFS_PARTITION || this == HDFS_PERSISTENT_PARTITION;
+	  return false;
   }
   
   
