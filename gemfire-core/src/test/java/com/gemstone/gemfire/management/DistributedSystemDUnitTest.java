@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.management;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -94,7 +95,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
   
   private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
   
-  static List<Notification> notifList = new ArrayList<Notification>();
+  static List<Notification> notifList = new ArrayList<>();
   
   static Map<ObjectName , NotificationListener> notificationListenerMap = new HashMap<ObjectName , NotificationListener>();
   
@@ -154,8 +155,8 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
       createCache(vm);
       warnLevelAlert(vm);
       severeLevelAlert(vm);
-      
     }
+
     VM managingNode = getManagingNode();
     createManagementCache(managingNode);
     startManagingNode(managingNode);
@@ -266,9 +267,8 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
 
     class NotificationHubTestListener implements NotificationListener {
       @Override
-      public void handleNotification(Notification notification, Object handback) {
+      public synchronized void handleNotification(Notification notification, Object handback) {
         notifList.add(notification);
-
       }
     }
 
@@ -291,9 +291,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
                 } else {
                   return false;
                 }
-
               }
-
             }, MAX_WAIT, 500, true);
             for (ObjectName objectName : bean.listMemberObjectNames()) {
               NotificationHubTestListener listener = new NotificationHubTestListener();
@@ -369,9 +367,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
             } else {
               return false;
             }
-
           }
-
         }, MAX_WAIT, 500, true);
 
         notifList.clear();
