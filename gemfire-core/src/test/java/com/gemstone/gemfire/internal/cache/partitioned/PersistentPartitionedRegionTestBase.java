@@ -172,7 +172,7 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
           public void run() {
             Cache cache = getCache();
             Region region = cache.getRegion(regionName);
-            
+
             for(int i =startKey; i < endKey; i++) {
               assertEquals("For key " + i, value, region.get(i));
             }

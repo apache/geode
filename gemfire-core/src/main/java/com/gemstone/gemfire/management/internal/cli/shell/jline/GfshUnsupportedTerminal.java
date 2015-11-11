@@ -27,7 +27,7 @@ import jline.UnsupportedTerminal;
  */
 public class GfshUnsupportedTerminal extends UnsupportedTerminal {
   @Override
-  public boolean isANSISupported() {
+  public synchronized boolean isAnsiSupported() {
     return false;
   }
 }
