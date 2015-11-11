@@ -191,7 +191,7 @@ public final class PartitionManager {
             logger.debug("createPrimaryBucket: {} bucket {} already primary, destroying local primary", pr, bucketId);
           }
           if (dumpBucket(self, region, bucketId)) {
-            createdBucket = createBucket(self, region, bucketId, destroyExistingRemote);
+            createdBucket = createBucket(self, region, bucketId, destroyExistingLocal);
           }
         } else {
           if (logger.isDebugEnabled()) {
