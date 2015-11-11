@@ -35,7 +35,7 @@ dependencies {
   compile 'mx4j:mx4j-remote:' + project.'mx4j.version'
   compile 'mx4j:mx4j-tools:' + project.'mx4j.version'
   compile 'net.java.dev.jna:jna:' + project.'jna.version'
-  compile 'net.sourceforge.jline:jline:' + project.'jline.version'
+  compile 'jline:jline:' + project.'jline.version'
   provided 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
   provided 'org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version'
   provided 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
