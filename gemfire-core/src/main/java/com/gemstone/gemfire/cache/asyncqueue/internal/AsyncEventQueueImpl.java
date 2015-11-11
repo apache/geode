@@ -189,6 +189,9 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     return sender.isParallel();
   }
 
+  public boolean isMetaQueue() {
+    return ((AbstractGatewaySender)sender).getIsMetaQueue();
+  }
 
   public void destroy() {
     ((AbstractGatewaySender)this.sender).destroy();

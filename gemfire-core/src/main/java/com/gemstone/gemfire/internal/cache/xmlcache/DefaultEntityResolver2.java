@@ -59,7 +59,7 @@ abstract public class DefaultEntityResolver2 implements EntityResolver2 {
    * @return InputSource if resource found, otherwise null.
    * @since 8.1
    */
-  protected final InputSource getClassPathIntputSource(final String publicId, final String systemId, final String path) {
+  protected final InputSource getClassPathInputSource(final String publicId, final String systemId, final String path) {
     final InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), path);
     if (null == stream) {
       return null;

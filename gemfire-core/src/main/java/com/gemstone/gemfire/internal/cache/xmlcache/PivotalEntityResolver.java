@@ -49,7 +49,7 @@ public final class PivotalEntityResolver extends DefaultEntityResolver2 {
     }
 
     if (systemId.startsWith(SYSTEM_ID_ROOT)) {
-      return getClassPathIntputSource(publicId, systemId, CLASSPATH_ROOT + systemId.substring(SYSTEM_ID_ROOT.length()));
+      return getClassPathInputSource(publicId, systemId, CLASSPATH_ROOT + systemId.substring(SYSTEM_ID_ROOT.length()));
     }
 
     return null;

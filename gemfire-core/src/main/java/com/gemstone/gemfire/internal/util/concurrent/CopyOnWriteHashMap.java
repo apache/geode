@@ -16,12 +16,14 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A copy on write hash map.
@@ -32,7 +34,7 @@ import java.util.Set;
  * @author dsmith
  *
  */
-public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> {
+public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> , Serializable {
   private volatile Map<K,V> map = Collections.<K,V>emptyMap();
 
   public CopyOnWriteHashMap() {
@@ -163,7 +165,45 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> {
     clone.map = map;
     return clone;
   }
-  
-  
 
+  @Override
+  public synchronized V putIfAbsent(K key, V value) {
+    V oldValue = map.get(key);
+    if(oldValue == null) {
+      put(key, value);
+      return null;
+    } else {
+      return oldValue;
+    }
+  }
+
+  @Override
+  public synchronized boolean remove(Object key, Object value) {
+    V oldValue = map.get(key);
+    if(oldValue != null && oldValue.equals(value)) {
+      remove(key);
+      return true;
+    }
+    
+    return false;
+  }
+
+  @Override
+  public synchronized boolean replace(K key, V oldValue, V newValue) {
+    V existingValue = map.get(key);
+    if(existingValue != null && existingValue.equals(oldValue)) {
+      put(key, newValue);
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public synchronized V replace(K key, V value) {
+    if (map.containsKey(key)) {
+      return put(key, value);
+    } else {
+      return null;
+    }
+  }
 }

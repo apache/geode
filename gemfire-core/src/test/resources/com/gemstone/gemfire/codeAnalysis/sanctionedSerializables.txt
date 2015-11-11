@@ -143,7 +143,6 @@ com/gemstone/gemfire/cache/hdfs/internal/hoplog/HdfsSortedOplogOrganizer$HoplogR
 com/gemstone/gemfire/cache/hdfs/internal/hoplog/Hoplog$HoplogVersion,false
 com/gemstone/gemfire/cache/hdfs/internal/hoplog/Hoplog$Meta,false
 com/gemstone/gemfire/cache/hdfs/internal/org/apache/hadoop/io/SequenceFile$CompressionType,false
-com/gemstone/gemfire/cache/lucene/LuceneQueryFactory$ResultType,false
 com/gemstone/gemfire/cache/operations/PutAllOperationContext$UpdateOnlyMap,true,-1034234728574286014,m:java/util/Map
 com/gemstone/gemfire/cache/partition/PartitionNotAvailableException,true,1
 com/gemstone/gemfire/cache/persistence/ConflictingPersistentDataException,true,-2629287782021455875
@@ -635,6 +634,7 @@ com/gemstone/gemfire/internal/tcp/VersionedByteBufferInputStream,false,version:c
 com/gemstone/gemfire/internal/util/Breadcrumbs$CrumbType,false
 com/gemstone/gemfire/internal/util/SingletonValue$ValueState,false
 com/gemstone/gemfire/internal/util/SunAPINotFoundException,false
+com/gemstone/gemfire/internal/util/concurrent/CopyOnWriteHashMap,false,map:java/util/Map
 com/gemstone/gemfire/internal/util/concurrent/CustomEntryConcurrentHashMap,true,-7056732555635108300,compareValues:boolean,entryCreator:com/gemstone/gemfire/internal/util/concurrent/CustomEntryConcurrentHashMap$HashEntryCreator,segmentMask:int,segmentShift:int,segments:com/gemstone/gemfire/internal/util/concurrent/CustomEntryConcurrentHashMap$Segment[]
 com/gemstone/gemfire/internal/util/concurrent/CustomEntryConcurrentHashMap$DefaultHashEntryCreator,true,3765680607280951726
 com/gemstone/gemfire/internal/util/concurrent/CustomEntryConcurrentHashMap$IdentitySegment,true,3086228147110819882

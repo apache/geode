@@ -1,0 +1,29 @@
+dependencies {
+    provided project(':gemfire-core')
+    provided project(':gemfire-common')
+
+    compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
+    compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
+    compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
+    compile 'org.apache.lucene:lucene-queryparser:' + project.'lucene.version'
+
+    provided project(path: ':gemfire-junit', configuration: 'testOutput')
+
+    //Lucene test framework.
+    testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
+    testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
+    testCompile project(path: ':gemfire-core', configuration: 'testOutput', transitive: false)
+    //Dependency of lucene-test-framework. Can we turn on transitive dependencies for
+    //the test framework somehow? We've disabled them globally in the parent
+    //build.gadle.
+    testCompile 'com.carrotsearch.randomizedtesting:randomizedtesting-runner:2.1.6'
+
+    // the following test dependencies are needed for mocking cache instance
+    testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
+    testRuntime 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
+    testRuntime 'com.google.guava:guava:' + project.'guava.version'
+    testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
+}
+
+//The lucene integration tests don't have any issues that requiring forking
+integrationTest.forkEvery 0
