@@ -301,10 +301,6 @@ public class CommandInitializer {
     gfe80Commands.put(MessageType.PUTALL, PutAll80.getCommand());
     ALL_COMMANDS.put(Version.GFE_80, gfe80Commands);
 
-    Map<Integer, Command> gfe8009Commands = new HashMap<Integer, Command>();
-    gfe8009Commands.putAll(ALL_COMMANDS.get(Version.GFE_80));
-    ALL_COMMANDS.put(Version.GFE_8009, gfe8009Commands);
-
     {
       Map<Integer, Command> gfe81Commands = new HashMap<Integer, Command>();
       gfe81Commands.putAll(ALL_COMMANDS.get(Version.GFE_80));
