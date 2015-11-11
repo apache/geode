@@ -427,7 +427,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
        * ParallelGatewaySender
        */
       if ((this.index == this.nDispatcher - 1) && this.sender.isRunning()) {
-        ((AbstractGatewaySender)sender).enqueTempEvents();
+        ((AbstractGatewaySender)sender).enqueueTempEvents();
       }
     }
     finally {
@@ -583,7 +583,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
        * ParallelGatewaySender
        */
       if ((this.index == this.nDispatcher - 1) && this.sender.isRunning()) {
-        ((AbstractGatewaySender)sender).enqueTempEvents();
+        ((AbstractGatewaySender)sender).enqueueTempEvents();
       }
       afterRegionAdd(userPR);
       this.sender.lifeCycleLock.writeLock().unlock();
