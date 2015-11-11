@@ -19,8 +19,7 @@ package com.gemstone.gemfire.management.internal.cli;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.shell.GfshConfig;
 import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import jline.ConsoleReader;
+import jline.console.ConsoleReader;
 import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.event.ShellStatus.Status;
 
@@ -106,7 +105,7 @@ public class HeadlessGfsh implements ResultHandler {
     boolean status = false;
     try {
       outputString = null;
-      status = shell.executeCommand(command);
+      status = shell.executeScriptLine(command);
     } catch (Exception e) {
       outputString = e.getMessage();
     }
@@ -291,9 +290,8 @@ public class HeadlessGfsh implements ResultHandler {
       try {
         output = new ByteArrayOutputStream(1024 * 10);
         PrintStream sysout = new PrintStream(output);
-        Writer wrappedOut = new BufferedWriter(new OutputStreamWriter(sysout));
         setGfshOutErr(sysout);
-        return new ConsoleReader(new FileInputStream(FileDescriptor.in), new PrintWriter(wrappedOut));
+        return new ConsoleReader(new FileInputStream(FileDescriptor.in), sysout);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

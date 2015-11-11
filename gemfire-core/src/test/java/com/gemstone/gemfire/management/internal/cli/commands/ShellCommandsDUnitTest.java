@@ -338,7 +338,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
       String resultString = commandResultToString(cmdResult);
       getLogWriter().info("testClearHistory resultString=" + resultString);
       assertTrue(resultString.contains(CliStrings.HISTORY__MSG__CLEARED_HISTORY));
-      assertTrue(gfshInstance.getGfshHistory().getHistoryList().size() <= 1);
+      assertTrue(gfshInstance.getGfshHistory().size()<= 1);
     } else {
       fail("testClearHistory failed");
     }
