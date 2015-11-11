@@ -36,9 +36,9 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import jline.ConsoleReader;
 import jline.Terminal;
 
+import jline.console.ConsoleReader;
 import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
@@ -380,7 +380,6 @@ public class Gfsh extends JLineShell {
   /**
    * See findResources in {@link AbstractShell}
    */
-  @Override
   protected Collection<URL> findResources(String resourceName) {
 //    return Collections.singleton(ClassPathLoader.getLatest().getResource(resourceName));
     return null;
@@ -420,7 +419,7 @@ public class Gfsh extends JLineShell {
    * @return true if execution is successful; false otherwise
    */
   @Override
-  public boolean executeCommand(final String line) {
+  public boolean executeScriptLine(final String line) {
     boolean success = false;
     String withPropsExpanded = line;
 
@@ -440,7 +439,7 @@ public class Gfsh extends JLineShell {
       if (gfshFileLogger.fineEnabled()) {
         gfshFileLogger.fine(logMessage + withPropsExpanded);
       }
-      success = super.executeCommand(withPropsExpanded);
+      success = super.executeScriptLine(withPropsExpanded);
     } catch (Exception e) {
       //TODO: should there be a way to differentiate error in shell & error on
       //server. May be by exception type.
@@ -633,12 +632,12 @@ public class Gfsh extends JLineShell {
   ///////////////////// JLineShell Class Methods End  //////////////////////////
 
   public int getTerminalHeight() {
-    return terminal != null ? terminal.getTerminalHeight() : DEFAULT_HEIGHT;
+    return terminal != null ? terminal.getHeight() : DEFAULT_HEIGHT;
   }
 
   public int getTerminalWidth() {
     if (terminal != null) {
-      return terminal.getTerminalWidth();
+      return terminal.getWidth();
     }
 
     Map<String, String> env = System.getenv();
@@ -805,7 +804,7 @@ public class Gfsh extends JLineShell {
                 ++commandSrNum;
                 Gfsh.println(commandSrNum+". Executing - " + cmdLet);                
                 Gfsh.println();
-                boolean executeSuccess = executeCommand(cmdLet);
+                boolean executeSuccess = executeScriptLine(cmdLet);
                 if (!executeSuccess) {
                   setLastExecutionStatus(-1);
                 }
@@ -922,7 +921,7 @@ public class Gfsh extends JLineShell {
       readLine = reader.readLine(prompt);
     } catch (IndexOutOfBoundsException e) {
       if (earlierLine.length() == 0) {
-        reader.printNewline();
+        reader.println();
         readLine = LINE_SEPARATOR;
         reader.getCursorBuffer().cursor = 0;
       } else {
