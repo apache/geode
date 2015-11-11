@@ -2478,43 +2478,6 @@ public class DistributionManager
     }
   }
 
-  private void handleJoinEvent(MemberJoinedEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberJoined(id);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try  {
-        listener.memberJoined(id);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-  }
   /**
    * Returns true if this DM or the DistributedSystem owned by
    * it is closing or is closed.
@@ -2529,162 +2492,11 @@ public class DistributionManager
     }
     return false;
   }
-  private void handleCrashEvent(MemberCrashedEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, true/*crashed*/);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, true/*crashed*/);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    
-    MembershipLogger.logCrash(id);
-  }
-  private void handleDepartEvent(MemberDepartedEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, false);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, false);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-  }
-  private void handleSuspectEvent(MemberSuspectEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    InternalDistributedMember whoSuspected = ev.whoSuspected();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberSuspect(id, whoSuspected);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-    iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberSuspect(id, whoSuspected);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-  }
   
   private void handleViewInstalledEvent(ViewInstalledEvent ev) {
     synchronized(this.membershipViewIdGuard) {
       this.membershipViewIdAcknowledged = ev.getViewId();
       this.membershipViewIdGuard.notifyAll();
-    }
-  }
-  
-  private void handleQuorumLostEvent(QuorumLostEvent ev) {
-    for (Iterator iter = membershipListeners.keySet().iterator();
-    iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.quorumLost(ev.getFailures(), ev.getRemaining());
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-    iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.quorumLost(ev.getFailures(), ev.getRemaining());
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
     }
   }
   
@@ -2707,44 +2519,8 @@ public class DistributionManager
   }
 
   protected void handleMemberEvent(MemberEvent ev) {
-    try {
-      switch (ev.eventType()) {
-      case MemberEvent.MEMBER_JOINED:
-        handleJoinEvent((MemberJoinedEvent)ev);
-        break;
-      case MemberEvent.MEMBER_DEPARTED:
-        handleDepartEvent((MemberDepartedEvent)ev);
-        break;
-      case MemberEvent.MEMBER_CRASHED:
-        handleCrashEvent((MemberCrashedEvent)ev);
-        break;
-      case MemberEvent.MEMBER_SUSPECT:
-        handleSuspectEvent((MemberSuspectEvent)ev);
-        break;
-      case MemberEvent.VIEW_INSTALLED:
-        // we're done processing events for a view
-        handleViewInstalledEvent((ViewInstalledEvent)ev);
-        break;
-      case MemberEvent.QUORUM_LOST:
-        handleQuorumLostEvent((QuorumLostEvent)ev);
-        break;
-      default:
-        logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNKNOWN_TYPE_OF_MEMBERSHIP_EVENT_RECEIVED_0, ev));
-        break;
-      }
-    }
-    catch (CancelException ex) {
-      // bug 37198...don't print a stack trace
-      logger.debug("Cancellation while calling membership listener for event <{}>: {}", ev, ex.getMessage(), ex);
-      
-      // ...and kill the caller...
-      throw ex;
-    }
-    catch (RuntimeException ex) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_EXCEPTION_WHILE_CALLING_MEMBERSHIP_LISTENER_FOR_EVENT__0, ev), ex);
-    }
+    ev.handleEvent(this);
   }
-  
 
   /**
    * This thread processes member events as they occur.
@@ -4766,12 +4542,6 @@ public class DistributionManager
   
  
   private static abstract class MemberEvent  {
-    static final int MEMBER_JOINED = 0;
-    static final int MEMBER_DEPARTED = 1;
-    static final int MEMBER_CRASHED = 2;
-    static final int MEMBER_SUSPECT = 3;
-    static final int VIEW_INSTALLED = 4;
-    static final int QUORUM_LOST = 5;
     
     private InternalDistributedMember id;
     MemberEvent(InternalDistributedMember id) {
@@ -4780,9 +4550,45 @@ public class DistributionManager
     public InternalDistributedMember getId() {
       return this.id;
     }
-    /** return the type of event: MEMBER_JOINED, MEMBER_DEPARTED, etc */
-    public abstract int eventType();
-  }
+
+    public void handleEvent(DistributionManager manager) {
+      handleEvent(manager, manager.membershipListeners.keySet());
+      handleEvent(manager, manager.allMembershipListeners);
+    }
+
+    protected abstract void handleEvent(MembershipListener listener);
+
+    protected void handleEvent(DistributionManager manager, Set<MembershipListener> membershipListeners) {
+      for (MembershipListener listener : membershipListeners) {
+        try {
+          handleEvent(listener);
+        } catch (CancelException e) {
+          if (manager.isCloseInProgress()) {
+            if (logger.isTraceEnabled()) {
+              logger.trace("MemberEventInvoker: cancelled");
+            }
+          }
+          else {
+            logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
+          }
+          break;
+        } catch (VirtualMachineError err) {
+          SystemFailure.initiateFailure(err);
+          // If this ever returns, rethrow the error.  We're poisoned
+          // now, so don't let this thread continue.
+          throw err;
+        } catch (Throwable t) {
+          // Whenever you catch Error or Throwable, you must also
+          // catch VirtualMachineError (see above).  However, there is
+          // _still_ a possibility that you are dealing with a cascading
+          // error condition, so you also need to check to see if the JVM
+          // is still usable:
+          SystemFailure.checkFailure();
+          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_EXCEPTION_WHILE_CALLING_MEMBERSHIP_LISTENER_FOR_EVENT__0, this), t);
+        }
+      }
+    }
+}
   
   /**
    * This is an event reflecting that a InternalDistributedMember has joined
@@ -4800,8 +4606,8 @@ public class DistributionManager
       return "member " + getId() + " joined";
     }
     @Override
-    public int eventType() {
-      return MEMBER_JOINED;
+    protected void handleEvent(MembershipListener listener) {
+      listener.memberJoined(getId());	
     }
   }
   
@@ -4818,12 +4624,12 @@ public class DistributionManager
       reason = r;
     }
     @Override
-    public int eventType() {
-      return MEMBER_DEPARTED;
-    }
-    @Override
     public String toString() {
       return "member " + getId() + " departed (" + reason + ")";
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+     listener.memberDeparted(getId(), false);	
     }
   }
   
@@ -4842,12 +4648,12 @@ public class DistributionManager
       reason = r;
     }
     @Override
-    public int eventType() {
-      return MEMBER_CRASHED;
-    }
-    @Override
     public String toString() {
       return "member " + getId() + " crashed: " + reason;
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      listener.memberDeparted(getId(), true/*crashed*/);	
     }
   }
 
@@ -4866,12 +4672,12 @@ public class DistributionManager
       return this.whoSuspected;
     }
     @Override
-    public int eventType() {
-      return MEMBER_SUSPECT;
-    }
-    @Override
     public String toString() {
       return "member " + getId() + " suspected by: " + this.whoSuspected;
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      listener.memberSuspect(getId(), whoSuspected());	
     }
   }
   
@@ -4885,12 +4691,16 @@ public class DistributionManager
       return view.getViewNumber();
     }
     @Override
-    public int eventType() {
-      return VIEW_INSTALLED;
-    }
-    @Override
     public String toString() {
       return "view installed: " + this.view;
+    }
+    @Override
+    public void handleEvent(DistributionManager manager) {
+      manager.handleViewInstalledEvent(this);
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      throw new UnsupportedOperationException();
     }
   }
 
@@ -4910,12 +4720,12 @@ public class DistributionManager
       return this.remaining;
     }
     @Override
-    public int eventType() {
-      return QUORUM_LOST;
-    }
-    @Override
     public String toString() {
       return "quorum lost.  failures=" + failures + "; remaining=" + remaining;
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      listener.quorumLost(getFailures(), getRemaining());	
     }
   }
 
