@@ -2812,9 +2812,7 @@ public final class InternalDistributedSystem
             }
             if (cache.getCachePerfStats().getReliableRegionsMissing() == 0){
               reconnectAttemptCounter = 0;
-              if (isDebugEnabled) {
-                logger.debug("Reconnected properly");
-              }  
+              logger.info("Reconnected properly");
             }
             else {
               // this try failed. The new cache will call reconnect again

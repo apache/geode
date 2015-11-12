@@ -13,7 +13,6 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.VIEW_ACK_MES
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -676,6 +675,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   boolean sendView(NetView view, List<InternalDistributedMember> newMembers, boolean preparing, ViewReplyProcessor rp) {
+
+    boolean isNetworkPartition = isNetworkPartition(view, false);
+    
     int id = view.getViewId();
     InstallViewMessage msg = new InstallViewMessage(view, services.getAuthenticator().getCredentials(this.localAddress), preparing);
     Set<InternalDistributedMember> recips = new HashSet<>(view.getMembers());
@@ -726,8 +728,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (preparing) {
       // send join responses after other members at least have
       // a prepared view announcing the new member
-      if (!(isNetworkPartition(view) && quorumRequired)) {
-        List<Integer> newPorts = new ArrayList<Integer>(view.size());
+      if (!(isNetworkPartition && quorumRequired)) {
         sendJoinResponses(newMembers, view);
       }
 
@@ -764,21 +765,26 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return;
     }
 
+    boolean viewContainsMyUnjoinedAddress = false;
+    if (!this.isJoined) {
+      // if we're still waiting for a join response and we're in this view we
+      // should install the view so join() can finish its work
+      for (InternalDistributedMember mbr: view.getMembers()) {
+        if (localAddress.compareTo(mbr) == 0) {
+          viewContainsMyUnjoinedAddress = true;
+          break;
+        }
+      }
+    }
+
     if (m.isPreparing()) {
       if (this.preparedView != null && this.preparedView.getViewId() >= view.getViewId()) {
         services.getMessenger().send(new ViewAckMessage(m.getSender(), this.preparedView));
       } else {
         this.preparedView = view;
         ackView(m);
-        if (!this.isJoined) {
-          // if we're still waiting for a join response and we're in this view we
-          // should install the view so join() can finish its work
-          for (InternalDistributedMember mbr: view.getMembers()) {
-            if (localAddress.compareTo(mbr) == 0) {
-              installView(view);
-              break;
-            }
-          }
+        if (viewContainsMyUnjoinedAddress) {
+          installView(view);
         }
       }
     } else { // !preparing
@@ -788,7 +794,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         if (!m.isRebroadcast()) { // no need to ack a rebroadcast view
           ackView(m);
         }
-        installView(view);
+        if (isJoined || viewContainsMyUnjoinedAddress) {
+          installView(view);
+        }
       }
     }
   }
@@ -1078,8 +1086,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       logger.info("received new view: {}\nold view is: {}", newView, currentView);
 
       if (currentView == null && !this.isJoined) {
+        boolean found = false;
         for (InternalDistributedMember mbr : newView.getMembers()) {
           if (this.localAddress.equals(mbr)) {
+            found = true;
             this.birthViewId = mbr.getVmViewId();
             this.localAddress.setVmViewId(this.birthViewId);
             GMSMember me = (GMSMember) this.localAddress.getNetMember();
@@ -1088,15 +1098,20 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             break;
           }
         }
+        if (!found) {
+          logger.info("rejecting view (not yet joined)");
+          return;
+        }
       }
 
-      if (isJoined && isNetworkPartition(newView)) {
+      if (isJoined && isNetworkPartition(newView, true)) {
         if (quorumRequired) {
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
           forceDisconnect(LocalizedStrings.Network_partition_detected.toLocalizedString(crashes.size(), crashes));
           return;
         }
       }
+      
       previousView = currentView;
       currentView = newView;
       preparedView = null;
@@ -1198,13 +1213,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /**
    * check to see if the new view shows a drop of 51% or more
    */
-  private boolean isNetworkPartition(NetView newView) {
+  private boolean isNetworkPartition(NetView newView, boolean logWeights) {
     if (currentView == null) {
       return false;
     }
     int oldWeight = currentView.memberWeight();
     int failedWeight = newView.getCrashedMemberWeight(currentView);
-    if (failedWeight > 0) {
+    if (failedWeight > 0 && logWeights) {
       if (logger.isInfoEnabled()
           && newView.getCreator().equals(localAddress)) { // view-creator logs this
         newView.logCrashedMemberWeights(currentView, logger);
@@ -1693,6 +1708,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               } finally {
                 waiting = false;
               }
+              if (shutdown || Thread.currentThread().isInterrupted()) {
+                return;
+              }
               if (viewRequests.size() == 1) {
                 // start the timer when we have only one request because
                 // concurrent startup / shutdown of multiple members is
@@ -1725,6 +1743,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             logger.info("View Creator is processing {} requests for the next membership view", requests.size());
             try {
               createAndSendView(requests);
+              if (shutdown) {
+                return;
+              }
             } catch (DistributedSystemDisconnectedException e) {
               shutdown = true;
             }
@@ -1876,10 +1897,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         mbr.setVmViewId(newView.getViewId());
         mbr.getNetMember().setSplitBrainEnabled(services.getConfig().isNetworkPartitionDetectionEnabled());
       }
+      
+      if (isShutdown()) {
+        return;
+      }
       // send removal messages before installing the view so we stop
       // getting messages from members that have been kicked out
       sendRemoveMessages(removalReqs, removalReasons, newView);
-
+      
       prepareAndSendView(newView, joinReqs, leaveReqs, newView.getCrashedMembers());
 
       return;
@@ -1896,7 +1921,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           return;
         }
 
-        if (quorumRequired && isNetworkPartition(newView)) {
+        if (quorumRequired && isNetworkPartition(newView, true)) {
           sendNetworkPartitionMessage(newView);
           try {
             Thread.sleep(LEAVE_MESSAGE_SLEEP_TIME);
@@ -1995,6 +2020,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       lastConflictingView = null;
 
       sendView(newView, joinReqs);
+      
+      // after sending a final view we need to stop this thread if
+      // the GMS is shutting down
+      if (isStopping()) {
+        shutdown = true;
+      }
     }
 
     /**

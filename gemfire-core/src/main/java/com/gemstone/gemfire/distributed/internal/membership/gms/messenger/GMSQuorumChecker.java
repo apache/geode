@@ -100,6 +100,11 @@ public class GMSQuorumChecker implements QuorumChecker {
     channel.setReceiver(null);
     channel.setReceiver(new QuorumCheckerReceiver());
   }
+  
+  @Override
+  public NetView getView() {
+    return this.lastView;
+  }
 
   @Override
   public Object getMembershipInfo() {
@@ -238,6 +243,10 @@ public class GMSQuorumChecker implements QuorumChecker {
         receivedAcks.add(memberAddr);
       }
     }
+  }
+  
+  public String toString() {
+    return getClass().getSimpleName() + " on view " + this.lastView;
   }
 
 }

@@ -1,17 +1,29 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.SocketException;
 
+import org.jgroups.Address;
+import org.jgroups.Message;
 import org.jgroups.protocols.UDP;
 import org.jgroups.util.DefaultThreadFactory;
 import org.jgroups.util.LazyThreadFactory;
+import org.jgroups.util.Util;
 
 public class Transport extends UDP {
 
   /**
    * This is the initial part of the name of all JGroups threads that deliver messages
    */
-  public static final String PRECIOUS_THREAD_NAME_PREFIX = "Geode UDP";
+  public static final String THREAD_POOL_NAME_PREFIX = "Geode UDP";
+  
+  private JGroupsMessenger messenger;
+  
+  public void setMessenger(JGroupsMessenger m) {
+    messenger = m;
+  }
   
   /*
    * (non-Javadoc)
@@ -43,6 +55,39 @@ public class Transport extends UDP {
     }
   }
 
+  /*
+   * (non-Javadoc)
+   * copied from JGroups to perform Geode-specific error handling when there
+   * is a network partition
+   * @see org.jgroups.protocols.TP#_send(org.jgroups.Message, org.jgroups.Address)
+   */
+  @Override
+  protected void _send(Message msg, Address dest) {
+    try {
+        send(msg, dest);
+    }
+    catch(InterruptedIOException iex) {
+    }
+    catch(InterruptedException interruptedEx) {
+        Thread.currentThread().interrupt(); // let someone else handle the interrupt
+    }
+    catch(SocketException e) {
+      log.error("Exception caught while sending message", e);
+//        log.trace(Util.getMessage("SendFailure"),
+//                  local_addr, (dest == null? "cluster" : dest), msg.size(), e.toString(), msg.printHeaders());
+    }
+    catch (IOException e) {
+      if (messenger != null
+          /*&& e.getMessage().contains("Operation not permitted")*/) { // this is the english Oracle JDK exception condition we really want to catch
+        messenger.handleJGroupsIOException(e, msg, dest);
+      }
+    }
+    catch(Throwable e) {
+        log.error("Exception caught while sending message", e);
+//        Util.getMessage("SendFailure"),
+//                  local_addr, (dest == null? "cluster" : dest), msg.size(), e.toString(), msg.printHeaders());
+    }
+}
     
   /*
    * (non-Javadoc)
@@ -54,10 +99,10 @@ public class Transport extends UDP {
   @Override
   public void init() throws Exception {
     global_thread_factory=new DefaultThreadFactory("Geode ", true);
-    timer_thread_factory=new LazyThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " Timer", true, true);
-    default_thread_factory=new DefaultThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " Incoming", true, true);
-    oob_thread_factory=new DefaultThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " OOB", true, true);
-    internal_thread_factory=new DefaultThreadFactory(PRECIOUS_THREAD_NAME_PREFIX + " INT", true, true);
+    timer_thread_factory=new LazyThreadFactory(THREAD_POOL_NAME_PREFIX + " Timer", true, true);
+    default_thread_factory=new DefaultThreadFactory(THREAD_POOL_NAME_PREFIX + " Incoming", true, true);
+    oob_thread_factory=new DefaultThreadFactory(THREAD_POOL_NAME_PREFIX + " OOB", true, true);
+    internal_thread_factory=new DefaultThreadFactory(THREAD_POOL_NAME_PREFIX + " INT", true, true);
     super.init();
   }
 

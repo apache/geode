@@ -48,4 +48,9 @@ public interface QuorumChecker {
    * to the one that is reconnecting.
    */
   public Object getMembershipInfo();
+  
+  /**
+   * Returns the membership view that is being used to establish a quorum
+   */
+  public NetView getView();
 }

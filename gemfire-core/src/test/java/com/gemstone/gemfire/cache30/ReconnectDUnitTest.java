@@ -48,6 +48,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ReconnectListener;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -432,6 +433,9 @@ public class ReconnectDUnitTest extends CacheTestCase
           fail("interrupted while waiting for reconnect");
         }
         assertTrue("expected system to be reconnected", ds.getReconnectedSystem() != null);
+        int viewId = MembershipManagerHelper.getMembershipManager(ds.getReconnectedSystem()).getView().getViewId();
+        int memberViewId = ((InternalDistributedMember)ds.getReconnectedSystem().getDistributedMember()).getVmViewId();
+        assertEquals("expected a new ID to be assigned", viewId, memberViewId);
         return ds.getReconnectedSystem().getDistributedMember();
       }
     });

@@ -478,10 +478,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       return true;
     }
     try {
-      // establish TCP connection
-//      for (Map.Entry<InternalDistributedMember, InetSocketAddress> entry : socketInfo.entrySet()) {
-//        logger.info("socketInfo member:" + entry.getKey() + " port:" + entry.getValue().getPort());
-//      }
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, suspectMember.getInetAddress(), port);
       clientSocket = SocketCreator.getDefaultInstance().connect(suspectMember.getInetAddress(), port,
           (int)memberTimeout, new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
@@ -626,7 +622,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       serverSocket = new ServerSocket();
       serverSocket.bind(new InetSocketAddress(socketAddress, socketPort));
     } catch (IOException e) {
-      throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range");
+      throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range", e);
     }
 
     serverSocketExecutor.execute(new Runnable() {
@@ -712,6 +708,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           HeartbeatMessage message = new HeartbeatMessage(-1);
           message.setRecipient(coordinator);
           try {
+            if (isStopping) {
+              return;
+            }
             services.getMessenger().sendUnreliably(message);
           } catch (CancelException e) {
             return;
@@ -731,6 +730,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }
           if (mbr.equals(coordinator)) {
             continue;
+          }
+          if (isStopping) {
+            return;
           }
           HeartbeatMessage message = new HeartbeatMessage(-1);
           message.setRecipient(mbr);
@@ -921,13 +923,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public void beSick() {
     this.beingSick = true;
-    initiateSuspicion(localAddress, "beSick invoked on GMSHealthMonitor");
   }
 
   @Override
   public void playDead() {
     this.playingDead = true;
-    initiateSuspicion(localAddress, "playDead invoked on GMSHealthMonitor");
   }
 
   @Override

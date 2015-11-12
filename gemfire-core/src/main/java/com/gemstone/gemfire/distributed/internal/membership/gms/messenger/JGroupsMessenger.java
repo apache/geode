@@ -1,6 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
@@ -63,6 +64,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
@@ -122,8 +124,13 @@ public class JGroupsMessenger implements Messenger {
   
   private volatile long pongsReceived;
   
-  private byte[] serializedNetMember;
-  
+  /**
+   * A set that contains addresses that we have logged JGroups IOExceptions for in the
+   * current membership view and possibly initiated suspect processing.  This
+   * reduces the amount of suspect processing initiated by IOExceptions and the
+   * amount of exceptions logged
+   */
+  private Set<Address> addressesWithioExceptionsProcessed = Collections.synchronizedSet(new HashSet<Address>());
   
   static {
     // register classes that we've added to jgroups that are put on the wire
@@ -282,6 +289,9 @@ public class JGroupsMessenger implements Messenger {
     if (sr != null) {
       sr.setDMStats(services.getStatistics());
     }
+    
+    Transport transport = (Transport)myChannel.getProtocolStack().getTransport();
+    transport.setMessenger(this);
 
     try {
       myChannel.setReceiver(null);
@@ -360,9 +370,43 @@ public class JGroupsMessenger implements Messenger {
     View jgv = new View(vid, new ArrayList<Address>(mbrs));
     logger.trace("installing JGroups view: {}", jgv);
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
+
+    addressesWithioExceptionsProcessed.clear();
   }
   
 
+  /**
+   * If JGroups is unable to send a message it may mean that the network
+   * is down.  If so we need to initiate suspect processing on the
+   * recipient.<p>
+   * see Transport._send()
+   */
+  public void handleJGroupsIOException(IOException e, Message msg, Address dest) {
+    if (addressesWithioExceptionsProcessed.contains(dest)) {
+      return;
+    }
+    addressesWithioExceptionsProcessed.add(dest);
+    logger.info("processing JGroups IOException: " + e.getMessage());
+    NetView v = this.view;
+    JGAddress jgMbr = (JGAddress)dest;
+    if (v != null) {
+      List<InternalDistributedMember> members = v.getMembers();
+      InternalDistributedMember recipient = null;
+      for (InternalDistributedMember mbr: members) {
+        GMSMember gmsMbr = ((GMSMember)mbr.getNetMember());
+        if (jgMbr.getUUIDLsbs() == gmsMbr.getUuidLSBs()
+            && jgMbr.getUUIDMsbs() == gmsMbr.getUuidMSBs()
+            && jgMbr.getVmViewId() == gmsMbr.getVmViewId()) {
+          recipient = mbr;
+          break;
+        }
+      }
+      if (recipient != null) {
+        services.getHealthMonitor().checkIfAvailable(recipient,
+            "Unable to send messages to this member via JGroups", true);
+      }
+    }
+  }
   
   private void establishLocalAddress() {
     UUID logicalAddress = (UUID)myChannel.getAddress();
@@ -753,10 +797,19 @@ public class JGroupsMessenger implements Messenger {
       }
       
       GMSMember m = DataSerializer.readObject(dis);
-      sender = getMemberFromView(m, ordinal);
 
       result = DataSerializer.readObject(dis);
       if (result instanceof DistributionMessage) {
+        DistributionMessage dm = (DistributionMessage)result;
+        // JoinRequestMessages are sent with an ID that may have been
+        // reused from a previous life by way of auto-reconnect,
+        // so we don't want to find a canonical reference for the
+        // request's sender ID
+        if (dm.getDSFID() == JOIN_REQUEST) {
+          sender = ((JoinRequestMessage)dm).getMemberID();
+        } else {
+          sender = getMemberFromView(m, ordinal);
+        }
         ((DistributionMessage)result).setSender(sender);
       }
       
