@@ -105,8 +105,6 @@ public abstract class CacheTestCase extends DistributedTestCase {
     synchronized(CacheTestCase.class) {
       try {
         System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        System.setProperty("gemfire.log-level", "debug");
-        System.setProperty("gemfire.log-file", "cache-server.log");
         Cache c;
         if (client) {
           c = (Cache)new ClientCacheFactory(getSystem().getProperties()).create();
