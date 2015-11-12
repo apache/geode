@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -41,7 +40,6 @@ import org.jgroups.util.UUID;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -55,7 +53,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Heartbe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.ConnectionWatcher;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
@@ -614,13 +611,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     // socket port and joining the system
     socketAddress = localAddress.getInetAddress();
     int[] portRange = services.getConfig().getMembershipPortRange();            
-    socketPort = AvailablePort.getAvailablePortInRange(portRange[0], portRange[1], AvailablePort.SOCKET);
-    if (socketPort == -1) {
-      throw new SystemConnectException("Unable to find a free port in the membership port range");
-    }
     try {
-      serverSocket = new ServerSocket();
-      serverSocket.bind(new InetSocketAddress(socketAddress, socketPort));
+      serverSocket = SocketCreator.getDefaultInstance().createServerSocketUsingPortRange(socketAddress, 50/*backlog*/, true/*isBindAddress*/, false/*useNIO*/, 65536/*tcpBufferSize*/, portRange);
+      socketPort = serverSocket.getLocalPort();
     } catch (IOException e) {
       throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range", e);
     }
