@@ -1100,6 +1100,9 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       }
       this.enqueuedAllTempQueueEvents = false;
     }
+    
+    statistics.setQueueSize(0);
+    statistics.setTempQueueSize(0);
   }
   
   public Object getSubstituteValue(EntryEventImpl clonedEvent, EnumListenerEvent operation) {
