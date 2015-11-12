@@ -115,6 +115,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
     stopMonitoring(false);
   }
   public void stopMonitoring(boolean waitForThread) {
+    Thread threadToWaitFor = null;
     synchronized (this) {
       if (!this.started) {
         return;
@@ -126,16 +127,18 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
       synchronized (this.offHeapMemoryUsageListener) {
         this.offHeapMemoryUsageListener.notifyAll();
       }
-
-      if (waitForThread && this.memoryListenerThread != null) {
-        try {
-          this.memoryListenerThread.join();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
+      if (waitForThread) {
+        threadToWaitFor = this.memoryListenerThread;
       }
       this.memoryListenerThread = null;
       this.started = false;
+    }
+    if (threadToWaitFor != null) {
+      try {
+        threadToWaitFor.join();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
