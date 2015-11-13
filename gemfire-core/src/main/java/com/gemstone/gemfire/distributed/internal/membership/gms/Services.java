@@ -333,7 +333,7 @@ public class Services {
     return !getConfig().getDistributionConfig().getDisableAutoReconnect();
   }
   
-  public static class Stopper extends CancelCriterion {
+  public class Stopper extends CancelCriterion {
     volatile String reasonForStopping = null;
     
     public void cancel(String reason) {
@@ -342,6 +342,8 @@ public class Services {
 
     @Override
     public String cancelInProgress() {
+      if(Services.this.shutdownCause != null)
+        return Services.this.shutdownCause.toString();
       return reasonForStopping;
     }
     
@@ -357,9 +359,9 @@ public class Services {
       }
       else {
         if (e == null) {
-          return new DistributedSystemDisconnectedException(reasonForStopping);
+          return new DistributedSystemDisconnectedException(reason);
         } else {
-          return new DistributedSystemDisconnectedException(reasonForStopping, e);
+          return new DistributedSystemDisconnectedException(reason, e);
         }
       }
     }
