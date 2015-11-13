@@ -131,8 +131,12 @@ public class ProcessManager {
         try {
           String line = reader.readLine();
           while(line != null) {
-            out.print(vmName);
-            out.println(line);
+            if (line.length() == 0) {
+              out.println();
+            } else {
+              out.print(vmName);
+              out.println(line);
+            }
             line = reader.readLine();
           }
         } catch(Exception e) {

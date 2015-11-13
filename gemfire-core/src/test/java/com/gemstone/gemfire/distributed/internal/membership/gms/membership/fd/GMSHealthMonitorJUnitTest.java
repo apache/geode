@@ -106,8 +106,11 @@ public class GMSHealthMonitorJUnitTest {
   public void testHMServiceStarted() throws IOException {
 
     InternalDistributedMember mbr = new InternalDistributedMember(SocketCreator.getLocalHost(), 12345);
+    mbr.setVmViewId(1);
     when(messenger.getMemberID()).thenReturn(mbr);
     gmsHealthMonitor.started();
+    
+    NetView v = new NetView(mbr, 1, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
     gmsHealthMonitor.processMessage(new HeartbeatRequestMessage(mbr, 1));
     verify(messenger, atLeastOnce()).send(any(HeartbeatMessage.class));

@@ -1856,6 +1856,7 @@ public class Connection implements Runnable {
             continue;
           }
           if (amt < 0) {
+            initiateSuspicionIfSharedUnordered();
             this.readerShuttingDown = true;
             try {
               requestClose("SocketChannel.read returned EOF");
@@ -1893,14 +1894,14 @@ public class Connection implements Runnable {
         }
         catch (ClosedChannelException e) {
           this.readerShuttingDown = true;
-          initiateSuspicionIfShared();
+          initiateSuspicionIfSharedUnordered();
           try { 
             requestClose(LocalizedStrings.Connection_CLOSEDCHANNELEXCEPTION_IN_CHANNEL_READ_0.toLocalizedString(e));
           } catch (Exception ex) {}
           return;
         }
         catch (IOException e) {
-          initiateSuspicionIfShared();
+          initiateSuspicionIfSharedUnordered();
           if (! isSocketClosed()
                 && !"Socket closed".equalsIgnoreCase(e.getMessage()) // needed for Solaris jdk 1.4.2_08
                 ) {
@@ -1924,7 +1925,7 @@ public class Connection implements Runnable {
           if (!stopped && ! isSocketClosed() ) {
             logger.fatal(LocalizedMessage.create(LocalizedStrings.Connection_0_EXCEPTION_IN_CHANNEL_READ, p2pReaderName()), e);
           }
-          initiateSuspicionIfShared();
+          initiateSuspicionIfSharedUnordered();
           this.readerShuttingDown = true;
           try { 
             requestClose(LocalizedStrings.Connection_0_EXCEPTION_IN_CHANNEL_READ.toLocalizedString(e)); 
@@ -1946,11 +1947,12 @@ public class Connection implements Runnable {
   }
 
   /** initiate suspect processing if a shared/ordered connection is lost and we're not shutting down */
-  private void initiateSuspicionIfShared() {
-    if (this.isReceiver && this.handshakeRead && this.preserveOrder && this.sharedResource) {
+  private void initiateSuspicionIfSharedUnordered() {
+    if (this.isReceiver && this.handshakeRead && !this.preserveOrder && this.sharedResource) {
       if (this.owner.getConduit().getCancelCriterion().cancelInProgress() == null) {
-            this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
-            "member shut down shared/ordered connection");
+        String reason = "member shut down shared unordered connection";
+        this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
+            reason);
       }
     }
   }
@@ -2089,6 +2091,7 @@ public class Connection implements Runnable {
         }
         int len = 0;
         if (readFully(input, lenbytes, lenbytes.length) < 0) {
+          initiateSuspicionIfSharedUnordered();
           stopped = true;
           continue;
         }
@@ -2445,7 +2448,7 @@ public class Connection implements Runnable {
         this.stopped = true;
       }
       catch (IOException io) {
-        initiateSuspicionIfShared();
+        initiateSuspicionIfSharedUnordered();
         boolean closed = isSocketClosed()
                 || "Socket closed".equalsIgnoreCase(io.getMessage()); // needed for Solaris jdk 1.4.2_08
         if (!closed) {
@@ -2479,7 +2482,7 @@ public class Connection implements Runnable {
         if (!stopped && !(e instanceof InterruptedException) ) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.Connection_0_EXCEPTION_RECEIVED, p2pReaderName()), e);
         }
-        initiateSuspicionIfShared();
+        initiateSuspicionIfSharedUnordered();
         if (isSocketClosed()) {
           stopped = true;
         }

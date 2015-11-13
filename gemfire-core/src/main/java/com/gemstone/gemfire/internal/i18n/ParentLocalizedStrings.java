@@ -719,7 +719,7 @@ class ParentLocalizedStrings {
   public static final StringId Invalid_0_INVALID_MESSAGE_TYPE_WITH_TX_1_FROM_2 = new StringId(1711, "{0}: INVALID message type with tx: {1} from {2}");
   // ok to reuse 1712
   public static final StringId JCAConnectionManagerImpl_EXCEPTION_CAUGHT_WHILE_INITIALIZING = new StringId(1713, "JCAConnectionManagerImpl::Constructor: An exception was caught while initialising due to {0}" );
-  public static final StringId GroupMembershipService_CONNECTED_TO_JGROUPS_CHANNEL_TOOK__0__MS = new StringId(1714, "Connected to Jgroups channel (took  {0}  ms)");
+  public static final StringId GroupMembershipService_JOINED_TOOK__0__MS = new StringId(1714, "Joined the distributed system (took  {0}  ms)");
   public static final StringId GroupMembershipService_FAILED_TO_SEND_MESSAGE_0_TO_MEMBER_1_VIEW_2 = new StringId(1715, "Failed to send message <{0}> to member <{1}> view = {2}");
   // ok to reuse 1716
   // ok to reuse 1717
@@ -1807,8 +1807,8 @@ class ParentLocalizedStrings {
   public static final StringId InvalidateMessage_FAILED_SENDING_0 = new StringId(2798, "Failed sending < {0} >");
   public static final StringId InvalidateMessage_NO_RESPONSE_CODE_RECEIVED = new StringId(2799, "no response code received");
   public static final StringId JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPLALLOCATECONNECTIONNO_VALID_CONNECTION_AVAILABLE = new StringId(2800, "JCAConnectionManagerImpl::allocateConnection::No valid Connection available");
-  public static final StringId JGroupMemberFactory_UNABLE_TO_CREATE_MEMBERSHIP_MANAGER = new StringId(2801, "Unable to create membership manager");
-  public static final StringId JGroupMember_JGROUPMEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES = new StringId(2802, "JGroupMember.compareTo(): comparison between different classes");
+  public static final StringId MemberFactory_UNABLE_TO_CREATE_MEMBERSHIP_MANAGER = new StringId(2801, "Unable to create membership manager");
+  public static final StringId Member_MEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES = new StringId(2802, "NetMember.compareTo(): comparison between different classes");
   public static final StringId GroupMembershipService_CANNOT_FIND_0 = new StringId(2803, "Cannot find  {0}");
   public static final StringId GroupMembershipService_CHANNEL_CLOSED = new StringId(2804, "Channel closed");
   public static final StringId GroupMembershipService_CHANNEL_FAILURE = new StringId(2805, "Channel failure");

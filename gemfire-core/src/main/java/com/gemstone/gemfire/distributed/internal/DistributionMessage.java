@@ -234,7 +234,7 @@ public abstract class DistributionMessage
    * direct-channel.  This is typically only done for messages that are
    * broadcast to the full membership set.
    */
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return false;
   }
   /**

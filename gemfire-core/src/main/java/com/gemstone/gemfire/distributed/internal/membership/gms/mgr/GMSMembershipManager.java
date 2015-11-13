@@ -29,7 +29,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
-import org.jgroups.JChannel;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.ForcedDisconnectException;
@@ -108,11 +107,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
   private volatile QuorumChecker quorumChecker;
   
   /**
-   * thread-local used to force use of JGroups for communications, usually to
+   * thread-local used to force use of Messenger for communications, usually to
    * avoid deadlock when conserve-sockets=true.  Use of this should be removed
    * when connection pools are implemented in the direct-channel 
    */
-  private ThreadLocal<Boolean> forceUseJGroups = new ThreadLocal<Boolean>();
+  private ThreadLocal<Boolean> forceUseUDPMessaging = new ThreadLocal<Boolean>();
   
   /**
    * Trick class to make the startup synch more
@@ -268,7 +267,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   /**
    * This is the latest view (ordered list of DistributedMembers) 
-   * that has been returned from Jgroups
+   * that has been installed
    * 
    * All accesses to this object are protected via {@link #latestViewLock}
    */
@@ -302,8 +301,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   volatile boolean isJoining;
   
-  /** has the jgroups channel been connected successfully? */
-  volatile boolean hasConnected;
+  /** have we joined successfully? */
+  volatile boolean hasJoined;
   
   /**
    * a map keyed on InternalDistributedMember, values are Stubs that represent direct
@@ -340,7 +339,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   /**
    * Members that have sent a shutdown message.  This is used to suppress
-   * suspect processing in JGroups that otherwise becomes pretty aggressive 
+   * suspect processing that otherwise becomes pretty aggressive 
    * when a member is shutting down.
    */
   private final Map shutdownMembers = new BoundedLinkedHashMap(1000);
@@ -356,7 +355,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   /**
    * The identities and birth-times of others that we have allowed into
    * membership at the distributed system level, but have not yet appeared
-   * in a jgroups view.
+   * in a view.
    * <p>
    * Keys are instances of {@link InternalDistributedMember}, values are 
    * Longs indicating the time this member was shunned.
@@ -415,7 +414,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   protected volatile boolean processingEvents = false;
   
   /**
-   * This is the latest viewId received from JGroups
+   * This is the latest viewId installed
    */
   long latestViewId = -1;
   
@@ -595,7 +594,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       for (int i = 0; i < newView.getMembers().size(); i++) { // additions
         InternalDistributedMember m = (InternalDistributedMember)newView.getMembers().get(i);
         
-        // Once a member has been seen via JGroups, remove them from the
+        // Once a member has been seen via a view, remove them from the
         // newborn set
         boolean wasSurprise = surpriseMembers.remove(m) != null;
         
@@ -678,7 +677,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         }
         
         if (surpriseMembers.containsKey(m)) {
-          continue; // member has not yet appeared in JGroups view
+          continue; // member has not yet appeared in a view
         }
 
         try {
@@ -686,7 +685,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
               LocalizedStrings.GroupMembershipService_MEMBERSHIP_PROCESSING_DEPARTING_MEMBER__0_, m));
           removeWithViewLock(m,
               newView.getCrashedMembers().contains(m) || suspectedMembers.containsKey(m)
-              , "departed JGroups view");
+              , "departed membership view");
         }
         catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
@@ -797,7 +796,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         long delta = System.currentTimeMillis() - start;
 
         logger.info(LogMarker.DISTRIBUTION, LocalizedMessage.create(
-            LocalizedStrings.GroupMembershipService_CONNECTED_TO_JGROUPS_CHANNEL_TOOK__0__MS, delta));
+            LocalizedStrings.GroupMembershipService_JOINED_TOOK__0__MS, delta));
 
         NetView initialView = services.getJoinLeave().getView();
         latestView = new NetView(initialView, initialView.getViewId());
@@ -810,7 +809,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         if (ex.getCause() != null && ex.getCause().getCause() instanceof SystemConnectException) {
           throw (SystemConnectException)(ex.getCause().getCause());
         }
-        throw new DistributionException(LocalizedStrings.GroupMembershipService_AN_EXCEPTION_WAS_THROWN_WHILE_CONNECTING_TO_JGROUPS.toLocalizedString(), ex);
+        throw new DistributionException(LocalizedStrings.GroupMembershipService_AN_EXCEPTION_WAS_THROWN_WHILE_JOINING.toLocalizedString(), ex);
       }
       finally {
         this.isJoining = false;
@@ -899,7 +898,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       stubToMemberMap.put(stub, address);
     }
 
-    this.hasConnected = true;
+    this.hasJoined = true;
 
     // in order to debug startup issues we need to announce the membership
     // ID as soon as we know it
@@ -1078,7 +1077,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   /**
    * Logic for handling a direct connection event (message received
-   * from a member not in the JGroups view).  Does not employ the
+   * from a member not in the view).  Does not employ the
    * startup queue.
    * <p>
    * Must be called with {@link #latestViewLock} held.  Waits
@@ -1131,7 +1130,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
 
       // Adding him to this set ensures we won't remove him if a new
-      // JGroups view comes in and he's still not visible.
+      // view comes in and he's still not visible.
       surpriseMembers.put(member, Long.valueOf(System.currentTimeMillis()));
 
       if (shutdownInProgress()) {
@@ -1185,7 +1184,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
         // However, we put the new member at the end of the list.  This
         // should ensure he's not chosen as an elder.
-        // This will get corrected when he finally shows up in the JGroups
+        // This will get corrected when he finally shows up in the
         // view.
         NetView newMembers = new NetView(latestView, latestView.getViewId());
         newMembers.add(member);
@@ -1336,7 +1335,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   protected void handleOrDeferViewEvent(NetView viewArg) {
     if (this.isJoining) {
-      // bug #44373 - queue all view messages while connecting the jgroups channel.
+      // bug #44373 - queue all view messages while joining.
       // This is done under the latestViewLock, but we can't block here because
       // we're sitting in the UDP reader thread.
       synchronized(startupLock) {
@@ -1353,7 +1352,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         }
       }
       // view processing can take a while, so we use a separate thread
-      // to avoid blocking the jgroups stack
+      // to avoid blocking a reader thread
       NetView newView = viewArg;
       long newId = viewArg.getViewId();
       if (logger.isTraceEnabled(LogMarker.DM_VIEWS)) {
@@ -1660,8 +1659,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   protected static volatile boolean inhibitForceDisconnectLogging;
   
   /**
-   * Ensure that the critical classes from JGroups and the TCP conduit
-   * implementation get loaded.
+   * Ensure that the critical classes from components
+   * get loaded.
    * 
    * @see SystemFailure#loadEmergencyClasses()
    */
@@ -1897,7 +1896,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   public void suspectMember(DistributedMember mbr, String reason) {
-    if (mbr != null && !this.shutdownMembers.containsKey(mbr)) {
+    if (!this.shutdownInProgress && !this.shutdownMembers.containsKey(mbr)) {
       this.services.getHealthMonitor().suspect((InternalDistributedMember)mbr, reason);
     }
   }
@@ -2032,7 +2031,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @see com.gemstone.gemfire.distributed.internal.membership.MembershipManager#isConnected()
    */
   public boolean isConnected() {
-    return (this.hasConnected && !this.shutdownInProgress); 
+    return (this.hasJoined && !this.shutdownInProgress); 
   }
   
   /**
@@ -2040,9 +2039,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * Otherwise returns false.
    */
   public boolean isReconnectingDS() {
-    if (this.hasConnected) {
-      // if the jgroups channel has been connected then we aren't in the
-      // middle of a reconnect attempt in this instance of the distributed system
+    if (this.hasJoined) {
       return false;
     } else {
       return this.wasReconnectingSystem;
@@ -2068,10 +2065,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     ((GMSQuorumChecker)checker).suspend();
     InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
     if (system == null || !system.isConnected()) {
-      JChannel channel = (JChannel)checker.getMembershipInfo();
-      if (channel != null  &&  !channel.isClosed()) {
-        channel.close();
-      }
+      checker.close();
     }
   }
   
@@ -2145,9 +2139,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
       useMcast = (msg.getMulticast() || allDestinations);
     }
     
-    boolean sendViaJGroups = isForceUDPCommunications(); // enable when bug #46438 is fixed: || msg.sendViaJGroups();
+    boolean sendViaMessenger = isForceUDPCommunications(); // enable when bug #46438 is fixed: || msg.sendViaUDP();
 
-    if (useMcast || tcpDisabled || sendViaJGroups) {
+    if (useMcast || tcpDisabled || sendViaMessenger) {
       result = services.getMessenger().send(msg);
     }
     else {
@@ -2165,11 +2159,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
   // MembershipManager method
   @Override
   public void forceUDPMessagingForCurrentThread() {
-    forceUseJGroups.set(null);
+    forceUseUDPMessaging.set(null);
   }
   
   private boolean isForceUDPCommunications() {
-    Boolean forced = forceUseJGroups.get();
+    Boolean forced = forceUseUDPMessaging.get();
     return forced == Boolean.TRUE;
   }
 

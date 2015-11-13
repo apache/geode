@@ -64,7 +64,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   }
 
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

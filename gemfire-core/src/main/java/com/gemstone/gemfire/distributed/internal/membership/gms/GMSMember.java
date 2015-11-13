@@ -217,7 +217,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     }
     // obligatory type check
     if (o == null || !(o instanceof GMSMember) ) {
-      throw new ClassCastException(LocalizedStrings.JGroupMember_JGROUPMEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES.toLocalizedString());
+      throw new ClassCastException(LocalizedStrings.Member_MEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES.toLocalizedString());
     }
     byte[] myAddr = inetAddr.getAddress();
     GMSMember his = (GMSMember)o;

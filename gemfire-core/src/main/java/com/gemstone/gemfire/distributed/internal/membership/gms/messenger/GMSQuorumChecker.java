@@ -91,8 +91,14 @@ public class GMSQuorumChecker implements QuorumChecker {
 
   @Override
   public void suspend() {
-    // TODO Auto-generated method stub
-
+    // NO-OP for this implementation
+  }
+  
+  @Override
+  public void close() {
+    if (channel != null  &&  !channel.isClosed()) {
+      channel.close();
+    }
   }
 
   @Override

@@ -347,7 +347,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public boolean sendViaJGroups() {
+    public boolean sendViaUDP() {
       return true;
     }
     
@@ -807,7 +807,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public boolean sendViaJGroups() {
+    public boolean sendViaUDP() {
       return true;
     }
     

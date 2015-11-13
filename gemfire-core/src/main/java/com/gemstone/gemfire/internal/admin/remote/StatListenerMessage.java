@@ -85,7 +85,7 @@ public final class StatListenerMessage extends PooledDistributionMessage
   }
 
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

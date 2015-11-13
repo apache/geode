@@ -977,11 +977,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     
     // only respond if the intended recipient is this member
     InternalDistributedMember me = localAddress;
-    // TODO the first part of this check should be removed.
-    // because a restarted server will probably have the same
-    // membership port as it had in its last incarnation, causing
-    // delays in removing the old member ID from the view.
-    if (me.getVmViewId() < 0 || m.getTarget().equals(me)) {
+
+    if (me.getVmViewId() >= 0  &&  m.getTarget().equals(me)) {
       HeartbeatMessage prm = new HeartbeatMessage(m.getRequestId());
       prm.setRecipient(m.getSender());
       Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(prm);

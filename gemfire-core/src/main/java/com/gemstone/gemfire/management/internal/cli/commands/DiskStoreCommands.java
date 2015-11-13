@@ -1189,7 +1189,10 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       }
       
       //Pass any java options on to the command
-      commandList.add(System.getenv("JAVA_OPTS"));
+      String opts = System.getenv("JAVA_OPTS");
+      if (opts != null) {
+        commandList.add(opts);
+      }
       commandList.add("-classpath");
       commandList.add(System.getProperty("java.class.path", "."));
       commandList.add(DiskStoreValidater.class.getName());
@@ -1219,6 +1222,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       return ResultBuilder
           .createGemFireErrorResult(CliStrings.format(CliStrings.VALIDATE_DISK_STORE__MSG__IO_ERROR,diskStoreName, ex.getMessage() ));
     } catch (Exception ex) {
+//      StringPrintWriter s = new StringPrintWriter();
+//      ex.printStackTrace(s);
       return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.VALIDATE_DISK_STORE__MSG__ERROR,diskStoreName, ex.getMessage()));
     }
 

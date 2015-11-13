@@ -154,7 +154,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     public JmxManagerProfileMessage() {}
     
     @Override
-    public boolean sendViaJGroups() {
+    public boolean sendViaUDP() {
       return true;
     }
 

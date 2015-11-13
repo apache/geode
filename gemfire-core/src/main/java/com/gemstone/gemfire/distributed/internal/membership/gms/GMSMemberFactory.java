@@ -116,7 +116,7 @@ public class GMSMemberFactory implements MemberServices {
       services.start();
     }
     catch (ConnectionException e) {
-      throw new DistributionException(LocalizedStrings.JGroupMemberFactory_UNABLE_TO_CREATE_MEMBERSHIP_MANAGER.toLocalizedString(), e);
+      throw new DistributionException(LocalizedStrings.MemberFactory_UNABLE_TO_CREATE_MEMBERSHIP_MANAGER.toLocalizedString(), e);
     }
     catch (GemFireConfigException
         | SystemConnectException

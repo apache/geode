@@ -67,7 +67,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId MessageFactory_COULD_NOT_ACCESS_ZEROARG_CONSTRUCTOR_OF_0 = new StringId(3435, "Could not access zero-arg constructor of  {0}");
   public static final StringId GroupMembershipService_AN_IOEXCEPTION_WAS_THROWN_WHILE_OPENING_0 = new StringId(3436, "An IOException was thrown while opening \"{0}\"");
   public static final StringId GroupMembershipService_AN_EXCEPTION_WAS_THROWN_WHILE_READING_JGROUPS_CONFIG = new StringId(3437, "An Exception was thrown while reading JGroups config.");
-  public static final StringId GroupMembershipService_AN_EXCEPTION_WAS_THROWN_WHILE_CONNECTING_TO_JGROUPS = new StringId(3438, "An Exception was thrown while connecting to Jgroups.");
+  public static final StringId GroupMembershipService_AN_EXCEPTION_WAS_THROWN_WHILE_JOINING = new StringId(3438, "An Exception was thrown while attempting to join the distributed system.");
   public static final StringId InternalInstantiator_CANNOT_UNREGISTER_A_NULL_CLASS = new StringId(3439, "Cannot unregister a null class");
   public static final StringId StatisticDescriptorImpl_THE_STATISTIC_0_WITH_ID_1_IS_OF_TYPE_2_AND_IT_WAS_EXPECTED_TO_BE_AN_INT = new StringId(3440, "The statistic  {0}  with id  {1}  is of type  {2}  and it was expected to be an int.");
   public static final StringId StatisticDescriptorImpl_THE_STATISTIC_0_WITH_ID_1_IS_OF_TYPE_2_AND_IT_WAS_EXPECTED_TO_BE_A_DOUBLE = new StringId(3441, "The statistic  {0}  with id  {1}  is of type  {2}  and it was expected to be a double.");
@@ -188,7 +188,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId MemberAttributes_IOEXCEPTION_ON_A_BYTE_ARRAY_0 = new StringId(3553, "IOException on a byte array:  {0}");
   public static final StringId MemberAttributes_CLASSNOTFOUNDEXCEPTION_IN_DESERIALIZATION_0 = new StringId(3554, "ClassNotFoundException in deserialization:  {0}");
   public static final StringId GroupMembershipService_UNKNOWN_STARTUP_EVENT_0 = new StringId(3555, "unknown startup event:  {0}");
-  public static final StringId JGroupMember_ATTEMPT_TO_EXTERNALIZE_NULL_IP_ADDRESS = new StringId(3556, "attempt to externalize null ip address");
+  // 3556 available for reuse
   public static final StringId UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY = new StringId(3557, "unknown deserialization policy");
   public static final StringId UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY_0 = new StringId(3558, "unknown deserialization policy:  {0}");
   public static final StringId QueuedOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED = new StringId(3559, "CacheWriter should not be called");

@@ -222,7 +222,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       long locatorGiveUpTime = startTime + locatorWaitTime;
       long giveupTime = startTime + timeout;
 
-      for (int tries=0; !this.isJoined; tries++) {
+      for (int tries=0; !this.isJoined && !this.isStopping; tries++) {
         logger.debug("searching for the membership coordinator");
         boolean found = findCoordinator();
         if (found) {
@@ -487,6 +487,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     if (v != null && !v.contains(incomingRequest.getSender())) {
       logger.info("Membership ignoring removal request for " + mbr + " from non-member " + incomingRequest.getSender());
+      return;
+    }
+    
+    if (v == null) {
+      // not yet a member
       return;
     }
 
@@ -1103,7 +1108,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           return;
         }
       }
-
+      
       if (isJoined && isNetworkPartition(newView, true)) {
         if (quorumRequired) {
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
@@ -1352,6 +1357,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   @Override
   public void memberShutdown(DistributedMember mbr, String reason) {
     LeaveRequestMessage msg = new LeaveRequestMessage(Collections.singleton(this.localAddress), (InternalDistributedMember)mbr, reason);
+    msg.setSender((InternalDistributedMember)mbr);
     processLeaveRequest(msg);
   }
 
@@ -1806,7 +1812,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
           break;
         case REMOVE_MEMBER_REQUEST:
-          // process these after gathring all leave-requests so that
+          // process these after gathering all leave-requests so that
           // we don't kick out a member that's shutting down
           break;
         default:
@@ -1850,14 +1856,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         int viewNumber = 0;
         List<InternalDistributedMember> mbrs;
         if (currentView == null) {
-          mbrs = new ArrayList<InternalDistributedMember>(joinReqs);
+          mbrs = new ArrayList<InternalDistributedMember>();
         } else {
           viewNumber = currentView.getViewId() + 1;
           mbrs = new ArrayList<InternalDistributedMember>(oldMembers);
-          mbrs.addAll(joinReqs);
         }
         mbrs.removeAll(leaveReqs);
         mbrs.removeAll(removalReqs);
+        // add joinReqs after removing old members because an ID may
+        // be reused in an auto-reconnect and get a new vmViewID
+        mbrs.addAll(joinReqs);
         newView = new NetView(localAddress, viewNumber, mbrs, leaveReqs, new HashSet<InternalDistributedMember>(removalReqs));
         int size = joinReqs.size();
         for (InternalDistributedMember mbr: joinReqs) {
@@ -1888,7 +1896,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       // if there are no membership changes then abort creation of
       // the new view
-      if (newView.getMembers().equals(currentView.getMembers())) {
+      if (joinReqs.isEmpty() && newView.getMembers().equals(currentView.getMembers())) {
         logger.info("membership hasn't changed - aborting new view {}", newView);
         return;
       }

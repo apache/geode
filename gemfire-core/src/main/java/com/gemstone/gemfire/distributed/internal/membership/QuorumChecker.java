@@ -42,6 +42,13 @@ public interface QuorumChecker {
    * resumes the quorum checker after having invoked suspend();
    */
   public void resume();
+  
+  /**
+   * closes the quorum checker and releases resources.  Use this if
+   * the distributed system is not going to be reconnected and you
+   * want to release resources.
+   */
+  public void close();
 
   /**
    * Get the membership info from the old system that needs to be passed

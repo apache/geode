@@ -142,7 +142,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
   

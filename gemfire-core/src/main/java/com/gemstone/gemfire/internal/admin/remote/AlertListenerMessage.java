@@ -105,7 +105,7 @@ public final class AlertListenerMessage extends PooledDistributionMessage implem
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

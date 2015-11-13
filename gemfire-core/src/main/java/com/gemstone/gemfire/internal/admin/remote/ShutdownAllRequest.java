@@ -137,7 +137,7 @@ public class ShutdownAllRequest extends AdminRequest {
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
   
