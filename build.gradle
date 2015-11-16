@@ -1,5 +1,15 @@
-apply plugin: 'wrapper'
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "org.ajoberstar:gradle-git:1.3.2"
+  }
+}
 
+apply plugin: 'wrapper'
 
 // Load all properties in dependency-version.properties as project properties, so all projects can read them
 Properties dependencyVersions = new Properties()
@@ -25,6 +35,7 @@ allprojects {
 
   group = "org.apache.geode"
 
+  apply plugin: 'org.ajoberstar.grgit'
   apply plugin: 'idea'
   apply plugin: 'eclipse'
   
