@@ -4664,7 +4664,7 @@ public class LocalRegion extends AbstractRegion
               continue;
             } else {
               if(logger.isDebugEnabled()) {
-                logger.debug("refreshEntries key={} value={}", currentKey, entry);
+                logger.debug("refreshEntries key={} value={} version={}", currentKey, entry, tag);
               }
               if (tag == null) { // no version checks
                 localDestroyNoCallbacks(currentKey);

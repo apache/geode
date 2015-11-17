@@ -72,7 +72,9 @@ public class Transport extends UDP {
         Thread.currentThread().interrupt(); // let someone else handle the interrupt
     }
     catch(SocketException e) {
-      log.error("Exception caught while sending message", e);
+      if (!stack.getChannel().isClosed()) {
+        log.error("Exception caught while sending message", e);
+      }
 //        log.trace(Util.getMessage("SendFailure"),
 //                  local_addr, (dest == null? "cluster" : dest), msg.size(), e.toString(), msg.printHeaders());
     }

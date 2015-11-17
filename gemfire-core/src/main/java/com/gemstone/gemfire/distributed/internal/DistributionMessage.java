@@ -230,7 +230,7 @@ public abstract class DistributionMessage
     return this.multicast;
   }
   /**
-   * Return true of this message should be sent through JGroups instead of the
+   * Return true of this message should be sent via UDP instead of the
    * direct-channel.  This is typically only done for messages that are
    * broadcast to the full membership set.
    */

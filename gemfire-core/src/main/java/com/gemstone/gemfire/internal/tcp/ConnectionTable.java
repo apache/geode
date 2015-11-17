@@ -690,7 +690,7 @@ public class ConnectionTable  {
     }
   }
 
-  protected final TCPConduit getConduit() {
+  protected TCPConduit getConduit() {
     return owner;
   }
 

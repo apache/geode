@@ -3,6 +3,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -114,6 +116,14 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
     gmsJoinLeave.started();
+  }
+  
+  @After
+  public void tearDown() throws Exception {
+    if (gmsJoinLeave != null) {
+      gmsJoinLeave.stop();
+      gmsJoinLeave.stopped();
+    }
   }
   
   @Test
@@ -753,6 +763,19 @@ public class GMSJoinLeaveJUnitTest {
     Assert.assertFalse(nextView.getMembers().contains(mockMembers[1]));
     Assert.assertFalse(nextView.getMembers().contains(mockMembers[2]));
     assertTrue(nextView.getMembers().contains(mockMembers[3]));
+  }
+  
+  @Test
+  public void testViewBroadcaster() throws Exception {
+    initMocks();
+    List<InternalDistributedMember> members = new ArrayList<>(Arrays.asList(mockMembers));
+    gmsJoinLeaveMemberId.setVmViewId(1);
+    members.add(gmsJoinLeaveMemberId);
+    prepareAndInstallView(gmsJoinLeaveMemberId, members);
+    gmsJoinLeave.becomeCoordinatorForTest();
+    GMSJoinLeave.ViewBroadcaster b = gmsJoinLeave.new ViewBroadcaster();
+    b.run();
+    verify(messenger).sendUnreliably(isA(InstallViewMessage.class));
   }
 }
 

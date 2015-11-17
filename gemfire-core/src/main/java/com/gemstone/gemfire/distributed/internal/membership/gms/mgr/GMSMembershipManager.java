@@ -1891,20 +1891,20 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   public void suspectMembers(Set members, String reason) {
     for (Iterator it=members.iterator(); it.hasNext(); ) {
-      suspectMember((DistributedMember)it.next(), reason);
+      verifyMember((DistributedMember)it.next(), reason);
     }
   }
   
   public void suspectMember(DistributedMember mbr, String reason) {
     if (!this.shutdownInProgress && !this.shutdownMembers.containsKey(mbr)) {
-      this.services.getHealthMonitor().suspect((InternalDistributedMember)mbr, reason);
+      verifyMember(mbr, reason);
     }
   }
 
   /* like memberExists() this checks to see if the given ID is in the current
-   * membership view.  If it is in the view though we try to connect to it
-   * port to see if it's still around.  If we can't then
-   * suspect processing is initiated on the member with the given reason string.
+   * membership view.  If it is in the view though we try to contact it
+   * to see if it's still around.  If we can't contact it then
+   * suspect messages are sent to initiate final checks
    * @param mbr the member to verify
    * @param reason why the check is being done (must not be blank/null)
    * @return true if the member checks out
