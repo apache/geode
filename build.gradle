@@ -290,7 +290,11 @@ subprojects {
   }
 
   javadoc.classpath += configurations.provided
-  
+
+  javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+  }
+
   dependencies {
     compile 'org.springframework:spring-aop:' + project.'springframework.version'
     compile 'org.springframework:spring-beans:' + project.'springframework.version'
