@@ -22,7 +22,8 @@ Install Pygments (Python-basd syntax coloring library):
 
 Install Nanoc and other Ruby Gems needed:
 
-    $ sudo gem install nanoc pygments.rb htmlentities pandoc-ruby nokogiri rack mime-types
+    $ sudo gem install nanoc -v 3.8.0
+    $ sudo gem install pygments.rb htmlentities pandoc-ruby nokogiri rack mime-types
 
 ## How to change/update the website
 
