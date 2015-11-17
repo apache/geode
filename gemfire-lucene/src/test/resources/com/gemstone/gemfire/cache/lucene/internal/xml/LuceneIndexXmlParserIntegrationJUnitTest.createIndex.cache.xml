@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:lucene="http://geode.incubator.apache.org/schema/lucene"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache
+        http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd
+        http://geode.incubator.apache.org/schema/lucene
+        http://geode.incubator.apache.org/schema/lucene/lucene-1.0.xsd"
+    version="9.0">
+
+	<region name="region" refid="PARTITION">
+    	<lucene:index name="index1">
+    	  <lucene:field name="a"/>
+    	  <lucene:field name="b"/>
+    	  <lucene:field name="c"/>
+    	  <lucene:field name="d"/>
+    	</lucene:index>
+    	<lucene:index name="index2">
+    	  <lucene:field name="f"/>
+    	  <lucene:field name="g"/>
+    	</lucene:index>
+    </region>    
+</cache>

@@ -205,7 +205,7 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   
   private static class TestFunction implements Function {
     
-    private static final int LOCK_WAIT_TIME = 5;
+    private static final int LOCK_WAIT_TIME = 1000;
 
     public boolean hasResult() {
       return true;

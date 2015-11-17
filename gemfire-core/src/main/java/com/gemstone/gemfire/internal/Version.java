@@ -174,6 +174,11 @@ public final class Version implements Comparable<Version> {
   
   // 31-34 available for 8.0.x variants
   
+  private static final byte GFE_8009_ORDINAL = 31;
+
+  public static final Version GFE_8009 = new Version("GFE", "8.0.0.9", (byte)8,
+      (byte)0, (byte)0, (byte)9, GFE_8009_ORDINAL);
+
   private static final byte GFE_81_ORDINAL = 35;
 
   public static final Version GFE_81 = new Version("GFE", "8.1", (byte)8,

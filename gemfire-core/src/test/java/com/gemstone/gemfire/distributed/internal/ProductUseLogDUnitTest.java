@@ -72,6 +72,7 @@ public class ProductUseLogDUnitTest extends DistributedTestCase {
         InternalDistributedSystem system = getSystem();
         Cache cache = CacheFactory.create(system);
         CacheServer server = cache.addCacheServer();
+        server.setPort(0);
         try {
           server.start();
         } catch (IOException e) {

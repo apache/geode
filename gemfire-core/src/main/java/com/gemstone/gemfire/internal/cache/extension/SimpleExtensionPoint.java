@@ -66,7 +66,7 @@ public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
   public void addExtension(Extension<T> extension) {
     extensions.add(extension);
   }
-
+  
   @Override
   public void removeExtension(Extension<T> extension) {
     extensions.remove(extension);

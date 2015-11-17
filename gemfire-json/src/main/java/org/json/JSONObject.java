@@ -999,6 +999,8 @@ public class JSONObject {
                         Object result = method.invoke(bean, (Object[])null);
                         if (result != null) {
                             this.map.put(key, wrap(result));
+                        } else if (!method.getReturnType().isArray()) {
+                            this.map.put(key, JSONObject.NULL);
                         }
                     }
                 }

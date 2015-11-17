@@ -3457,7 +3457,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   public void testCustomEntryIdleReset() {
 
     final String name = this.getUniqueName();
-    final int timeout = 200; // ms
+    final int timeout = 200*1000; // ms
     final String key1 = "KEY1";
     final String value = "VALUE";
     
@@ -3475,55 +3475,37 @@ public abstract class RegionTestCase extends CacheTestCase {
     factory.addCacheListener(list);
     RegionAttributes attrs = factory.create();
     
-    Region region = null;
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      region = createRegion(name, attrs);
+      LocalRegion region = (LocalRegion) createRegion(name, attrs);
 
     // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
     ExpiryTask.suspendExpiration();
-    Region.Entry entry = null;
-    long tilt;
     try {
       region.create(key1, value);
-      tilt = System.currentTimeMillis() + timeout;
       assertTrue(list.waitForInvocation(5000));
-      entry = region.getEntry(key1);
+      Region.Entry entry = region.getEntry(key1);
       assertNotNull(entry.getValue());
-    } 
-    finally {
-      ExpiryTask.permitExpiration();
-    }
-    
-    pause(timeout / 2);
-    long now = System.currentTimeMillis();
-    if (entry.getValue() == null && now < tilt) {
-      fail("Entry invalidated " + (tilt - now) + " ms prematurely");
-    }
-    region.get(key1); // touch again
-    
-    waitForInvalidate(entry, tilt);
-
-    // Do it again with a put (I guess)
-    ExpiryTask.suspendExpiration();
-    try {
+      EntryExpiryTask eet = region.getEntryExpiryTask(key1);
+      final long createExpiryTime = eet.getExpirationTime();
+      waitForExpiryClockToChange(region);
+      region.get(key1);
+      assertSame(eet, region.getEntryExpiryTask(key1));
+      final long getExpiryTime = eet.getExpirationTime();
+      if (getExpiryTime - createExpiryTime <= 0L) {
+        fail("get did not reset the expiration time. createExpiryTime=" + createExpiryTime + " getExpiryTime=" + getExpiryTime);
+      }
+      waitForExpiryClockToChange(region);
       region.put(key1, value);
-      tilt = System.currentTimeMillis() + timeout;
-      entry = region.getEntry(key1);
-      assertNotNull(entry.getValue());
+      assertSame(eet, region.getEntryExpiryTask(key1));
+      final long putExpiryTime = eet.getExpirationTime();
+      if (putExpiryTime - getExpiryTime <= 0L) {
+        fail("put did not reset the expiration time. getExpiryTime=" + getExpiryTime + " putExpiryTime=" + putExpiryTime);
+      }
     } 
     finally {
       ExpiryTask.permitExpiration();
     }
-    
-    pause(timeout / 2);
-    now = System.currentTimeMillis();
-    if (entry.getValue() == null && now < tilt) {
-      fail("entry invalidated " + (tilt - now) + " ms prematurely");
-    }
-    region.put(key1, value); // touch
-    
-    waitForInvalidate(entry, tilt);
     } 
     finally {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);

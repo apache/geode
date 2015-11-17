@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.query.QueryException;
@@ -213,10 +214,10 @@ public class MemberFunctionStreamingMessage extends DistributionMessage implemen
       // bug 37026: this is too noisy...
       // throw new CacheClosedException("remote system shutting down");
       // thr = se; cache is closed, no point trying to send a reply
-      thr = null;
-      if (logger.isDebugEnabled()) {
-        logger.debug("shutdown caught, abandoning message: {}",exception.getMessage(), exception);
-      }
+      thr = new FunctionInvocationTargetException(exception);
+      stats.endFunctionExecutionWithException(this.functionObject.hasResult());
+      rex = new ReplyException(thr);
+      replyWithException(dm, rex);
     }
     catch (Exception exception) {
       if (logger.isDebugEnabled()) {

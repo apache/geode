@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+    targetNamespace="http://geode.incubator.apache.org/schema/lucene"
+    xmlns:gpdb="http://geode.incubator.apache.org/schema/lucene"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    version="1.0">
+  
+  <xsd:import
+      namespace="http://schema.pivotal.io/gemfire/cache"
+      schemaLocation="http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd"/>
+  
+  <xsd:annotation>
+    <xsd:documentation><![CDATA[
+XML schema for Lucene indexes in Geode.
+
+  <cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:lucene="http://geode.incubator.apache.org/schema/lucene"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache
+        http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd
+        http://geode.incubator.apache.org/schema/lucene
+        http://geode.incubator.apache.org/schema/lucene/lucene-1.0.xsd"
+    version="9.0">
+    
+    ]]></xsd:documentation>
+  </xsd:annotation>
+  <xsd:element name="index">
+    <xsd:complexType>
+    	<xsd:sequence>
+    	  <xsd:element name="field" maxOccurs="unbounded">
+			<xsd:complexType>
+				<xsd:attribute name="name" type="xsd:string" />
+			</xsd:complexType>
+    	  </xsd:element>
+    	</xsd:sequence>
+    	<xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

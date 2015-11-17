@@ -1729,15 +1729,27 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
     final static long FILL_PATTERN = 0x3c3c3c3c3c3c3c3cL;
     final static byte FILL_BYTE = 0x3c;
     
-    public final static int SRC_TYPE_NO_LOB_NO_DELTA = 0 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_WITH_LOBS = 1 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_WITH_SINGLE_DELTA = 2 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_WITH_MULTIPLE_DELTAS = 3 << SRC_TYPE_SHIFT;
-    //public final static int SRC_TYPE_IS_LOB = 4 << SRC_TYPE_SHIFT;
+    // The 8 bits reserved for SRC_TYPE are basically no longer used.
+    // So we could free up these 8 bits for some other use or we could
+    // keep them for future extensions.
+    // If we ever want to allocate other "types" into a chunk of off-heap
+    // memory then the SRC_TYPE would be the way to go.
+    // For example we may want to allocate the memory for the off-heap
+    // RegionEntry in off-heap memory without it being of type GFE.
+    // When it is of type GFE then it either needs to be the bytes
+    // of a byte array or it needs to be a serialized java object.
+    // For the RegionEntry we may want all the primitive fields of
+    // the entry at certain offsets in the off-heap memory so we could
+    // access them directly in native byte format (i.e. no serialization).
+    // Note that for every SRC_TYPE we should have a ChunkType subclass.
+    public final static int SRC_TYPE_UNUSED0 = 0 << SRC_TYPE_SHIFT;
+    public final static int SRC_TYPE_UNUSED1 = 1 << SRC_TYPE_SHIFT;
+    public final static int SRC_TYPE_UNUSED2 = 2 << SRC_TYPE_SHIFT;
+    public final static int SRC_TYPE_UNUSED3 = 3 << SRC_TYPE_SHIFT;
     public final static int SRC_TYPE_GFE = 4 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED1 = 5 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED2 = 6 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED3 = 7 << SRC_TYPE_SHIFT;
+    public final static int SRC_TYPE_UNUSED5 = 5 << SRC_TYPE_SHIFT;
+    public final static int SRC_TYPE_UNUSED6 = 6 << SRC_TYPE_SHIFT;
+    public final static int SRC_TYPE_UNUSED7 = 7 << SRC_TYPE_SHIFT;
     
     protected Chunk(long memoryAddress, int chunkSize, ChunkType chunkType) {
       validateAddressAndSize(memoryAddress, chunkSize);

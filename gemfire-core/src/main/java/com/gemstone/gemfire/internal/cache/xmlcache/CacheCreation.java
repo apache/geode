@@ -63,7 +63,6 @@ import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.CqExistsException;
@@ -100,6 +99,7 @@ import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
+import com.gemstone.gemfire.internal.cache.CacheService;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -133,7 +133,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  *
  * @since 3.0
  */
-public class CacheCreation implements InternalCache, Extensible<Cache> {
+public class CacheCreation implements InternalCache {
 
   /** The amount of time to wait for a distributed lock */
   private int lockTimeout = GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT;
@@ -1416,11 +1416,6 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     return null;
   }
 
-  @Override
-  public LuceneService getLuceneService() {
-    return null;
-  }
-
   public QueryService queryService = new com.gemstone.gemfire.cache.query.QueryService() {
 
     private Map<String, List> indexes = new HashMap<String, List>();
@@ -1656,6 +1651,9 @@ public class CacheCreation implements InternalCache, Extensible<Cache> {
     }
     
   };
-	  
 
+  @Override
+  public <T extends CacheService> T getService(Class<T> clazz) {
+    throw new UnsupportedOperationException();
+  }
 }

@@ -115,6 +115,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
     stopMonitoring(false);
   }
   public void stopMonitoring(boolean waitForThread) {
+    Thread threadToWaitFor = null;
     synchronized (this) {
       if (!this.started) {
         return;
@@ -126,16 +127,18 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
       synchronized (this.offHeapMemoryUsageListener) {
         this.offHeapMemoryUsageListener.notifyAll();
       }
-
-      if (waitForThread && this.memoryListenerThread != null) {
-        try {
-          this.memoryListenerThread.join();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
+      if (waitForThread) {
+        threadToWaitFor = this.memoryListenerThread;
       }
       this.memoryListenerThread = null;
       this.started = false;
+    }
+    if (threadToWaitFor != null) {
+      try {
+        threadToWaitFor.join();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
@@ -511,11 +514,20 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
         updateStateAndSendEvent(lastOffHeapMemoryUsed);
 
         synchronized (this) {
-          if (lastOffHeapMemoryUsed == this.offHeapMemoryUsed && !this.stopRequested) {
-            try {
+          long newOffHeapMemoryUsed = this.offHeapMemoryUsed;
+          if (this.stopRequested) {
+            // no need to wait since we are stopping
+          } else if (lastOffHeapMemoryUsed != newOffHeapMemoryUsed) {
+            // no need to wait since memory used has changed
+            // This fixes a race like bug GEODE-500
+            lastOffHeapMemoryUsed = newOffHeapMemoryUsed;
+          } else {
+            // wait for memory used to change
+            try {  
               do {
                 this.wait(1000);
-                if (this.offHeapMemoryUsed == lastOffHeapMemoryUsed) {
+                newOffHeapMemoryUsed = this.offHeapMemoryUsed;
+                if (newOffHeapMemoryUsed == lastOffHeapMemoryUsed) {
                   // The wait timed out. So tell the OffHeapMemoryMonitor
                   // that we need an event if the state is not normal.
                   deliverNextAbnormalEvent();
@@ -536,7 +548,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
                 } else {
                   // we have been notified so exit the inner while loop
                   // and call updateStateAndSendEvent.
-                  lastOffHeapMemoryUsed = this.offHeapMemoryUsed;
+                  lastOffHeapMemoryUsed = newOffHeapMemoryUsed;
                   break;
                 }
               } while (!this.stopRequested);

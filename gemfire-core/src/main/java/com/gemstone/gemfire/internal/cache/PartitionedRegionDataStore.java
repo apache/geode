@@ -119,7 +119,7 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQue
  * @author tapshank
  * @author Mitch Thomas
  */
-public final class PartitionedRegionDataStore implements HasCachePerfStats
+public class PartitionedRegionDataStore implements HasCachePerfStats
 {
   private static final Logger logger = LogService.getLogger();
   
