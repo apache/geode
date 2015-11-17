@@ -18,6 +18,8 @@ package com.gemstone.gemfire.management.internal.cli.shell.jline;
 
 import org.springframework.shell.core.JLineLogHandler;
 
+import jline.ANSIBuffer;
+
 /**
  * Overrides jline.History to add History without newline characters.
  * 
@@ -48,8 +50,7 @@ public class ANSIHandler {
     String decoratedInput = input;
     
     if (isAnsiEnabled()) {
-      ANSIBuffer ansiBuffer = ANSIBuffer.getANSIBuffer();
-
+      ANSIBuffer ansiBuffer = JLineLogHandler.getANSIBuffer();
 
       for (ANSIStyle ansiStyle : styles) {
         switch (ansiStyle) {

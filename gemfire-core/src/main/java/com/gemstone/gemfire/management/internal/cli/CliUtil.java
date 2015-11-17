@@ -105,7 +105,7 @@ public class CliUtil {
 
     if (includeGfshDependencies) {
       // ConsoleReader from jline
-      jarProductName = checkLibraryByLoadingClass("jline.console.ConsoleReader", "JLine");
+      jarProductName = checkLibraryByLoadingClass("jline.ConsoleReader", "JLine");
       if (jarProductName != null) {
         return jarProductName;
       }

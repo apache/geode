@@ -18,10 +18,7 @@ package com.gemstone.gemfire.management.internal.cli.shell.jline;
 
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
 
-import jline.console.history.MemoryHistory;
-
-import java.io.File;
-import java.io.IOException;
+import jline.History;
 
 /**
  * Overrides jline.History to add History without newline characters.
@@ -29,14 +26,14 @@ import java.io.IOException;
  * @author Abhishek Chaudhari
  * @since 7.0
  */
-public class GfshHistory extends MemoryHistory {
-
+public class GfshHistory extends History {
   // let the history from history file get added initially
   private boolean autoFlush = true;
-
+  
+  @Override
   public void addToHistory(String buffer) {
     if (isAutoFlush()) {
-      super.add(toHistoryLoggable(buffer));
+      super.addToHistory(toHistoryLoggable(buffer));
     }
   }
 
