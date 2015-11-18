@@ -7,6 +7,8 @@
  */
 package com.vmware.gemfire.tools.pulse.testbed;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +28,12 @@ public class TestBed {
   
   
   public TestBed(String fileName,boolean flag) throws FileNotFoundException, IOException{    
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    InputStream inputStream = classLoader.getResourceAsStream("testbed.properties");
-    System.out.println("Inputstream : " + inputStream);
+//    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+//    InputStream inputStream = classLoader.getResourceAsStream("testbed.properties");
+//    System.out.println("Inputstream : " + inputStream);
     Properties properties = new Properties();
     try {
-      properties.load(inputStream);
+      properties.load(new FileInputStream(new File(fileName)));
     } catch (IOException e) {
       e.printStackTrace();
       throw new RuntimeException(e);

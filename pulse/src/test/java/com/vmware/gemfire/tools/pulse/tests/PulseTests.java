@@ -1021,7 +1021,7 @@ public class PulseTests {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
 	  //Thread.sleep(200000000);
-    // driver.close();
+    driver.close();
     /*try {
       if (tomcat != null) {
         tomcat.stop();
