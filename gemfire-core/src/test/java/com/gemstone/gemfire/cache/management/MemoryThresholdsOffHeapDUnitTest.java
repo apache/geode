@@ -524,7 +524,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM replicate1 = host.getVM(1);
     final VM replicate2 = host.getVM(2);
     final String rName = getUniqueName();
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     
     // Make sure the desired VMs will have a fresh DS.
     AsyncInvocation d1 = replicate1.invokeAsync(DistributedTestCase.class, "disconnectFromDS");
@@ -537,7 +536,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @SuppressWarnings("synthetic-access")
       @Override
       public void run2() throws CacheException {
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getOffHeapProperties());
       }
     };
     replicate1.invoke(establishConnectivity);
@@ -547,7 +546,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         // Assert some level of connectivity
-        InternalDistributedSystem ds = getSystem(getServerProperties(mcastPort));
+        InternalDistributedSystem ds = getSystem(getOffHeapProperties());
         assertTrue(ds.getDistributionManager().getNormalDistributionManagerIds().size() >= 1);
 
         InternalResourceManager irm = (InternalResourceManager)getCache().getResourceManager();
@@ -1156,14 +1155,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(2);
     final String rName = getUniqueName();
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     vm.invoke(DistributedTestCase.class, "disconnectFromDS");
     
     vm.invoke(new CacheSerializableRunnable("test LocalRegion load passthrough when critical") {
       @Override
       public void run2() throws CacheException {
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getOffHeapProperties());
         InternalResourceManager irm = (InternalResourceManager)getCache().getResourceManager();
         final OffHeapMemoryMonitor ohmm = irm.getOffHeapMonitor();
         irm.setCriticalOffHeapPercentage(90f);
@@ -1821,12 +1819,17 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     });
   }
   
-  private Properties getServerProperties(int mcastPort) {
+  private Properties getOffHeapProperties() {
     Properties p = new Properties();
+    p.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    return p;
+  }
+
+  private Properties getServerProperties(int mcastPort) {
+    Properties p = getOffHeapProperties();
     p.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastPort + "");
     p.setProperty(DistributionConfig.MCAST_TTL_NAME, "0");
     p.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    p.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
     return p;
   }
   
