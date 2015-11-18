@@ -48,6 +48,7 @@ public abstract class BaseServiceTest {
 
   protected static Properties propsForJUnit = new Properties();
   protected static String strHost = null;
+  protected static String strPort = null;
 
   static{
 
@@ -59,13 +60,14 @@ public abstract class BaseServiceTest {
       System.out.println("BaseServiceTest :: Error loading properties from pulse.properties in classpath");
     }
     strHost = propsForJUnit.getProperty("pulse.host");
+    strPort = propsForJUnit.getProperty("pulse.port");
     System.out.println("BaseServiceTest :: Loaded properties from classpath. Checking properties for hostname. Hostname found = " + strHost);
   }
 
-  protected static final String LOGIN_URL = "http://" + strHost + ":8081/pulse-7.5/j_spring_security_check";
-  protected static final String LOGOUT_URL = "http://" + strHost + ":8081/pulse-7.5/pulse/clusterLogout";
-  protected static final String IS_AUTHENTICATED_USER_URL = "http://" + strHost + ":8081/pulse-7.5/pulse/authenticateUser";
-  protected static final String PULSE_UPDATE_URL = "http://" + strHost + ":8081/pulse-7.5/pulse/pulseUpdate";
+  protected static final String LOGIN_URL =                 "http://" + strHost + ":" + strPort + "/pulse/j_spring_security_check";
+  protected static final String LOGOUT_URL =                "http://" + strHost + ":" + strPort + "/pulse/clusterLogout";
+  protected static final String IS_AUTHENTICATED_USER_URL = "http://" + strHost + ":" + strPort + "/pulse/authenticateUser";
+  protected static final String PULSE_UPDATE_URL =          "http://" + strHost + ":" + strPort + "/pulse/pulseUpdate";
   protected static final String PULSE_UPDATE_PARAM = "pulseData";
   protected static final String PULSE_UPDATE_1_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
   protected static final String PULSE_UPDATE_2_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/Rubbish'}}";
