@@ -420,14 +420,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         	handleShadowPRExistsScenario(cache, prQ);
       }
       /*
-       * Here, enqueTempEvents need to be invoked when a sender is already
+         * Here, enqueueTempEvents need to be invoked when a sender is already
        * running and userPR is created later. When the flow comes here through
        * start() method of sender i.e. userPR already exists and sender is
-       * started later, the enqueTempEvents is done in the start() method of
+       * started later, the enqueueTempEvents is done in the start() method of
        * ParallelGatewaySender
        */
       if ((this.index == this.nDispatcher - 1) && this.sender.isRunning()) {
-        ((AbstractGatewaySender)sender).enqueTempEvents();
+        ((AbstractGatewaySender)sender).enqueueTempEvents();
       }
     }
     finally {
@@ -576,14 +576,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         this.userRegionNameToshadowPRMap.put(userPR.getFullPath(), prQ);
       }
       /*
-       * Here, enqueTempEvents need to be invoked when a sender is already
+       * Here, enqueueTempEvents need to be invoked when a sender is already
        * running and userPR is created later. When the flow comes here through
        * start() method of sender i.e. userPR already exists and sender is
-       * started later, the enqueTempEvents is done in the start() method of
+       * started later, the enqueueTempEvents is done in the start() method of
        * ParallelGatewaySender
        */
       if ((this.index == this.nDispatcher - 1) && this.sender.isRunning()) {
-        ((AbstractGatewaySender)sender).enqueTempEvents();
+        ((AbstractGatewaySender)sender).enqueueTempEvents();
       }
       afterRegionAdd(userPR);
       this.sender.lifeCycleLock.writeLock().unlock();

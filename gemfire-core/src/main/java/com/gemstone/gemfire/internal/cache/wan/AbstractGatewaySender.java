@@ -78,7 +78,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
- * Abstract implementation of both Serial and Parallel GatewaySener. It handles
+ * Abstract implementation of both Serial and Parallel GatewaySender. It handles
  * common functionality like initializing proxy.
  * 
  * @author Suranjan Kumar
@@ -647,15 +647,15 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     logger.info(LocalizedMessage.create(LocalizedStrings.GatewayImpl_GATEWAY_0_HAS_BEEN_REBALANCED, this));
   }
 
-  public boolean beforeEnque(GatewayQueueEvent gatewayEvent) {
-    boolean enque = true;
+  public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
+    boolean enqueue = true;
     for (GatewayEventFilter filter : getGatewayEventFilters()) {
-      enque = filter.beforeEnqueue(gatewayEvent);
-      if (!enque) {
-        return enque;
+      enqueue = filter.beforeEnqueue(gatewayEvent);
+      if (!enqueue) {
+        return enqueue;
       }
     }
-    return enque;
+    return enqueue;
   }
   
   protected void stompProxyDead() {
@@ -816,7 +816,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         
         logger.info(LocalizedMessage.create(LocalizedStrings.GatewaySender_PAUSED__0, this));
 
-        enqueTempEvents();
+        enqueueTempEvents();
       } finally {
         this.lifeCycleLock.writeLock().unlock();
       }
@@ -839,7 +839,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         
         logger.info(LocalizedMessage.create(LocalizedStrings.GatewaySender_RESUMED__0, this));
         
-        enqueTempEvents();
+        enqueueTempEvents();
       } finally {
         this.lifeCycleLock.writeLock().unlock();
       }
@@ -1028,7 +1028,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
    * The eventProcessor can be null when the method gets invoked through this flow: 
    * ParallelGatewaySenderImpl.start() -> ParallelGatewaySenderQueue.<init> -> ParallelGatewaySenderQueue.addPartitionedRegionForRegion 
    */
-  public void enqueTempEvents() {
+  public void enqueueTempEvents() {
     if (this.eventProcessor != null) {//Fix for defect #47308
       TmpQueueEvent nextEvent = null;
       final GatewaySenderStats stats = getStatistics();
