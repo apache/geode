@@ -88,11 +88,9 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
 
 
     // Step 1: Starting the servers
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-
     PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+        "createCacheServer", new Object[] { regionName, new Boolean(true)
+             })).intValue();
     this.server1VM.invoke(DurableClientStatsDUnitTest.class, "checkStatistics");
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
@@ -134,11 +132,9 @@ public class DurableClientStatsDUnitTest extends DistributedTestCase {
   public void testDurableClientStatistics() {
 
     // Step 1: Starting the servers
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-
     PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+        "createCacheServer", new Object[] { regionName, new Boolean(true)
+      })).intValue();
     this.server1VM.invoke(DurableClientStatsDUnitTest.class, "checkStatistics");
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it

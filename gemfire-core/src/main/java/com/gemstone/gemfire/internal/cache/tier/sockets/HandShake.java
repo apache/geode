@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataOutput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -489,7 +490,11 @@ public class HandShake implements ClientHandShake
       else {
         hdos.writeInt(readTimeout);
       }
-      DataSerializer.writeObject(this.id, hdos);
+      // we do not know the receiver's version at this point, but the on-wire
+      // form of InternalDistributedMember changed in 9.0, so we must serialize
+      // it using the previous version
+      DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82);
+      DataSerializer.writeObject(this.id, idOut);
   
       if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {
         for (int bytes = 0; bytes < this.overrides.length; bytes++) {
@@ -1310,7 +1315,12 @@ public class HandShake implements ClientHandShake
       if(communicationMode == Acceptor.GATEWAY_TO_GATEWAY  && !
           (acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED ||
               acceptanceCode ==  REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
-          conn.setWanSiteVersion(Version.readOrdinal(dis));
+         short wanSiteVersion = Version.readOrdinal(dis);
+         conn.setWanSiteVersion(wanSiteVersion);
+         // establish a versioned stream for the other site, if necessary         
+         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
+           dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
+         }
         } 
 
       // No need to check for return value since DataInputStream already throws
@@ -1443,6 +1453,10 @@ public class HandShake implements ClientHandShake
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
     ByteArrayInputStream bais = new ByteArrayInputStream(memberBytes);
     DataInputStream dis = new DataInputStream(bais);
+    Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
+    if (v != null) {
+      dis = new VersionedDataInputStream(dis, v);
+    }
     try {
       return (DistributedMember)DataSerializer.readObject(dis);
     }

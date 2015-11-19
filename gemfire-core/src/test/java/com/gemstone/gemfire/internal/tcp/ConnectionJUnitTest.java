@@ -1,0 +1,71 @@
+package com.gemstone.gemfire.internal.tcp;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+
+import java.io.InputStream;
+import java.net.Socket;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
+import com.gemstone.gemfire.internal.SocketCloser;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
+public class ConnectionJUnitTest {
+
+  /**
+   * Test whether suspicion is raised about a member that
+   * closes its shared/unordered TCPConduit connection
+   */
+  @Test
+  public void testSuspicionRaised() throws Exception {
+    // this test has to create a lot of mocks because Connection
+    // uses a lot of objects
+    
+    // mock the socket
+    ConnectionTable table = mock(ConnectionTable.class);
+    DM distMgr = mock(DM.class);
+    MembershipManager membership = mock(MembershipManager.class);
+    TCPConduit conduit = mock(TCPConduit.class);
+
+    // mock the connection table and conduit
+    
+    when(table.getConduit()).thenReturn(conduit);
+
+    CancelCriterion stopper = mock(CancelCriterion.class);
+    when(stopper.cancelInProgress()).thenReturn(null);
+    when(conduit.getCancelCriterion()).thenReturn(stopper);
+
+    when(conduit.getId()).thenReturn(new Stub(SocketCreator.getLocalHost(), 10337, 1));
+    
+    // NIO can't be mocked because SocketChannel has a final method that
+    // is used by Connection - configureBlocking
+    when(conduit.useNIO()).thenReturn(false);
+    
+    // mock the distribution manager and membership manager
+    when(distMgr.getMembershipManager()).thenReturn(membership);
+    when(conduit.getDM()).thenReturn(distMgr);
+    when(table.getDM()).thenReturn(distMgr);
+    SocketCloser closer = mock(SocketCloser.class);
+    when(table.getSocketCloser()).thenReturn(closer);
+
+    InputStream instream = mock(InputStream.class);
+    when(instream.read()).thenReturn(-1);
+    Socket socket = mock(Socket.class);
+    when(socket.getInputStream()).thenReturn(instream);
+    
+    Connection conn = new Connection(table, socket);
+    conn.setSharedUnorderedForTest();
+    conn.run();
+    verify(membership).suspectMember(any(InternalDistributedMember.class), any(String.class));
+  }
+}

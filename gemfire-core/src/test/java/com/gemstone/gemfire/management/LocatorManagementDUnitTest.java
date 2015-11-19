@@ -58,8 +58,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   private VM locator;
   
-  protected int mCastPort;
-
 
   public LocatorManagementDUnitTest(String name) {
     super(name);
@@ -70,8 +68,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   public void setUp() throws Exception {
     super.setUp();
     locator = managedNode1;
-    
-    mCastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
   }
 
   public void tearDown2() throws Exception {

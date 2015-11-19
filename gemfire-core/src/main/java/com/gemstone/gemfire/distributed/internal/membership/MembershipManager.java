@@ -17,15 +17,16 @@
 package com.gemstone.gemfire.distributed.internal.membership;
 
 import java.io.NotSerializableException;
-import java.net.DatagramSocket;
+import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.tcp.Stub;
 
 /**
@@ -57,7 +58,7 @@ public interface MembershipManager {
    * While this lock is held the view can't change.
    * @since 5.7
    */
-  public Object getViewLock();
+  public ReadWriteLock getViewLock();
 
   /**
    * Return a {@link InternalDistributedMember} representing the current system
@@ -145,14 +146,8 @@ public interface MembershipManager {
   public Set send(
       InternalDistributedMember[] destinations,
       DistributionMessage content,
-      DistributionStats stats)
+      DMStats stats)
   throws NotSerializableException;
-  
-  /**
-   * Force a reset of communication channels
-   *
-   */
-  public void reset();
   
   /**
    * Return a {@link Stub} referring to the given member.  A <em>null</em> may
@@ -199,7 +194,7 @@ public interface MembershipManager {
    *    process and the given distributed member
    * @since 5.1
    */
-  public HashMap getChannelStates(DistributedMember member, boolean includeMulticast);
+  public Map getChannelStates(DistributedMember member, boolean includeMulticast);
 
   /**
    * Waits for the given communication channels to reach the associated
@@ -212,7 +207,7 @@ public interface MembershipManager {
    *    Thrown if the thread is interrupted
    * @since 5.1
    */
-  public void waitForChannelState(DistributedMember member, HashMap channelState)
+  public void waitForChannelState(DistributedMember member, Map channelState)
     throws InterruptedException;
   
   /**
@@ -349,5 +344,11 @@ public interface MembershipManager {
    * @param checker the QuorumChecker instance
    */
   public void releaseQuorumChecker(QuorumChecker checker);
+  
+  /**
+   * sets the log writer for authentication logging
+   * @param writer
+   */
+  public void setSecurityLogWriter(InternalLogWriter writer);
 
 }

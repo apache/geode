@@ -1145,14 +1145,16 @@ public class DistributionConfigImpl
   
   
   private void computeMcastPortDefault() {
-    ConfigSource cs = getAttSourceMap().get(MCAST_PORT_NAME);
-    if (cs == null) {
-      String locators = getLocators();
-      if (locators != null && !locators.isEmpty()) {
-        this.mcastPort = 0; // fixes 46308
-      }
-    }
+    // a no-op since multicast discovery has been removed
+    // and the default mcast port is now zero
     
+//    ConfigSource cs = getAttSourceMap().get(MCAST_PORT_NAME);
+//    if (cs == null) {
+//      String locators = getLocators();
+//      if (locators != null && !locators.isEmpty()) {
+//        this.mcastPort = 0; // fixes 46308
+//      }
+//    }
   }
   
   /**

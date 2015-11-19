@@ -42,6 +42,7 @@ import com.gemstone.gemfire.pdx.PdxWriter;
 
 
 public class PortfolioPdx implements Serializable, PdxSerializable  {
+  public static boolean DEBUG = false;
 
   public enum Day {
     Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
@@ -139,11 +140,13 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   /* public no-arg constructor required for Deserializable */
   public PortfolioPdx() {
     this.numInstance++;
+    if (DEBUG) Thread.dumpStack();
 //    GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
   }
 
   public PortfolioPdx(int i) {
     aDay = (Day)(dayList.get((i % dayList.size())));
+    if (DEBUG) Thread.dumpStack();
     this.numInstance++;
     ID = i;
     if(i % 2 == 0) {

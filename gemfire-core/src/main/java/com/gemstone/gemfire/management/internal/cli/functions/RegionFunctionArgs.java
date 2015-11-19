@@ -70,6 +70,8 @@ public class RegionFunctionArgs implements Serializable {
   private final boolean isSetConcurrencyChecksEnabled;
   private Boolean cloningEnabled;
   private final boolean isSetCloningEnabled;
+  private Boolean mcastEnabled;
+  private final boolean isSetMcastEnabled;
   private Integer concurrencyLevel;
   private final boolean isSetConcurrencyLevel;
   private final PartitionArgs partitionArgs;
@@ -96,7 +98,7 @@ public class RegionFunctionArgs implements Serializable {
       Integer prLocalMaxMemory, Long prRecoveryDelay,
       Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax,
-      String compressor, Boolean offHeap) {
+      String compressor, Boolean offHeap, Boolean mcastEnabled) {
     this.regionPath = regionPath;
     this.regionShortcut = regionShortcut;
     this.useAttributesFrom = useAttributesFrom;
@@ -153,6 +155,10 @@ public class RegionFunctionArgs implements Serializable {
     if (this.isSetCloningEnabled) {
       this.cloningEnabled = cloningEnabled;
     }
+    this.isSetMcastEnabled = mcastEnabled != null;
+    if (isSetMcastEnabled) {
+      this.mcastEnabled = mcastEnabled;
+    }
     this.isSetConcurrencyLevel = concurrencyLevel != null;
     if (this.isSetConcurrencyLevel) {
       this.concurrencyLevel = concurrencyLevel;
@@ -188,7 +194,8 @@ public class RegionFunctionArgs implements Serializable {
       Integer prLocalMaxMemory, Long prRecoveryDelay,
       Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, 
-      Boolean offHeap, RegionAttributes<?, ?> regionAttributes) {   
+      Boolean offHeap,
+      Boolean mcastEnabled, RegionAttributes<?, ?> regionAttributes) {   
     this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint,
         valueConstraint, statisticsEnabled, entryExpirationIdleTime,
         entryExpirationTTL, regionExpirationIdleTime, regionExpirationTTL,
@@ -198,7 +205,7 @@ public class RegionFunctionArgs implements Serializable {
         concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
         prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
         prRedundantCopies, prStartupRecoveryDelay,
-        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap);
+        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap , mcastEnabled);
     this.regionAttributes = regionAttributes;
   }
 
@@ -420,6 +427,20 @@ public class RegionFunctionArgs implements Serializable {
    */
   public Boolean isSetCloningEnabled() {
     return this.isSetCloningEnabled;
+  }
+
+  /**
+   * @return the mcastEnabled setting
+   */
+  public Boolean isMcastEnabled() {
+    return this.mcastEnabled;
+  }
+
+  /**
+   * @return the isSetCloningEnabled
+   */
+  public Boolean isSetMcastEnabled() {
+    return this.isSetMcastEnabled;
   }
 
   /**

@@ -154,28 +154,11 @@ public class ManagedEntityConfigXmlGenerator
    * Generates XML for locators in the distributed system
    */
   private void generateDiscovery() throws SAXException {
-    if (!this.system.isMcastDiscovery()) {
-      handler.startElement("", LOCATORS, LOCATORS, EMPTY);
+    handler.startElement("", LOCATORS, LOCATORS, EMPTY);
 
-      generateLocators();
-    }
+    generateLocators();
     
     handler.endElement("", LOCATORS, LOCATORS);
-  }
-
-  /**
-   * Generates XML for multicast discovery
-   */
-  private void generateMulticast() throws SAXException {
-    int port = this.system.getMcastPort();
-    String address = this.system.getMcastAddress();
-
-    AttributesImpl atts = new AttributesImpl();
-    atts.addAttribute("", "", PORT, "", String.valueOf(port));
-    atts.addAttribute("", "", ADDRESS, "", address);
-
-    handler.startElement("", MULTICAST, MULTICAST, atts);
-    handler.endElement("", MULTICAST, MULTICAST);
   }
 
   /**

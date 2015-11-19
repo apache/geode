@@ -64,8 +64,8 @@ import com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.LocatorImpl;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DSFIDFactory;
@@ -75,7 +75,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.LinuxProcFsStatistics;
 import com.gemstone.gemfire.internal.LocalStatisticsImpl;
-import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.OsStatisticsFactory;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.StatisticsImpl;
@@ -107,7 +106,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.org.jgroups.util.GemFireTracer;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that
@@ -518,14 +516,17 @@ public final class InternalDistributedSystem
    * current configuration state.
    */
   private void initialize() {
-    if (this.originalConfig.getMcastPort() == 0 && this.originalConfig.getLocators().equals("")) {
-      // no distribution
-      this.isLoner = true;
-//       throw new IllegalArgumentException("The "
-//                                          + DistributionConfig.LOCATORS_NAME
-//                                          + " attribute can not be empty when the "
-//                                          + DistributionConfig.MCAST_PORT_NAME
-//                                          + " attribute is zero.");
+    if (this.originalConfig.getLocators().equals("")) {
+      if (this.originalConfig.getMcastPort() != 0) {
+        throw new GemFireConfigException("The "
+                                          + DistributionConfig.LOCATORS_NAME
+                                          + " attribute can not be empty when the "
+                                          + DistributionConfig.MCAST_PORT_NAME
+                                          + " attribute is non-zero.");
+      } else {
+        // no distribution
+        this.isLoner = true;
+      }
     }
 
     if (this.isLoner) {
@@ -571,11 +572,9 @@ public final class InternalDistributedSystem
       this.securityLogWriter = LogWriterFactory.createLogWriterLogger(this.isLoner, true, this.config, false);
       this.securityLogWriter.fine("SecurityLogWriter is created.");
     }
-
-    GemFireTracer tracer = GemFireTracer.getLog(InternalDistributedSystem.class);
-    tracer.setLogWriter(this.logWriter);
-    tracer.setSecurityLogWriter(this.securityLogWriter);
-    tracer.setLogger(LogService.getLogger(GemFireTracer.class));
+    
+    Services.setLogWriter(this.logWriter);
+    Services.setSecurityLogWriter(this.securityLogWriter);
 
     this.clock = new DSClock(this.isLoner);
     
@@ -669,9 +668,6 @@ public final class InternalDistributedSystem
             .toLocalizedString(), e);
     }
 
-    if (!this.isLoner) {
-      this.dm.restartCommunications();
-    }
     synchronized (this.isConnectedMutex) {
       this.isConnected = true;
     }
@@ -752,16 +748,10 @@ public final class InternalDistributedSystem
           boolean startedPeerLocation = false;
           try {
             this.startedLocator.startPeerLocation(true);
-            if (this.isConnected) {
-              InternalDistributedMember id = this.dm.getDistributionManagerId();
-              LocatorImpl gs = this.startedLocator.getLocatorHandler();
-              gs.setLocalAddress(id);
-            }
             startedPeerLocation = true;
           } finally {
             if (!startedPeerLocation) {
               this.startedLocator.stop();
-              this.startedLocator = null;
             }
           }
         }
@@ -794,7 +784,6 @@ public final class InternalDistributedSystem
       } finally {
         if (!finished) {
           this.startedLocator.stop();
-          this.startedLocator = null;
         }
       }
     }
@@ -942,7 +931,8 @@ public final class InternalDistributedSystem
     if (isForcedDisconnect) {
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
-      reconnected = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
+    
+     reconnected = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
     }
     if (!reconnected) {
       disconnect(false, reason, shunned);
@@ -1166,14 +1156,14 @@ public final class InternalDistributedSystem
   private static volatile boolean emergencyClassesLoaded = false;
   
   /**
-   * Ensure that the JGroupMembershipManager class gets loaded.
+   * Ensure that the MembershipManager class gets loaded.
    * 
    * @see SystemFailure#loadEmergencyClasses()
    */
   static public void loadEmergencyClasses() {
     if (emergencyClassesLoaded) return;
     emergencyClassesLoaded = true;
-    JGroupMembershipManager.loadEmergencyClasses();
+    GMSMembershipManager.loadEmergencyClasses();
   }
   
   /**
@@ -1343,7 +1333,7 @@ public final class InternalDistributedSystem
           // we close the locator after the DM so that when split-brain detection
           // is enabled, loss of the locator doesn't cause the DM to croak
           if (this.startedLocator != null) {
-            this.startedLocator.stop(preparingForReconnect, false);
+            this.startedLocator.stop(forcedDisconnect, preparingForReconnect, false);
             this.startedLocator = null;
           }
         } finally { // timer canceled
@@ -1479,26 +1469,19 @@ public final class InternalDistributedSystem
 
     // @todo Do we need to compare SSL properties?
 
-    if (me.getMcastPort() != 0) {
-      // mcast
-      return me.getMcastPort() == other.getMcastPort() &&
-        me.getMcastAddress().equals(other.getMcastAddress());
+    // locators
+    String myLocators = me.getLocators();
+    String otherLocators = other.getLocators();
+
+    // quick check
+    if (myLocators.equals(otherLocators)) {
+      return true;
 
     } else {
-      // locators
-      String myLocators = me.getLocators();
-      String otherLocators = other.getLocators();
+      myLocators = canonicalizeLocators(myLocators);
+      otherLocators = canonicalizeLocators(otherLocators);
 
-      // quick check
-      if (myLocators.equals(otherLocators)) {
-        return true;
-
-      } else {
-        myLocators = canonicalizeLocators(myLocators);
-        otherLocators = canonicalizeLocators(otherLocators);
-
-        return myLocators.equals(otherLocators);
-      }
+      return myLocators.equals(otherLocators);
     }
   }
 
@@ -1514,19 +1497,17 @@ public final class InternalDistributedSystem
       String l = st.nextToken();
       StringBuffer canonical = new StringBuffer();
       DistributionLocatorId locId = new DistributionLocatorId(l);
-      if (!locId.isMcastId()) {
-        String addr = locId.getBindAddress();
-        if (addr != null && addr.trim().length() > 0) {
-          canonical.append(addr);
-        }
-        else {
-          canonical.append(locId.getHost().getHostAddress());
-        }
-        canonical.append("[");
-        canonical.append(String.valueOf(locId.getPort()));
-        canonical.append("]");
-        sorted.add(canonical.toString());
+      String addr = locId.getBindAddress();
+      if (addr != null && addr.trim().length() > 0) {
+        canonical.append(addr);
       }
+      else {
+        canonical.append(locId.getHost().getHostAddress());
+      }
+      canonical.append("[");
+      canonical.append(String.valueOf(locId.getPort()));
+      canonical.append("]");
+      sorted.add(canonical.toString());
     }
 
     StringBuffer sb = new StringBuffer();
@@ -1599,10 +1580,10 @@ public final class InternalDistributedSystem
     //Search through the set of all members
     for(InternalDistributedMember member: allMembers) {
       
-      Set<InetAddress> equivalentAddresses = dm.getEquivalents(member.getIpAddress());
+      Set<InetAddress> equivalentAddresses = dm.getEquivalents(member.getInetAddress());
       //Check to see if the passed in address is matches one of the addresses on
       //the given member.
-      if(address.equals(member.getIpAddress()) || equivalentAddresses.contains(address)) {
+      if(address.equals(member.getInetAddress()) || equivalentAddresses.contains(address)) {
         results.add(member);
       }
     }
@@ -2502,20 +2483,17 @@ public final class InternalDistributedSystem
    */
   public boolean tryReconnect(boolean forcedDisconnect, String reason, GemFireCacheImpl oldCache) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
     synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a cache
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
         synchronized (reconnectLock) {
-          if (!forcedDisconnect &&
-              !oldCache.isClosed() &&
-              oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
+          if (!forcedDisconnect && !oldCache.isClosed() && oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
             if (isDebugEnabled) {
               logger.debug("tryReconnect: No required roles are missing.");
             }
             return false;
           }
-        
+
           if (isDebugEnabled) {
             logger.debug("tryReconnect: forcedDisconnect={} sqlf listener={}", forcedDisconnect, this.sqlfDisconnectListener);
           }
@@ -2523,7 +2501,7 @@ public final class InternalDistributedSystem
             // allow the fabric-service to stop before dismantling everything
             notifySqlfForcedDisconnectListener();
 
-            if (this.config.getDisableAutoReconnect()) {
+            if (config.getDisableAutoReconnect()) {
               if (isDebugEnabled) {
                 logger.debug("tryReconnect: auto reconnect after forced disconnect is disabled");
               }
@@ -2531,7 +2509,7 @@ public final class InternalDistributedSystem
             }
           }
           reconnect(forcedDisconnect, reason);
-          return this.reconnectDS != null && this.reconnectDS.isConnected();
+          return (this.reconnectDS != null && this.reconnectDS.isConnected());
         } // synchronized reconnectLock
       } // synchronized cache
     } // synchronized CacheFactory.class
@@ -2600,18 +2578,10 @@ public final class InternalDistributedSystem
     
 //    logger.info("reconnecting IDS@"+System.identityHashCode(this));
 
-    boolean mcastDiscovery = oldConfig.getLocators().isEmpty()
-        && oldConfig.getStartLocator().isEmpty()
-        && oldConfig.getMcastPort() != 0;
-    boolean mcastQuorumContacted = false;
-    
-
-    if (Thread.currentThread().getName().equals("CloserThread")) {
-      if (isDebugEnabled) {
-        logger.debug("changing thread name to ReconnectThread"); // wha?! really?
-      }
-      Thread.currentThread().setName("ReconnectThread");
+    if (isDebugEnabled) {
+      logger.debug("changing thread name to ReconnectThread");
     }
+    Thread.currentThread().setName("ReconnectThread");
     
     // get the membership manager for quorum checks
     MembershipManager mbrMgr = this.dm.getMembershipManager();
@@ -2708,24 +2678,6 @@ public final class InternalDistributedSystem
             System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
           }
   //        log.fine("DistributedSystem@"+System.identityHashCode(this)+" reconnecting distributed system.  attempt #"+reconnectAttemptCounter);
-          if (mcastDiscovery  &&  (quorumChecker != null) && !mcastQuorumContacted) {
-            mcastQuorumContacted = quorumChecker.checkForQuorum(3*this.config.getMemberTimeout());
-            if (!mcastQuorumContacted) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("quorum check failed - skipping reconnect attempt");
-              }
-              continue;
-            }
-            if (logger.isDebugEnabled()) {
-              logger.debug(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_QUORUM_OF_MEMBERS_CONTACTED));
-            }
-            mcastQuorumContacted = true;
-            // bug #51527: become more aggressive about reconnecting since there are other 
-            // members around now
-            if (timeOut > 5000) {
-              timeOut = 5000;
-            }
-          }
           configProps.put(DistributionConfig.DS_RECONNECTING_NAME, Boolean.TRUE);
           if (quorumChecker != null) {
             configProps.put(DistributionConfig.DS_QUORUM_CHECKER_NAME, quorumChecker);
@@ -2860,9 +2812,7 @@ public final class InternalDistributedSystem
             }
             if (cache.getCachePerfStats().getReliableRegionsMissing() == 0){
               reconnectAttemptCounter = 0;
-              if (isDebugEnabled) {
-                logger.debug("Reconnected properly");
-              }  
+              logger.info("Reconnected properly");
             }
             else {
               // this try failed. The new cache will call reconnect again

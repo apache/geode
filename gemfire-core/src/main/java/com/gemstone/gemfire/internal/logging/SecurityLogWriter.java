@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * A log writer for security related logs. This will prefix all messages with

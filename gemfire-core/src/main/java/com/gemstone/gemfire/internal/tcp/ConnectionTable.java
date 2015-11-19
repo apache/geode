@@ -47,7 +47,7 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.SocketCloser;
 import com.gemstone.gemfire.internal.SocketCreator;
@@ -690,7 +690,7 @@ public class ConnectionTable  {
     }
   }
 
-  protected final TCPConduit getConduit() {
+  protected TCPConduit getConduit() {
     return owner;
   }
 
@@ -1106,7 +1106,7 @@ public class ConnectionTable  {
    * number of messages
    */
   protected void waitForThreadOwnedOrderedConnectionState(Stub member,
-      HashMap connectionStates) throws InterruptedException {
+      Map connectionStates) throws InterruptedException {
     if (Thread.interrupted()) throw new InterruptedException(); // wisest to do this before the synchronize below
     List r = null;
     synchronized(receivers) {
@@ -1282,7 +1282,7 @@ public class ConnectionTable  {
       InternalDistributedMember targetMember = null;
       if (ackSATimeout > 0) {
         targetMember =
-          ((JGroupMembershipManager)mgr).getMemberForStub(this.id, false);
+          ((GMSMembershipManager)mgr).getMemberForStub(this.id, false);
       }
 
       for (;;) {
@@ -1319,7 +1319,7 @@ public class ConnectionTable  {
             logger.warn(LocalizedMessage.create(
                 LocalizedStrings.ConnectionTable_UNABLE_TO_FORM_A_TCPIP_CONNECTION_TO_0_IN_OVER_1_SECONDS,
                 new Object[] { this.id, (ackTimeout)/1000 }));
-            ((JGroupMembershipManager)mgr).suspectMember(targetMember,
+            ((GMSMembershipManager)mgr).suspectMember(targetMember,
                 "Unable to form a TCP/IP connection in a reasonable amount of time");
             suspected = true;
           }

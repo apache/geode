@@ -115,11 +115,10 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   }
 
   @SuppressWarnings("deprecation")
-  public static Integer createServerCache(Integer mcastPort, Boolean createPR)
+  public static Integer createServerCache(Boolean createPR)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", String.valueOf(mcastPort));
+    props.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
 
     Bug51193DUnitTest test = new Bug51193DUnitTest("Bug51193DUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -172,9 +171,8 @@ public class Bug51193DUnitTest extends DistributedTestCase {
   public void doTest(boolean createPR, int timeout, String mode)
       throws Throwable {
     // start server
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     int port = (Integer) server0.invoke(Bug51193DUnitTest.class,
-        "createServerCache", new Object[] { mcastPort, createPR });
+        "createServerCache", new Object[] { createPR });
     // start client
     client0.invoke(Bug51193DUnitTest.class, "createClientCache", new Object[] {
         client0.getHost().getHostName(), port, timeout });

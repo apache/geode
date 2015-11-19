@@ -53,6 +53,7 @@ import batterytest.greplogs.ExpectedStrings;
 import batterytest.greplogs.LogConsumer;
 
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.LogService;
 
@@ -77,6 +78,9 @@ import dunit.VM;
  */
 public class DUnitLauncher {
 
+  /** change this to use a different log level in unit tests */
+  public static final String LOG_LEVEL = System.getProperty("logLevel", "info");
+  
   static int locatorPort;
 
   private static final int NUM_VMS = 4;
@@ -88,7 +92,6 @@ public class DUnitLauncher {
   private static File DUNIT_SUSPECT_FILE;
 
   public static final String DUNIT_DIR = "dunit";
-  public static final String LOG_LEVEL = System.getProperty("logLevel", "config");
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
   public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
 
@@ -239,7 +242,16 @@ public class DUnitLauncher {
         //Disable the shared configuration on this locator.
         //Shared configuration tests create their own locator
         p.setProperty("enable-cluster-configuration", "false");
-        Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);
+        //Tell the locator it's the first in the system for
+        //faster boot-up
+        
+        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY, "true");
+        try {
+          Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);
+        } finally {
+          System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY);
+        }
+        
         return null;
       }
     }, "call");

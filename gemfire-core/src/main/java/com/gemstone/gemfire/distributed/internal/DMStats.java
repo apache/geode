@@ -181,38 +181,26 @@ public interface DMStats {
   public long startSocketWrite(boolean sync);
   public void endSocketWrite(boolean sync, long start, int bytesWritten, int retries);
   /**
-   * begin a unicast datagram write operation.  Use the result of this operation
-   * when calling endUcastWrite
+   * increments
+   * the number of unicast writes performed and the number of bytes written
    * @since 5.0
    */
-  public long startUcastWrite();
-  /**
-   * record the end of a unicast datagram write operation and increment
-   * the number of writes performed and the number of bytes written
-   * @since 5.0
-   */
-  public void endUcastWrite(long start, int bytesWritten);
+  public void incUcastWriteBytes(int bytesWritten);
   /**
    * increment the number of unicast datagram payload bytes received and
    * the number of unicast reads performed
    */
-  public void incUcastReadBytes(long amount);
+  public void incUcastReadBytes(int amount);
   /**
-   * begin a multicast write operation.  Use the result of this operation
-   * when calling endMcastWrite
-   * @since 5.0
+   * increment the number of multicast datagrams sent and
+   * the number of multicast bytes transmitted
    */
-  public long startMcastWrite();
-  /**
-   * record the end of a multicast datagram write operation
-   * @since 5.0
-   */
-  public void endMcastWrite(long start, int bytesWritten);
+  public void incMcastWriteBytes(int bytesWritten);
   /**
    * increment the number of multicast datagram payload bytes received, and
    * the number of mcast messages read
    */
-  public void incMcastReadBytes(long amount);
+  public void incMcastReadBytes(int amount);
   /**
    * returns the current value of the mcastWrites statistic
    */
@@ -294,7 +282,7 @@ public interface DMStats {
    */
   public int getSendersSU();
   /**
-   * increment the number of unicast UDP retransmissions sent to
+   * increment the number of unicast UDP retransmission requests received from
    * other processes
    * @since 5.0
    */
@@ -317,97 +305,6 @@ public interface DMStats {
    */
   public void incMcastRetransmitRequests();
 
-  /**
-   * start a period of suspension of message transmission while we
-   * wait for acknowledgement of unicast messages this process has
-   * transmitted to other processes.  This returns a timestamp to be
-   * used when calling endUcastFlush()
-   * @since 5.0
-   */
-  public long startUcastFlush();
-  
-  /**
-   * end a period of suspension of message transmission while waiting
-   * for acknowledgment of unicast messages
-   * @since 5.0
-   */
-  public void endUcastFlush(long start);
-  
-  /**
-   * increment the number of flow control requests sent to other processes
-   */
-  public void incFlowControlRequests();
-  
-  /**
-   * increment the number of flow control responses sent to other processes
-   */
-  public void incFlowControlResponses();
-  
-  /**
-   * start a period of suspension of message transmission while waiting
-   * for flow-control recharge from another process.  This returns a
-   * timestamp to be used when calling endFlowControlWait();
-   * @since 5.0
-   */
-  public long startFlowControlWait();
-  
-  /**
-   * end a period of suspension of message transmission while waiting for
-   * flow-control recharge from another process.
-   */
-  public void endFlowControlWait(long start);
-
-  /**
-   * start a period of suspension of message transmission based on throttle
-   * request from another process.  
-   * This returns a timestamp to be used when calling endFlowControlWait();
-   * @since 5.0
-   */
-  public long startFlowControlThrottleWait();
-  
-  /**
-   * end a period of suspension of message transmission based on throttle 
-   * request from another process.
-   */
-  public void endFlowControlThrottleWait(long start);
-
-  /**
-   * this statistic measures travel of messages up the jgroups stack
-   * for tuning purposes
-   */
-  public void incJgUNICASTdataReceived(long value);
-
-  public void incjgDownTime(long value);
-  public void incjgUpTime(long value);
-  public void incjChannelUpTime(long value);
-
-  public void setJgQueuedMessagesSize(long value);
-  
-  public void setJgSTABLEreceivedMessagesSize(long value);
-  public void setJgSTABLEsentMessagesSize(long value);
-  
-  public void incJgSTABLEsuspendTime(long value);
-  public void incJgSTABLEmessages(long value);
-  public void incJgSTABLEmessagesSent(long value);
-  public void incJgSTABILITYmessages(long value);
-  
-  public void incJgFCsendBlocks(long value);
-  public void incJgFCautoRequests(long value);
-  public void incJgFCreplenish(long value);
-  public void incJgFCresumes(long value);
-  public void incJgFCsentCredits(long value);
-  public void incJgFCsentThrottleRequests(long value);
-  
-  public void setJgUNICASTreceivedMessagesSize(long amount);
-  public void setJgUNICASTsentMessagesSize(long amount);
-  public void setJgUNICASTsentHighPriorityMessagesSize(long amount);
-
-  /** increment the number of javagroups fragmentations performed */
-  public void incJgFragmentationsPerformed();
-  
-  /** increment the number of fragments created during javagroups fragmentation */
-  public void incJgFragmentsCreated(long value);
-  
   /**
    * @since 4.2.2
    */
@@ -582,8 +479,6 @@ public interface DMStats {
    * @since 5.0.2.4 
    */
   public void endBufferAcquire(long start);
-
-  public void incJgNAKACKwaits(long value);
 
   /**
    * increment/decrement the number of thread-owned receivers with the given

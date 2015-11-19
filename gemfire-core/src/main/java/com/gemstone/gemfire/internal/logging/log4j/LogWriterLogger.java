@@ -32,6 +32,7 @@ import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.logging.GemFireHandler;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -39,7 +40,6 @@ import com.gemstone.gemfire.internal.logging.LogWriterFactory;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.org.apache.logging.log4j.core.config.xml.GemFireXmlConfiguration;
 import com.gemstone.org.apache.logging.log4j.message.GemFireParameterizedMessageFactory;
-import com.gemstone.org.jgroups.util.StringId;
 
 /**
  * Implements GemFireLogger with custom levels while also bridging LogWriter 

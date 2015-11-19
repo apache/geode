@@ -372,6 +372,9 @@ subprojects {
   task distributedTest(type:Test) {
     include '**/*DUnitTest.class'
     
+    // maxParallelForks = 2
+    // maxParallelForks = Runtime.runtime.availableProcessors()
+    
 // TODO add @Category(DistributedTest.class) to dunit tests
 //    useJUnit {
 //      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'

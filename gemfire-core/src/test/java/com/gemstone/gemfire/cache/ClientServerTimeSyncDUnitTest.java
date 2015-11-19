@@ -117,7 +117,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
     // place-holder to keep dunit runner from barfing
   }
 
-  @Ignore("Failing inconsistently")
+  @Ignore("not yet implemented")
   public void DISABLED_testClientTimeSlowsDown() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server

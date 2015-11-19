@@ -17,16 +17,15 @@
 
 package com.gemstone.gemfire.internal;
 
-import com.gemstone.gemfire.cache.UnsupportedVersionException;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CommandInitializer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.org.jgroups.JGroupsVersion;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+
+import com.gemstone.gemfire.cache.UnsupportedVersionException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CommandInitializer;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for client / server and p2p version.
@@ -64,7 +63,7 @@ public final class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 43;
+  public static final int HIGHEST_VERSION = 45;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION+1];
 
@@ -192,9 +191,9 @@ public final class Version implements Comparable<Version> {
   public static final Version GFE_82 = new Version("GFE", "8.2", (byte)8,
       (byte)2, (byte)0, (byte)0, GFE_82_ORDINAL);
 
-  // 41-42 available for 8.2.x variants
+  // 41-44 available for 8.2.x variants
 
-  private static final byte GFE_90_ORDINAL = 43;
+  private static final byte GFE_90_ORDINAL = 45;
 
   public static final Version GFE_90 = new Version("GFE", "9.0", (byte)9,
       (byte)0, (byte)0, (byte)0, GFE_90_ORDINAL);
@@ -220,10 +219,6 @@ public final class Version implements Comparable<Version> {
   public static final Version TEST_VERSION = new Version("TEST", "VERSION",
       (byte)0, (byte)0, (byte)0, (byte)0, validOrdinalForTesting);
   
-  static {
-    JGroupsVersion.CURRENT_ORDINAL = CURRENT_ORDINAL;
-  }
-
   /** Creates a new instance of <code>Version</code> */
   private Version(String product, String name, byte major, byte minor, byte release,
       byte patch, byte ordinal) {

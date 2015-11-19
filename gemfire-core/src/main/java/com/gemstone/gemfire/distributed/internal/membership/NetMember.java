@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.net.InetAddress;
 
 /**
@@ -25,55 +28,51 @@ import java.net.InetAddress;
  * @author jpenney
  *
  */
-public interface NetMember
+public interface NetMember extends Comparable<NetMember>
 {
 
-  public abstract void setAttributes(MemberAttributes args);
+  public void setAttributes(MemberAttributes args);
 
-  public abstract MemberAttributes getAttributes();
+  public MemberAttributes getAttributes();
 
-  public abstract InetAddress getIpAddress();
+  public InetAddress getInetAddress();
 
-  public abstract int getPort();
+  public int getPort();
   
-  public abstract void setPort(int p);
+  public void setPort(int p);
 
-  public abstract boolean isMulticastAddress();
+  public boolean isMulticastAddress();
+  
+  public short getVersionOrdinal();
   
   /**
    * return a flag stating whether the member has network partition detection enabled
    * @since 5.6
    */
-  public abstract boolean splitBrainEnabled();
+  public boolean splitBrainEnabled();
+  
+  public void setSplitBrainEnabled(boolean enabled);
   
   /**
    * return a flag stating whether the member can be the membership coordinator
    * @since 5.6
    */
-  public abstract boolean canBeCoordinator();
-
+  public boolean preferredForCoordinator();
+  
   /**
-   * Establishes an order between 2 addresses. Assumes other contains non-null IpAddress.
-   * Excludes channel_name from comparison.
-   * @return 0 for equality, value less than 0 if smaller, greater than 0 if greater.
+   * Set whether this member ID is preferred for coordinator.  This
+   * is mostly useful for unit tests because it does not distribute
+   * this status to other members in the distributed system. 
+   * @param preferred
    */
-  public abstract int compare(NetMember other);
+  public void setPreferredForCoordinator(boolean preferred);
+  
+  public byte getMemberWeight();
 
-  /**
-   * implements the java.lang.Comparable interface
-   * @see java.lang.Comparable
-   * @param o - the Object to be compared
-   * @return a negative integer, zero, or a positive integer as this object is less than,
-   *         equal to, or greater than the specified object.
-   * @exception java.lang.ClassCastException - if the specified object's type prevents it
-   *            from being compared to this Object.
-   */
-  public abstract int compareTo(Object o);
-
-  public abstract boolean equals(Object obj);
-
-  public abstract int hashCode();
-
-  public abstract String toString();
+  /** write identity information not known by DistributedMember instances */
+  public void writeAdditionalData(DataOutput out) throws IOException;
+  
+  /** read identity information not known by DistributedMember instances */
+  public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException;
 
  }

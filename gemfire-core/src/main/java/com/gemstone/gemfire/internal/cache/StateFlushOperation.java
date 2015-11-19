@@ -21,7 +21,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -411,7 +410,7 @@ public class StateFlushOperation  {
               boolean useMulticast = r.getMulticastEnabled()
                                     && r.getSystem().getConfig().getMcastPort() != 0;
               if (initialized) {
-                HashMap channelStates = dm.getMembershipManager().getChannelStates(relayRecipient, useMulticast);
+                Map channelStates = dm.getMembershipManager().getChannelStates(relayRecipient, useMulticast);
                 if (gr.channelState != null) {
                   gr.channelState.putAll(channelStates);
                 } else {
@@ -521,7 +520,7 @@ public class StateFlushOperation  {
     protected int processorId;
     /** a map of the communication channel state between the sending process
      *  and the receiving process */
-    protected HashMap channelState;
+    protected Map channelState;
     /** whether this is a simple request/response two-party flush or (false) a proxied flush */
     protected boolean isSingleFlushTo;
     

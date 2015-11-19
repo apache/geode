@@ -48,7 +48,7 @@ public final class SnapshotResultMessage extends PooledDistributionMessage
   }
 
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 
