@@ -40,11 +40,11 @@ import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.Chunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.Releasable;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -340,9 +340,9 @@ public interface DiskEntry extends RegionEntry {
       synchronized (syncObj) {
         entry.setLastModified(mgr, de.getLastModified());
                               
-        SimpleMemoryAllocatorImpl.setReferenceCountOwner(entry);
+        ReferenceCountHelper.setReferenceCountOwner(entry);
         v = de._getValueRetain(context, true); // OFFHEAP copied to heap entry; todo allow entry to refer to offheap since it will be copied to network.
-        SimpleMemoryAllocatorImpl.setReferenceCountOwner(null);
+        ReferenceCountHelper.setReferenceCountOwner(null);
         if (v == null) {
           if (did == null) {
             // fix for bug 41449

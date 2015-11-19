@@ -16,32 +16,25 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-@Category(IntegrationTest.class)
-public class OldFreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
+/**
+ * Used to keep the heapForm around while an operation is still in progress.
+ * This allows the operation to access the serialized heap form instead of copying
+ * it from offheap. See bug 48135.
+ */
+public class ChunkWithHeapForm extends GemFireChunk {
+  private final byte[] heapForm;
+  
+  public ChunkWithHeapForm(GemFireChunk chunk, byte[] heapForm) {
+    super(chunk);
+    this.heapForm = heapForm;
+  }
 
   @Override
-  protected String getOffHeapMemorySize() {
-    return "20m";
+  protected byte[] getRawBytes() {
+    return this.heapForm;
   }
   
-  @Override
-  public void configureOffHeapStorage() {
-    System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1m");
+  public Chunk getChunkWithoutHeapForm() {
+    return new GemFireChunk(this);
   }
-
-  @Override
-  public void unconfigureOffHeapStorage() {
-    System.clearProperty("gemfire.OFF_HEAP_TOTAL_SIZE");
-    System.clearProperty("gemfire.OFF_HEAP_SLAB_SIZE");
-  }
-
-  @Override
-  public int perObjectOverhead() {
-    return Chunk.OFF_HEAP_HEADER_SIZE;
-  }
-
 }

@@ -16,32 +16,37 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-@Category(IntegrationTest.class)
-public class OldFreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
-
+/**
+ * A ChunkFactory that produces chunks of type GemFireChunk.
+ */
+public class GemFireChunkFactory implements ChunkFactory {
   @Override
-  protected String getOffHeapMemorySize() {
-    return "20m";
-  }
-  
-  @Override
-  public void configureOffHeapStorage() {
-    System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1m");
+  public Chunk newChunk(long address, int chunkSize, ChunkType chunkType) {
+    assert chunkType.equals(GemFireChunk.TYPE);
+    return new GemFireChunk(address,chunkSize);
   }
 
   @Override
-  public void unconfigureOffHeapStorage() {
-    System.clearProperty("gemfire.OFF_HEAP_TOTAL_SIZE");
-    System.clearProperty("gemfire.OFF_HEAP_SLAB_SIZE");
+  public Chunk newChunk(long address) {
+    return new GemFireChunk(address);
   }
 
   @Override
-  public int perObjectOverhead() {
-    return Chunk.OFF_HEAP_HEADER_SIZE;
+  public Chunk newChunk(long address, ChunkType chunkType) {
+    assert chunkType.equals(GemFireChunk.TYPE);
+    return new GemFireChunk(address);
   }
 
+  @Override
+  public ChunkType getChunkTypeForAddress(long address) {
+    assert Chunk.getSrcType(address) == Chunk.SRC_TYPE_GFE;
+    return GemFireChunk.TYPE;
+  }
+
+  @Override
+  public ChunkType getChunkTypeForRawBits(int bits) {
+    assert Chunk.getSrcTypeFromRawBits(bits) == Chunk.SRC_TYPE_GFE;
+    return GemFireChunk.TYPE;
+  }
 }

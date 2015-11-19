@@ -16,32 +16,29 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-@Category(IntegrationTest.class)
-public class OldFreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
-
+/**
+ * Represents a slice of a GemFireChunk.
+ * A slice is a subsequence of the bytes stored in a GemFireChunk.
+ */
+public class GemFireChunkSlice extends GemFireChunk {
+  private final int offset;
+  private final int capacity;
+  public GemFireChunkSlice(GemFireChunk gemFireChunk, int position, int limit) {
+    super(gemFireChunk);
+    this.offset = gemFireChunk.getBaseDataOffset() + position;
+    this.capacity = limit - position;
+  }
   @Override
-  protected String getOffHeapMemorySize() {
-    return "20m";
+  public int getDataSize() {
+    return this.capacity;
   }
   
   @Override
-  public void configureOffHeapStorage() {
-    System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1m");
+  protected long getBaseDataAddress() {
+    return super.getBaseDataAddress() + this.offset;
   }
-
   @Override
-  public void unconfigureOffHeapStorage() {
-    System.clearProperty("gemfire.OFF_HEAP_TOTAL_SIZE");
-    System.clearProperty("gemfire.OFF_HEAP_SLAB_SIZE");
+  protected int getBaseDataOffset() {
+    return this.offset;
   }
-
-  @Override
-  public int perObjectOverhead() {
-    return Chunk.OFF_HEAP_HEADER_SIZE;
-  }
-
 }

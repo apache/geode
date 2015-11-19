@@ -108,7 +108,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -4310,10 +4310,10 @@ public final class Oplog implements CompactableOplog, Flushable {
     DiskId did = entry.getDiskId();
     byte userBits = 0;
     long oplogOffset = did.getOffsetInOplog();
-    SimpleMemoryAllocatorImpl.skipRefCountTracking();
+    ReferenceCountHelper.skipRefCountTracking();
     // TODO OFFHEAP: no need to retain. We just use it while we have the RegionEntry synced.
     @Retained @Released Object value = entry._getValueRetain(dr, true);
-    SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+    ReferenceCountHelper.unskipRefCountTracking();
     // TODO:KIRK:OK Object value = entry.getValueWithContext(dr);
     boolean foundData = false;
     if (value == null) {

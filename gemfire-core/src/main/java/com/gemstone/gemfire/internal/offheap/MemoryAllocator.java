@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.offheap;
 
 import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.ChunkType;
 
 /**
  * Basic contract for a heap that manages off heap memory. Any MemoryChunks allocated from a heap

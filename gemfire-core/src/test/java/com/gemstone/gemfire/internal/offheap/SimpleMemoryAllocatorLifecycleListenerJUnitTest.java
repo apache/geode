@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.LifecycleListener;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -45,7 +44,7 @@ public class SimpleMemoryAllocatorLifecycleListenerJUnitTest {
   
   @After
   public void tearDown() throws Exception {
-    SimpleMemoryAllocatorImpl.removeLifecycleListener(this.listener);
+    LifecycleListener.removeLifecycleListener(this.listener);
     this.afterCreateCallbacks.clear();
     this.afterReuseCallbacks.clear();
     this.beforeCloseCallbacks.clear();
@@ -54,8 +53,8 @@ public class SimpleMemoryAllocatorLifecycleListenerJUnitTest {
 
   @Test
   public void testAddRemoveListener() {
-    SimpleMemoryAllocatorImpl.addLifecycleListener(this.listener);
-    SimpleMemoryAllocatorImpl.removeLifecycleListener(this.listener);
+    LifecycleListener.addLifecycleListener(this.listener);
+    LifecycleListener.removeLifecycleListener(this.listener);
 
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
     SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
@@ -73,7 +72,7 @@ public class SimpleMemoryAllocatorLifecycleListenerJUnitTest {
   
   @Test
   public void testCallbacksAreCalledAfterCreate() {
-    SimpleMemoryAllocatorImpl.addLifecycleListener(this.listener);
+    LifecycleListener.addLifecycleListener(this.listener);
     
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
     SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
