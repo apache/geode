@@ -71,12 +71,12 @@
             <img class="logo-title img-responsive hidden-xs" src="img/apache_geode_logo.png" />
             <div class="text-container">
                 <h2 class="tagline"><em>Performance</em> is key. <em>Consistency</em> is a must.</h2>
-                <p class="description">Solving the hardest data management problems since 2002.<br/>
-                  <br/>Build elastic modern <em>in-memory</em> data intensive applications and <em>scale</em>.<br/>
-                  Delivery high-performance at cloud scale blending advanced techniques for data replication, partitioning and distributed processing.
+                <p class="description">Solving low latency data management problems at very high concurrency since 2002.<br/>
+                  <br/>Build high-speed, data-intensive applications that elastically meet performance requirements at any scale.<br/>
+                  Take advantage of Apache Geode's unique technology that blends advanced techniques for data replication, partitioning and distributed processing.
 
                   <br/><br/>
-                  Offering a database-like consistency model, reliable transaction processing and shared nothing architecture at ease.<br/></p>
+                  Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing.<br/></p>
             </div>
 
             <div class="btn-wrapper">
@@ -95,34 +95,34 @@
             <div class="col-md-4">
                 <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-sitemap""></i></div>
                 <h3>Replication and Partitioning</h3>
-                <p>Data can easily be partitioned (sharded) or replicated and resilience is ensured through redundant copies or disk-persistency allowing data to scale however is needed.</p>
+                <p>Data can easily be partitioned (sharded) or replicated between nodes allowing performance to scale as needed. Durability is ensured through redundant in-memory copies and disk-based persistence.</p>
             </div>
             <div class="col-md-4">
                 <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-hdd"></i></div>
                 <h3>Persistence</h3>
-                <p>Super fast WAL persistence mechanism with shared-nothing architecture and optmized for fast parallel recovery of a cluster or single node.</p>
+                <p>Super fast write-ahead-logging (WAL) persistence with a shared-nothing architecture that is optimized for fast parallel recovery of nodes or an entire cluster.</p>
             </div>
             <div class="col-md-4">
                 <div class="bf-icon-wrap"><i aria-hidden="true" class="icon-rocket"></i></div>
                 <h3>Performance</h3>
-                <p>Predictable low-latency for transactions, reads, writes and query processing on top of index and non-indexed data.</p>
+                <p>Linear-scaling low latency for transactions, reads, writes and query processing of indexed or unindexed data.</p>
             </div>
         </div>
         <div class="row">
             <div class="col-md-4">
                 <div class="bf-icon-wrap" style="font-size:40px; vertical-align: 15px;"><i aria-hidden="true" class="icon-fast-forward"></i><i aria-hidden="true" class="icon-dashboard"></i></div>
-                <h3>In-Memory</h3>
-                <p>Blazing fast in-memory storage optmized for larger heaps, with the option of using off-heap, compression and features such as disk-overflow, eviction and expiration.</p>
+                <h3>In-Memory Storage</h3>
+                <p>Blazing fast in-memory storage optimized for large heaps, with the option of using off-heap storage, compression and features such as disk-overflow, eviction and expiration of data.</p>
             </div>
             <div class="col-md-4">
                 <div class="bf-icon-wrap"><span style="font-size:60px" aria-hidden="true" class="icon-cogs"></span></div>
                 <h3>Functions</h3>
-                <p>Distributed data-aware processing can be deployed and executed in parallel on a cluster. In the case of failures, processing can be retried on different nodes.</p>
+                <p>Distributed location-aware user functions can be deployed and executed by the same nodes storing relevant sharded data for fast parallel processing. Failed operations can be retried on replicant nodes.</p>
             </div>
             <div class="col-md-4">
                 <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-credit-card"></i></div>
                 <h3>Transactions</h3>
-                <p>ACID distributed transactions allows for efficient and safe coordinated operations on colocated data. Transactions can be suspended, initiated from a client or a server.</p>
+                <p>ACID distributed transactions support efficient and safe coordinated operations on colocated data. Transactions can be initiated or suspended by either a client or a server.</p>
             </div>
         </div>
         <div class="row">
@@ -130,17 +130,17 @@
               <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-table"></i></div>
               <h3>OQL and Indexes</h3>
               <p>Object Query Language allows distributed query execution on hot and cold data, with SQL-like capabilities, including joins.<br/>
-              Multiple option of indexes can be created and consistently maintained across the cluster.</p>
+              Multiple kinds of indexes can be defined and consistently maintained across the cluster.</p>
           </div>
           <div class="col-md-4">
               <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-bolt"></i></div>
               <h3>Events</h3>
-              <p>Clients can be notified about server-side data events, and servers can react synchronous or asynchronously with guaranteed delivery of ordered events.</p>
+              <p>Clients can be notified about server-side data events, and servers can react synchronously or asynchronously with guaranteed delivery of ordered events.</p>
           </div>
           <div class="col-md-4">
               <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-cloud"></i></div>
               <h3>Clustering</h3>
-              <p>Highly scalable, battle-proof advanced clustering technology, with failure detection, dynamic scale, and network-partition detection algorithms.</p>
+              <p>Highly scalable, robust advanced clustering technology with failure detection, dynamic scaling, and network-partition detection algorithms.</p>
           </div>
         </div>
     </div>
@@ -163,8 +163,10 @@
             <div class="col-md-12 text-left">
                 <h2>About the Project</h2>
                 <p>Apache Geode is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.</p>
-                <p>By pooling memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior, it uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.</p>
-                <p>Apache Geode is an extremely mature and robust product that can trace its legacy all the way back to one of the first Object Databases for Smalltalk: GemStone. Geode (as GemFire™) was first deployed in the financial sector as the transactional, low-latency data engine used by multiple Wall Street trading platforms. Today Geode is used by over 600 enterprise customers for high-scale, 24x7 business critical applications.</p>
+
+                <p>By pooling memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior, it uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Apache Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.</p>
+
+                <p>Apache Geode is a mature, robust product that can trace its legacy all the way back to GemStone, one of the first Object Databases for Smalltalk. Apache Geode (as GemFire™) was first deployed in the financial sector as the transactional, low-latency data engine used by multiple Wall Street trading platforms. Today Apache Geode is used by over 600 enterprise customers for high-scale, 24x7 business critical applications.</p>
             </div>
             <!--
             <div class="col-md-4 text-left">
