@@ -72,7 +72,7 @@ public class Transport extends UDP {
         Thread.currentThread().interrupt(); // let someone else handle the interrupt
     }
     catch(SocketException e) {
-      if (!stack.getChannel().isClosed()) {
+      if (!this.sock.isClosed() && !stack.getChannel().isClosed()) {
         log.error("Exception caught while sending message", e);
       }
 //        log.trace(Util.getMessage("SendFailure"),
