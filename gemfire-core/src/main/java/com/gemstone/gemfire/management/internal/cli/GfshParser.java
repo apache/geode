@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
@@ -40,7 +41,6 @@ import org.springframework.shell.event.ParseResult;
 import com.gemstone.gemfire.management.cli.CommandProcessingException;
 import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandMultiModeOptionException;
 import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionHasMultipleValuesException;
 import com.gemstone.gemfire.management.internal.cli.exceptions.CliException;
 import com.gemstone.gemfire.management.internal.cli.exceptions.ExceptionHandler;
 import com.gemstone.gemfire.management.internal.cli.help.format.NewHelp;
@@ -62,7 +62,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preproce
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedInput;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CLIConsoleBufferUtil;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * Implementation of the {@link Parser} interface for GemFire SHell (gfsh)
@@ -354,10 +353,10 @@ public class GfshParser implements Parser {
           for (String string : userOptionSet.getSplit()) {
             if (string.startsWith(SyntaxConstants.LONG_OPTION_SPECIFIER)) {
               // Remove option prefix
-              string = StringUtils.removePrefix(string,
+              string = StringUtils.removeStart(string,
                   SyntaxConstants.LONG_OPTION_SPECIFIER);
               // Remove value specifier
-              string = StringUtils.removeSuffix(string,
+              string = StringUtils.removeEnd(string,
                   SyntaxConstants.OPTION_VALUE_SPECIFIER);
               if (!string.equals("")) {
                 if (option.getLongOption().equals(string)) {
@@ -546,7 +545,7 @@ public class GfshParser implements Parser {
             // with an option specifier
             if (userOptString.startsWith(SyntaxConstants.LONG_OPTION_SPECIFIER)) {
               // Now remove the option specifier part
-              userOptString = StringUtils.removePrefix(userOptString,
+              userOptString = StringUtils.removeEnd(userOptString,
                   SyntaxConstants.LONG_OPTION_SPECIFIER);
               if (option.getLongOption().startsWith(userOptString)
                   && !userOptString.equals("")
@@ -910,10 +909,10 @@ public class GfshParser implements Parser {
   public ParseResult parse(String userInput) {
     GfshParseResult parseResult = null;
     // First remove the trailing white spaces
-    userInput = StringUtils.trimTrailingWhitespace(userInput);
+    userInput = StringUtils.stripEnd(userInput, null);
     if ((ParserUtils.contains(userInput, SyntaxConstants.COMMAND_DELIMITER) && StringUtils.endsWithIgnoreCase(
         userInput, SyntaxConstants.COMMAND_DELIMITER))) {
-      userInput = StringUtils.removeSuffix(userInput, SyntaxConstants.COMMAND_DELIMITER);
+      userInput = StringUtils.removeEnd(userInput, SyntaxConstants.COMMAND_DELIMITER);
     }
     
     try {
@@ -1205,7 +1204,7 @@ public class GfshParser implements Parser {
         // This means that the user has entered the command
         CommandTarget commandTarget = commands.get(commandName);
         if (isAvailable(commandTarget, commandName)) {
-          String remainingBuffer = StringUtils.removePrefix(userInput, commandName);
+          String remainingBuffer = StringUtils.removeEnd(userInput, commandName);
           if (remainingBuffer.length() == 0
               || remainingBuffer.startsWith(" ")
               || remainingBuffer.startsWith(GfshParser.LINE_SEPARATOR)) {
@@ -1257,7 +1256,7 @@ public class GfshParser implements Parser {
         // This means that the user has entered the command & name matches exactly
         commandTarget = commandTargetsMap.get(commandName);
         if (commandTarget != null) {
-          String remainingBuffer = StringUtils.removePrefix(userInput, commandName);
+          String remainingBuffer = StringUtils.removeEnd(userInput, commandName);
           commandTarget = commandTarget.duplicate(commandName, remainingBuffer);
           break;
         }

@@ -80,7 +80,7 @@ def cp = {
     project(':gemfire-core').configurations.runtime.collect { it.getName() }.findAll {
       it.contains('antlr') ||
       it.contains('commons-io') ||
-      it.contains('commons-logging') ||
+      it.contains('commons-lang') ||
       it.contains('fastutil') ||
       it.contains('jackson-annotations') ||
       it.contains('jackson-core') ||
