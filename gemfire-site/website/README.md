@@ -16,7 +16,7 @@ Install Pandoc (Haskell-based markup format converter):
 
     http://johnmacfarlane.net/pandoc/installing.html
 
-Install Pygments (Python-basd syntax coloring library):
+Install Pygments (Python-based syntax coloring library):
 
     $ sudo easy_install Pygments
 
