@@ -25,6 +25,7 @@ import org.springframework.shell.core.ExecutionStrategy;
 import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.management.cli.CliMetaData;
@@ -41,7 +42,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.multistep.MultiStepCommand;
 import com.gemstone.gemfire.management.internal.cli.result.FileResult;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.util.spring.ReflectionUtils;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in

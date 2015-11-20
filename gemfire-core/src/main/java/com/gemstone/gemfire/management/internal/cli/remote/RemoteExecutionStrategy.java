@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -35,7 +36,6 @@ import com.gemstone.gemfire.management.internal.cli.GfshParseResult;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
 import com.gemstone.gemfire.management.internal.cli.result.FileResult;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.util.spring.ReflectionUtils;
 
 /**
  * 

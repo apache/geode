@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.shell.event.ParseResult;
+import org.springframework.util.ReflectionUtils;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.management.cli.Result;
@@ -38,9 +41,6 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.util.spring.ReflectionUtils;
-
-import org.springframework.shell.event.ParseResult;
 
 /**
  * Utility class to abstract CompositeResultData for Multi-step commands
