@@ -18,7 +18,8 @@ package com.gemstone.gemfire.management.internal.cli.parser;
 
 import java.lang.reflect.Method;
 
-import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
+import org.springframework.util.Assert;
+
 import com.gemstone.gemfire.management.internal.cli.util.spring.ObjectUtils;
 import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
