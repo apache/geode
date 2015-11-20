@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+# A few helpful tips about the Rules file:
+#
+# * The string given to #compile and #route are matching patterns for
+#   identifiers--not for paths. Therefore, you can’t match on extension.
+#
+# * The order of rules is important: for each item, only the first matching
+#   rule is applied.
+#
+# * Item identifiers start and end with a slash (e.g. “/about/” for the file
+#   “content/about.html”). To select all children, grandchildren, … of an
+#   item, use the pattern “/about/*/”; “/about/*” will also select the parent,
+#   because “*” matches zero or more characters.
+
+passthrough /\/(bootstrap|css|font|img|js|static)\/.*/ 
+
+compile '/docs/*' do
+  @docs = true
+  filter :erb
+  filter :fenced_code_block
+  filter :pandoc
+  filter :colorize_syntax, :default_colorizer => :pygmentsrb, :pygmentsrb => { :options => { :startinline => 'True' } }
+  layout 'docs'
+end
+
+compile '/community/*' do
+  @community = true
+  filter :erb
+  layout 'community'
+end
+
+compile '*' do
+  if item.binary?
+    # don’t filter binary items
+  else
+    filter :erb
+    layout 'default'
+  end
+end
+
+route '*' do
+  if item.binary?
+    # Write item with identifier /foo/ to /foo.ext
+    item.identifier.chop + '.' + item[:extension]
+  else
+    # Write item with identifier /foo/ to /foo/index.html
+    item.identifier + 'index.html'
+  end
+end
+
+layout '*', :erb
