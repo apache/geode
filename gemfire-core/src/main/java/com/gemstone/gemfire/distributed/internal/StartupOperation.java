@@ -65,7 +65,6 @@ public class StartupOperation {
     msg.setDistributedSystemId(dm.getConfig().getDistributedSystemId());
     msg.setRedundancyZone(redundancyZone);
     msg.setEnforceUniqueZone(enforceUniqueZone);
-    msg.setDirectChannel(dm.getDirectChannel());
     msg.setMcastEnabled(transport.isMcastEnabled());
     msg.setMcastPort(dm.getSystem().getOriginalConfig().getMcastPort());
     msg.setMcastHostAddress(dm.getSystem().getOriginalConfig().getMcastAddress());

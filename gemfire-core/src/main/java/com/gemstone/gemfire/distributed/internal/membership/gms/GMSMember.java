@@ -93,28 +93,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
   
   /**
-   * This is the only constructor to refer to a CacheMember other
-   * than the current host.
-   */
-  public GMSMember(GMSMember m) {
-    udpPort=m.udpPort;
-    preferredForCoordinator=m.preferredForCoordinator;
-    splitBrainEnabled=m.splitBrainEnabled;
-    memberWeight=m.memberWeight;
-    inetAddr=m.inetAddr;
-    processId=m.processId;
-    vmKind=m.vmKind;
-    vmViewId=m.vmViewId;
-    directPort=m.directPort;
-    name=m.name;
-    durableClientAttributes=m.durableClientAttributes;
-    groups=m.groups;
-    versionOrdinal=m.versionOrdinal;
-    uuidLSBs=m.uuidLSBs;
-    uuidMSBs=m.uuidMSBs;
-  }
-
-  /**
    * Create a CacheMember referring to the current host (as defined by
    * the given string).
    * 

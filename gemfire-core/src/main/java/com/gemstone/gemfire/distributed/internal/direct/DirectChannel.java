@@ -91,7 +91,7 @@ public class DirectChannel {
     private volatile boolean disconnectCompleted = true;
 
     /** this is the DistributionManager, most of the time */
-    private final DistributedMembershipListener receiver;
+    private final DirectChannelListener receiver;
 
     private final InetAddress address;
     
@@ -142,17 +142,17 @@ public class DirectChannel {
 
     /**
      * @param mgr
-     * @param dm
+     * @param listener
      * @param dc
      * @param unused
      * @throws ConnectionException
      */
-    public DirectChannel(MembershipManager mgr, DistributedMembershipListener dm,
-        DistributionConfig dc, Properties unused) 
+    public DirectChannel(MembershipManager mgr, DirectChannelListener listener,
+        DistributionConfig dc) 
         throws ConnectionException {
-      this.receiver = dm;
+      this.receiver = listener;
 
-      this.address = initAddress(dm, dc);
+      this.address = initAddress(dc);
       boolean isBindAddress = dc.getBindAddress() != null;
       try {
         int port = Integer.getInteger("tcpServerPort", 0).intValue();
@@ -889,7 +889,7 @@ public class DirectChannel {
   }
 
   /** returns the receiver to which this DirectChannel is delivering messages */
-  protected DistributedMembershipListener getReceiver() {
+  protected DirectChannelListener getReceiver() {
     return receiver;
   }
 
@@ -909,7 +909,7 @@ public class DirectChannel {
     return this.conduit;
   }
 
-  private InetAddress initAddress(DistributedMembershipListener dm, DistributionConfig dc) {
+  private InetAddress initAddress(DistributionConfig dc) {
 
     String bindAddress = dc.getBindAddress();
 

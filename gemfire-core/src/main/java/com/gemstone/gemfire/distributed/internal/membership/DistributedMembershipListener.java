@@ -21,8 +21,9 @@ import java.util.Set;
 
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.direct.DirectChannelListener;
 
-public interface DistributedMembershipListener {
+public interface DistributedMembershipListener extends DirectChannelListener {
 
   /** this method is invoked when the processing of a new view is completed */
   public void viewInstalled(NetView view);
@@ -33,10 +34,8 @@ public interface DistributedMembershipListener {
   /**
    * Event indicating that a new member has joined the system.
    * @param m the new member
-   * @param stub the stub, if any, representing communication to this member
    */
-  public void newMemberConnected(InternalDistributedMember m, 
-      com.gemstone.gemfire.internal.tcp.Stub stub);
+  public void newMemberConnected(InternalDistributedMember m);
 
   /**
    * Event indicating that a member has left the system
@@ -82,11 +81,5 @@ public interface DistributedMembershipListener {
    * @return a printable string for this listener
    */
   public String toString();
-  
-  /**
-   * Return the distribution manager for this receiver
-   * @return the distribution manager
-   */
-  public DistributionManager getDM();
   
 }

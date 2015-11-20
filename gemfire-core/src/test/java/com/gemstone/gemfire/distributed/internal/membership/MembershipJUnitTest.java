@@ -19,6 +19,10 @@ package com.gemstone.gemfire.distributed.internal.membership;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -43,6 +47,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
 import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -54,13 +59,9 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class MembershipJUnitTest extends TestCase {
+public class MembershipJUnitTest {
   static Level baseLogLevel;
   
-  public MembershipJUnitTest(String name) {
-    super(name);
-  }
-
   @BeforeClass
   public static void setupClass() {
 //    baseLogLevel = LogService.getBaseLogLevel();
@@ -68,7 +69,7 @@ public class MembershipJUnitTest extends TestCase {
   }
   
   @AfterClass
-  protected void tearDown() throws Exception {
+  public static void tearDown() throws Exception {
 //    LogService.setBaseLogLevel(baseLogLevel);
   }
   
@@ -263,10 +264,24 @@ public class MembershipJUnitTest extends TestCase {
     GMSJoinLeave joinLeave = new GMSJoinLeave();
     try {
       joinLeave.init(services);
-      fail("expected a GemFireConfigException to be thrown because no locators are configured");
+      throw new Error("expected a GemFireConfigException to be thrown because no locators are configured");
     } catch (GemFireConfigException e) {
       // expected
     }
+  }
+  
+  /**
+   * test the GMSUtil.formatBytes() method
+   */
+  @Test
+  public void testFormatBytes() throws Exception {
+    byte[] bytes = new byte[200];
+    for (int i=0; i<bytes.length; i++) {
+      bytes[i] = (byte)(i%255);
+    }
+    String str = GMSUtil.formatBytes(bytes, 0, bytes.length);
+    System.out.println(str);
+    assertEquals(600+4, str.length());
   }
   
   

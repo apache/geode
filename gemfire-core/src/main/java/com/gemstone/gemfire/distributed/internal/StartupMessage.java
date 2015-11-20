@@ -46,8 +46,6 @@ import com.gemstone.gemfire.internal.tcp.Stub;
 public final class StartupMessage extends HighPriorityDistributionMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
-  /** A stub for the direct channel for this manager */
-  private Stub directChannel;
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
   private int replyProcessorId;
   private boolean isMcastEnabled;
@@ -101,13 +99,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   
   ///////////////////////  Instance Methods  ///////////////////////
   
-  /**
-   * Sets the id of the distribution manager that is starting up
-   */
-  void setDirectChannel(Stub directChannel) {
-    this.directChannel = directChannel;
-  }
-
   /**
    * Sets the reply processor for this message
    */
@@ -319,10 +310,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeBoolean(this.directChannel != null);
-    if (this.directChannel != null) {
-      InternalDataSerializer.invokeToData(this.directChannel, out);
-    }
 
     boolean pre9_0_0_0 = InternalDataSerializer.
         getVersionForDataStream(out).compareTo(Version.GFE_90) < 0;
@@ -391,12 +378,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   public void fromData(DataInput in)
     throws IOException, ClassNotFoundException {
     super.fromData(in);
-    boolean hasDirectChannel = in.readBoolean();
-    if (hasDirectChannel) {
-      this.directChannel = Stub.createFromData(in);
-    } else {
-      this.directChannel = null;
-    }
 
     boolean pre9_0_0_0 = InternalDataSerializer.
         getVersionForDataStream(in).compareTo(Version.GFE_90) < 0;

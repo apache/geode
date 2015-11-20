@@ -132,7 +132,7 @@ public class DistributionChannel  {
   public long getId() {
     MembershipManager mgr = this.membershipManager;
     if (mgr == null) {
-      throw new DistributedSystemDisconnectedException(LocalizedStrings.DistributionChannel_I_NO_LONGER_HAVE_A_MEMBERSHIP_ID.toLocalizedString(), membershipManager.getShutdownCause());
+      throw new DistributedSystemDisconnectedException(LocalizedStrings.DistributionChannel_I_NO_LONGER_HAVE_A_MEMBERSHIP_ID.toLocalizedString());
     }
     InternalDistributedMember moi = mgr.getLocalMember();
     if (moi == null) {

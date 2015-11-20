@@ -645,9 +645,9 @@ public class TCPConduit implements Runnable {
           continue;
         }
         if (inhibitNewConnections) {
-          if (logger.isTraceEnabled(LogMarker.QA)) {
-            logger.trace(LogMarker.QA, "Test hook: inhibiting acceptance of connection {}", othersock);
-          }
+//          if (logger.isTraceEnabled(LogMarker.QA)) {
+            logger.info("Test hook: inhibiting acceptance of connection {}", othersock);
+//          }
           othersock.close();
           while (inhibitNewConnections && !stopped) {
             this.stopper.checkCancelInProgress(null);

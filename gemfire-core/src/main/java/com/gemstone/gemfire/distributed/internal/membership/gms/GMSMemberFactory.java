@@ -95,17 +95,6 @@ public class GMSMemberFactory implements MemberServices {
     return newNetMember(inetAddr, p);
   }
   
-  /**
-   * Return a new Member
-   * 
-   * Used by externalization only.
-   * 
-   * @return blank member for use with externalization
-   */
-  public NetMember newNetMember() {
-    return new GMSMember();
-  }
-
   public MembershipManager newMembershipManager(DistributedMembershipListener listener,
           DistributionConfig config,
           RemoteTransportConfig transport, DMStats stats) throws DistributionException
@@ -140,4 +129,5 @@ public class GMSMemberFactory implements MemberServices {
     
     return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled, stats);
   }
+
 }

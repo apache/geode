@@ -38,14 +38,6 @@ public class MemberFactory {
   private static final MemberServices services = new GMSMemberFactory();
 
   /**
-   * Return a blank NetMember (used by externalization)
-   * @return the new NetMember
-   */
-  static public NetMember newNetMember() {
-    return services.newNetMember();
-  }
-  
-  /**
    * Return a new NetMember, possibly for a different host
    * 
    * @param i the name of the host for the specified NetMember, the current host (hopefully)

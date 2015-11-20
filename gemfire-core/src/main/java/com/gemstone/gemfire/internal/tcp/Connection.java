@@ -771,6 +771,13 @@ public class Connection implements Runnable {
             String peerName;
             if (this.remoteAddr != null) {
               peerName = this.remoteAddr.toString();
+              // late in the life of jdk 1.7 we started seeing connections accepted
+              // when accept() was not even being called.  This started causing timeouts
+              // to occur in the handshake threads instead of causing failures in
+              // connection-formation.  So, we need to initiate suspect processing here
+              owner.getDM().getMembershipManager().suspectMember(this.remoteAddr,
+                  LocalizedStrings.Connection_CONNECTION_HANDSHAKE_WITH_0_TIMED_OUT_AFTER_WAITING_1_MILLISECONDS.toLocalizedString(
+                      new Object[] {peerName, Integer.valueOf(HANDSHAKE_TIMEOUT_MS)}));
             }
             else {
               peerName = "socket " + this.socket.getRemoteSocketAddress().toString()

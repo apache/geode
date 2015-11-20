@@ -121,13 +121,6 @@ public interface MembershipManager {
    */
   public void startEventProcessing();
   
-  /**
-   * Return the underlying proxy object, if any, associated with this
-   * local side of this connection.
-   * 
-   * @return the Stub
-   */
-  public Stub getDirectChannel();
   
   /**
    * @param destinations list of members to send the message to.  A list of
@@ -345,10 +338,4 @@ public interface MembershipManager {
    */
   public void releaseQuorumChecker(QuorumChecker checker);
   
-  /**
-   * sets the log writer for authentication logging
-   * @param writer
-   */
-  public void setSecurityLogWriter(InternalLogWriter writer);
-
 }

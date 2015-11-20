@@ -419,7 +419,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @return
    */
   private boolean doCheckMember(InternalDistributedMember member) {
-    if (playingDead) {
+    if (playingDead || beingSick) {
       // a member playingDead should not be sending messages to other
       // members, so we avoid sending heartbeat requests or suspect
       // messages by returning true.

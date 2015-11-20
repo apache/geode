@@ -136,5 +136,24 @@ public class GMSUtil {
   }
   
   
+  /** compareTo for InetAddresses */
+  public static int compareAddresses(InetAddress one, InetAddress two) {
+    byte[] oneBytes = one.getAddress();
+    byte[] twoBytes = two.getAddress();
+
+    if (oneBytes != twoBytes) {
+      for (int i = 0; i < oneBytes.length; i++) {
+        if (i >= twoBytes.length)
+          return -1; // same as far as they go, but shorter...
+        if (oneBytes[i] < twoBytes[i])
+          return -1;
+        if (oneBytes[i] > twoBytes[i])
+          return 1;
+      }
+      if (oneBytes.length > twoBytes.length)
+        return 1; // same as far as they go, but longer...
+    }
+    return 0;
+  }
 
 }

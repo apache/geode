@@ -1,0 +1,370 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.gemstone.gemfire.distributed.internal.membership.gms.mgr;
+
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Timer;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.internal.AdminMessageType;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.HighPriorityAckedMessage;
+import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
+import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.SuspectMember;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager.StartupEvent;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.admin.remote.AdminRequest;
+import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
+import com.gemstone.gemfire.internal.admin.remote.AlertListenerMessage;
+import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
+import com.gemstone.gemfire.internal.tcp.Stub;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
+public class GMSMembershipManagerJUnitTest {
+  private Services services;
+  private ServiceConfig mockConfig;
+  private DistributionConfig distConfig;
+  private Authenticator authenticator;
+  private HealthMonitor healthMonitor;
+  private InternalDistributedMember myMemberId;
+  private InternalDistributedMember[] mockMembers;
+  private Messenger messenger;
+  private JoinLeave joinLeave;
+  private Stopper stopper;
+  DistributedMembershipListener listener;
+  private GMSMembershipManager manager;
+  private List<InternalDistributedMember> members;
+  private Set<InternalDistributedMember> emptyMembersSet = new HashSet<>();
+  private DirectChannel dc;
+
+  @Before
+  public void initMocks() throws Exception {
+    Properties nonDefault = new Properties();
+    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
+    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
+    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
+    nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
+    distConfig = new DistributionConfigImpl(nonDefault);
+    RemoteTransportConfig tconfig = new RemoteTransportConfig(distConfig,
+        DistributionManager.NORMAL_DM_TYPE);
+    
+
+    mockConfig = mock(ServiceConfig.class);
+    when(mockConfig.getDistributionConfig()).thenReturn(distConfig);
+    when(mockConfig.getTransport()).thenReturn(tconfig);
+    
+    authenticator = mock(Authenticator.class);
+    myMemberId = new InternalDistributedMember("localhost", 8887);
+    
+    messenger = mock(Messenger.class);
+    when(messenger.getMemberID()).thenReturn(myMemberId);
+
+    stopper = mock(Stopper.class);
+    when(stopper.isCancelInProgress()).thenReturn(false);
+    
+    healthMonitor = mock(HealthMonitor.class);
+    when(healthMonitor.getFailureDetectionPort()).thenReturn(Integer.valueOf(-1));
+    
+    joinLeave = mock(JoinLeave.class);
+    
+    services = mock(Services.class);
+    when(services.getAuthenticator()).thenReturn(authenticator);
+    when(services.getConfig()).thenReturn(mockConfig);
+    when(services.getMessenger()).thenReturn(messenger);
+    when(services.getCancelCriterion()).thenReturn(stopper);
+    when(services.getHealthMonitor()).thenReturn(healthMonitor);
+    when(services.getJoinLeave()).thenReturn(joinLeave);
+    
+    Timer t = new Timer(true);
+    when(services.getTimer()).thenReturn(t);
+    
+    mockMembers = new InternalDistributedMember[5];
+    for (int i = 0; i < mockMembers.length; i++) {
+      mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
+    }
+    members = new ArrayList<>(Arrays.asList(mockMembers));
+
+    listener = mock(DistributedMembershipListener.class);
+    
+    manager = new GMSMembershipManager(listener);
+    manager.init(services);
+    when(services.getManager()).thenReturn(manager);
+  }
+  
+  @After
+  public void tearDown() throws Exception {
+    if (manager != null) {
+      manager.stop();
+      manager.stopped();
+    }
+  }
+  
+  @Test
+  public void testSendMessage() throws Exception {
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    m.setRecipient(mockMembers[0]);
+    manager.start();
+    manager.started();
+    manager.installView(new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet));
+    Set<InternalDistributedMember> failures = manager.send(m);
+    verify(messenger).send(m);
+    if (failures != null) {
+      assertEquals(0, failures.size());
+    }
+  }
+  
+  @Test
+  public void testSendAdminMessageFailsDuringShutdown() throws Exception {
+    AlertListenerMessage m = AlertListenerMessage.create(mockMembers[0], 1, 
+       new Date(System.currentTimeMillis()), "thread", "", 1L, "", "");
+    manager.start();
+    manager.started();
+    manager.installView(new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet));
+    manager.setShutdown();
+    Set<InternalDistributedMember> failures = manager.send(m);
+    verify(messenger, never()).send(m);
+    assertEquals(1, failures.size());
+    assertEquals(mockMembers[0], failures.iterator().next());
+  }
+  
+  @Test
+  public void testSendToEmptyListIsRejected() throws Exception {
+    InternalDistributedMember[] emptyList = new InternalDistributedMember[0];
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    m.setRecipient(mockMembers[0]);
+    manager.start();
+    manager.started();
+    manager.installView(new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet));
+    Set<InternalDistributedMember> failures = manager.send(null, m, null);
+    verify(messenger, never()).send(m);
+    reset(messenger);
+    failures = manager.send(emptyList, m, null);
+    verify(messenger, never()).send(m);
+  }
+  
+  @Test
+  public void testStartupEvents() throws Exception {
+    manager.start();
+    manager.started();
+    manager.isJoining = true;
+
+    List<InternalDistributedMember> viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], myMemberId});
+    manager.installView(new NetView(myMemberId, 2, viewmembers, emptyMembersSet, emptyMembersSet));
+
+    // add a surprise member that will be shunned due to it's having
+    // an old view ID
+    InternalDistributedMember surpriseMember = mockMembers[2];
+    surpriseMember.setVmViewId(1);
+    manager.handleOrDeferSurpriseConnect(surpriseMember);
+    assertEquals(1, manager.getStartupEvents().size());
+
+    // add a surprise member that will be accepted
+    InternalDistributedMember surpriseMember2 = mockMembers[3];
+    surpriseMember2.setVmViewId(3);
+    manager.handleOrDeferSurpriseConnect(surpriseMember2);
+    assertEquals(2, manager.getStartupEvents().size());
+
+    // suspect a member
+    InternalDistributedMember suspectMember = mockMembers[1];
+    manager.handleOrDeferSuspect(new SuspectMember(mockMembers[0], suspectMember));
+    // suspect messages aren't queued - they're ignored before joining the system
+    assertEquals(2, manager.getStartupEvents().size());
+    verify(listener, never()).memberSuspect(suspectMember, mockMembers[0]);
+
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    mockMembers[0].setVmViewId(1);
+    m.setRecipient(mockMembers[0]);
+    m.setSender(mockMembers[1]);
+    manager.handleOrDeferMessage(m);
+    assertEquals(3, manager.getStartupEvents().size());
+
+    // this view officially adds surpriseMember2
+    viewmembers = Arrays.asList(
+        new InternalDistributedMember[] {mockMembers[0], myMemberId, surpriseMember2});
+    manager.handleOrDeferViewEvent(new NetView(myMemberId, 3, viewmembers, emptyMembersSet, emptyMembersSet));
+    assertEquals(4, manager.getStartupEvents().size());
+    
+    // add a surprise member that will be shunned due to it's having
+    // an old view ID
+    InternalDistributedMember surpriseMember3 = mockMembers[4];
+    surpriseMember.setVmViewId(1);
+    manager.handleOrDeferSurpriseConnect(surpriseMember);
+    assertEquals(5, manager.getStartupEvents().size());
+
+    
+    // process a new view after we finish joining but before event processing has started
+    manager.isJoining = false;
+    mockMembers[4].setVmViewId(4);
+    viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], myMemberId, surpriseMember2, mockMembers[4]});
+    manager.handleOrDeferViewEvent(new NetView(myMemberId, 4, viewmembers, emptyMembersSet, emptyMembersSet));
+    assertEquals(6, manager.getStartupEvents().size());
+    
+    // exercise the toString methods for code coverage
+    for (StartupEvent ev: manager.getStartupEvents()) {
+      ev.toString();
+    }
+    
+    manager.startEventProcessing();
+
+    // all startup events should have been processed 
+    assertEquals(0, manager.getStartupEvents().size());
+    // the new view should have been installed
+    assertEquals(4, manager.getView().getViewId());
+    // supriseMember2 should have been announced
+    verify(listener).newMemberConnected(surpriseMember2);
+    // supriseMember should have been rejected (old view ID)
+    verify(listener, never()).newMemberConnected(surpriseMember);
+    
+    // for code coverage also install a view after we finish joining but before
+    // event processing has started.  This should notify the distribution manager
+    // with a LocalViewMessage to process the view
+    reset(listener);
+    manager.handleOrDeferViewEvent(new NetView(myMemberId, 5, viewmembers, emptyMembersSet, emptyMembersSet));
+    assertEquals(0, manager.getStartupEvents().size());
+    verify(listener).messageReceived(isA(LocalViewMessage.class));
+
+    // process a suspect now - it will be passed to the listener
+    reset(listener);
+    suspectMember = mockMembers[1];
+    manager.handleOrDeferSuspect(new SuspectMember(mockMembers[0], suspectMember));
+    verify(listener).memberSuspect(suspectMember, mockMembers[0]);
+    
+    InternalDistributedMember mbr = manager.getMemberForStub(new Stub(myMemberId.getInetAddress(), 2033, 20), false);
+    assertTrue(mbr == null);
+    myMemberId.setDirectChannelPort(2033);
+    mbr = manager.getMemberForStub(new Stub(myMemberId.getInetAddress(), 2033, 20), false);
+    assertTrue(mbr != null);
+    assertEquals(mbr, myMemberId);
+  }
+  
+  /**
+   * Some tests require a DirectChannel mock
+   */
+  private void setUpDirectChannelMock() throws Exception {
+    dc = mock(DirectChannel.class);
+    when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()), any(DistributionMessage.class), anyInt(), anyInt()))
+      .thenReturn(100);
+
+    manager.start();
+    manager.started();
+    
+    manager.setDirectChannel(dc);
+
+    NetView view = new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet);
+    manager.installView(view);
+    when(joinLeave.getView()).thenReturn(view);
+    
+    manager.startEventProcessing();
+  }
+
+  @Test
+  public void testDirectChannelSend() throws Exception {
+    setUpDirectChannelMock();
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    InternalDistributedMember[] recipients = new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
+    m.setRecipients(Arrays.asList(recipients));
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+    assertTrue(failures == null);
+    verify(dc).send(isA(GMSMembershipManager.class), isA(mockMembers.getClass()), isA(DistributionMessage.class), anyInt(), anyInt());
+  }
+  
+  @Test
+  public void testDirectChannelSendFailureToOneRecipient() throws Exception {
+    setUpDirectChannelMock();
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    InternalDistributedMember[] recipients = new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
+    m.setRecipients(Arrays.asList(recipients));
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+
+    ConnectExceptions exception = new ConnectExceptions();
+    exception.addFailure(recipients[0], new Exception("testing"));
+    when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()), any(DistributionMessage.class), anyInt(), anyInt()))
+      .thenThrow(exception);
+    failures = manager.directChannelSend(recipients, m, null);
+    assertTrue(failures != null);
+    assertEquals(1, failures.size());
+    assertEquals(recipients[0], failures.iterator().next()); 
+  }
+  
+  @Test
+  public void testDirectChannelSendFailureToAll() throws Exception {
+    setUpDirectChannelMock();
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    InternalDistributedMember[] recipients = new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
+    m.setRecipients(Arrays.asList(recipients));
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+    when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()), any(DistributionMessage.class), anyInt(), anyInt()))
+      .thenReturn(0);
+    when(stopper.cancelInProgress()).thenReturn("stopping for test");
+    try {
+      manager.directChannelSend(recipients, m, null);
+      throw new RuntimeException("expected directChannelSend to throw an exception");
+    } catch (DistributedSystemDisconnectedException e) {
+      // expected
+    }
+  }
+  
+  @Test
+  public void testDirectChannelSendAllRecipients() throws Exception {
+    setUpDirectChannelMock();
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    m.setRecipient(DistributionMessage.ALL_RECIPIENTS);
+    assertTrue(m.forAll());
+    Set<InternalDistributedMember> failures = manager.directChannelSend(null, m, null);
+    assertTrue(failures == null);
+    verify(dc).send(isA(GMSMembershipManager.class), isA(mockMembers.getClass()), isA(DistributionMessage.class), anyInt(), anyInt());
+  }
+  
+}
+

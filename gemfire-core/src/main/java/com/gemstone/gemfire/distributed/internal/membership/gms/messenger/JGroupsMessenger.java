@@ -605,7 +605,7 @@ public class JGroupsMessenger implements Messenger {
         }
       }
       if (problem != null) {
-        if (services.getManager().getShutdownCause() != null) {
+        if (services.getShutdownCause() != null) {
           Throwable cause = services.getShutdownCause();
           // If ForcedDisconnectException occurred then report it as actual
           // problem.
@@ -898,13 +898,6 @@ public class JGroupsMessenger implements Messenger {
    */
   public String getJGroupsStackConfig() {
     return this.jgStackConfig;
-  }
-  
-  /**
-   * returns the JChannel for test verification
-   */
-  public JChannel getJGroupsChannel() {
-    return this.myChannel;
   }
   
   /**

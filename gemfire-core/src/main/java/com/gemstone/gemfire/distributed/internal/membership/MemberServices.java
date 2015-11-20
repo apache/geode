@@ -35,12 +35,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 public interface MemberServices {
 
   /**
-   * Return a blank NetMember (used by externalization)
-   * @return the new NetMember
-   */
-  public abstract NetMember newNetMember();
-  
-  /**
    * Return a new NetMember, possibly for a different host
    * 
    * @param i the name of the host for the specified NetMember, the current host (hopefully)

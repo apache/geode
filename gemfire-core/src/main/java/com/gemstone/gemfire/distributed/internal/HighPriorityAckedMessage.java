@@ -69,7 +69,9 @@ public final class HighPriorityAckedMessage extends HighPriorityDistributionMess
     if (ds != null) {
       this.originDm = (DistributionManager)ds.getDistributionManager();
     }
-    this.id = this.originDm.getDistributionManagerId();
+    if (this.originDm != null) {
+      this.id = this.originDm.getDistributionManagerId();
+    }
   }
   
   /**

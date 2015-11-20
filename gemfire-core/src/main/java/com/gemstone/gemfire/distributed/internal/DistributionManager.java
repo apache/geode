@@ -593,7 +593,7 @@ public class DistributionManager
             }
           }
         }
-        dm.addNewMember(id, null); // add ourselves
+        dm.addNewMember(id); // add ourselves
         dm.selectElder(); // ShutdownException could be thrown here
       }
 
@@ -1440,7 +1440,7 @@ public class DistributionManager
       // Add them all to our view
       Iterator<InternalDistributedMember> it = v.getMembers().iterator();
       while (it.hasNext()) {
-        addNewMember(it.next(), null);
+        addNewMember(it.next());
       }
       
       // Figure out who the elder is...
@@ -1607,15 +1607,6 @@ public class DistributionManager
    */
   public InternalDistributedMember getDistributionManagerId() {
     return this.myid;
-  }
-
-  /**
-   * Returns a remote reference to the channel used for point-to-point
-   * communications, or null if the normal channel is being used for
-   * this.
-   */
-  protected Stub getDirectChannel() {
-    return membershipManager.getDirectChannel();
   }
 
   /**
@@ -1820,16 +1811,16 @@ public class DistributionManager
     }
   }
 
-  public void addNewMember(InternalDistributedMember member, Stub stub) {
+  public void addNewMember(InternalDistributedMember member) {
     // This is the place to cleanup the zombieMembers
     int vmType = member.getVmKind();
     switch (vmType) {
       case ADMIN_ONLY_DM_TYPE:
-        handleConsoleStartup(member, stub);
+        handleConsoleStartup(member);
         break;
       case LOCATOR_DM_TYPE:
       case NORMAL_DM_TYPE:
-        handleManagerStartup(member, stub);
+        handleManagerStartup(member);
         break;        
       default:
         throw new InternalGemFireError(LocalizedStrings.DistributionManager_UNKNOWN_MEMBER_TYPE_0.toLocalizedString(Integer.valueOf(vmType)));
@@ -2795,7 +2786,7 @@ public class DistributionManager
         if (unresponsiveElder) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.DistributionManager_FORCING_AN_ELDER_JOIN_EVENT_SINCE_A_STARTUP_RESPONSE_WAS_NOT_RECEIVED_FROM_ELDER__0_, e));
-          handleManagerStartup(e, null/*stub already registered*/);
+          handleManagerStartup(e);
         }
       } // an elder exists
     } // someone didn't reply
@@ -3104,7 +3095,7 @@ public class DistributionManager
    *        The id of the distribution manager starting up
    *
    */
-  private void handleManagerStartup(InternalDistributedMember theId, Stub directChannel) {
+  private void handleManagerStartup(InternalDistributedMember theId) {
     HashMap<InternalDistributedMember,InternalDistributedMember> tmp = null;
     synchronized (this.membersLock) {
       // Note test is under membersLock
@@ -3150,7 +3141,7 @@ public class DistributionManager
    * the distributed cache.
    *
    */
-  private void handleConsoleStartup(InternalDistributedMember theId, Serializable directChannel) {
+  private void handleConsoleStartup(InternalDistributedMember theId) {
     // if we have an all listener then notify it NOW.
     HashSet tmp = null;
     synchronized (this.membersLock) {
@@ -4400,12 +4391,12 @@ public class DistributionManager
       handleIncomingDMsg(message);
     }
 
-    public void newMemberConnected(InternalDistributedMember member, Stub stub) {
+    public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock.  That can cause a race condition and
       // subsequent deadlock (#45566).  Elder selection is now done when a view
       // is installed.
-      dm.addNewMember(member, stub);
+      dm.addNewMember(member);
     }
 
     public void memberDeparted(InternalDistributedMember theId, boolean crashed, String reason) {
