@@ -199,11 +199,22 @@ public final class AlertAppender extends AbstractAppender implements PropertyCha
     final Level level = LogService.toLevel(alertLevelToLogLevel(alertLevel));
     
     for (Listener listener: this.listeners) {
-      if(listener.getMember().equals(member) && listener.getLevel().equals(level)) {
+      if (listener.getMember().equals(member) && listener.getLevel().equals(level)) {
         return true;
       }
     }
-    
+
+    // Special case for alert level Alert.OFF (NONE_LEVEL), because we can never have an actual listener with
+    // this level (see AlertLevelChangeMessage.process()).
+    if (alertLevel == Alert.OFF) {
+      for (Listener listener: this.listeners) {
+        if (listener.getMember().equals(member)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     return false;
   }
 
