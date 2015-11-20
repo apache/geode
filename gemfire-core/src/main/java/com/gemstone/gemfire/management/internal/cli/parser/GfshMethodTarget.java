@@ -19,8 +19,8 @@ package com.gemstone.gemfire.management.internal.cli.parser;
 import java.lang.reflect.Method;
 
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
-import com.gemstone.gemfire.management.internal.cli.util.spring.ObjectUtils;
 import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
@@ -102,7 +102,7 @@ public class GfshMethodTarget {
 
   @Override
   public int hashCode() {
-    return ObjectUtils.nullSafeHashCode(method, target);
+    return ObjectUtils.nullSafeHashCode(new Object[] { method, target });
   }
 
   @Override
