@@ -160,7 +160,7 @@ public class HashIndex extends AbstractIndex {
       }
     }
     
-    entriesSet = new HashIndexSet(entryToValuesMap, entryToOldKeysMap, internalIndexStats);
+    entriesSet = new HashIndexSet();
   }
 
   /**
@@ -233,16 +233,48 @@ public class HashIndex extends AbstractIndex {
             if (logger.isDebugEnabled()) { 
               logger.debug("A removed or invalid token was being added, and we had an old mapping.");
             }
-            entriesSet.remove(oldKey, entry, true);
+            removeFromEntriesSet(oldKey, entry, true);
           }
           return;
         }
       }
-      this.entriesSet.add(newKey, entry);
+      
+      // Before adding the entry with new value, remove it from reverse map and
+      // using the oldValue remove entry from the forward map.
+      // Reverse-map is used based on the system property
+      Object oldKey = getOldKey(entry);
+      
+      int indexSlot = this.entriesSet.add(newKey, entry);
+      
+      if (indexSlot >= 0) {
+        // Update the reverse map
+        if (IndexManager.isObjectModificationInplace()) {
+          this.entryToValuesMap.put(entry, newKey);
+        }
+        if (newKey != null && oldKey != null) {
+          removeFromEntriesSet(oldKey, entry, false, indexSlot);
+        }
+        // Update Stats after real addition
+        internalIndexStats.incNumValues(1);
+
+      }
     } catch (TypeMismatchException ex) {
       throw new IMQException("Could not add object of type "
           + key.getClass().getName(), ex);
     }
+  }
+  
+  private Object getOldKey(RegionEntry entry) throws TypeMismatchException {
+    Object oldKey = null;
+    if (IndexManager.isObjectModificationInplace() && this.entryToValuesMap.containsKey(entry)) {
+      oldKey = this.entryToValuesMap.get(entry);
+    } else if (!IndexManager.isObjectModificationInplace() && this.entryToOldKeysMap != null) {
+      Map oldKeyMap = this.entryToOldKeysMap.get();
+      if (oldKeyMap != null) {
+        oldKey = TypeUtils.indexKeyFor(oldKeyMap.get(entry));
+      }
+    }
+    return oldKey;
   }
 
   /**
@@ -293,13 +325,25 @@ public class HashIndex extends AbstractIndex {
     // space, but there is no way to ask an ArrayList what
     // it's current capacity is..so we trim after every
     // removal
-    boolean found = false;
     try {
       Object newKey = TypeUtils.indexKeyFor(key);
-      found = this.entriesSet.remove(newKey, entry, updateReverseMap);       
+      removeFromEntriesSet(newKey, entry, updateReverseMap);
     } catch (TypeMismatchException ex) {
       throw new IMQException("Could not add object of type "
           + key.getClass().getName(), ex);
+    }
+  }
+  
+  private void removeFromEntriesSet(Object newKey, RegionEntry entry, boolean updateReverseMap) {
+    removeFromEntriesSet(newKey, entry, updateReverseMap, -1);
+  }
+  
+  private void removeFromEntriesSet(Object newKey, RegionEntry entry, boolean updateReverseMap, int ignoreThisSlot) {
+    if (this.entriesSet.remove(newKey, entry, ignoreThisSlot)) {
+      if (updateReverseMap && IndexManager.isObjectModificationInplace()) {
+        entryToValuesMap.remove(entry);
+      }
+      internalIndexStats.incNumValues(-1);
     }
   }
 
@@ -628,8 +672,7 @@ public class HashIndex extends AbstractIndex {
   @Override
   void instantiateEvaluator(IndexCreationHelper ich) {
     this.evaluator = new IMQEvaluator(ich);
-    this.entriesSet.setHashIndexStrategy(new HashStrategy(
-        (IMQEvaluator) evaluator));
+    this.entriesSet.setEvaluator((HashIndex.IMQEvaluator)evaluator);
     this.comparator = ((IMQEvaluator) evaluator).comparator;
   }
 
@@ -672,9 +715,9 @@ public class HashIndex extends AbstractIndex {
       Object obj = entriesIter.next();
       Object key = null;
       if (obj != null && obj != HashIndexSet.REMOVED) {
-        
         RegionEntry re = (RegionEntry) obj;
         if (applyOrderBy) {
+          key = ((HashIndex.IMQEvaluator)evaluator).evaluateKey(obj);
           orderedKeys.add(new Object[]{key,i++});
           addValueToResultSet(re, orderedResults, iterOps, runtimeItr, context, projAttrib, intermediateResults, isIntersection, limit, observer, iteratorCreationTime);
         } else {
@@ -856,19 +899,22 @@ public class HashIndex extends AbstractIndex {
   void recreateIndexData() throws IMQException {
     // Mark the data maps to null & call the initialization code of index
     this.entriesSet.clear();
-	int numKeys = (int) this.internalIndexStats.getNumberOfKeys();
-	if (numKeys > 0) {
-		this.internalIndexStats.incNumKeys(-numKeys);
-	}
-	int numValues = (int) this.internalIndexStats.getNumberOfValues();
-	if (numValues > 0) {
-		this.internalIndexStats.incNumValues(-numValues);
-	}
-	int updates = (int) this.internalIndexStats.getNumUpdates();
-	if (updates > 0) {
-		this.internalIndexStats.incNumUpdates(updates);
-	}
-	this.initializeIndex(true);
+    if (IndexManager.isObjectModificationInplace()) {
+      entryToValuesMap.clear();
+    }
+    int numKeys = (int) this.internalIndexStats.getNumberOfKeys();
+    if (numKeys > 0) {
+      this.internalIndexStats.incNumKeys(-numKeys);
+    }
+    int numValues = (int) this.internalIndexStats.getNumberOfValues();
+    if (numValues > 0) {
+      this.internalIndexStats.incNumValues(-numValues);
+    }
+    int updates = (int) this.internalIndexStats.getNumUpdates();
+    if (updates > 0) {
+      this.internalIndexStats.incNumUpdates(updates);
+    }
+    this.initializeIndex(true);
   }
 
   public String dump() {
@@ -1435,7 +1481,7 @@ public class HashIndex extends AbstractIndex {
       return context;
     }
 
-    Object evaluateKey(Object object) {
+    public Object evaluateKey(Object object) {
       Object value = object;
       
       ExecutionContext newContext = null;
@@ -1459,6 +1505,10 @@ public class HashIndex extends AbstractIndex {
           logger.debug("Could not reevaluate key for hash index");
         }
       }
+      
+      if (key == null) {
+        key = IndexManager.NULL;
+      }
       return key;
     }
 
@@ -1471,8 +1521,8 @@ public class HashIndex extends AbstractIndex {
         //We check to see if an update was in progress.  If so (and is the way these turn to undefined),
         //the value is reevaluated and removed from the result set if it does not match the 
         //search criteria.  This occurs in addToResultsFromEntries()
-        Object key0 = ((Object[])arg0)[1];
-        Object key1 = ((Object[])arg1)[1];
+        Object key0 = ((Object[])arg0)[0];
+        Object key1 = ((Object[])arg1)[0];
       
         Comparable comp0 = (Comparable) key0;
         Comparable comp1 = (Comparable) key1;
@@ -1512,82 +1562,12 @@ public class HashIndex extends AbstractIndex {
       throws IMQException {
     // TODO Auto-generated method stub
   }
-
-  private class HashStrategy implements HashIndexStrategy {
-
-    private AttributeDescriptor attDesc;
-
-    private IMQEvaluator evaluator;
-    
-    public HashStrategy(IMQEvaluator evaluator) {
-      this.evaluator = evaluator;
-    }
-
-    public final int computeHashCode(Object o) {
-      return computeHashCode(o, false);
-    }
-
-    public final int computeHashCode(Object o, boolean reevaluateKey) {
-      if (reevaluateKey) {
-        return computeKey(o).hashCode();
-      }
-      return o.hashCode();
-    }
-
-    public final Object computeKey(Object o) {
-      Object key = evaluator.evaluateKey(o);
-      if (key == null) {
-        key = IndexManager.NULL;
-      }
-      return key;
-    }
-
-    public final boolean equalsOnAdd(Object o1, Object o2) {
-      if (o1 == null) {
-        return o2 == null;
-      }
-      try {
-        return TypeUtils.compare(o1, o2, OQLLexerTokenTypes.TOK_EQ).equals(Boolean.TRUE);
-      }
-      catch (TypeMismatchException e) {
-        return o1.equals(o2);
-      }
-    }
-
-    /*
-     * expects object o to be a region entry
-     */
-    public boolean equalsOnGet(Object indexKey, Object o) {
-      Object fieldValue = evaluator.evaluateKey(o);
-     
-      if (fieldValue == null && indexKey == IndexManager.NULL) {
-        return true;
-      } else {
-        try {
-          if (fieldValue instanceof PdxString) {
-           if (indexKey instanceof String) {
-             fieldValue = ((PdxString) fieldValue).toString(); 
-           }
-         }
-         else if (indexKey instanceof PdxString) {
-           if (fieldValue instanceof String) {
-             fieldValue = new PdxString((String)fieldValue);
-           }
-         }
-         return TypeUtils.compare(fieldValue, indexKey, OQLLexerTokenTypes.TOK_EQ).equals(Boolean.TRUE);
-        }
-        catch (TypeMismatchException e) {
-          return fieldValue.equals(indexKey);
-        }
-      }
-    }
-  }
-
+  
   public boolean isEmpty() {
     return entriesSet.isEmpty();
   }
   
-  public String printAll() {
-    return this.entriesSet.printAll();
-  }
+//  public String printAll() {
+//    return this.entriesSet.printAll();
+//  }
 }

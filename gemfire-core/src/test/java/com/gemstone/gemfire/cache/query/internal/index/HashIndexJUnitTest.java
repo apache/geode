@@ -189,6 +189,7 @@ public class HashIndexJUnitTest {
       }
       region.put("" + i, p);
     }
+    
     helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.status = 'inactive'", "p.status", "/portfolios p");
     qs.removeIndexes();
     observer = new MyQueryObserverAdapter();
@@ -1382,17 +1383,17 @@ public class HashIndexJUnitTest {
   }
 
    
-  private void printIndex(Index index) {
-   if (index instanceof PartitionedIndex) {
-    Iterator it = ((PartitionedIndex)index).getBucketIndexes().iterator();
-    while (it.hasNext()) { 
-      ((HashIndex)it.next()).printAll();
-    }
-   }
-   else {
-     System.out.println(((HashIndex)index).printAll());
-   }
-  }
+//  private void printIndex(Index index) {
+//   if (index instanceof PartitionedIndex) {
+//    Iterator it = ((PartitionedIndex)index).getBucketIndexes().iterator();
+//    while (it.hasNext()) { 
+//      ((HashIndex)it.next()).printAll();
+//    }
+//   }
+//   else {
+//     System.out.println(((HashIndex)index).printAll());
+//   }
+//  }
   
   
   private class RelationshipKey implements Comparable {
