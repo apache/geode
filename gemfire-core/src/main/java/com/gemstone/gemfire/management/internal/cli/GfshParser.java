@@ -545,7 +545,7 @@ public class GfshParser implements Parser {
             // with an option specifier
             if (userOptString.startsWith(SyntaxConstants.LONG_OPTION_SPECIFIER)) {
               // Now remove the option specifier part
-              userOptString = StringUtils.removeEnd(userOptString,
+              userOptString = StringUtils.removeStart(userOptString,
                   SyntaxConstants.LONG_OPTION_SPECIFIER);
               if (option.getLongOption().startsWith(userOptString)
                   && !userOptString.equals("")
@@ -1204,7 +1204,7 @@ public class GfshParser implements Parser {
         // This means that the user has entered the command
         CommandTarget commandTarget = commands.get(commandName);
         if (isAvailable(commandTarget, commandName)) {
-          String remainingBuffer = StringUtils.removeEnd(userInput, commandName);
+          String remainingBuffer = StringUtils.removeStart(userInput, commandName);
           if (remainingBuffer.length() == 0
               || remainingBuffer.startsWith(" ")
               || remainingBuffer.startsWith(GfshParser.LINE_SEPARATOR)) {
@@ -1256,7 +1256,7 @@ public class GfshParser implements Parser {
         // This means that the user has entered the command & name matches exactly
         commandTarget = commandTargetsMap.get(commandName);
         if (commandTarget != null) {
-          String remainingBuffer = StringUtils.removeEnd(userInput, commandName);
+          String remainingBuffer = StringUtils.removeStart(userInput, commandName);
           commandTarget = commandTarget.duplicate(commandName, remainingBuffer);
           break;
         }
