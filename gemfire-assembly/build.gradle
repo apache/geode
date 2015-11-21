@@ -25,6 +25,7 @@ dependencies {
   archives project(':gemfire-json')  
   archives project(':gemfire-joptsimple')  
   archives project(':gemfire-core')  
+  archives project(':gemfire-lucene')
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
 
@@ -181,6 +182,9 @@ distributions {
         }
         from project(":gemfire-core").configurations.archives.allArtifacts.files
 
+        from project(":gemfire-lucene").configurations.runtime
+        from project(":gemfire-lucene").configurations.archives.allArtifacts.files
+
         // include this jar        
         from project(":gemfire-web-api").jar.outputs.files.getFiles()
         
@@ -216,7 +220,8 @@ def commonJar = [publicationName:'commonJar', project:project(":gemfire-common")
 def coreJar = [publicationName:'coreJar', project:project(":gemfire-core").name]
 def jsonJar = [publicationName:'jsonJar', project:project(":gemfire-json").name]
 def joptsimpleJar = [publicationName:'joptsimpleJar', project:project(":gemfire-joptsimple").name]
-def MavenJars = [ coreJar, jsonJar, joptsimpleJar, commonJar ]
+def luceneJar = [publicationName:'luceneJar', project:project(":gemfire-lucene").name]
+def MavenJars = [ coreJar, jsonJar, joptsimpleJar, commonJar, luceneJar ]
 
 afterEvaluate {
   publishing {
