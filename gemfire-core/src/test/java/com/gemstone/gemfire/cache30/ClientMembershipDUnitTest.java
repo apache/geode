@@ -1342,6 +1342,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     
     for (int i = 0; i < host.getVMCount(); i++) { 
       final VM vm = Host.getHost(0).getVM(i);
+      System.out.println("creating pool in vm_"+i);
       vm.invoke(createPool);
       clientMemberIdArray[i] =  String.valueOf(vm.invoke(
         ClientMembershipDUnitTest.class, "getMemberId"));
@@ -1365,7 +1366,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           return true;
         }
       };
-      waitForCriterion(wc, 10000, 100, false);
+      waitForCriterion(wc, 30000, 100, false);
     }
     
     Map connectedClients = InternalClientMembership.getConnectedClients(false);
@@ -1465,7 +1466,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           return true;
         }
       };
-      waitForCriterion(wc, 10000, 100, false);
+      waitForCriterion(wc, 60000, 100, false);
     }
 
     {
