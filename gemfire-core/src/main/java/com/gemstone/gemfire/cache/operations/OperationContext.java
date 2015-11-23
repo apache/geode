@@ -481,7 +481,11 @@ public abstract class OperationContext {
   public abstract boolean isPostOperation();
 
   /**
-   * True if the context is created before sending the updates to a client.
+   * When called post-operation, returns true if the operation was one that performed an update.
+   * An update occurs when one of the following methods on {@link getOperationCode()} returns true:
+   * {@linkplain isPut()}, {@linkplain isPutAll()}, {@linkplain isDestroy()}, {@linkplain isRemoveAll()},
+   * {@linkplain isInvalidate()}, {@linkplain isRegionCreate()}, {@linkplain isRegionClear()}, {@linkplain isRegionDestroy()}.
+   * Otherwise, returns false.
    * 
    * @since 6.6
    */
