@@ -74,10 +74,12 @@ task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
 // This closure sets the gemfire classpath.  If we add another jar to the classpath it must
 // be included in the filter logic below.
 def cp = {
-  configurations.archives.dependencies.collect { it.dependencyProject }
+  def jars = configurations.archives.dependencies.collect { it.dependencyProject }
     .findAll { !it.name.contains('web') }
     .collect { it.jar.archiveName }
-    .join(' ') + ' ' +
+    .join(' ')
+
+  jars += ' ' + 
     project(':gemfire-core').configurations.runtime.collect { it.getName() }.findAll {
       it.contains('antlr') ||
       it.contains('commons-io') ||
@@ -105,10 +107,6 @@ def cp = {
       it.contains('log4j-jcl') ||
       it.contains('log4j-jul') ||
       it.contains('log4j-slf4j-impl') ||
-      it.contains('lucene-analyzers-common') ||
-      it.contains('lucene-core') ||
-      it.contains('lucene-queries') ||
-      it.contains('lucene-queryparser') ||
       it.contains('slf4j-api') ||
       it.contains('spring-core') ||
       it.contains('spring-shell') ||
@@ -116,7 +114,17 @@ def cp = {
       it.contains('hbase') ||
       it.contains('jgroups') ||
       it.contains('netty')
-    }.join(' ') 
+    }.join(' ')
+    
+  jars += ' ' +
+    project(':gemfire-lucene').configurations.runtime.collect { it.getName() }.findAll {
+      it.contains('lucene-analyzers-common') ||
+      it.contains('lucene-core') ||
+      it.contains('lucene-queries') ||
+      it.contains('lucene-queryparser')
+    }.join(' ')
+    
+  return jars
 }
 
 // Note: this dependency doesn't work if you change a library version from
