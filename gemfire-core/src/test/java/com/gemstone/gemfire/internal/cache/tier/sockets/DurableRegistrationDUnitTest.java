@@ -109,14 +109,12 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
   public void testSimpleDurableClient() {
 
     // Step 1: Starting the servers
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-
     PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+        "createCacheServer", new Object[] { regionName, new Boolean(true)
+            })).intValue();
     PORT2 = ((Integer)this.server2VM.invoke(CacheServerTestUtil.class,
         "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+            })).intValue();
 
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
@@ -264,14 +262,12 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
   public void testSimpleDurableClientWithRegistration() {
     // Step 1: Starting the servers
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-
     PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+        "createCacheServer", new Object[] { regionName, new Boolean(true)
+            })).intValue();
     PORT2 = ((Integer)this.server2VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+        "createCacheServer", new Object[] { regionName, new Boolean(true)
+            })).intValue();
 
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
@@ -459,13 +455,11 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
   public void testDurableClientWithRegistrationHA() {
     
     // Step 1: Start server1
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    
     PORT2 = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
     
     PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+        "createCacheServer", new Object[] { regionName, new Boolean(true)
+             })).intValue();
     
 
     // Step 2: Bring Up the Client
@@ -501,7 +495,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
     this.server2VM.invoke(CacheServerTestUtil.class,
         "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort), PORT2 });
+             PORT2 });
 
     pause(3000);
 
@@ -561,13 +555,11 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
   public void testDurableClientDisConnectWithRegistrationHA() {
     
     // Step 1: Start server1
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    
     PORT2 = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
     
     PORT1 = ((Integer)this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort) })).intValue();
+        "createCacheServer", new Object[] { regionName, new Boolean(true)
+             })).intValue();
     
 
     // Step 2: Bring Up the Client
@@ -624,7 +616,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     // Step 4: Bring up the server2
     this.server2VM.invoke(CacheServerTestUtil.class,
         "createCacheServer", new Object[] { regionName, new Boolean(true),
-            new Integer(mcastPort), PORT2 });
+             PORT2 });
 
     pause(3000);
 

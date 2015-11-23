@@ -107,6 +107,8 @@ public class ShutdownAllRequest extends AdminRequest {
       if(!(e.getCause() instanceof CancelException)) {
         e.handleAsUnexpected();
       }
+    } catch (CancelException e) {
+      // expected
     } catch (InterruptedException e) {
       interrupted = true;
     }
@@ -135,7 +137,7 @@ public class ShutdownAllRequest extends AdminRequest {
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
   
@@ -265,6 +267,7 @@ public class ShutdownAllRequest extends AdminRequest {
       }
       if(msg instanceof ShutdownAllResponse) {
         if (((ShutdownAllResponse)msg).isToShutDown()) {
+          logger.debug("{} adding {} to result set {}", this, msg.getSender(), results);
           results.add(msg.getSender());
         }
         else {
@@ -291,6 +294,7 @@ public class ShutdownAllRequest extends AdminRequest {
     }
 
     public Set getResults() {
+      logger.debug("{} shutdownAll returning {}", this, results, new Exception("stack trace"));
       return results;
     }
   }

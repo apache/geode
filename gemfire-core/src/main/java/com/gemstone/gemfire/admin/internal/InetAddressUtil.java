@@ -45,7 +45,7 @@ public class InetAddressUtil {
   public static final InetAddress LOCALHOST = createLocalHost();
   
   public static  final String LOOPBACK_ADDRESS =
-    Boolean.getBoolean("java.net.preferIPv6Addresses") ? "::1" : "127.0.0.1"; 
+    SocketCreator.preferIPv6Addresses() ? "::1" : "127.0.0.1"; 
   
   public static final InetAddress LOOPBACK = 
       InetAddressUtil.toInetAddress(LOOPBACK_ADDRESS);

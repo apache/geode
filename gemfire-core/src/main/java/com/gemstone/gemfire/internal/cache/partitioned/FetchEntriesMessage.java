@@ -568,10 +568,13 @@ public final class FetchEntriesMessage extends PartitionMessage
               VersionTag versionTag = DataSerializer.readObject(in);
               
               //Fix for 47260 - canonicalize the mebmer ids to avoid an OOME
-              if(canonicalMembers.containsKey(versionTag.getMemberID())) {
-                versionTag.setMemberID(canonicalMembers.get(versionTag.getMemberID()));
-              } else {
-                canonicalMembers.put(versionTag.getMemberID(), versionTag.getMemberID());
+              VersionSource id = versionTag.getMemberID();
+              if (id != null) {
+                if(canonicalMembers.containsKey(id)) {
+                  versionTag.setMemberID(canonicalMembers.get(id));
+                } else {
+                  canonicalMembers.put(id, id);
+                }
               }
               
               synchronized(returnValue) {

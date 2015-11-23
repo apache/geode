@@ -24,8 +24,8 @@ dependencies {
   archives project(':gemfire-common')  
   archives project(':gemfire-json')  
   archives project(':gemfire-joptsimple')  
-  archives project(':gemfire-jgroups')  
   archives project(':gemfire-core')  
+  archives project(':gemfire-lucene')
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
 
@@ -114,6 +114,7 @@ def cp = {
       it.contains('spring-shell') ||
       it.contains('snappy-java') ||
       it.contains('hbase') ||
+      it.contains('jgroups') ||
       it.contains('netty')
     }.join(' ') 
 }
@@ -166,9 +167,6 @@ distributions {
         from project(":gemfire-common").configurations.runtime
         from project(":gemfire-common").configurations.archives.allArtifacts.files
 
-        from project(":gemfire-jgroups").configurations.runtime
-        from project(":gemfire-jgroups").configurations.archives.allArtifacts.files
-
         from project(":gemfire-json").configurations.runtime
         from project(":gemfire-json").configurations.archives.allArtifacts.files
 
@@ -183,6 +181,9 @@ distributions {
           include 'spring-data-gemfire-*'
         }
         from project(":gemfire-core").configurations.archives.allArtifacts.files
+
+        from project(":gemfire-lucene").configurations.runtime
+        from project(":gemfire-lucene").configurations.archives.allArtifacts.files
 
         // include this jar        
         from project(":gemfire-web-api").jar.outputs.files.getFiles()
@@ -217,10 +218,10 @@ def MavenRepos = [ springReleaseRepo, springSnapshotRepo, springLibsReleaseRepo,
 // Jars to be published via Maven
 def commonJar = [publicationName:'commonJar', project:project(":gemfire-common").name]
 def coreJar = [publicationName:'coreJar', project:project(":gemfire-core").name]
-def jgroupsJar = [publicationName:'jgroupsJar', project:project(":gemfire-jgroups").name]
 def jsonJar = [publicationName:'jsonJar', project:project(":gemfire-json").name]
 def joptsimpleJar = [publicationName:'joptsimpleJar', project:project(":gemfire-joptsimple").name]
-def MavenJars = [ coreJar, jgroupsJar, jsonJar, joptsimpleJar, commonJar ]
+def luceneJar = [publicationName:'luceneJar', project:project(":gemfire-lucene").name]
+def MavenJars = [ coreJar, jsonJar, joptsimpleJar, commonJar, luceneJar ]
 
 afterEvaluate {
   publishing {

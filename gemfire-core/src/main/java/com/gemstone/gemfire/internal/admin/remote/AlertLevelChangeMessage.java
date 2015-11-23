@@ -20,11 +20,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.admin.AlertLevel;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
 import com.gemstone.gemfire.internal.admin.Alert;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -40,8 +40,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * @author David Whitlock
  * @since 3.5
  */
-public final class AlertLevelChangeMessage
-  extends PooledDistributionMessage  {
+public final class AlertLevelChangeMessage extends SerialDistributionMessage {
   
   private static final Logger logger = LogService.getLogger();
 

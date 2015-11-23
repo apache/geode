@@ -37,7 +37,7 @@ public class ShutdownAllResponse extends AdminResponse {
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
   

@@ -102,6 +102,7 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     server = host.getVM(1);
     client = host.getVM(2);
     client2 = host.getVM(3);
+    addExpectedException("Connection reset");
   }
 
   public void tearDown2() throws Exception {

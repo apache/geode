@@ -17,7 +17,7 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -123,8 +123,8 @@ import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector.HdfsRegionManager;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
@@ -207,15 +207,13 @@ import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReadWriteLock;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different
@@ -950,6 +948,7 @@ public class LocalRegion extends AbstractRegion
     checkReadiness();
     LocalRegion newRegion = null;
     RegionAttributes regionAttributes = attrs;
+    attrs = cache.invokeRegionBefore(this, subregionName, attrs, internalRegionArgs);
     final InputStream snapshotInputStream = internalRegionArgs
         .getSnapshotInputStream();
     final boolean getDestroyLock = internalRegionArgs.getDestroyLockFlag();
@@ -1116,6 +1115,7 @@ public class LocalRegion extends AbstractRegion
       }
     }
 
+    cache.invokeRegionAfter(newRegion);
     return newRegion;
   }
 
@@ -4664,7 +4664,7 @@ public class LocalRegion extends AbstractRegion
               continue;
             } else {
               if(logger.isDebugEnabled()) {
-                logger.debug("refreshEntries key={} value={}", currentKey, entry);
+                logger.debug("refreshEntries key={} value={} version={}", currentKey, entry, tag);
               }
               if (tag == null) { // no version checks
                 localDestroyNoCallbacks(currentKey);
@@ -9210,6 +9210,11 @@ public class LocalRegion extends AbstractRegion
   {
     
     CacheListener[] listeners = region.fetchCacheListenersField();
+    if (event.getOperation().isCreate()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("invoking listeners: " + Arrays.toString(listeners));
+      }
+    }
     if (listeners == null || listeners.length == 0) {
       return;
     }

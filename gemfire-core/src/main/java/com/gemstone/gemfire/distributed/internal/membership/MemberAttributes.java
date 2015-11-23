@@ -38,11 +38,6 @@ public class MemberAttributes implements DataSerializable {
   private static final long serialVersionUID = -3257772958884802693L;
   
   public static final MemberAttributes INVALID = new MemberAttributes(-1, -1, -1, -1, null, null, null);
-  public static MemberAttributes DEFAULT = INVALID;
-  
-  public static void setDefaults(int dcPort, int vmPid, int vmKind, int vmViewId, String name, String[] groups, DurableClientAttributes durableClientAttributes) {
-    DEFAULT = new MemberAttributes(dcPort, vmPid, vmKind, vmViewId, name, groups, durableClientAttributes);
-  }
   
   private int dcPort;
   private int vmPid;
@@ -64,12 +59,12 @@ public class MemberAttributes implements DataSerializable {
     if (l_groups == null) {
       l_groups = new String[0];
     }
+    this.groups = l_groups;
     if (p_name == null) {
       this.name = "";
     } else {
       this.name = p_name;
     }
-    this.groups = l_groups;
     this.durableClientAttributes = durableClientAttributes;
   }
   
@@ -231,19 +226,6 @@ public class MemberAttributes implements DataSerializable {
     sb.append("]");
 		return sb.toString();
 	}
-
-  /**
-   * Set the VmPid to be the given value.  This may be done by JGroups UDP
-   * protocol if there is no PID available to augment its membership port number.
-   * This functionality was added by us for bug #41983
-   * @param uniqueID
-   */
-  public static void setDefaultVmPid(int uniqueID) {
-    // note: JGroupMembershipManager establishes DEFAULT before attempting to
-    // create a JGroups channel, so we know it isn't INVALID here
-    setDefaults(DEFAULT.dcPort, uniqueID, DEFAULT.vmKind, DEFAULT.vmViewId, DEFAULT.name,
-        DEFAULT.groups, DEFAULT.durableClientAttributes);
-  }
 
   /**
    * @return the membership view number in which this member was born

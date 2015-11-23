@@ -47,6 +47,7 @@ import dunit.RemoteDUnitVMIF;
  *
  */
 public class ProcessManager {
+  public static final boolean IS_WINDOWS = System.getProperty("os.name").contains("Windows");
   
   private int namingPort;
   private Map<Integer, ProcessHolder> processes = new HashMap<Integer, ProcessHolder>();
@@ -130,8 +131,12 @@ public class ProcessManager {
         try {
           String line = reader.readLine();
           while(line != null) {
-            out.print(vmName);
-            out.println(line);
+            if (line.length() == 0) {
+              out.println();
+            } else {
+              out.print(vmName);
+              out.println(line);
+            }
             line = reader.readLine();
           }
         } catch(Exception e) {
@@ -174,6 +179,9 @@ public class ProcessManager {
       "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
       "-Dgemfire.disallowMcastDefaults=true",
       "-ea",
+      // use IPv4 on Windows
+      // see https://github.com/belaban/JGroups/wiki/FAQ
+//      (IS_WINDOWS?"-Djava.net.preferIPv4Stack=true":""),
       agent,
       "dunit.standalone.ChildVM"
     };

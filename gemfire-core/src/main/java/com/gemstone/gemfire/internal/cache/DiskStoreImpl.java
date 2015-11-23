@@ -119,7 +119,7 @@ import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxField;
 import com.gemstone.gemfire.pdx.internal.PdxType;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both
@@ -3323,7 +3323,7 @@ public class DiskStoreImpl implements DiskStore {
     
     //NOTE - do NOT use DM.cacheTimeMillis here. See bug #49920
     long timestamp = System.currentTimeMillis();
-    PersistentMemberID id = new PersistentMemberID(getDiskStoreID(), memberId.getIpAddress(),
+    PersistentMemberID id = new PersistentMemberID(getDiskStoreID(), memberId.getInetAddress(),
         firstDir.getAbsolutePath(), memberId.getName(),
         timestamp, (short) 0);
     return id;
@@ -3331,7 +3331,7 @@ public class DiskStoreImpl implements DiskStore {
 
   public PersistentID getPersistentID() {
     InetAddress host = cache.getDistributedSystem().getDistributedMember()
-        .getIpAddress();
+        .getInetAddress();
     String dir = getDiskDirs()[0].getAbsolutePath();
     return new PersistentMemberPattern(host, dir, this.diskStoreID.toUUID(), 0);
   }

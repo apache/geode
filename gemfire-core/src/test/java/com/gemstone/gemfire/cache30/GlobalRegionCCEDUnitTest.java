@@ -241,8 +241,5 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
     versionTestGetAllWithVersions();
   }
 
-  public void testRegionVersionVectors() throws Exception {
-    versionTestRegionVersionVectors();
-  }
 
 }

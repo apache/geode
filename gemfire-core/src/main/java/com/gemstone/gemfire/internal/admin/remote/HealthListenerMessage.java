@@ -62,7 +62,7 @@ public final class HealthListenerMessage extends PooledDistributionMessage imple
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

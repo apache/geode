@@ -110,8 +110,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   @Override
   public void tearDown2() throws Exception {
-    super.tearDown2();
     invokeInEveryVM(this.resetResourceManager);
+    super.tearDown2();
   }
 
   private SerializableCallable resetResourceManager = new SerializableCallable() {
@@ -142,12 +142,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int port1 = ports[0];
     final int port2 = ports[1];
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     final String regionName = "offHeapEventDelivery";
 
-    startCacheServer(server1, port1, mcastPort, 0f, 0f,
+    startCacheServer(server1, port1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, mcastPort, 70f, 90f,
+    startCacheServer(server2, port2, 70f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -243,12 +242,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int port1 = ports[0];
     final int port2 = ports[1];
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     final String regionName = "offHeapDisabledThresholds";
 
-    startCacheServer(server1, port1, mcastPort, 0f, 0f,
+    startCacheServer(server1, port1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, mcastPort, 0f, 0f,
+    startCacheServer(server2, port2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -361,12 +359,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int port1 = ports[0];
     final int port2 = ports[1];
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     final String regionName = "offHeapDRRemoteClientPutReject";
 
-    startCacheServer(server1, port1, mcastPort, 0f, 0f,
+    startCacheServer(server1, port1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, mcastPort, 0f, 90f,
+    startCacheServer(server2, port2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     startClient(client, server1, port1, regionName);
@@ -407,7 +404,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   }
   
   public void testGettersAndSetters() {
-    getSystem(getServerProperties(0));
+    getSystem(getOffHeapProperties());
     ResourceManager rm = getCache().getResourceManager();
     assertEquals(0.0f, rm.getCriticalOffHeapPercentage());
     assertEquals(0.0f, rm.getEvictionOffHeapPercentage());
@@ -438,12 +435,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int port1 = ports[0];
     final int port2 = ports[1];
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     final String regionName = "offHeapDRRemotePutRejection";
 
-    startCacheServer(server1, port1, mcastPort, 0f, 0f,
+    startCacheServer(server1, port1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, mcastPort, 0f, 90f,
+    startCacheServer(server2, port2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -524,7 +520,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM replicate1 = host.getVM(1);
     final VM replicate2 = host.getVM(2);
     final String rName = getUniqueName();
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     
     // Make sure the desired VMs will have a fresh DS.
     AsyncInvocation d1 = replicate1.invokeAsync(DistributedTestCase.class, "disconnectFromDS");
@@ -537,7 +532,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @SuppressWarnings("synthetic-access")
       @Override
       public void run2() throws CacheException {
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getOffHeapProperties());
       }
     };
     replicate1.invoke(establishConnectivity);
@@ -547,7 +542,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         // Assert some level of connectivity
-        InternalDistributedSystem ds = getSystem(getServerProperties(mcastPort));
+        InternalDistributedSystem ds = getSystem(getOffHeapProperties());
         assertTrue(ds.getDistributionManager().getNormalDistributionManagerIds().size() >= 1);
 
         InternalResourceManager irm = (InternalResourceManager)getCache().getResourceManager();
@@ -762,19 +757,18 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     servers[2] = host.getVM(3);
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
     final String regionName = "offHeapPRRemotePutRejection";
     final int redundancy = 1;
 
-    startCacheServer(servers[0], ports[0], mcastPort, 0f, 90f,
+    startCacheServer(servers[0], ports[0], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    startCacheServer(servers[1], ports[1], mcastPort, 0f, 90f,
+    startCacheServer(servers[1], ports[1], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    startCacheServer(servers[2], ports[2], mcastPort, 0f, 90f,
+    startCacheServer(servers[2], ports[2], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getOffHeapProperties());
         getCache();
         AttributesFactory factory = new AttributesFactory();        
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -930,7 +924,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM accessor = host.getVM(1);
     final VM ds1 = host.getVM(2);
     final String rName = getUniqueName();
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     // Make sure the desired VMs will have a fresh DS.
     AsyncInvocation d0 = accessor.invokeAsync(DistributedTestCase.class, "disconnectFromDS");
@@ -946,8 +939,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     ds1.invoke(establishConnectivity);
     accessor.invoke(establishConnectivity);
 
-    ds1.invoke(createPR(rName, false, mcastPort));
-    accessor.invoke(createPR(rName, true, mcastPort));
+    ds1.invoke(createPR(rName, false));
+    accessor.invoke(createPR(rName, true));
     
     final AtomicInteger expectedInvocations = new AtomicInteger(0);
 
@@ -1112,12 +1105,12 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     ds1.invoke(removeExpectedException);
   }
   
-  private CacheSerializableRunnable createPR(final String rName, final boolean accessor, final int mcastPort) {
+  private CacheSerializableRunnable createPR(final String rName, final boolean accessor) {
     return new CacheSerializableRunnable("create PR accessor") {
     @Override
     public void run2() throws CacheException {
       // Assert some level of connectivity
-      getSystem(getServerProperties(mcastPort));      
+      getSystem(getOffHeapProperties());      
       InternalResourceManager irm = (InternalResourceManager)getCache().getResourceManager();
       irm.setCriticalOffHeapPercentage(90f);
       AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
@@ -1156,14 +1149,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(2);
     final String rName = getUniqueName();
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     vm.invoke(DistributedTestCase.class, "disconnectFromDS");
     
     vm.invoke(new CacheSerializableRunnable("test LocalRegion load passthrough when critical") {
       @Override
       public void run2() throws CacheException {
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getOffHeapProperties());
         InternalResourceManager irm = (InternalResourceManager)getCache().getResourceManager();
         final OffHeapMemoryMonitor ohmm = irm.getOffHeapMonitor();
         irm.setCriticalOffHeapPercentage(90f);
@@ -1280,16 +1272,15 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final int port1 = ports[0];
     final int port2 = ports[1];
     final int port3 = ports[2];
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-    final String regionName = "testEventOrger";
+    final String regionName = "testEventOrder";
 
-    startCacheServer(server1, port1, mcastPort, 0f, 0f,
+    startCacheServer(server1, port1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, mcastPort, 0f, 0f,
+    startCacheServer(server2, port2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
-    verifyProfiles(server1, 1);
-    verifyProfiles(server2, 1);
+    verifyProfiles(server1, 2);
+    verifyProfiles(server2, 2);
 
     server2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -1298,13 +1289,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       }
     });
 
-    verifyProfiles(server1, 0);
+    verifyProfiles(server1, 1);
 
-    startCacheServer(server3, port3, mcastPort, 0f, 0f,
+    startCacheServer(server3, port3, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
-    verifyProfiles(server1, 1);
-    verifyProfiles(server3, 1);
+    verifyProfiles(server1, 2);
+    verifyProfiles(server3, 2);
   }
   
   public void testPRClientPutRejection() throws Exception {
@@ -1397,8 +1388,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final Object smallKey = -2;
 
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-    startCacheServer(server, port, mcastPort, 0f, 90f,
+    startCacheServer(server, port, 0f, 90f,
         regionName, createPR, false, 0);
     startClient(client, server, port, regionName);
     doPuts(client, regionName, false/*catchServerException*/,
@@ -1610,13 +1600,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     });
   }
 
-  private void startCacheServer(VM server, final int port, final int mcastPort,
+  private void startCacheServer(VM server, final int port,
       final float evictionThreshold, final float criticalThreshold, final String regionName,
       final boolean createPR, final boolean notifyBySubscription, final int prRedundancy) throws Exception {
 
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getSystem(getServerProperties(mcastPort));
+        getSystem(getOffHeapProperties());
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
 
         InternalResourceManager irm = cache.getResourceManager();
@@ -1821,11 +1811,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     });
   }
   
-  private Properties getServerProperties(int mcastPort) {
+  private Properties getOffHeapProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastPort + "");
-    p.setProperty(DistributionConfig.MCAST_TTL_NAME, "0");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
     p.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
     return p;
   }

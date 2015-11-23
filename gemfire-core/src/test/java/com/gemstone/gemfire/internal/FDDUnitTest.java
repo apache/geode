@@ -96,12 +96,11 @@ public class FDDUnitTest extends CacheTestCase {
     try {
       StringBuffer incaseOfFailure = new StringBuffer();
       final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-      final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
       int numThreads = 30;
 
-      startCacheServer(vm0, port[0], mcastPort);
-      startCacheServer(vm1, port[1], mcastPort);
-      startCacheServer(vm2, port[2], mcastPort);
+      startCacheServer(vm0, port[0]);
+      startCacheServer(vm1, port[1]);
+      startCacheServer(vm2, port[2]);
 
       createRegion(vm0, "portfolios", RegionShortcut.PARTITION_REDUNDANT);
       createRegion(vm1, "portfolios", RegionShortcut.PARTITION_REDUNDANT);
@@ -221,11 +220,13 @@ public class FDDUnitTest extends CacheTestCase {
     });
   }
   
-  private void startCacheServer(VM server, final int port, final int mcastPort) throws Exception {
+  private void startCacheServer(VM server, final int port) throws Exception {
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         //System.setProperty("IDLE_THREAD_TIMEOUT", "50");
-        getSystem(getServerProperties(mcastPort));
+        disconnectFromDS();
+        
+        getSystem(getServerProperties());
         
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
         
@@ -269,10 +270,9 @@ public class FDDUnitTest extends CacheTestCase {
     return p;
   }
 
-  protected Properties getServerProperties(int mcastPort) {
+  protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastPort+"");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+getDUnitLocatorPort()+"]");
     p.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
     //p.setProperty(DistributionConfig.SOCKET_LEASE_TIME_NAME, "120000");
     return p;

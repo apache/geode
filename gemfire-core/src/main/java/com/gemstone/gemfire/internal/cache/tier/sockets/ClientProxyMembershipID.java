@@ -104,7 +104,9 @@ public final class ClientProxyMembershipID
 
   protected int uniqueId;
   
-  private transient Version clientVersion;
+  //Version information is not available during the handshake
+  //see comments in HandShake.write()
+  private transient static final Version clientVersion = Version.GFE_82;
 
   // private final String proxyIDStr;
   // private final String clientIdStr ;
@@ -354,7 +356,7 @@ public final class ClientProxyMembershipID
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException
   {
-    this.clientVersion = InternalDataSerializer.getVersionForDataStream(in);
+    
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
 //    {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}

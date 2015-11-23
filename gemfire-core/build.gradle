@@ -14,6 +14,7 @@ dependencies {
    // Source Dependencies
   // External 
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compile 'org.jgroups:jgroups:3.6.6.Final'
   compile 'antlr:antlr:' + project.'antlr.version'
   compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
@@ -46,10 +47,6 @@ dependencies {
   runtime 'org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version'
   runtime 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
   runtime 'org.apache.logging.log4j:log4j-jul:' + project.'log4j.version'
-  compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
-  compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
-  compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
-  compile 'org.apache.lucene:lucene-queryparser:' + project.'lucene.version'
   compile 'org.eclipse.jetty:jetty-http:' + project.'jetty.version'
   compile 'org.eclipse.jetty:jetty-io:' + project.'jetty.version'
   compile 'org.eclipse.jetty:jetty-security:' + project.'jetty.version'
@@ -68,7 +65,6 @@ dependencies {
   compile 'org.apache.hbase:hbase:' + project.'hbase.version'
  
   compile project(':gemfire-common')
-  compile project(':gemfire-jgroups')
   compile project(':gemfire-joptsimple')
   compile project(':gemfire-json')
   
@@ -81,6 +77,7 @@ dependencies {
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testRuntime 'org.apache.derby:derby:' + project.'derby.version'
   testRuntime 'org.apache.hadoop:hadoop-auth:' + project.'hadoop.version'
+  testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
   testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
   testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
@@ -103,55 +100,16 @@ task createVersionPropertiesFile {
   inputs.dir compileJava.destinationDir
 
   doLast {
-    new ByteArrayOutputStream().withStream { gitWorkspaceStream ->
-      def result = exec {
-        workingDir = "${projectDir}"
-        standardOutput = gitWorkspaceStream
-        ignoreExitValue = true
-        executable = "git"
-        args = ['rev-parse', '--is-inside-work-tree']
-      }
-      ext.isGitWorkspace = gitWorkspaceStream.toString()
-      ext.isGitWorkspace = ext.isGitWorkspace.trim()
-    }
 
-    if ( isGitWorkspace.equalsIgnoreCase('true') ) {
-      new ByteArrayOutputStream().withStream { gitBranchStream ->
-        def result = exec {
-          workingDir = "${projectDir}"
-          standardOutput = gitBranchStream
-          executable = "git"
-          args = ['rev-parse', '--abbrev-ref', 'HEAD']
-        }
-        ext.gitBranchString = gitBranchStream.toString()
-        ext.gitBranch = ext.gitBranchString.trim()
-      }
-
-      new ByteArrayOutputStream().withStream { commitStream ->
-        def result = exec {
-          workingDir = "${projectDir}"
-          standardOutput = commitStream
-          executable = "git"
-          args = ['rev-parse', 'HEAD']
-        }
-        ext.commitIdString = commitStream.toString()
-        ext.commitId = ext.commitIdString.trim()
-      }
-
-      new ByteArrayOutputStream().withStream { sourceDateStream ->
-        def result = exec {
-          workingDir = "${projectDir}"
-          standardOutput = sourceDateStream
-          executable = "git"
-          args = ['show', '-s', '--format=%ci', "${ext.commitId}"]
-        }
-        ext.sourceDateString = sourceDateStream.toString()
-        ext.sourceDate = ext.sourceDateString.trim()
-      }
-    }
-    else {
-      // Not in SCM workspace, use default values
-      ext.gitBranch = 'UNKNOWN'
+    try {
+      def grgit = org.ajoberstar.grgit.Grgit.open()
+      ext.branch = grgit.branch.getCurrent().name
+      ext.commitId = grgit.head().id
+      ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+      grgit.close()
+    } catch (Exception e) {
+      logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
+      ext.branch = 'UNKNOWN'
       ext.commitId = 'UNKNOWN'
       ext.sourceDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
     }
@@ -172,7 +130,7 @@ task createVersionPropertiesFile {
       "Build-Java-Version": ext.jdkVersion,
       "Source-Date"       : ext.sourceDate,
       "Source-Revision"   : ext.commitId,
-      "Source-Repository" : ext.gitBranch
+      "Source-Repository" : ext.branch
     ] as Properties
 
     propertiesFile.getParentFile().mkdirs();

@@ -83,7 +83,7 @@ public class CliStrings {
   public static final String TOPIC_GEMFIRE_DISKSTORE = "Disk Store";
   public static final String TOPIC_GEMFIRE_DISKSTORE__DESC = "Disk stores are used to persist data to disk as a backup to your in-memory copy or as overflow storage when memory use is too high.";
   public static final String TOPIC_GEMFIRE_LOCATOR = "Locator";
-  public static final String TOPIC_GEMFIRE_LOCATOR__DESC = "JVMs running GemFire discover each other through multicast messaging or through a TCP service named the locator.";
+  public static final String TOPIC_GEMFIRE_LOCATOR__DESC = "JVMs running GemFire discover each other through a TCP service named the locator.";
   public static final String TOPIC_GEMFIRE_SERVER = "Server";
   public static final String TOPIC_GEMFIRE_SERVER__DESC = "A server is GemFire cluster member which holds a GemFire cache. Depending on the topology used it can refer to either a system that responds to client requests or a system that is only a peer to other members.";
   public static final String TOPIC_GEMFIRE_MANAGER = "Manager";
@@ -607,6 +607,8 @@ public class CliStrings {
   public static final String CREATE_REGION__COLOCATEDWITH__HELP = "Central Region with which this region should be colocated.";
   public static final String CREATE_REGION__LOCALMAXMEMORY = "local-max-memory";
   public static final String CREATE_REGION__LOCALMAXMEMORY__HELP = "Sets the maximum amount of memory, in megabytes, to be used by the region in this process. (Default: 90% of available heap)";
+  public static final String CREATE_REGION__MULTICASTENABLED = "enable-multicast";
+  public static final String CREATE_REGION__MULTICASTENABLED__HELP = "Enables multicast messaging on the region.  Multicast must also be enabled in the cache distributed system properties.  This is primarily useful for replicated regions that are in all servers.";
   public static final String CREATE_REGION__RECOVERYDELAY = "recovery-delay";
   public static final String CREATE_REGION__RECOVERYDELAY__HELP = "Sets the delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes. -1 (the default) indicates that redundancy will not be recovered after a failure.";
   public static final String CREATE_REGION__REDUNDANTCOPIES = "redundant-copies";
@@ -1081,27 +1083,27 @@ public class CliStrings {
   public static final String DESCRIBE_CLIENT__ID__HELP = "ID of a client for which details are needed";
   public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST = "No cache-servers were observed.";
   public static final String DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0 = "Specified Client ID {0} not present";
-  public static final String DECRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0 = "Could not retrieve client. Reason : {0}";
-  public static final String DECRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0 = "Could not retrieve stats for client : {0}";
-  public static final String DECRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1 = "Could not retrieve stats for client : {0}. Reason : {1}";
-  public static final String DECRIBE_CLIENT_ERROR_FETCHING_STATS_0 = "Error occured while fetching stats. Reason : {0}";
-  public static final String DECRIBE_CLIENT_NO_MEMBERS = "DS has no members";
-  public static final String DECRIBE_CLIENT_COLUMN_PRIMARY_SERVERS = "Primary Servers";
-  public static final String DECRIBE_CLIENT_COLUMN_SECONDARY_SERVERS = "Secondary Servers";
-  public static final String DECRIBE_CLIENT_COLUMN_CPU = "CPU";
-  public static final String DECRIBE_CLIENT_COLUMN_LISTNER_CALLS = "Number of Cache Listner Calls";
-  public static final String DECRIBE_CLIENT_COLUMN_GETS = "Number of Gets";
-  public static final String DECRIBE_CLIENT_COLUMN_MISSES = "Number of Misses";
-  public static final String DECRIBE_CLIENT_COLUMN_PUTS = "Number of Puts";
-  public static final String DECRIBE_CLIENT_COLUMN_THREADS = "Number of Threads";
-  public static final String DECRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME = "Process CPU Time (nanoseconds)";
-  public static final String DECRIBE_CLIENT_COLUMN_QUEUE_SIZE = "Queue size";
-  public static final String DECRIBE_CLIENT_COLUMN_UP_TIME = "UP Time (seconds)";
-  public static final String DECRIBE_CLIENT_COLUMN_DURABLE = "Is Durable";
-  public static final String DECRIBE_CLIENT_MIN_CONN = "Minimum Connections";
-  public static final String DECRIBE_CLIENT_MAX_CONN = "Maximum Connections";
-  public static final String DECRIBE_CLIENT_REDUDANCY = "Redudancy";
-  public static final String DECRIBE_CLIENT_CQs = "Num of CQs";
+  public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0 = "Could not retrieve client. Reason : {0}";
+  public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0 = "Could not retrieve stats for client : {0}";
+  public static final String DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1 = "Could not retrieve stats for client : {0}. Reason : {1}";
+  public static final String DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0 = "Error occured while fetching stats. Reason : {0}";
+  public static final String DESCRIBE_CLIENT_NO_MEMBERS = "DS has no members";
+  public static final String DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS = "Primary Servers";
+  public static final String DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS = "Secondary Servers";
+  public static final String DESCRIBE_CLIENT_COLUMN_CPU = "CPU";
+  public static final String DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS = "Number of Cache Listner Calls";
+  public static final String DESCRIBE_CLIENT_COLUMN_GETS = "Number of Gets";
+  public static final String DESCRIBE_CLIENT_COLUMN_MISSES = "Number of Misses";
+  public static final String DESCRIBE_CLIENT_COLUMN_PUTS = "Number of Puts";
+  public static final String DESCRIBE_CLIENT_COLUMN_THREADS = "Number of Threads";
+  public static final String DESCRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME = "Process CPU Time (nanoseconds)";
+  public static final String DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE = "Queue size";
+  public static final String DESCRIBE_CLIENT_COLUMN_UP_TIME = "UP Time (seconds)";
+  public static final String DESCRIBE_CLIENT_COLUMN_DURABLE = "Is Durable";
+  public static final String DESCRIBE_CLIENT_MIN_CONN = "Minimum Connections";
+  public static final String DESCRIBE_CLIENT_MAX_CONN = "Maximum Connections";
+  public static final String DESCRIBE_CLIENT_REDUDANCY = "Redudancy";
+  public static final String DESCRIBE_CLIENT_CQs = "Num of CQs";
   
   
   
@@ -1383,8 +1385,9 @@ public class CliStrings {
   public static final String SHOW_DEADLOCK__HELP = "Display any deadlocks in the GemFire distributed system.";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__FILE = "file";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP = "Name of the file to which dependencies between members will be written.";
-  public static final String SHOW_DEADLOCK__NO__DEADLOCK = "No dead lock detected.";
-  public static final String SHOW_DEADLOCK__DEADLOCK__DETECTED = "Dead lock detected.";
+  public static final String SHOW_DEADLOCK__NO__DEADLOCK = "No deadlock was detected.";
+  public static final String SHOW_DEADLOCK__DEADLOCK__DETECTED = "Deadlock detected.";
+  public static final String SHOW_DEADLOCK__DEEPEST_FOUND = "No deadlock was detected.  Here is the deepest call chain that could be found";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__REVIEW = "Please view the dependencies between the members in file : {0}";
   public static final String SHOW_DEADLOCK__ERROR = "Error";
 
@@ -1621,9 +1624,9 @@ public class CliStrings {
   public static final String START_LOCATOR__LOG_LEVEL = "log-level";
   public static final String START_LOCATOR__LOG_LEVEL__HELP = "Sets the level of output logged to the Locator log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
   public static final String START_LOCATOR__MCAST_ADDRESS = "mcast-address";
-  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can locate other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
+  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate other members in the GemFire cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
   public static final String START_LOCATOR__MCAST_PORT = "mcast-port";
-  public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can locate other members of the GemFire cluster.  A zero value disables mcast.";
+  public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
   public static final String START_LOCATOR__MEMBER_NAME = "name";
   public static final String START_LOCATOR__MEMBER_NAME__HELP = "The member name to give this Locator in the GemFire cluster.";
   public static final String START_LOCATOR__PORT = "port";
@@ -1716,9 +1719,9 @@ public class CliStrings {
   public static final String START_SERVER__MAXHEAP = "max-heap";
   public static final String START_SERVER__MAXHEAP__HELP = "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
   public static final String START_SERVER__MCAST_ADDRESS = "mcast-address";
-  public static final String START_SERVER__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Cache Server can locate other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
+  public static final String START_SERVER__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Cache Server can communicate with other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
   public static final String START_SERVER__MCAST_PORT = "mcast-port";
-  public static final String START_SERVER__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Cache Server can locate other members of the GemFire cluster.  A zero value disables mcast.";
+  public static final String START_SERVER__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Cache Server can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
   public static final String START_SERVER__NAME = "name";
   public static final String START_SERVER__NAME__HELP = "The member name to give this Cache Server in the GemFire cluster.";
   public static final String START_SERVER__MEMCACHED_PORT = "memcached-port";

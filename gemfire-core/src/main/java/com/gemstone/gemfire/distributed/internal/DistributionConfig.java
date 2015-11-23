@@ -110,7 +110,7 @@ public interface DistributionConfig extends Config, LogConfig {
   public static final String MCAST_PORT_NAME = "mcast-port";
 
   /** The default value of the "mcastPort" property */
-  public static final int DEFAULT_MCAST_PORT = 10334;
+  public static final int DEFAULT_MCAST_PORT = 0;
   /**
    * The minimum mcastPort.
    * <p> Actual value of this constant is <code>0</code>.
@@ -326,7 +326,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   public String getStartLocator();
   /**
-   * Sets the start-locators property.  This is a string in the form
+   * Sets the start-locator property.  This is a string in the form
    * bindAddress[port] and, if set, tells the distributed system to start
    * a locator prior to connecting
    * @param value must be of the form <code>hostName[portNum]</code>
@@ -338,11 +338,11 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   public boolean isStartLocatorModifiable();
   /**
-   * The name of the "start-locators" property
+   * The name of the "start-locator" property
    */
   public static final String START_LOCATOR_NAME = "start-locator";
   /**
-   * The default value of the "start-locators" property
+   * The default value of the "start-locator" property
    */
   public static final String DEFAULT_START_LOCATOR = "";
   

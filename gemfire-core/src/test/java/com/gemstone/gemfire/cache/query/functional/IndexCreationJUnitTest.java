@@ -876,7 +876,6 @@ public class IndexCreationJUnitTest{
     {
       Properties props = new Properties();
       props.setProperty(DistributionConfig.NAME_NAME, "test");
-      int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
       props.setProperty("mcast-port", "0");
       props.setProperty("cache-xml-file", IndexCreationJUnitTest.class.getResource("index-creation-with-eviction.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
@@ -981,7 +980,6 @@ public class IndexCreationJUnitTest{
     {
       Properties props = new Properties();
       props.setProperty(DistributionConfig.NAME_NAME, "test");
-      int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
       props.setProperty("mcast-port", "0");
       props.setProperty("statistic-sampling-enabled", "true");
       props.setProperty("enable-time-statistics", "true");

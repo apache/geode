@@ -39,7 +39,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
 import com.gemstone.gemfire.codeAnalysis.decode.CompiledField;
 import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
-import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -70,7 +69,6 @@ public class AnalyzeSerializablesJUnitTest {
     List<String> excludedClasses = loadExcludedClasses(new File(TestUtil.getResourcePath(AnalyzeSerializablesJUnitTest.class, "excludedClasses.txt")));
     List<String> openBugs = loadOpenBugs(new File(TestUtil.getResourcePath(AnalyzeSerializablesJUnitTest.class, "openBugs.txt")));
     excludedClasses.addAll(openBugs);
-    loadJGroupsJar(excludedClasses);
     
     String cp = System.getProperty("java.class.path");
     System.out.println("java classpath is " + cp);
@@ -108,33 +106,6 @@ public class AnalyzeSerializablesJUnitTest {
   public static void cleanup() {
     if (classes != null) {
       classes.clear();
-    }
-  }
-  
-  private static void loadJGroupsJar(List<String> excludedClasses) throws Exception {
-    System.out.println("loadJGroupsJar starting");
-
-    String cp = System.getProperty("java.class.path");
-    System.out.println("java classpath is " + cp);
-    System.out.flush();
-    String[] entries = cp.split(File.pathSeparator);
-    String gfejgroupsjar = null;
-    String gfejgroupsjarname = GemFireVersion.getGemFireJGroupsJarFileName();
-    for (int i=0; i<entries.length; i++) {
-      System.out.println("examining '" + entries[i] + "'");
-      System.out.flush();
-      if (entries[i].endsWith(gfejgroupsjarname)) {
-        gfejgroupsjar = entries[i];
-        break;
-      }
-    }
-    if (gfejgroupsjar != null) {
-      System.out.println("loading class files from " + gfejgroupsjar);
-      System.out.flush();
-      loadClasses(new File(gfejgroupsjar), excludedClasses);
-    }
-    else {
-      fail("unable to find jgroups jar");
     }
   }
   

@@ -461,11 +461,6 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
     return false;
   }
   
-  /** Returns true if this system is using multicast instead of locators */
-  public boolean isMcastDiscovery() {
-    return this.isMcastEnabled() && (this.getLocators().length() == 0);
-  }
-  
   /** Returns true if this system can use multicast for communications */
   public boolean isMcastEnabled() {
     return this.getMcastPort() > 0 ;
@@ -1345,11 +1340,9 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
           this.getMcastPort()).append("]").toString();
       locatorIds.add(new DistributionLocatorId(mcastId));
     }
-    if (!isMcastDiscovery()) {
-      StringTokenizer st = new StringTokenizer(this.getLocators(), ",");
-      while (st.hasMoreTokens()) {
-        locatorIds.add(new DistributionLocatorId(st.nextToken()));
-      }
+    StringTokenizer st = new StringTokenizer(this.getLocators(), ",");
+    while (st.hasMoreTokens()) {
+      locatorIds.add(new DistributionLocatorId(st.nextToken()));
     }
 
     if (logger.isDebugEnabled()) {
@@ -1748,10 +1741,10 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
   // LOG: saves LogWriterLogger from AdminDistributedSystemImpl for RemoteGfManagerAgentConfig
   private GfManagerAgentConfig buildAgentConfig(InternalLogWriter logWriter) {
     RemoteTransportConfig conf = new RemoteTransportConfig(
-        isMcastEnabled(), isMcastDiscovery(), getDisableTcp(),
+        isMcastEnabled(), getDisableTcp(),
         getDisableAutoReconnect(),
         getBindAddress(), buildSSLConfig(), parseLocators(), 
-        getMembershipPortRange(), getTcpPort());
+        getMembershipPortRange(), getTcpPort(), DistributionManager.ADMIN_ONLY_DM_TYPE);
     return new GfManagerAgentConfig(
         getSystemName(), conf, logWriter, this.alertLevel.getSeverity(), this, this);
   }
@@ -1774,13 +1767,6 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    */
   private String getBindAddress() {
     return this.config.getBindAddress();
-
-//     String bindAddress = 
-//         System.getProperty("gemfire.jg-bind-address");
-//     if (bindAddress == null || bindAddress.length() == 0) {
-//       return DistributionConfig.DEFAULT_BIND_ADDRESS;
-//     }
-//     return bindAddress;
   }
 
   /** Returns whether or not the given member is running */

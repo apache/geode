@@ -2646,7 +2646,7 @@ public abstract class DataSerializer {
    *
    * @see #readHashMap
    */
-  public static void writeHashMap(HashMap<?,?> map, DataOutput out)
+  public static void writeHashMap(Map<?,?> map, DataOutput out)
     throws IOException {
 
     InternalDataSerializer.checkOut(out);

@@ -16,11 +16,14 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
+import java.io.File;
 import java.net.InetAddress;
 
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMemberFactory;
+import com.gemstone.gemfire.distributed.internal.LocatorStats;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberFactory;
+import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 
 /**
@@ -32,7 +35,7 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
  */
 public class MemberFactory {
   
-  private static final MemberServices services = new JGroupMemberFactory();
+  private static final MemberServices services = new GMSMemberFactory();
 
   /**
    * Return a blank NetMember (used by externalization)
@@ -54,8 +57,8 @@ public class MemberFactory {
    * @return the new NetMember
    */
   static public NetMember newNetMember(InetAddress i, int p,
-      boolean splitBrainEnabled, boolean canBeCoordinator, MemberAttributes payload) {
-    return services.newNetMember(i, p, splitBrainEnabled, canBeCoordinator, payload);
+      boolean splitBrainEnabled, boolean canBeCoordinator, short version, MemberAttributes payload) {
+    return services.newNetMember(i, p, splitBrainEnabled, canBeCoordinator, payload, version);
   }
 
   /**
@@ -97,4 +100,18 @@ public class MemberFactory {
   {
     return services.newMembershipManager(listener, config, transport, stats);
   }
+  
+  /**
+   * currently this is a test method but it ought to be used by InternalLocator
+   * to create the peer location TcpHandler
+   */
+  static public NetLocator newLocatorHandler(InetAddress bindAddress,
+          File stateFile,
+          String locatorString,
+          boolean usePreferredCoordinators,
+          boolean networkPartitionDetectionEnabled, LocatorStats stats) {
+    return services.newLocatorHandler(bindAddress, stateFile, locatorString,
+        usePreferredCoordinators, networkPartitionDetectionEnabled, stats);
+  }
+
 }

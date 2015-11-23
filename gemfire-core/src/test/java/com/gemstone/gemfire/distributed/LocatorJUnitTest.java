@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
@@ -42,15 +43,14 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.org.jgroups.stack.GossipClient;
-import com.gemstone.org.jgroups.stack.GossipData;
-import com.gemstone.org.jgroups.stack.IpAddress;
 
 import dunit.DistributedTestCase;
 import dunit.DistributedTestCase.WaitCriterion;
@@ -105,7 +105,8 @@ public class LocatorJUnitTest {
     }
   }
 
-  public void _testBasicInfo() throws Exception {
+  @Test
+  public void testBasicInfo() throws Exception {
     locator = Locator.startLocator(port, tmpFile);
     Assert.assertTrue(locator.isPeerLocator());
     Assert.assertFalse(locator.isServerLocator());
@@ -114,33 +115,33 @@ public class LocatorJUnitTest {
     Assert.assertTrue(info.length > 1);
   }
 
-  public void _testPeerOnly() throws Exception {
-    locator = Locator.startLocator(port, tmpFile);
-    Assert.assertEquals(locator, Locator.getLocators().iterator().next());
-    Thread.sleep(1000);
-    final GossipClient client = new GossipClient(new IpAddress(InetAddress.getLocalHost(), port),  500);
-    client.register("mygroup1", new IpAddress(InetAddress.getLocalHost(), 55),5000, false);
-    WaitCriterion ev = new WaitCriterion() {
-      public boolean done() {
-        try {
-          Vector members = client.getMembers("mygroup1",
-              new IpAddress(InetAddress.getLocalHost(), 55), true,5000);
-          return members.size() == 1;
+  @Test
+  public void testNoThreadLeftBehind() throws Exception {
+    Properties dsprops = new Properties();
+    dsprops.setProperty("mcast-port", "0");
+    dsprops.setProperty("locators", "localhost[" + port + "]");
+    dsprops.setProperty("jmx-manager-start", "false");
+    dsprops.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+
+    JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = true;
+    int threadCount = Thread.activeCount();
+    try {
+      locator = Locator.startLocatorAndDS(port, new File(""), dsprops);
+      locator.stop();
+      fail("expected an exception");
+    } catch (SystemConnectException e) {
+      
+      for (int i=0; i<10; i++) {
+        if (threadCount < Thread.activeCount()) {
+          Thread.sleep(1000);
         }
-        catch (Exception e) {
-          e.printStackTrace();
-          fail("unexpected exception");
+      }
+      if (threadCount < Thread.activeCount()) {
+          OSProcess.printStacks(0);
+          fail("expected " + threadCount + " threads or fewer but found " + Thread.activeCount()
+              +".  Check log file for a thread dump.");
         }
-        return false; // NOTREACHED
-      }
-      public String description() {
-        return null;
-      }
-    };
-    DistributedTestCase.waitForCriterion(ev, 1000, 200, true);
-    Vector members = client.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), 55), true,5000);
-    Assert.assertEquals(1, members.size());
-    Assert.assertEquals(new IpAddress(InetAddress.getLocalHost(), 55), members.get(0));
+    }
   }
 
   @Test
@@ -152,14 +153,6 @@ public class LocatorJUnitTest {
     Assert.assertFalse(locator.isPeerLocator());
     Assert.assertTrue(locator.isServerLocator());
     Thread.sleep(1000);
-    try {
-      GossipData request = new GossipData(GossipData.REGISTER_REQ, "group", new IpAddress(InetAddress.getLocalHost(), 55), null, null);
-      TcpClient.requestToServer(InetAddress.getLocalHost(), port, request, REQUEST_TIMEOUT);
-      Assert.fail("Should have got an exception");
-    } catch (Exception expected) {
-//      expected.printStackTrace();
-    }
-
     doServerLocation();
   }
 
@@ -175,7 +168,6 @@ public class LocatorJUnitTest {
     Assert.assertTrue(locator.isServerLocator());
     Thread.sleep(1000);
     doServerLocation();
-    doGossip();
     locator.stop();
   }
 
@@ -190,34 +182,6 @@ public class LocatorJUnitTest {
     if (sl1.equals(sl2)) {
       fail("ServerLocation instances on different hosts should not test equal");
     }
-  }
-
-  //TODO - test durable queue discovery, excluded servers, server groups.
-
-  private void doGossip()  throws Exception {
-    final GossipClient client = new GossipClient(new IpAddress(InetAddress.getLocalHost(), port),  500);
-    client.register("mygroup1", new IpAddress(InetAddress.getLocalHost(), 55),5000, false);
-    WaitCriterion ev = new WaitCriterion() {
-      public boolean done() {
-        try {
-          Vector members = client.getMembers("mygroup1",
-              new IpAddress(InetAddress.getLocalHost(), 55), true,5000);
-//          System.out.println("members in mygroup1: " + members);
-          return members.size() == 1;
-        }
-        catch (Exception e) {
-          e.printStackTrace();
-          fail("unexpected exception");
-        }
-        return false; // NOTREACHED
-      }
-      public String description() {
-        return null;
-      }
-    };
-    DistributedTestCase.waitForCriterion(ev, 1 * 1000, 200, true);
-    Vector members = client.getMembers("mygroup1", new IpAddress(InetAddress.getLocalHost(), 55), true,5000);
-    Assert.assertEquals(new IpAddress(InetAddress.getLocalHost(), 55), members.get(0));
   }
 
   private void doServerLocation() throws Exception {

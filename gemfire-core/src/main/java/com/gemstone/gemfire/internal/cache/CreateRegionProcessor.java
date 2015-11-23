@@ -102,7 +102,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     CreateRegionReplyProcessor replyProc = new CreateRegionReplyProcessor(recps);
     
 
-    boolean useMcast = false; // never use multicast for region meta-level ops (can cause hangs)
+    boolean useMcast = false; // multicast is disabled for this message for now
     CreateRegionMessage msg = getCreateRegionMessage(recps, replyProc, useMcast);
 
     // since PR buckets can be created during cache entry operations, enable
@@ -347,7 +347,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public boolean sendViaJGroups() {
+    public boolean sendViaUDP() {
       return true;
     }
     
@@ -807,7 +807,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public boolean sendViaJGroups() {
+    public boolean sendViaUDP() {
       return true;
     }
     

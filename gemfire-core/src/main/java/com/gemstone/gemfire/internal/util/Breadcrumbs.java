@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.internal.util;
 
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.org.jgroups.util.StringId;
 
 /**
  * Breadcrumbs establishes traces in thread names that are useful in figuring

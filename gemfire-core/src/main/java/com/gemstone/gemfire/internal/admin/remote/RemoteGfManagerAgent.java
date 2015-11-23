@@ -66,7 +66,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LogWriterFactory;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.SecurityLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -296,24 +295,20 @@ public
   }
   
   private void join() {
-    if (transport.isMcastDiscovery()) {
-      connectToDS();
-    } else {
-      daemon = new DSConnectionDaemon();
-      daemon.start();
-      // give the daemon some time to get us connected
-      // we don't want to wait forever since there may be no one to connect to
-      try {
-        long endTime = System.currentTimeMillis() + 2000; // wait 2 seconds
-        while (!connected && daemon.isAlive() && System.currentTimeMillis() < endTime) {
-          daemon.join(200);
-        }
-      } 
-      catch (InterruptedException ignore) {
-        Thread.currentThread().interrupt();
-        // Peremptory cancellation check, but keep going
-        this.system.getCancelCriterion().checkCancelInProgress(ignore);
+    daemon = new DSConnectionDaemon();
+    daemon.start();
+    // give the daemon some time to get us connected
+    // we don't want to wait forever since there may be no one to connect to
+    try {
+      long endTime = System.currentTimeMillis() + 2000; // wait 2 seconds
+      while (!connected && daemon.isAlive() && System.currentTimeMillis() < endTime) {
+        daemon.join(200);
       }
+    } 
+    catch (InterruptedException ignore) {
+      Thread.currentThread().interrupt();
+      // Peremptory cancellation check, but keep going
+      this.system.getCancelCriterion().checkCancelInProgress(ignore);
     }
   }
 
@@ -413,9 +408,9 @@ public
         this.system = null;
         this.connected = false;
       }
-      if (!transport.isMcastDiscovery()) {
-        daemon.shutDown();
-      }
+
+      daemon.shutDown();
+      
       if (snapshotDispatcher != null) {
         snapshotDispatcher.shutDown();
       }

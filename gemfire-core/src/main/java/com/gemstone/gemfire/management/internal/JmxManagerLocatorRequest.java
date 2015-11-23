@@ -23,15 +23,9 @@ import java.net.InetAddress;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.org.jgroups.util.GemFireTracer;
 
 /**
  * Sent to a locator to request it to find (and possibly start)
@@ -93,11 +87,6 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
       if (sslConfigProps != null) {
         distributionConfigProps.putAll(sslConfigProps);
       }
-
-      GemFireTracer tracer = GemFireTracer.getLog(JmxManagerLocator.class);
-      tracer.setLogWriter(new LocalLogWriter(InternalLogWriter.NONE_LEVEL));
-      tracer.setSecurityLogWriter(new LocalLogWriter(InternalLogWriter.NONE_LEVEL));
-      SocketCreator.getDefaultInstance(distributionConfigProps);
 
       Object responseFromServer = TcpClient.requestToServer(networkAddress, locatorPort, SINGLETON, msTimeout);
 

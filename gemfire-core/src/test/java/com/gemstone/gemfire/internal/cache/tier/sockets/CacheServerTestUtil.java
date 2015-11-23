@@ -369,16 +369,8 @@ public class CacheServerTestUtil extends DistributedTestCase
     return new Integer[] {port, 0};
   }
 
-  public static Integer createCacheServer(String regionName,
-      Boolean notifyBySubscription, Integer mcastPort)
-      throws Exception {
-    Integer serverPort = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
-    createCacheServer(regionName, notifyBySubscription, mcastPort, serverPort);
-    return serverPort;
-  }
-
   public static void createCacheServer(String regionName,
-      Boolean notifyBySubscription, Integer mcastPort, Integer serverPort)
+      Boolean notifyBySubscription, Integer serverPort)
       throws Exception {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");

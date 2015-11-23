@@ -156,7 +156,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
     int pId = bucketId % this.nDispatcher;
     this.processors[pId].enqueueEvent(operation, event, substituteValue);
     
-   /* if (getSender().beforeEnque(gatewayQueueEvent)) {
+   /* if (getSender().beforeEnqueue(gatewayQueueEvent)) {
       long start = getSender().getStatistics().startTime();
       try {
         this.parallelQueue.put(gatewayQueueEvent);
