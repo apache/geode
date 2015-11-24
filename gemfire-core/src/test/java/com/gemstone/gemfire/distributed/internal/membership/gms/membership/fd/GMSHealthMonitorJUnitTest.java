@@ -149,7 +149,7 @@ public class GMSHealthMonitorJUnitTest {
 
     // allow the monitor to give up on the initial "next neighbor" and
     // move on to the one after it
-    long giveup = System.currentTimeMillis() + memberTimeout + 500;
+    long giveup = System.currentTimeMillis() + memberTimeout + 600;
     InternalDistributedMember expected = mockMembers.get(5);
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
     while (System.currentTimeMillis() < giveup && neighbor != expected) {
