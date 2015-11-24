@@ -234,4 +234,4 @@ rdd4o.foreach(println)
 ```
 
 
-Next: [Saving RDD to Geode](6_save_join.md)
+Next: [Saving RDD to Geode](6_save_rdd.md)
