@@ -276,7 +276,7 @@ public class JGroupsMessenger implements Messenger {
       else {
         logger.debug("JGroups configuration: {}", properties);
         
-        checkForWindowsIPv6();
+        checkForIPv6();
         InputStream is = new ByteArrayInputStream(properties.getBytes("UTF-8"));
         myChannel = new JChannel(is);
       }
@@ -320,11 +320,10 @@ public class JGroupsMessenger implements Messenger {
    * and preferIPv6Addresses is not set or is true.  We want it to use an
    * IPv4 address for a dual-IP stack so that both IPv4 and IPv6 messaging work
    */
-  private void checkForWindowsIPv6() throws Exception {
-    boolean isWindows = ((String)System.getProperty("os.name")).indexOf("Windows") >= 0;
+  private void checkForIPv6() throws Exception {
     boolean preferIpV6Addr = Boolean.getBoolean("java.net.preferIPv6Addresses");
-    if (isWindows && !preferIpV6Addr) {
-      logger.debug("Windows detected - forcing JGroups to think IPv4 is being used so it will choose an IPv4 address");
+    if (!preferIpV6Addr) {
+      logger.debug("forcing JGroups to think IPv4 is being used so it will choose an IPv4 address");
       Field m = org.jgroups.util.Util.class.getDeclaredField("ip_stack_type");
       m.setAccessible(true);
       m.set(null, org.jgroups.util.StackType.IPv4);
