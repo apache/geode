@@ -74,13 +74,16 @@ task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
 // This closure sets the gemfire classpath.  If we add another jar to the classpath it must
 // be included in the filter logic below.
 def cp = {
+  // first add all the dependent project jars
   def jars = configurations.archives.dependencies.collect { it.dependencyProject }
     .findAll { !it.name.contains('web') }
     .collect { it.jar.archiveName }
     .join(' ')
 
-  jars += ' ' + 
-    project(':gemfire-core').configurations.runtime.collect { it.getName() }.findAll {
+  // then add all the dependencies of the dependent jars
+  jars += ' ' + configurations.archives.dependencies.collect { 
+    it.dependencyProject.configurations.runtime.collect { it.getName() }.findAll {
+      // depedencies from gemfire-core
       it.contains('antlr') ||
       it.contains('commons-io') ||
       it.contains('commons-logging') ||
@@ -113,17 +116,16 @@ def cp = {
       it.contains('snappy-java') ||
       it.contains('hbase') ||
       it.contains('jgroups') ||
-      it.contains('netty')
-    }.join(' ')
-    
-  jars += ' ' +
-    project(':gemfire-lucene').configurations.runtime.collect { it.getName() }.findAll {
+      it.contains('netty') ||
+      
+      // dependencies from gemfire-lucene
       it.contains('lucene-analyzers-common') ||
       it.contains('lucene-core') ||
       it.contains('lucene-queries') ||
       it.contains('lucene-queryparser')
-    }.join(' ')
-    
+    }
+  }.flatten().unique().join(' ')
+
   return jars
 }
 
