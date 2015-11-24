@@ -470,7 +470,6 @@ com/gemstone/gemfire/internal/memcached/commands/ClientError,true,-2426928000696
 com/gemstone/gemfire/internal/offheap/MemoryBlock$State,false
 com/gemstone/gemfire/internal/offheap/OffHeapStorage$1,false
 com/gemstone/gemfire/internal/offheap/OffHeapStorage$2,false
-com/gemstone/gemfire/internal/offheap/SimpleMemoryAllocatorImpl$RefCountChangeInfo,false,dupCount:int,owner:java/lang/Object,rc:int,stackTraceString:java/lang/String,threadName:java/lang/String
 com/gemstone/gemfire/internal/offheap/annotations/OffHeapIdentifier,false,id:java/lang/String
 com/gemstone/gemfire/internal/process/ConnectionFailedException,true,5622636452836752700
 com/gemstone/gemfire/internal/process/FileAlreadyExistsException,true,5471082555536094256

@@ -2205,10 +2205,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
             Set otherMembers = dm.getOtherDistributionManagerIds();
             ReplyProcessor21 processor = new ReplyProcessor21(system, otherMembers);
             CloseCacheMessage msg = new CloseCacheMessage();
-            // [bruce] if multicast is available, use it to send the message to
-            // avoid race conditions with cache content operations that might
-            // also be multicast
-            msg.setMulticast(system.getConfig().getMcastPort() != 0);
             msg.setRecipients(otherMembers);
             msg.setProcessorId(processor.getProcessorId());
             dm.putOutgoing(msg);

@@ -203,9 +203,9 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.Chunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -2178,14 +2178,14 @@ public class LocalRegion extends AbstractRegion
       RegionEntry entry = this.entries.getEntry(keyInfo.getKey());
       boolean result = entry != null;
       if (result) {
-        SimpleMemoryAllocatorImpl.skipRefCountTracking();
+        ReferenceCountHelper.skipRefCountTracking();
         Object val = entry.getTransformedValue(); // no need to decompress since we only want to know if we have an existing value 
         if (val instanceof StoredObject) {
           OffHeapHelper.release(val);
-          SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+          ReferenceCountHelper.unskipRefCountTracking();
           return true;
         }
-        SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+        ReferenceCountHelper.unskipRefCountTracking();
         // No need to to check CachedDeserializable because of Bruce's fix in r30960 for bug 42162. See bug 42732.
         // this works because INVALID and LOCAL_INVALID will never be faulted out of mem
         // If val is NOT_AVAILABLE that means we have a valid value on disk.

@@ -24,8 +24,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapRegionEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
 import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.DataAsAddress;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -371,9 +369,9 @@ public class OffHeapRegionEntryHelper {
     do {
       oldAddress = re.getAddress();
     } while (!re.setAddress(oldAddress, newAddress));
-    SimpleMemoryAllocatorImpl.setReferenceCountOwner(re);
+    ReferenceCountHelper.setReferenceCountOwner(re);
     releaseAddress(oldAddress);
-    SimpleMemoryAllocatorImpl.setReferenceCountOwner(null);
+    ReferenceCountHelper.setReferenceCountOwner(null);
   }
  
   public static Token getValueAsToken(@Unretained OffHeapRegionEntry re) {
@@ -422,7 +420,7 @@ public class OffHeapRegionEntryHelper {
         long addr2 = re.getAddress();
         retryCount++;
         if (retryCount > 100) {
-          throw new IllegalStateException("retain failed addr=" + addr + " addr2=" + addr + " 100 times" + " history=" + SimpleMemoryAllocatorImpl.getFreeRefCountInfo(addr));
+          throw new IllegalStateException("retain failed addr=" + addr + " addr2=" + addr + " 100 times" + " history=" + ReferenceCountHelper.getFreeRefCountInfo(addr));
         }
         addr = addr2;
         // Since retain returned false our region entry should have a different

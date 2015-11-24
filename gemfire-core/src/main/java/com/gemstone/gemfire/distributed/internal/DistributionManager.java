@@ -3383,7 +3383,7 @@ public class DistributionManager
     allOthers.remove(getDistributionManagerId());
 //    ReplyProcessor21 rp = new ReplyProcessor21(this, allOthers);
 //    m.setProcessorId(rp.getProcessorId());
-    m.setMulticast(system.getConfig().getMcastPort() != 0);
+//    m.setMulticast(system.getConfig().getMcastPort() != 0);
     m.setRecipients(allOthers);
 
     //Address recipient = (Address) m.getRecipient();

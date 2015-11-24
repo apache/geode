@@ -171,7 +171,7 @@ public class PartitionedRepositoryManagerJUnitTest {
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    Mockito.when(ctx.getLocalBucketSet((any(Region.class)))).thenReturn(buckets);
+    Mockito.when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
     Collection<IndexRepository> repos = repoManager.getRepositories(ctx);
     assertEquals(2, repos.size());
 
@@ -199,7 +199,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
 
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    Mockito.when(ctx.getLocalBucketSet((any(Region.class)))).thenReturn(buckets);
+    Mockito.when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
     repoManager.getRepositories(ctx);
   }
   

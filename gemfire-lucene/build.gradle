@@ -1,6 +1,6 @@
 dependencies {
-    provided project(':gemfire-core')
-    provided project(':gemfire-common')
+    compile project(':gemfire-core')
+    compile project(':gemfire-common')
 
     compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
     compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'

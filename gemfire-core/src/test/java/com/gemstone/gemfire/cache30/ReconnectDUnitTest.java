@@ -1099,10 +1099,10 @@ public class ReconnectDUnitTest extends CacheTestCase
         if (oldLocator != null) {
           WaitCriterion wc = new WaitCriterion() {
             public boolean done() {
-              return ((InternalLocator)oldLocator).isStopped();
+              return msys.isReconnecting();
             }
             public String description() {
-              return "waiting for locator to stop: " + oldLocator;
+              return "waiting for locator to start reconnecting: " + oldLocator;
             }
           };
           waitForCriterion(wc, 10000, 50, true);

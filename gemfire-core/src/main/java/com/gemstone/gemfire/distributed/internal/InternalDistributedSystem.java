@@ -2578,10 +2578,12 @@ public final class InternalDistributedSystem
     
 //    logger.info("reconnecting IDS@"+System.identityHashCode(this));
 
-    if (isDebugEnabled) {
-      logger.debug("changing thread name to ReconnectThread");
+    if (Thread.currentThread().getName().equals("DisconnectThread")) {
+      if (isDebugEnabled) {
+        logger.debug("changing thread name to ReconnectThread");
+      }
+      Thread.currentThread().setName("ReconnectThread");
     }
-    Thread.currentThread().setName("ReconnectThread");
     
     // get the membership manager for quorum checks
     MembershipManager mbrMgr = this.dm.getMembershipManager();

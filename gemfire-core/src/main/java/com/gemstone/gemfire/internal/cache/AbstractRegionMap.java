@@ -74,10 +74,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.Chunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -3357,11 +3357,11 @@ RETRY_LOOP:
     // replace is propagated to server, so no need to check
     // satisfiesOldValue on client
     if (expectedOldValue != null && !replaceOnClient) {
-      SimpleMemoryAllocatorImpl.skipRefCountTracking();
+      ReferenceCountHelper.skipRefCountTracking();
       
       @Retained @Released Object v = re._getValueRetain(event.getLocalRegion(), true);
       
-      SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+      ReferenceCountHelper.unskipRefCountTracking();
       try {
         if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getLocalRegion())) {
           return false;
@@ -3392,9 +3392,9 @@ RETRY_LOOP:
       if (event.hasDelta() || event.getOperation().guaranteesOldValue()
           || GemFireCacheImpl.sqlfSystem()) {
         // In these cases we want to even get the old value from disk if it is not in memory
-        SimpleMemoryAllocatorImpl.skipRefCountTracking();
+        ReferenceCountHelper.skipRefCountTracking();
         @Released Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getLocalRegion());
-        SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+        ReferenceCountHelper.unskipRefCountTracking();
         try {
           event.setOldValue(oldValueInVMOrDisk, requireOldValue
               || GemFireCacheImpl.sqlfSystem());
@@ -3403,11 +3403,11 @@ RETRY_LOOP:
         }
       } else {
         // In these cases only need the old value if it is in memory
-        SimpleMemoryAllocatorImpl.skipRefCountTracking();
+        ReferenceCountHelper.skipRefCountTracking();
         
         @Retained @Released Object oldValueInVM = re._getValueRetain(event.getLocalRegion(), true); // OFFHEAP: re synced so can use its ref.
         
-        SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+        ReferenceCountHelper.unskipRefCountTracking();
         try {
           event.setOldValue(oldValueInVM,
               requireOldValue || GemFireCacheImpl.sqlfSystem());
