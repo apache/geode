@@ -6,14 +6,16 @@
     <title>Apache Geode (incubating) — Performance is key. Consistency is a must.</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
-    <meta name="keywords" content="Apache Geode, Geode, GemFire, In-memory, IMDB, IMDG">
-    <meta name="description" content="" />
+    <meta name="keywords" content="Apache Geode, Geode, GemFire, In-memory, IMDB, IMDG, cache">
+    <meta name="description" content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs." />
     <meta property="og:title" content="Apache Geode (incubating)" />
     <meta property="og:description" content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs." />
     <!-- Loading Typekit -->
     <script type="text/javascript" src="//use.typekit.net/ddl7izx.js"></script>
     <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
-    <!-- Loading Bootstrap -->
+    <!-- Place this tag right after the last button or just before your close body tag. -->
+    <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+        <!-- Loading Bootstrap -->
     <link href="/bootstrap/bootstrap.min.css" rel="stylesheet" type='text/css'>
     <link href="/css/bootflat.css" rel="stylesheet" type='text/css'>
     <link href="/css/geode-site.css" rel="stylesheet" type='text/css'>
@@ -46,7 +48,7 @@
         <nav class="collapse navbar-collapse bf-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav navbar-right">
                 <li class=""><a href="/community/"><span class="icns icon-group"></span></a></li>
-                <li><a href="/docs" target="_blank"><span class="icns icon-book"></span></a></li>
+                <li><a href="http://geode.docs.pivotal.io" target="_blank"><span class="icns icon-book"></span></a></li>
                 <li><a href="http://github.com/apache/incubator-geode" target="_blank"><span class="icns icon-github-sign"></span></a></li>
                 <!--<li><a href="https://trello.com/b/exQmJIOn/usergrid" target="_blank"><span class="icns icon-trello"></span></a></li>-->
                 <li><a href="https://issues.apache.org/jira/browse/GEODE/"
@@ -80,11 +82,12 @@
             </div>
 
             <div class="btn-wrapper">
-                <iframe class="social-btn" src="/static/github-btn.html?user=apache&repo=incubator-geode&type=watch&size=large" allowtransparency="true" frameborder="0" scrolling="0" width="85" height="30"></iframe>
-                <iframe class="social-btn" src="/static/github-btn.html?user=apache&repo=incubator-geode&type=fork&size=large" allowtransparency="true" frameborder="0" scrolling="0" width="85" height="30"></iframe>
-                <!--<p><span class="or">or</span> <a href="#">Download Geode</a></p>-->
+                <!-- Place this tag where you want the button to render. -->
+              <a class="github-button" href="https://github.com/apache/incubator-geode" data-icon="octicon-star" data-style="mega" data-count-href="/apache/incubator-geode/stargazers" data-count-api="/repos/apache/incubator-geode#stargazers_count" data-count-aria-label="# stargazers on GitHub" aria-label="Star apache/incubator-geode on GitHub">Star</a>
+              <a class="github-button" href="https://github.com/apache/incubator-geode/fork" data-icon="octicon-repo-forked" data-style="mega" data-count-href="/apache/incubator-geode/network" data-count-api="/repos/apache/incubator-geode#forks_count" data-count-aria-label="# forks on GitHub" aria-label="Fork apache/incubator-geode on GitHub">Fork</a>
+              <a class="github-button" href="https://github.com/apache/incubator-geode" data-icon="octicon-eye" data-style="mega" data-count-href="/apache/incubator-geode/watchers" data-count-api="/repos/apache/incubator-geode#subscribers_count" data-count-aria-label="# watchers on GitHub" aria-label="Watch apache/incubator-geode on GitHub">Watch</a>
+              <!--<p><span class="or">or</span> <a href="#">Download Geode</a></p>-->
             </div>
-
         </div>
     </div>
 </section>
@@ -93,7 +96,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-sitemap""></i></div>
+                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-sitemap"></i></div>
                 <h3>Replication and Partitioning</h3>
                 <p>Data can easily be partitioned (sharded) or replicated between nodes allowing performance to scale as needed. Durability is ensured through redundant in-memory copies and disk-based persistence.</p>
             </div>
@@ -168,8 +171,10 @@
 
                 <p>Apache Geode is a mature, robust technology originally developed by GemStone Systems in Beaverton, Oregon.
 Commercially available as GemFire™, the technology was first widely deployed in the financial sector as the transactional, low-latency data engine used
-in Wall Street trading platforms. 
+in Wall Street trading platforms.
 Today Apache Geode is used by over 600 enterprise customers for high-scale business applications that must meet low latency and 24x7 availability requirements.</p>
+
+                <p>This project is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.</p>
             </div>
             <!--
             <div class="col-md-4 text-left">
@@ -212,7 +217,7 @@ Today Apache Geode is used by over 600 enterprise customers for high-scale busin
                 <ul class="nav nav-list">
                     <li class="nav-header">Resources</li>
                     <li><a href="http://github.com/apache/geode-incubator" target="_blank">GitHub Code</a></li>
-                    <li><a href="docs" target="_blank">Docs</a></li>
+                    <li><a href="http://geode.docs.pivotal.io" target="_blank">Docs</a></li>
                     <li><a href="https://issues.apache.org/jira/browse/GEODE" target="_blank">JIRA Bug Tracker</a></li>
                     <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank">StackOverflow</a></li>
                     <li><a href="/community/#live">Live Chat</a></li>
