@@ -87,6 +87,7 @@ def cp = {
       it.contains('antlr') ||
       it.contains('commons-io') ||
       it.contains('commons-lang') ||
+      it.contains('commons-logging') ||
       it.contains('fastutil') ||
       it.contains('jackson-annotations') ||
       it.contains('jackson-core') ||
