@@ -38,8 +38,6 @@ public class AgentUtil {
   private static final String LIB_WEB_API_WAR = "/lib/gemfire-web-api-";
   private static final String TOOLS_WEB_WAR = "/tools/Extensions/gemfire-web-";
   private static final String LIB_WEB_WAR = "/lib/gemfire-web-";
-  private static final String TOOLS_API_WAR = "/tools/Extensions/gemfire-api-";
-  private static final String LIB_API_WAR = "/lib/gemfire-api-";
   private static final String TOOLS_PULSE_WAR = "/tools/Pulse/pulse.war";
   private static final String LIB_PULSE_WAR = "/lib/pulse.war";
   public static final String ERROR_VARIABLE_NOT_SET = "The GEMFIRE environment variable must be set!";
@@ -53,13 +51,18 @@ public class AgentUtil {
   public String getGemFireWebApiWarLocation() {
     String gemfireHome = getGemFireHome();
     assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
-    logger.warn(gemfireHome + TOOLS_WEB_API_WAR + gemfireVersion + ".war");
 
-    if (new File(gemfireHome + TOOLS_WEB_API_WAR + gemfireVersion + ".war").isFile()) {
-      return gemfireHome + TOOLS_WEB_API_WAR + gemfireVersion + ".war";
-    } else if (new File(gemfireHome + LIB_WEB_API_WAR + gemfireVersion + ".war").isFile()) {
-      return gemfireHome + LIB_WEB_API_WAR + gemfireVersion + ".war";
+    String toolsWebApiWar = gemfireHome + TOOLS_WEB_API_WAR + gemfireVersion + ".war";
+    String libWebApiWar = gemfireHome + LIB_WEB_API_WAR + gemfireVersion + ".war";
+
+    if (new File(toolsWebApiWar).isFile()) {
+      logger.info("GemFire Dev REST API war: {}", toolsWebApiWar);
+      return toolsWebApiWar;
+    } else if (new File(libWebApiWar).isFile()) {
+      logger.info("GemFire Dev REST API war: {}", libWebApiWar);
+      return libWebApiWar;
     } else {
+      logger.warn("GemFire Dev REST API war not found - neither {} or {} exist", toolsWebApiWar, libWebApiWar);
       return null;
     }
   }
@@ -74,24 +77,17 @@ public class AgentUtil {
     String gemfireHome = getGemFireHome();
     assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
 
-    if (new File(gemfireHome + TOOLS_WEB_WAR + gemfireVersion + ".war").isFile()) {
-      return gemfireHome + TOOLS_WEB_WAR + gemfireVersion + ".war";
-    } else if (new File(gemfireHome + LIB_WEB_WAR + gemfireVersion + ".war").isFile()) {
-      return gemfireHome + LIB_WEB_WAR + gemfireVersion + ".war";
-    } else {
-      return null;
-    }
-  }
+    String toolsWebWar = gemfireHome + TOOLS_WEB_WAR + gemfireVersion + ".war";
+    String libWebWar = gemfireHome + LIB_WEB_WAR + gemfireVersion + ".war";
 
-  public String getGemfireApiWarLocation() {
-    String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) :ERROR_VARIABLE_NOT_SET;
-
-    if (new File(gemfireHome + TOOLS_API_WAR + gemfireVersion + ".war").isFile()) {
-      return gemfireHome + TOOLS_API_WAR + gemfireVersion + ".war";
-    } else if (new File(gemfireHome + LIB_API_WAR + gemfireVersion + ".war").isFile()) {
-      return gemfireHome + LIB_API_WAR + gemfireVersion + ".war";
+    if (new File(toolsWebWar).isFile()) {
+      logger.info("GemFire Admin REST war: {}", toolsWebWar);
+      return toolsWebWar;
+    } else if (new File(libWebWar).isFile()) {
+      logger.info("GemFire Admin REST war: {}", libWebWar);
+      return libWebWar;
     } else {
+      logger.warn("GemFire Admin REST war not found - neither {} or {} exist", toolsWebWar, libWebWar);
       return null;
     }
   }
@@ -104,11 +100,17 @@ public class AgentUtil {
     String gemfireHome = getGemFireHome();
     assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
 
-    if (new File(gemfireHome + TOOLS_PULSE_WAR).isFile()) {
-      return gemfireHome + TOOLS_PULSE_WAR;
-    } else if (new File(gemfireHome + LIB_PULSE_WAR).isFile()) {
-      return gemfireHome + LIB_PULSE_WAR;
+    String toolsPulseWar = gemfireHome + TOOLS_PULSE_WAR;
+    String libPulseWar = gemfireHome + LIB_PULSE_WAR;
+
+    if (new File(toolsPulseWar).isFile()) {
+      logger.info("GemFire Pulse war: {}", toolsPulseWar);
+      return toolsPulseWar;
+    } else if (new File(libPulseWar).isFile()) {
+      logger.info("GemFire Pulse war: {}", libPulseWar);
+      return libPulseWar;
     } else {
+      logger.warn("GemFire Pulse war not found - neither {} or {} exist", toolsPulseWar, libPulseWar);
       return null;
     }
   }
