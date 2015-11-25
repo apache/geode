@@ -16,21 +16,21 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.internal.logging.NullLogWriter;
+import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk.Factory;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -40,15 +40,198 @@ public class SimpleMemoryAllocatorJUnitTest {
     return ((v+multiple-1)/multiple)*multiple;
   }
   @Test
+  public void testNullGetAllocator() {
+    try {
+      SimpleMemoryAllocatorImpl.getAllocator();
+      fail("expected CacheClosedException");
+    } catch (CacheClosedException expected) {
+    }
+  }
+  @Test
+  public void testConstructor() {
+    try {
+      SimpleMemoryAllocatorImpl.create(null, null, null);
+      fail("expected IllegalArgumentException");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), null, null, -1, 0, 0, 0);
+      fail("expected IllegalStateException");
+    } catch (IllegalStateException expected) {
+      assertEquals(true, expected.getMessage().contains("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8"));
+    }
+    try {
+      SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), null, null, 9, 0, 0, 0);
+      fail("expected IllegalStateException");
+    } catch (IllegalStateException expected) {
+      assertEquals(true, expected.getMessage().contains("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8"));
+    }
+    try {
+      SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), null, null, 256+8, 0, 0, 0);
+      fail("expected IllegalStateException");
+    } catch (IllegalStateException expected) {
+      assertEquals(true, expected.getMessage().contains("gemfire.OFF_HEAP_ALIGNMENT must be <= 256"));
+    }
+    try {
+      SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), null, null, 8, 0, 0, 0);
+      fail("expected IllegalStateException");
+    } catch (IllegalStateException expected) {
+      assertEquals(true, expected.getMessage().contains("gemfire.OFF_HEAP_BATCH_ALLOCATION_SIZE must be >= 1."));
+    }
+    try {
+      SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), null, null, 8, 1, 0, 0);
+      fail("expected IllegalStateException");
+    } catch (IllegalStateException expected) {
+      assertEquals(true, expected.getMessage().contains("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1."));
+    }
+    try {
+      SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), null, null, 8, 1, 1, -1);
+      fail("expected IllegalStateException");
+    } catch (IllegalStateException expected) {
+      assertEquals(true, expected.getMessage().contains("HUGE_MULTIPLE must be >= 0 and <= 256 but it was -1"));
+    }
+    try {
+      SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), null, null, 8, 1, 1, 257);
+      fail("expected IllegalStateException");
+    } catch (IllegalStateException expected) {
+      assertEquals(true, expected.getMessage().contains("HUGE_MULTIPLE must be >= 0 and <= 256 but it was 257"));
+    }
+     
+  }
+  /**
+   * Logger that remembers the last severe message
+   */
+  private static class LastSevereLogger extends NullLogWriter {
+    private String lastSevereMessage;
+    private Throwable lastSevereThrowable;
+    
+    private void setLastSevere(String msg, Throwable ex) {
+      this.lastSevereMessage = msg;
+      this.lastSevereThrowable = ex;
+    }
+    public String getLastSevereMessage() {
+      return this.lastSevereMessage;
+    }
+    public Throwable getLastSevereThrowable() {
+      return this.lastSevereThrowable;
+    }
+    @Override
+    public void severe(String msg, Throwable ex) {
+      setLastSevere(msg, ex);
+    }
+    @Override
+    public void severe(String msg) {
+      setLastSevere(msg, null);
+    }
+    @Override
+    public void severe(Throwable ex) {
+      setLastSevere(null, ex);
+    }
+  }
+  @Test
+  public void testCreate() {
+    {
+      NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
+      NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
+      LastSevereLogger logger = new LastSevereLogger();
+      try {
+        SimpleMemoryAllocatorImpl.create(listener, stats, logger, 10, 950, 100,
+            new UnsafeMemoryChunk.Factory() {
+          @Override
+          public UnsafeMemoryChunk create(int size) {
+            throw new OutOfMemoryError("expected");
+          }
+        });
+      } catch (OutOfMemoryError expected) {
+      }
+      assertTrue(listener.isClosed());
+      assertTrue(stats.isClosed());
+      assertEquals(null, logger.getLastSevereThrowable());
+      assertEquals(null, logger.getLastSevereMessage());
+     }
+    {
+      NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
+      NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
+      LastSevereLogger logger = new LastSevereLogger();
+      int MAX_SLAB_SIZE = 100;
+      try {
+        Factory factory = new UnsafeMemoryChunk.Factory() {
+          private int createCount = 0;
+          @Override
+          public UnsafeMemoryChunk create(int size) {
+            createCount++;
+            if (createCount == 1) {
+              return new UnsafeMemoryChunk(size);
+            } else {
+              throw new OutOfMemoryError("expected");
+            }
+          }
+        };
+        SimpleMemoryAllocatorImpl.create(listener, stats, logger, 10, 950, MAX_SLAB_SIZE, factory);
+      } catch (OutOfMemoryError expected) {
+      }
+      assertTrue(listener.isClosed());
+      assertTrue(stats.isClosed());
+      assertEquals(null, logger.getLastSevereThrowable());
+      assertEquals("Off-heap memory creation failed after successfully allocating " + MAX_SLAB_SIZE + " bytes of off-heap memory.", logger.getLastSevereMessage());
+    }
+    {
+      NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
+      NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
+      Factory factory = new UnsafeMemoryChunk.Factory() {
+        @Override
+        public UnsafeMemoryChunk create(int size) {
+          return new UnsafeMemoryChunk(size);
+        }
+      };
+      MemoryAllocator ma = 
+        SimpleMemoryAllocatorImpl.create(listener, stats, new NullLogWriter(), 10, 950, 100, factory);
+      try {
+        assertFalse(listener.isClosed());
+        assertFalse(stats.isClosed());
+        ma.close();
+        assertTrue(listener.isClosed());
+        assertFalse(stats.isClosed());
+        listener = new NullOutOfOffHeapMemoryListener();
+        NullOffHeapMemoryStats stats2 = new NullOffHeapMemoryStats();
+        {
+          UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024);
+          try {
+            SimpleMemoryAllocatorImpl.create(listener, stats2, new UnsafeMemoryChunk[]{slab});
+          } catch (IllegalStateException expected) {
+            assertTrue("unexpected message: " + expected.getMessage(), 
+                expected.getMessage().equals("attempted to reuse existing off-heap memory even though new off-heap memory was allocated"));
+          } finally {
+            slab.release();
+          }
+          assertFalse(stats.isClosed());
+          assertTrue(listener.isClosed());
+          assertTrue(stats2.isClosed());
+        }
+        listener = new NullOutOfOffHeapMemoryListener();
+        stats2 = new NullOffHeapMemoryStats();
+        MemoryAllocator ma2 = SimpleMemoryAllocatorImpl.create(listener, stats2, new NullLogWriter(), 10, 950, 100, factory);
+        assertSame(ma, ma2);
+        assertTrue(stats.isClosed());
+        assertFalse(listener.isClosed());
+        assertFalse(stats2.isClosed());
+        stats = stats2;
+      } finally {
+        ma.close();
+        assertTrue(listener.isClosed());
+        assertFalse(stats.isClosed());
+        SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+        assertTrue(stats.isClosed());
+      }
+    }
+  }
+  @Test
   public void testBasics() {
     int BATCH_SIZE = com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.BATCH_SIZE;
     int TINY_MULTIPLE = com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.TINY_MULTIPLE;
-//    int BIG_MULTIPLE = com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.FreeListManager.BIG_MULTIPLE;
     int HUGE_MULTIPLE = com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.HUGE_MULTIPLE;
     int perObjectOverhead = com.gemstone.gemfire.internal.offheap.Chunk.OFF_HEAP_HEADER_SIZE;
     int maxTiny = com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.MAX_TINY-perObjectOverhead;
-//    int MIN_BIG_SIZE = round(BIG_MULTIPLE, maxTiny+perObjectOverhead+1)-perObjectOverhead;
-//    int maxBig = com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.FreeListManager.MAX_BIG-perObjectOverhead;
     int minHuge = maxTiny+1;
     int TOTAL_MEM = (maxTiny+perObjectOverhead)*BATCH_SIZE /*+ (maxBig+perObjectOverhead)*BATCH_SIZE*/ + round(TINY_MULTIPLE, minHuge+1+perObjectOverhead)*BATCH_SIZE + (TINY_MULTIPLE+perObjectOverhead)*BATCH_SIZE /*+ (MIN_BIG_SIZE+perObjectOverhead)*BATCH_SIZE*/ + round(TINY_MULTIPLE, minHuge+perObjectOverhead+1);
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(TOTAL_MEM);
@@ -57,14 +240,10 @@ public class SimpleMemoryAllocatorJUnitTest {
       assertEquals(TOTAL_MEM, ma.getFreeMemory());
       assertEquals(TOTAL_MEM, ma.freeList.getFreeFragmentMemory());
       assertEquals(0, ma.freeList.getFreeTinyMemory());
-//      assertEquals(0, ma.freeList.getFreeBigMemory());
       assertEquals(0, ma.freeList.getFreeHugeMemory());
       MemoryChunk tinymc = ma.allocate(maxTiny, null);
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       assertEquals(round(TINY_MULTIPLE, maxTiny+perObjectOverhead)*(BATCH_SIZE-1), ma.freeList.getFreeTinyMemory());
-//      MemoryChunk bigmc = ma.allocate(maxBig);
-//      assertEquals(TOTAL_MEM-round(BIG_MULTIPLE, maxBig+perObjectOverhead)-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
-//      assertEquals(round(BIG_MULTIPLE, maxBig+perObjectOverhead)*(BATCH_SIZE-1), ma.getFreeList().getFreeBigMemory());
       MemoryChunk hugemc = ma.allocate(minHuge, null);
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, minHuge+perObjectOverhead)/*-round(BIG_MULTIPLE, maxBig+perObjectOverhead)*/-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       long freeSlab = ma.freeList.getFreeFragmentMemory();
@@ -73,9 +252,6 @@ public class SimpleMemoryAllocatorJUnitTest {
       hugemc.release();
       assertEquals(round(TINY_MULTIPLE, minHuge+perObjectOverhead), ma.freeList.getFreeHugeMemory()-oldFreeHugeMemory);
       assertEquals(TOTAL_MEM/*-round(BIG_MULTIPLE, maxBig+perObjectOverhead)*/-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
-//      long oldFreeBigMemory = ma.freeList.getFreeBigMemory();
-//      bigmc.free();
-//      assertEquals(round(BIG_MULTIPLE, maxBig+perObjectOverhead), ma.freeList.getFreeBigMemory()-oldFreeBigMemory);
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       long oldFreeTinyMemory = ma.freeList.getFreeTinyMemory();
       tinymc.release();
@@ -85,17 +261,12 @@ public class SimpleMemoryAllocatorJUnitTest {
       tinymc = ma.allocate(maxTiny, null);
       assertEquals(oldFreeTinyMemory, ma.freeList.getFreeTinyMemory());
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
-//      bigmc = ma.allocate(maxBig);
-//      assertEquals(oldFreeBigMemory, ma.freeList.getFreeBigMemory());
-//      assertEquals(TOTAL_MEM-round(BIG_MULTIPLE, maxBig+perObjectOverhead)-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       hugemc = ma.allocate(minHuge, null);
       assertEquals(oldFreeHugeMemory, ma.freeList.getFreeHugeMemory());
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, minHuge+perObjectOverhead)/*-round(BIG_MULTIPLE, maxBig+perObjectOverhead)*/-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       hugemc.release();
       assertEquals(round(TINY_MULTIPLE, minHuge+perObjectOverhead), ma.freeList.getFreeHugeMemory()-oldFreeHugeMemory);
       assertEquals(TOTAL_MEM/*-round(BIG_MULTIPLE, maxBig+perObjectOverhead)*/-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
-//      bigmc.free();
-//      assertEquals(round(BIG_MULTIPLE, maxBig+perObjectOverhead), ma.freeList.getFreeBigMemory()-oldFreeBigMemory);
       assertEquals(TOTAL_MEM-round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.getFreeMemory());
       tinymc.release();
       assertEquals(round(TINY_MULTIPLE, maxTiny+perObjectOverhead), ma.freeList.getFreeTinyMemory()-oldFreeTinyMemory);
@@ -108,9 +279,6 @@ public class SimpleMemoryAllocatorJUnitTest {
       freeSlab = ma.freeList.getFreeFragmentMemory();
       tinymc.release();
       assertEquals(round(TINY_MULTIPLE, maxTiny+perObjectOverhead)+(round(TINY_MULTIPLE, 1+perObjectOverhead)*BATCH_SIZE), ma.freeList.getFreeTinyMemory()-oldFreeTinyMemory);
-//      bigmc = ma.allocate(MIN_BIG_SIZE);
-//      assertEquals(MIN_BIG_SIZE+perObjectOverhead, bigmc.getSize());
-//      assertEquals(freeSlab-((MIN_BIG_SIZE+perObjectOverhead)*BATCH_SIZE), ma.freeList.getFreeFragmentMemory());
       
       hugemc = ma.allocate(minHuge+1, null);
       assertEquals(round(TINY_MULTIPLE, minHuge+1+perObjectOverhead), hugemc.getSize());
@@ -129,13 +297,6 @@ public class SimpleMemoryAllocatorJUnitTest {
       assertEquals(round(TINY_MULTIPLE, minHuge+perObjectOverhead)*BATCH_SIZE, ma.freeList.getFreeHugeMemory());
       // now that we do compaction the following allocate works.
       hugemc = ma.allocate(minHuge + HUGE_MULTIPLE + HUGE_MULTIPLE-1, null);
-
-      //      assertEquals(minHuge+minHuge+1, ma.freeList.getFreeHugeMemory());
-//      hugemc.free();
-//      assertEquals(minHuge+minHuge+1+minHuge + HUGE_MULTIPLE + HUGE_MULTIPLE-1, ma.freeList.getFreeHugeMemory());
-//      hugemc = ma.allocate(minHuge + HUGE_MULTIPLE);
-//      assertEquals(minHuge + HUGE_MULTIPLE + HUGE_MULTIPLE-1, hugemc.getSize());
-//      assertEquals(minHuge+minHuge+1, ma.freeList.getFreeHugeMemory());
     } finally {
       SimpleMemoryAllocatorImpl.freeOffHeapMemory();
     }
@@ -162,6 +323,144 @@ public class SimpleMemoryAllocatorJUnitTest {
     } finally {
       SimpleMemoryAllocatorImpl.freeOffHeapMemory();
     }
+  }
+  
+  @Test
+  public void testDebugLog() {
+    SimpleMemoryAllocatorImpl.debugLog("test debug log", false);
+    SimpleMemoryAllocatorImpl.debugLog("test debug log", true);
+  }
+  @Test
+  public void testGetLostChunks() {
+    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
+    try {
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      assertEquals(Collections.emptyList(), ma.getLostChunks());
+    } finally {
+      SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    }
+  }
+  @Test
+  public void testFindSlab() {
+    final int SLAB_SIZE = 1024*1024;
+    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(SLAB_SIZE);
+    try {
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      assertEquals(0, ma.findSlab(slab.getMemoryAddress()));
+      assertEquals(0, ma.findSlab(slab.getMemoryAddress()+SLAB_SIZE-1));
+      try {
+        ma.findSlab(slab.getMemoryAddress()-1);
+        fail("expected IllegalStateException");
+      } catch (IllegalStateException expected) {
+      }
+      try {
+        ma.findSlab(slab.getMemoryAddress()+SLAB_SIZE);
+        fail("expected IllegalStateException");
+      } catch (IllegalStateException expected) {
+      }
+    } finally {
+      SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    }
+  }
+  @Test
+  public void testValidateAddressAndSize() {
+    final int SLAB_SIZE = 1024*1024;
+    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(SLAB_SIZE);
+    try {
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      try {
+        SimpleMemoryAllocatorImpl.validateAddress(0L);
+        fail("expected IllegalStateException");
+      } catch (IllegalStateException expected) {
+        assertEquals("Unexpected exception message: " + expected.getMessage(), true, expected.getMessage().contains("addr was smaller than expected"));
+      }
+      try {
+        SimpleMemoryAllocatorImpl.validateAddress(1L);
+        fail("expected IllegalStateException");
+      } catch (IllegalStateException expected) {
+        assertEquals("Unexpected exception message: " + expected.getMessage(), true, expected.getMessage().contains("Valid addresses must be in one of the following ranges:"));
+      }
+      SimpleMemoryAllocatorImpl.validateAddressAndSizeWithinSlab(slab.getMemoryAddress(), SLAB_SIZE, false);
+      SimpleMemoryAllocatorImpl.validateAddressAndSizeWithinSlab(slab.getMemoryAddress(), SLAB_SIZE, true);
+      SimpleMemoryAllocatorImpl.validateAddressAndSizeWithinSlab(slab.getMemoryAddress(), -1, true);
+      try {
+        SimpleMemoryAllocatorImpl.validateAddressAndSizeWithinSlab(slab.getMemoryAddress()-1, SLAB_SIZE, true);
+        fail("expected IllegalStateException");
+      } catch (IllegalStateException expected) {
+        assertEquals("Unexpected exception message: " + expected.getMessage(), true, expected.getMessage().equals(" address 0x" + Long.toString(slab.getMemoryAddress()-1, 16) + " does not address the original slab memory"));
+      }
+      try {
+        SimpleMemoryAllocatorImpl.validateAddressAndSizeWithinSlab(slab.getMemoryAddress(), SLAB_SIZE+1, true);
+        fail("expected IllegalStateException");
+      } catch (IllegalStateException expected) {
+        assertEquals("Unexpected exception message: " + expected.getMessage(), true, expected.getMessage().equals(" address 0x" + Long.toString(slab.getMemoryAddress()+SLAB_SIZE, 16) + " does not address the original slab memory"));
+      }
+    } finally {
+      SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    }
+  }
+  @Test
+  public void testMemoryInspection() {
+    final int SLAB_SIZE = 1024*1024;
+    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(SLAB_SIZE);
+    try {
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+      MemoryInspector inspector = ma.getMemoryInspector();
+      assertNotNull(inspector);
+      assertEquals(null, inspector.getFirstBlock());
+      assertEquals(Collections.emptyList(), ma.getInspectionSnapshot());
+      assertEquals(Collections.emptyList(), ma.getAllocatedBlocks());
+      assertEquals(null, ma.getBlockAfter(null));
+      inspector.createInspectionSnapshot();
+      // call this twice for code coverage
+      inspector.createInspectionSnapshot();
+      try {
+        assertEquals(ma.getAllBlocks(), ma.getInspectionSnapshot());
+        MemoryBlock firstBlock = inspector.getFirstBlock();
+        assertNotNull(firstBlock);
+        assertEquals(1024*1024, firstBlock.getBlockSize());
+        assertEquals("N/A", firstBlock.getDataType());
+        assertEquals(-1, firstBlock.getFreeListId());
+        assertTrue(firstBlock.getMemoryAddress() > 0);
+        assertNull(firstBlock.getNextBlock());
+        assertEquals(0, firstBlock.getRefCount());
+        assertEquals(0, firstBlock.getSlabId());
+        assertEquals(MemoryBlock.State.UNUSED, firstBlock.getState());
+        assertFalse(firstBlock.isCompressed());
+        assertFalse(firstBlock.isSerialized());
+        assertEquals(null, ma.getBlockAfter(firstBlock));
+      } finally {
+        inspector.clearInspectionSnapshot();
+      }
+    } finally {
+      SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    }
+  }
+
+  @Test
+  public void testClose() {
+    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
+    boolean freeSlab = true;
+    UnsafeMemoryChunk[] slabs = new UnsafeMemoryChunk[]{slab};
+    try {
+      SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), slabs);
+      ma.close();
+      ma.close();
+      System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
+      try {
+        ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), slabs);
+        ma.close();
+        freeSlab = false;
+        ma.close();
+      } finally {
+        System.clearProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY);
+      }
+    } finally {
+      if (freeSlab) {
+        SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+      }
+    }
+    
   }
   
   @Test
@@ -306,8 +605,18 @@ public class SimpleMemoryAllocatorJUnitTest {
       smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead, null);
       assertEquals(true, this.memoryUsageEventReceived);
       
+      MemoryUsageListener unaddedListener = new MemoryUsageListener() {
+        @Override
+        public void updateMemoryUsed(final long bytesUsed) {
+          throw new IllegalStateException("Should never be called");
+        }
+      };
+      ma.removeMemoryUsageListener(unaddedListener);
+      
       ma.removeMemoryUsageListener(listener);
       
+      ma.removeMemoryUsageListener(unaddedListener);
+
       this.expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
       this.memoryUsageEventReceived = false;
       smc = ma.allocate(SMALL_ALLOC_SIZE-perObjectOverhead, null);

@@ -16,18 +16,11 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.io.DataOutput;
-import java.io.IOException;
-
-import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
 import com.gemstone.gemfire.internal.cache.EntryBits;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.internal.lang.StringUtils;
 
 /**
  * Used to represent offheap addresses whose
@@ -35,7 +28,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * location.
  * Instances of this class have a very short lifetime.
  */
-public class DataAsAddress implements StoredObject {
+public class DataAsAddress extends AbstractStoredObject {
   private final long address;
   
   public DataAsAddress(long addr) {
@@ -88,53 +81,6 @@ public class DataAsAddress implements StoredObject {
   }
 
   @Override
-  public Object getDeserializedForReading() {
-    return getDeserializedValue(null,null);
-  }
-  
-  @Override
-  public Object getValueAsDeserializedHeapObject() {
-    return getDeserializedValue(null,null);
-  }
-  
-  @Override
-  public byte[] getValueAsHeapByteArray() {
-    if (isSerialized()) {
-      return getSerializedValue();
-    } else {
-      return (byte[])getDeserializedForReading();
-    }
-  }
-
-  @Override
-  public String getStringForm() {
-    try {
-      return StringUtils.forceToString(getDeserializedForReading());
-    } catch (RuntimeException ex) {
-      return "Could not convert object to string because " + ex;
-    }
-  }
-
-  @Override
-  public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
-    return getDeserializedValue(null,null);
-  }
-
-  @Override
-  public Object getValue() {
-    if (isSerialized()) {
-      return getSerializedValue();
-    } else {
-      throw new IllegalStateException("Can not call getValue on StoredObject that is not serialized");
-    }
-  }
-
-  @Override
-  public void writeValueAsByteArray(DataOutput out) throws IOException {
-    DataSerializer.writeByteArray(getSerializedValue(), out);
-  }
-
-  @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper,
       byte userBits) {
     byte[] value;
@@ -152,37 +98,6 @@ public class DataAsAddress implements StoredObject {
     return 0;
   }
   
-  @Override
-  public void sendTo(DataOutput out) throws IOException {
-    if (isSerialized()) {
-      out.write(getSerializedValue());
-    } else {
-      Object objToSend = (byte[]) getDeserializedForReading(); // deserialized as a byte[]
-      DataSerializer.writeObject(objToSend, out);
-    }
-  }
-
-  @Override
-  public void sendAsByteArray(DataOutput out) throws IOException {
-    byte[] bytes;
-    if (isSerialized()) {
-      bytes = getSerializedValue();
-    } else {
-      bytes = (byte[]) getDeserializedForReading();
-    }
-    DataSerializer.writeByteArray(bytes, out);
-    
-  }
-  
-  @Override
-  public void sendAsCachedDeserializable(DataOutput out) throws IOException {
-    if (!isSerialized()) {
-      throw new IllegalStateException("sendAsCachedDeserializable can only be called on serialized StoredObjects");
-    }
-    InternalDataSerializer.writeDSFIDHeader(DataSerializableFixedID.VM_CACHED_DESERIALIZABLE, out);
-    sendAsByteArray(out);
-  }
-
   @Override
   public boolean isSerialized() {
     return OffHeapRegionEntryHelper.isSerialized(this.address);

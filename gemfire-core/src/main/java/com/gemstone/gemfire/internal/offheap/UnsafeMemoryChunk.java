@@ -265,4 +265,14 @@ public class UnsafeMemoryChunk implements MemoryChunk {
     sb.append("}");
     return sb.toString();
   }
+  
+  /**
+   * Used to create UnsafeMemoryChunk instances.
+   */
+  public interface Factory {
+    /** Create and return an UnsafeMemoryChunk.
+     * @throws OutOfMemoryError if the create fails
+     */
+    public UnsafeMemoryChunk create(int size);
+  }
 }

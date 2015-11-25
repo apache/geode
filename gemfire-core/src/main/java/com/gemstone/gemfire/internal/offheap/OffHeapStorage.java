@@ -183,7 +183,6 @@ public class OffHeapStorage implements OffHeapMemoryStats {
       }
     }
     
-    //TODO:Asif: Fix it
     MemoryAllocator result;
     if (offHeapMemorySize == 0 || Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
       // Checking the FORCE_LOCATOR_DM_TYPE is a quick hack to keep our locator from allocating off heap memory.

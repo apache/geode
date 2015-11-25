@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
 
 /**
  * Basic implementation of MemoryBlock for test validation only.
@@ -154,5 +153,18 @@ public class MemoryBlockNode implements MemoryBlock {
   @Override
   public ChunkType getChunkType() {
     return this.block.getChunkType();
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof MemoryBlockNode) {
+      o = ((MemoryBlockNode)o).block;
+    }
+    return this.block.equals(o);
+  }
+  
+  @Override
+  public int hashCode() {
+    return this.block.hashCode();
   }
 }

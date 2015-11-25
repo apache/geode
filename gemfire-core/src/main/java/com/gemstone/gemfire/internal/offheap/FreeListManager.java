@@ -803,5 +803,19 @@ public class FreeListManager {
     public ChunkType getChunkType() {
       return null;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof TinyMemoryBlock) {
+        return getMemoryAddress() == ((TinyMemoryBlock) o).getMemoryAddress();
+      }
+      return false;
+    }
+    
+    @Override
+    public int hashCode() {
+      long value = this.getMemoryAddress();
+      return (int)(value ^ (value >>> 32));
+    }
   }
 }

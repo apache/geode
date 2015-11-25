@@ -28,14 +28,6 @@ public class GemFireChunk extends Chunk {
     public int getSrcType() {
       return Chunk.SRC_TYPE_GFE;
     }
-    @Override
-    public Chunk newChunk(long memoryAddress) {
-      return new GemFireChunk(memoryAddress);
-    }
-    @Override
-    public Chunk newChunk(long memoryAddress, int chunkSize) {
-      return new GemFireChunk(memoryAddress, chunkSize);
-    }
   };
   public GemFireChunk(long memoryAddress, int chunkSize) {
     super(memoryAddress, chunkSize, TYPE);

@@ -389,7 +389,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     @Override
     public void writeBytes(int offset, byte[] bytes, int bytesOffset, int size) {
       assert offset+size <= getDataSize();
-      SimpleMemoryAllocatorImpl.validateAddressAndSizeWithinSlab(getBaseDataAddress() + offset, size);
       UnsafeMemoryChunk.writeAbsoluteBytes(getBaseDataAddress() + offset, bytes, bytesOffset, size);
     }
     

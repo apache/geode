@@ -122,4 +122,18 @@ public class Fragment implements MemoryBlock {
   public ChunkType getChunkType() {
     return null;
   }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof Fragment) {
+      return getMemoryAddress() == ((Fragment) o).getMemoryAddress();
+    }
+    return false;
+  }
+  
+  @Override
+  public int hashCode() {
+    long value = this.getMemoryAddress();
+    return (int)(value ^ (value >>> 32));
+  }
 }

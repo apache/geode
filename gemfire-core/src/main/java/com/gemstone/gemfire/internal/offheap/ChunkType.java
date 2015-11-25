@@ -17,10 +17,14 @@
 package com.gemstone.gemfire.internal.offheap;
 
 /**
- * Used to create new chunks of a certain type.
+ * Describes the type of data stored in a chunk.
  */
-public abstract class ChunkType {
-  public abstract int getSrcType();
-  public abstract Chunk newChunk(long memoryAddress);
-  public abstract Chunk newChunk(long memoryAddress, int chunkSize);
+public interface ChunkType {
+  /**
+   * Returns an int that describes that type of
+   * data stored in the chunk.
+   * Currently the only supported type is
+   * Chunk.SRC_TYPE_GFE.
+   */
+  public int getSrcType();
 }
