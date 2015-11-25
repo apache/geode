@@ -76,8 +76,8 @@ public class Utility {
 		return ((value - value2) / ((timestamp - timestamp2) / 1000));
 	}
 
-	public static void dumpCharts(List<StatFileParser.ResourceInst> ril) {
-		logger.info("Dumping Charts");
+//	public static void dumpCharts(List<StatFileParser.ResourceInst> ril) {
+//		logger.info("Dumping Charts");
 //		for (StatFileParser.ResourceInst o : ril) {
 //			logger.fine("RESOURCE:" + o.getType().getName() + o.getName() + "," + o.
 //							toString());
@@ -141,89 +141,89 @@ public class Utility {
 //				}
 //			}
 //		}
-		logger.info("Finished Charts");
-	}
+//		logger.info("Finished Charts");
+//	}
 
-	static public void dumpCSV(StatFileManager sfm, File file) {
-		int numFiles = sfm.length();
-		try {
-			System.out.println("Writing CSV file: " + file.getAbsolutePath());
-			file.createNewFile();
-			PrintWriter pw = new PrintWriter(file);
-			for (int x = 0; x < numFiles; x++) {
-				StatFileWrapper sfWrapper = sfm.getFile(x);
-				StatFileParser.ArchiveInfo aInfo = sfWrapper.getaInfo();
-				pw.print("FILE INFO, ");
-				pw.print(aInfo.getArchiveFileName() + ", ");
-				pw.print(aInfo.getMachine() + ", ");
-				pw.print(aInfo.getOs() + ", ");
-				pw.print(aInfo.getProductVersion() + ", ");
-				pw.print(aInfo.getStartTimeMillis() + ", ");
-				pw.print(aInfo.getSystem() + ", ");
-				pw.print(aInfo.getSystemId() + ", ");
-				pw.print(aInfo.getSystemStartTimeMillis() + ", ");
-				pw.print(aInfo.getTimeZone());
-				pw.println();
-				pw.flush();
-				List<StatFileParser.ResourceInst> rl = sfWrapper.getResourceList();
-				for (StatFileParser.ResourceInst ri : rl) {
-					pw.print("STATTYPE, ");
-					pw.print(ri.getType().getName() + ", ");
-					pw.print(ri.getName());
-					pw.println();
-					StatFileParser.StatValue[] svArray = ri.getStatValues();
-					for (StatFileParser.StatValue sv : svArray) {
-						pw.print("STAT, ");
-						pw.print(sv.getDescriptor().getName() + ", ");
-						if (sv.getFilter() == sv.FILTER_NONE) {
-							pw.print("NO FILTER, ");
-						} else {
-							if (sv.getFilter() == sv.FILTER_PERSAMPLE) {
-								pw.print("PERSAMPLE FILTER, ");
-							} else {
-								if (sv.getFilter() == sv.FILTER_PERSEC) {
-									pw.print("PERSECOND FILTER, ");
-								}
-							}
-						}
-						pw.println();
-						pw.print("TIME, ");
-						long[] timesnapshot = sv.getRawAbsoluteTimeStamps();
-						for (long time : timesnapshot) {
-							pw.print(time);
-							pw.print(", ");
-						}
-						pw.println();
-						pw.print("DATA, ");
-						double[] datasnapshot = sv.getRawSnapshots();
-						for (double data : datasnapshot) {
-							pw.print(data);
-							pw.print(", ");
-						}
-						pw.println();
-					}
-					pw.println();
-					pw.flush();
-				}
-				pw.close();
-			}
-			System.out.println("Finished writing CSV file: " + file.getAbsolutePath());
-		} catch (IOException ex) {
-			Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-	}
-
-	static public JMenu createMenu(String menuName, JMenuBar menubar) {
-		JMenu menu = new JMenu(menuName);
-		menubar.add(menu);
-		return menu;
-	}
-
-	static public JMenuItem createMenuItem(String menuItem, JMenu menu, ActionListener al) {
-		JMenuItem mi = new JMenuItem(menuItem);
-		mi.addActionListener(al);
-		menu.add(mi);
-		return mi;
-	}
+//	static public void dumpCSV(StatFileManager sfm, File file) {
+//		int numFiles = sfm.length();
+//		try {
+//			System.out.println("Writing CSV file: " + file.getAbsolutePath());
+//			file.createNewFile();
+//			PrintWriter pw = new PrintWriter(file);
+//			for (int x = 0; x < numFiles; x++) {
+//				StatFileWrapper sfWrapper = sfm.getFile(x);
+//				StatFileParser.ArchiveInfo aInfo = sfWrapper.getaInfo();
+//				pw.print("FILE INFO, ");
+//				pw.print(aInfo.getArchiveFileName() + ", ");
+//				pw.print(aInfo.getMachine() + ", ");
+//				pw.print(aInfo.getOs() + ", ");
+//				pw.print(aInfo.getProductVersion() + ", ");
+//				pw.print(aInfo.getStartTimeMillis() + ", ");
+//				pw.print(aInfo.getSystem() + ", ");
+//				pw.print(aInfo.getSystemId() + ", ");
+//				pw.print(aInfo.getSystemStartTimeMillis() + ", ");
+//				pw.print(aInfo.getTimeZone());
+//				pw.println();
+//				pw.flush();
+//				List<StatFileParser.ResourceInst> rl = sfWrapper.getResourceList();
+//				for (StatFileParser.ResourceInst ri : rl) {
+//					pw.print("STATTYPE, ");
+//					pw.print(ri.getType().getName() + ", ");
+//					pw.print(ri.getName());
+//					pw.println();
+//					StatFileParser.StatValue[] svArray = ri.getStatValues();
+//					for (StatFileParser.StatValue sv : svArray) {
+//						pw.print("STAT, ");
+//						pw.print(sv.getDescriptor().getName() + ", ");
+//						if (sv.getFilter() == sv.FILTER_NONE) {
+//							pw.print("NO FILTER, ");
+//						} else {
+//							if (sv.getFilter() == sv.FILTER_PERSAMPLE) {
+//								pw.print("PERSAMPLE FILTER, ");
+//							} else {
+//								if (sv.getFilter() == sv.FILTER_PERSEC) {
+//									pw.print("PERSECOND FILTER, ");
+//								}
+//							}
+//						}
+//						pw.println();
+//						pw.print("TIME, ");
+//						long[] timesnapshot = sv.getRawAbsoluteTimeStamps();
+//						for (long time : timesnapshot) {
+//							pw.print(time);
+//							pw.print(", ");
+//						}
+//						pw.println();
+//						pw.print("DATA, ");
+//						double[] datasnapshot = sv.getRawSnapshots();
+//						for (double data : datasnapshot) {
+//							pw.print(data);
+//							pw.print(", ");
+//						}
+//						pw.println();
+//					}
+//					pw.println();
+//					pw.flush();
+//				}
+//				pw.close();
+//			}
+//			System.out.println("Finished writing CSV file: " + file.getAbsolutePath());
+//		} catch (IOException ex) {
+//			Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+//		}
+//
+//	}
+//
+//	static public JMenu createMenu(String menuName, JMenuBar menubar) {
+//		JMenu menu = new JMenu(menuName);
+//		menubar.add(menu);
+//		return menu;
+//	}
+//
+//	static public JMenuItem createMenuItem(String menuItem, JMenu menu, ActionListener al) {
+//		JMenuItem mi = new JMenuItem(menuItem);
+//		mi.addActionListener(al);
+//		menu.add(mi);
+//		return mi;
+//	}
 }
