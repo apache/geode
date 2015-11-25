@@ -547,11 +547,7 @@ public class CacheCreation implements InternalCache {
       cache.setRegionAttributes(id, attrs);
     }
 
-    Iterator it = this.roots.values().iterator();
-    while (it.hasNext()) {
-      RegionCreation r = (RegionCreation)it.next();
-      r.createRoot(cache);
-    }
+    initializeRegions(this.roots, cache);
 
     cache.readyDynamicRegionFactory();
 
@@ -563,38 +559,76 @@ public class CacheCreation implements InternalCache {
     Integer serverPort = CacheServerLauncher.getServerPort();
     String serverBindAdd = CacheServerLauncher.getServerBindAddress();
     Boolean disableDefaultServer = CacheServerLauncher.disableDefaultServer.get();
+    startCacheServers(this.getCacheServers(), cache, serverPort, serverBindAdd, disableDefaultServer);
+    cache.setBackupFiles(this.backups);
+    cache.addDeclarableProperties(this.declarablePropertiesMap);
+    runInitializer();
+    cache.setInitializer(getInitializer(), getInitializerProps());
     
-    if (this.getCacheServers().size() > 1
+    // UnitTest CacheXml81Test.testCacheExtension
+    // Create all extensions
+    extensionPoint.fireCreate(cache);
+  }
+
+  protected void initializeRegions(Map declarativeRegions, Cache cache) {
+    Iterator it = declarativeRegions.values().iterator();
+    while (it.hasNext()) {
+      RegionCreation r = (RegionCreation)it.next();
+      r.createRoot(cache);
+    }
+  }
+
+  /**
+   * starts declarative cache servers if a server is not running on the port already.
+   * Also adds a default server to the param declarativeCacheServers if a serverPort is specified.
+   */
+  protected void startCacheServers(List declarativeCacheServers, Cache cache, Integer serverPort, String serverBindAdd, Boolean disableDefaultServer) {
+
+    if (declarativeCacheServers.size() > 1
         && (serverPort != null || serverBindAdd != null)) {
       throw new RuntimeException(
           LocalizedStrings.CacheServerLauncher_SERVER_PORT_MORE_THAN_ONE_CACHE_SERVER
               .toLocalizedString());
     }
-    
-    if (this.getCacheServers().isEmpty()
+
+    if (declarativeCacheServers.isEmpty()
         && (serverPort != null || serverBindAdd != null)
         && (disableDefaultServer == null || !disableDefaultServer)) {
       boolean existingCacheServer = false;
-      
+
       List<CacheServer> cacheServers = cache.getCacheServers();
       if (cacheServers != null) {
         for(CacheServer cacheServer : cacheServers) {
-          if (serverPort == cacheServer.getPort() && cacheServer.getBindAddress().equals(serverBindAdd)) {
+          if (serverPort == cacheServer.getPort()) {
             existingCacheServer = true;
           }
         }
       }
       
       if (!existingCacheServer) {
-        this.getCacheServers().add(new CacheServerCreation(cache, false));
+        declarativeCacheServers.add(new CacheServerCreation((GemFireCacheImpl)cache, false));
       }
     }
     
-    for (Iterator iter = this.getCacheServers().iterator(); iter.hasNext();) {
-      CacheServerCreation bridge = (CacheServerCreation)iter.next();
-      
+    for (Iterator iter = declarativeCacheServers.iterator(); iter.hasNext();) {
+      CacheServerCreation declaredCacheServer = (CacheServerCreation)iter.next();
+
+      boolean startServer = true;
+      List<CacheServer> cacheServers = cache.getCacheServers();
+      if (cacheServers != null) {
+        for (CacheServer cacheServer : cacheServers) {
+          if (declaredCacheServer.getPort() == cacheServer.getPort()) {
+            startServer = false;
+          }
+        }
+      }
+
+      if (!startServer) {
+        continue;
+      }
+
       CacheServerImpl impl = (CacheServerImpl)cache.addCacheServer();
-      impl.configureFrom(bridge);
+      impl.configureFrom(declaredCacheServer);
 
       if (serverPort != null && serverPort != CacheServer.DEFAULT_PORT) {
         impl.setPort(serverPort);
@@ -614,14 +648,6 @@ public class CacheCreation implements InternalCache {
                 .toLocalizedString(impl), ex);
       }
     }
-    cache.setBackupFiles(this.backups);
-    cache.addDeclarableProperties(this.declarablePropertiesMap);
-    runInitializer();
-    cache.setInitializer(getInitializer(), getInitializerProps());
-    
-    // UnitTest CacheXml81Test.testCacheExtension
-    // Create all extensions
-    extensionPoint.fireCreate(cache);
   }
 
   /**
