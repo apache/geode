@@ -24,12 +24,36 @@ $mvn install
 
 Install the MultiAxisChart jar into local maven repository.
 
-$mvn install:install-file 
--Dfile=./MultiAxisChart-1.0-SNAPSHOT.jar 
--DgroupId=com.pivotal.javafx 
--DartifactId=MultiAxisChart 
--Dversion=1.0-SNAPSHOT 
--Dpackaging=jar 
+$mvn install:install-file \
+-Dfile=./MultiAxisChart-1.0-SNAPSHOT.jar \
+-DgroupId=com.pivotal.javafx \
+-DartifactId=MultiAxisChart \
+-Dversion=1.0-SNAPSHOT \
+-Dpackaging=jar \
+-DgeneratePom=true
+
+For testing, additional jars may need to be added from the Apache Geode build to
+the local Maven repository. 
+
+mvn install:install-file -Dfile=gemfire-core-1.0.0-incubating-SNAPSHOT.jar \
+-DgroupId=org.apache.geode \
+-DartifactId=gemfire-core \
+-Dversion=1.0.0-incubating-SNAPSHOT \
+-Dpackaging=jar \
+-DgeneratePom=true
+
+mvn install:install-file -Dfile=gemfire-jgroups-1.0.0-incubating-SNAPSHOT.jar \
+-DgroupId=org.apache.geode \
+-DartifactId=gemfire-jgroups \
+-Dversion=1.0.0-incubating-SNAPSHOT \
+-Dpackaging=jar \
+-DgeneratePom=true
+
+mvn install:install-file -Dfile=fastutil-7.0.2.jar \
+-DgroupId=org.apache.geode \
+-DartifactId=fastutil \
+-Dversion=7.0.2 \
+-Dpackaging=jar \
 -DgeneratePom=true
 
 Change back into the Geode directory and then into the JVSD directory. Build JVSD.
