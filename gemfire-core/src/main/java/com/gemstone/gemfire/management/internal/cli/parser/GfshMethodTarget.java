@@ -18,9 +18,9 @@ package com.gemstone.gemfire.management.internal.cli.parser;
 
 import java.lang.reflect.Method;
 
-import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
-import com.gemstone.gemfire.management.internal.cli.util.spring.ObjectUtils;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * A method that can be executed via a shell command.
@@ -101,7 +101,7 @@ public class GfshMethodTarget {
 
   @Override
   public int hashCode() {
-    return ObjectUtils.nullSafeHashCode(method, target);
+    return ObjectUtils.nullSafeHashCode(new Object[] { method, target });
   }
 
   @Override

@@ -21,6 +21,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import joptsimple.ArgumentAcceptingOptionSpec;
+import joptsimple.MultipleArgumentsForOptionException;
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSpecBuilder;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.gemstone.gemfire.management.internal.cli.MultipleValueConverter;
 import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionException;
 import com.gemstone.gemfire.management.internal.cli.exceptions.ExceptionGenerator;
@@ -32,16 +40,10 @@ import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preprocessor;
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedInput;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
-import joptsimple.ArgumentAcceptingOptionSpec;
-import joptsimple.MultipleArgumentsForOptionException;
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSpecBuilder;
 
 /**
  * Implementation of {@link GfshOptionParser} which internally makes use of
- * {@link com.gemstone.joptsimple.OptionParser}
+ * {@link joptsimple.OptionParser}
  * 
  * @author Nikhil Jadhav
  * @since 7.0
@@ -172,10 +174,10 @@ public class JoptOptionParser implements GfshOptionParser {
               outer: for (String inputSplit : preProcessedInput) {
                 if (inputSplit.startsWith(SyntaxConstants.LONG_OPTION_SPECIFIER)) {
                   // Remove option prefix
-                  inputSplit = StringUtils.removePrefix(inputSplit,
+                  inputSplit = StringUtils.removeStart(inputSplit,
                       SyntaxConstants.LONG_OPTION_SPECIFIER);
                   // Remove value specifier
-                  inputSplit = StringUtils.removeSuffix(inputSplit,
+                  inputSplit = StringUtils.removeEnd(inputSplit,
                       SyntaxConstants.OPTION_VALUE_SPECIFIER);
                   if (!inputSplit.equals("")) {
                     if (option.getLongOption().equals(inputSplit)) {

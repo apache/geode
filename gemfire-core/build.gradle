@@ -22,7 +22,7 @@ dependencies {
   compile 'com.google.code.findbugs:annotations:' + project.'annotations.version'
   provided 'com.google.guava:guava:' + project.'guava.version'
   compile 'commons-io:commons-io:' + project.'commons-io.version'
-  provided 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile 'commons-logging:commons-logging:' + project.'commons-logging.version'
   compile 'commons-modeler:commons-modeler:' + project.'commons-modeler.version'
   compile 'io.netty:netty-all:' + project.'netty-all.version'

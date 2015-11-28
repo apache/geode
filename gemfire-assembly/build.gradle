@@ -86,6 +86,7 @@ def cp = {
       // depedencies from gemfire-core
       it.contains('antlr') ||
       it.contains('commons-io') ||
+      it.contains('commons-lang') ||
       it.contains('commons-logging') ||
       it.contains('fastutil') ||
       it.contains('jackson-annotations') ||

@@ -22,11 +22,11 @@ import java.util.List;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.support.util.FileUtils;
+import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.internal.cli.MultipleValueAdapter;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
 
 /**
  * @author Nikhil Jadhav
