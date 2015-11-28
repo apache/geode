@@ -15,11 +15,22 @@ apply plugin: "org.nosphere.apache.rat"
 
 rat {
   excludes = [
+    // git
     '.git/**',
     '**/.gitignore',
+    
+    // gradle
     '**/.gradle/**',
-    '.gradle',
+    '**/build.gradle',
+    'gradlew',
+    'gradlew.bat',
+    'gradle.properties',
+    'settings.gradle',
+    'gradle/dependency-versions.properties',
+    'gradle/wrapper/gradle-wrapper.properties',
     '**/build/**',
+    
+    // IDE
     '**/.project',
     '**/.classpath',
     '**/.settings/**',
@@ -27,7 +38,128 @@ rat {
     '*.iml',
     '.idea/**',
 
-    '**/doc-files/*.fig'
+    // text files
+    '**/*.fig',
+    '**/*.txt',
+    '**/*.md',
+    '**/*.json',
+    '**/*.tx0',
+    '**/*.txo',
+    
+    // binary files
+    '**/*.cer',
+    '**/*.gfs',
+    '**/keystore',
+    '**/*.ser',
+    '**/*.xls',
+    
+    // other text files
+    'gemfire-assembly/src/main/dist/bin/gfsh',
+    'gemfire-assembly/src/main/dist/bin/gfsh-completion.bash',
+    'gemfire-assembly/src/main/dist/bin/gfsh.bat',
+    'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/fixantlr.sh',
+    'gemfire-spark-connector/project/plugins.sbt',
+    'gemfire-spark-connector/project/build.properties',
+    'gemfire-web-api/src/main/webapp/docs/o2c.html',
+    'gemfire-web-api/src/main/webapp/docs/index.html',
+    
+    // XML
+    'etc/eclipseFormatterProfile.xml',
+    'etc/intellijIdeaCodeStyle.xml',
+    'log4j2*.xml',
+    '**/example*cache.xml',
+    'gemfire-core/src/test/resources/**/*JUnitTest*.xml',
+    'gemfire-core/src/test/resources/**/IndexCreation.xml',
+    'gemfire-core/src/test/resources/**/PRIndexCreation.xml',
+    'gemfire-core/src/test/resources/**/PartitionRegionCacheExample*.xml',
+    'gemfire-core/src/test/resources/**/attributesUnordered.xml',
+    'gemfire-core/src/test/resources/**/bad*.xml',
+    'gemfire-core/src/test/resources/**/bug44710.xml',
+    'gemfire-core/src/test/resources/**/cachejta.xml',
+    'gemfire-core/src/test/resources/**/cachequeryindex*.xml',
+    'gemfire-core/src/test/resources/**/callback*.xml',
+    'gemfire-core/src/test/resources/**/coLocation*.xml',
+    'gemfire-core/src/test/resources/**/ewtest.xml',
+    'gemfire-core/src/test/resources/**/incorrect*.xml',
+    'gemfire-core/src/test/resources/**/index-creation-*.xml',
+    'gemfire-core/src/test/resources/**/index-recovery-overflow.xml',
+    'gemfire-core/src/test/resources/**/loaderNotLoader.xml',
+    'gemfire-core/src/test/resources/**/malformed.xml',
+    'gemfire-core/src/test/resources/**/mixed_diskstore_disk*.xml',
+    'gemfire-core/src/test/resources/**/namedAttributes.xml',
+    'gemfire-core/src/test/resources/**/partitioned*.xml',
+    'gemfire-core/src/test/resources/**/same*.xml',
+    'gemfire-core/src/test/resources/**/spring-gemfire-context.xml',
+    'gemfire-core/src/test/resources/**/test*.xml',
+    'gemfire-core/src/test/resources/**/unknownNamedAttributes.xml',
+    
+    // ANTLR generated files
+    'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexer.java',
+    'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexerTokenTypes.java',
+    'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLParser.java',
+    'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexerTokenTypes.txt',
+    'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/oql.g',
+    
+    // Service META-INF
+    '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
+    '**/META-INF/services/com.gemstone.gemfire.internal.cache.CacheService',
+    '**/META-INF/services/com.gemstone.gemfire.internal.cache.xmlcache.XmlParser',
+    '**/META-INF/services/org.springframework.shell.core.CommandMarker',
+
+    // --- Other Licenses ---
+    
+    // Copied from other ASF projects 
+    'gemfire-core/src/main/resources/com/gemstone/gemfire/admin/jmx/internal/doc-files/mbeans-descriptors.dtd',
+    'gemfire-core/src/main/resources/com/gemstone/gemfire/admin/jmx/mbeans-descriptors.xml',
+
+    // Public Domain http://meyerweb.com/eric/tools/css/reset/
+    'gemfire-web-api/src/main/webapp/docs/css/reset.css',
+
+    // Public Domain - http://creativecommons.org/licenses/publicdomain
+    'SynchronousQueueNoSpin.java',
+
+    // JSON License - permissive, used for Good, not Evil
+    'gemfire-json/src/main/java/org/json/CDL.java',
+    'gemfire-json/src/main/java/org/json/Cookie.java',
+    'gemfire-json/src/main/java/org/json/CookieList.java',
+    'gemfire-json/src/main/java/org/json/CDL.java',
+    'gemfire-json/src/main/java/org/json/Cookie.java',
+    'gemfire-json/src/main/java/org/json/CookieList.java',
+    'gemfire-json/src/main/java/org/json/HTTP.java',
+    'gemfire-json/src/main/java/org/json/HTTPTokener.java',
+    'gemfire-json/src/main/java/org/json/JSONArray.java',
+    'gemfire-json/src/main/java/org/json/JSONException.java',
+    'gemfire-json/src/main/java/org/json/JSONML.java',
+    'gemfire-json/src/main/java/org/json/JSONObject.java',
+    'gemfire-json/src/main/java/org/json/JSONString.java',
+    'gemfire-json/src/main/java/org/json/JSONStringer.java',
+    'gemfire-json/src/main/java/org/json/JSONTokener.java',
+    'gemfire-json/src/main/java/org/json/JSONWriter.java',
+    'gemfire-json/src/main/java/org/json/XML.java',
+    'gemfire-json/src/main/java/org/json/XMLTokener.java',
+
+    // MIT License
+    'gemfire-web-api/src/main/webapp/docs/lib/backbone-min.js',
+    'gemfire-web-api/src/main/webapp/docs/lib/jquery-1.8.0.min.js',
+    'gemfire-web-api/src/main/webapp/docs/lib/jquery.ba-bbq.min.js',
+    'gemfire-web-api/src/main/webapp/docs/lib/jquery.slideto.min.js',
+    'gemfire-web-api/src/main/webapp/docs/lib/jquery.wiggle.min.js',
+    'gemfire-web-api/src/main/webapp/docs/lib/underscore-min.js',
+    'gemfire-site/src/jbake/**',
+
+    // MIT or ISC
+    'gemfire-web-api/src/main/webapp/docs/lib/shred.bundle.js',
+    'gemfire-web-api/src/main/webapp/docs/lib/shred/content.js',
+
+    // BSD License
+    'gemfire-web-api/src/main/webapp/docs/lib/highlight.7.3.pack.js',
+
+    // Apache License
+    'gemfire-web-api/src/main/webapp/docs/lib/swagger-oauth.js',
+    'gemfire-web-api/src/main/webapp/docs/lib/swagger.js',
+    'gemfire-web-api/src/main/webapp/docs/css/screen.css',
+    'gemfire-web-api/src/main/webapp/docs/swagger-ui.js',
+    'gemfire-web-api/src/main/webapp/docs/swagger-ui.min.js'
   ]
 }
 
