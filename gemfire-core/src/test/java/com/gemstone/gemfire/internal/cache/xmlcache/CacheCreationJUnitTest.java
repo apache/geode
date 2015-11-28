@@ -16,27 +16,29 @@
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- * Created by pivotal on 11/19/15.
- */
+@Category(UnitTest.class)
 public class CacheCreationJUnitTest {
 
   @Mock
