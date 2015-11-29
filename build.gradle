@@ -304,6 +304,7 @@ subprojects {
     compile 'org.springframework:spring-expression:' + project.'springframework.version'
     compile 'org.springframework:spring-web:' + project.'springframework.version'
     compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
+    compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
 
     testCompile 'com.jayway.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'com.github.stefanbirkner:system-rules:' + project.'system-rules.version'

@@ -51,7 +51,6 @@ package com.gemstone.gemfire.internal.util.concurrent;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -59,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -77,8 +75,6 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 import com.gemstone.gemfire.internal.size.SingleObjectSizer;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * A hash table supporting full concurrency of retrievals and adjustable
@@ -1436,7 +1432,7 @@ RETRYLOOP:
    * @return the number of key-value mappings in this map
    */
   @Override
-  @SuppressFBWarnings(value="UL_UNRELEASED_LOCK", justification="The lock() calls are followed by unlock() calls without finally-block. Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="The lock() calls are followed by unlock() calls without finally-block. Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
   public final int size() {
     final Segment<K, V>[] segments = this.segments;
     long sum = 0;
@@ -1536,7 +1532,7 @@ RETRYLOOP:
    *           if the specified value is null
    */
   @Override
-  @SuppressFBWarnings(value="UL_UNRELEASED_LOCK", justification="Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
   public final boolean containsValue(final Object value) {
     if (value == null) {
       throw new NullPointerException();

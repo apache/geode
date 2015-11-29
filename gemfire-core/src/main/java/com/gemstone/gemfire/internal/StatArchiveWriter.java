@@ -16,19 +16,6 @@
  */
 package com.gemstone.gemfire.internal;
 
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.statistics.ResourceInstance;
-import com.gemstone.gemfire.internal.statistics.ResourceType;
-import com.gemstone.gemfire.internal.statistics.SampleHandler;
-import com.gemstone.gemfire.internal.statistics.StatArchiveDescriptor;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -48,6 +35,17 @@ import java.util.TimeZone;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.InternalGemFireException;
+import com.gemstone.gemfire.StatisticDescriptor;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.statistics.ResourceInstance;
+import com.gemstone.gemfire.internal.statistics.ResourceType;
+import com.gemstone.gemfire.internal.statistics.SampleHandler;
+import com.gemstone.gemfire.internal.statistics.StatArchiveDescriptor;
 
 /**
  * StatArchiveWriter provides APIs to write statistic snapshots to an archive
@@ -168,7 +166,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
   
-  @SuppressFBWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Best effort attempt to delete a GFS file without any samples.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Best effort attempt to delete a GFS file without any samples.") 
   private static void deleteFileIfPossible(File file) {
     file.delete();
   }
@@ -288,7 +286,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
   
-  @SuppressFBWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only for debugging and there is never more than one instance being traced because there is only one stat sampler.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="This is only for debugging and there is never more than one instance being traced because there is only one stat sampler.") 
   public void allocatedResourceInstance(ResourceInstance statResource) {
     if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
       logger.trace(LogMarker.STATISTICS, "StatArchiveWriter#allocatedResourceInstance statResource={}", statResource);

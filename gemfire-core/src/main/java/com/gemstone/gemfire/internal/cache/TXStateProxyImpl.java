@@ -50,8 +50,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * @author mthomas
  *
@@ -570,7 +568,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.InternalDataView#entryCount(com.gemstone.gemfire.internal.cache.LocalRegion)
    */
-  @SuppressFBWarnings(value="UL_UNRELEASED_LOCK", justification="This method unlocks and then conditionally undoes the unlock in the finally-block. Review again at later time.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="This method unlocks and then conditionally undoes the unlock in the finally-block. Review again at later time.") 
   public int entryCount(LocalRegion localRegion) {
     // if size is the first operation in the transaction, then reset the txState
     boolean resetTXState = this.realDeal == null;

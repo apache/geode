@@ -39,14 +39,11 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
@@ -484,7 +481,7 @@ public final class ClientProxyMembershipID
   /**
    * call this when the distributed system ID has been modified
    */
-  @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Only applicable in client DS and in that case too multiple instances do not modify it at the same time.")
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Only applicable in client DS and in that case too multiple instances do not modify it at the same time.")
   public void updateID(DistributedMember idm) {
 //    this.transientPort = ((InternalDistributedMember)this.memberId).getPort();
 //    if (this.transientPort == 0) {

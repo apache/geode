@@ -41,8 +41,6 @@ import com.gemstone.gemfire.pdx.PdxSerializationException;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Class Description
  *
@@ -223,7 +221,7 @@ public class CompiledOperation extends AbstractCompiledValue {
     return context.addDependencies(this, rcvr.computeDependencies(context));
   }
  
-  @SuppressFBWarnings(value="RV_RETURN_VALUE_OF_PUTIFABSENT_IGNORED", justification="Does not matter if the methodDispatch that isn't stored in the map is used") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="RV_RETURN_VALUE_OF_PUTIFABSENT_IGNORED", justification="Does not matter if the methodDispatch that isn't stored in the map is used") 
   private Object eval0(Object receiver, Class resolutionType, ExecutionContext context)
   throws TypeMismatchException, FunctionDomainException, NameResolutionException,
           QueryInvocationTargetException {
