@@ -522,7 +522,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put("log-level", "fine");
+    p.put("log-level", getDUnitLogLevel());
     return p;
   }
 

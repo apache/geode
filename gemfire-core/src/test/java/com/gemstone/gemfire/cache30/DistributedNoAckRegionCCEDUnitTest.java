@@ -266,8 +266,15 @@ public class DistributedNoAckRegionCCEDUnitTest extends
   }
   
   
-  public void testTombstones() {
-    versionTestTombstones();
+  public void testTombstones() throws Exception {
+//    for (int i=0; i<1000; i++) {
+//      System.out.println("starting run #"+i);
+      versionTestTombstones();
+//      if (i < 999) {
+//        tearDown();
+//        setUp();
+//      }
+//    }
   }
   
 

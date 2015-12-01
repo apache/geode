@@ -441,11 +441,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }
           TimeStamp ts = memberTimeStamps.get(member);
           if (pingResp.getResponseMsg() == null) {
-            // double check the activity map
             if (isStopping) {
-              return true;
-            }
-            if (checkRecentActivity(member)) {
               return true;
             }
             logger.trace("no heartbeat response received from {} and no recent activity", member);
@@ -486,10 +482,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
     Socket clientSocket = null;
-    // first check for a recent timestamp
-    if (checkRecentActivity(suspectMember)) {
-      return true;
-    }
     try {
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, suspectMember.getInetAddress(), port);
       clientSocket = SocketCreator.getDefaultInstance().connect(suspectMember.getInetAddress(), port,
@@ -516,10 +508,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           return true;
         } else {
           //received ERROR
-          return checkRecentActivity(suspectMember);
+          return false;
         }
       } else {// cannot establish TCP connection with suspect member
-        return checkRecentActivity(suspectMember);
+        return false;
       }
     } catch (SocketTimeoutException e) {
       logger.debug("tcp/ip connection timed out");
@@ -1192,7 +1184,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               }
               if (!failed) {
                 logger.info("Final check passed");
-                contactedBy(mbr);
               }
               // whether it's alive or not, at this point we allow it to
               // be watched again

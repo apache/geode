@@ -551,7 +551,13 @@ public class JGroupsMessenger implements Messenger {
     }
     
     filterOutgoingMessage(msg);
-    
+
+    // JGroupsMessenger does not support direct-replies, so register
+    // the message's processor if necessary
+    if ((msg instanceof DirectReplyMessage) && msg.isDirectAck() && msg.getProcessorId() <= 0) {
+      ((DirectReplyMessage)msg).registerProcessor();
+    }
+
     InternalDistributedMember[] destinations = msg.getRecipients();
     boolean allDestinations = msg.forAll();
     

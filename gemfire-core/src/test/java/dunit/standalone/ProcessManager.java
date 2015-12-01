@@ -34,11 +34,8 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
-import com.gemstone.gemfire.internal.sequencelog.SequenceLoggerImpl;
 
 import dunit.RemoteDUnitVMIF;
 
@@ -47,8 +44,6 @@ import dunit.RemoteDUnitVMIF;
  *
  */
 public class ProcessManager {
-  public static final boolean IS_WINDOWS = System.getProperty("os.name").contains("Windows");
-  
   private int namingPort;
   private Map<Integer, ProcessHolder> processes = new HashMap<Integer, ProcessHolder>();
   private File log4jConfig;
@@ -179,9 +174,6 @@ public class ProcessManager {
       "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
       "-Dgemfire.disallowMcastDefaults=true",
       "-ea",
-      // use IPv4 on Windows
-      // see https://github.com/belaban/JGroups/wiki/FAQ
-//      (IS_WINDOWS?"-Djava.net.preferIPv4Stack=true":""),
       agent,
       "dunit.standalone.ChildVM"
     };

@@ -8229,12 +8229,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     return !o1.equals(o2);
   }
   
-  protected AsyncInvocation performOps4ClearWithConcurrentEvents(VM vm, final int opNum) {
+  protected AsyncInvocation performOps4ClearWithConcurrentEvents(VM vm, final int msToRun) {
     SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
       public void run() {
         try {
           boolean includeClear = true;
-          doOpsLoop(opNum, includeClear);
+          doOpsLoop(msToRun, includeClear);
         } catch (CacheException e) {
           fail("while performing concurrent operations", e);
         }

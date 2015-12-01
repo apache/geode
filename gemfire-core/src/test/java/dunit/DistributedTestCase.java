@@ -49,6 +49,7 @@ import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogConfig;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.GlobalLockingDUnitTest;
 import com.gemstone.gemfire.cache30.MultiVMRegionTestCase;
 import com.gemstone.gemfire.cache30.RegionTestCase;
@@ -76,6 +77,7 @@ import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -756,6 +758,9 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     closeCache();
     
     SocketCreator.resolve_dns = true;
+    CacheCreation.clearThreadLocals();
+    System.getProperties().remove("gemfire.log-level");
+    System.getProperties().remove("jgroups.resolve_dns");
     InitialImageOperation.slowImageProcessing = 0;
     DistributionMessageObserver.setInstance(null);
     QueryTestUtils.setCache(null);
@@ -767,10 +772,14 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     MultiVMRegionTestCase.CCRegion = null;
     InternalClientMembership.unregisterAllListeners();
     ClientStatsManager.cleanupForTests();
+    ClientServerTestCase.AUTO_LOAD_BALANCE = false;
     unregisterInstantiatorsInThisVM();
     DistributionMessageObserver.setInstance(null);
     QueryObserverHolder.reset();
     DiskStoreObserver.setInstance(null);
+    System.getProperties().remove("gemfire.log-level");
+    System.getProperties().remove("jgroups.resolve_dns");
+    
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {
       InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
     }

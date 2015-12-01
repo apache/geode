@@ -226,6 +226,11 @@ public class CacheCreation implements InternalCache {
   public CacheCreation() {
     this(false);
   }
+  
+  /** clear thread locals that may have been set by previous uses of CacheCreation */
+  public static void clearThreadLocals() {
+    createInProgress = new ThreadLocal<>();
+  }
 
   /**
    * @param forParsing if true then this creation is used for parsing xml;
@@ -357,7 +362,7 @@ public class CacheCreation implements InternalCache {
    * Used from PoolManager to defer to CacheCreation as a manager of pools.
    * @since 5.7
    */
-  private static final ThreadLocal createInProgress = new ThreadLocal();
+  private static ThreadLocal createInProgress = new ThreadLocal();
 
   /**
    * Returns null if the current thread is not doing a CacheCreation create.
