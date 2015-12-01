@@ -531,7 +531,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       NetView check = new NetView(v, v.getViewId() + 1);
       synchronized (removedMembers) {
         removedMembers.add(mbr);
-        check = new NetView(v, v.getViewId());
         check.addCrashedMembers(removedMembers);
         check.removeAll(removedMembers);
       }
@@ -660,6 +659,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         mbrs.removeAll(leaving);
         newView = new NetView(this.localAddress, viewNumber, mbrs, leaving,
             removals);
+        newView.setFailureDetectionPorts(currentView);
         newView.setFailureDetectionPort(this.localAddress, services.getHealthMonitor().getFailureDetectionPort());
       }
       if (viewCreator == null || viewCreator.isShutdown()) {
@@ -1890,23 +1890,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
         }
         if (currentView != null) {
-          int[] ports = currentView.getFailureDetectionPorts();
-          if (ports != null) {
-            int idx = 0;
-            int portsSize = ports.length;
-            for (InternalDistributedMember mbr: currentView.getMembers()) {
-              if (newView.contains(mbr)) {
-                // unit tests create views w/o failure detection ports, so we must check the length
-                // of the array
-                if (idx < portsSize) {
-                  newView.setFailureDetectionPort(mbr, ports[idx]);
-                } else {
-                  newView.setFailureDetectionPort(mbr, -1);
-                }
-              }
-              idx += 1;
-            }
-          }
+          newView.setFailureDetectionPorts(currentView);
         }
       }
 
@@ -1995,11 +1979,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             logger.info("adding these new members from a conflicting view to the new view: {}", newMembers);
             for (InternalDistributedMember mbr: newMembers) {
               int port = conflictingView.getFailureDetectionPort(mbr);
-              JoinRequestMessage msg = new JoinRequestMessage(localAddress, mbr, null, port);
               newView.add(mbr);
               newView.setFailureDetectionPort(mbr, port);
               joinReqs.add(mbr);
             }
+          }
+          // trump the view ID of the conflicting view so mine will be accepted
+          if (conflictingView.getViewId() >= newView.getViewId()) {
+            newView = new NetView(newView, conflictingView.getViewId()+1);
           }
         }
 

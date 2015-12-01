@@ -88,6 +88,12 @@ public class NetView implements DataSerializableFixedID {
     Arrays.fill(failureDetectionPorts, -1);
   }
 
+  /**
+   * Create a new view with the contents of the given view and the
+   * specified view ID
+   * @param other
+   * @param viewId
+   */
   public NetView(NetView other, int viewId) {
     this.creator = other.creator;
     this.viewId = viewId;
@@ -129,7 +135,7 @@ public class NetView implements DataSerializableFixedID {
   
   public int getFailureDetectionPort(InternalDistributedMember mbr) {
     int idx = members.indexOf(mbr);
-    if (idx < 0 || failureDetectionPorts == null || idx >= failureDetectionPorts.length) {
+    if (idx < 0 || idx >= failureDetectionPorts.length) {
       return -1;
     }
     return failureDetectionPorts[idx];
@@ -143,15 +149,36 @@ public class NetView implements DataSerializableFixedID {
     ensureFDCapacity(idx);
     failureDetectionPorts[idx] = port;
   }
+  
+  /**
+   * Transfer the failure-detection ports from another view to this one
+   * @param otherView
+   */
+  public void setFailureDetectionPorts(NetView otherView) {
+    int[] ports = otherView.getFailureDetectionPorts();
+    if (ports != null) {
+      int idx = 0;
+      int portsSize = ports.length;
+      for (InternalDistributedMember mbr: otherView.getMembers()) {
+        if (contains(mbr)) {
+          // unit tests create views w/o failure detection ports, so we must check the length
+          // of the array
+          if (idx < portsSize) {
+            setFailureDetectionPort(mbr, ports[idx]);
+          } else {
+            setFailureDetectionPort(mbr, -1);
+          }
+        }
+        idx += 1;
+      }
+    }
+  }
 
   /**
    * ensures that there is a slot at idx to store an int
    */
   private void ensureFDCapacity(int idx) {
-    if (failureDetectionPorts == null) {
-      failureDetectionPorts = new int[idx+10];
-      Arrays.fill(failureDetectionPorts, -1);
-    } else if (idx >= failureDetectionPorts.length) {
+    if (idx >= failureDetectionPorts.length) {
       int[] p = new int[idx+10];
       if (failureDetectionPorts.length > 0) {
         System.arraycopy(failureDetectionPorts, 0, p, 0, failureDetectionPorts.length);
@@ -479,6 +506,15 @@ public class NetView implements DataSerializableFixedID {
         first = false;
       }
     }
+//    sb.append("] fd ports: [");
+//    int[] ports = getFailureDetectionPorts();
+//    int numMembers = size();
+//    for (int i=0; i<numMembers; i++) {
+//      if (i > 0) {
+//        sb.append(' ');
+//      }
+//      sb.append(ports[i]);
+//    }
     sb.append("]");
     return sb.toString();
   }
