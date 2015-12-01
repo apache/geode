@@ -404,7 +404,7 @@ public class JGroupsMessenger implements Messenger {
     logger.info("processing JGroups IOException: " + e.getMessage());
     NetView v = this.view;
     JGAddress jgMbr = (JGAddress)dest;
-    if (v != null) {
+    if (jgMbr != null && v != null) {
       List<InternalDistributedMember> members = v.getMembers();
       InternalDistributedMember recipient = null;
       for (InternalDistributedMember mbr: members) {
