@@ -211,13 +211,17 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     byte[] hisAddr = his.inetAddr.getAddress();
     if (myAddr != hisAddr) {
       for (int idx=0; idx < myAddr.length; idx++) {
-        if (idx > hisAddr.length) {
+        if (idx >= hisAddr.length) {
           return 1;
         } else if (myAddr[idx] > hisAddr[idx]) {
           return 1;
         } else if (myAddr[idx] < hisAddr[idx]) {
           return -1;
         }
+      }
+      //After checking both addresses we have only gone up to myAddr.length, their address could be longer
+      if (hisAddr.length > myAddr.length) {
+        return -1;
       }
     }
     if (udpPort < his.udpPort) return -1;
@@ -226,16 +230,14 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
     // bug #41983, address of kill-9'd member is reused
     // before it can be ejected from membership
-    if (result == 0) {
-      if (this.vmViewId >= 0 && his.vmViewId >= 0) {
-        if (this.vmViewId < his.vmViewId) {
-          result = -1;
-        } else if (his.vmViewId < this.vmViewId) {
-          result = 1;
-        }
+    if (this.vmViewId >= 0 && his.vmViewId >= 0) {
+      if (this.vmViewId < his.vmViewId) {
+        result = -1;
+      } else if (his.vmViewId < this.vmViewId) {
+        result = 1;
       }
     }
-    if (result == 0 && this.uuidMSBs != 0 && his.uuidMSBs != 0) {
+    if (result == 0 && this.uuidMSBs != 0 && his.uuidMSBs != 0) { 
       if (this.uuidMSBs < his.uuidMSBs) {
         result = -1;
       } else if (his.uuidMSBs < this.uuidMSBs) {
