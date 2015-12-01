@@ -173,8 +173,6 @@ distributions {
       }
       
       into ('lib') {
-        exclude 'annotation*.jar'
-
         from project(":gemfire-common").configurations.runtime
         from project(":gemfire-common").configurations.archives.allArtifacts.files
 
