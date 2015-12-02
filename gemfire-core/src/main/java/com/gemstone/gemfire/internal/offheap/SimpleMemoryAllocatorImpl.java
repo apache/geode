@@ -25,12 +25,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -100,7 +101,6 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
   private volatile MemoryUsageListener[] memoryUsageListeners = new MemoryUsageListener[0];
   
   private static SimpleMemoryAllocatorImpl singleton = null;
-  private static final AtomicReference<Thread> asyncCleanupThread = new AtomicReference<>();
   final ChunkFactory chunkFactory;
   
   public static SimpleMemoryAllocatorImpl getAllocator() {
@@ -297,8 +297,8 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
   public List<Chunk> getLostChunks() {
     List<Chunk> liveChunks = this.freeList.getLiveChunks();
     List<Chunk> regionChunks = getRegionLiveChunks();
-    Set liveChunksSet = new HashSet(liveChunks);
-    Set regionChunksSet = new HashSet(regionChunks);
+    Set<Chunk> liveChunksSet = new HashSet<>(liveChunks);
+    Set<Chunk> regionChunksSet = new HashSet<>(regionChunks);
     liveChunksSet.removeAll(regionChunksSet);
     return new ArrayList<Chunk>(liveChunksSet);
   }
@@ -308,23 +308,22 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
    */
   private List<Chunk> getRegionLiveChunks() {
     ArrayList<Chunk> result = new ArrayList<Chunk>();
-    GemFireCacheImpl gfc = GemFireCacheImpl.getInstance();
+    RegionService gfc = GemFireCacheImpl.getInstance();
     if (gfc != null) {
-      Iterator rootIt = gfc.rootRegions().iterator();
+      Iterator<Region<?,?>> rootIt = gfc.rootRegions().iterator();
       while (rootIt.hasNext()) {
-        Region rr = (Region) rootIt.next();
+        Region<?,?> rr = rootIt.next();
         getRegionLiveChunks(rr, result);
-        Iterator srIt = rr.subregions(true).iterator();
+        Iterator<Region<?,?>> srIt = rr.subregions(true).iterator();
         while (srIt.hasNext()) {
-          Region sr = (Region)srIt.next();
-          getRegionLiveChunks(sr, result);
+          getRegionLiveChunks(srIt.next(), result);
         }
       }
     }
     return result;
   }
 
-  private void getRegionLiveChunks(Region r, List<Chunk> result) {
+  private void getRegionLiveChunks(Region<?,?> r, List<Chunk> result) {
     if (r.getAttributes().getOffHeap()) {
 
       if (r instanceof PartitionedRegion) {
@@ -375,7 +374,6 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator, MemoryI
     return result;
   }
   
-  @SuppressWarnings("unused")
   public static void debugLog(String msg, boolean logStack) {
     if (logStack) {
       logger.info(msg, new RuntimeException(msg));
