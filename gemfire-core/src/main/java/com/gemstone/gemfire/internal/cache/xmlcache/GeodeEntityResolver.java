@@ -26,8 +26,8 @@ import org.xml.sax.ext.EntityResolver2;
 
 /**
  * Resolves entities for XSDs or DTDs with SYSTEM IDs rooted at
- * http://www.pivotal.io/xml/ns from the classpath at
- * /META-INF/schemas/schema.pivotal.io/.
+ * http://geode.apache.org/schema from the classpath at
+ * /META-INF/schemas/geode.apache.org/.
  * 
  * Loaded by {@link ServiceLoader} on {@link EntityResolver2} class. See file
  * <code>META-INF/services/org.xml.sax.ext.EntityResolver2</code>
@@ -38,9 +38,9 @@ import org.xml.sax.ext.EntityResolver2;
  */
 public final class GeodeEntityResolver extends DefaultEntityResolver2 {
 
-  private static final String SYSTEM_ID_ROOT = "http://geode.incubator.apache.org/schema";
+  private static final String SYSTEM_ID_ROOT = "http://geode.apache.org/schema";
 
-  private static final String CLASSPATH_ROOT = "/META-INF/schemas/geode.incubator.apache.org/";
+  private static final String CLASSPATH_ROOT = "/META-INF/schemas/geode.apache.org/";
 
   @Override
   public InputSource resolveEntity(final String name, final String publicId, final String baseURI, final String systemId) throws SAXException, IOException {
