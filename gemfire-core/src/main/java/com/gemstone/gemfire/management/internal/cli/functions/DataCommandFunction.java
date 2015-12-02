@@ -536,10 +536,10 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
         //Following code is adaptation of which.java of old Gfsh
         PartitionedRegion pr = (PartitionedRegion)region;
         Region localRegion = PartitionRegionHelper.getLocalData((PartitionedRegion)region);
-        value = localRegion.get(key);
+        value = localRegion.get(keyObject);
         if(value!=null){
-          DistributedMember primaryMember = PartitionRegionHelper.getPrimaryMemberForKey(region, key);
-          int bucketId = pr.getKeyInfo(key).getBucketId();        
+          DistributedMember primaryMember = PartitionRegionHelper.getPrimaryMemberForKey(region, keyObject);
+          int bucketId = pr.getKeyInfo(keyObject).getBucketId();
           boolean isPrimary = member == primaryMember;
           keyInfo.addLocation(new Object[]{region.getFullPath(),true,getJSONForNonPrimitiveObject(value)[1],isPrimary,""+bucketId});          
         }else{
