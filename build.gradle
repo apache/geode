@@ -567,7 +567,7 @@ subprojects {
     description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, and distributedTest'
   }
 
-  check.dependsOn checkMissedTests
+  check.dependsOn checkMissedTests, rat
   combineReports.mustRunAfter check, test, integrationTest, distributedTest, checkMissedTests
   build.finalizedBy combineReports
   check.finalizedBy combineReports
