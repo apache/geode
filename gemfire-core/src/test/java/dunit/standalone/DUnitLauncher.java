@@ -245,11 +245,11 @@ public class DUnitLauncher {
         //Tell the locator it's the first in the system for
         //faster boot-up
         
-        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY, "true");
+        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
         try {
           Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);
         } finally {
-          System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY);
+          System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
         }
         
         return null;

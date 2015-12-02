@@ -185,14 +185,14 @@ public class MembershipJUnitTest {
 
       // start the first membership manager
       try {
-        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY, "true");
+        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
         DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
         DMStats stats1 = mock(DMStats.class);
         System.out.println("creating 1st membership manager");
         m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
         m1.startEventProcessing();
       } finally {
-        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY);
+        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
       }
       
       // start the second membership manager

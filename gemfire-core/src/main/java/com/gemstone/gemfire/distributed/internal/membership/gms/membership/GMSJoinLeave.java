@@ -88,7 +88,7 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
  */
 public class GMSJoinLeave implements JoinLeave, MessageHandler {
   
-  public static String BYPASS_DISCOVERY = "gemfire.bypass-discovery";
+  public static final String BYPASS_DISCOVERY_PROPERTY = "gemfire.bypass-discovery";
 
   /** amount of time to wait for responses to FindCoordinatorRequests */
   private static final int DISCOVERY_TIMEOUT = Integer.getInteger("gemfire.discovery-timeout", 3000);
@@ -221,7 +221,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   public boolean join() {
 
     try {
-      if (Boolean.getBoolean(BYPASS_DISCOVERY)) {
+      if (Boolean.getBoolean(BYPASS_DISCOVERY_PROPERTY)) {
         synchronized(viewInstallationLock) {
           becomeCoordinator();
         }
