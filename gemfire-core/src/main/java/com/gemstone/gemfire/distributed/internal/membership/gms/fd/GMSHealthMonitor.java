@@ -56,6 +56,7 @@ import org.jgroups.util.UUID;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -173,9 +174,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   
   // For TCP check
   private ExecutorService serverSocketExecutor;
-  private static final int OK = 0x7B;
-  private static final int ERROR = 0x00;  
-  private InetAddress socketAddress;
+  static final int OK = 0x7B;
+  static final int ERROR = 0x00;  
   private volatile int socketPort;
   private volatile ServerSocket serverSocket;
 
@@ -491,11 +491,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         InputStream in = clientSocket.getInputStream();
         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
         GMSMember gmbr = (GMSMember) suspectMember.getNetMember();
-        out.writeShort(Version.CURRENT_ORDINAL);
-        out.writeInt(gmbr.getVmViewId());
-        out.writeLong(gmbr.getUuidLSBs());
-        out.writeLong(gmbr.getUuidMSBs());
-        out.flush();
+        writeMemberToStream(gmbr, out);
         clientSocket.shutdownOutput();
         logger.debug("Connected - reading response", suspectMember);
         int b = in.read();
@@ -529,6 +525,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     return false;
+  }
+  
+  void writeMemberToStream(GMSMember gmbr, DataOutputStream out) throws IOException {
+    out.writeShort(Version.CURRENT_ORDINAL);
+    out.writeInt(gmbr.getVmViewId());
+    out.writeLong(gmbr.getUuidLSBs());
+    out.writeLong(gmbr.getUuidMSBs());
+    out.flush();
   }
   
   /*
@@ -610,32 +614,37 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   }
 
-  /**
-   * start the thread that listens for tcp/ip connections and responds
-   * to connection attempts
-   */
-  private void startTcpServer() {
-    // allocate a socket here so there are no race conditions between knowing the FD
-    // socket port and joining the system
-    socketAddress = localAddress.getInetAddress();
-    int[] portRange = services.getConfig().getMembershipPortRange();            
+  ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
+    ServerSocket serverSocket = null;
     try {
       serverSocket = SocketCreator.getDefaultInstance().createServerSocketUsingPortRange(socketAddress, 50/*backlog*/, true/*isBindAddress*/, false/*useNIO*/, 65536/*tcpBufferSize*/, portRange);
       socketPort = serverSocket.getLocalPort();
     } catch (IOException e) {
       throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range", e);
+    } catch (SystemConnectException e) {
+      throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range", e);
     }
+    return serverSocket;
+  }
+  
+  /**
+   * start the thread that listens for tcp/ip connections and responds
+   * to connection attempts
+   */
+  private void startTcpServer(ServerSocket ssocket) {
+    // allocate a socket here so there are no race conditions between knowing the FD
+    // socket port and joining the system
 
     serverSocketExecutor.execute(new Runnable() {
       @Override
       public void run() {
-        logger.info("Started failure detection server thread on {}:{}.", socketAddress, socketPort);
+        logger.info("Started failure detection server thread on {}:{}.", ssocket.getInetAddress(), socketPort);
         Socket socket = null;
         try {
           while (!services.getCancelCriterion().isCancelInProgress() 
               && !GMSHealthMonitor.this.isStopping) {
             try {
-              socket = serverSocket.accept();
+              socket = ssocket.accept();
               if (GMSHealthMonitor.this.playingDead) {
                 continue;
               }
@@ -658,9 +667,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           logger.info("GMSHealthMonitor server thread exiting");
         } finally {
           // close the server socket
-          if (serverSocket != null && !serverSocket.isClosed()) {
+          if (ssocket != null && !ssocket.isClosed()) {
             try {
-              serverSocket.close();
+              ssocket.close();
               serverSocket = null;
               logger.info("GMSHealthMonitor server socket closed.");
             } catch (IOException e) {
@@ -841,8 +850,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   @Override
   public void started() {
-    this.localAddress = services.getMessenger().getMemberID();
-    startTcpServer();
+    setLocalAddress( services.getMessenger().getMemberID());
+    serverSocket = createServerSocket(localAddress.getInetAddress(), services.getConfig().getMembershipPortRange());
+    startTcpServer(serverSocket);
     startHeartbeatThread();
   }
 
@@ -940,6 +950,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public void emergencyClose() {
     stopServices();
+  }
+  
+  void setLocalAddress(InternalDistributedMember idm) {
+    this.localAddress = idm;
   }
 
   @Override

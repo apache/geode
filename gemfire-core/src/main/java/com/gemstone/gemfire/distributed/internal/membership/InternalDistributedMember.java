@@ -292,7 +292,21 @@ public final class InternalDistributedMember
    * @throws UnknownHostException if the given hostname cannot be resolved
    */
   public InternalDistributedMember(String i, int p, Version version) throws UnknownHostException {
-    netMbr = MemberFactory.newNetMember(i, p);
+    this (i, p, version, MemberFactory.newNetMember(i, p));
+  }
+  
+  /**
+   * Create a InternalDistributedMember referring to the current host (as defined by the given
+   * string).<p>
+   *
+   * <b>
+   * THIS METHOD IS FOR TESTING ONLY.  DO NOT USE IT TO CREATE IDs FOR
+   * USE IN THE PRODUCT.  IT DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED
+   * FOR P2P FUNCTIONALITY.
+   * </b>
+   **/
+  public InternalDistributedMember(String i, int p, Version version, NetMember netMember) throws UnknownHostException {
+    netMbr = netMember;
     defaultToCurrentHost();
     this.vmKind = DistributionManager.NORMAL_DM_TYPE;
     this.versionObj = version;

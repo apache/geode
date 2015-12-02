@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.membership.fd;
+package com.gemstone.gemfire.distributed.internal.membership.gms.fd;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -26,12 +26,21 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,10 +53,11 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
+import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
@@ -56,6 +66,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Heartbe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
 import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -116,7 +127,6 @@ public class GMSHealthMonitorJUnitTest {
   @After
   public void tearDown() {
     gmsHealthMonitor.stop();
-    System.getProperties().remove("gemfire.bind-address");
   }
 
   @Test
@@ -165,7 +175,7 @@ public class GMSHealthMonitorJUnitTest {
 
     // allow the monitor to give up on the initial "next neighbor" and
     // move on to the one after it
-    long giveup = System.currentTimeMillis() + memberTimeout + 600;
+    long giveup = System.currentTimeMillis() + memberTimeout + 500;
     InternalDistributedMember expected = mockMembers.get(5);
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
     while (System.currentTimeMillis() < giveup && neighbor != expected) {
@@ -193,6 +203,7 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
+    //Should we remove these sleeps and force the checkmember directly instead of waiting?
     try {
       // member-timeout is 1000 ms.  We initiate a check and choose
       // a new neighbor at 500 ms
@@ -444,6 +455,110 @@ public class GMSHealthMonitorJUnitTest {
     assertTrue("HeathMonitor should have shutdown", gmsHealthMonitor.isShutdown());
 
   }
+  
+  @Test
+  public void testCreateServerSocket() throws Exception {
+    try (ServerSocket socket = gmsHealthMonitor.createServerSocket(InetAddress.getLocalHost(), portRange)) {
+      Assert.assertTrue( portRange[0] <= socket.getLocalPort() && socket.getLocalPort() <= portRange[1]);
+    }
+  }
+
+  @Test
+  public void testCreateServerSocketPortRangeInvalid() throws Exception {
+    try (ServerSocket socket = gmsHealthMonitor.createServerSocket(InetAddress.getLocalHost(), new int[]{-1, -1})) {
+      Assert.fail("socket was created with invalid port range");
+    }
+    catch (IllegalArgumentException e) {
+      
+    }
+  }
+  
+  @Test
+  public void testClientSocketHandler() throws Exception {
+    int viewId = 2;
+    long msb = 3;
+    long lsb = 4;
+    GMSMember otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    GMSMember gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.OK);
+  }
+
+  @Test
+  public void testClientSocketHandlerWhenMsbDoNotMatch() throws Exception {
+    int viewId = 2;
+    long msb = 3;
+    long lsb = 4;
+    GMSMember otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb + 1, lsb);
+    GMSMember gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.ERROR);
+  }
+  
+  @Test
+  public void testClientSocketHandlerWhenLsbDoNotMatch() throws Exception {
+    int viewId = 2;
+    long msb = 3;
+    long lsb = 4;
+    GMSMember otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb + 1);
+    GMSMember gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.ERROR);
+  }
+  
+  @Test
+  public void testClientSocketHandlerWhenViewIdDoNotMatch() throws Exception {
+    int viewId = 2;
+    long msb = 3;
+    long lsb = 4;
+    GMSMember otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId + 1, msb, lsb);
+    GMSMember gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.ERROR);
+  }
+  
+  public void executeTestClientSocketHandler(GMSMember gmsMember, GMSMember otherMember, int expectedResult) throws Exception {
+    //We have already set the view id in the member but when creating the IDM it resets it to -1 for some reason
+    int viewId = gmsMember.getVmViewId();
+    
+    InternalDistributedMember testMember = new InternalDistributedMember("localhost", 9000, Version.CURRENT, gmsMember);
+    //We set to our expected test viewId in the IDM as well as reseting the gms member
+    testMember.setVmViewId(viewId);
+    gmsMember.setBirthViewId(viewId);
+    
+
+    //Set up the incoming/received bytes.  We just wrap output streams and write out the gms member information
+    byte[] receivedBytes = writeMemberToBytes(otherMember);
+    InputStream mockInputStream = new ByteArrayInputStream(receivedBytes);
+    
+    //configure the mock to return the mocked incoming bytes and provide an outputstream that we will check
+    Socket fakeSocket = mock(Socket.class);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    when(fakeSocket.getInputStream()).thenReturn(mockInputStream);
+    when(fakeSocket.getOutputStream()).thenReturn(outputStream);
+
+    //run the socket handler
+    gmsHealthMonitor.setLocalAddress(testMember);
+    ClientSocketHandler handler = gmsHealthMonitor.new ClientSocketHandler(fakeSocket);
+    handler.run();
+    
+    //verify the written bytes are as expected
+    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
+    int byteReply = dis.read();
+    Assert.assertEquals(expectedResult, byteReply);
+  }
+
+  private GMSMember createGMSMember(short version, int viewId, long msb, long lsb) {
+    GMSMember gmsMember = new GMSMember();
+    gmsMember.setVersionOrdinal(version);
+    gmsMember.setBirthViewId(viewId);
+    gmsMember.setUUID(new UUID(msb, lsb));
+    return gmsMember;
+  }
+  
+  private byte[] writeMemberToBytes(GMSMember gmsMember) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dataReceive = new DataOutputStream(baos);
+    gmsHealthMonitor.writeMemberToStream(gmsMember, dataReceive);
+    return baos.toByteArray();
+  }
+
 
   private class MethodExecuted implements Answer {
     private boolean methodExecuted = false;

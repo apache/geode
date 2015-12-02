@@ -19,7 +19,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.isA;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -242,6 +242,21 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null, -1));
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
+  }
+  
+  //This test does not test the actual join process but rather that the join response gets loggedß
+  @Test
+  public void testProcessJoinResponseIsRecorded() throws IOException {
+    initMocks();
+    when(services.getAuthenticator()).thenReturn(authenticator);
+    when(authenticator.authenticate(mockMembers[0], null)).thenThrow(new AuthenticationFailedException("we want to fail auth here"));
+    when(services.getMessenger()).thenReturn(messenger);
+      
+    JoinResponseMessage[] joinResponse = gmsJoinLeave.getJoinResponseMessage();
+    
+    JoinResponseMessage jrm = new JoinResponseMessage();
+    gmsJoinLeave.processMessage(jrm);
+    Assert.assertEquals(jrm, joinResponse[0]);
   }
   
   /**
@@ -634,6 +649,20 @@ public class GMSJoinLeaveJUnitTest {
     verify(manager).forceDisconnect(any(String.class));
     verify(manager).quorumLost(crashes, newView);
   }
+  
+  //Possibly modify test to check for network partition message in the force disconnect
+  @Test
+  public void testNetworkPartitionMessageReceived() throws Exception {
+    initMocks();
+    gmsJoinLeave.becomeCoordinatorForTest();
+    List<InternalDistributedMember> members = Arrays.asList(mockMembers);
+    Set<InternalDistributedMember> empty = Collections.<InternalDistributedMember>emptySet();
+    NetView v = new NetView(mockMembers[0], 2, members, empty, empty);
+    NetworkPartitionMessage message = new NetworkPartitionMessage();
+    gmsJoinLeave.processMessage(message);
+    verify(manager).forceDisconnect(any(String.class));
+  }
+
   
   @Test 
   public void testQuorumLossNotificationWithNetworkPartitionDetectionDisabled() throws IOException {
