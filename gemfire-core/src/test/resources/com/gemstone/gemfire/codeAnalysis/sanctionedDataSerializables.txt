@@ -1569,6 +1569,10 @@ com/gemstone/gemfire/internal/cache/partitioned/BucketBackupMessage,2
 fromData,16,2a2bb7001d2a2bb9001e0100b50003b1
 toData,16,2a2bb7001f2b2ab40003b900200200b1
 
+com/gemstone/gemfire/internal/cache/partitioned/BucketCountLoadProbe,2
+fromData,1,b1
+toData,1,b1
+
 com/gemstone/gemfire/internal/cache/partitioned/BucketProfileUpdateMessage,2
 fromData,47,2a2bb700232a2bb900240100b500052a2bb900240100b500062a2bb900240100b500022a2bb80025c00026b50007b1
 toData,44,2a2bb700272b2ab40005b9002802002b2ab40006b9002802002b2ab40002b9002802002ab400072bb80029b1
