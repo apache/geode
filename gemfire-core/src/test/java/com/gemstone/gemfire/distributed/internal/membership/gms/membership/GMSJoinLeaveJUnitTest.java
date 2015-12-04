@@ -41,8 +41,14 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.internal.verification.Times;
+import org.mockito.internal.verification.api.VerificationData;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.mockito.verification.Timeout;
+import org.mockito.verification.VerificationMode;
+import org.mockito.verification.VerificationWithTimeout;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -57,13 +63,17 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manag
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.SearchState;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewReplyProcessor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.admin.remote.AddStatListenerResponse;
+import com.gemstone.gemfire.internal.admin.remote.StatListenerMessage;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -792,6 +802,145 @@ public class GMSJoinLeaveJUnitTest {
     GMSJoinLeave.ViewBroadcaster b = gmsJoinLeave.new ViewBroadcaster();
     b.run();
     verify(messenger).sendUnreliably(isA(InstallViewMessage.class));
+  }
+  
+  private void installView(int viewId,InternalDistributedMember coordinator, List<InternalDistributedMember> members) throws IOException {
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
+    
+    when(services.getMessenger()).thenReturn(messenger);
+    
+    //prepare the view
+    NetView netView = new NetView(coordinator, viewId, members, shutdowns, crashes);
+    InstallViewMessage installViewMessage = new InstallViewMessage(netView, credentials, false);
+    gmsJoinLeave.processMessage(installViewMessage);
+   // verify(messenger).send(any(ViewAckMessage.class));
+  }
+  
+  @Test
+  public void testIgnoreoldView() throws Exception {
+    initMocks(false);
+    installView(3, mockMembers[0], createMemberList(mockMembers[0], mockMembers[1], mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
+    //now try to intall old view..
+    installView(1, mockMembers[0], createMemberList(mockMembers[0], mockMembers[1], mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
+    
+    assertFalse("Expected view id is 3 but found " + gmsJoinLeave.getView().getViewId(), gmsJoinLeave.getView().getViewId() == 1);
+  }
+  
+  @Test
+  public void testClearViewRequests() throws Exception {
+    try {
+    initMocks(false);
+    System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+    gmsJoinLeave.join();
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials, -1));
+    int viewRequests = gmsJoinLeave.getViewRequests().size();
+    
+    assertTrue( "There should be 1 viewRequest but found " + viewRequests, viewRequests == 1);
+    Thread.sleep(2 * GMSJoinLeave.MEMBER_REQUEST_COLLECTION_INTERVAL);
+    
+    viewRequests = gmsJoinLeave.getViewRequests().size();
+    assertTrue( "There should be 0 viewRequest but found " + viewRequests, viewRequests == 0);
+    }finally {
+      System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
+    }
+  }
+  
+  /***
+   * validating ViewReplyProcessor's memberSuspected, 
+   * processLeaveRequest, processRemoveRequest, processViewResponse method
+   */
+  @Test
+  public void testViewReplyProcessor() throws Exception {
+    try {
+      initMocks(false);
+      System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+      gmsJoinLeave.join();
+      Set<InternalDistributedMember> recips = new HashSet<>();
+      recips.add(mockMembers[0]);
+      recips.add(mockMembers[1]);
+      recips.add(mockMembers[2]);
+      recips.add(mockMembers[3]);
+      ViewReplyProcessor prepareProcessor = gmsJoinLeave.getPrepareViewReplyProcessor(); 
+      prepareProcessor.initialize( 1, recips);
+      assertTrue("Prepare processor should be waiting ", gmsJoinLeave.testPrepareProcessorWaiting());
+      
+      prepareProcessor.memberSuspected(gmsJoinLeaveMemberId, mockMembers[0]);
+      prepareProcessor.processLeaveRequest(mockMembers[1]);
+      prepareProcessor.processRemoveRequest(mockMembers[2]);
+      prepareProcessor.processViewResponse(1, mockMembers[3], null);
+      
+      assertFalse("Prepare processor should not be waiting ", gmsJoinLeave.testPrepareProcessorWaiting());
+      }finally {
+        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
+      }
+  }
+  
+  /***
+   * validating ViewReplyProcessor's processPendingRequests method
+   */
+  @Test
+  public void testViewReplyProcessor2() throws Exception {
+    try {
+      initMocks(false);
+      System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+      gmsJoinLeave.join();
+      Set<InternalDistributedMember> recips = new HashSet<>();
+      recips.add(mockMembers[0]);
+      recips.add(mockMembers[1]);
+      recips.add(mockMembers[2]);
+      recips.add(mockMembers[3]);
+      ViewReplyProcessor prepareProcessor = gmsJoinLeave.getPrepareViewReplyProcessor();
+      prepareProcessor.initialize(1, recips);
+      assertTrue("Prepare processor should be waiting ", gmsJoinLeave.testPrepareProcessorWaiting());
+      Set<InternalDistributedMember> pendingLeaves = new HashSet<>();
+      pendingLeaves.add(mockMembers[0]);
+      Set<InternalDistributedMember> pendingRemovals = new HashSet<>();
+      pendingRemovals.add(mockMembers[1]);
+      
+      prepareProcessor.processPendingRequests(pendingLeaves, pendingRemovals);
+      
+      prepareProcessor.processViewResponse(1, mockMembers[2], null);
+      prepareProcessor.processViewResponse(1, mockMembers[3], null);
+      
+      assertFalse("Prepare processor should not be waiting ", gmsJoinLeave.testPrepareProcessorWaiting());
+      }finally {
+        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
+      }
+  }
+  
+  @Test
+  public void testJoinResponseMsgWithBecomeCoordinator() throws Exception {
+    initMocks(false);
+    gmsJoinLeaveMemberId.getNetMember().setPreferredForCoordinator(false);
+    JoinRequestMessage reqMsg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[0], null, 56734);
+    InternalDistributedMember ids = new InternalDistributedMember("localhost", 97898);
+    ids.getNetMember().setPreferredForCoordinator(true);
+    gmsJoinLeave.processMessage(reqMsg);
+    ArgumentCaptor<JoinResponseMessage> ac = new ArgumentCaptor<>();
+    verify(messenger).send(ac.capture());
+    
+    assertTrue("Should have asked for becoming a coordinator", ac.getValue().getBecomeCoordinator());
+  }
+  
+  @Test
+  public void testNetworkPartionMessage() throws Exception {
+    try {
+      initMocks(true);
+      System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+      gmsJoinLeave.join();
+      installView(1, gmsJoinLeaveMemberId, createMemberList(mockMembers[0], mockMembers[1], mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
+      for(int i = 1; i < 4; i++) {
+        RemoveMemberMessage msg = new RemoveMemberMessage(gmsJoinLeaveMemberId, mockMembers[i], "crashed");
+        msg.setSender(gmsJoinLeaveMemberId);
+        gmsJoinLeave.processMessage(msg);
+      }
+      Timeout to = new Timeout(2 * GMSJoinLeave.MEMBER_REQUEST_COLLECTION_INTERVAL, new Times(1));
+      verify(messenger, to).send( isA(NetworkPartitionMessage.class));
+                 
+    }finally {
+      System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
+    }    
   }
 }
 

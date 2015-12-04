@@ -1476,12 +1476,24 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     return result;
   }
 
+  /***
+   * test method
+   * @return ViewReplyProcessor
+   */
+  protected ViewReplyProcessor getPrepareViewReplyProcessor() {
+    return prepareProcessor;
+  }
+  
+  protected boolean testPrepareProcessorWaiting(){
+    return prepareProcessor.isWaiting();
+  }
+  
   class ViewReplyProcessor {
     volatile int viewId = -1;
     final Set<InternalDistributedMember> notRepliedYet = new HashSet<>();
     NetView conflictingView;
     InternalDistributedMember conflictingViewSender;
-    boolean waiting;
+    volatile boolean waiting;
     final boolean isPrepareViewProcessor;
     final Set<InternalDistributedMember> pendingRemovals = new HashSet<>();
 
@@ -1498,6 +1510,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       pendingRemovals.clear();
     }
 
+    boolean isWaiting(){
+      return waiting;
+    }
     synchronized void processPendingRequests(Set<InternalDistributedMember> pendingLeaves, Set<InternalDistributedMember> pendingRemovals) {
       // there's no point in waiting for members who have already
       // requested to leave or who have been declared crashed.
