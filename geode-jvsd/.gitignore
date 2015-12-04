@@ -1,0 +1,6 @@
+/lib/
+/target/
+/.project
+/.classpath
+/.settings/
+/output.txt
