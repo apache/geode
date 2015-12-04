@@ -68,20 +68,11 @@ public class RefCountChangeInfo extends Throwable {
       ps.print("@");
       ps.print(System.identityHashCode(this.owner));
     }
+    
     ps.println(": ");
-    StackTraceElement[] trace = getStackTrace();
-    // skip the initial elements from SimpleMemoryAllocatorImpl
-    int skip=0;
-    for (int i=0; i < trace.length; i++) {
-      if (!trace[i].getClassName().contains("SimpleMemoryAllocatorImpl")) {
-        skip = i;
-        break;
-      }
-    }
-    for (int i=skip; i < trace.length; i++) {
-      ps.println("\tat " + trace[i]);
-    }
+    cleanStackTrace(ps); 
     ps.flush();
+    
     return baos.toString();
   }
   
@@ -99,14 +90,32 @@ public class RefCountChangeInfo extends Throwable {
   }
 
   private String stackTraceString;
-  private String getStackTraceString() {
+  String getStackTraceString() {
     String result = this.stackTraceString;
     if (result == null) {
-      StringPrintWriter spr = new StringPrintWriter();
-      printStackTrace(spr);
-      result = spr.getBuilder().toString();
-      this.stackTraceString = result;
+	ByteArrayOutputStream baos = new ByteArrayOutputStream(64*1024);
+	PrintStream spr = new PrintStream(baos);
+
+	cleanStackTrace(spr);
+	result = baos.toString();
+	this.stackTraceString = result;
     }
     return result;
   }
+  
+  private void cleanStackTrace(PrintStream ps) {
+      StackTraceElement[] trace = getStackTrace();
+      // skip the initial elements from the offheap package
+      int skip=0;
+      for (int i=0; i < trace.length; i++) {
+	if (!trace[i].getClassName().contains("com.gemstone.gemfire.internal.offheap")) {
+          skip = i;
+          break;
+        }
+      }
+      for (int i=skip; i < trace.length; i++) {
+        ps.println("\tat " + trace[i]);
+      }   
+  }
+
 }
