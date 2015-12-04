@@ -842,7 +842,10 @@ public class DistributionManager
             " SERIAL_QUEUE_SIZE_THROTTLE :" + SERIAL_QUEUE_SIZE_THROTTLE
         ); 
       }
-      this.serialQueuedExecutorPool = new SerialQueuedExecutorPool(this.threadGroup, this.stats);
+      //  when TCP/IP is disabled we can't throttle the serial queue or we run the risk of 
+      // distributed deadlock when we block the UDP reader thread
+      boolean throttlingDisabled = system.getConfig().getDisableTcp();
+      this.serialQueuedExecutorPool = new SerialQueuedExecutorPool(this.threadGroup, this.stats, throttlingDisabled);
     }
       
     {
@@ -4119,14 +4122,17 @@ public class DistributionManager
     DistributionStats stats;
     ThreadGroup threadGroup;
     
+    final boolean throttlingDisabled;
+    
     /**
      * Constructor.
      * @param group thread group to which the threads will belog to.
      * @param stats 
      */
-    SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats) {
+    SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats, boolean throttlingDisabled) {
       this.threadGroup = group;
       this.stats = stats;
+      this.throttlingDisabled = throttlingDisabled;
     }
 
     /*
@@ -4250,7 +4256,7 @@ public class DistributionManager
       
       BlockingQueue poolQueue;
       
-      if (SERIAL_QUEUE_BYTE_LIMIT == 0) {
+      if (SERIAL_QUEUE_BYTE_LIMIT == 0 || this.throttlingDisabled) {
         poolQueue = new OverflowQueueWithDMStats(stats.getSerialQueueHelper());
       } else {
         poolQueue = new ThrottlingMemLinkedQueueWithDMStats(SERIAL_QUEUE_BYTE_LIMIT, SERIAL_QUEUE_THROTTLE, SERIAL_QUEUE_SIZE_LIMIT, SERIAL_QUEUE_SIZE_THROTTLE, this.stats.getSerialQueueHelper());
