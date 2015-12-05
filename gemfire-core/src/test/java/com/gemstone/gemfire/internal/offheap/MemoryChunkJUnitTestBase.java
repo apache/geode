@@ -50,6 +50,53 @@ public abstract class MemoryChunkJUnitTestBase {
   }
   
   @Test
+  public void testGetSize() {
+    MemoryChunk mc = createChunk(5);
+    try {
+      assertEquals(5, mc.getSize());
+    } finally {
+      mc.release();
+    }
+    mc = createChunk(0);
+    try {
+      assertEquals(0, mc.getSize());
+    } finally {
+      mc.release();
+    }
+    mc = createChunk(1024);
+    try {
+      assertEquals(1024, mc.getSize());
+    } finally {
+      mc.release();
+    }
+  }
+  
+  @Test
+  public void testCopyBytes() {
+    int CHUNK_SIZE = 1024;
+    MemoryChunk mc = createChunk(CHUNK_SIZE*2);
+    try {
+      for (int i=0; i<CHUNK_SIZE; i++) {
+        mc.writeByte(i, (byte)(i%128));
+      }
+      for (int i=0; i<CHUNK_SIZE; i++) {
+        assertEquals(i%128, mc.readByte(i));
+      }
+      mc.copyBytes(0, CHUNK_SIZE, CHUNK_SIZE);
+      for (int i=0; i<CHUNK_SIZE; i++) {
+        assertEquals(i%128, mc.readByte(CHUNK_SIZE+i));
+      }
+      mc.copyBytes(0, 1, CHUNK_SIZE);
+      for (int i=0; i<CHUNK_SIZE; i++) {
+        assertEquals(i%128, mc.readByte(1+i));
+      }
+    } finally {
+      mc.release();
+    }
+  }
+ 
+  
+  @Test
   public void testByteArrayReadWrite() {
     byte[] writeBytes = new byte[256];
     int v = Byte.MIN_VALUE;
