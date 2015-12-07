@@ -581,7 +581,7 @@ public class ReconnectDUnitTest extends CacheTestCase
     Properties config = getDistributedSystemProperties();
     config.put(DistributionConfig.ROLES_NAME, "");
     config.put(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
-    config.put("log-file", "roleLossController.log");
+//    config.put("log-file", "roleLossController.log");
     //creating the DS
     getSystem(config);
 

@@ -174,7 +174,7 @@ public abstract class DistributionMessage
     }
   } 
   
-  public final boolean isDirectAck() {
+  public boolean isDirectAck() {
     return acker != null;
   }
 

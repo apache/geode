@@ -347,6 +347,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
       public void afterCreate(EntryEvent event) {
         try {
           if (playDead) {
+            MembershipManagerHelper.beSickMember(system);
             MembershipManagerHelper.playDead(system);
           }
           Thread.sleep(15000);

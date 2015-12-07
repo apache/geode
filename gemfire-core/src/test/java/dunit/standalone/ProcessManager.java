@@ -98,10 +98,18 @@ public class ProcessManager {
   public synchronized void killVMs() {
     for(ProcessHolder process : processes.values()) {
       if(process != null) {
-        //TODO - stop it gracefully? Why bother
         process.kill();
       }
     }
+  }
+  
+  public synchronized boolean hasLiveVMs() {
+    for(ProcessHolder process : processes.values()) {
+      if(process != null && process.isAlive()) {
+        return true;
+      }
+    }
+    return false;
   }
   
   public synchronized void bounce(int vmNum) {
@@ -239,6 +247,10 @@ public class ProcessManager {
 
     public boolean isKilled() {
       return killed;
+    }
+    
+    public boolean isAlive() {
+      return !killed && process.isAlive();
     }
   }
 

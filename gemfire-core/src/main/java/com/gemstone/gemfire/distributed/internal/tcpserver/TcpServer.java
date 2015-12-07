@@ -362,7 +362,7 @@ public class TcpServer {
             versionOrdinal = input.readShort();
           }
 
-          if (log.isDebugEnabled()) {
+          if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
             log.debug("Locator reading request from " + sock.getInetAddress() + " with version " + Version.fromOrdinal(versionOrdinal, false));
           }
           input = new VersionedDataInputStream(input, Version.fromOrdinal(

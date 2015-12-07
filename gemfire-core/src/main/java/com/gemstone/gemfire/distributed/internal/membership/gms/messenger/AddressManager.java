@@ -23,10 +23,8 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
 import org.jgroups.Event;
-import org.jgroups.Message;
 import org.jgroups.protocols.PingData;
 import org.jgroups.protocols.TP;
-import org.jgroups.protocols.UDP;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Responses;
@@ -55,19 +53,16 @@ public class AddressManager extends Protocol {
   @Override
   public Object up(Event evt) {
     
-//    logger.info("AddressManager.up: " + evt);
-    
     switch (evt.getType()) {
 
     case Event.FIND_MBRS:
       List<Address> missing = (List<Address>)evt.getArg();
-//      logger.debug("AddressManager.FIND_MBRS processing {}", missing);
+
       Responses responses = new Responses(false);
       for (Address laddr: missing) {
         try {
           if (laddr instanceof JGAddress) {
             PingData pd = new PingData(laddr, true, laddr.toString(), newIpAddress(laddr));
-//            logger.debug("AddressManager.FIND_MBRS adding response {}", pd);
             responses.addResponse(pd, false);
             updateUDPCache(pd);
           }
@@ -96,17 +91,13 @@ public class AddressManager extends Protocol {
       findPingDataMethod();
     }
     if (setPingData != null) {
-      Exception problem = null;
       try {
         setPingData.invoke(transport, new Object[]{pd});
-      } catch (InvocationTargetException e) {
-        problem = e;
-      } catch (IllegalAccessException e) {
-        problem = e;
-      }
-      if (problem != null && !warningLogged) {
-        log.warn("Unable to update JGroups address cache - this may affect performance", problem);
-        warningLogged = true;
+      } catch (InvocationTargetException | IllegalAccessException e) {
+        if (!warningLogged) {
+          log.warn("Unable to update JGroups address cache - this may affect performance", e);
+          warningLogged = true;
+        }
       }
     }
   }

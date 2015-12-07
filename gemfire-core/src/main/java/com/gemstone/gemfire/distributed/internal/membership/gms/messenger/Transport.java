@@ -97,7 +97,7 @@ public class Transport extends UDP {
     catch (IOException e) {
       if (messenger != null
           /*&& e.getMessage().contains("Operation not permitted")*/) { // this is the english Oracle JDK exception condition we really want to catch
-        messenger.handleJGroupsIOException(e, msg, dest);
+        messenger.handleJGroupsIOException(e, dest);
       }
     }
     catch(Throwable e) {

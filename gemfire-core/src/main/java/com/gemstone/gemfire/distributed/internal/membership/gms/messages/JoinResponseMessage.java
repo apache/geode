@@ -36,7 +36,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   private NetView currentView;
   private String rejectionMessage;
   private InternalDistributedMember memberID;
-  private Object messengerData;
+  private byte[] messengerData;
   private boolean becomeCoordinator;
   
   public JoinResponseMessage(InternalDistributedMember memberID, NetView view) {
@@ -76,11 +76,11 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     return rejectionMessage;
   }
   
-  public Object getMessengerData() {
+  public byte[] getMessengerData() {
     return this.messengerData;
   }
   
-  public void setMessengerData(Object data) {
+  public void setMessengerData(byte[] data) {
     this.messengerData = data;
   }
 
@@ -114,7 +114,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     DataSerializer.writeObject(memberID, out);
     out.writeBoolean(becomeCoordinator);
     DataSerializer.writeString(rejectionMessage, out);
-    DataSerializer.writeObject(messengerData, out);
+    DataSerializer.writeByteArray(messengerData, out);
   }
 
   @Override
@@ -123,7 +123,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     memberID = DataSerializer.readObject(in);
     becomeCoordinator = in.readBoolean();
     rejectionMessage = DataSerializer.readString(in);
-    messengerData = DataSerializer.readObject(in);
+    messengerData = DataSerializer.readByteArray(in);
   }
 
 }

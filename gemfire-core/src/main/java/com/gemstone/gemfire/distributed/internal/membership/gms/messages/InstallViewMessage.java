@@ -76,7 +76,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  public void process(DistributionManager dm) {
     throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 

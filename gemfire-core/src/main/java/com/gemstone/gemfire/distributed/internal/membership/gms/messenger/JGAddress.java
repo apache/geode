@@ -84,22 +84,6 @@ public class JGAddress extends UUID {
   }
 
 
-  private void setAddressToLocalHost() {
-      try {
-          ip_addr=InetAddress.getLocalHost();  // get first NIC found (on multi-homed systems)
-      }
-      catch(Exception e) {
-          ip_addr=null;
-      }
-      if(ip_addr == null) {
-          try {
-              ip_addr=InetAddress.getByName(null);
-          }
-          catch(UnknownHostException e) {
-          }
-      }
-  }
-
   public final InetAddress  getInetAddress()               {return ip_addr;}
   public final int          getPort()                    {return port;}
   
@@ -112,6 +96,7 @@ public class JGAddress extends UUID {
   }
 
 
+  @Override
   public String toString() {
       StringBuilder sb=new StringBuilder();
 
@@ -137,6 +122,7 @@ public class JGAddress extends UUID {
   }
 
 
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
       try {
           readFrom(in);
@@ -146,6 +132,7 @@ public class JGAddress extends UUID {
       }
   }
 
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
       try {
           writeTo(out);
@@ -155,6 +142,7 @@ public class JGAddress extends UUID {
       }
   }
 
+  @Override
   public void writeTo(DataOutput out) throws Exception {
       if(ip_addr != null) {
           byte[] address=ip_addr.getAddress();  // 4 bytes (IPv4) or 16 bytes (IPv6)
@@ -180,6 +168,7 @@ public class JGAddress extends UUID {
     return leastSigBits;
   }
 
+  @Override
   public void readFrom(DataInput in) throws Exception {
       int len=in.readByte();
       if(len > 0 && (len != Global.IPV4_SIZE && len != Global.IPV6_SIZE))
@@ -202,6 +191,7 @@ public class JGAddress extends UUID {
       leastSigBits = in.readLong();
   }
 
+  @Override
   public int size() {
       // length (1 bytes) + 4 bytes for port
       int tmp_size=Global.BYTE_SIZE+ Global.SHORT_SIZE +Global.SHORT_SIZE
@@ -213,6 +203,7 @@ public class JGAddress extends UUID {
       return tmp_size;
   }
 
+  @Override
   public JGAddress copy() {
     JGAddress result = new JGAddress();
     result.mostSigBits = mostSigBits;

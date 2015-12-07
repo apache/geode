@@ -35,23 +35,31 @@ public class GMSPingPonger {
   }
   
   public void sendPongMessage(JChannel channel, Address src, Address dest) throws Exception {
-    channel.send(createJGMessage(pongInBytes, src, dest, Version.CURRENT_ORDINAL)); 
+    channel.send(createPongMessage(src, dest)); 
   }
   
   public Message createPongMessage(Address src, Address dest) {
 	  return createJGMessage(pongInBytes, src, dest, Version.CURRENT_ORDINAL);
   }
   
+  public Message createPingMessage(Address src, Address dest) {
+    return createJGMessage(pingInBytes, src, dest, Version.CURRENT_ORDINAL);
+  }
+  
   public void sendPingMessage(JChannel channel, Address src, JGAddress dest) throws Exception {
-    channel.send(createJGMessage(pingInBytes, src, dest, Version.CURRENT_ORDINAL));
+    channel.send(createPingMessage(src, dest));
   }
 
   private Message createJGMessage(byte[] msgBytes, Address src, Address dest, short version) {
-	Message msg = new Message();
-	msg.setDest(dest);
-	msg.setSrc(src);
-	msg.setObject(msgBytes);
-	return msg;
+    Message msg = new Message();
+    msg.setDest(dest);
+    msg.setSrc(src);
+    msg.setObject(msgBytes);
+    msg.setFlag(Message.Flag.NO_RELIABILITY);
+    msg.setFlag(Message.Flag.NO_FC);
+    msg.setFlag(Message.Flag.DONT_BUNDLE);
+    msg.setFlag(Message.Flag.OOB);
+    return msg;
   }
 
 }

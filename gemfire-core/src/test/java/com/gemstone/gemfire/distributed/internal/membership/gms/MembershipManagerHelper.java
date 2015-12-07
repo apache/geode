@@ -156,6 +156,7 @@ public class MembershipManagerHelper
   public static void crashDistributedSystem(final DistributedSystem msys) {
     msys.getLogWriter().info("crashing distributed system: " + msys);
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
+    MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);
     GMSMembershipManager mgr = ((GMSMembershipManager)getMembershipManager(msys));
     mgr.forceDisconnect("for testing");

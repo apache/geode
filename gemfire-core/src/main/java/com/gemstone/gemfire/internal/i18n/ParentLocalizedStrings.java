@@ -730,9 +730,9 @@ class ParentLocalizedStrings {
   public static final StringId GroupMembershipService_MEMBERSHIP_FAULT_WHILE_PROCESSING_VIEW_REMOVAL_OF__0 = new StringId(1722, "Membership: Fault while processing view removal of  {0}");
   public static final StringId GroupMembershipService_MEMBERSHIP_FINISHED_VIEW_PROCESSING_VIEWID___0 = new StringId(1723, "Membership: Finished view processing viewID =  {0}");
   public static final StringId GroupMembershipService_MEMBERSHIP_GEMFIRE_RECEIVED_A_MESSAGE_WITH_NO_SENDER_ADDRESS = new StringId(1724, "Membership: GemFire received a message with no sender address");
-  public static final StringId GroupMembershipService_MEMBERSHIP_GEMFIRE_RECEIVED_NULL_MESSAGE_FROM__0 = new StringId(1725, "Membership: GemFire received null message from  {0}");
+  // ok to reuse 1725
   public static final StringId GroupMembershipService_MEMBERSHIP_IGNORING_SURPRISE_CONNECT_FROM_SHUNNED_MEMBER_0 = new StringId(1726, "Membership: Ignoring surprise connect from shunned member <{0}>");
-  public static final StringId GroupMembershipService_MEMBERSHIP_MESSAGE_HEADERS__0 = new StringId(1727, "Membership: message headers:  {0}");
+  // ok to reuse 1727
   // ok to reuse 1728
   public static final StringId GroupMembershipService_MEMBERSHIP_PAUSING_TO_ALLOW_OTHER_CONCURRENT_PROCESSES_TO_JOIN_THE_DISTRIBUTED_SYSTEM = new StringId(1729, "Membership: Pausing to allow other concurrent processes to join the distributed system");
   public static final StringId GroupMembershipService_MEMBERSHIP_PROCESSING_ADDITION__0_ = new StringId(1730, "Membership: Processing addition < {0} >");
