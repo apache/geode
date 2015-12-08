@@ -87,10 +87,6 @@ public class OffHeapRegionEntryHelper {
     if (v == Token.NOT_AVAILABLE) return NOT_AVAILABLE_ADDRESS;
     throw new IllegalStateException("Can not convert " + v + " to an off heap address.");
   }
-
-  static Object encodedAddressToObject(long ohAddress) {
-    return encodedAddressToObject(ohAddress, true, true);
-  }
   
   //TODO:Asif:Check if this is a valid equality conditions
   public static boolean isAddressInvalidOrRemoved(long address) {
@@ -280,23 +276,20 @@ public class OffHeapRegionEntryHelper {
     }
     return 0L;
   }
-  
-  public static Object encodedAddressToObject(long addr, boolean decompress, boolean deserialize) {
-    boolean isSerialized = (addr & SERIALIZED_BIT) != 0;
-    byte[] bytes = encodedAddressToBytes(addr, decompress, false);
-    if (isSerialized) {
-      if (deserialize) {
-        return EntryEventImpl.deserialize(bytes);
+
+  static Object decodeAddressToObject(long ohAddress) {
+      byte[] bytes = decodeAddressToBytes(ohAddress, true, false);
+
+      boolean isSerialized = (ohAddress & SERIALIZED_BIT) != 0;
+      if (isSerialized) {
+         return EntryEventImpl.deserialize(bytes);
       } else {
-        return CachedDeserializableFactory.create(bytes);
+          return bytes;
       }
-    } else {
-      return bytes;
-    }
   }
-  
-  static byte[] encodedAddressToBytes(long addr) {
-    byte[] result = encodedAddressToBytes(addr, true, false);
+
+  static byte[] decodeAddressToBytes(long addr) {
+    byte[] result = decodeAddressToBytes(addr, true, false);
     boolean isSerialized = (addr & SERIALIZED_BIT) != 0;
     if (!isSerialized) {
       result = EntryEventImpl.serialize(result);
@@ -304,15 +297,7 @@ public class OffHeapRegionEntryHelper {
     return result;
   }
 
-  /**
-   * If the address contains a byte[] return it.
-   * Otherwise return the serialize bytes in the address in a byte array.
-   */
-  static byte[] encodedAddressToRawBytes(long addr) {
-    return encodedAddressToBytes(addr, true, false);
-  }
-
-  private static byte[] encodedAddressToBytes(long addr, boolean decompress, boolean compressedOk) {
+  static byte[] decodeAddressToBytes(long addr, boolean decompress, boolean compressedOk) {
     assert (addr & ENCODED_BIT) != 0;
     boolean isCompressed = (addr & COMPRESSED_BIT) != 0;
     int size = (int) ((addr & SIZE_MASK) >> SIZE_SHIFT);
@@ -340,18 +325,6 @@ public class OffHeapRegionEntryHelper {
     if (decompress && isCompressed) {
       if (!compressedOk) {
         throw new UnsupportedOperationException("Did not expect DataAsAddress to be compressed");
-      }
-    }
-    return bytes;
-  }
-  public static byte[] encodedAddressToBytes(long addr, boolean decompress, RegionEntryContext context) {
-    byte[] bytes = encodedAddressToBytes(addr, decompress, true);
-    if (decompress) {
-      boolean isCompressed = (addr & COMPRESSED_BIT) != 0;
-      if (isCompressed) {
-        long time = context.getCachePerfStats().startDecompression();
-        bytes = context.getCompressor().decompress(bytes);
-        context.getCachePerfStats().endDecompression(time);      
       }
     }
     return bytes;
