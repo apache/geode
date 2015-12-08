@@ -127,6 +127,7 @@ public class GMSHealthMonitorJUnitTest {
   @After
   public void tearDown() {
     gmsHealthMonitor.stop();
+    System.getProperties().remove("gemfire.bind-address");
   }
 
   @Test
