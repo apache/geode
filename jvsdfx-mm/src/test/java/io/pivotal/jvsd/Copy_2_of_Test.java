@@ -1,11 +1,9 @@
 package io.pivotal.jvsd;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Random;
 
 public class Copy_2_of_Test {
   private static int count = 10485760; // 10 MB
