@@ -58,11 +58,9 @@ mvn install:install-file -Dfile=fastutil-7.0.2.jar \
 
 Change back into the Geode directory and then into the JVSD directory. Build JVSD.
 $cd ../incubator-geode
-$cd jvsdfx-mm/
+$cd geode-jvsd/
 $mvn install
 
 Run the JVSD application.
 $runjvsd.sh
-
-
 
