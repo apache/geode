@@ -98,6 +98,7 @@ public class OffHeapStorageJUnitTest {
     try {
       System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "99");
       assertEquals(99*1024*1024, OffHeapStorage.calcMaxSlabSize(100L*1024*1024));
+      assertEquals(88, OffHeapStorage.calcMaxSlabSize(88));
       System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "88m");
       assertEquals(88*1024*1024, OffHeapStorage.calcMaxSlabSize(100L*1024*1024));
       System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "77M");
