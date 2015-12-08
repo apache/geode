@@ -395,7 +395,6 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
   
   static class DisconnectingOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListener {
-    private final boolean stayConnectedOnOutOfOffHeapMemory = Boolean.getBoolean(STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY);
     private final Object lock = new Object();
     private InternalDistributedSystem ids;
     
@@ -415,7 +414,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
         if (this.ids == null) {
           return;
         }
-        if (stayConnectedOnOutOfOffHeapMemory) {
+        if (Boolean.getBoolean(STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY)) {
           return;
         }
         
