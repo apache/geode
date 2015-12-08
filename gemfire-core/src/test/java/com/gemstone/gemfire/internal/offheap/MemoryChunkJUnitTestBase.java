@@ -29,6 +29,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public abstract class MemoryChunkJUnitTestBase {
+  static {
+    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+  }
 
   
   protected abstract MemoryChunk createChunk(int size);
@@ -70,7 +73,18 @@ public abstract class MemoryChunkJUnitTestBase {
       mc.release();
     }
   }
-  
+
+  @Test
+  public void testToString() {
+    int CHUNK_SIZE = 1024;
+    MemoryChunk mc = createChunk(CHUNK_SIZE);
+    try {
+      mc.toString();
+    } finally {
+      mc.release();
+    }
+  }
+ 
   @Test
   public void testCopyBytes() {
     int CHUNK_SIZE = 1024;

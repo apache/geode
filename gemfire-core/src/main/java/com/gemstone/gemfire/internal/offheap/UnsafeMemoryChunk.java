@@ -65,9 +65,6 @@ public class UnsafeMemoryChunk implements MemoryChunk {
     }
   }
 
-  public static int getPageSize() {
-    return unsafe != null ? unsafe.getPageSize() : 8192;
-  }
   @Override
   public int getSize() {
     return (int)this.size;
@@ -75,46 +72,6 @@ public class UnsafeMemoryChunk implements MemoryChunk {
   
   public long getMemoryAddress() {
     return this.data;
-  }
-  
-  /**
-   * Compare the first 'size' bytes at addr1 to those at addr2 and return true
-   * if they are all equal.
-   */
-  public static boolean compareUnsafeBytes(long addr1, long addr2, int size) {
-    if ((size >= 8) && ((addr1 & 7) == 0) && ((addr2 & 7) == 0)) {
-      // We have 8 or more bytes to compare and the addresses are 8 byte aligned
-      do {
-        if (unsafe.getLong(null, addr1) != unsafe.getLong(null, addr2)) {
-          return false;
-        }
-        size -= 8;
-        addr1 += 8;
-        addr2 += 8;
-      } while (size >= 8);
-    }
-    while (size > 0) {
-      if (unsafe.getByte(addr1) != unsafe.getByte(addr2)) {
-        return false;
-      }
-      size -= 1;
-      addr1 += 1;
-      addr2 += 1;
-    }
-    return true;
-  }
-
-  /**
-   * Like readAbsoluteByte but does no validation of addr
-   */
-  public static byte readUnsafeByte(long addr) {
-    return unsafe.getByte(addr);
-  }
-  /**
-   * Reads from "addr" to "bytes". Number of bytes read/written is the length of the array.
-   */
-  public static void readUnsafeBytes(long addr, byte[] bytes) {
-    unsafe.copyMemory(null, addr, bytes, ARRAY_BYTE_BASE_OFFSET, bytes.length);
   }
   
   public static byte readAbsoluteByte(long addr) {
@@ -172,21 +129,9 @@ public class UnsafeMemoryChunk implements MemoryChunk {
     writeAbsoluteByte(this.data+offset, value);
   }
 
-  public static void readAbsoluteBytes(long addr, byte[] bytes) {
-    readAbsoluteBytes(addr, bytes, 0, bytes.length);
-  }
-
   @Override
   public void readBytes(int offset, byte[] bytes) {
     readBytes(offset, bytes, 0, bytes.length);
-  }
-
-  public static void writeAbsoluteBytes(long addr, byte[] bytes) {
-    writeAbsoluteBytes(addr, bytes, 0, bytes.length);
-  }
-  
-  public static void clearAbsolute(long addr, long size) {
-    unsafe.setMemory(addr, size, (byte) 0);
   }
 
   @Override
