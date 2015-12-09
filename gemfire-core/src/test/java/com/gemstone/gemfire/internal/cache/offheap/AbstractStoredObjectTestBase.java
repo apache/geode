@@ -17,80 +17,187 @@
 
 package com.gemstone.gemfire.internal.cache.offheap;
 
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.offheap.DataAsAddress;
-import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import java.nio.ByteBuffer;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-@Category(UnitTest.class)
-public class AbstractStoredObjectTestBase {
+public abstract class AbstractStoredObjectTestBase {
+
+    /* Returns Value as an Object Eg: Integer or UserDefinedRegionValue */
+    protected abstract Object getValue();
+
+    /* Returns Value as an ByteArray (not serialized) */
+    protected abstract byte[] getValueAsByteArray();
+
+    protected abstract Object convertByteArrayToObject(byte[] valueInByteArray);
+
+    protected abstract Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray);
+
+    protected abstract StoredObject createValueAsUnserializedStoredObject(Object value);
+
+    protected abstract StoredObject createValueAsSerializedStoredObject(Object value);
 
     @Test
     public void getValueAsDeserializedHeapObjectShouldReturnDeserializedValueIfValueIsSerialized() {
-        Integer regionEntryValue = 123456789;
-        byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
 
-        //encode a serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
-
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
-
-        Integer actualRegionEntryValue = (Integer) offheapAddress.getValueAsDeserializedHeapObject();
-
+        Integer actualRegionEntryValue = (Integer) storedObject.getValueAsDeserializedHeapObject();
         assertEquals(regionEntryValue, actualRegionEntryValue);
     }
 
     @Test
     public void getValueAsDeserializedHeapObjectShouldReturnValueAsIsIfNotSerialized() {
-        int regionEntryValue = 123456789;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        byte[] regionEntryValue = getValueAsByteArray();
+        StoredObject storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
 
-        //encode a non-serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
-
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
-
-        byte[] deserializedValue = (byte[]) offheapAddress.getValueAsDeserializedHeapObject();
-        int actualRegionEntryValue = ByteBuffer.wrap(deserializedValue).getInt();
-
-        assertEquals(regionEntryValue, actualRegionEntryValue);
+        byte[] deserializedValue = (byte[]) storedObject.getValueAsDeserializedHeapObject();
+        assertArrayEquals(regionEntryValue, deserializedValue);
     }
 
     @Test
     public void getValueAsHeapByteArrayShouldReturnSerializedByteArrayIfValueIsSerialized() {
-        Integer regionEntryValue = 123456789;
-        byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
 
-        //encode a serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
+        byte[] valueInSerializedByteArray = (byte[]) storedObject.getValueAsHeapByteArray();
+        Object actualRegionEntryValue = convertSerializedByteArrayToObject(valueInSerializedByteArray);
 
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
-
-        byte[] actualSerializedRegionEntryValue = (byte[]) offheapAddress.getValueAsHeapByteArray();
-
-        assertArrayEquals(serializedRegionEntryValue, actualSerializedRegionEntryValue);
+        assertEquals(regionEntryValue, actualRegionEntryValue);
     }
 
     @Test
     public void getValueAsHeapByteArrayShouldReturnDeserializedByteArrayIfValueIsNotSerialized() {
-        int regionEntryValue = 123456789;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        Object regionEntryValue = getValue();
 
-        //encode a non-serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
+        StoredObject storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
 
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        byte[] valueInByteArray = (byte[]) storedObject.getValueAsHeapByteArray();
 
-        byte[] deserializedValue = (byte[]) offheapAddress.getValueAsHeapByteArray();
-        int actualRegionEntryValue = ByteBuffer.wrap(deserializedValue).getInt();
+        Object actualRegionEntryValue = convertByteArrayToObject(valueInByteArray);
 
         assertEquals(regionEntryValue, actualRegionEntryValue);
+    }
+
+    @Test
+    public void getStringFormShouldReturnStringFromDeserializedValue() {
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+
+        String stringForm = storedObject.getStringForm();
+        assertEquals(String.valueOf(regionEntryValue), stringForm);
+    }
+
+    @Test
+    public void getValueShouldReturnSerializedValue() {
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+
+        byte[] valueAsSerializedByteArray = (byte[]) storedObject.getValue();
+
+        Object actualValue = convertSerializedByteArrayToObject(valueAsSerializedByteArray);
+
+        assertEquals(regionEntryValue, actualValue);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getValueShouldThrowExceptionIfValueIsNotSerialized() {
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
+
+        byte[] deserializedValue = (byte[]) storedObject.getValue();
+    }
+
+    @Test
+    public void getDeserializedWritableCopyShouldReturnDeserializedValue() {
+        byte[] regionEntryValue = getValueAsByteArray();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+
+        assertArrayEquals(regionEntryValue, (byte[]) storedObject.getDeserializedWritableCopy(null, null));
+    }
+
+    @Test
+    public void writeValueAsByteArrayWritesToProvidedDataOutput() throws IOException {
+        byte[] regionEntryValue = getValueAsByteArray();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+
+        DataOutput dataOutput = mock(DataOutput.class);
+        storedObject.writeValueAsByteArray(dataOutput);
+
+        verify(dataOutput, times(1)).write(storedObject.getSerializedValue(), 0 , storedObject.getSerializedValue().length);
+    }
+
+    @Test
+    public void sendToShouldWriteSerializedValueToDataOutput() throws IOException {
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+
+        DataOutput dataOutput = mock(DataOutput.class);
+        storedObject.sendTo(dataOutput);
+
+        verify(dataOutput, times(1)).write(storedObject.getSerializedValue());
+    }
+
+    @Test
+    public void sendToShouldWriteDeserializedObjectToDataOutput() throws IOException {
+        byte[] regionEntryValue = getValueAsByteArray();
+        StoredObject storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
+
+        DataOutput dataOutput = mock(DataOutput.class);
+        storedObject.sendTo(dataOutput);
+
+        verify(dataOutput, times(1)).write(regionEntryValue, 0, regionEntryValue.length);
+    }
+
+    @Test
+    public void sendAsByteArrayShouldWriteSerializedValueToDataOutput() throws IOException {
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+
+        DataOutput dataOutput = mock(DataOutput.class);
+        storedObject.sendAsByteArray(dataOutput);
+
+        verify(dataOutput, times(1)).write(storedObject.getSerializedValue(), 0, storedObject.getSerializedValue().length);
+    }
+
+    @Test
+    public void sendAsByteArrayShouldWriteDeserializedObjectToDataOutput() throws IOException {
+        byte[] regionEntryValue = getValueAsByteArray();
+        StoredObject storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
+
+        DataOutput dataOutput = mock(DataOutput.class);
+        storedObject.sendAsByteArray(dataOutput);
+
+        verify(dataOutput, times(1)).write(regionEntryValue, 0, regionEntryValue.length);
+    }
+
+    @Test
+    public void sendAsCachedDeserializableShouldWriteSerializedValueToDataOutputAndSetsHeader() throws IOException {
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+
+        DataOutput dataOutput = mock(DataOutput.class);
+        storedObject.sendAsCachedDeserializable(dataOutput);
+
+        verify(dataOutput, times(1)).writeByte((DataSerializableFixedID.VM_CACHED_DESERIALIZABLE));
+        verify(dataOutput, times(1)).write(storedObject.getSerializedValue(), 0, storedObject.getSerializedValue().length);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void sendAsCachedDeserializableShouldThrowExceptionIfValueIsNotSerialized() throws IOException {
+        Object regionEntryValue = getValue();
+        StoredObject storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
+
+        DataOutput dataOutput = mock(DataOutput.class);
+        storedObject.sendAsCachedDeserializable(dataOutput);
     }
 }

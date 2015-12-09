@@ -17,13 +17,11 @@
 
 package com.gemstone.gemfire.internal.cache.offheap;
 
-import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.internal.cache.persistence.BytesAndBits;
 import com.gemstone.gemfire.internal.offheap.DataAsAddress;
 
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
@@ -41,6 +39,65 @@ import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
+
+    @Override
+    public Object getValue() {
+        return Integer.valueOf(123456789);
+    }
+
+    @Override
+    public byte[] getValueAsByteArray() {
+        return convertValueToByteArray(getValue());
+    }
+
+    private byte[] convertValueToByteArray(Object value) {
+        return ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt((Integer) value).array();
+    }
+
+    @Override
+    public Object convertByteArrayToObject(byte[] valueInByteArray) {
+        return ByteBuffer.wrap(valueInByteArray).getInt();
+    }
+
+    @Override
+    public Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
+       return EntryEventImpl.deserialize(valueInSerializedByteArray);
+    }
+
+    @Override
+    public DataAsAddress createValueAsUnserializedStoredObject(Object value) {
+        byte[] valueInByteArray;
+        if(value instanceof Integer) {
+            valueInByteArray = convertValueToByteArray(value);
+        } else {
+            valueInByteArray = (byte[]) value;
+        }
+        //encode a non-serialized entry value to address
+        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInByteArray, false, false);
+        return new DataAsAddress(encodedAddress);
+    }
+
+    @Override
+    public DataAsAddress createValueAsSerializedStoredObject(Object value) {
+        byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
+        //encode a serialized entry value to address
+        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
+        return new DataAsAddress(encodedAddress);
+    }
+
+    public DataAsAddress createValueAsCompressedStoredObject(Object value) {
+        byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
+        //encode a serialized, compressed entry value to address
+        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, true);
+        return new DataAsAddress(encodedAddress);
+    }
+
+    public DataAsAddress createValueAsUncompressedStoredObject(Object value) {
+        byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
+        //encode a serialized, uncompressed entry value to address
+        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
+        return new DataAsAddress(encodedAddress);
+    }
 
     @Test
     public void shouldReturnCorrectEncodingAddress() {
@@ -119,58 +176,46 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
     @Test
     public void isCompressedShouldReturnTrueIfCompressed() {
-        int regionEntryValue = 1234567;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        Object regionEntryValue = getValue();
 
-        //encode a non-serialized entry value to address and compress it - last argument true is to let that it is compressed
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, true);
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsCompressedStoredObject(regionEntryValue);
 
         assertEquals("Should return true as it is compressed", true, offheapAddress.isCompressed());
     }
 
     @Test
     public void isCompressedShouldReturnFalseIfNotCompressed() {
-        int regionEntryValue = 123456789;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        Object regionEntryValue = getValue();
 
-        //encode a non-serialized entry value to address and compress it - last argument true is to let that it is compressed
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsUncompressedStoredObject(regionEntryValue);
 
         assertEquals("Should return false as it is compressed", false, offheapAddress.isCompressed());
     }
 
     @Test
     public void isSerializedShouldReturnTrueIfSeriazlied() {
-        Integer regionEntryValue = 123456789;
-        byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
+        Object regionEntryValue = getValue();
 
-        //encode a serialized entry value to address and compress it - second argument is to let that it is serialized
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
 
         assertEquals("Should return true as it is serialized", true, offheapAddress.isSerialized());
     }
 
     @Test
     public void isSerializedShouldReturnFalseIfNotSeriazlied() {
-        Integer regionEntryValue = 123456789;
-        byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
+        Object regionEntryValue = getValue();
 
-        //encode a serialized entry value to address and compress it - second argument is to let that it is serialized
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, false, false);
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsUnserializedStoredObject(regionEntryValue);
 
         assertEquals("Should return false as it is serialized", false, offheapAddress.isSerialized());
     }
 
     @Test
     public void getDecompressedBytesShouldReturnDecompressedBytesIfCompressed() {
-        int regionEntryValue = 123456789;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        Object regionEntryValue = getValue();
+        byte[] regionEntryValueAsBytes =  convertValueToByteArray(regionEntryValue);
 
-        //encode a non-serialized entry value to address and compress it - last argument true is to compress it
+        //encode a non-serialized and compressed entry value to address - last argument is to let that it is compressed
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, true);
         DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
 
@@ -182,7 +227,7 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
         //mock required things
         when(regionContext.getCompressor()).thenReturn(compressor);
-        when(compressor.decompress(new byte[]{7, 91, -51, 21})).thenReturn(new byte[]{7, 91, -51, 21});
+        when(compressor.decompress(regionEntryValueAsBytes)).thenReturn(regionEntryValueAsBytes);
         when(regionContext.getCachePerfStats()).thenReturn(cacheStats);
         when(cacheStats.startDecompression()).thenReturn(startTime);
 
@@ -191,21 +236,17 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
         //verify the thing happened
         verify(cacheStats, atLeastOnce()).startDecompression();
-        verify(compressor, times(1)).decompress(new byte[]{7, 91, -51, 21});
+        verify(compressor, times(1)).decompress(regionEntryValueAsBytes);
         verify(cacheStats, atLeastOnce()).endDecompression(startTime);
 
         assertArrayEquals(regionEntryValueAsBytes, bytes);
     }
 
     @Test
-    public void getDecompressedBytesShouldNotTryToDecompressIfNotDecompressed() {
-        int regionEntryValue = 123456789;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+    public void getDecompressedBytesShouldNotTryToDecompressIfNotCompressed() {
+        Object regionEntryValue = getValue();
 
-        //encode a non-serialized entry value to address and don`t compress it - last argument false is not to compress it
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
-
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsUncompressedStoredObject(regionEntryValue);
 
         //mock the thing
         RegionEntryContext regionContext = mock(RegionEntryContext.class);
@@ -213,52 +254,44 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
         when(regionContext.getCompressor()).thenReturn(compressor);
 
         //invoke the thing
-        byte[] actual = offheapAddress.getDecompressedBytes(regionContext);
+        byte[] actualValueInBytes = offheapAddress.getDecompressedBytes(regionContext);
+
+        //createValueAsUncompressedStoredObject does uses a serialized value - so convert it to object
+        Object actualRegionValue = convertSerializedByteArrayToObject(actualValueInBytes);
 
         //verify the thing happened
         verify(regionContext, never()).getCompressor();
-        assertArrayEquals(regionEntryValueAsBytes, actual);
+        assertEquals(regionEntryValue, actualRegionValue);
     }
 
     @Test
     public void getRawBytesShouldReturnAByteArray() {
-        int regionEntryValue = 123456789;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        byte[] regionEntryValueAsBytes = getValueAsByteArray();
 
-        //encode a non-serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
-
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
         byte[] actual = offheapAddress.getRawBytes();
 
         assertArrayEquals(regionEntryValueAsBytes, actual);
-
     }
 
     @Test
     public void getSerializedValueShouldReturnASerializedByteArray() {
-        Integer regionEntryValue = 123456789;
-        byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
+        Object regionEntryValue = getValue();
 
-        //encode a serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
+        DataAsAddress offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
 
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        byte[] actualSerializedValue = offheapAddress.getSerializedValue();
 
-        byte[] actual = offheapAddress.getSerializedValue();
+        Object actualRegionEntryValue = convertSerializedByteArrayToObject(actualSerializedValue);
 
-        assertArrayEquals(serializedRegionEntryValue, actual);
+        assertEquals(regionEntryValue, actualRegionEntryValue);
     }
 
     @Test
     public void getDeserializedObjectShouldReturnADeserializedObject() {
-        Integer regionEntryValue = 123456789;
-        byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
+        Object regionEntryValue = getValue();
 
-        //encode a serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
-
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsSerializedStoredObject(regionEntryValue);
 
         Integer actualRegionEntryValue = (Integer) offheapAddress.getDeserializedValue(null, null);
 
@@ -267,23 +300,18 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
     @Test
     public void getDeserializedObjectShouldReturnAByteArrayAsIsIfNotSerialized() {
-        int regionEntryValue = 123456789;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        byte[] regionEntryValueAsBytes = getValueAsByteArray();
 
-        //encode a non-serialized entry value to address
-        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
-
-        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+        DataAsAddress offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
 
         byte[] deserializeValue = (byte[]) offheapAddress.getDeserializedValue(null, null);
-        int actualRegionEntryValue = ByteBuffer.wrap(deserializeValue).getInt();
 
-        assertEquals(regionEntryValue, actualRegionEntryValue);
+        assertArrayEquals(regionEntryValueAsBytes, deserializeValue);
     }
 
     @Test
     public void fillSerializedValueShouldFillWrapperWithSerializedValueIfValueIsSerialized() {
-        Integer regionEntryValue = 123456789;
+        Object regionEntryValue = getValue();
         byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
 
         //encode a serialized entry value to address
@@ -302,10 +330,10 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
 
     @Test
     public void fillSerializedValueShouldFillWrapperWithDeserializedValueIfValueIsNotSerialized() {
-        int regionEntryValue = 1234567;
-        byte[] regionEntryValueAsBytes =  ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(regionEntryValue).array();
+        Object regionEntryValue = getValue();
+        byte[] regionEntryValueAsBytes =  convertValueToByteArray(regionEntryValue);
 
-        //encode a serialized entry value to address
+        //encode a un serialized entry value to address
         long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
 
         DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
@@ -317,5 +345,24 @@ public class DataAsAddressJUnitTest extends AbstractStoredObjectTestBase {
         offheapAddress.fillSerializedValue(wrapper, userBits);
 
         verify(wrapper, times(1)).setData(regionEntryValueAsBytes, userBits, regionEntryValueAsBytes.length, true);
+    }
+
+    @Test
+    public void getStringFormShouldCatchExceptionAndReturnErrorMessageAsString() {
+        Object regionEntryValueAsBytes = getValue();
+
+        byte[] serializedValue = EntryEventImpl.serialize(regionEntryValueAsBytes);
+
+        //store -127 (DSCODE.ILLEGAL) - in order the deserialize to throw exception
+        serializedValue[0] = -127;
+
+        //encode a un serialized entry value to address
+        long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedValue, true, false);
+
+        DataAsAddress offheapAddress = new DataAsAddress(encodedAddress);
+
+        String errorMessage = offheapAddress.getStringForm();
+
+        assertEquals(true, errorMessage.contains("Could not convert object to string because "));
     }
 }
