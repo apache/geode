@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Apache Geode (incubating) — Performance is key. Consistency is a must.</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+    <meta name="keywords" content="Apache Geode, Geode, GemFire, In-memory, IMDB, IMDG, cache">
+    <meta name="description" content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs." />
+    <meta property="og:title" content="Apache Geode (incubating)" />
+    <meta property="og:description" content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs." />
+    <!-- Loading Typekit -->
+    <script type="text/javascript" src="//use.typekit.net/ddl7izx.js"></script>
+    <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+    <!-- Place this tag right after the last button or just before your close body tag. -->
+    <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+        <!-- Loading Bootstrap -->
+    <link href="/bootstrap/bootstrap.min.css" rel="stylesheet" type='text/css'>
+    <link href="/css/bootflat.css" rel="stylesheet" type='text/css'>
+    <link href="/css/geode-site.css" rel="stylesheet" type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:200,400,500,300,600,800,700,400italic,600italic,700italic,800italic,300italic" rel="stylesheet" type="text/css">
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type='text/css'>
+
+    
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+      <script src="js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+    <header class="navbar navbar-inverse navbar-fixed-top bf-docs-nav " role="banner">
+    <div class="container">
+        <div class="navbar-header">
+            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bf-navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <a href="/" class="navbar-brand">
+                <img id="home-logo" src="/img/apache_geode_logo_white_small.png" />
+            </a>
+        <nav class="collapse navbar-collapse bf-navbar-collapse" role="navigation">
+            <ul class="nav navbar-nav navbar-right">
+                <li class=""><a href="/community/"><span class="icns icon-group"></span></a></li>
+                <li><a href="http://geode.docs.pivotal.io" target="_blank"><span class="icns icon-book"></span></a></li>
+                <li><a href="http://github.com/apache/incubator-geode" target="_blank"><span class="icns icon-github-sign"></span></a></li>
+                <!--<li><a href="https://trello.com/b/exQmJIOn/usergrid" target="_blank"><span class="icns icon-trello"></span></a></li>-->
+                <li><a href="https://issues.apache.org/jira/browse/GEODE/"
+                       target="_blank"><span class="icns icon-bug"></span></a></li>
+                <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank"><span class="icns icon-stackexchange"></span></a></li>
+                <li><a href="/community/#mailing-lists"><span class="icns icon-envelope"></span></a></li>
+                <!-- <li><a href="/community/#live"><span class="icns icon-comments"></span></a></li> -->
+                <li><a href="https://twitter.com/apachegeode" target="_blank"><span class="icns icon-twitter"></span></a></li>
+                <li><a href="https://cwiki.apache.org/confluence/display/geode/" target="_blank"><span class="icns icon-edit"></span></a></li>
+                <li><a href="/releases/"><span class="icns icon-releases"></span></a></li>
+            </ul>
+        </nav>
+    </div>
+    </header>
+
+
+
+
+
+<section class="bf-masthead" id="content" role="main">
+    <div class="bf-masthead-bg">
+        <div class="container">
+            <img class="logo-title img-responsive hidden-xs" src="img/apache_geode_logo.png" />
+            <div class="text-container">
+                <h2 class="tagline"><em>Performance</em> is key. <em>Consistency</em> is a must.</h2>
+                <p class="description">Solving low latency data management problems at very high concurrency since 2002.<br/>
+                  <br/>Build high-speed, data-intensive applications that elastically meet performance requirements at any scale.<br/>
+                  Take advantage of Apache Geode's unique technology that blends advanced techniques for data replication, partitioning and distributed processing.
+
+                  <br/><br/>
+                  Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing.<br/></p>
+            </div>
+
+            <div class="btn-wrapper">
+                <!-- Place this tag where you want the button to render. -->
+              <a class="github-button" href="https://github.com/apache/incubator-geode" data-icon="octicon-star" data-style="mega" data-count-href="/apache/incubator-geode/stargazers" data-count-api="/repos/apache/incubator-geode#stargazers_count" data-count-aria-label="# stargazers on GitHub" aria-label="Star apache/incubator-geode on GitHub">Star</a>
+              <a class="github-button" href="https://github.com/apache/incubator-geode/fork" data-icon="octicon-repo-forked" data-style="mega" data-count-href="/apache/incubator-geode/network" data-count-api="/repos/apache/incubator-geode#forks_count" data-count-aria-label="# forks on GitHub" aria-label="Fork apache/incubator-geode on GitHub">Fork</a>
+              <a class="github-button" href="https://github.com/apache/incubator-geode" data-icon="octicon-eye" data-style="mega" data-count-href="/apache/incubator-geode/watchers" data-count-api="/repos/apache/incubator-geode#subscribers_count" data-count-aria-label="# watchers on GitHub" aria-label="Watch apache/incubator-geode on GitHub">Watch</a>
+              <!--<p><span class="or">or</span> <a href="#">Download Geode</a></p>-->
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bf-features">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-sitemap"></i></div>
+                <h3>Replication and Partitioning</h3>
+                <p>Data can easily be partitioned (sharded) or replicated between nodes allowing performance to scale as needed. Durability is ensured through redundant in-memory copies and disk-based persistence.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-hdd"></i></div>
+                <h3>Persistence</h3>
+                <p>Super fast write-ahead-logging (WAL) persistence with a shared-nothing architecture that is optimized for fast parallel recovery of nodes or an entire cluster.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bf-icon-wrap"><i aria-hidden="true" class="icon-rocket"></i></div>
+                <h3>Performance</h3>
+                <p>Linear-scaling low latency for transactions, reads, writes and query processing of indexed or unindexed data.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="bf-icon-wrap" style="font-size:40px; vertical-align: 15px;"><i aria-hidden="true" class="icon-fast-forward"></i><i aria-hidden="true" class="icon-dashboard"></i></div>
+                <h3>In-Memory Storage</h3>
+                <p>Blazing fast in-memory storage optimized for large heaps, with the option of using off-heap storage, compression and features such as disk-overflow, eviction and expiration of data.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bf-icon-wrap"><span style="font-size:60px" aria-hidden="true" class="icon-cogs"></span></div>
+                <h3>Functions</h3>
+                <p>Distributed location-aware user functions can be deployed and executed by the same nodes storing relevant sharded data for fast parallel processing. Failed operations can be retried on replicant nodes.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-credit-card"></i></div>
+                <h3>Transactions</h3>
+                <p>ACID distributed transactions support efficient and safe coordinated operations on colocated data. Transactions can be initiated or suspended by either a client or a server.</p>
+            </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-table"></i></div>
+              <h3>OQL and Indexes</h3>
+              <p>Object Query Language allows distributed query execution on hot and cold data, with SQL-like capabilities, including joins.<br/>
+              Multiple kinds of indexes can be defined and consistently maintained across the cluster.</p>
+          </div>
+          <div class="col-md-4">
+              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-bolt"></i></div>
+              <h3>Events</h3>
+              <p>Clients can be notified about server-side data events, and servers can react synchronously or asynchronously with guaranteed delivery of ordered events.</p>
+          </div>
+          <div class="col-md-4">
+              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-cloud"></i></div>
+              <h3>Clustering</h3>
+              <p>Highly scalable, robust advanced clustering technology with failure detection, dynamic scaling, and network-partition detection algorithms.</p>
+          </div>
+        </div>
+    </div>
+
+    </div>
+</section>
+
+<section class="bf-questions">
+    <div class="container">
+            <div class="col-md-12 text-center cta">
+                And much more... Interested? You can check our <a href="https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutesGeodein5minutes" target="_blank" class="btn btn-inverse btn-lg">Geode in 5 minutes tutorial</a> <span class="avoidwrap">, ask a question on the <a href="/community/" class="btn btn-inverse btn-lg">Mailing lists</a> or <a href="http://stackoverflow.com/search?q=Apache%20Geode" class="btn btn-inverse btn-lg">StackOverflow</a></span>
+            </div>
+    </div>
+</section
+
+<section class="bf-news">
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-12 text-left">
+                <h2>About the Project</h2>
+                <p>Apache Geode is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.</p>
+
+                <p>By pooling memory, CPU, network resources, and (optionally) local disk across multiple processes to manage application objects and behavior, it uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Apache Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.</p>
+
+                <p>Apache Geode is a mature, robust technology originally developed by GemStone Systems in Beaverton, Oregon.
+Commercially available as GemFire™, the technology was first widely deployed in the financial sector as the transactional, low-latency data engine used
+in Wall Street trading platforms.
+Today Apache Geode is used by over 600 enterprise customers for high-scale business applications that must meet low latency and 24x7 availability requirements.</p>
+
+                <p>This project is undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.</p>
+            </div>
+            <!--
+            <div class="col-md-4 text-left">
+                <h2>Recent Releases</h2>
+
+
+            </div>
+            -->
+        </div>
+
+    </div>
+</section>
+
+
+
+
+<footer class="bf-footer" role="contentinfo">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                <ul class="nav nav-list">
+                    <li class="nav-header"><a href="/">Home</a></li>
+                    <li class="nav-header"><a href="/community/">Community</a></li>
+                        <li><a href="/community/#events">Events</a></li>
+                        <li><a href="/community/#mailing-lists">Mailing Lists</a></li>
+                        <li><a href="/community/#deployments">Deployments</a></li>
+                        <!-- <li><a href="/community/#committers">Commiters</a></li> -->
+                </ul>
+            </div>
+            <div class="col-md-2">
+                <ul class="nav nav-list">
+                    <li class="nav-header"><a href="http://github.com/apache/incubator-geode" target="_blank">Code</a></li>
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/Project+Proposals+and+Specifications" target="_blank">Specifications</a></li>
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/Geode+Internal+Architecture" target="_blank">Internal Architecture</a></li>
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/Writing+tests" target="_blank">Writing Tests</a></li>
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/Criteria+for+Code+Submissions" target="_blank">Code Submissions</a></li>
+                </ul>
+            </div>
+            <div class="col-md-2">
+                <ul class="nav nav-list">
+                    <li class="nav-header">Resources</li>
+                    <li><a href="http://github.com/apache/geode-incubator" target="_blank">GitHub Code</a></li>
+                    <li><a href="http://geode.docs.pivotal.io" target="_blank">Docs</a></li>
+                    <li><a href="https://issues.apache.org/jira/browse/GEODE" target="_blank">JIRA Bug Tracker</a></li>
+                    <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank">StackOverflow</a></li>
+                    <li><a href="/community/#live">Live Chat</a></li>
+                    <li><a href="https://twitter.com/apachegeode" target="_blank">Twitter</a></li>
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutesGeodein5minutes" target="_blank">Geode in 5 minutes</a></li>
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute" target="_blank">How to Contribute</a></li>
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/Application+Development" target="_blank">Application Development</a></li>
+
+                    <li><a href="https://cwiki.apache.org/confluence/display/GEODE/Technology+FAQ" target="_blank">FAQ</a></li>
+
+                </ul>
+            </div>
+            <div class="col-md-2">
+                <ul class="nav nav-list">
+                    <li class="nav-header">Apache</li>
+                    <li><a href="http://www.apache.org/licenses/" target="_blank">License</a></li>
+                    <li><a href="http://www.apache.org/foundation/sponsorship.html" target="_blank">Sponsorship</a></li>
+                    <li><a href="http://www.apache.org/foundation/thanks.html" target="_blank">Thanks</a></li>
+                    <li><a href="http://www.apache.org/security/">Security</a></li>
+                    <li><a href="http://www.apache.org/" target="_blank">Apache Foundation</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+              <a class="twitter-timeline" href="https://twitter.com/search?q=%23ApacheGeode%20OR%20Apache%20Geode" data-widget-id="665030887004725248">Tweets about #ApacheGeode OR Apache Geode</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+            </div>
+        <!--
+            <div class="col-md-4">
+                <div class="input-group form-search">
+                    <input type="text" class="form-control search-query">
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-primary" data-type="last">Search</button>
+                    </span>
+                </div>
+            </div> -->
+        </div>
+        <div class="row">
+          <center>
+            <div id="copyright">
+                <a href="http://incubator.apache.org" target="_blank"><img src="/img/egg-logo.png" /></a><br/><br/>
+                <p class="credits">
+                Apache Geode is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+                </p>
+                <p>Copyright © 2015 The Apache Software Foundation, Licensed under the Apache License, Version 2.0.<br>
+                Apache, Apache Geode (incubating), and the Apache feather logos are trademarks of The Apache Software Foundation.</p>
+                <p>Site designed & assembled with love by <a href="https://github.com/ryuneeee">@ryuneeee</a> + <a href="https://github.com/realbeast">@realbeast</a> + <a href="https://twitter.com/timanglade">@timanglade</a> + <a href="https://twitter.com/snoopdave">@snoopdave</a> for Apache Usergrid.</p>
+                <p>Modified for Apache Geode by <a href="https://twitter.com/william_markito">@william_markito</a>.</p>
+            </div>
+          </center>
+        </div>
+    </div>
+</footer>
+
+<script type="text/javascript" src="/js/head.js"></script>
+<script type="text/javascript">
+    head.js("/js/jquery-1.10.1.min.js", "/js/bootstrap.min.js", "/js/usergrid-site.js");
+</script>
+<!-- update the code below for google analytics -->
+<!--
+ <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45815079-1', 'apache.org');
+  ga('send', 'pageview');
+
+</script> -->
+
+
+
+</body>
+</html>
