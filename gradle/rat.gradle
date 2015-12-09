@@ -59,6 +59,9 @@ rat {
     'gemfire-spark-connector/project/build.properties',
     '**/log4j2*.xml',
     'gemfire-core/src/test/resources/com/gemstone/gemfire/management/internal/configuration/domain/CacheElementJUnitTest.xml',
+
+    // TODO - go through all the gemfire-site files!!
+    '**/gemfire-site/**',
  
     // ANTLR generated files
     'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexer.java',
