@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.offheap;
+package com.gemstone.gemfire.internal.offheap;
 
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
