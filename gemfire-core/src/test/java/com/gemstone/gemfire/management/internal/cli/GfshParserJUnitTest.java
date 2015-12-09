@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.CommandMarker;
@@ -777,6 +778,7 @@ public class GfshParserJUnitTest {
    * @throws SecurityException
    */
   @Test
+  @Ignore("GEODE-647")
   public void testParse() throws Exception {
     // get a CommandManager, add sample commands
     CommandManager commandManager = CommandManager.getInstance(false);
