@@ -1094,6 +1094,9 @@ public class DistributionStats implements DMStats {
   public int getMcastWrites() {
     return stats.getInt(mcastWritesId);
   }
+  public int getMcastReads() {
+    return stats.getInt(mcastReadsId);
+  }
   public void incMcastReadBytes(int amount) {
     stats.incInt(mcastReadsId, 1);
     stats.incLong(mcastReadBytesId, amount);

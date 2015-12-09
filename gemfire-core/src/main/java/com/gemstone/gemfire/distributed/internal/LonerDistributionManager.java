@@ -451,6 +451,8 @@ public class LonerDistributionManager implements DM {
     @Override
     public int getMcastWrites() { return 0; }
     @Override
+    public int getMcastReads() { return 0; }
+    @Override
     public void incUcastReadBytes(int amount) {}
     @Override
     public void incMcastReadBytes(int amount) {}

@@ -205,6 +205,7 @@ public interface DMStats {
    * returns the current value of the mcastWrites statistic
    */
   public int getMcastWrites();
+  public int getMcastReads();
 
   public long startSerialization();
   public void endSerialization(long start, int bytes);
