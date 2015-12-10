@@ -112,4 +112,37 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     throw new IllegalStateException("this message should not be executed");
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + lastViewId;
+    result = prime * result + ((memberID == null) ? 0 : memberID.hashCode());
+    result = prime * result + ((rejectedCoordinators == null) ? 0 : rejectedCoordinators.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    FindCoordinatorRequest other = (FindCoordinatorRequest) obj;
+    if (lastViewId != other.lastViewId)
+      return false;
+    if (memberID == null) {
+      if (other.memberID != null)
+        return false;
+    } else if (!memberID.equals(other.memberID))
+      return false;
+    if (rejectedCoordinators == null) {
+      if (other.rejectedCoordinators != null)
+        return false;
+    } else if (!rejectedCoordinators.equals(other.rejectedCoordinators))
+      return false;
+    return true;
+  }  
 }

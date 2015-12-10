@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,9 +60,11 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authe
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.SearchState;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewCreator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.TcpClientWrapper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewReplyProcessor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
@@ -99,6 +102,7 @@ public class GMSJoinLeaveJUnitTest {
     when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
     when(mockDistConfig.getLocators()).thenReturn("localhost[8888]");
     mockConfig = mock(ServiceConfig.class);
+    when(mockDistConfig.getStartLocator()).thenReturn("localhost[12345]");
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
     when(mockDistConfig.getLocators()).thenReturn("localhost[12345]");
     when(mockDistConfig.getMcastPort()).thenReturn(0);
@@ -1027,6 +1031,65 @@ public class GMSJoinLeaveJUnitTest {
     System.out.println("new view is " + newView);
     assertTrue(newView.contains(mockMembers[1]));
     assertTrue(newView.getViewId() > preparedView.getViewId());
+  }
+
+  private NetView createView() {
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
+    mbrs.add(mockMembers[0]);
+    mbrs.add(mockMembers[1]);
+    mbrs.add(mockMembers[2]);
+    mbrs.add(gmsJoinLeaveMemberId);
+    
+    //prepare the view
+    NetView netView = new NetView(mockMembers[0], 1, mbrs, shutdowns, crashes);
+    return netView;
+  }
+  
+  @Test
+  public void testCoordinatorFindRequestSuccess()  throws Exception {
+    try{
+      initMocks(false);
+      HashSet<InternalDistributedMember> registrants = new HashSet<>();
+      registrants.add(mockMembers[0]);
+      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true);
+      NetView view = createView();
+      JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view);
+      gmsJoinLeave.setJoinResponseMessage(jrm);
+      
+      TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
+      gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
+      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1);
+      int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
+      when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12345), fcreq, connectTimeout)).thenReturn(fcr);
+      assertTrue("Should be able to join ", gmsJoinLeave.join());
+    }finally{
+      
+    }   
+  }
+  
+  @Test
+  public void testCoordinatorFindRequestFailure()  throws Exception {
+    try{
+      initMocks(false);
+      HashSet<InternalDistributedMember> registrants = new HashSet<>();
+      registrants.add(mockMembers[0]);
+      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true);
+      NetView view = createView();
+      JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view);
+      gmsJoinLeave.setJoinResponseMessage(jrm);
+      
+      TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
+      gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
+      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1);
+      int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
+      //passing wrong port here, so ot will fail
+      when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12346), fcreq, connectTimeout)).thenReturn(fcr);
+      assertFalse("Should not be able to join ", gmsJoinLeave.join());
+    }finally{
+      
+    }   
   }
 }
 

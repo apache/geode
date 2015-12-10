@@ -313,7 +313,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * @param coord
    * @return true if the attempt succeeded, false if it timed out
    */
-  private boolean attemptToJoin() {
+   boolean attemptToJoin() {
     SearchState state = searchState;
 
     // send a join request to the coordinator and wait for a response
@@ -826,6 +826,15 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
+  private TcpClientWrapper tcpClientWrapper = new TcpClientWrapper();
+  
+  /***
+   * testing purpose
+   * @param tcpClientWrapper
+   */
+  void setTcpClientWrapper(TcpClientWrapper tcpClientWrapper) {
+    this.tcpClientWrapper = tcpClientWrapper;
+  }
   /**
    * This contacts the locators to find out who the current coordinator is.
    * All locators are contacted. If they don't agree then we choose the oldest
@@ -861,9 +870,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     do {
       for (InetSocketAddress addr : locators) {
         try {
-          Object o = TcpClient.requestToServer(
-              addr.getAddress(), addr.getPort(), request, connectTimeout, 
-              true);
+          Object o = tcpClientWrapper.sendCoordinatorFindRequest(addr, request, connectTimeout);
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse)o : null;
           if (response != null) {
             state.locatorsContacted++;
@@ -937,6 +944,15 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
     return true;
   }
+  
+  protected class TcpClientWrapper {
+    protected Object sendCoordinatorFindRequest(InetSocketAddress addr, FindCoordinatorRequest request, int connectTimeout) 
+        throws ClassNotFoundException, IOException{
+      return TcpClient.requestToServer(
+          addr.getAddress(), addr.getPort(), request, connectTimeout, 
+          true);
+    }
+  }    
 
   boolean findCoordinatorFromView() {
     ArrayList<FindCoordinatorResponse> result;
@@ -1050,6 +1066,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    */
   JoinResponseMessage[] getJoinResponseMessage() {
     return joinResponse;
+  }
+  /***
+   * for testing purpose
+   * @param jrm
+   */
+  void setJoinResponseMessage(JoinResponseMessage jrm) {
+    joinResponse[0] = jrm;
   }
 
   private void processFindCoordinatorRequest(FindCoordinatorRequest req) {
