@@ -36,7 +36,7 @@ rat {
     '**/.classpath',
     '**/.settings/**',
     '**/build-eclipse/**',
-    '*.iml',
+    '**/*.iml',
     '.idea/**',
 
     // text files
