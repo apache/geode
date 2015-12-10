@@ -1186,7 +1186,7 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
     }
 
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
 
     @Override

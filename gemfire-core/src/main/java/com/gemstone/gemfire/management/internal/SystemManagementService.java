@@ -729,9 +729,9 @@ public final class SystemManagementService extends BaseManagementService {
     }
   }
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected) {
+  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {
     for (ProxyListener listener : proxyListeners) {
-      listener.memberSuspect(id, whoSuspected);
+      listener.memberSuspect(id, whoSuspected, reason);
     }
   }
   

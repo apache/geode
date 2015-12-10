@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -48,6 +49,7 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
+import com.gemstone.gemfire.internal.tcp.Connection;
 
 import dunit.AsyncInvocation;
 import dunit.DistributedTestCase;
@@ -60,7 +62,6 @@ import dunit.VM;
  * Tests the ability of the {@link Locator} API to start and stop
  * locators running in remote VMs.
  *
- * @author David Whitlock
  * @since 4.0
  */
 public class LocatorDUnitTest extends DistributedTestCase {
@@ -581,6 +582,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
       }
       // quorumLost should be invoked if we get a ForcedDisconnect in this situation
       assertTrue("expected quorumLost to be invoked", listener.quorumLostInvoked);
+      assertTrue("expected suspect processing initiated by TCPConduit", listener.suspectReasons.contains(Connection.INITIATING_SUSPECT_PROCESSING));
     }
     finally {
       if (locator != null) {
@@ -1882,11 +1884,14 @@ public class LocatorDUnitTest extends DistributedTestCase {
   }
   class MyMembershipListener implements MembershipListener {
     boolean quorumLostInvoked;
+    List<String> suspectReasons = new ArrayList<>(50);
     
     public void memberJoined(InternalDistributedMember id) {  }
     public void memberDeparted(InternalDistributedMember id, boolean crashed) { }
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) { }
+        InternalDistributedMember whoSuspected, String reason) {
+      suspectReasons.add(reason);
+    }
     public void quorumLost(Set<InternalDistributedMember> failures,
         List<InternalDistributedMember> remaining) {
       quorumLostInvoked = true;

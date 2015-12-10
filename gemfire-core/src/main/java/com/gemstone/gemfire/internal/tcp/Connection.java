@@ -123,6 +123,9 @@ public class Connection implements Runnable {
   /** counter to give connections a unique id */
   private static AtomicLong idCounter = new AtomicLong(1);
 
+  /** string used as the reason for initiating suspect processing */
+  public static final String INITIATING_SUSPECT_PROCESSING = "member unexpectedly shut down shared, unordered connection";
+
   /** the table holding this connection */
   final ConnectionTable owner;
   
@@ -1954,9 +1957,8 @@ public class Connection implements Runnable {
   private void initiateSuspicionIfSharedUnordered() {
     if (this.isReceiver && this.handshakeRead && !this.preserveOrder && this.sharedResource) {
       if (this.owner.getConduit().getCancelCriterion().cancelInProgress() == null) {
-        String reason = "member unexpectedly shut down shared, unordered connection";
         this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
-            reason);
+            INITIATING_SUSPECT_PROCESSING);
       }
     }
   }

@@ -233,10 +233,10 @@ public class GMSMembershipManagerJUnitTest {
 
     // suspect a member
     InternalDistributedMember suspectMember = mockMembers[1];
-    manager.handleOrDeferSuspect(new SuspectMember(mockMembers[0], suspectMember));
+    manager.handleOrDeferSuspect(new SuspectMember(mockMembers[0], suspectMember, "testing"));
     // suspect messages aren't queued - they're ignored before joining the system
     assertEquals(2, manager.getStartupEvents().size());
-    verify(listener, never()).memberSuspect(suspectMember, mockMembers[0]);
+    verify(listener, never()).memberSuspect(suspectMember, mockMembers[0], "testing");
 
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     mockMembers[0].setVmViewId(1);
@@ -293,8 +293,8 @@ public class GMSMembershipManagerJUnitTest {
     // process a suspect now - it will be passed to the listener
     reset(listener);
     suspectMember = mockMembers[1];
-    manager.handleOrDeferSuspect(new SuspectMember(mockMembers[0], suspectMember));
-    verify(listener).memberSuspect(suspectMember, mockMembers[0]);
+    manager.handleOrDeferSuspect(new SuspectMember(mockMembers[0], suspectMember, "testing"));
+    verify(listener).memberSuspect(suspectMember, mockMembers[0], "testing");
     
     InternalDistributedMember mbr = manager.getMemberForStub(new Stub(myMemberId.getInetAddress(), 2033, 20), false);
     assertTrue(mbr == null);

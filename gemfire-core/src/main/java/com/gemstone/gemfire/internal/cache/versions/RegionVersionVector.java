@@ -1364,7 +1364,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
 
 
   public void memberJoined(InternalDistributedMember id) { }
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected) {  }
+  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {  }
   public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {  }
 
   /* 

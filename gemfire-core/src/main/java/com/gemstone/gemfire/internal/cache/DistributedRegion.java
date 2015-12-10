@@ -3805,7 +3805,7 @@ public class DistributedRegion extends LocalRegion implements
     }
 
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     
     /** called when membership listeners are added after region creation */

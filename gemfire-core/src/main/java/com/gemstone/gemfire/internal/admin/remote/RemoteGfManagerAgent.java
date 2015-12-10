@@ -1428,7 +1428,7 @@ public
     }
     
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     
     public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {

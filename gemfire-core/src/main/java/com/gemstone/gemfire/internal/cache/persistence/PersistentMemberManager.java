@@ -255,7 +255,7 @@ public class PersistentMemberManager {
 
     @Override
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     
     @Override

@@ -1301,7 +1301,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   @Override
-  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect, String reason) {
     prepareProcessor.memberSuspected(initiator, suspect);
     viewProcessor.memberSuspected(initiator, suspect);
   }

@@ -925,7 +925,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
   }
 
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
   }
   
 

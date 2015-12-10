@@ -940,7 +940,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   @Override
-  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect, String reason) {
   }
 
   @Override
@@ -1177,7 +1177,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           @Override
           public void run() {
             try {
-              services.memberSuspected(initiator, mbr);
+              services.memberSuspected(initiator, mbr, reason);
               long startTime = System.currentTimeMillis();
               // for some reason we used to update the timestamp for the member
               // with the startTime, but we don't want to do that because it looks

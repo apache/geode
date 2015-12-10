@@ -9968,7 +9968,7 @@ public class PartitionedRegion extends LocalRegion implements
     }
 
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     
     public synchronized void memberDeparted(InternalDistributedMember id,

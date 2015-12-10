@@ -49,8 +49,9 @@ public interface DistributedMembershipListener extends DirectChannelListener {
   /**
    * Event indicating that a member is suspected of having departed but
    * is still in the membership view
+   * @param reason TODO
    */
-  public void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected);
+  public void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected, String reason);
 
   /**
    * Event indicating a message has been delivered that we need to process.

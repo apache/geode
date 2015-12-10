@@ -27,10 +27,15 @@ public class SuspectMember
   /** suspected member */
   public InternalDistributedMember suspectedMember;
   
-  /** create a new SuspectMember */
-  public SuspectMember(InternalDistributedMember whoSuspected, InternalDistributedMember suspectedMember) {
+  /** the reason */
+  public String reason;
+  
+  /** create a new SuspectMember 
+   * @param reason TODO*/
+  public SuspectMember(InternalDistributedMember whoSuspected, InternalDistributedMember suspectedMember, String reason) {
     this.whoSuspected = whoSuspected;
     this.suspectedMember = suspectedMember;
+    this.reason = reason;
   }
   
   @Override

@@ -277,20 +277,20 @@ public class Services {
     manager.installView(v);
   }
   
-  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect, String reason) {
     try {
-      joinLeave.memberSuspected(initiator, suspect);
+      joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
       try {
-        healthMon.memberSuspected(initiator, suspect);
+        healthMon.memberSuspected(initiator, suspect, reason);
       } finally {
         try {
-          auth.memberSuspected(initiator, suspect);
+          auth.memberSuspected(initiator, suspect, reason);
         } finally {
           try {
-            messenger.memberSuspected(initiator, suspect);
+            messenger.memberSuspected(initiator, suspect, reason);
           } finally {
-            manager.memberSuspected(initiator, suspect);
+            manager.memberSuspected(initiator, suspect, reason);
           }
         }
       }

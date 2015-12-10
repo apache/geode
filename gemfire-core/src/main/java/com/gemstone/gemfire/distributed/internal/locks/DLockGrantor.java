@@ -3731,7 +3731,7 @@ public class DLockGrantor {
     public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
     }
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
       final DLockGrantor me = DLockGrantor.this;

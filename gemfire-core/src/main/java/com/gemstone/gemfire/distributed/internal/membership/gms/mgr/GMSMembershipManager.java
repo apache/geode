@@ -1209,8 +1209,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   @Override
-  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
-    SuspectMember s = new SuspectMember(initiator, suspect);
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect, String reason) {
+    SuspectMember s = new SuspectMember(initiator, suspect, reason);
     handleOrDeferSuspect(s);
   }
 
@@ -1230,7 +1230,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       InternalDistributedMember who = suspectInfo.whoSuspected;
       this.suspectedMembers.put(suspect, Long.valueOf(System.currentTimeMillis()));
       try {
-        listener.memberSuspect(suspect, who);
+        listener.memberSuspect(suspect, who, suspectInfo.reason);
       }
       catch (DistributedSystemDisconnectedException se) {
         // let's not get huffy about it

@@ -60,9 +60,10 @@ public interface MembershipListener {
    * removed from the membership view
    * @param id the suspected member
    * @param whoSuspected the member that initiated suspect processing
+   * @param reason TODO
    */
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected);
+      InternalDistributedMember whoSuspected, String reason);
   
   /**
    * This is notification that more than 50% of member weight has been

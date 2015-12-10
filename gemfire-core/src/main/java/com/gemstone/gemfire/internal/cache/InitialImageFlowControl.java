@@ -186,7 +186,7 @@ public class InitialImageFlowControl implements MembershipListener {
   }
 
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
     //Do nothing
   }
 

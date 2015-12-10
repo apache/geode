@@ -3333,9 +3333,10 @@ public class DistributionManager
   }
 
   /**
+   * @param reason TODO
    */
   public void handleManagerSuspect(InternalDistributedMember suspect, 
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
     if (!isCurrentMember(suspect)) {
       return; // fault tolerance
     }
@@ -3345,7 +3346,7 @@ public class DistributionManager
       return;
     }
 
-    addMemberEvent(new MemberSuspectEvent(suspect, whoSuspected));
+    addMemberEvent(new MemberSuspectEvent(suspect, whoSuspected, reason));
   }
   
   public void handleViewInstalled(NetView view) {
@@ -3756,7 +3757,7 @@ public class DistributionManager
                   }
                 }
                 public void memberSuspect(InternalDistributedMember id,
-                    InternalDistributedMember whoSuspected) {
+                    InternalDistributedMember whoSuspected, String reason) {
                 }
                 public void viewInstalled(NetView view) {
                 }
@@ -4424,8 +4425,8 @@ public class DistributionManager
       dm.handleManagerDeparture(theId, crashed, reason);
     }
     
-    public void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected) {
-      dm.handleManagerSuspect(suspect, whoSuspected);
+    public void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected, String reason) {
+      dm.handleManagerSuspect(suspect, whoSuspected, reason);
     }
     
     public void viewInstalled(NetView view) {
@@ -4579,20 +4580,27 @@ public class DistributionManager
    */
   private static final class MemberSuspectEvent extends MemberEvent {
     InternalDistributedMember whoSuspected;
-    MemberSuspectEvent(InternalDistributedMember suspect, InternalDistributedMember whoSuspected) {
+    String reason;
+    MemberSuspectEvent(InternalDistributedMember suspect, InternalDistributedMember whoSuspected, String reason) {
       super(suspect);
       this.whoSuspected = whoSuspected;
+      this.reason = reason;
     }
     public InternalDistributedMember whoSuspected() {
       return this.whoSuspected;
     }
+    
+    public String getReason() {
+      return this.reason;
+    }
+    
     @Override
     public String toString() {
-      return "member " + getId() + " suspected by: " + this.whoSuspected;
+      return "member " + getId() + " suspected by: " + this.whoSuspected + " reason: " + reason;
     }
     @Override
     protected void handleEvent(MembershipListener listener) {
-      listener.memberSuspect(getId(), whoSuspected());	
+      listener.memberSuspect(getId(), whoSuspected(), reason);	
     }
   }
   

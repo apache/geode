@@ -2206,7 +2206,7 @@ public class PRHARedundancyProvider
     }
 
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     
     public void memberDeparted(InternalDistributedMember id, boolean crashed) {
@@ -2339,7 +2339,7 @@ public class PRHARedundancyProvider
     }
     
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     
     public void memberJoined(InternalDistributedMember id)

@@ -508,7 +508,7 @@ public class ReplyProcessor21
   }
 
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
     if (isSevereAlertProcessingEnabled()) {
       // if we're waiting for the member that initiated suspicion, we don't
       // want to be hasty about kicking it out of the distributed system

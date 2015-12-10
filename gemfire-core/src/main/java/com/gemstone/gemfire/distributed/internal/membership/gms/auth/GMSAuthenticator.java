@@ -90,7 +90,7 @@ public class GMSAuthenticator implements Authenticator {
   }
   
   @Override
-  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect) {
+  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect, String reason) {
   }
 
   /**
