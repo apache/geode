@@ -70,7 +70,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
   
   @Override
   public void start() {
-    this.lifeCycleLock.writeLock().lock(); 
+    this.getLifeCycleLock().writeLock().lock(); 
     try {
       if (isRunning()) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewaySender_SENDER_0_IS_ALREADY_RUNNING, this.getId()));
@@ -117,7 +117,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       }
     }
     finally {
-      this.lifeCycleLock.writeLock().unlock();
+      this.getLifeCycleLock().writeLock().unlock();
     }
   }
   
@@ -132,7 +132,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
   @Override
   public void stop() {
-    this.lifeCycleLock.writeLock().lock(); 
+    this.getLifeCycleLock().writeLock().lock(); 
     try {
       if (!this.isRunning()) {
         return;
@@ -163,7 +163,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       clearTempEventsAfterSenderStopped();
     }
     finally {
-      this.lifeCycleLock.writeLock().unlock();
+      this.getLifeCycleLock().writeLock().unlock();
     }
   }
   

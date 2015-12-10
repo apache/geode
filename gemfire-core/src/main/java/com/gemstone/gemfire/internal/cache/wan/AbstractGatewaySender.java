@@ -142,7 +142,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   
   protected LocatorDiscoveryCallback locatorDiscoveryCallback;
   
-  public final ReentrantReadWriteLock lifeCycleLock = new ReentrantReadWriteLock();
+  private final ReentrantReadWriteLock lifeCycleLock = new ReentrantReadWriteLock();
   
   protected GatewaySenderAdvisor senderAdvisor;
   
@@ -569,7 +569,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
    */
   public void destroy() {
     try {
-      this.lifeCycleLock.writeLock().lock();
+      this.getLifeCycleLock().writeLock().lock();
       // first, check if this sender is attached to any region. If so, throw
       // GatewaySenderException
       Set<LocalRegion> regions = ((GemFireCacheImpl)this.cache)
@@ -627,7 +627,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       }//END if (regionQueues != null)
     }
     finally {
-      this.lifeCycleLock.writeLock().unlock();
+      this.getLifeCycleLock().writeLock().unlock();
     }
   }
   
@@ -803,7 +803,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   
   final public void pause() {
     if (this.eventProcessor != null) {
-      this.lifeCycleLock.writeLock().lock();
+      this.getLifeCycleLock().writeLock().lock();
       try {
         if (this.eventProcessor.isStopped()) {
           return;
@@ -818,14 +818,14 @@ public abstract class AbstractGatewaySender implements GatewaySender,
 
         enqueueTempEvents();
       } finally {
-        this.lifeCycleLock.writeLock().unlock();
+        this.getLifeCycleLock().writeLock().unlock();
       }
     }
   }
 
   final public void resume() {
     if (this.eventProcessor != null) {
-      this.lifeCycleLock.writeLock().lock();
+      this.getLifeCycleLock().writeLock().lock();
       try {
         if (this.eventProcessor.isStopped()) {
           return;
@@ -841,7 +841,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         
         enqueueTempEvents();
       } finally {
-        this.lifeCycleLock.writeLock().unlock();
+        this.getLifeCycleLock().writeLock().unlock();
       }
     }
   }
@@ -951,10 +951,10 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       clonedEvent.setCallbackArgument(geCallbackArg);
     }
 
-    if (!this.lifeCycleLock.readLock().tryLock()) {
+    if (!this.getLifeCycleLock().readLock().tryLock()) {
       synchronized (this.queuedEventsSync) {
         if (!this.enqueuedAllTempQueueEvents) {
-          if (!this.lifeCycleLock.readLock().tryLock()) {
+          if (!this.getLifeCycleLock().readLock().tryLock()) {
             Object substituteValue = getSubstituteValue(clonedEvent, operation);
             this.tmpQueuedEvents.add(new TmpQueueEvent(operation, clonedEvent, substituteValue));
             freeClonedEvent = false;
@@ -967,7 +967,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         }
       }
       if(this.enqueuedAllTempQueueEvents) {
-        this.lifeCycleLock.readLock().lock();
+        this.getLifeCycleLock().readLock().lock();
       }
     }
     try {
@@ -1010,7 +1010,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
                 new Object[] { this, getId(), operation, clonedEvent }), e);
       }
     } finally {
-      this.lifeCycleLock.readLock().unlock();
+      this.getLifeCycleLock().readLock().unlock();
     }
     } finally {
       if (freeClonedEvent) {
@@ -1249,6 +1249,11 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     return 0;
   }
   
+  public int getEventQueueSize() { 
+    AbstractGatewaySenderEventProcessor localProcessor = this.eventProcessor;
+    return localProcessor == null ? 0 : localProcessor.eventQueueSize();
+  }
+
   public void setEnqueuedAllTempQueueEvents(boolean enqueuedAllTempQueueEvents) {
     this.enqueuedAllTempQueueEvents = enqueuedAllTempQueueEvents;
   }
@@ -1260,6 +1265,10 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   public Object getLockForConcurrentDispatcher() {
     return this.lockForConcurrentDispatcher;
   }
+  public ReentrantReadWriteLock getLifeCycleLock() {
+    return lifeCycleLock;
+  }
+
   /**
    * Has a reference to a GatewayEventImpl and has a timeout value.
    */

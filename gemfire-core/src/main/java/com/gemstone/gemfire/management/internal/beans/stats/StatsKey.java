@@ -301,7 +301,6 @@ public class StatsKey {
   
   public static final String GATEWAYSENDER_EVENTS_RECEIVED = "eventsReceived";
   public static final String GATEWAYSENDER_EVENTS_QUEUED = "eventsQueued";
-  public static final String GATEWAYSENDER_EVENTS_QUEUE_SIZE = "eventQueueSize";
   public static final String GATEWAYSENDER_BATCHES_DISTRIBUTED = "batchesDistributed";
   public static final String GATEWAYSENDER_BATCHES_DISTRIBUTE_TIME = "batchDistributionTime";
   public static final String GATEWAYSENDER_TOTAL_BATCHES_REDISTRIBUTED = "batchesRedistributed";

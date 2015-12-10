@@ -23,15 +23,18 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.NanoTimer;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
 import com.gemstone.gemfire.management.internal.beans.GatewaySenderMBeanBridge;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+import io.codearte.catchexception.shade.mockito.Mockito;
 
 /**
  * @author rishim
  */
 @Category(IntegrationTest.class)
-public class GatewaySenderStatsJUnitTest extends MBeanStatsTestCase {
+public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
   
   private GatewaySenderMBeanBridge bridge;
 
@@ -39,10 +42,14 @@ public class GatewaySenderStatsJUnitTest extends MBeanStatsTestCase {
 
   private static long testStartTime = NanoTimer.getTime();
 
+  private AbstractGatewaySender sender;
+
   public void init() {
     senderStats = new GatewaySenderStats(system, "test");
 
-    bridge = new GatewaySenderMBeanBridge();
+    sender = Mockito.mock(AbstractGatewaySender.class);
+    Mockito.when(sender.getStatistics()).thenReturn(senderStats);
+    bridge = new GatewaySenderMBeanBridge(sender);
     bridge.addGatewaySenderStats(senderStats);
   }
   
@@ -50,7 +57,7 @@ public class GatewaySenderStatsJUnitTest extends MBeanStatsTestCase {
   public void testSenderStats() throws InterruptedException{
     senderStats.incBatchesRedistributed();
     senderStats.incEventsReceived();
-    senderStats.setQueueSize(10);
+    Mockito.when(sender.getEventQueueSize()).thenReturn(10);
     senderStats.endPut(testStartTime);
     senderStats.endBatch(testStartTime, 100);
     senderStats.incEventsNotQueuedConflated();

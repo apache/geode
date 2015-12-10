@@ -76,12 +76,6 @@ public class GatewaySenderMBeanBridge {
     }
 
   }
-  
-  public GatewaySenderMBeanBridge() {
-    this.monitor = new MBeanStatsMonitor(
-        ManagementStrings.GATEWAY_SENDER_MONITOR.toLocalizedString());
-    initializeStats();
-  }
 
   public void addGatewaySenderStats(GatewaySenderStats gatewaySenderStats) {
     monitor.addStatisticsToMonitor(gatewaySenderStats.getStats());
@@ -253,7 +247,7 @@ public class GatewaySenderMBeanBridge {
   }  
 
   public int getEventQueueSize() {
-    return getStatistic(StatsKey.GATEWAYSENDER_EVENTS_QUEUE_SIZE).intValue();
+    return abstractSender.getEventQueueSize();
   }
 
   public float getEventsQueuedRate() {

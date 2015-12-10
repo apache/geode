@@ -244,8 +244,12 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     //return this.queue.take();
   }
 
-  protected int eventQueueSize() {
-    // This should be local size instead of PR size. Fix for #48627
+  public int eventQueueSize() {
+    if(queue == null) {
+      return 0;
+    }
+    
+    // This should be local size instead of pr size
     if (this.queue instanceof ParallelGatewaySenderQueue) {
       return ((ParallelGatewaySenderQueue) queue).localSize();
     }
