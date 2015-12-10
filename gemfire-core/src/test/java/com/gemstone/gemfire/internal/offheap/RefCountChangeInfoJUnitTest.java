@@ -185,11 +185,23 @@ public class RefCountChangeInfoJUnitTest {
     assertEquals(2, refInfo1.getUseCount());
     refInfo1.setStackTraceString(null);
 
-    refInfo1.setSameHashDifferentTrace();
-    refInfo4.setSameHashDifferentTrace();
+    refInfo1.setStackTraceString(new SameHashDifferentTrace());
+    refInfo4.setStackTraceString(new SameHashDifferentTrace());
     assertFalse(refInfo1.isSameCaller(refInfo4));
     assertEquals(2, refInfo1.getUseCount());
 
   }
+
+  class SameHashDifferentTrace {
+
+    public int hashCode() { 
+      return 1; 
+    }
+
+    public boolean equals(Object notused) { 
+      return false; 
+    }
+  }
+  
 
 }

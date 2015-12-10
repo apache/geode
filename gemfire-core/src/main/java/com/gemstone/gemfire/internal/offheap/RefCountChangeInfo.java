@@ -107,26 +107,10 @@ public class RefCountChangeInfo extends Throwable {
     return result;
   }
   
-  void setSameHashDifferentTrace() {
-    Object sts = new SameHashDifferentTrace();
-    stackTraceString = sts;
-  }
-
   void setStackTraceString(Object sts) {
     stackTraceString = sts;
   }
 
-  class SameHashDifferentTrace {
-
-    public int hashCode() { 
-      return 1; 
-    }
-
-    public boolean equals(Object notused) { 
-      return false; 
-    }
-  }
-  
   private void cleanStackTrace(PrintStream ps) {
     StackTraceElement[] trace = getStackTrace();
     // skip the initial elements from the offheap package
