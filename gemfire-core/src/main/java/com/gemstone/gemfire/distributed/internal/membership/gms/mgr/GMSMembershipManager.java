@@ -1995,13 +1995,16 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
     for (int i=0; i<addresses.length; i++) {
-      GMSMember id = (GMSMember)addresses[i].getNetMember();
-      if (!id.hasUUID()) {
-        latestViewLock.readLock().lock();
-        try {
-          addresses[i] = latestView.getCanonicalID(addresses[i]);
-        } finally {
-          latestViewLock.readLock().unlock();
+      InternalDistributedMember m = addresses[i];
+      if(m != null) {
+        GMSMember id = (GMSMember)m.getNetMember();
+        if (!id.hasUUID()) {
+          latestViewLock.readLock().lock();
+          try {
+            addresses[i] = latestView.getCanonicalID(addresses[i]);
+          } finally {
+            latestViewLock.readLock().unlock();
+          }
         }
       }
     }
