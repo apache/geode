@@ -104,10 +104,14 @@ public class ParallelGatewaySenderEventProcessor extends
       logger.debug("The target Regions are(PGSEP) {}", targetRs);
     }
     
+    ParallelGatewaySenderQueue queue;
     if (sender.getIsHDFSQueue())
-      this.queue = new HDFSParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher);
+      queue = new HDFSParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher);
     else
-      this.queue = new ParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher);
+      queue = new ParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher);
+    
+    queue.start();
+    this.queue = queue;
     
     if(((ParallelGatewaySenderQueue)queue).localSize() > 0) {
       ((ParallelGatewaySenderQueue)queue).notifyEventProcessorIfRequired();
