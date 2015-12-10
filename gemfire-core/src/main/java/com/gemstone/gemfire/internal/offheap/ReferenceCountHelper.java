@@ -169,9 +169,6 @@ public class ReferenceCountHelper {
 
   /**
    * Used internally to report that a reference count has changed.
-   * SAJ:  Uses 2 different methods to find match in inc and dec paths
-   * SAJ:  isSameCaller has side effect of incrementing usCount if same
-   * SAJ:  rc in parm list seems to be a count to inc/dec but is not used
    */
   
   static void refCountChanged(Long address, boolean decRefCount, int rc) {
