@@ -79,7 +79,7 @@ public class GMSHealthMonitorJUnitTest {
 
   @Before
   public void initMocks() throws UnknownHostException {
-    System.setProperty("gemfire.bind-address", "localhost");
+    //System.setProperty("gemfire.bind-address", "localhost");
     mockDistConfig = mock(DistributionConfig.class);
     mockConfig = mock(ServiceConfig.class);
     messenger = mock(Messenger.class);
@@ -121,7 +121,7 @@ public class GMSHealthMonitorJUnitTest {
   @After
   public void tearDown() {
     gmsHealthMonitor.stop();
-    System.getProperties().remove("gemfire.bind-address");
+    //System.getProperties().remove("gemfire.bind-address");
   }
 
   @Test
@@ -562,12 +562,61 @@ public class GMSHealthMonitorJUnitTest {
     when(smm.getDSFID()).thenCallRealMethod();
     gmsHealthMonitor.processMessage(smm);
   }
-
-  private GMSMember createGMSMember(short version, int viewId, long msb, long lsb) {
+  
+  @Test
+  public void testDoTCPCheckMemberWithOkStatus() throws Exception {
+    executeTestDoTCPCheck(GMSHealthMonitor.OK, true);
+  }
+  
+  @Test
+  public void testDoTCPCheckMemberWithErrorStatus() throws Exception {
+    executeTestDoTCPCheck(GMSHealthMonitor.ERROR, false);
+  }
+  
+  @Test
+  public void testDoTCPCheckMemberWithUnkownStatus() throws Exception {
+    executeTestDoTCPCheck(GMSHealthMonitor.ERROR + 100, false);
+  }
+  
+  private void executeTestDoTCPCheck(int receivedStatus, boolean expectedResult) throws Exception {
+    InternalDistributedMember otherMember = createInternalDistributedMember(Version.CURRENT_ORDINAL, 0, 1, 1);
+    InternalDistributedMember gmsMember = createInternalDistributedMember(Version.CURRENT_ORDINAL, 0, 1, 1);
+    
+    //Set up the incoming/received bytes.  We just wrap output streams and write out the gms member information
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    baos.write(receivedStatus);
+    
+    byte[] receivedBytes = baos.toByteArray();
+    InputStream mockInputStream = new ByteArrayInputStream(receivedBytes);
+    
+    Socket fakeSocket = mock(Socket.class);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    when(fakeSocket.getInputStream()).thenReturn(mockInputStream);
+    when(fakeSocket.getOutputStream()).thenReturn(outputStream);
+    when(fakeSocket.isConnected()).thenReturn(true);
+    
+    Assert.assertEquals(expectedResult, gmsHealthMonitor.doTCPCheckMember(otherMember, fakeSocket));
+    
+    //we can check to see if the gms member information was written out by the tcp check
+    byte[] bytesWritten = outputStream.toByteArray();
+    Assert.assertArrayEquals(writeMemberToBytes((GMSMember)gmsMember.getNetMember()), bytesWritten);
+  }
+  
+  private InternalDistributedMember createInternalDistributedMember(short version, int viewId, long msb, long lsb) throws UnknownHostException{
+    GMSMember gmsMember = createGMSMember(version, viewId, msb, lsb);
+    InternalDistributedMember idm = new InternalDistributedMember("localhost", 9000, Version.CURRENT, gmsMember);
+    //We set to our expected test viewId in the IDM as well as reseting the gms member
+    idm.setVmViewId(viewId);
+    gmsMember.setBirthViewId(viewId);
+    return idm;
+  }
+  
+  private GMSMember createGMSMember(short version, int viewId, long msb, long lsb) throws UnknownHostException{
     GMSMember gmsMember = new GMSMember();
     gmsMember.setVersionOrdinal(version);
     gmsMember.setBirthViewId(viewId);
     gmsMember.setUUID(new UUID(msb, lsb));
+    gmsMember.setInetAddr(InetAddress.getLocalHost());
     return gmsMember;
   }
   

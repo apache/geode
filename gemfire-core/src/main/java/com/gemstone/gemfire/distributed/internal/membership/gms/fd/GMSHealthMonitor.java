@@ -472,6 +472,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     TimeStamp ts = memberTimeStamps.get(suspectMember);
     return (ts != null && (System.currentTimeMillis() - ts.getTime()) <= memberTimeout);
   }
+  
 
   /**
    * During final check, establish TCP connection between current member and suspect member.
@@ -486,6 +487,26 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, suspectMember.getInetAddress(), port);
       clientSocket = SocketCreator.getDefaultInstance().connect(suspectMember.getInetAddress(), port,
           (int)memberTimeout, new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
+      return doTCPCheckMember(suspectMember, clientSocket);
+    }
+    catch (IOException e) {
+      logger.debug("Unexpected exception", e);
+    } 
+    finally {
+      try {
+        if (clientSocket != null) {
+          clientSocket.close();
+        }
+      } catch (IOException e) {
+        logger.trace("Unexpected exception", e);
+      }
+    }
+    return false;
+  }
+
+  //Package protected for testing purposes
+  boolean doTCPCheckMember(InternalDistributedMember suspectMember, Socket clientSocket) {
+    try {
       if (clientSocket.isConnected()) {
         clientSocket.setSoTimeout((int) services.getConfig().getMemberTimeout());
         InputStream in = clientSocket.getInputStream();
@@ -513,17 +534,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       logger.debug("tcp/ip connection timed out");
       return false;
     } catch (IOException e) {
-      logger.debug("Unexpected exception", e);
-    } finally {
-      try {
-        if (clientSocket != null) {
-          clientSocket.close();
-        }
-      } catch (IOException e) {
-        logger.trace("Unexpected exception", e);
-      }
-    }
-
+      logger.trace("Unexpected exception", e);
+    } 
     return false;
   }
   
