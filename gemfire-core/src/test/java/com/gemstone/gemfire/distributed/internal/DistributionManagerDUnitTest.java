@@ -19,9 +19,8 @@ package com.gemstone.gemfire.distributed.internal;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import junit.framework.Assert;
-
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.admin.AdminDistributedSystem;
@@ -43,7 +42,9 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
+import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -537,5 +538,43 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     // use a valid bind address
     props.setProperty(DistributionConfig.BIND_ADDRESS_NAME, InetAddress.getLocalHost().getCanonicalHostName());
     getSystem().disconnect();
+  }
+  
+  /**
+   * install a new view and show that waitForViewInstallation works as expected
+   */
+  public void testWaitForViewInstallation() {
+    getSystem(new Properties());
+    
+    MembershipManager mgr = system.getDM().getMembershipManager(); 
+
+    final NetView v = mgr.getView();
+    
+    final boolean[] passed = new boolean[1];
+    Thread t = new Thread("wait for view installation") {
+      public void run() {
+        try {
+          ((DistributionManager)system.getDM()).waitForViewInstallation(v.getViewId()+1);
+          synchronized(passed) {
+            passed[0] = true;
+          }
+        } catch (InterruptedException e) {
+          // failed
+        }
+      }
+    };
+    t.setDaemon(true);
+    t.start();
+    
+    pause(2000);
+
+    NetView newView = new NetView(v, v.getViewId()+1);
+    ((Manager)mgr).installView(newView);
+
+    pause(2000);
+    
+    synchronized(passed) {
+      Assert.assertTrue(passed[0]);
+    }
   }
 }

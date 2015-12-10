@@ -20,12 +20,17 @@ import java.net.InetAddress;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 
 public class ServiceConfig {
+
+  /** stall time to wait for concurrent join/leave/remove requests to be received */
+  public static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("gemfire.member-request-collection-interval", 500);
+
   /** various settings from Geode configuration */
-  private int joinTimeout;
+  private long joinTimeout;
   private int[] membershipPortRange;
   private int udpRecvBufferSize;
   private int udpSendBufferSize;
@@ -47,7 +52,7 @@ public class ServiceConfig {
   }
 
 
-  public int getJoinTimeout() {
+  public long getJoinTimeout() {
     return joinTimeout;
   }
 
@@ -128,11 +133,19 @@ public class ServiceConfig {
     this.dconfig = theConfig;
     this.transport = transport;
     
-    int defaultJoinTimeout = 24000;
+    long defaultJoinTimeout = 24000;
     if (theConfig.getLocators().length() > 0 && !Locator.hasLocators()) {
       defaultJoinTimeout = 60000;
     }
-    joinTimeout = Integer.getInteger("p2p.joinTimeout", defaultJoinTimeout).intValue();
+    
+    // we need to have enough time to figure out that the coordinator has crashed &
+    // find a new one
+    long minimumJoinTimeout = dconfig.getMemberTimeout() * 2 + MEMBER_REQUEST_COLLECTION_INTERVAL;
+    if (defaultJoinTimeout < minimumJoinTimeout) {
+      defaultJoinTimeout = minimumJoinTimeout;
+    };
+    
+    joinTimeout = Long.getLong("p2p.joinTimeout", defaultJoinTimeout).longValue();
     
     // if network partition detection is enabled, we must connect to the locators
     // more frequently in order to make sure we're not isolated from them

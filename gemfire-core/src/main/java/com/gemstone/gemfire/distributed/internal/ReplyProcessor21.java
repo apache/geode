@@ -757,7 +757,7 @@ public class ReplyProcessor21
       else {
         if (msecs > timeout) {
           if (!latch.await(timeout)) {
-            timeout(false, false);
+            timeout(isSevereAlertProcessingEnabled() && (severeAlertTimeout > 0), false);
             // after timeout alert, wait remaining time
             if (!latch.await(msecs-timeout)) {
               logger.info(LocalizedMessage.create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_TIMING_OUT_AFTER_0_SEC, Long.valueOf(msecs / 1000)));

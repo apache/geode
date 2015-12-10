@@ -374,6 +374,14 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   public void setPort(int p) {
     this.udpPort = p;
   }
+  
+  /**
+   * checks to see if this address has UUID information needed
+   * to send messages via JGroups
+   */
+  public boolean hasUUID() {
+    return !(this.uuidLSBs == 0 && this.uuidMSBs == 0);
+  }
 
   @Override
   public Version[] getSerializationVersions() {

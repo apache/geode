@@ -285,6 +285,19 @@ public final class InternalDistributedSystem
       }
     }
   }
+  
+  
+  /**
+   * creates a non-functional instance for testing
+   * @param nonDefault - non-default distributed system properties
+   */
+  public static InternalDistributedSystem newInstanceForTesting(DM dm, Properties nonDefault) {
+    InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
+    sys.config = new RuntimeDistributionConfigImpl(sys);
+    sys.dm = dm;
+    sys.isConnected = true;
+    return sys;
+  }
 
   /**
    * Returns a connection to the distributed system that is suitable
@@ -529,10 +542,8 @@ public final class InternalDistributedSystem
       }
     }
 
-    if (this.isLoner) {
-      this.config = new RuntimeDistributionConfigImpl(this);
-    } else {
-      this.config = new RuntimeDistributionConfigImpl(this);
+    this.config = new RuntimeDistributionConfigImpl(this);
+    if (!this.isLoner) {
       this.attemptingToReconnect = (reconnectAttemptCounter > 0);
     }
     try {

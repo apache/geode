@@ -20,11 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,8 +42,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -292,7 +286,6 @@ public class GMSHealthMonitorJUnitTest {
 
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
 
-    MethodExecuted messageSent = new MethodExecuted();
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
 
@@ -300,15 +293,13 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.suspect(mockMembers.get(1), "Not responding");
 
-    when(messenger.send(isA(SuspectMembersMessage.class))).thenAnswer(messageSent);
-
     try {
       // suspect thread timeout is 200 ms
       Thread.sleep(100l);
     } catch (InterruptedException e) {
     }
 
-    assertTrue("SuspectMembersMessage shouldn't have sent", !messageSent.isMethodExecuted());
+    verify(messenger, atLeastOnce()).send(isA(SuspectMembersMessage.class));
   }
 
   /***
@@ -544,6 +535,33 @@ public class GMSHealthMonitorJUnitTest {
     int byteReply = dis.read();
     Assert.assertEquals(expectedResult, byteReply);
   }
+  
+  @Test
+  public void testBeSickAndPlayDead() throws Exception {
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
+    gmsHealthMonitor.installView(v);
+    gmsHealthMonitor.beSick();
+    
+    // a sick member will not respond to a heartbeat request
+    HeartbeatRequestMessage req = new HeartbeatRequestMessage(mockMembers.get(0), 10);
+    req.setSender(mockMembers.get(0));
+    gmsHealthMonitor.processMessage(req);
+    verify(messenger, never()).send(isA(HeartbeatMessage.class));
+    
+    // a sick member will not record a heartbeat from another member
+    HeartbeatMessage hb = new HeartbeatMessage(-1);
+    hb.setSender(mockMembers.get(0));
+    gmsHealthMonitor.processMessage(hb);
+    assertTrue(gmsHealthMonitor.memberTimeStamps.get(hb.getSender()) == null);
+    
+    // a sick member will not take action on a Suspect message from another member
+    SuspectMembersMessage smm = mock(SuspectMembersMessage.class);
+    Error err = new AssertionError("expected suspect message to be ignored");
+    when(smm.getMembers()).thenThrow(err);
+    when(smm.getSender()).thenThrow(err);
+    when(smm.getDSFID()).thenCallRealMethod();
+    gmsHealthMonitor.processMessage(smm);
+  }
 
   private GMSMember createGMSMember(short version, int viewId, long msb, long lsb) {
     GMSMember gmsMember = new GMSMember();
@@ -560,18 +578,4 @@ public class GMSHealthMonitorJUnitTest {
     return baos.toByteArray();
   }
 
-
-  private class MethodExecuted implements Answer {
-    private boolean methodExecuted = false;
-
-    public boolean isMethodExecuted() {
-      return methodExecuted;
-    }
-
-    @Override
-    public Object answer(InvocationOnMock invocation) throws Throwable {
-      methodExecuted = true;
-      return null;
-    }
-  }
 }

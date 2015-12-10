@@ -16,28 +16,17 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
-import static org.mockito.Mockito.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-
-import junit.framework.TestCase;
 
 import org.apache.logging.log4j.Level;
 import org.junit.AfterClass;
@@ -47,12 +36,10 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SerialAckedMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
@@ -90,70 +77,7 @@ public class MembershipJUnitTest {
 //    LogService.setBaseLogLevel(baseLogLevel);
   }
   
-  /**
-   * Test that failed weight calculations are correctly performed.  See bug #47342
-   * @throws Exception
-   */
-  public void testFailedWeight() throws Exception {
-    // in #47342 a new view was created that contained a member that was joining but
-    // was no longer reachable.  The member was included in the failed-weight and not
-    // in the previous view-weight, causing a spurious network partition to be declared
-    InternalDistributedMember members[] = new InternalDistributedMember[] {
-        new InternalDistributedMember("localhost", 1), new InternalDistributedMember("localhost", 2), new InternalDistributedMember("localhost", 3),
-        new InternalDistributedMember("localhost", 4), new InternalDistributedMember("localhost", 5), new InternalDistributedMember("localhost", 6)};
-    int i = 0;
-    // weight 3
-    members[i].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    members[i++].getNetMember().setPreferredForCoordinator(true);
-    // weight 3
-    members[i].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    members[i++].getNetMember().setPreferredForCoordinator(true);
-    // weight 15 (cache+leader)
-    members[i].setVmKind(DistributionManager.NORMAL_DM_TYPE);
-    members[i++].getNetMember().setPreferredForCoordinator(false);
-    // weight 0
-    members[i].setVmKind(DistributionManager.ADMIN_ONLY_DM_TYPE);
-    members[i++].getNetMember().setPreferredForCoordinator(false);
-    // weight 0
-    members[i].setVmKind(DistributionManager.ADMIN_ONLY_DM_TYPE);
-    members[i++].getNetMember().setPreferredForCoordinator(false);
-    // weight 10
-    members[i].setVmKind(DistributionManager.NORMAL_DM_TYPE);
-    members[i++].getNetMember().setPreferredForCoordinator(false);
-    
-    List<InternalDistributedMember> vmbrs = new ArrayList<>(members.length);
-    for (i=0; i<members.length; i++) {
-      vmbrs.add(members[i]);
-    }
-    Set<InternalDistributedMember> empty = Collections.emptySet();
-    NetView lastView = new NetView(members[0], 4, vmbrs, empty, empty);
-    InternalDistributedMember leader = members[2];
-    assertTrue(!leader.getNetMember().preferredForCoordinator());
-    
-    InternalDistributedMember joiningMember = new InternalDistributedMember("localhost", 7);
-    joiningMember.setVmKind(DistributionManager.NORMAL_DM_TYPE);
-    joiningMember.getNetMember().setPreferredForCoordinator(false);
-    
-    // have the joining member and another cache process (weight 10) in the failed members
-    // collection and check to make sure that the joining member is not included in failed
-    // weight calcs.
-    Set<InternalDistributedMember> failedMembers = new HashSet<>(3);
-    failedMembers.add(joiningMember);
-    failedMembers.add(members[members.length-1]); // cache
-    failedMembers.add(members[members.length-2]); // admin
-    List<InternalDistributedMember> newMbrs = new ArrayList<InternalDistributedMember>(lastView.getMembers());
-    newMbrs.removeAll(failedMembers);
-    NetView newView = new NetView(members[0], 5, newMbrs, empty, failedMembers);
-    
-    int failedWeight = newView.getCrashedMemberWeight(lastView);
-//    System.out.println("last view = " + lastView);
-//    System.out.println("failed mbrs = " + failedMembers);
-//    System.out.println("failed weight = " + failedWeight);
-    assertEquals("failure weight calculation is incorrect", 10, failedWeight);
-    Set<InternalDistributedMember> actual = newView.getActualCrashedMembers(lastView);
-    assertTrue(!actual.contains(members[members.length-2]));
-  }
-  
+ 
 //  @Test
 //  public void testRepeat() throws Exception {
 //    for (int i=0; i<50; i++) {
@@ -291,6 +215,48 @@ public class MembershipJUnitTest {
         l.stop();
       }
     }
+  }
+  
+  @Test
+  public void testJoinTimeoutSetting() throws Exception {
+    long timeout = 30000;
+    Properties nonDefault = new Properties();
+    nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, ""+timeout);
+    DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
+    RemoteTransportConfig transport = new RemoteTransportConfig(config,
+        DistributionManager.NORMAL_DM_TYPE);
+    ServiceConfig sc = new ServiceConfig(transport, config);
+    assertEquals(2 * timeout + ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, sc.getJoinTimeout());
+    
+    nonDefault.clear();
+    config = new DistributionConfigImpl(nonDefault);
+    transport = new RemoteTransportConfig(config,
+        DistributionManager.NORMAL_DM_TYPE);
+    sc = new ServiceConfig(transport, config);
+    assertEquals(24000, sc.getJoinTimeout());
+    
+
+    nonDefault.clear();
+    nonDefault.put(DistributionConfig.LOCATORS_NAME, SocketCreator.getLocalHost().getHostAddress()+"["+12345+"]");
+    config = new DistributionConfigImpl(nonDefault);
+    transport = new RemoteTransportConfig(config,
+        DistributionManager.NORMAL_DM_TYPE);
+    sc = new ServiceConfig(transport, config);
+    assertEquals(60000, sc.getJoinTimeout());
+    
+
+    timeout = 2000;
+    System.setProperty("p2p.joinTimeout", ""+timeout);
+    try {
+      config = new DistributionConfigImpl(nonDefault);
+      transport = new RemoteTransportConfig(config,
+          DistributionManager.NORMAL_DM_TYPE);
+      sc = new ServiceConfig(transport, config);
+      assertEquals(timeout, sc.getJoinTimeout());
+    } finally {
+      System.getProperties().remove("p2p.joinTimeout");
+    }
+    
   }
 
   @Test

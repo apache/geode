@@ -25,9 +25,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 
+import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,16 +37,22 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.AdminMessageType;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.HighPriorityAckedMessage;
 import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.MembershipListener;
+import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
@@ -72,6 +80,7 @@ public class GMSMembershipManagerJUnitTest {
   private Services services;
   private ServiceConfig mockConfig;
   private DistributionConfig distConfig;
+  private Properties distProperties;
   private Authenticator authenticator;
   private HealthMonitor healthMonitor;
   private InternalDistributedMember myMemberId;
@@ -88,6 +97,8 @@ public class GMSMembershipManagerJUnitTest {
   @Before
   public void initMocks() throws Exception {
     Properties nonDefault = new Properties();
+    nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
+    nonDefault.put(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "10");
     nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
     nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
     nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
@@ -96,6 +107,7 @@ public class GMSMembershipManagerJUnitTest {
     nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
     distConfig = new DistributionConfigImpl(nonDefault);
+    distProperties = nonDefault;
     RemoteTransportConfig tconfig = new RemoteTransportConfig(distConfig,
         DistributionManager.NORMAL_DM_TYPE);
     
@@ -129,9 +141,13 @@ public class GMSMembershipManagerJUnitTest {
     Timer t = new Timer(true);
     when(services.getTimer()).thenReturn(t);
     
+    Random r = new Random();
     mockMembers = new InternalDistributedMember[5];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
+      GMSMember m = (GMSMember)mockMembers[i].getNetMember();
+      UUID uuid = new UUID(r.nextLong(), r.nextLong());
+      m.setUUID(uuid);
     }
     members = new ArrayList<>(Arrays.asList(mockMembers));
 
@@ -364,6 +380,64 @@ public class GMSMembershipManagerJUnitTest {
     Set<InternalDistributedMember> failures = manager.directChannelSend(null, m, null);
     assertTrue(failures == null);
     verify(dc).send(isA(GMSMembershipManager.class), isA(mockMembers.getClass()), isA(DistributionMessage.class), anyInt(), anyInt());
+  }
+  
+  /**
+   * This test ensures that the membership manager can accept an ID that
+   * does not have a UUID and replace it with one that does have a UUID
+   * from the current membership view.
+   */
+  @Test
+  public void testAddressesWithoutUUIDs() throws Exception {
+    manager.start();
+    manager.started();
+    manager.isJoining = true;
+
+    List<InternalDistributedMember> viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], mockMembers[1], myMemberId});
+    manager.installView(new NetView(myMemberId, 2, viewmembers, emptyMembersSet, emptyMembersSet));
+    
+    InternalDistributedMember[] destinations = new InternalDistributedMember[viewmembers.size()];
+    for (int i=0; i<destinations.length; i++) {
+      InternalDistributedMember id = viewmembers.get(i);
+      destinations[i] = new InternalDistributedMember(id.getHost(), id.getPort());
+    }
+    manager.checkAddressesForUUIDs(destinations);
+    // each destination w/o a UUID should have been replaced with the corresponding
+    // ID from the membership view
+    for (int i=0; i<destinations.length; i++) {
+      assertTrue(viewmembers.get(i) == destinations[i]);
+    }
+  }
+  
+  @Test
+  public void testReplyProcessorInitiatesSuspicion() throws Exception {
+    DM dm = mock(DM.class);
+    DMStats stats = mock(DMStats.class);
+    
+    InternalDistributedSystem system = InternalDistributedSystem.newInstanceForTesting(dm, distProperties);
+
+    when(dm.getStats()).thenReturn(stats);
+    when(dm.getSystem()).thenReturn(system);
+    when(dm.getCancelCriterion()).thenReturn(stopper);
+    when(dm.getMembershipManager()).thenReturn(manager);
+    when(dm.getViewMembers()).thenReturn(members);
+    when(dm.getDistributionManagerIds()).thenReturn(new HashSet(members));
+    when(dm.addMembershipListenerAndGetDistributionManagerIds(any(MembershipListener.class))).thenReturn(new HashSet(members));
+    
+    manager.start();
+    manager.started();
+    manager.isJoining = true;
+
+    List<InternalDistributedMember> viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], mockMembers[1], myMemberId});
+    manager.installView(new NetView(myMemberId, 2, viewmembers, emptyMembersSet, emptyMembersSet));
+
+    List<InternalDistributedMember> mbrs = new ArrayList<>(1);
+    mbrs.add(mockMembers[0]);
+    ReplyProcessor21 rp = new ReplyProcessor21(dm, mbrs);
+    rp.enableSevereAlertProcessing();
+    boolean result = rp.waitForReplies(2000);
+    assertFalse(result);  // the wait should have timed out
+    verify(healthMonitor, atLeastOnce()).checkIfAvailable(isA(InternalDistributedMember.class), isA(String.class), isA(Boolean.class));
   }
   
 }

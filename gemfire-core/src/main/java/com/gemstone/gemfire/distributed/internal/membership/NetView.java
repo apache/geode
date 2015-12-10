@@ -230,6 +230,10 @@ public class NetView implements DataSerializableFixedID {
     this.crashedMembers.addAll(mbr);
   }
 
+  public void addShutdownMembers(Set<InternalDistributedMember> mbr) {
+    this.shutdownMembers.addAll(mbr);
+  }
+
   public boolean remove(InternalDistributedMember mbr) {
     this.hashedMembers.remove(mbr);
     int idx = this.members.indexOf(mbr);
@@ -517,6 +521,21 @@ public class NetView implements DataSerializableFixedID {
 //    }
     sb.append("]");
     return sb.toString();
+  }
+  
+  /**
+   * Returns the ID from this view that is equal to the argument.
+   * If no such ID exists the argument is returned.
+   */
+  public synchronized InternalDistributedMember getCanonicalID(InternalDistributedMember id) {
+    if (hashedMembers.contains(id)) {
+      for (InternalDistributedMember m: this.members) {
+        if (id.equals(m)) {
+          return m;
+        }
+      }
+    }
+    return id;
   }
 
   @Override
