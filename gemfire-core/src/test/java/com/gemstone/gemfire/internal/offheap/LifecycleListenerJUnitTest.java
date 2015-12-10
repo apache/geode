@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -34,14 +37,13 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * @author Kirk Lund
  */
 @Category(UnitTest.class)
-public class SimpleMemoryAllocatorLifecycleListenerJUnitTest {
-  
+public class LifecycleListenerJUnitTest {
+
   private final List<LifecycleListenerCallback> afterCreateCallbacks = new ArrayList<LifecycleListenerCallback>();
   private final List<LifecycleListenerCallback> afterReuseCallbacks = new ArrayList<LifecycleListenerCallback>();
   private final List<LifecycleListenerCallback> beforeCloseCallbacks = new ArrayList<LifecycleListenerCallback>();
-  private final TestLifecycleListener listener = new TestLifecycleListener(
-      this.afterCreateCallbacks, this.afterReuseCallbacks, this.beforeCloseCallbacks);
-  
+  private final TestLifecycleListener listener = new TestLifecycleListener(this.afterCreateCallbacks, this.afterReuseCallbacks, this.beforeCloseCallbacks);
+
   @After
   public void tearDown() throws Exception {
     LifecycleListener.removeLifecycleListener(this.listener);
@@ -57,88 +59,161 @@ public class SimpleMemoryAllocatorLifecycleListenerJUnitTest {
     LifecycleListener.removeLifecycleListener(this.listener);
 
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
-    SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+    SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(),
+        new UnsafeMemoryChunk[] { slab });
 
     Assert.assertEquals(0, this.afterCreateCallbacks.size());
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
     Assert.assertEquals(0, this.beforeCloseCallbacks.size());
-    
+
     ma.close();
 
     Assert.assertEquals(0, this.afterCreateCallbacks.size());
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
     Assert.assertEquals(0, this.beforeCloseCallbacks.size());
+
+    LifecycleListener.removeLifecycleListener(this.listener);
   }
-  
+
   @Test
   public void testCallbacksAreCalledAfterCreate() {
     LifecycleListener.addLifecycleListener(this.listener);
-    
+    // saj
+    System.getProperties().put("gemfire.free-off-heap-memory", "true");
+    // saj above
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
-    SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{slab});
+    SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(),
+        new UnsafeMemoryChunk[] { slab });
 
     Assert.assertEquals(1, this.afterCreateCallbacks.size());
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
     Assert.assertEquals(0, this.beforeCloseCallbacks.size());
-    
+
     ma.close();
-    
+
     Assert.assertEquals(1, this.afterCreateCallbacks.size());
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
     Assert.assertEquals(1, this.beforeCloseCallbacks.size());
+    
+    LifecycleListener.removeLifecycleListener(this.listener);
+  }
+
+  @Test
+  public void testCallbacksAreCalledAfterReuse() {
+
+    LifecycleListener.addLifecycleListener(this.listener);
+
+    System.getProperties().put("gemfire.free-off-heap-memory", "false");
+
+    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
+    SimpleMemoryAllocatorImpl ma = createAllocator(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[] { slab });
+
+    Assert.assertEquals(1, this.afterCreateCallbacks.size());
+    Assert.assertEquals(0, this.afterReuseCallbacks.size());
+    Assert.assertEquals(0, this.beforeCloseCallbacks.size());
+
+    ma.close();
+
+    Assert.assertEquals(1, this.afterCreateCallbacks.size());
+    Assert.assertEquals(0, this.afterReuseCallbacks.size());
+    Assert.assertEquals(1, this.beforeCloseCallbacks.size());
+
+    ma = createAllocator(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), null);
+
+    Assert.assertEquals(1, this.afterCreateCallbacks.size());
+    Assert.assertEquals(1, this.afterReuseCallbacks.size());
+    Assert.assertEquals(1, this.beforeCloseCallbacks.size());
+
+    SimpleMemoryAllocatorImpl ma2 = createAllocator(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[] { slab });
+    assertEquals(null, ma2);
+    
+    Assert.assertEquals(1, this.afterCreateCallbacks.size());
+    Assert.assertEquals(1, this.afterReuseCallbacks.size());
+    Assert.assertEquals(1, this.beforeCloseCallbacks.size());
+
+    ma.close();
+
+    Assert.assertEquals(1, this.afterCreateCallbacks.size());
+    Assert.assertEquals(1, this.afterReuseCallbacks.size());
+    Assert.assertEquals(2, this.beforeCloseCallbacks.size());
+  }
+
+  private SimpleMemoryAllocatorImpl createAllocator(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats ohms, UnsafeMemoryChunk[] slab) {
+    try {
+       return SimpleMemoryAllocatorImpl.create(ooohml, ohms, slab);
+    } catch (IllegalStateException e) {
+      return null;
+    }
   }
   
+  @Test
+  public void testCallbacksAreCalledAfterReuseWithFreeTrue() {
+
+    LifecycleListener.addLifecycleListener(this.listener);
+
+    System.getProperties().put("gemfire.free-off-heap-memory", "true");
+
+    UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
+    SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[] { slab });
+
+    Assert.assertEquals(1, this.afterCreateCallbacks.size());
+    Assert.assertEquals(0, this.afterReuseCallbacks.size());
+    Assert.assertEquals(0, this.beforeCloseCallbacks.size());
+
+    ma.close();
+
+    Assert.assertEquals(1, this.afterCreateCallbacks.size());
+    Assert.assertEquals(0, this.afterReuseCallbacks.size());
+    Assert.assertEquals(1, this.beforeCloseCallbacks.size());
+
+    slab = new UnsafeMemoryChunk(1024); // 1k
+    SimpleMemoryAllocatorImpl ma2 = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[] { slab });
+
+    Assert.assertEquals(2, this.afterCreateCallbacks.size());
+    Assert.assertEquals(0, this.afterReuseCallbacks.size());
+    Assert.assertEquals(1, this.beforeCloseCallbacks.size());
+
+    ma.close();
+
+    Assert.assertEquals(2, this.afterCreateCallbacks.size());
+    Assert.assertEquals(0, this.afterReuseCallbacks.size());
+    Assert.assertEquals(2, this.beforeCloseCallbacks.size());
+  }
+
   static final class LifecycleListenerCallback {
     private final SimpleMemoryAllocatorImpl allocator;
     private final long timeStamp;
     private final Throwable creationTime;
+
     LifecycleListenerCallback(SimpleMemoryAllocatorImpl allocator) {
       this.allocator = allocator;
       this.timeStamp = System.currentTimeMillis();
       this.creationTime = new Exception();
     }
-    SimpleMemoryAllocatorImpl getAllocator() {
-      return this.allocator;
-    }
-    Throwable getStackTrace() {
-      return this.creationTime;
-    }
-    long getCreationTime() {
-      return this.timeStamp;
-    }
-    @Override
-    public String toString() {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-      pw.print(new StringBuilder().
-          append(super.toString()).
-          append(" created at ").
-          append(this.timeStamp).
-          append(" by ").toString());
-      this.creationTime.printStackTrace(pw);
-      return sw.toString();
-    }
   }
-  
+
   static class TestLifecycleListener implements LifecycleListener {
     private final List<LifecycleListenerCallback> afterCreateCallbacks;
     private final List<LifecycleListenerCallback> afterReuseCallbacks;
     private final List<LifecycleListenerCallback> beforeCloseCallbacks;
-    TestLifecycleListener(List<LifecycleListenerCallback> afterCreateCallbacks,
-        List<LifecycleListenerCallback> afterReuseCallbacks,
+
+    TestLifecycleListener(List<LifecycleListenerCallback> afterCreateCallbacks, List<LifecycleListenerCallback> afterReuseCallbacks,
         List<LifecycleListenerCallback> beforeCloseCallbacks) {
       this.afterCreateCallbacks = afterCreateCallbacks;
       this.afterReuseCallbacks = afterReuseCallbacks;
       this.beforeCloseCallbacks = beforeCloseCallbacks;
     }
+
     @Override
     public void afterCreate(SimpleMemoryAllocatorImpl allocator) {
       this.afterCreateCallbacks.add(new LifecycleListenerCallback(allocator));
     }
+
     @Override
     public void afterReuse(SimpleMemoryAllocatorImpl allocator) {
       this.afterReuseCallbacks.add(new LifecycleListenerCallback(allocator));
     }
+
     @Override
     public void beforeClose(SimpleMemoryAllocatorImpl allocator) {
       this.beforeCloseCallbacks.add(new LifecycleListenerCallback(allocator));

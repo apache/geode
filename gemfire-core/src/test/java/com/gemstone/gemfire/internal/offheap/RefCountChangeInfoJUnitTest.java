@@ -43,65 +43,92 @@ public class RefCountChangeInfoJUnitTest {
     String notOwner1 = new String("notInfo1");
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
+    RefCountChangeInfo refInfo2 = new RefCountChangeInfo(true, 1, notOwner1);
 
     assertEquals(owner1, refInfo1.getOwner());
-
-    try {
-      assertEquals(owner1, notOwner1);
-      fail("Expected owner1 != notOwner1");
-    } catch (AssertionError e) {
-      // Ignore expected error
-    }
+    assertEquals(notOwner1, refInfo2.getOwner());
+    assertFalse(refInfo1.getOwner().equals(refInfo2.getOwner()));
 
   }
 
   @Test
-  public void testGetDupCount() {
+  public void testNullOwner() {
+
+    String owner1 = null;
+    String notOwner1 = new String("notInfo1");
+
+    RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
+    RefCountChangeInfo refInfo2 = new RefCountChangeInfo(true, 1, notOwner1);
+    assertFalse(isOwnerNull(refInfo2.getOwner()));
+    assertTrue(hasStringLit(refInfo2.toString(), " owner="));
+
+    assertEquals(owner1, refInfo1.getOwner());
+    assertEquals(notOwner1, refInfo2.getOwner());
+    assertTrue(isOwnerNull(refInfo1.getOwner()));
+    assertFalse(hasStringLit(refInfo1.toString(), " owner="));
+
+  }
+
+  private boolean isOwnerNull(Object own1) {
+    return own1 == null;
+  }
+  
+  private boolean hasStringLit(String str, String has) {
+    if(str.indexOf(has) == -1) return false;
+    return true;
+  }
+  
+  @Test
+  public void testGetUseCount() {
 
     String owner1 = new String("Info1");
     String owner2 = new String("Info2");
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
-    assertEquals(0, refInfo1.getDupCount());
+    assertEquals(0, refInfo1.getUseCount());
 
     RefCountChangeInfo refInfo2 = new RefCountChangeInfo(true, 1, owner1);
-    assertTrue(refInfo1.isDuplicate(refInfo2));
-    assertEquals(1, refInfo1.getDupCount());
+    assertTrue(refInfo1.isSameCaller(refInfo2));
+    refInfo1.incUseCount();
+    assertEquals(1, refInfo1.getUseCount());
 
     // owner not used in isDup
     RefCountChangeInfo refInfo3 = new RefCountChangeInfo(true, 1, owner2);
-    assertTrue(refInfo1.isDuplicate(refInfo3));
-    assertEquals(2, refInfo1.getDupCount());
+    assertTrue(refInfo1.isSameCaller(refInfo3));
+    refInfo1.incUseCount();
+    assertEquals(2, refInfo1.getUseCount());
 
     RefCountChangeInfo refInfo4 = new RefCountChangeInfo(false, 1, owner2);
-    assertFalse(refInfo1.isDuplicate(refInfo4));
-    assertEquals(2, refInfo1.getDupCount());
+    assertFalse(refInfo1.isSameCaller(refInfo4));
+    assertEquals(2, refInfo1.getUseCount());
 
   }
 
   @Test
-  public void testDecDupCount() {
+  public void testDecUseCount() {
 
     String owner1 = new String("Info1");
     String owner2 = new String("Info2");
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
-    assertEquals(0, refInfo1.getDupCount());
+    assertEquals(0, refInfo1.getUseCount());
 
     RefCountChangeInfo refInfo2 = new RefCountChangeInfo(true, 1, owner1);
-    assertTrue(refInfo1.isDuplicate(refInfo2));
-    assertEquals(1, refInfo1.getDupCount());
+    assertTrue(refInfo1.isSameCaller(refInfo2));
+    refInfo1.incUseCount();
+    assertEquals(1, refInfo1.getUseCount());
 
-    // owner not used in isDuplicate check
+    // owner not used in isSameCaller check
     RefCountChangeInfo refInfo3 = new RefCountChangeInfo(true, 1, owner2);
-    assertTrue(refInfo1.isDuplicate(refInfo3));
-    assertEquals(2, refInfo1.getDupCount());
+    assertTrue(refInfo1.isSameCaller(refInfo3));
+    refInfo1.incUseCount();
+    assertEquals(2, refInfo1.getUseCount());
 
-    refInfo1.decDupCount();
-    assertEquals(1, refInfo1.getDupCount());
+    refInfo1.decUseCount();
+    assertEquals(1, refInfo1.getUseCount());
 
-    refInfo1.decDupCount();
-    assertEquals(0, refInfo1.getDupCount());
+    refInfo1.decUseCount();
+    assertEquals(0, refInfo1.getUseCount());
 
   }
 
@@ -116,44 +143,65 @@ public class RefCountChangeInfoJUnitTest {
     assertEquals(refInfo1.toString(), refInfo2.toString());
 
     RefCountChangeInfo refInfo3 = new RefCountChangeInfo(false, 1, owner1);
-    try {
-      assertEquals(refInfo1.toString(), refInfo3.toString());
-      fail("expected refInfo1.toString() != refInfo3.toString()");
-    } catch (AssertionError e) {
-      // ignore expected IllegalArgumentException
-    }
+    assertFalse(refInfo1.toString().equals(refInfo3.toString()));
 
     RefCountChangeInfo refInfo4 = new RefCountChangeInfo(true, 2, owner1);
-    try {
-      assertEquals(refInfo1.toString(), refInfo4.toString());
-      fail("expected refInfo1.toString() != refInfo4.toString()");
-    } catch (AssertionError e) {
-      // ignore expected IllegalArgumentException
-    }
+    assertFalse(refInfo1.toString().equals(refInfo4.toString()));
 
   }
 
   @Test
-  public void testIsDuplicate() {
+  public void testisSameCaller() {
 
     String owner1 = new String("Info1");
     String owner2 = new String("Info2");
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
-    assertEquals(0, refInfo1.getDupCount());
+    assertEquals(0, refInfo1.getUseCount());
 
     RefCountChangeInfo refInfo2 = new RefCountChangeInfo(true, 1, owner1);
-    assertTrue(refInfo1.isDuplicate(refInfo2));
-    assertEquals(1, refInfo1.getDupCount());
+    assertTrue(refInfo1.isSameCaller(refInfo2));
+    refInfo1.incUseCount();
+    assertEquals(1, refInfo1.getUseCount());
+    String str = refInfo1.toString();
+    str = refInfo1.toString();
+    
+    assertTrue(hasStringLit(refInfo1.toString(), " useCount=1"));
+
 
     RefCountChangeInfo refInfo3 = new RefCountChangeInfo(false, 1, owner1);
-    assertFalse(refInfo1.isDuplicate(refInfo3));
-    assertEquals(1, refInfo1.getDupCount());
-
+    assertFalse(refInfo1.isSameCaller(refInfo3));
+    assertEquals(1, refInfo1.getUseCount());
+    
     RefCountChangeInfo refInfo4 = new RefCountChangeInfo(true, 1, owner2);
-    assertTrue(refInfo1.isDuplicate(refInfo4));
-    assertEquals(2, refInfo1.getDupCount());
+    assertTrue(refInfo1.isSameCaller(refInfo4));
+    refInfo1.incUseCount();
+    assertEquals(2, refInfo1.getUseCount());
+
+    assertTrue(hasStringLit(refInfo1.toString(), " useCount=2"));
+    
+    refInfo1.setStackTraceString("not_the_same");
+    assertFalse(refInfo1.isSameCaller(refInfo4));
+    assertEquals(2, refInfo1.getUseCount());
+    refInfo1.setStackTraceString(null);
+
+    refInfo1.setStackTraceString(new SameHashDifferentTrace());
+    refInfo4.setStackTraceString(new SameHashDifferentTrace());
+    assertFalse(refInfo1.isSameCaller(refInfo4));
+    assertEquals(2, refInfo1.getUseCount());
 
   }
+
+  class SameHashDifferentTrace {
+
+    public int hashCode() { 
+      return 1; 
+    }
+
+    public boolean equals(Object notused) { 
+      return false; 
+    }
+  }
+  
 
 }

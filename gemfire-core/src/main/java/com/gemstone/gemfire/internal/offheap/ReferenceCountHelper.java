@@ -170,6 +170,7 @@ public class ReferenceCountHelper {
   /**
    * Used internally to report that a reference count has changed.
    */
+  
   static void refCountChanged(Long address, boolean decRefCount, int rc) {
     final Object owner = refCountOwner.get();
     if (owner == SKIP_REF_COUNT_TRACKING) {
@@ -193,16 +194,16 @@ public class ReferenceCountHelper {
             if (owner instanceof RegionEntry) {
               // use identity comparison on region entries since sqlf does some wierd stuff in the equals method
               if (owner == info.getOwner()) {
-                if (info.getDupCount() > 0) {
-                  info.decDupCount();
+                if (info.getUseCount() > 0) {
+                  info.decUseCount();
                 } else {
                   list.remove(i);
                 }
                 return;
               }
             } else if (owner.equals(info.getOwner())) {
-              if (info.getDupCount() > 0) {
-                info.decDupCount();
+              if (info.getUseCount() > 0) {
+                info.decUseCount();
               } else {
                 list.remove(i);
               }
@@ -223,8 +224,9 @@ public class ReferenceCountHelper {
       //        list.clear();
       //      }
       for (RefCountChangeInfo e: list) {
-        if (e.isDuplicate(info)) {
-          // No need to add it
+        if (e.isSameCaller(info)) {
+          // No need to add it just increment useCount
+          e.incUseCount();
           return;
         }
       }
