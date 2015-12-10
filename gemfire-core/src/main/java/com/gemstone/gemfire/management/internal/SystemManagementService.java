@@ -527,12 +527,11 @@ public final class SystemManagementService extends BaseManagementService {
         federatingManager.stopManager();
         system.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
         getGemFireCacheImpl().getJmxManagerAdvisor().broadcastChange();
-        if (this.agent != null && this.agent.isRunning()) {
+        if (this.agent != null && (this.agent.isRunning() || this.agent.isHttpServiceRunning())) {
           this.agent.stopAgent();
         }
       }
     }
-
   }
 
   @Override
