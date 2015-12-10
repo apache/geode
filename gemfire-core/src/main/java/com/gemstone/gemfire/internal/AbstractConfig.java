@@ -204,10 +204,6 @@ public abstract class AbstractConfig implements Config {
   }
   
   private boolean okToDisplayPropertyValue(String attName) {
-    if (AbstractDistributionConfig.isWellKnownAttribute(attName)) {
-      // it is always ok to display the well know attributes
-      return true;
-    }
     if (attName.startsWith(DistributionConfig.SECURITY_PREFIX_NAME)) {
       return false;
     }
