@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE acl PUBLIC "-//GemStone Systems, Inc.//GemFire XML Authorization 1.0//EN"
+              "authz5_5.dtd" >
+<acl>
+
+  <role name="reader">
+    <user>gemfire1</user>
+    <user>gemfire2</user>
+    <user>gemfire3</user>
+    <user>gemfire4</user>
+    <user>gemfire5</user>
+  </role>
+
+  <role name="writer">
+    <user>gemfire1</user>
+    <user>gemfire2</user>
+    <user>gemfire6</user>
+    <user>gemfire7</user>
+    <user>gemfire8</user>
+  </role>
+
+  <role name="cacheOps">
+    <user>gemfire1</user>
+    <user>gemfire2</user>
+  </role>
+
+  <role name="queryRegions">
+    <user>gemfire9</user>
+    <user>gemfire10</user>
+  </role>
+
+  <permission role="cacheOps">
+    <operation>QUERY</operation>
+    <operation>EXECUTE_CQ</operation>
+    <operation>STOP_CQ</operation>
+    <operation>CLOSE_CQ</operation>
+    <operation>REGION_CREATE</operation>
+    <operation>REGION_DESTROY</operation>
+  </permission>
+
+  <permission role="reader">
+    <operation>GET</operation>
+    <operation>REGISTER_INTEREST</operation>
+    <operation>UNREGISTER_INTEREST</operation>
+    <operation>KEY_SET</operation>
+    <operation>CONTAINS_KEY</operation>
+    <operation>EXECUTE_FUNCTION</operation>
+  </permission>
+
+  <permission role="writer">
+    <operation>PUT</operation>
+    <operation>PUTALL</operation>
+    <operation>DESTROY</operation>
+    <operation>INVALIDATE</operation>
+    <operation>REGION_CLEAR</operation>
+  </permission>
+
+  <permission role="queryRegions" regions="Portfolios,/Positions//,/AuthRegion">
+    <operation>QUERY</operation>
+    <operation>EXECUTE_CQ</operation>
+    <operation>STOP_CQ</operation>
+    <operation>CLOSE_CQ</operation>
+  </permission>
+
+</acl>
