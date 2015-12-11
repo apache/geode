@@ -39,7 +39,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.GemFireConfigException;
@@ -2366,17 +2365,18 @@ public class GMSMembershipManager implements MembershipManager, Manager
   /* non-thread-owned serial channels and high priority channels are not
    * included
    */
-  public Map getChannelStates(DistributedMember member, boolean includeMulticast) {
-    HashMap result = new HashMap();
+  public Map getMessageState(DistributedMember member, boolean includeMulticast) {
+    Map result = new HashMap();
     Stub stub = (Stub)memberToStubMap.get(member);
     DirectChannel dc = directChannel;
     if (stub != null && dc != null) {
       dc.getChannelStates(stub, result);
     }
+    services.getMessenger().getMessageState((InternalDistributedMember)member, result, includeMulticast);
     return result;
   }
 
-  public void waitForChannelState(DistributedMember otherMember, Map channelState)
+  public void waitForMessageState(DistributedMember otherMember, Map state)
     throws InterruptedException
   {
     if (Thread.interrupted()) throw new InterruptedException();
@@ -2389,15 +2389,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
       latestViewLock.writeLock().unlock();
     }
     if (dc != null && stub != null) {
-      dc.waitForChannelState(stub, channelState);
+      dc.waitForChannelState(stub, state);
     }
-//    Long mcastState = (Long)channelState.remove("JGroups.MCast");
-//    if (mcastState != null) {
-//      InternalDistributedMember idm = (InternalDistributedMember)otherMember;
-//      GMSMember jgm = (GMSMember)idm.getNetMember();
-//      Address other = jgm.getAddress();
-//      gms.waitForMulticastState(other, mcastState.longValue());
-//    }
+    services.getMessenger().waitForMessageState((InternalDistributedMember)otherMember, state);
   }
   
   /* 

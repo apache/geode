@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
+import java.util.Map;
 import java.util.Set;
 
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -56,4 +57,25 @@ public interface Messenger extends Service {
    * @return true multicast is enabled and working
    */
   boolean testMulticast(long timeout) throws InterruptedException;
+
+  /**
+   * For the state-flush algorithm we need to be able to record
+   * the state of outgoing messages to the given member.  If multicast
+   * is being used for region operations we also need to record its
+   * state.
+   * 
+   * @param member the target member
+   * @param state messaging state is stored in this map
+   * @param includeMulticast whether to record multicast state
+   */
+  void getMessageState(InternalDistributedMember member, Map state, boolean includeMulticast);
+  
+  /**
+   * The flip-side of getMessageState, this method takes the state it recorded
+   * and waits for messages from the given member to be received.
+   * 
+   * @param member the member flushing operations to this member
+   * @param state the state of that member's outgoing messaging to this member
+   */
+  void waitForMessageState(InternalDistributedMember member, Map state) throws InterruptedException;
 }

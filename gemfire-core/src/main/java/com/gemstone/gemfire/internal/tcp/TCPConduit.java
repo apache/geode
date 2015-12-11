@@ -808,7 +808,7 @@ public class TCPConduit implements Runnable {
    */
   public void getThreadOwnedOrderedConnectionState(
     Stub member,
-    HashMap result)
+    Map result)
   {
     getConTable().getThreadOwnedOrderedConnectionState(member, result);
   }

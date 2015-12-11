@@ -177,30 +177,30 @@ public interface MembershipManager {
   public boolean shutdownInProgress();
 
   /**
-   * Returns a serializable map of communication channel state for
+   * Returns a serializable map of communications state for
    * use in state stabilization.
    * @param member
-   *    the member whose channel state is to be captured
+   *    the member whose message state is to be captured
    * @param includeMulticast
-   *    whether the state of the mcast channel should be included
+   *    whether the state of the mcast messaging should be included
    * @return the current state of the communication channels between this
    *    process and the given distributed member
    * @since 5.1
    */
-  public Map getChannelStates(DistributedMember member, boolean includeMulticast);
+  public Map getMessageState(DistributedMember member, boolean includeMulticast);
 
   /**
-   * Waits for the given communication channels to reach the associated
+   * Waits for the given communications to reach the associated
    * state
    * @param member
-   *    The member whose channel state we're waiting for
-   * @param channelState
-   *    The channel states to wait for.  This should come from getChannelStates
+   *    The member whose messaging state we're waiting for
+   * @param state
+   *    The message states to wait for.  This should come from getMessageStates
    * @throws InterruptedException
    *    Thrown if the thread is interrupted
    * @since 5.1
    */
-  public void waitForChannelState(DistributedMember member, Map channelState)
+  public void waitForMessageState(DistributedMember member, Map state)
     throws InterruptedException;
   
   /**

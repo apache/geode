@@ -26,15 +26,20 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.SerializationException;
+import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.UNICAST3;
+import org.jgroups.protocols.pbcast.NAKACK2;
+import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Test;
@@ -682,9 +687,9 @@ public class JGroupsMessengerJUnitTest {
 
     interceptor.collectedMessages.clear();
     JGroupsReceiver receiver = (JGroupsReceiver)messenger.myChannel.getReceiver();
-    long pongsReceived = messenger.pongsReceived;
+    long pongsReceived = messenger.pongsReceived.longValue();
     receiver.receive(pongMessage);
-    assertEquals(pongsReceived+1, messenger.pongsReceived);
+    assertEquals(pongsReceived+1, messenger.pongsReceived.longValue());
     receiver.receive(pingMessage);
     assertEquals("expected 1 message but found " + interceptor.collectedMessages, interceptor.collectedMessages.size(), 1);
     Message m = interceptor.collectedMessages.get(0);
@@ -754,6 +759,61 @@ public class JGroupsMessengerJUnitTest {
     newMessenger.started();
     newMessenger.stop();
     assertTrue(newMessenger.myChannel == messenger.myChannel);
+  }
+  
+  @Test
+  public void testGetMessageState() throws Exception {
+    initMocks(true/*multicast*/);
+    messenger.testMulticast(50); // do some multicast messaging
+    NAKACK2 nakack = (NAKACK2)messenger.myChannel.getProtocolStack().findProtocol("NAKACK2");
+    assertNotNull(nakack);
+    long seqno = nakack.getCurrentSeqno();
+    Map state = new HashMap();
+    messenger.getMessageState(null, state, true);
+    assertEquals(1, state.size());
+    Long stateLong = (Long)state.values().iterator().next();
+    assertTrue("expected multicast state to be at least "+seqno+" but it was "+stateLong.longValue(),
+        stateLong.longValue() >= seqno);
+  }
+  
+  @Test
+  public void testGetMessageStateNoMulticast() throws Exception {
+    initMocks(false/*multicast*/);
+    Map state = new HashMap();
+    messenger.getMessageState(null, state, true);
+    assertEquals("expected an empty map but received " + state, 0, state.size());
+  }
+  
+  @Test
+  public void testWaitForMessageState() throws Exception {
+    initMocks(true/*multicast*/);
+    NAKACK2 nakack = mock(NAKACK2.class);
+    Digest digest = mock(Digest.class);
+    when(nakack.getDigest(any(Address.class))).thenReturn(digest);
+    when(digest.get(any(Address.class))).thenReturn(
+        new long[] {0,0}, new long[] {2, 50}, new long[] {49, 50}, new long[] {50, 80}, new long[] {80, 120});
+    messenger.waitForMessageState(nakack, createAddress(1234), Long.valueOf(50));
+    verify(digest, times(4)).get(isA(Address.class));
+    
+    reset(digest);
+    when(digest.get(any(Address.class))).thenReturn(
+        new long[] {0,0}, new long[] {2, 50}, null);
+    messenger.waitForMessageState(nakack, createAddress(1234), Long.valueOf(50));
+    verify(digest, times(3)).get(isA(Address.class));
+    
+    // for code coverage let's invoke the other waitForMessageState method
+    Map state = new HashMap();
+    state.put("JGroups.mcastState", Long.valueOf(10L));
+    messenger.waitForMessageState(createAddress(1234), state);
+  }
+  
+
+  @Test
+  public void testMulticastTest() throws Exception {
+    initMocks(true);
+    boolean result = messenger.testMulticast(50);
+    // this shouldln't succeed
+    assertFalse(result);
   }
   
   /**

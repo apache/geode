@@ -19,20 +19,16 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
@@ -52,12 +49,12 @@ import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.Message.Flag;
 import org.jgroups.Message.TransientFlag;
-import org.jgroups.Receiver;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.ViewId;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.UDP;
+import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
@@ -97,6 +94,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
 public class JGroupsMessenger implements Messenger {
 
   private static final Logger logger = Services.getLogger();
@@ -109,7 +108,7 @@ public class JGroupsMessenger implements Messenger {
   /**
    * The location (in the product) of the mcast Jgroups config file.
    */
-  private static final String DEFAULT_JGROUPS_MCAST_CONFIG = "com/gemstone/gemfire/distributed/internal/membership/gms/messenger/jgroups-mcast.xml";
+  private static final String JGROUPS_MCAST_CONFIG_FILE_NAME = "com/gemstone/gemfire/distributed/internal/membership/gms/messenger/jgroups-mcast.xml";
 
   /** JG magic numbers for types added to the JG ClassConfigurator */
   public static final short JGROUPS_TYPE_JGADDRESS = 2000;
@@ -127,13 +126,11 @@ public class JGroupsMessenger implements Messenger {
   /** handlers that receive certain classes of messages instead of the Manager */
   Map<Class, MessageHandler> handlers = new ConcurrentHashMap<Class, MessageHandler>();
   
-  Object nakackDigest;
-
   private volatile NetView view;
 
   private GMSPingPonger pingPonger = new GMSPingPonger();
   
-  protected volatile long pongsReceived;
+  protected AtomicLong pongsReceived = new AtomicLong(0);
   
   /**
    * A set that contains addresses that we have logged JGroups IOExceptions for in the
@@ -151,6 +148,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void init(Services s) {
     this.services = s;
 
@@ -170,7 +168,7 @@ public class JGroupsMessenger implements Messenger {
 
     String r = null;
     if (transport.isMcastEnabled()) {
-      r = DEFAULT_JGROUPS_MCAST_CONFIG;
+      r = JGROUPS_MCAST_CONFIG_FILE_NAME;
     } else {
       r = DEFAULT_JGROUPS_TCP_CONFIG;
     }
@@ -248,6 +246,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void start() {
     // create the configuration XML string for JGroups
     String properties = this.jgStackConfig;
@@ -303,8 +302,8 @@ public class JGroupsMessenger implements Messenger {
       throw new SystemConnectException("unable to create jgroups channel", e);
     }
     
-    if (THROW_EXCEPTION_ON_START_HOOK) {
-      THROW_EXCEPTION_ON_START_HOOK = false;
+    if (JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK) {
+      JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
       throw new SystemConnectException("failing for test");
     }
     
@@ -490,7 +489,7 @@ public class JGroupsMessenger implements Messenger {
   
   @Override
   public boolean testMulticast(long timeout) throws InterruptedException {
-    long pongsSnapshot = pongsReceived;
+    long pongsSnapshot = pongsReceived.longValue();
     JGAddress dest = null;
     try {
       pingPonger.sendPingMessage(myChannel, jgAddress, dest);
@@ -500,10 +499,48 @@ public class JGroupsMessenger implements Messenger {
       return false;
     }
     long giveupTime = System.currentTimeMillis() + timeout;
-    while (pongsReceived == pongsSnapshot && System.currentTimeMillis() < giveupTime) {
+    while (pongsReceived.longValue() == pongsSnapshot && System.currentTimeMillis() < giveupTime) {
       Thread.sleep(100);
     }
-    return pongsReceived > pongsSnapshot;
+    return pongsReceived.longValue() > pongsSnapshot;
+  }
+  
+  @Override
+  public void getMessageState(InternalDistributedMember target, Map state, boolean includeMulticast) {
+    if (includeMulticast) {
+      NAKACK2 nakack = (NAKACK2)myChannel.getProtocolStack().findProtocol("NAKACK2");
+      if (nakack != null) {
+        long seqno = nakack.getCurrentSeqno();
+        state.put("JGroups.mcastState", Long.valueOf(seqno));
+      }
+    }
+  }
+  
+  @Override
+  public void waitForMessageState(InternalDistributedMember sender, Map state) throws InterruptedException {
+    NAKACK2 nakack = (NAKACK2)myChannel.getProtocolStack().findProtocol("NAKACK2");
+    Long seqno = (Long)state.get("JGroups.mcastState");
+    if (nakack != null && seqno != null) {
+      waitForMessageState(nakack, sender, seqno);
+    }
+  }
+  
+  /**
+   * wait for the mcast state from the given member to reach the given seqno 
+   */
+  protected void waitForMessageState(NAKACK2 nakack, InternalDistributedMember sender, Long seqno)
+    throws InterruptedException {
+    JGAddress jgSender = new JGAddress(sender);
+    Digest digest = nakack.getDigest(jgSender);
+    if (digest != null) {
+      for (;;) {
+        long[] senderSeqnos = digest.get(jgSender);
+        if (senderSeqnos == null || senderSeqnos[0] >= seqno.longValue()) {
+          break;
+        }
+        Thread.sleep(50);
+      }
+    }
   }
 
   @Override
@@ -985,7 +1022,7 @@ public class JGroupsMessenger implements Messenger {
         }
         return;
       } else if (pingPonger.isPongMessage(contents)) {
-        pongsReceived++;
+        pongsReceived.incrementAndGet();
         return;
       }
       

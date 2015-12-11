@@ -1080,7 +1080,7 @@ public class ConnectionTable  {
    * @since 5.1
    */
   protected void getThreadOwnedOrderedConnectionState(Stub member,
-      HashMap result) {
+      Map result) {
 
     ConcurrentMap cm = this.threadConnectionMap;
     if (cm != null) {

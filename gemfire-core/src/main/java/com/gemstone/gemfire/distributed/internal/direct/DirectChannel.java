@@ -962,7 +962,7 @@ public class DirectChannel {
    *    the map to add the state to
    * @since 5.1
    */
-  public void getChannelStates(Stub member, HashMap result)
+  public void getChannelStates(Stub member, Map result)
   {
     TCPConduit tc = this.conduit;
     if (tc != null) {

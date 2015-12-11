@@ -313,7 +313,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * @param coord
    * @return true if the attempt succeeded, false if it timed out
    */
-   boolean attemptToJoin() {
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="WA_NOT_IN_LOOP")
+  boolean attemptToJoin() {
     SearchState state = searchState;
 
     // send a join request to the coordinator and wait for a response
@@ -688,8 +689,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   boolean sendView(NetView view, List<InternalDistributedMember> newMembers, boolean preparing, ViewReplyProcessor rp) {
 
-    boolean isNetworkPartition = isNetworkPartition(view, false);
-    
     int id = view.getViewId();
     InstallViewMessage msg = new InstallViewMessage(view, services.getAuthenticator().getCredentials(this.localAddress), preparing);
     Set<InternalDistributedMember> recips = new HashSet<>(view.getMembers());
@@ -954,6 +953,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }    
 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="WA_NOT_IN_LOOP")
   boolean findCoordinatorFromView() {
     ArrayList<FindCoordinatorResponse> result;
     SearchState state = searchState;
@@ -1799,7 +1799,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
 
         // use the new view as the initial view
-        setInitialView(newView, newMembers, initialLeaving, initialRemovals);
+        synchronized(this) {
+          setInitialView(newView, newMembers, initialLeaving, initialRemovals);
+        }
       }
     }
 
