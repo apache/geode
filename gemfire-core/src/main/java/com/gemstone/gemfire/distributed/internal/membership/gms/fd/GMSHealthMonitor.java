@@ -86,12 +86,12 @@ import com.gemstone.gemfire.internal.Version;
  * to remove that member from view.
  * 
  * It has {@link #suspect(InternalDistributedMember, String)} api, which can be used
- * to initiate suspect processing for any member. First is checks whether member is
- * responding or not. Then it informs to probable coordinators to remove that member from
+ * to initiate suspect processing for any member. First is checks whether the member is
+ * responding or not. Then it informs probable coordinators to remove that member from
  * view.
  * 
  * It has {@link #checkIfAvailable(DistributedMember, String, boolean)} api to see
- * if that member is alive. Then based on removal flag it initiate the suspect processing
+ * if that member is alive. Then based on removal flag it initiates the suspect processing
  * for that member.
  * 
  * */
@@ -157,9 +157,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private ScheduledExecutorService scheduler;
 
   private ExecutorService checkExecutor;
-
-//  List<SuspectRequest> suspectRequests = new ArrayList<SuspectRequest>();
-//  private RequestCollector<SuspectRequest> suspectRequestCollectorThread;
 
   /**
    * to stop check scheduler
@@ -462,17 +459,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
     return false;
   }
-
-  /**
-   * Check for recent messaging activity from the given member
-   * @param suspectMember
-   * @return whether there has been activity within memberTimeout ms
-   */
-  private boolean checkRecentActivity(InternalDistributedMember suspectMember) {
-    TimeStamp ts = memberTimeStamps.get(suspectMember);
-    return (ts != null && (System.currentTimeMillis() - ts.getTime()) <= memberTimeout);
-  }
-  
 
   /**
    * During final check, establish TCP connection between current member and suspect member.
@@ -1236,100 +1222,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public int getFailureDetectionPort() {
     return this.socketPort;
-  }
-
-  interface Callback<T> {
-    public void process(List<T> requests);
-  }
-
-  /***
-   * this thread will collect suspect message for some time interval
-   * then it send message to current coordinator first if its not in
-   * suspected list. if its in then it will send message to next probable
-   * coordinator. NOTE: this thread will not check-server for verification
-   * assuming many servers are going down and lets coordinator deals with it.
-   * 
-   * Should we wait for ack from coordinator/probable coordinator that I got
-   * request to suspect these members.
-   * 
-   */
-  class RequestCollector<T> extends Thread {
-    volatile boolean shutdown = false;
-    final List<T> listToTrack;
-    final Callback<T> callback;
-    final long timeout;
-
-    public RequestCollector(String name, ThreadGroup tg, List<T> l, Callback<T> c, long t) {
-      super(tg, name);
-      listToTrack = l;
-      callback = c;
-      timeout = t;
-    }
-
-    void shutdown() {
-      shutdown = true;
-      synchronized (listToTrack) {
-        listToTrack.notify();
-        interrupt();
-      }
-    }
-
-    boolean isShutdown() {
-      return shutdown;
-    }
-
-    @Override
-    public void run() {
-      List<T> requests = null;
-      logger.debug("Suspect thread is starting");
-      long okayToSendSuspectRequest = System.currentTimeMillis() + timeout;
-      try {
-        for (;;) {
-          synchronized (listToTrack) {
-            if (shutdown || services.getCancelCriterion().isCancelInProgress()) {
-              return;
-            }
-            if (listToTrack.isEmpty()) {
-              try {
-                logger.trace("Result collector is waiting");
-                listToTrack.wait();
-              } catch (InterruptedException e) {
-                return;
-              }
-            } else {
-              long now = System.currentTimeMillis();
-              if (now < okayToSendSuspectRequest) {
-                // sleep to let more suspect requests arrive
-                try {
-                  sleep(okayToSendSuspectRequest - now);
-                  continue;
-                } catch (InterruptedException e) {
-                  return;
-                }
-              } else {
-                if (requests == null) {
-                  requests = new ArrayList<T>(listToTrack);
-                } else {
-                  requests.addAll(listToTrack);
-                }
-                listToTrack.clear();
-                okayToSendSuspectRequest = System.currentTimeMillis() + timeout;
-              }
-            }
-          } // synchronized
-          if (requests != null && !requests.isEmpty()) {
-            if (logger != null && logger.isDebugEnabled()) {
-              logger.info("Health Monitor is sending {} member suspect requests to coordinator", requests.size());
-            }
-            callback.process(requests);
-            requests = null;
-          }
-        }
-      } finally {
-        shutdown = true;
-        logger.debug("Suspect thread is stopped");
-      }
-    }
   }
 
   private void sendSuspectRequest(final List<SuspectRequest> requests) {

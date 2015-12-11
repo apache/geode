@@ -20,7 +20,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +46,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -407,25 +413,33 @@ public class GMSHealthMonitorJUnitTest {
    * validates HealthMonitor.CheckIfAvailable api
    */
   @Test
-  public void testCheckIfAvailable() {
-
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers, new HashSet<InternalDistributedMember>(), new HashSet<InternalDistributedMember>());
-
-    // 3rd is current member
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-
-    gmsHealthMonitor.installView(v);
-
+  public void testCheckIfAvailableNoHeartBeatDontRemoveMember() {
     long startTime = System.currentTimeMillis();
-
     boolean retVal = gmsHealthMonitor.checkIfAvailable(mockMembers.get(1), "Not responding", false);
-
     long timeTaken = System.currentTimeMillis() - startTime;
 
-    assertTrue("This should have taken member ping timeout 100ms ", timeTaken > 90);
-    assertTrue("CheckIfAvailable should have return false", !retVal);
+    assertTrue("This should have taken member ping timeout 100ms ", timeTaken >= gmsHealthMonitor.memberTimeout);
+    assertFalse("CheckIfAvailable should have return false", retVal);
   }
 
+  @Test
+  public void testCheckIfAvailableWithSimulatedHeartBeat() {
+    InternalDistributedMember memberToCheck = mockMembers.get(1);
+    HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
+    fakeHeartbeat.setSender(memberToCheck);
+    when(messenger.send(any(HeartbeatRequestMessage.class))).then(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        gmsHealthMonitor.processMessage(fakeHeartbeat);
+        return null;
+      }
+    });
+    
+    boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+    assertTrue("CheckIfAvailable should have return true", retVal);
+  }
+  
+  
   @Test
   public void testShutdown() {
 
