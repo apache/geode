@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -38,10 +38,10 @@ import static org.junit.Assert.assertTrue;
  *
  * @author tushark
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class HeadlessGfshJUnitTest {
 
-  @SuppressWarnings({"unused", "deprecation", "unused"})
+  @SuppressWarnings({"deprecation"})
   @Test
   public void testHeadlessGfshTest() throws ClassNotFoundException, IOException, InterruptedException {
     GemFireCacheImpl cache = null;
@@ -57,7 +57,6 @@ public class HeadlessGfshJUnitTest {
 
     ds = DistributedSystem.connect(pr);
     cache = (GemFireCacheImpl) CacheFactory.create(ds);
-    ObjectName name = MBeanJMXAdapter.getDistributedSystemName();
 
     HeadlessGfsh gfsh = new HeadlessGfsh("Test", 25);
     for (int i = 0; i < 5; i++) {
