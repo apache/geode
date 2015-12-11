@@ -1,5 +1,5 @@
 
-package templates.security;
+package security;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -28,6 +28,8 @@ import java.util.Set;
 
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.util.test.TestUtil;
+import templates.security.UsernamePrincipal;
+import templates.security.XmlAuthorization;
 
 public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 

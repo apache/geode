@@ -26,9 +26,9 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import templates.security.CredentialGenerator;
-import templates.security.DummyCredentialGenerator;
-import templates.security.LdapUserCredentialGenerator;
+import security.CredentialGenerator;
+import security.DummyCredentialGenerator;
+import security.LdapUserCredentialGenerator;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -507,7 +507,7 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
     gen.init();
     Properties extraProps = gen.getSystemProperties();
     String authenticator = gen.getAuthenticator();
-    String authInit = "templates.security.UserPasswordWithExtraPropsAuthInit.create";
+    String authInit = "security.UserPasswordWithExtraPropsAuthInit.create";
     if (extraProps == null) {
       extraProps = new Properties();
     }

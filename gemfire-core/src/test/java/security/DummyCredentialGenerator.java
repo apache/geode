@@ -1,5 +1,5 @@
 
-package templates.security;
+package security;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,6 +20,10 @@ package templates.security;
  * under the License.
  */
 
+
+import security.CredentialGenerator;
+import templates.security.DummyAuthenticator;
+import templates.security.UserPasswordAuthInit;
 
 import java.security.Principal;
 import java.util.Properties;

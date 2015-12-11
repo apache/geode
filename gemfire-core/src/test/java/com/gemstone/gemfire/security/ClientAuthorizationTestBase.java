@@ -31,9 +31,9 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import templates.security.AuthzCredentialGenerator;
-import templates.security.CredentialGenerator;
-import templates.security.AuthzCredentialGenerator.ClassCode;
+import security.AuthzCredentialGenerator;
+import security.CredentialGenerator;
+import security.AuthzCredentialGenerator.ClassCode;
 
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
@@ -62,8 +62,8 @@ import com.gemstone.gemfire.internal.util.Callable;
 
 import dunit.DistributedTestCase;
 import dunit.VM;
-import templates.security.DummyCredentialGenerator;
-import templates.security.XmlAuthzCredentialGenerator;
+import security.DummyCredentialGenerator;
+import security.XmlAuthzCredentialGenerator;
 
 /**
  * Base class for tests for authorization from client to server. It contains

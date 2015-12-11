@@ -1,5 +1,5 @@
 
-package templates.security;
+package security;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -27,6 +27,8 @@ import java.security.Security;
 import java.util.Properties;
 
 import com.gemstone.gemfire.util.test.TestUtil;
+import templates.security.PKCSAuthInit;
+import templates.security.PKCSAuthenticator;
 
 /**
  * @author kneeraj

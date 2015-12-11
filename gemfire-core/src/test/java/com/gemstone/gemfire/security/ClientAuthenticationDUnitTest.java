@@ -26,8 +26,8 @@ import java.util.Properties;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
-import templates.security.CredentialGenerator;
-import templates.security.CredentialGenerator.ClassCode;
+import security.CredentialGenerator;
+import security.CredentialGenerator.ClassCode;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import dunit.DistributedTestCase;
 import dunit.Host;
 import dunit.VM;
-import templates.security.DummyCredentialGenerator;
+import security.DummyCredentialGenerator;
 
 /**
  * Test for authentication from client to server. This tests for both valid and

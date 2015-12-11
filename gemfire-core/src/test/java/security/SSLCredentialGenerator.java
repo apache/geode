@@ -1,5 +1,5 @@
 
-package templates.security;
+package security;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -27,6 +27,7 @@ import java.security.Principal;
 import java.util.Properties;
 
 import com.gemstone.gemfire.security.AuthenticationFailedException;
+import security.CredentialGenerator;
 
 public class SSLCredentialGenerator extends CredentialGenerator {
 
