@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.util;
 
-import jline.ConsoleReader;
+import jline.console.ConsoleReader;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 public class CLIConsoleBufferUtil {
@@ -24,9 +24,9 @@ public class CLIConsoleBufferUtil {
     
     ConsoleReader reader = Gfsh.getConsoleReader();    
     if (reader != null) {
-      StringBuffer buffer = reader.getCursorBuffer().getBuffer();    
-      if(buffer.length() > messege.length()){
-        int appendSpaces = buffer.length() - messege.length();
+      int bufferLength = reader.getCursorBuffer().length();
+      if(bufferLength > messege.length()){
+        int appendSpaces = bufferLength - messege.length();
         for(int i = 0; i < appendSpaces; i++){
           messege = messege + " ";
         }
