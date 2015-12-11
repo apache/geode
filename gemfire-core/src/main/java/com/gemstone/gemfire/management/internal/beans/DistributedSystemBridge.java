@@ -44,9 +44,8 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.internal.FinishBackupRequest;
-import com.gemstone.gemfire.admin.internal.FlushToDiskRequest;
-import com.gemstone.gemfire.admin.internal.PrepareBackupRequest;
+import com.gemstone.gemfire.admin.internal.BackupDataStoreHelper;
+import com.gemstone.gemfire.admin.internal.BackupDataStoreResult;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
@@ -59,6 +58,7 @@ import com.gemstone.gemfire.internal.admin.remote.RevokePersistentIDRequest;
 import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.management.CacheServerMXBean;
@@ -521,6 +521,7 @@ public class DistributedSystemBridge {
    */
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception {
+    if (BackupDataStoreHelper.obtainLock(dm)) {
     try {
       
       if(targetDirPath == null || targetDirPath.isEmpty()){
@@ -540,26 +541,21 @@ public class DistributedSystemBridge {
       Set<PersistentID> missingMembers = MissingPersistentIDsRequest.send(dm);
       Set recipients = dm.getOtherDistributionManagerIds();
 
-      FlushToDiskRequest.send(dm, recipients);
+      BackupDataStoreResult result = BackupDataStoreHelper.backupAllMembers(dm, recipients, targetDir, baselineDir);
 
-      Map<DistributedMember, Set<PersistentID>> existingDataStores = PrepareBackupRequest
-          .send(dm, recipients);
-      Map<DistributedMember, Set<PersistentID>> successfulMembers = FinishBackupRequest
-          .send(dm, recipients, targetDir, baselineDir);
-
-      Iterator<DistributedMember> it = successfulMembers.keySet().iterator();
+      Iterator<DistributedMember> it = result.getSuccessfulMembers().keySet().iterator();
 
       Map<String, String[]> backedUpDiskStores = new HashMap<String, String[]>();
       while (it.hasNext()) {
         DistributedMember member = it.next();
-        Set<PersistentID> setOfDisk = successfulMembers.get(member);
+        Set<PersistentID> setOfDisk = result.getSuccessfulMembers().get(member);
         String[] setOfDiskStr = new String[setOfDisk.size()];
         int j = 0;
         for (PersistentID id : setOfDisk) {
           setOfDiskStr[j] = id.getDirectory();
           j++;
         }
-        backedUpDiskStores.put(member.getName(), setOfDiskStr);
+        backedUpDiskStores.put(member.getId(), setOfDiskStr);
       }
 
       // It's possible that when calling getMissingPersistentMembers, some
@@ -569,17 +565,17 @@ public class DistributedSystemBridge {
       // regions at the members are ready. Logically, since the members in
       // successfulMembers
       // should override the previous missingMembers
-      for (Set<PersistentID> onlineMembersIds : successfulMembers.values()) {
+      for (Set<PersistentID> onlineMembersIds : result.getSuccessfulMembers().values()) {
         missingMembers.removeAll(onlineMembersIds);
       }
 
-      existingDataStores.keySet().removeAll(successfulMembers.keySet());
+      result.getExistingDataStores().keySet().removeAll(result.getSuccessfulMembers().keySet());
       String[] setOfMissingDiskStr = null;
 
-      if (existingDataStores.size() > 0) {
-        setOfMissingDiskStr = new String[existingDataStores.size()];
+      if (result.getExistingDataStores().size() > 0) {
+        setOfMissingDiskStr = new String[result.getExistingDataStores().size()];
         int j = 0;
-        for (Set<PersistentID> lostMembersIds : existingDataStores.values()) {
+        for (Set<PersistentID> lostMembersIds : result.getExistingDataStores().values()) {
           for (PersistentID id : lostMembersIds) {
             setOfMissingDiskStr[j] = id.getDirectory();
             j++;
@@ -595,6 +591,11 @@ public class DistributedSystemBridge {
 
     } catch (Exception e) {
       throw new Exception(e.getLocalizedMessage());
+    } finally {
+      BackupDataStoreHelper.releaseLock(dm);
+    }
+    } else {
+      throw new Exception(LocalizedStrings.DistributedSystem_BACKUP_ALREADY_IN_PROGRESS.toLocalizedString());
     }
   }
 

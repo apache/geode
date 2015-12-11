@@ -2144,6 +2144,7 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS = new StringId(6610, "Failed to find credentials from [{0}] using Authenticator [{1}]");
   public static final StringId AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE = new StringId(6611, "AuthInitialize instance could not be obtained");
   public static final StringId AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2 = new StringId(6612, "Failed to obtain credentials using AuthInitialize [{1}]. {2}");
+  public static final StringId DistributedSystem_BACKUP_ALREADY_IN_PROGRESS = new StringId(6613, "A backup is already in progress.");
   
   /** Testing strings, messageId 90000-99999 **/
   

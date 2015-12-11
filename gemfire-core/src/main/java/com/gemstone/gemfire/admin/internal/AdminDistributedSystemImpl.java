@@ -2421,31 +2421,38 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
 
   public static BackupStatus backupAllMembers(DM dm, File targetDir, File baselineDir)
       throws AdminException {
+    BackupStatus status = null;
+    if (BackupDataStoreHelper.obtainLock(dm)) {
+    try {
     Set<PersistentID> missingMembers = getMissingPersistentMembers(dm);
     Set recipients = dm.getOtherDistributionManagerIds();
     
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     targetDir = new File(targetDir, format.format(new Date()));
-    FlushToDiskRequest.send(dm, recipients);
-    Map<DistributedMember, Set<PersistentID>> existingDataStores 
-        = PrepareBackupRequest.send(dm, recipients);
-    Map<DistributedMember, Set<PersistentID>> successfulMembers 
-        = FinishBackupRequest.send(dm, recipients, targetDir, baselineDir);
+    BackupDataStoreResult result = BackupDataStoreHelper.backupAllMembers(
+        dm, recipients, targetDir, baselineDir);
     
     // It's possible that when calling getMissingPersistentMembers, some members are 
     // still creating/recovering regions, and at FinishBackupRequest.send, the 
     // regions at the members are ready. Logically, since the members in successfulMembers
     // should override the previous missingMembers
-    for(Set<PersistentID> onlineMembersIds : successfulMembers.values()) {
+    for(Set<PersistentID> onlineMembersIds : result.getSuccessfulMembers().values()) {
       missingMembers.removeAll(onlineMembersIds);
     }
     
-    existingDataStores.keySet().removeAll(successfulMembers.keySet());
-    for(Set<PersistentID> lostMembersIds : existingDataStores.values()) {
+    result.getExistingDataStores().keySet().removeAll(result.getSuccessfulMembers().keySet());
+    for(Set<PersistentID> lostMembersIds : result.getExistingDataStores().values()) {
       missingMembers.addAll(lostMembersIds);
     }
     
-    return new BackupStatusImpl(successfulMembers, missingMembers);
+    status = new BackupStatusImpl(result.getSuccessfulMembers(), missingMembers);
+    } finally {
+      BackupDataStoreHelper.releaseLock(dm);
+    }
+    } else {
+      throw new AdminException(LocalizedStrings.DistributedSystem_BACKUP_ALREADY_IN_PROGRESS.toLocalizedString());
+    }
+    return status;
   }
   
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {
