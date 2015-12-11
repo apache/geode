@@ -150,11 +150,8 @@ public class GfshParserJUnitTest {
    */
   @Test
   public void testComplete() throws Exception {
-    StringBuilder debugger = new StringBuilder();
-
     // get a CommandManager, add sample commands
     CommandManager commandManager = CommandManager.getInstance(false);
-    debugger.append("cm1:").append(String.format("0x%x", commandManager.hashCode()));
     assertNotNull("CommandManager should not be null.", commandManager);
     commandManager.add(Commands.class.newInstance());
     commandManager.add(SimpleConverter.class.newInstance());
@@ -170,16 +167,6 @@ public class GfshParserJUnitTest {
     List<String> completionCandidates = new ArrayList<String>();
     List<String> completionValues = new ArrayList<String>();
     parser.complete(input, input.length(), completionCandidates);
-    debugger.append(" cm2:").append(String.format("0x%x", CommandManager.getExisting().hashCode()));
-    if (completionValues.size() != completionCandidates.size()) {
-      if (completionCandidates.size() > 0) {
-        for (String s : completionCandidates) {
-          debugger.append(" ").append(s);
-        }
-      }
-      assertEquals(debugger.toString(), completionValues.size(), completionCandidates.size());
-    }
-
     assertSimpleCompletionValues(completionValues, completionCandidates);
 
     // Input contains a string which is prefix
