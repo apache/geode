@@ -26,10 +26,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import templates.security.AuthzCredentialGenerator;
-import templates.security.CredentialGenerator;
-import templates.security.DummyCredentialGenerator;
-import templates.security.XmlAuthzCredentialGenerator;
+import security.AuthzCredentialGenerator;
+import security.CredentialGenerator;
+import security.DummyCredentialGenerator;
+import security.XmlAuthzCredentialGenerator;
 
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.AvailablePort;

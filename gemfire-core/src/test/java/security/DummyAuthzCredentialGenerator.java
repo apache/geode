@@ -1,5 +1,5 @@
 
-package templates.security;
+package security;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -27,6 +27,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import security.AuthzCredentialGenerator;
+import templates.security.DummyAuthorization;
+import templates.security.UsernamePrincipal;
 
 public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
 

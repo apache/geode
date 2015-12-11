@@ -1,5 +1,5 @@
 
-package templates.security;
+package security;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -27,6 +27,8 @@ import java.util.Properties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
 import com.gemstone.gemfire.util.test.TestUtil;
+import templates.security.LdapUserAuthenticator;
+import templates.security.UserPasswordAuthInit;
 
 import java.util.Random;
 

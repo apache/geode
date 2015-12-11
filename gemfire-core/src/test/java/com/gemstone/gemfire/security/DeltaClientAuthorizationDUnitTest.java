@@ -23,8 +23,8 @@ package com.gemstone.gemfire.security;
 
 import java.util.Properties;
 
-import templates.security.AuthzCredentialGenerator;
-import templates.security.CredentialGenerator;
+import security.AuthzCredentialGenerator;
+import security.CredentialGenerator;
 
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.cache.Region;
