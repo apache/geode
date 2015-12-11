@@ -19,18 +19,15 @@ package com.gemstone.gemfire.distributed.internal.direct;
 import com.gemstone.gemfire.GemFireCheckedException;
 
 /**
- * Exception thrown when the TCPConduit is unable to acquire a stub
- * for the given recipient.
+ * Exception thrown when a member is no longer in the distributed system
  * 
- * @author jpenney
- *
  */
-public class MissingStubException extends GemFireCheckedException
+public class ShunnedMemberException extends GemFireCheckedException
 {
 
   private static final long serialVersionUID = -6455664684151074915L;
 
-  public MissingStubException(String msg) {
+  public ShunnedMemberException(String msg) {
     super(msg);
   }
   
