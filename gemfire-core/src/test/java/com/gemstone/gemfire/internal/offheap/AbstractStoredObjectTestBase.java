@@ -51,7 +51,7 @@ public abstract class AbstractStoredObjectTestBase {
         Object regionEntryValue = getValue();
         StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
 
-        Integer actualRegionEntryValue = (Integer) storedObject.getValueAsDeserializedHeapObject();
+        Object actualRegionEntryValue = storedObject.getValueAsDeserializedHeapObject();
         assertEquals(regionEntryValue, actualRegionEntryValue);
     }
 
