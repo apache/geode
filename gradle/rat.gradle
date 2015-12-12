@@ -21,14 +21,14 @@ rat {
     // git
     '.git/**',
     '**/.gitignore',
-    
+
     // gradle
     '**/.gradle/**',
     'gradlew',
     'gradlew.bat',
     'gradle/wrapper/gradle-wrapper.properties',
     '**/build/**',
-    
+
     // IDE
     'etc/eclipseFormatterProfile.xml',
     'etc/intellijIdeaCodeStyle.xml',
@@ -47,14 +47,14 @@ rat {
     '**/*.json',
     '**/*.tx0',
     '**/*.txo',
-    
+
     // binary files
     '**/*.cer',
     '**/*.gfs',
     '**/keystore',
     '**/*.ser',
     '**/*.xls',
-    
+
     // other text files
     'gemfire-spark-connector/project/plugins.sbt',
     'gemfire-spark-connector/project/build.properties',
@@ -64,15 +64,31 @@ rat {
     'gemfire-core/src/test/resources/com/gemstone/gemfire/management/internal/configuration/domain/CacheElementJUnitTest.xml',
     'gemfire-core/src/test/resources/com/gemstone/gemfire/management/internal/configuration/utils/*.xml',
 
-    // TODO - go through all the gemfire-site files!!
-    '**/gemfire-site/**',
- 
+    // gemfire-site: Adding exceptions to MIT/BSD licensed files
+    'gemfire-site/website/content/js/head.js',
+    'gemfire-site/website/content/js/html5shiv.js',
+    'gemfire-site/website/content/js/jquery-1.10.1.min.js',
+    'gemfire-site/website/content/js/jquery.icheck.js',
+    'gemfire-site/website/content/js/respond.min.js',
+    'gemfire-site/website/content/js/bootstrap.min.js',
+    'gemfire-site/website/content/css/bootflat-extensions.css',
+    'gemfire-site/website/content/css/bootflat-square.css',
+    'gemfire-site/website/content/css/bootflat.css',
+    'gemfire-site/website/content/bootstrap/bootstrap.min.css',
+    'gemfire-site/website/content/css/font-awesome.min.css',
+    'gemfire-site/website/lib/pandoc.template',
+    'gemfire-site/website/content/font/**',
+    // compiled logs and locks
+    'gemfire-site/website/tmp/**',
+    'gemfire-site/website/layouts/**',
+
+
     // ANTLR generated files
     'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexer.java',
     'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexerTokenTypes.java',
     'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLParser.java',
     'gemfire-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexerTokenTypes.txt',
-    
+
     // Service META-INF
     '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
     '**/META-INF/services/com.gemstone.gemfire.internal.cache.CacheService',
@@ -80,8 +96,8 @@ rat {
     '**/META-INF/services/org.springframework.shell.core.CommandMarker',
 
     // --- Other Licenses ---
-    
-    // Copied from other ASF projects 
+
+    // Copied from other ASF projects
     'gemfire-core/src/main/resources/com/gemstone/gemfire/admin/jmx/internal/doc-files/mbeans-descriptors.dtd',
     'gemfire-core/src/main/resources/com/gemstone/gemfire/admin/jmx/mbeans-descriptors.xml',
 
@@ -134,4 +150,3 @@ rat {
     'gemfire-web-api/src/main/webapp/docs/swagger-ui.min.js'
   ]
 }
-
