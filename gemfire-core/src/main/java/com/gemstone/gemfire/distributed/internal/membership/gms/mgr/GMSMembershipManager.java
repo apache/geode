@@ -94,6 +94,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.shared.StringPrintWriter;
 import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
+import com.gemstone.gemfire.internal.tcp.Stub;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 
 public class GMSMembershipManager implements MembershipManager, Manager
@@ -155,6 +156,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     boolean crashed;
     String reason;
     DistributionMessage dmsg;
+    Stub stub;
     NetView gmsView;
     
     @Override
@@ -163,7 +165,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       sb.append("kind=");
       switch (kind) {
       case SURPRISE_CONNECT:
-        sb.append("connect; member = <" + member + ">");
+        sb.append("connect; member = <" + member + ">; stub = " + stub);
         break;
       case VIEW:
         String text = gmsView.toString();
@@ -182,10 +184,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
     /**
      * Create a surprise connect event
      * @param member the member connecting
+     * @param id the stub
      */
-    StartupEvent(final InternalDistributedMember member) {
+    StartupEvent(final InternalDistributedMember member, final Stub id) {
       this.kind = SURPRISE_CONNECT;
       this.member = member;
+      this.stub = id;
     }
     /**
      * Indicate if this is a surprise connect event
@@ -276,6 +280,24 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   /** have we joined successfully? */
   volatile boolean hasJoined;
+  
+  /**
+   * a map keyed on InternalDistributedMember, values are Stubs that represent direct
+   * channels to other systems
+   * 
+   * Accesses must be under the read or write lock of {@link #latestViewLock}.
+   */
+  protected final Map<InternalDistributedMember, Stub> memberToStubMap = 
+      new ConcurrentHashMap<InternalDistributedMember, Stub>();
+
+  /**
+   * a map of direct channels (Stub) to InternalDistributedMember. key instanceof Stub
+   * value instanceof InternalDistributedMember
+   * 
+   * Accesses must be under the read or write lock of {@link #latestViewLock}.
+   */
+  protected final Map<Stub, InternalDistributedMember> stubToMemberMap = 
+      new ConcurrentHashMap<Stub, InternalDistributedMember>();
   
   /**
    * Members of the distributed system that we believe have shut down.
@@ -523,6 +545,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
           if ((currentLatch = (CountDownLatch)memberLatch.get(m)) != null) {
             currentLatch.countDown();
           }
+        }
+
+        // fix for bug #42006, lingering old identity
+        Object oldStub = this.memberToStubMap.remove(m);
+        if (oldStub != null) {
+          this.stubToMemberMap.remove(oldStub);
         }
 
         if (shutdownInProgress()) {
@@ -778,6 +806,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
     
     if (directChannel != null) {
       directChannel.setLocalAddr(address);
+      Stub stub = directChannel.getLocalStub();
+      memberToStubMap.put(address, stub);
+      stubToMemberMap.put(stub, address);
     }
 
     this.hasJoined = true;
@@ -874,15 +905,17 @@ public class GMSMembershipManager implements MembershipManager, Manager
   /**
    * Process a surprise connect event, or place it on the startup queue.
    * @param member the member
+   * @param stub its stub
    */
   protected void handleOrDeferSurpriseConnect(InternalDistributedMember member) {
+    Stub stub = new Stub(member.getInetAddress(), member.getDirectChannelPort(), member.getVmViewId());
     synchronized (startupLock) {
       if (!processingEvents) {
-        startupMessages.add(new StartupEvent(member));
+        startupMessages.add(new StartupEvent(member, stub));
         return;
       }
     }
-    processSurpriseConnect(member);
+    processSurpriseConnect(member, stub);
   }
   
   public void startupMessageFailed(DistributedMember mbr, String failureMessage) {
@@ -908,9 +941,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * been added, simply returns; else adds the member.
    * 
    * @param dm the member joining
+   * @param stub the member's stub
    */
-  public boolean addSurpriseMember(DistributedMember dm) {
+  public boolean addSurpriseMember(DistributedMember dm, 
+      Stub stub) {
     final InternalDistributedMember member = (InternalDistributedMember)dm;
+    Stub s = null;
     boolean warn = false;
     
     latestViewLock.writeLock().lock();
@@ -972,6 +1008,16 @@ public class GMSMembershipManager implements MembershipManager, Manager
         if (this.cleanupTimer == null) {
           startCleanupTimer();
         } // cleanupTimer == null
+
+        // fix for bug #42006, lingering old identity
+        Object oldStub = this.memberToStubMap.remove(member);
+        if (oldStub != null) {
+          this.stubToMemberMap.remove(oldStub);
+        }
+
+        s = stub == null ? getStubForMember(member) : stub;
+        // Make sure that channel information is consistent
+        addChannel(member, s);
 
         // Ensure that the member is accounted for in the view
         // Conjure up a new view including the new member. This is necessary
@@ -1108,7 +1154,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
         // If it's a new sender, wait our turn, generate the event
         if (isNew) {
-          shunned = !addSurpriseMember(m);
+          shunned = !addSurpriseMember(m, getStubForMember(m));
         } // isNew
       }
 
@@ -1120,7 +1166,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (shunned) { // bug #41538 - shun notification must be outside synchronization to avoid hanging
       warnShun(m);
       logger.info("Membership: Ignoring message from shunned member <{}>:{}", m, msg);
-      throw new MemberShunnedException(m);
+      throw new MemberShunnedException(getStubForMember(m));
     }
     
     listener.messageReceived(msg);
@@ -1202,11 +1248,13 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * grabbed a stable view if this is really a new member.
    * 
    * @param member
+   * @param stub
    */
   private void processSurpriseConnect(
-      InternalDistributedMember member) 
+      InternalDistributedMember member, 
+      Stub stub) 
   {
-    addSurpriseMember(member);
+    addSurpriseMember(member, stub);
   }
   
   /**
@@ -1228,7 +1276,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       processView(o.gmsView.getViewId(), o.gmsView);
     }
     else if (o.isSurpriseConnect()) { // connect
-      processSurpriseConnect(o.member);
+      processSurpriseConnect(o.member, o.stub);
     }
     
     else // sanity
@@ -1402,7 +1450,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
   }
 
-  public boolean memberExists(DistributedMember m) {
+  public boolean memberExists(InternalDistributedMember m) {
     latestViewLock.readLock().lock();
     NetView v = latestView;
     latestViewLock.readLock().unlock();
@@ -1476,6 +1524,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       directChannel.emergencyClose();
     }
+    
+    // could we guarantee not to allocate objects?  We're using Darrel's 
+    // factory, so it's possible that an unsafe implementation could be
+    // introduced here.
+//    stubToMemberMap.clear();
+//    memberToStubMap.clear();
     
     if (DEBUG) {
       System.err.println("DEBUG: done closing GroupMembershipService");
@@ -1713,7 +1767,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       allDestinations = true;
       latestViewLock.writeLock().lock();
       try {
-        List<InternalDistributedMember> keySet = latestView.getMembers();
+        Set keySet = memberToStubMap.keySet();
         keys = new InternalDistributedMember[keySet.size()];
         keys = (InternalDistributedMember[])keySet.toArray(keys);
       } finally {
@@ -1966,6 +2020,80 @@ public class GMSMembershipManager implements MembershipManager, Manager
     // not currently supported by this manager
   }
   
+  /**
+   * Get or create stub for given member
+   */
+  public Stub getStubForMember(InternalDistributedMember m)
+  {
+    if (shutdownInProgress) {
+      throw new DistributedSystemDisconnectedException(LocalizedStrings.GroupMembershipService_DISTRIBUTEDSYSTEM_IS_SHUTTING_DOWN.toLocalizedString(), services.getShutdownCause());
+    }
+
+    if (services.getConfig().getDistributionConfig().getDisableTcp()) {
+      return new Stub(m.getInetAddress(), m.getPort(), m.getVmViewId());
+    }
+    
+    // Return existing one if it is already in place
+    Stub result;
+    result = (Stub)memberToStubMap.get(m);
+    if (result != null)
+      return result;
+
+    latestViewLock.writeLock().lock();
+    try {
+      // Do all of this work in a critical region to prevent
+      // members from slipping in during shutdown
+      if (shutdownInProgress())
+        return null; // don't try to create a stub during shutdown
+      if (isShunned(m))
+        return null; // don't let zombies come back to life
+      
+      // OK, create one.  Update the table to reflect the creation.
+      result = directChannel.createConduitStub(m);
+      addChannel(m, result);
+    } finally {
+      latestViewLock.writeLock().unlock();
+    }
+   return result;
+  }
+
+  public InternalDistributedMember getMemberForStub(Stub s, boolean validated)
+  {
+    latestViewLock.writeLock().lock();
+    try {
+      if (shutdownInProgress) {
+        throw new DistributedSystemDisconnectedException(LocalizedStrings.GroupMembershipService_DISTRIBUTEDSYSTEM_IS_SHUTTING_DOWN.toLocalizedString(), services.getShutdownCause());
+      }
+      InternalDistributedMember result = (InternalDistributedMember)
+          stubToMemberMap.get(s);
+      if (result != null) {
+        if (validated && !this.latestView.contains(result)) {
+          // Do not return this member unless it is in the current view.
+          if (!surpriseMembers.containsKey(result)) {
+            // if not a surprise member, this stub is lingering and should be removed
+            stubToMemberMap.remove(s);
+            memberToStubMap.remove(result);
+          }
+          result = null;
+          // fall through to see if there is a newer member using the same direct port
+        }
+      }
+      if (result == null) {
+        // it may have not been added to the stub->idm map yet, so check the current view
+        for (InternalDistributedMember idm: latestView.getMembers()) {
+          if (GMSUtil.compareAddresses(idm.getInetAddress(), s.getInetAddress()) == 0
+              && idm.getDirectChannelPort() == s.getPort()) {
+            addChannel(idm, s);
+            return idm;
+          }
+        }
+      }
+      return result;
+    } finally {
+      latestViewLock.writeLock().unlock();
+    }
+  }
+
   public void setShutdown()
   {
     latestViewLock.writeLock().lock();
@@ -1981,6 +2109,24 @@ public class GMSMembershipManager implements MembershipManager, Manager
     return shutdownInProgress || (dm != null && dm.shutdownInProgress());
   }
   
+  /**
+   * Add a mapping from the given member to the given stub. Must
+   * be called with {@link #latestViewLock} held.
+   * 
+   * @param member
+   * @param theChannel
+   */
+  protected void addChannel(InternalDistributedMember member, Stub theChannel)
+  {
+    if (theChannel != null) {
+      // Don't overwrite existing stub information with a null
+      this.memberToStubMap.put(member, theChannel);
+
+      // Can't create reverse mapping if the stub is null
+      this.stubToMemberMap.put(theChannel, member);
+    }
+  }
+
 
   /**
    * Clean up and create consistent new view with member removed.
@@ -1990,6 +2136,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
    */
   protected void destroyMember(final InternalDistributedMember member,
       boolean crashed, final String reason) {
+    
+    // Clean up the maps
+    Stub theChannel = (Stub)memberToStubMap.remove(member);
+    if (theChannel != null) {
+      this.stubToMemberMap.remove(theChannel);
+    }
     
     // Make sure it is removed from the view
     latestViewLock.writeLock().lock();
@@ -2213,11 +2365,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
   /* non-thread-owned serial channels and high priority channels are not
    * included
    */
-  public Map getChannelStates(DistributedMember member, boolean includeMulticast) {
+  public Map getMessageState(DistributedMember member, boolean includeMulticast) {
     Map result = new HashMap();
+    Stub stub = (Stub)memberToStubMap.get(member);
     DirectChannel dc = directChannel;
-    if (dc != null) {
-      dc.getChannelStates(member, result);
+    if (stub != null && dc != null) {
+      dc.getChannelStates(stub, result);
     }
     services.getMessenger().getMessageState((InternalDistributedMember)member, result, includeMulticast);
     return result;
@@ -2228,8 +2381,15 @@ public class GMSMembershipManager implements MembershipManager, Manager
   {
     if (Thread.interrupted()) throw new InterruptedException();
     DirectChannel dc = directChannel;
-    if (dc != null) {
-      dc.waitForChannelState(otherMember, channelState);
+    Stub stub;
+    latestViewLock.writeLock().lock();
+    try {
+      stub = (Stub)memberToStubMap.get(otherMember);
+    } finally {
+      latestViewLock.writeLock().unlock();
+    }
+    if (dc != null && stub != null) {
+      dc.waitForChannelState(stub, state);
     }
     services.getMessenger().waitForMessageState((InternalDistributedMember)otherMember, state);
   }
@@ -2245,6 +2405,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     boolean result = false;
     DirectChannel dc = directChannel;
     InternalDistributedMember idm = (InternalDistributedMember)mbr;
+    Stub stub = new Stub(idm.getInetAddress(), idm.getPort(), idm.getVmViewId());
     int memberTimeout = this.services.getConfig().getDistributionConfig().getMemberTimeout();
     long pauseTime = (memberTimeout < 1000) ? 100 : memberTimeout / 10;
     boolean wait;
@@ -2252,7 +2413,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     do {
       wait = false;
       if (dc != null) {
-        if (dc.hasReceiversFor(idm)) {
+        if (dc.hasReceiversFor(stub)) {
           wait = true;
         }
         if (wait && logger.isDebugEnabled()) {

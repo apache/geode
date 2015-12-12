@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.tcp;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
@@ -35,7 +34,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 public interface ServerDelegate {
 
   public void receive( DistributionMessage message, int bytesRead,
-                       DistributedMember connId );
+                       Stub connId );
 
   public LogWriterI18n getLogger();
 
@@ -43,5 +42,5 @@ public interface ServerDelegate {
    * Called when a possibly new member is detected by receiving a direct channel
    * message from him.
    */
-  public void newMemberConnected(InternalDistributedMember member);
+  public void newMemberConnected(InternalDistributedMember member, Stub id);
 }

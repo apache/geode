@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.tcp.Stub;
 
 /**
  * A MembershipManager is responsible for reporting a MemberView, as well as
@@ -73,7 +74,7 @@ public interface MembershipManager {
    * @param m the member
    * @return true if it still exists
    */
-  public boolean memberExists(DistributedMember m);
+  public boolean memberExists(InternalDistributedMember m);
   
   /**
    * Is this manager still connected?  If it has not been initialized, this
@@ -140,6 +141,25 @@ public interface MembershipManager {
       DistributionMessage content,
       DMStats stats)
   throws NotSerializableException;
+  
+  /**
+   * Return a {@link Stub} referring to the given member.  A <em>null</em> may
+   * be returned if the system is not employing stubs for communication.
+   * 
+   * @param m the member
+   * @return the stub
+   */
+  public Stub getStubForMember(InternalDistributedMember m);
+  
+  /**
+   * Return a {@link InternalDistributedMember} associated with the given Stub.  This
+   * method may return a null if Stubs are not being used.
+   * @param s Stub to look up
+   * @param validated true if member must be in the current view
+   * @return the member associated with the given stub, if any
+   */
+  public InternalDistributedMember getMemberForStub(Stub s, boolean validated);
+  
   
   /**
    * Indicates to the membership manager that the system is shutting down.
@@ -266,7 +286,7 @@ public interface MembershipManager {
    */
   public void warnShun(DistributedMember mbr);
   
-  public boolean addSurpriseMember(DistributedMember mbr);
+  public boolean addSurpriseMember(DistributedMember mbr, Stub stub);
   
   /** if a StartupMessage is going to reject a new member, this should be used
    * to make sure we don't keep that member on as a "surprise member"
@@ -287,11 +307,6 @@ public interface MembershipManager {
    * @return true if the member is a surprise member
    */
   public boolean isSurpriseMember(DistributedMember m);
-  
-  /**
-   * Returns true if the member is being shunned
-   */
-  public boolean isShunned(DistributedMember m);
 
   /**
    * Forces use of UDP for communications in the current thread.  UDP is

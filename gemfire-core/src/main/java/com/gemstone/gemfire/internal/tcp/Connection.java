@@ -50,7 +50,6 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.ConflationKey;
 import com.gemstone.gemfire.distributed.internal.DM;
@@ -73,6 +72,7 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.DSFIDFactory;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.SocketCloser;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
@@ -221,6 +221,11 @@ public class Connection implements Runnable {
 
   /** the ID string of the conduit (for logging) */
   String conduitIdStr;
+
+  /** remoteId identifies the remote conduit's listener.  It does NOT
+     identify the "port" that this connection's socket is attached
+     to, which is a different thing altogether */
+  Stub remoteId;
 
   /** Identifies the java group member on the other side of the connection. */
   InternalDistributedMember remoteAddr;
@@ -796,7 +801,7 @@ public class Connection implements Runnable {
           }
           if (success) {
             if (this.isReceiver) {
-              needToClose = !owner.getConduit().getMembershipManager().addSurpriseMember(this.remoteAddr);
+              needToClose = !owner.getConduit().getMembershipManager().addSurpriseMember(this.remoteAddr, this.remoteId);
               if (needToClose) {
                 reason = "this member is shunned";
               }
@@ -840,7 +845,7 @@ public class Connection implements Runnable {
    * @param beingSick
    */
   private void asyncClose(boolean beingSick) {
-    // note: remoteAddr may be null if this is a receiver that hasn't finished its handshake
+    // note: remoteId may be null if this is a receiver that hasn't finished its handshake
     
     // we do the close in a background thread because the operation may hang if 
     // there is a problem with the network.  See bug #46659
@@ -1013,7 +1018,8 @@ public class Connection implements Runnable {
   protected static Connection createSender(final MembershipManager mgr,
                                            final ConnectionTable t,
                                            final boolean preserveOrder,
-                                           final DistributedMember remoteAddr,
+                                           final Stub key,
+                                           final InternalDistributedMember remoteAddr,
                                            final boolean sharedResource,
                                            final long startTime,
                                            final long ackTimeout,
@@ -1068,8 +1074,9 @@ public class Connection implements Runnable {
         }
         if (firstTime) {
           firstTime = false;
-          if (!mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress()) {
-            throw new IOException("Member " + remoteAddr + " left the system");
+          InternalDistributedMember m = mgr.getMemberForStub(key, true);
+          if (m == null) {
+            throw new IOException("Member for stub " + key + " left the group");
           }
         }
         else {
@@ -1077,7 +1084,7 @@ public class Connection implements Runnable {
           // alert listener should not prevent cache operations from continuing
           if (AlertAppender.isThreadAlerting()) {
             // do not change the text of this exception - it is looked for in exception handlers
-            throw new IOException("Cannot form connection to alert listener " + remoteAddr);
+            throw new IOException("Cannot form connection to alert listener " + key);
           }
             
           // Wait briefly...
@@ -1090,19 +1097,20 @@ public class Connection implements Runnable {
             t.getConduit().getCancelCriterion().checkCancelInProgress(ie);
           }
           t.getConduit().getCancelCriterion().checkCancelInProgress(null);
-          if (giveUpOnMember(mgr, remoteAddr)) {
-            throw new IOException(LocalizedStrings.Connection_MEMBER_LEFT_THE_GROUP.toLocalizedString(remoteAddr));
+          InternalDistributedMember m = mgr.getMemberForStub(key, true);
+          if (m == null) {
+            throw new IOException(LocalizedStrings.Connection_MEMBER_FOR_STUB_0_LEFT_THE_GROUP.toLocalizedString(key));
           }
           if (!warningPrinted) {
             warningPrinted = true;
-            logger.warn(LocalizedMessage.create(LocalizedStrings.Connection_CONNECTION_ATTEMPTING_RECONNECT_TO_PEER__0, remoteAddr));
+            logger.warn(LocalizedMessage.create(LocalizedStrings.Connection_CONNECTION_ATTEMPTING_RECONNECT_TO_PEER__0, m));
           }          
           t.getConduit().stats.incReconnectAttempts();
         }
         //create connection
         try {
           conn = null;
-          conn = new Connection(mgr, t, preserveOrder, remoteAddr, sharedResource);
+          conn = new Connection(mgr, t, preserveOrder, key, remoteAddr, sharedResource);
         }
         catch (javax.net.ssl.SSLHandshakeException se) {
           // no need to retry if certificates were rejected
@@ -1110,7 +1118,8 @@ public class Connection implements Runnable {
         }
         catch (IOException ioe) {
           // Only give up if the member leaves the view.
-          if (giveUpOnMember(mgr, remoteAddr)) {
+          InternalDistributedMember m = mgr.getMemberForStub(key, true);
+          if (m == null) {
             throw ioe;
           }
           t.getConduit().getCancelCriterion().checkCancelInProgress(null);
@@ -1121,7 +1130,7 @@ public class Connection implements Runnable {
             connectionErrorLogged = true; // otherwise change to use 100ms intervals causes a lot of these
             logger.info(LocalizedMessage.create(
                 LocalizedStrings.Connection_CONNECTION_FAILED_TO_CONNECT_TO_PEER_0_BECAUSE_1,
-                new Object[] {sharedResource, preserveOrder, remoteAddr, ioe}));
+                new Object[] {sharedResource, preserveOrder, m, ioe}));
           }
         } // IOException
         finally {
@@ -1137,8 +1146,9 @@ public class Connection implements Runnable {
               // something went wrong while reading the handshake
               // and the socket was closed or this guy sent us a
               // ShutdownMessage
-              if (giveUpOnMember(mgr, remoteAddr)) {
-                throw new IOException(LocalizedStrings.Connection_MEMBER_LEFT_THE_GROUP.toLocalizedString(remoteAddr));
+              InternalDistributedMember m = mgr.getMemberForStub(key, true);
+              if (m == null) {
+                throw new IOException(LocalizedStrings.Connection_MEMBER_FOR_STUB_0_LEFT_THE_GROUP.toLocalizedString(key));
               }
               t.getConduit().getCancelCriterion().checkCancelInProgress(null);
               // no success but no need to log; just retry
@@ -1151,7 +1161,8 @@ public class Connection implements Runnable {
             throw e;
           }
           catch (ConnectionException e) {
-            if (giveUpOnMember(mgr, remoteAddr)) {
+            InternalDistributedMember m = mgr.getMemberForStub(key, true);
+            if (m == null) {
               IOException ioe = new IOException(LocalizedStrings.Connection_HANDSHAKE_FAILED.toLocalizedString());
               ioe.initCause(e);
               throw ioe;
@@ -1159,16 +1170,17 @@ public class Connection implements Runnable {
             t.getConduit().getCancelCriterion().checkCancelInProgress(null);
             logger.info(LocalizedMessage.create(
                 LocalizedStrings.Connection_CONNECTION_HANDSHAKE_FAILED_TO_CONNECT_TO_PEER_0_BECAUSE_1,
-                new Object[] {sharedResource, preserveOrder, remoteAddr ,e}));
+                new Object[] {sharedResource, preserveOrder, m,e}));
           }
           catch (IOException e) {
-            if (giveUpOnMember(mgr, remoteAddr)) {
+            InternalDistributedMember m = mgr.getMemberForStub(key, true);
+            if (m == null) {
               throw e;
             }
             t.getConduit().getCancelCriterion().checkCancelInProgress(null);
             logger.info(LocalizedMessage.create(
                 LocalizedStrings.Connection_CONNECTION_HANDSHAKE_FAILED_TO_CONNECT_TO_PEER_0_BECAUSE_1,
-                new Object[] {sharedResource, preserveOrder, remoteAddr ,e}));
+                new Object[] {sharedResource, preserveOrder, m,e}));
             if (!sharedResource && "Too many open files".equals(e.getMessage())) {
               t.fileDescriptorsExhausted();
             }
@@ -1208,7 +1220,7 @@ public class Connection implements Runnable {
     if (conn == null) {
       throw new ConnectionException(
         LocalizedStrings.Connection_CONNECTION_FAILED_CONSTRUCTION_FOR_PEER_0
-          .toLocalizedString(remoteAddr));
+          .toLocalizedString(mgr.getMemberForStub(key, true)));
     }
     if (preserveOrder && BATCH_SENDS) {
       conn.createBatchSendBuffer();
@@ -1216,15 +1228,12 @@ public class Connection implements Runnable {
     conn.finishedConnecting = true;
     return conn;
   }
-  
-  private static boolean giveUpOnMember(MembershipManager mgr, DistributedMember remoteAddr) {
-    return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
-  }
 
-  private void setRemoteAddr(DistributedMember m) {
+  private void setRemoteAddr(InternalDistributedMember m, Stub stub) {
     this.remoteAddr = this.owner.getDM().getCanonicalId(m);
+    this.remoteId = stub;
     MembershipManager mgr = this.owner.owner.getMembershipManager();
-    mgr.addSurpriseMember(m);
+    mgr.addSurpriseMember(m, stub);
   }
   
   /** creates a new connection to a remote server.
@@ -1234,11 +1243,11 @@ public class Connection implements Runnable {
   private Connection(MembershipManager mgr,
                      ConnectionTable t,
                      boolean preserveOrder,
-                     DistributedMember remoteID,
+                     Stub key,
+                     InternalDistributedMember remoteAddr,
                      boolean sharedResource)
     throws IOException, DistributedSystemDisconnectedException
   {    
-    InternalDistributedMember remoteAddr = (InternalDistributedMember)remoteID;
     if (t == null) {
       throw new IllegalArgumentException(LocalizedStrings.Connection_CONNECTIONTABLE_IS_NULL.toLocalizedString());
     }
@@ -1246,7 +1255,7 @@ public class Connection implements Runnable {
     this.owner = t;
     this.sharedResource = sharedResource;
     this.preserveOrder = preserveOrder;
-    setRemoteAddr(remoteAddr);
+    setRemoteAddr(remoteAddr, key);
     this.conduitIdStr = this.owner.getConduit().getId().toString();
     this.handshakeRead = false;
     this.handshakeCancelled = false;
@@ -1256,7 +1265,7 @@ public class Connection implements Runnable {
 
     // connect to listening socket
 
-    InetSocketAddress addr = new InetSocketAddress(remoteAddr.getInetAddress(), remoteAddr.getDirectChannelPort());
+    InetSocketAddress addr = new InetSocketAddress(remoteId.getInetAddress(), remoteId.getPort());
     if (useNIO()) {
       SocketChannel channel = SocketChannel.open();
       this.owner.addConnectingSocket(channel.socket(), addr.getAddress());
@@ -1316,15 +1325,15 @@ public class Connection implements Runnable {
     else {
       if (TCPConduit.useSSL) {
         // socket = javax.net.ssl.SSLSocketFactory.getDefault()
-        //  .createSocket(remoteAddr.getInetAddress(), remoteAddr.getPort());
+        //  .createSocket(remoteId.getInetAddress(), remoteId.getPort());
         int socketBufferSize = sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
-        this.socket = SocketCreator.getDefaultInstance().connectForServer( remoteAddr.getInetAddress(), remoteAddr.getDirectChannelPort(), socketBufferSize );
+        this.socket = SocketCreator.getDefaultInstance().connectForServer( remoteId.getInetAddress(), remoteId.getPort(), socketBufferSize );
         // Set the receive buffer size local fields. It has already been set in the socket.
         setSocketBufferSize(this.socket, false, socketBufferSize, true);
         setSendBufferSize(this.socket);
       }
       else {
-        //socket = new Socket(remoteAddr.getInetAddress(), remoteAddr.getPort());
+        //socket = new Socket(remoteId.getInetAddress(), remoteId.getPort());
         Socket s = new Socket();
         this.socket = s;
         s.setTcpNoDelay(true);
@@ -1630,8 +1639,8 @@ public class Connection implements Runnable {
     // we can't wait for the reader thread when running in an IBM JRE.  See
     // bug 41889
     if (this.owner.owner.config.getEnableNetworkPartitionDetection() ||
-        this.owner.owner.getLocalAddr().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE ||
-        this.owner.owner.getLocalAddr().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+        this.owner.owner.getLocalId().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE ||
+        this.owner.owner.getLocalId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
       isIBM = "IBM Corporation".equals(System.getProperty("java.vm.vendor"));
     }
     {
@@ -1680,16 +1689,16 @@ public class Connection implements Runnable {
               // Only remove endpoint if sender.
               if (this.finishedConnecting) {
                 // only remove endpoint if our constructor finished
-                this.owner.removeEndpoint(this.remoteAddr, reason);
+                this.owner.removeEndpoint(this.remoteId, reason);
               }
             }
           }
           else {
-            this.owner.removeSharedConnection(reason, this.remoteAddr, this.preserveOrder, this);
+            this.owner.removeSharedConnection(reason, this.remoteId, this.preserveOrder, this);
           }
         }
         else if (!this.isReceiver) {
-          this.owner.removeThreadConnection(this.remoteAddr, this);
+          this.owner.removeThreadConnection(this.remoteId, this);
         }
       }
       else {
@@ -1697,10 +1706,10 @@ public class Connection implements Runnable {
         // has never added this Connection to its maps since
         // the calls in this block use our identity to do the removes.
         if (this.sharedResource) {
-          this.owner.removeSharedConnection(reason, this.remoteAddr, this.preserveOrder, this);
+          this.owner.removeSharedConnection(reason, this.remoteId, this.preserveOrder, this);
         }
         else if (!this.isReceiver) {
-          this.owner.removeThreadConnection(this.remoteAddr, this);
+          this.owner.removeThreadConnection(this.remoteId, this);
         }
       }
     }
@@ -1744,7 +1753,7 @@ public class Connection implements Runnable {
     } finally {
       // bug36060: do the socket close within a finally block
       if (logger.isDebugEnabled()) {
-        logger.debug("Stopping {} for {}", p2pReaderName(), remoteAddr);
+        logger.debug("Stopping {} for {}", p2pReaderName(), remoteId);
       }
       initiateSuspicionIfSharedUnordered();
       if (this.isReceiver) {
@@ -2329,7 +2338,8 @@ public class Connection implements Runnable {
                     .toLocalizedString(new Object[]{new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
               }
               InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
-              setRemoteAddr(remote);
+              Stub stub = new Stub(remote.getInetAddress()/*fix for bug 33615*/, remote.getDirectChannelPort(), remote.getVmViewId());
+              setRemoteAddr(remote, stub);
               Thread.currentThread().setName(LocalizedStrings.Connection_P2P_MESSAGE_READER_FOR_0.toLocalizedString(this.remoteAddr, this.socket.getPort()));
               this.sharedResource = dis.readBoolean();
               this.preserveOrder = dis.readBoolean();
@@ -2367,7 +2377,7 @@ public class Connection implements Runnable {
               }
               
               if (logger.isDebugEnabled()) {
-                logger.debug("{} remoteAddr is {} {}", p2pReaderName(), this.remoteAddr,
+                logger.debug("{} remoteId is {} {}", p2pReaderName(), this.remoteId,
                     (this.remoteVersion != null ? " (" + this.remoteVersion + ')' : ""));
               }
 
@@ -2545,7 +2555,7 @@ public class Connection implements Runnable {
     throws IOException, ConnectionException
   {
     if (!connected) {
-      throw new ConnectionException(LocalizedStrings.Connection_NOT_CONNECTED_TO_0.toLocalizedString(this.remoteAddr));
+      throw new ConnectionException(LocalizedStrings.Connection_NOT_CONNECTED_TO_0.toLocalizedString(this.remoteId));
     }
     if (this.batchFlusher != null) {
       batchSend(buffer);
@@ -2768,7 +2778,7 @@ public class Connection implements Runnable {
         if (this.disconnectRequested) {
           buffer.position(origBufferPos);
           // we have given up so just drop this message.
-          throw new ConnectionException(LocalizedStrings.Connection_FORCED_DISCONNECT_SENT_TO_0.toLocalizedString(this.remoteAddr));
+          throw new ConnectionException(LocalizedStrings.Connection_FORCED_DISCONNECT_SENT_TO_0.toLocalizedString(this.remoteId));
         }
         if (!force && !this.asyncQueuingInProgress) {
           // reset buffer since we will be sending it. This fixes bug 34832
@@ -2970,7 +2980,7 @@ public class Connection implements Runnable {
     }
     DM dm = this.owner.getDM();
     if (dm == null) {
-      this.owner.removeEndpoint(this.remoteAddr, LocalizedStrings.Connection_NO_DISTRIBUTION_MANAGER.toLocalizedString());
+      this.owner.removeEndpoint(this.remoteId, LocalizedStrings.Connection_NO_DISTRIBUTION_MANAGER.toLocalizedString());
       return;
     }
     dm.getMembershipManager().requestMemberRemoval(this.remoteAddr, 
@@ -2991,7 +3001,7 @@ public class Connection implements Runnable {
         return;
       }
     }
-    this.owner.removeEndpoint(this.remoteAddr, 
+    this.owner.removeEndpoint(this.remoteId, 
                               LocalizedStrings.Connection_FORCE_DISCONNECT_TIMED_OUT.toLocalizedString());
     if (dm.getOtherDistributionManagerIds().contains(this.remoteAddr)) {
       if (logger.isDebugEnabled()) {
@@ -3100,7 +3110,7 @@ public class Connection implements Runnable {
       stats.incAsyncThreads(-1);
       stats.incAsyncQueues(-1);
       if (logger.isDebugEnabled()) {
-        logger.debug("runNioPusher terminated id={} from {}/{}", conduitIdStr, remoteAddr, remoteAddr);
+        logger.debug("runNioPusher terminated id={} from {}/{}", conduitIdStr, remoteId, remoteAddr);
       }
     }
     } finally {
@@ -3827,7 +3837,8 @@ public class Connection implements Runnable {
                   throw new IllegalStateException(LocalizedStrings.Connection_DETECTED_WRONG_VERSION_OF_GEMFIRE_PRODUCT_DURING_HANDSHAKE_EXPECTED_0_BUT_FOUND_1.toLocalizedString(new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
                 }
                 InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
-                setRemoteAddr(remote);
+                Stub stub = new Stub(remote.getInetAddress()/*fix for bug 33615*/, remote.getDirectChannelPort(), remote.getVmViewId());
+                setRemoteAddr(remote, stub);
                 this.sharedResource = dis.readBoolean();
                 this.preserveOrder = dis.readBoolean();
                 this.uniqueId = dis.readLong();
@@ -3886,7 +3897,7 @@ public class Connection implements Runnable {
                 return;
               }
               if (logger.isDebugEnabled()) {
-                logger.debug("P2P handshake remoteAddr is {}{}", this.remoteAddr,
+                logger.debug("P2P handshake remoteId is {}{}", this.remoteId,
                     (this.remoteVersion != null ? " (" + this.remoteVersion + ')' : ""));
               }
               try {
@@ -4018,6 +4029,12 @@ public class Connection implements Runnable {
 
   protected final void accessed() {
     this.accessed = true;
+  }
+
+  /** returns the ConnectionKey stub representing the other side of
+      this connection (host:port) */
+  public final Stub getRemoteId() {
+    return remoteId;
   }
 
   /** return the DM id of the guy on the other side of this connection.
