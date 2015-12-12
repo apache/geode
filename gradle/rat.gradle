@@ -38,6 +38,7 @@ rat {
     '**/build-eclipse/**',
     '*.iml',
     '.idea/**',
+    '**/tags',
 
     // text files
     '**/*.fig',
