@@ -2213,7 +2213,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   /* non-thread-owned serial channels and high priority channels are not
    * included
    */
-  public Map getChannelStates(DistributedMember member, boolean includeMulticast) {
+  public Map getMessageState(DistributedMember member, boolean includeMulticast) {
     Map result = new HashMap();
     DirectChannel dc = directChannel;
     if (dc != null) {
@@ -2229,7 +2229,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (Thread.interrupted()) throw new InterruptedException();
     DirectChannel dc = directChannel;
     if (dc != null) {
-      dc.waitForChannelState(otherMember, channelState);
+      dc.waitForChannelState(otherMember, state);
     }
     services.getMessenger().waitForMessageState((InternalDistributedMember)otherMember, state);
   }
