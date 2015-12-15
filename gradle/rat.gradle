@@ -27,6 +27,10 @@ rat {
     'gradlew',
     'gradlew.bat',
     'gradle/wrapper/gradle-wrapper.properties',
+    'caches/**',
+    'daemon/**',
+    'native/**',
+    'wrapper/**',
     '**/build/**',
 
     // IDE
