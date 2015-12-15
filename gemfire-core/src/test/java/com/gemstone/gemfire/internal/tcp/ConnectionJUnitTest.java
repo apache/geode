@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class ConnectionJUnitTest {
     when(stopper.cancelInProgress()).thenReturn(null);
     when(conduit.getCancelCriterion()).thenReturn(stopper);
 
-    when(conduit.getId()).thenReturn(new Stub(SocketCreator.getLocalHost(), 10337, 1));
+    when(conduit.getId()).thenReturn(new InetSocketAddress(SocketCreator.getLocalHost(), 10337));
     
     // NIO can't be mocked because SocketChannel has a final method that
     // is used by Connection - configureBlocking
