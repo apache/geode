@@ -514,7 +514,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         GMSMember gmbr = (GMSMember) suspectMember.getNetMember();
         writeMemberToStream(gmbr, out);
         clientSocket.shutdownOutput();
-        logger.debug("Connected - reading response", suspectMember);
+        logger.debug("Connected - reading response from suspect member {}", suspectMember);
         int b = in.read();
         logger.debug("Received {}", (b == OK ? "OK" : (b == ERROR ? "ERROR" : b)), suspectMember);
         if (b == OK) {
@@ -531,7 +531,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         return false;
       }
     } catch (SocketTimeoutException e) {
-      logger.debug("tcp/ip connection timed out");
+      logger.debug("Final check TCP/IP connection timed out for suspect member {}", suspectMember);
       return false;
     } catch (IOException e) {
       logger.trace("Unexpected exception", e);
@@ -1201,15 +1201,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               if (!pinged && !isStopping) {
                 TimeStamp ts = memberTimeStamps.get(mbr);
                 if (ts == null || ts.getTime() <= startTime) {
-                  logger.info("Final check failed - requesting removal");
+                  logger.info("Final check failed - requesting removal of suspect member " + mbr);
                   services.getJoinLeave().remove(mbr, reason);
                   failed = true;
                 } else {
-                  logger.info("check failed but detected recent message traffic");
+                  logger.info("Final check failed but detected recent message traffic for suspect member " + mbr);
                 }
               }
               if (!failed) {
-                logger.info("Final check passed");
+                logger.info("Final check passed for suspect member " + mbr);
               }
               // whether it's alive or not, at this point we allow it to
               // be watched again
