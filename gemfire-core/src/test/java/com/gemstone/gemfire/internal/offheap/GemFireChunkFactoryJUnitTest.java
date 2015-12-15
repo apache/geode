@@ -37,7 +37,7 @@ public class GemFireChunkFactoryJUnitTest {
   private MemoryAllocator ma;
 
   @Before
-  public void beforeClass() {
+  public void setUp() {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
     LogWriter lw = mock(LogWriter.class);
