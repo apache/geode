@@ -1639,6 +1639,13 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       // it's already doing shutdown by another thread
       return;
     }
+    if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
+      try {
+        CacheObserverHolder.getInstance().beforeShutdownAll();
+      } finally {
+        LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
+      }
+    }
     this.isShutDownAll = true;
 
     // bug 44031 requires multithread shutdownall should be grouped
