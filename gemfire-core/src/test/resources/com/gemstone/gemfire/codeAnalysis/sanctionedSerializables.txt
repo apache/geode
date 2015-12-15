@@ -249,7 +249,7 @@ com/gemstone/gemfire/distributed/internal/deadlock/GemFireDeadlockDetector$Colle
 com/gemstone/gemfire/distributed/internal/deadlock/LocalLockInfo,true,1,info:com/gemstone/gemfire/internal/concurrent/LI,locatility:java/io/Serializable
 com/gemstone/gemfire/distributed/internal/deadlock/LocalThread,true,1,locality:java/io/Serializable,threadId:long,threadName:java/lang/String,threadStack:java/lang/String
 com/gemstone/gemfire/distributed/internal/deadlock/MessageDependencyMonitor$MessageKey,true,414781046295505260,myId:com/gemstone/gemfire/distributed/internal/membership/InternalDistributedMember,processorId:int
-com/gemstone/gemfire/distributed/internal/direct/MissingStubException,true,-6455664684151074915
+com/gemstone/gemfire/distributed/internal/direct/ShunnedMemberException,true,-6455664684151074915
 com/gemstone/gemfire/distributed/internal/locks/DistributedMemberLock$LockReentryPolicy,false
 com/gemstone/gemfire/distributed/internal/locks/LockGrantorDestroyedException,true,-3540124531032570817
 com/gemstone/gemfire/distributed/internal/membership/gms/messages/InstallViewMessage$messageType,false
@@ -627,7 +627,7 @@ com/gemstone/gemfire/internal/tcp/ByteBufferInputStream,false,buffer:com/gemston
 com/gemstone/gemfire/internal/tcp/ConnectExceptions,true,-4173688946448867706,causes:java/util/List,members:java/util/List
 com/gemstone/gemfire/internal/tcp/ConnectionException,true,-1977443644277412122
 com/gemstone/gemfire/internal/tcp/ImmutableByteBufferInputStream,false
-com/gemstone/gemfire/internal/tcp/MemberShunnedException,true,-8453126202477831557,member:com/gemstone/gemfire/internal/tcp/Stub
+com/gemstone/gemfire/internal/tcp/MemberShunnedException,true,-8453126202477831557,member:com/gemstone/gemfire/distributed/DistributedMember
 com/gemstone/gemfire/internal/tcp/ReenteredConnectException,false
 com/gemstone/gemfire/internal/tcp/VersionedByteBufferInputStream,false,version:com/gemstone/gemfire/internal/Version
 com/gemstone/gemfire/internal/util/Breadcrumbs$CrumbType,false
