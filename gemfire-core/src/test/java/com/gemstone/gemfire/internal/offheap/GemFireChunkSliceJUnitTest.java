@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.offheap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -28,11 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GemFireChunkSliceJUnitTest extends GemFireChunkJUnitTest {
-	
-	@AfterClass
-	public static void afterClass() {
-		ma = null;
-	}
 	
 	@Test
 	public void sliceShouldHaveAValidDataSize() {

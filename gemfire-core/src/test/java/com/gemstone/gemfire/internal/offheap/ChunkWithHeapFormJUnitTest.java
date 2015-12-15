@@ -20,6 +20,8 @@ package com.gemstone.gemfire.internal.offheap;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,8 +40,7 @@ public class ChunkWithHeapFormJUnitTest extends GemFireChunkJUnitTest {
         	
     	assertNotNull(heapForm);
     	
-    	//assertEquals - to test identity that the passed byte[] is returned
-    	assertEquals(valueInBytes, heapForm.getRawBytes());
+    	assertSame(valueInBytes, heapForm.getRawBytes());
 	}
 	
 	@Test
@@ -58,5 +59,6 @@ public class ChunkWithHeapFormJUnitTest extends GemFireChunkJUnitTest {
     	
     	assertEquals(chunk.getMemoryAddress(), chunkWithOutHeapForm.getMemoryAddress());
     	assertArrayEquals(chunk.getRawBytes(), chunkWithOutHeapForm.getRawBytes());
+    	assertNotSame(valueInBytes, chunkWithOutHeapForm.getRawBytes());
 	}
 }

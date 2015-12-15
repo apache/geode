@@ -33,7 +33,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -52,19 +53,24 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 	
-	static MemoryAllocator ma;
+	private MemoryAllocator ma;
 	
 	static {
 		ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
 	}
 	
-	@BeforeClass
-	public static void beforeClass() {
+	@Before
+	public void setUp() {
 		OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
 		OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 		LogWriter lw = mock(LogWriter.class);
 		
 		ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
+	}
+	
+	@After
+	public void tearDown() {
+	  SimpleMemoryAllocatorImpl.freeOffHeapMemory();
 	}
 
     @Override
@@ -733,8 +739,16 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     @Test(expected = IllegalStateException.class)
     public void retainShouldThrowExceptionAfterMaxNumberOfTimesRetained() {
     	GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    	for(;;)
+    	
+      //max retain Chunk.MAX_REF_COUNT
+    	int MAX_REF_COUNT = 0xFFFF;
+    	
+      //loop though and invoke retain for MAX_REF_COUNT-1 times, as create chunk above counted as one reference
+    	for(int i = 0; i < MAX_REF_COUNT - 1; i++)
     		chunk.retain();
+    	
+      //invoke for the one more time should throw exception
+    	chunk.retain();
     }
     
     @Test

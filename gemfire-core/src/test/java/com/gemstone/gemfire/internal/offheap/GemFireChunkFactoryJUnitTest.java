@@ -22,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -33,15 +35,20 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class GemFireChunkFactoryJUnitTest {
 	
-	static MemoryAllocator ma;
+	private MemoryAllocator ma;
 	
-	@BeforeClass
-	public static void beforeClass() {
+	@Before
+	public void beforeClass() {
 		OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
 		OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 		LogWriter lw = mock(LogWriter.class);
 		
 		ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
+	}
+	
+	@After
+	public void tearDown() {
+	  SimpleMemoryAllocatorImpl.freeOffHeapMemory();
 	}
 	
     private GemFireChunk createChunk(Object value) {
