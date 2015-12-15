@@ -984,10 +984,7 @@ public class DLockGrantor {
     }
     try {
       checkDestroyed();
-      if (request.checkForTimeout()) {
-        // no cleanup here because we bypassed lock permissions
-        return 0;
-      }
+      // to fix GEODE-678 no longer call request.checkForTimeout
       DLockGrantToken grant = getGrantToken(request.getObjectName());
       if (grant == null) {
         if (logger.isTraceEnabled(LogMarker.DLS)) {
