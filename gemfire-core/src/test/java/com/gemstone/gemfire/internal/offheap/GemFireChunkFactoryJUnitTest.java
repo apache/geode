@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -34,106 +33,106 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GemFireChunkFactoryJUnitTest {
-	
-	private MemoryAllocator ma;
-	
-	@Before
-	public void beforeClass() {
-		OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
-		OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
-		LogWriter lw = mock(LogWriter.class);
-		
-		ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
-	}
-	
-	@After
-	public void tearDown() {
-	  SimpleMemoryAllocatorImpl.freeOffHeapMemory();
-	}
-	
-    private GemFireChunk createChunk(Object value) {
-        byte[] v = EntryEventImpl.serialize(value);
-       
-        boolean isSerialized = true;
-        boolean isCompressed = false;
-        
-    	GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-        chunk.setSerializedValue(v);
-        chunk.setCompressed(isCompressed);
-        chunk.setSerialized(isSerialized);
-        
-        return chunk;
-    }
-	
-	@Test
-	public void factoryShouldCreateNewChunkWithGivenAddress() {
-		GemFireChunk chunk = createChunk(Long.MAX_VALUE);
-		
-		ChunkFactory factory = new GemFireChunkFactory();
-		Chunk newChunk = factory.newChunk(chunk.getMemoryAddress());
-		
-		assertNotNull(newChunk);
-		assertEquals(GemFireChunk.class, newChunk.getClass());
-		
-		assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
-		
-		chunk.release();
-	}
-	
-	@Test
-	public void factoryShouldCreateNewChunkWithGivenAddressAndType() {
-		GemFireChunk chunk = createChunk(Long.MAX_VALUE);
-		
-		ChunkFactory factory = new GemFireChunkFactory();
-		Chunk newChunk = factory.newChunk(chunk.getMemoryAddress(), GemFireChunk.TYPE);
-		
-		assertNotNull(newChunk);
-		assertEquals(GemFireChunk.class, newChunk.getClass());
-		
-		assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
-		assertThat(newChunk.getChunkType()).isEqualTo(GemFireChunk.TYPE);
-		
-		chunk.release();
-	}
-	
-	@Test
-	public void shouldGetChunkTypeFromAddress() {
-		byte[] v = EntryEventImpl.serialize(Long.MAX_VALUE);
-	       
-        boolean isSerialized = true;
-        boolean isCompressed = false;
-        
-		GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-        chunk.setSerializedValue(v);
-        chunk.setCompressed(isCompressed);
-        chunk.setSerialized(isSerialized);
-		
-        ChunkFactory factory = new GemFireChunkFactory();
-		ChunkType actualType = factory.getChunkTypeForAddress(chunk.getMemoryAddress());
-		
-		assertEquals(GemFireChunk.TYPE, actualType);
-		
-		chunk.release();
-	}
-	
-	@Test
-	public void shouldGetChunkTypeFromRawBits() {
-		byte[] v = EntryEventImpl.serialize(Long.MAX_VALUE);
-	       
-        boolean isSerialized = true;
-        boolean isCompressed = false;
-        
-		GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-        chunk.setSerializedValue(v);
-        chunk.setCompressed(isCompressed);
-        chunk.setSerialized(isSerialized);
-		
-        int rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4 /*REF_COUNT_OFFSET*/);
-        
-        ChunkFactory factory = new GemFireChunkFactory();
-		ChunkType actualType = factory.getChunkTypeForRawBits(rawBits);
-		assertEquals(GemFireChunk.TYPE, actualType);
-		
-		chunk.release();
-	}
+
+  private MemoryAllocator ma;
+
+  @Before
+  public void beforeClass() {
+    OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
+    OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
+    LogWriter lw = mock(LogWriter.class);
+
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
+  }
+
+  @After
+  public void tearDown() {
+    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+  }
+
+  private GemFireChunk createChunk(Object value) {
+    byte[] v = EntryEventImpl.serialize(value);
+
+    boolean isSerialized = true;
+    boolean isCompressed = false;
+
+    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
+    chunk.setSerializedValue(v);
+    chunk.setCompressed(isCompressed);
+    chunk.setSerialized(isSerialized);
+
+    return chunk;
+  }
+
+  @Test
+  public void factoryShouldCreateNewChunkWithGivenAddress() {
+    GemFireChunk chunk = createChunk(Long.MAX_VALUE);
+
+    ChunkFactory factory = new GemFireChunkFactory();
+    Chunk newChunk = factory.newChunk(chunk.getMemoryAddress());
+
+    assertNotNull(newChunk);
+    assertEquals(GemFireChunk.class, newChunk.getClass());
+
+    assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
+
+    chunk.release();
+  }
+
+  @Test
+  public void factoryShouldCreateNewChunkWithGivenAddressAndType() {
+    GemFireChunk chunk = createChunk(Long.MAX_VALUE);
+
+    ChunkFactory factory = new GemFireChunkFactory();
+    Chunk newChunk = factory.newChunk(chunk.getMemoryAddress(), GemFireChunk.TYPE);
+
+    assertNotNull(newChunk);
+    assertEquals(GemFireChunk.class, newChunk.getClass());
+
+    assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
+    assertThat(newChunk.getChunkType()).isEqualTo(GemFireChunk.TYPE);
+
+    chunk.release();
+  }
+
+  @Test
+  public void shouldGetChunkTypeFromAddress() {
+    byte[] v = EntryEventImpl.serialize(Long.MAX_VALUE);
+
+    boolean isSerialized = true;
+    boolean isCompressed = false;
+
+    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
+    chunk.setSerializedValue(v);
+    chunk.setCompressed(isCompressed);
+    chunk.setSerialized(isSerialized);
+
+    ChunkFactory factory = new GemFireChunkFactory();
+    ChunkType actualType = factory.getChunkTypeForAddress(chunk.getMemoryAddress());
+
+    assertEquals(GemFireChunk.TYPE, actualType);
+
+    chunk.release();
+  }
+
+  @Test
+  public void shouldGetChunkTypeFromRawBits() {
+    byte[] v = EntryEventImpl.serialize(Long.MAX_VALUE);
+
+    boolean isSerialized = true;
+    boolean isCompressed = false;
+
+    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
+    chunk.setSerializedValue(v);
+    chunk.setCompressed(isCompressed);
+    chunk.setSerialized(isSerialized);
+
+    int rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4 /* REF_COUNT_OFFSET */);
+
+    ChunkFactory factory = new GemFireChunkFactory();
+    ChunkType actualType = factory.getChunkTypeForRawBits(rawBits);
+    assertEquals(GemFireChunk.TYPE, actualType);
+
+    chunk.release();
+  }
 }

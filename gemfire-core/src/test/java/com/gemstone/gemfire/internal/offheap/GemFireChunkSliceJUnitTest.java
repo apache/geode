@@ -27,46 +27,46 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GemFireChunkSliceJUnitTest extends GemFireChunkJUnitTest {
-	
-	@Test
-	public void sliceShouldHaveAValidDataSize() {
-		int position = 1;
-    	int end = 2;
 
-    	GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-		GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);	
-		
-    	assertNotNull(slice);	
-    	assertEquals(GemFireChunkSlice.class, slice.getClass());
-    	
-    	assertEquals(end - position, slice.getDataSize());
-	}
-	
-	@Test
-	public void sliceShouldHaveAValidBaseDataAddress() {
-		int position = 1;
-    	int end = 2;
-    	
-		GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());    	
-    	GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
-    	
-    	assertNotNull(slice);	
-    	assertEquals(GemFireChunkSlice.class, slice.getClass());
-    	
-    	assertEquals(chunk.getBaseDataAddress() + position, slice.getBaseDataAddress());
-	}
-	
-	@Test
-	public void sliceShouldHaveAValidBaseOffset() {
-		int position = 1;
-    	int end = 2;
-    	
-		GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());    	
-    	GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
-    	
-    	assertNotNull(slice);	
-    	assertEquals(GemFireChunkSlice.class, slice.getClass());
-    	
-    	assertEquals(chunk.getBaseDataOffset() + position, slice.getBaseDataOffset());
-	}
+  @Test
+  public void sliceShouldHaveAValidDataSize() {
+    int position = 1;
+    int end = 2;
+
+    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
+
+    assertNotNull(slice);
+    assertEquals(GemFireChunkSlice.class, slice.getClass());
+
+    assertEquals(end - position, slice.getDataSize());
+  }
+
+  @Test
+  public void sliceShouldHaveAValidBaseDataAddress() {
+    int position = 1;
+    int end = 2;
+
+    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
+
+    assertNotNull(slice);
+    assertEquals(GemFireChunkSlice.class, slice.getClass());
+
+    assertEquals(chunk.getBaseDataAddress() + position, slice.getBaseDataAddress());
+  }
+
+  @Test
+  public void sliceShouldHaveAValidBaseOffset() {
+    int position = 1;
+    int end = 2;
+
+    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    GemFireChunkSlice slice = (GemFireChunkSlice) chunk.slice(position, end);
+
+    assertNotNull(slice);
+    assertEquals(GemFireChunkSlice.class, slice.getClass());
+
+    assertEquals(chunk.getBaseDataOffset() + position, slice.getBaseDataOffset());
+  }
 }

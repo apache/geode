@@ -31,34 +31,34 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class ChunkWithHeapFormJUnitTest extends GemFireChunkJUnitTest {
 
-	@Test
-	public void getRawBytesShouldReturnCachedHeapForm() {
-		GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    
-    	byte[] valueInBytes = getValueAsByteArray();
-    	ChunkWithHeapForm heapForm = new ChunkWithHeapForm(chunk, valueInBytes);
-        	
-    	assertNotNull(heapForm);
-    	
-    	assertSame(valueInBytes, heapForm.getRawBytes());
-	}
-	
-	@Test
-	public void getChunkWithoutHeapFormShouldReturnGemFireChunk() {
-		GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
-	    
-    	byte[] valueInBytes = getValueAsByteArray();
-    	ChunkWithHeapForm heapForm = new ChunkWithHeapForm(chunk, valueInBytes);
-    	
-    	Chunk chunkWithOutHeapForm = heapForm.getChunkWithoutHeapForm();
-    	
-    	assertNotNull(chunkWithOutHeapForm);
-    	assertEquals(GemFireChunk.class, chunkWithOutHeapForm.getClass());
-    	
-    	assertEquals(chunk, heapForm.getChunkWithoutHeapForm());
-    	
-    	assertEquals(chunk.getMemoryAddress(), chunkWithOutHeapForm.getMemoryAddress());
-    	assertArrayEquals(chunk.getRawBytes(), chunkWithOutHeapForm.getRawBytes());
-    	assertNotSame(valueInBytes, chunkWithOutHeapForm.getRawBytes());
-	}
+  @Test
+  public void getRawBytesShouldReturnCachedHeapForm() {
+    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+
+    byte[] valueInBytes = getValueAsByteArray();
+    ChunkWithHeapForm heapForm = new ChunkWithHeapForm(chunk, valueInBytes);
+
+    assertNotNull(heapForm);
+
+    assertSame(valueInBytes, heapForm.getRawBytes());
+  }
+
+  @Test
+  public void getChunkWithoutHeapFormShouldReturnGemFireChunk() {
+    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+
+    byte[] valueInBytes = getValueAsByteArray();
+    ChunkWithHeapForm heapForm = new ChunkWithHeapForm(chunk, valueInBytes);
+
+    Chunk chunkWithOutHeapForm = heapForm.getChunkWithoutHeapForm();
+
+    assertNotNull(chunkWithOutHeapForm);
+    assertEquals(GemFireChunk.class, chunkWithOutHeapForm.getClass());
+
+    assertEquals(chunk, heapForm.getChunkWithoutHeapForm());
+
+    assertEquals(chunk.getMemoryAddress(), chunkWithOutHeapForm.getMemoryAddress());
+    assertArrayEquals(chunk.getRawBytes(), chunkWithOutHeapForm.getRawBytes());
+    assertNotSame(valueInBytes, chunkWithOutHeapForm.getRawBytes());
+  }
 }
