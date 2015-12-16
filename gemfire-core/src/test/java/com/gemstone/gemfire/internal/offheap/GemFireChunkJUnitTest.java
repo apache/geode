@@ -255,7 +255,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
 
-    int headerBeforeSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4/* REF_COUNT_OFFSET */);
+    int headerBeforeSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
 
     assertThat(chunk.isSerialized()).isFalse();
 
@@ -263,9 +263,9 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isSerialized()).isTrue();
 
-    int headerAfterSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4/* REF_COUNT_OFFSET */);
+    int headerAfterSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterSerializedBitSet).isEqualTo(headerBeforeSerializedBitSet | 0x80000000/* IS_SERIALIZED_BIT */);
+    assertThat(headerAfterSerializedBitSet).isEqualTo(headerBeforeSerializedBitSet | Chunk.IS_SERIALIZED_BIT);
 
     chunk.release();
   }
@@ -289,7 +289,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
 
-    int headerBeforeCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4/* REF_COUNT_OFFSET */);
+    int headerBeforeCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
 
     assertThat(chunk.isCompressed()).isFalse();
 
@@ -297,9 +297,9 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isCompressed()).isTrue();
 
-    int headerAfterCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4/* REF_COUNT_OFFSET */);
+    int headerAfterCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterCompressedBitSet).isEqualTo(headerBeforeCompressedBitSet | 0x40000000/* IS_SERIALIZED_BIT */);
+    assertThat(headerAfterCompressedBitSet).isEqualTo(headerBeforeCompressedBitSet | Chunk.IS_COMPRESSED_BIT);
 
     chunk.release();
   }
@@ -730,11 +730,8 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   public void retainShouldThrowExceptionAfterMaxNumberOfTimesRetained() {
     GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
-    // max retain Chunk.MAX_REF_COUNT
-    int MAX_REF_COUNT = 0xFFFF;
-
     // loop though and invoke retain for MAX_REF_COUNT-1 times, as create chunk above counted as one reference
-    for (int i = 0; i < MAX_REF_COUNT - 1; i++)
+    for (int i = 0; i < Chunk.MAX_REF_COUNT - 1; i++)
       chunk.retain();
 
     // invoke for the one more time should throw exception
@@ -891,7 +888,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   public void getSrcTypeOrdinalFromAddressShouldReturnOrdinal() {
     GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
-    assertThat(Chunk.getSrcTypeOrdinal(chunk.getMemoryAddress())).isEqualTo(4);
+    assertThat(Chunk.getSrcTypeOrdinal(chunk.getMemoryAddress())).isEqualTo(Chunk.SRC_TYPE_GFE >> Chunk.SRC_TYPE_SHIFT);
 
     chunk.release();
   }
@@ -900,8 +897,8 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   public void getSrcTypeOrdinalFromRawBitsShouldReturnOrdinal() {
     GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
-    int rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4 /* REF_COUNT_OFFSET */);
-    assertThat(Chunk.getSrcTypeOrdinalFromRawBits(rawBits)).isEqualTo(4);
+    int rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
+    assertThat(Chunk.getSrcTypeOrdinalFromRawBits(rawBits)).isEqualTo(Chunk.SRC_TYPE_GFE >> Chunk.SRC_TYPE_SHIFT);
 
     chunk.release();
   }
