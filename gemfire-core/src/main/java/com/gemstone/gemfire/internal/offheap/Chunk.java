@@ -74,21 +74,21 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      * a delta whose max value would be HUGE_MULTIPLE-1.
      * The lower two bytes contains the use count.
      */
-    private final static int REF_COUNT_OFFSET = 4;
+    final static int REF_COUNT_OFFSET = 4;
     /**
      * The upper two bits are used for the isSerialized
      * and isCompressed flags.
      */
-    private final static int IS_SERIALIZED_BIT =    0x80000000;
-    private final static int IS_COMPRESSED_BIT =    0x40000000;
-    private final static int SRC_TYPE_MASK = 0x38000000;
-    private final static int SRC_TYPE_SHIFT = 16/*refCount*/+8/*dataSize*/+3/*magicSize*/;
-    private final static int MAGIC_MASK = 0x07000000;
-    private final static int MAGIC_NUMBER = 0x05000000;
-    private final static int DATA_SIZE_DELTA_MASK = 0x00ff0000;
-    private final static int DATA_SIZE_SHIFT = 16;
-    private final static int REF_COUNT_MASK =       0x0000ffff;
-    private final static int MAX_REF_COUNT = 0xFFFF;
+    final static int IS_SERIALIZED_BIT =    0x80000000;
+    final static int IS_COMPRESSED_BIT =    0x40000000;
+    final static int SRC_TYPE_MASK = 0x38000000;
+    final static int SRC_TYPE_SHIFT = 16/*refCount*/+8/*dataSize*/+3/*magicSize*/;
+    final static int MAGIC_MASK = 0x07000000;
+    final static int MAGIC_NUMBER = 0x05000000;
+    final static int DATA_SIZE_DELTA_MASK = 0x00ff0000;
+    final static int DATA_SIZE_SHIFT = 16;
+    final static int REF_COUNT_MASK =       0x0000ffff;
+    final static int MAX_REF_COUNT = 0xFFFF;
     final static long FILL_PATTERN = 0x3c3c3c3c3c3c3c3cL;
     final static byte FILL_BYTE = 0x3c;
     
@@ -376,8 +376,8 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     }
 
     public long getAddressForReading(int offset, int size) {
-      assert offset+size <= getDataSize();
-      return getBaseDataAddress() + offset;
+      //delegate to getUnsafeAddress - as both the methods does return the memory address from given offset
+      return getUnsafeAddress(offset, size);
     }
     
     @Override
