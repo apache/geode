@@ -907,15 +907,11 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Test
-  public void fillShouldFillTheUnusedSpace() {
-    Object regionEntryValue = getValue();
-    byte[] regionEntryValueAsBytes = convertValueToByteArray(regionEntryValue);
-
+  public void fillShouldFillTheChunk() {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(regionEntryValueAsBytes);
 
     // first fill the unused part with FILL_PATTERN
     Chunk.fill(chunk.getMemoryAddress());
