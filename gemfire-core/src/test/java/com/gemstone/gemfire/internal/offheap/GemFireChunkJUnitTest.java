@@ -124,10 +124,6 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   private GemFireChunk createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(v);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
-
     return chunk;
   }
 
@@ -258,7 +254,6 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isCompressed = false;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(regionEntryValueAsBytes);
 
     int headerBeforeSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4/* REF_COUNT_OFFSET */);
 
@@ -293,7 +288,6 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isCompressed = false;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(regionEntryValueAsBytes);
 
     int headerBeforeCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4/* REF_COUNT_OFFSET */);
 
@@ -447,9 +441,6 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isCompressed = true;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(regionEntryValueAsBytes);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
 
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
     CachePerfStats cacheStats = mock(CachePerfStats.class);
@@ -873,9 +864,6 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isCompressed = true;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(regionEntryValueAsBytes);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
 
     chunk.getRawBytes();
 
@@ -891,9 +879,6 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isCompressed = false;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(regionEntryValueAsBytes);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
 
     byte[] serializedValue = chunk.getSerializedValue();
 
@@ -931,8 +916,6 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed, GemFireChunk.TYPE);
     chunk.setSerializedValue(regionEntryValueAsBytes);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
 
     // first fill the unused part with FILL_PATTERN
     Chunk.fill(chunk.getMemoryAddress());

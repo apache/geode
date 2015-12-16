@@ -57,9 +57,6 @@ public class GemFireChunkFactoryJUnitTest {
     boolean isCompressed = false;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(v);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
 
     return chunk;
   }
@@ -103,9 +100,6 @@ public class GemFireChunkFactoryJUnitTest {
     boolean isCompressed = false;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(v);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
 
     ChunkFactory factory = new GemFireChunkFactory();
     ChunkType actualType = factory.getChunkTypeForAddress(chunk.getMemoryAddress());
@@ -123,9 +117,6 @@ public class GemFireChunkFactoryJUnitTest {
     boolean isCompressed = false;
 
     GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-    chunk.setSerializedValue(v);
-    chunk.setCompressed(isCompressed);
-    chunk.setSerialized(isSerialized);
 
     int rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + 4 /* REF_COUNT_OFFSET */);
 
