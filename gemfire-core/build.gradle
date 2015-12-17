@@ -99,6 +99,14 @@ dependencies {
   testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
   testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
   testCompile 'redis.clients:jedis:' + project.'jedis.version'
+
+  testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-module-junit4-common:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-api-support:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+  testRuntime 'org.powermock:powermock-reflect:' + project.'powermock.version'
+  testRuntime 'org.javassist:javassist:' + project.'javassist.version'
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

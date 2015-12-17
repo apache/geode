@@ -104,7 +104,14 @@ public class TableBuilder {
       RowGroup rowGroup = newRowGroup();
       rowGroup.newBlankRow();
     }
-    
+
+    public RowGroup getLastRowGroup() {
+      if (rowGroups.size() == 0) {
+        return null;
+      }
+      return rowGroups.get(rowGroups.size() - 1);
+    }
+
     /**
      * Computes total Max Row Length across table - for all row groups.
      */
