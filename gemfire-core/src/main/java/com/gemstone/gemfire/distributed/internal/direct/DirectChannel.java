@@ -596,7 +596,7 @@ public class DirectChannel {
           logger.trace(LogMarker.DM, "Not a member: {}", destination);
         }
         if (ce == null) ce = new ConnectExceptions();
-        ce.addFailure(destination, new ShunnedMemberException(LocalizedStrings.DirectChannel_SHUNNING_0.toLocalizedString()));
+        ce.addFailure(destination, new ShunnedMemberException(LocalizedStrings.DirectChannel_SHUNNING_0.toLocalizedString(destination)));
       }
       else {
         try {

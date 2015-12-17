@@ -21,6 +21,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import com.gemstone.gemfire.internal.Version;
+
 /**
  * This is the SPI for the basic element of membership provided in the
  * GemFire system.
@@ -68,6 +70,8 @@ public interface NetMember extends Comparable<NetMember>
   public void setPreferredForCoordinator(boolean preferred);
   
   public byte getMemberWeight();
+  
+  public void setVersion(Version v);
 
   /** write identity information not known by DistributedMember instances */
   public void writeAdditionalData(DataOutput out) throws IOException;

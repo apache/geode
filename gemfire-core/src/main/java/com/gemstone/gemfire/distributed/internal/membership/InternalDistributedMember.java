@@ -18,6 +18,7 @@ package com.gemstone.gemfire.distributed.internal.membership;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -1023,7 +1024,11 @@ public final class InternalDistributedMember
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
     if (this.version >= Version.GFE_90.ordinal()) {
-      netMbr.readAdditionalData(in);
+      try {
+        netMbr.readAdditionalData(in);
+      } catch (EOFException e) {
+        // nope - it's from a pre-GEODE client or WAN site
+      }
     }
   }
   
@@ -1254,6 +1259,12 @@ public final class InternalDistributedMember
       sb.append(hostname);
     }
   }*/
+  
+  public final void setVersionObjectForTest(Version v) {
+    this.version = v.ordinal();
+    this.versionObj = v;
+    netMbr.setVersion(v);
+  }
 
   public final Version getVersionObject() {
     return this.versionObj;

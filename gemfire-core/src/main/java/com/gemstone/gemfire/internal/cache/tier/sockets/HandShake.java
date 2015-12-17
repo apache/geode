@@ -1314,14 +1314,14 @@ public class HandShake implements ClientHandShake
       //Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
       if(communicationMode == Acceptor.GATEWAY_TO_GATEWAY  && !
           (acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED ||
-              acceptanceCode ==  REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
-         short wanSiteVersion = Version.readOrdinal(dis);
-         conn.setWanSiteVersion(wanSiteVersion);
-         // establish a versioned stream for the other site, if necessary         
-         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
-           dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
-         }
-        } 
+          acceptanceCode ==  REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
+        short wanSiteVersion = Version.readOrdinal(dis);
+        conn.setWanSiteVersion(wanSiteVersion);
+        // establish a versioned stream for the other site, if necessary         
+        if (wanSiteVersion < Version.CURRENT_ORDINAL) {
+          dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
+        }
+      } 
 
       // No need to check for return value since DataInputStream already throws
       // EOFException in case of EOF

@@ -39,6 +39,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -101,10 +102,6 @@ public final class ClientProxyMembershipID
 
   protected int uniqueId;
   
-  //Version information is not available during the handshake
-  //see comments in HandShake.write()
-  private transient static final Version clientVersion = Version.GFE_82;
-
   // private final String proxyIDStr;
   // private final String clientIdStr ;
 
@@ -353,14 +350,13 @@ public final class ClientProxyMembershipID
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException
   {
-    
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
 //    {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}
   }
   
   public Version getClientVersion() {
-    return this.clientVersion;
+    return ((InternalDistributedMember)getDistributedMember()).getVersionObject();
   }
 
   public String getDSMembership()
@@ -405,15 +401,12 @@ public final class ClientProxyMembershipID
   public DistributedMember getDistributedMember()  {
     if (memberId == null) {      
       ByteArrayInputStream bais = new ByteArrayInputStream(identity);
-      DataInputStream dis = new VersionedDataInputStream(bais, clientVersion);
+      DataInputStream dis = new VersionedDataInputStream(bais, Version.CURRENT);
       try {
         memberId = (DistributedMember)DataSerializer.readObject(dis);
       }
       catch (Exception e) {
-        DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-        if(ds != null){
-          logger.error(LocalizedMessage.create(LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_DESERIALIZE_MEMBERSHIP_ID), e);
-        }
+        logger.error(LocalizedMessage.create(LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_DESERIALIZE_MEMBERSHIP_ID), e);
       }
     }
     return memberId;

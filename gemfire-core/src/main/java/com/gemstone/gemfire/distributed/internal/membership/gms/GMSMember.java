@@ -26,11 +26,9 @@ import org.jgroups.util.UUID;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -349,6 +347,10 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   public void setVmKind(int vmKind) {
     this.vmKind = vmKind;
   }
+  
+  public void setVersion(Version v) {
+    this.versionOrdinal = v.ordinal();
+  }
 
   public void setBirthViewId(int birthViewId) {
     this.vmViewId = birthViewId;
@@ -441,7 +443,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   @Override
   public void writeAdditionalData(DataOutput out) throws IOException {
-    // note: member weight and other GMS-only info is not included here
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
     out.write(memberWeight);
