@@ -54,9 +54,16 @@ rat {
 
     // binary files
     '**/*.cer',
+    '**/*.dia',
     '**/*.gfs',
-    '**/keystore',
+    '**/*.gif',
+    '**/*.ico',
+    '**/*.jpg',
+    '**/*.keystore',
+    '**/*.pdf',
+    '**/*.png',
     '**/*.ser',
+    '**/*.truststore',
     '**/*.xls',
 
     // other text files
