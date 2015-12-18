@@ -99,7 +99,7 @@ public class TcpServer {
   public static int TESTVERSION = GOSSIPVERSION;
   public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
-  private static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
+  public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
   private static int MAX_POOL_SIZE = Integer.getInteger("gemfire.TcpServer.MAX_POOL_SIZE", 100).intValue();
   private static int POOL_IDLE_TIMEOUT = 60 * 1000;
   

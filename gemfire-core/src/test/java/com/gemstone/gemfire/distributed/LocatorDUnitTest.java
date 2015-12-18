@@ -1436,12 +1436,13 @@ public class LocatorDUnitTest extends DistributedTestCase {
       vm0.invoke(getStopLocatorRunnable());
     }
   }
-
+  
   /**
    * Tests starting multiple locators in multiple VMs.
    */
   public void testMultipleMcastLocators() throws Exception {
     disconnectAllFromDS();
+    addExpectedException("Could not stop  Distribution Locator"); // shutdown timing issue in InternalLocator
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
