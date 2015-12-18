@@ -646,6 +646,7 @@ public class SharedConfiguration {
         regionAttrsFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
         regionAttrsFactory.setCacheListener(new ConfigurationChangeListener(this));
         regionAttrsFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
+        regionAttrsFactory.setScope(Scope.DISTRIBUTED_ACK);
         InternalRegionArguments internalArgs = new InternalRegionArguments();
         internalArgs.setIsUsedForMetaRegion(true);
         internalArgs.setMetaRegionWithTransactions(false);
