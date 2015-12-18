@@ -35,8 +35,8 @@ public class AvailablePort {
   /** Is the port available for a Socket (TCP) connection? */
   public static final int SOCKET = 0;
 
-  /** Is the port available for a JGroups (UDP) connection */
-  public static final int JGROUPS = 1;
+  /** Is the port available for a JGroups (UDP) multicast connection */
+  public static final int MULTICAST = 1;
 
   ///////////////////////  Static Methods  ///////////////////////
   
@@ -50,7 +50,7 @@ public class AvailablePort {
       if (protocol == SOCKET) {
         name = System.getProperty("gemfire.bind-address");
       }
-      else if (protocol == JGROUPS) {
+      else if (protocol == MULTICAST) {
         name = System.getProperty("gemfire.mcast-address");
       }
       if (name != null) {
@@ -72,7 +72,7 @@ public class AvailablePort {
    *        The port to check
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -90,7 +90,7 @@ public class AvailablePort {
    *        The port to check
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind address (or mcast address) to use
    *
    * @throws IllegalArgumentException
@@ -106,47 +106,44 @@ public class AvailablePort {
       }
     }
     
-    else if (protocol == JGROUPS) {
+    else if (protocol == MULTICAST) {
       DatagramSocket socket = null;
       try {
-        // TODO - need to find out if anyone is listening on this port
-        return true;
-
-//        socket = new MulticastSocket();
-//        socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000).intValue());
-//        byte[] buffer = new byte[4];
-//        buffer[0] = (byte)'p';
-//        buffer[1] = (byte)'i';
-//        buffer[2] = (byte)'n';
-//        buffer[3] = (byte)'g';
-//        SocketAddress mcaddr = new InetSocketAddress(
-//          addr==null? DistributionConfig.DEFAULT_MCAST_ADDRESS : addr, port);
-//        DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
-//        socket.send(packet);
-//        try {
-//          socket.receive(packet);
-//          packet.getData();  // make sure there's data, but no need to process it
-//          return false;
-//        }
-//        catch (SocketTimeoutException ste) {
-//          //System.out.println("socket read timed out");
-//          return true;
-//        }
-//        catch (Exception e) {
-//          e.printStackTrace();
-//          return false;
-//        }
-//      }
-//      catch (java.io.IOException ioe) {
-//        if (ioe.getMessage().equals("Network is unreachable")) {
-//          throw new RuntimeException(LocalizedStrings.AvailablePort_NETWORK_IS_UNREACHABLE.toLocalizedString(), ioe);
-//        }
-//        ioe.printStackTrace();
-//        return false;
-//      }
-//      catch (Exception e) {
-//        e.printStackTrace();
-//        return false;
+        socket = new MulticastSocket();
+        socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000).intValue());
+        byte[] buffer = new byte[4];
+        buffer[0] = (byte)'p';
+        buffer[1] = (byte)'i';
+        buffer[2] = (byte)'n';
+        buffer[3] = (byte)'g';
+        SocketAddress mcaddr = new InetSocketAddress(
+          addr==null? DistributionConfig.DEFAULT_MCAST_ADDRESS : addr, port);
+        DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
+        socket.send(packet);
+        try {
+          socket.receive(packet);
+          packet.getData();  // make sure there's data, but no need to process it
+          return false;
+        }
+        catch (SocketTimeoutException ste) {
+          //System.out.println("socket read timed out");
+          return true;
+        }
+        catch (Exception e) {
+          e.printStackTrace();
+          return false;
+        }
+      }
+      catch (java.io.IOException ioe) {
+        if (ioe.getMessage().equals("Network is unreachable")) {
+          throw new RuntimeException(LocalizedStrings.AvailablePort_NETWORK_IS_UNREACHABLE.toLocalizedString(), ioe);
+        }
+        ioe.printStackTrace();
+        return false;
+      }
+      catch (Exception e) {
+        e.printStackTrace();
+        return false;
       }
       finally {
         if (socket != null) {
@@ -173,7 +170,7 @@ public class AvailablePort {
       } else {
         return keepOneInterface(addr, port);
       }
-    } else if (protocol == JGROUPS) {
+    } else if (protocol == MULTICAST) {
       throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
     } else {
       throw new IllegalArgumentException(LocalizedStrings.AvailablePort_UNKNOWN_PROTOCOL_0.toLocalizedString(Integer.valueOf(protocol)));
@@ -297,7 +294,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -314,7 +311,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -329,7 +326,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -345,7 +342,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind-address or mcast address to use
    *
    * @throws IllegalArgumentException
@@ -356,7 +353,7 @@ public class AvailablePort {
       int port = getRandomWildcardBindPortNumber();
       if (isPortAvailable(port, protocol, addr)) {
         // don't return the products default multicast port
-        if ( !(protocol == JGROUPS && port == DistributionConfig.DEFAULT_MCAST_PORT) ){
+        if ( !(protocol == MULTICAST && port == DistributionConfig.DEFAULT_MCAST_PORT) ){
           return port;
         }
       }
@@ -377,7 +374,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind-address or mcast address to use
    *
    * @throws IllegalArgumentException
@@ -399,7 +396,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind-address or mcast address to use
    *
    * @throws IllegalArgumentException
@@ -543,7 +540,7 @@ public class AvailablePort {
 
     } else if (protocolString.equalsIgnoreCase("javagroups") ||
       protocolString.equalsIgnoreCase("jgroups")) {
-      protocol = JGROUPS;
+      protocol = MULTICAST;
 
     } else {
       usage("Unknown protocol: " + protocolString);

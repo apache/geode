@@ -317,7 +317,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
   // TODO this needs to use a locator
   public void _testMembershipPortRange() throws Exception {
     Properties config = new Properties();
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
     int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     config.setProperty("mcast-port", String.valueOf(mcastPort));
     config.setProperty("locators", "");
@@ -337,7 +337,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
   // TODO this needs to use a locator
   public void _testMembershipPortRangeWithExactThreeValues() throws Exception {
     Properties config = new Properties();
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
     config.setProperty("mcast-port", String.valueOf(mcastPort));
     config.setProperty("locators", "");
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, ""
@@ -358,7 +358,7 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
   // TODO this needs to use a locator
   public void _testConflictingUDPPort() throws Exception {
     final Properties config = new Properties();
-    final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+    final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
     final int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     config.setProperty("mcast-port", String.valueOf(mcastPort));
     config.setProperty("locators", "");

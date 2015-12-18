@@ -138,5 +138,31 @@ public class Transport extends UDP {
     }
   }
 
+  // overridden to implement AvailablePort response
+  @Override
+  public void receive(Address sender, byte[] data, int offset, int length, boolean copy_buffer) {
+    if(data == null) return;
+
+    // drop message from self; it has already been looped back up (https://issues.jboss.org/browse/JGRP-1765)
+    if(local_physical_addr != null && local_physical_addr.equals(sender))
+        return;
+
+    if (length-offset == 4
+        && data[offset] == 'p'
+        && data[offset+1] == 'i'
+        && data[offset+2] == 'n'
+        && data[offset+3] == 'g') {
+      // AvailablePort check
+      data[offset+1] = 'o';
+      try {
+        sendToSingleMember(sender, data, offset, length);
+      } catch (Exception e) {
+        log.fatal("Unable to respond to available-port check", e);
+      }
+      return;
+    }
+
+    super.receive(sender,  data,  offset,  length, copy_buffer);
+  }
 
 }

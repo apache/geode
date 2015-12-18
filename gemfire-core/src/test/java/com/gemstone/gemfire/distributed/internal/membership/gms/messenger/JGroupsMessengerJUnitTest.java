@@ -68,6 +68,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinReq
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
+import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
@@ -812,8 +813,9 @@ public class JGroupsMessengerJUnitTest {
   public void testMulticastTest() throws Exception {
     initMocks(true);
     boolean result = messenger.testMulticast(50);
-    // this shouldln't succeed
+    // this shouldln't succeed because there's no-one to respond
     assertFalse(result);
+    assertFalse(AvailablePort.isPortAvailable(services.getConfig().getDistributionConfig().getMcastPort(), AvailablePort.MULTICAST));
   }
   
   /**

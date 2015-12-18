@@ -1454,7 +1454,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     final int port2 = freeTCPPorts[1];
     this.port2 = port2;
     deleteLocatorStateFile(port1, port2);
-    final int mcastport = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+    final int mcastport = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
     
     final String host0 = getServerHostName(host); 
     final String locators = host0 + "[" + port1 + "]," +
