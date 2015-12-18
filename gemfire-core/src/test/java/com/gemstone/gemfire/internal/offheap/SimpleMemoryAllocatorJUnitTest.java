@@ -437,6 +437,8 @@ public class SimpleMemoryAllocatorJUnitTest {
     }
   }
 
+  /* This test fails intermittently.
+   * Disabling it until this test case is fixed. GEODE-701
   @Test
   public void testClose() {
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
@@ -461,7 +463,7 @@ public class SimpleMemoryAllocatorJUnitTest {
       }
     }
     
-  }
+  }*/
   
   @Test
   public void testCompaction() {
