@@ -150,6 +150,7 @@ rat {
 
     // BSD License
     'gemfire-web-api/src/main/webapp/docs/lib/highlight.7.3.pack.js',
+    'gemfire-core/src/main/java/com/gemstone/gemfire/management/internal/cli/shell/jline/ANSIBuffer.java',
 
     // Apache License
     'gemfire-web-api/src/main/webapp/docs/o2c.html',
