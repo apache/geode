@@ -153,6 +153,12 @@ public class QueryMonitor implements Runnable {
             testException = new QueryExecutionTimeoutException("The Query completed sucessfully before it got canceled.");          
           }
         }
+        
+        if ((testException == null) && (query instanceof DefaultQuery)) {
+          if (((DefaultQuery)query).isCanceled()) {
+            testException = new QueryExecutionTimeoutException("The query task could not be found but the query is marked as having been canceled");
+          }
+        }
       }
       // END - DUnit Test purpose.
 
@@ -162,7 +168,7 @@ public class QueryMonitor implements Runnable {
     }
     
     if (logger.isDebugEnabled()) {
-      logger.debug("Removed thread from QueryMonitor. QueryMonitor size is:{}, Thread (id): thread is : {}", 
+      logger.debug("Removed thread from QueryMonitor. QueryMonitor size is:{}, Thread ID is: {}  thread is : {}", 
           queryThreads.size(), queryThread.getId(), queryThread);
     }
     
