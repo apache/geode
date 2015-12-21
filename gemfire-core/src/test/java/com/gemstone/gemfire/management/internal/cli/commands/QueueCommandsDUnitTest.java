@@ -57,6 +57,11 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     super(testName);
   }
 
+  public void setUp() throws Exception {
+    disconnectAllFromDS();
+    super.setUp();
+  }
+
   public void testAsyncEventQueue() throws IOException {
     final String queue1Name = "testAsyncEventQueue1";
     final String queue2Name = "testAsyncEventQueue2";
