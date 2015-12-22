@@ -17,6 +17,10 @@
 apply plugin: "org.nosphere.apache.rat"
 
 rat {
+  xmlOutput = false
+  htmlOutput = false
+  plainOutput = true
+
   excludes = [
     // git
     '.git/**',
