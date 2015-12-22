@@ -51,6 +51,9 @@ rat {
     '**/*.json',
     '**/*.tx0',
     '**/*.txo',
+    '**/*.log',
+    '**/*.patch',
+    '**/*.diff',
 
     // binary files
     '**/*.cer',
@@ -66,6 +69,7 @@ rat {
     '**/*.truststore',
     '**/*.xls',
     '**/publickeyfile',
+    '**/*.dat',
 
     // other text files
     'gemfire-spark-connector/project/plugins.sbt',

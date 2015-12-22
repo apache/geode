@@ -17,5 +17,9 @@ build-eclipse/
 *.ipr
 *.iws
 *.swp
+*.log
+*.patch
+*.diff
+*.dat
 # bruce: my synch settings for windows->linux transfers
 transferhost.txt
