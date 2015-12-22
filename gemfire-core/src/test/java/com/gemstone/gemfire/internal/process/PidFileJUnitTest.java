@@ -139,7 +139,7 @@ public class PidFileJUnitTest {
     timeout.expect(TimeoutException.class);
     timeout.expectMessage("Invalid pid 'null' found");
     timeout.expectMinimumDuration(1000);
-    timeout.expectMaximumDuration(2000);
+    timeout.expectMaximumDuration(10000);
     timeout.expectTimeUnit(TimeUnit.MILLISECONDS);
     
     new PidFile(file).readPid(1500, TimeUnit.MILLISECONDS);
