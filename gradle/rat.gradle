@@ -65,6 +65,7 @@ rat {
     '**/*.ser',
     '**/*.truststore',
     '**/*.xls',
+    '**/publickeyfile',
 
     // other text files
     'gemfire-spark-connector/project/plugins.sbt',
