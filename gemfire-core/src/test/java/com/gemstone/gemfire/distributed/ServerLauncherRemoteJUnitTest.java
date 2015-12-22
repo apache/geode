@@ -1346,9 +1346,11 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
           }
           final ServerState serverState = launcher.status();
           assertNotNull(serverState);
+          logger.info("serverState: "+serverState);
           return Status.ONLINE.equals(serverState.getStatus());
         }
         catch (RuntimeException e) {
+          logger.error(e, e);
           return false;
         }
       }
