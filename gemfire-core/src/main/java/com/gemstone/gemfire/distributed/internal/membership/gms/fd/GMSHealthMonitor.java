@@ -274,6 +274,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     public void run() {
       try {
+        socket.setTcpNoDelay(true);
         DataInputStream in = new DataInputStream(socket.getInputStream());
         OutputStream out = socket.getOutputStream();
         @SuppressWarnings("unused")
@@ -473,6 +474,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, suspectMember.getInetAddress(), port);
       clientSocket = SocketCreator.getDefaultInstance().connect(suspectMember.getInetAddress(), port,
           (int)memberTimeout, new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
+      clientSocket.setTcpNoDelay(true);
       return doTCPCheckMember(suspectMember, clientSocket);
     }
     catch (IOException e) {

@@ -110,7 +110,7 @@ public class TcpClient {
     long giveupTime = System.currentTimeMillis() + timeout;
     
     // Get the GemFire version of the TcpServer first, before sending any other request.
-    short serverVersion = getServerVersion(ipAddr, timeout/2).shortValue();
+    short serverVersion = getServerVersion(ipAddr, timeout).shortValue();
 
     if (serverVersion > Version.CURRENT_ORDINAL) {
       serverVersion = Version.CURRENT_ORDINAL;
