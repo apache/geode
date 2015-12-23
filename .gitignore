@@ -21,5 +21,4 @@ build-eclipse/
 *.patch
 *.diff
 *.dat
-# bruce: my synch settings for windows->linux transfers
-transferhost.txt
+
