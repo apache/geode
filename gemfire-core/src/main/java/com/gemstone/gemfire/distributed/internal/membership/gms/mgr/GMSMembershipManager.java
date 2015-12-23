@@ -66,6 +66,7 @@ import com.gemstone.gemfire.distributed.internal.StartupMessage;
 import com.gemstone.gemfire.distributed.internal.ThrottlingMemLinkedQueueWithDMStats;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannelListener;
+import com.gemstone.gemfire.distributed.internal.direct.ShunnedMemberException;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
@@ -1765,7 +1766,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         InternalDistributedMember member = (InternalDistributedMember)it_mem.next();
         Throwable th = (Throwable)it_causes.next();
         
-        if (!view.contains(member)) {
+        if (!view.contains(member) || (th instanceof ShunnedMemberException)) {
           continue;
         }
         logger.fatal(LocalizedMessage.create(
