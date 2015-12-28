@@ -29,12 +29,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.util.PropertiesUtil;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
 import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 import com.gemstone.org.apache.logging.log4j.core.config.xml.GemFireXmlConfigurationFactory;
 
+@Category(PerformanceTest.class)
+@Ignore("Tests have no assertions")
 public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
 
   protected static final int DEFAULT_LOG_FILE_SIZE_LIMIT = Integer.MAX_VALUE;
@@ -44,13 +49,11 @@ public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
   protected static final String SYS_LOG_FILE_SIZE_LIMIT = "gemfire-log-file-size-limit";
   protected static final String SYS_LOG_FILE_COUNT_LIMIT = "gemfire-log-file-count-limit";
   
-  static {
+  private static void init() { // was a static initializer
     // set log4j.configurationFactory to be our optimized version
     final String factory = GemFireXmlConfigurationFactory.class.getName();
     System.setProperty(ConfigurationFactory.CONFIGURATION_FACTORY_PROPERTY, factory);
-    System.out.println("Set "+ConfigurationFactory.CONFIGURATION_FACTORY_PROPERTY+" to "+factory);
     final String factoryClass = PropertiesUtil.getProperties().getStringProperty(ConfigurationFactory.CONFIGURATION_FACTORY_PROPERTY);
-    System.out.println("KIRK: factoryClass is " + factoryClass);
   }
   
   private File config = null;

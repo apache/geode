@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import dunit.VM;
 
 @SuppressWarnings("serial")
-public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
+public class HAInterestPart1DUnitTest extends HAInterestTestCase {
 
   public HAInterestPart1DUnitTest(String name) {
     super(name);
@@ -31,14 +31,14 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
   public void testInterestRegistrationOnBothPrimaryAndSecondary() throws Exception {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     // register K1 and K2
     registerK1AndK2();
-    server1.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
-    server2.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
-    server3.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    server1.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
+    server2.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
+    server3.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
   }
 
   /**
@@ -48,9 +48,9 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
   public void testInterestRegistrationResponseOnBothPrimaryAndSecondary() throws Exception {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     // register interest and verify response
     registerK1AndK2OnPrimaryAndSecondaryAndVerifyResponse();
   }
@@ -62,15 +62,15 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
   public void testRERegistrationWillNotCreateDuplicateKeysOnServerInterstMaps() throws Exception {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     // register multiple times
     reRegisterK1AndK2();
 
-    server1.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
-    server2.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
-    server3.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    server1.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
+    server2.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
+    server3.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
   }
 
   /**
@@ -81,9 +81,9 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
   public void testPrimaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     // stop primary
     VM oldPrimary = getPrimaryVM();
     stopPrimaryAndRegisterK1AndK2AndVerifyResponse();
@@ -91,8 +91,8 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
     verifyDeadAndLiveServers(1, 2);
     // new primary
     VM newPrimary = getPrimaryVM(oldPrimary);
-    newPrimary.invoke(HAInterestBaseTest.class, "verifyDispatcherIsAlive");
-    newPrimary.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    newPrimary.invoke(HAInterestTestCase.class, "verifyDispatcherIsAlive");
+    newPrimary.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
   }
 
   /**
@@ -102,17 +102,17 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
   public void testSecondaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
 
     VM primary = getPrimaryVM();
     stopSecondaryAndRegisterK1AndK2AndVerifyResponse();
 
     verifyDeadAndLiveServers(1, 2);
     // still primary
-    primary.invoke(HAInterestBaseTest.class, "verifyDispatcherIsAlive");
-    primary.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    primary.invoke(HAInterestTestCase.class, "verifyDispatcherIsAlive");
+    primary.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
   }
 
   /**
@@ -124,17 +124,17 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
   public void testBothPrimaryAndSecondaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
     // stop server1 and server2
     VM oldPrimary = getPrimaryVM();
     stopBothPrimaryAndSecondaryAndRegisterK1AndK2AndVerifyResponse();
 
     verifyDeadAndLiveServers(2, 1);
     VM newPrimary = getPrimaryVM(oldPrimary);
-    newPrimary.invoke(HAInterestBaseTest.class, "verifyDispatcherIsAlive");
-    newPrimary.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    newPrimary.invoke(HAInterestTestCase.class, "verifyDispatcherIsAlive");
+    newPrimary.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
   }
 
   /**
@@ -148,17 +148,17 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
   public void testProbablePrimaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
 
     VM oldPrimary = getPrimaryVM();
     stopPrimaryAndRegisterK1AndK2AndVerifyResponse();
 
     verifyDeadAndLiveServers(1, 2);
     VM newPrimary = getPrimaryVM(oldPrimary);
-    newPrimary.invoke(HAInterestBaseTest.class, "verifyDispatcherIsAlive");
-    newPrimary.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    newPrimary.invoke(HAInterestTestCase.class, "verifyDispatcherIsAlive");
+    newPrimary.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
   }
 
   /**
@@ -172,40 +172,40 @@ public class HAInterestPart1DUnitTest extends HAInterestBaseTest {
     createClientPoolCache(this.getName(), getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     registerK1AndK2();
-    server1.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server2.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
-    server3.invoke(HAInterestBaseTest.class, "createEntriesK1andK2");
+    server1.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server2.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
+    server3.invoke(HAInterestTestCase.class, "createEntriesK1andK2");
 
-    server1.invoke(HAInterestBaseTest.class, "stopServer");
-    server2.invoke(HAInterestBaseTest.class, "stopServer");
-    server3.invoke(HAInterestBaseTest.class, "stopServer");
+    server1.invoke(HAInterestTestCase.class, "stopServer");
+    server2.invoke(HAInterestTestCase.class, "stopServer");
+    server3.invoke(HAInterestTestCase.class, "stopServer");
     // All servers are dead at this point , no primary in the system.
     verifyDeadAndLiveServers(3, 0);
 
     // now start one of the servers
-    server2.invoke(HAInterestBaseTest.class, "startServer");
+    server2.invoke(HAInterestTestCase.class, "startServer");
     verifyDeadAndLiveServers(2, 1);
     // verify that is it primary , and dispatcher is running
-    server2.invoke(HAInterestBaseTest.class, "verifyDispatcherIsAlive");
+    server2.invoke(HAInterestTestCase.class, "verifyDispatcherIsAlive");
     // verify that interest is registered on this recovered EP
-    server2.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    server2.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
 
     // now start one more server ; this should be now secondary
-    server1.invoke(HAInterestBaseTest.class, "startServer");
+    server1.invoke(HAInterestTestCase.class, "startServer");
     verifyDeadAndLiveServers(1, 2);
 
     // verify that is it secondary , dispatcher should not be runnig
-    server1.invoke(HAInterestBaseTest.class, "verifyDispatcherIsNotAlive");
+    server1.invoke(HAInterestTestCase.class, "verifyDispatcherIsNotAlive");
     // verify that interest is registered on this recovered EP as well
-    server1.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    server1.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
 
     // now start one more server ; this should be now secondary
-    server3.invoke(HAInterestBaseTest.class, "startServer");
+    server3.invoke(HAInterestTestCase.class, "startServer");
     verifyDeadAndLiveServers(0, 3);
 
     // verify that is it secondary , dispatcher should not be runnig
-    server3.invoke(HAInterestBaseTest.class, "verifyDispatcherIsNotAlive");
+    server3.invoke(HAInterestTestCase.class, "verifyDispatcherIsNotAlive");
     // verify that interest is registered on this recovered EP as well
-    server3.invoke(HAInterestBaseTest.class, "verifyInterestRegistration");
+    server3.invoke(HAInterestTestCase.class, "verifyInterestRegistration");
   }
 }

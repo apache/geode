@@ -19,9 +19,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -31,6 +36,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Test for Bug no. 40662. To verify the default action being set in eviction
@@ -40,17 +46,14 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
  * @author shoagarwal
  * @since 6.6
  */
-public class Bug40662JUnitDisabledTest extends TestCase {
+@Category(IntegrationTest.class)
+@Ignore("Test is broken and was named Bug40662JUnitDisabledTest")
+public class Bug40662JUnitTest {
 
-  private static final String BUG_40662_XML = Bug40662JUnitDisabledTest.class.getResource("bug40662noevictionaction.xml").getFile();
+  private static final String BUG_40662_XML = Bug40662JUnitTest.class.getResource("bug40662noevictionaction.xml").getFile();
 
   DistributedSystem ds;
   Cache cache;
-
-  @Override
-  public void setName(String name) {
-    super.setName(name);
-  }
 
   /**
    * Test for checking eviction action in eviction attributes if no evicition
@@ -65,9 +68,8 @@ public class Bug40662JUnitDisabledTest extends TestCase {
     assertEquals(EvictionAction.LOCAL_DESTROY, evicAttrs.getAction());
   }
 
-  @Override
+  @After
   protected void tearDown() throws Exception {
-    super.tearDown();
     if (this.cache != null) {
       this.cache.close();
       this.cache = null;
@@ -78,9 +80,8 @@ public class Bug40662JUnitDisabledTest extends TestCase {
     }
   }
 
-  @Override
+  @Before
   protected void setUp() throws Exception {
-    super.setUp();
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");

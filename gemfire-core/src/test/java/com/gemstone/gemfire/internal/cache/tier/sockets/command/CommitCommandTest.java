@@ -22,12 +22,18 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
+/**
+ * Exposes GEODE-537: NPE in JTA AFTER_COMPLETION command processing
+ */
+@Category(UnitTest.class)
 public class CommitCommandTest {
 
 	/**
