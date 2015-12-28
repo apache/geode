@@ -27,11 +27,16 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
 import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
+@Category(PerformanceTest.class)
+@Ignore("Tests have no assertions")
 public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
 
   protected static final int DEFAULT_LOG_FILE_SIZE_LIMIT = Integer.MAX_VALUE;

@@ -24,7 +24,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.internal.membership.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import junit.framework.AssertionFailedError;
 
 /**

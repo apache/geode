@@ -20,7 +20,13 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+
+@Category(PerformanceTest.class)
+@Ignore("Tests have no assertions")
 public class LogWriterLoggerDisabledPerformanceTest extends LogWriterLoggerPerformanceTest {
 
   public LogWriterLoggerDisabledPerformanceTest(String name) {

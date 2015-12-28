@@ -20,14 +20,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
 import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class EvictionDUnitDisabledTest extends EvictionTestBase {
+@Category(DistributedTest.class)
+@Ignore("Test was disabled by renaming to DisabledTest")
+public class EvictionDUnitTest extends EvictionTestBase {
   private static final long serialVersionUID = 270073077723092256L;
 
-  public EvictionDUnitDisabledTest(String name) {
+  public EvictionDUnitTest(String name) {
     super(name);
   }
  
