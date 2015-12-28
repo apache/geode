@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit;
+package com.gemstone.gemfire.test.dunit.standalone;
 
-import hydra.MethExecutorResult;
+public class BounceResult {
+  private final int newPid;
+  private final RemoteDUnitVMIF newClient;
+  
+  public BounceResult(int newPid, RemoteDUnitVMIF newClient) {
+    this.newPid = newPid;
+    this.newClient = newClient;
+  }
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+  public int getNewPid() {
+    return newPid;
+  }
 
-public interface RemoteDUnitVMIF extends Remote {
-
-  MethExecutorResult executeMethodOnObject(Object o, String methodName) throws RemoteException;
-
-  MethExecutorResult executeMethodOnObject(Object o, String methodName,
-      Object[] args) throws RemoteException;
-
-  MethExecutorResult executeMethodOnClass(String name, String methodName,
-      Object[] args) throws RemoteException;
-
-  void shutDownVM() throws RemoteException;
+  public RemoteDUnitVMIF getNewClient() {
+    return newClient;
+  }
 
 }

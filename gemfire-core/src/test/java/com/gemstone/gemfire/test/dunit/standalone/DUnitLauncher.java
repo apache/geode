@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit.standalone;
+package com.gemstone.gemfire.test.dunit.standalone;
 
 import hydra.Log;
 import hydra.MethExecutorResult;
@@ -57,10 +57,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJo
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.LogService;
 
-import dunit.BounceResult;
 import dunit.DUnitEnv;
 import dunit.Host;
-import dunit.RemoteDUnitVMIF;
 import dunit.SerializableCallable;
 import dunit.VM;
 
@@ -242,7 +240,7 @@ public class DUnitLauncher {
         LogManager.getLogger(LogService.BASE_LOGGER_NAME)).getContext();
 
     final PatternLayout layout = PatternLayout.createLayout(
-        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n", null, null,null,
+        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n", null, null, null,
         Charset.defaultCharset(), true, false, "", "");
     
     final FileAppender fileAppender = FileAppender.createAppender(suspectFilename, "true", "false",

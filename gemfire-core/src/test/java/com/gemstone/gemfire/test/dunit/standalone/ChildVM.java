@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit.standalone;
+package com.gemstone.gemfire.test.dunit.standalone;
 
 import hydra.HydraRuntimeException;
 import hydra.Log;
@@ -25,8 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.logging.LogService;
-
-import dunit.standalone.DUnitLauncher.MasterRemote;
+import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher.MasterRemote;
 
 /**
  * @author dsmith
