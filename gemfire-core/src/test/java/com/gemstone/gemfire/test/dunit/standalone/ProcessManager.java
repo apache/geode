@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit.standalone;
+package com.gemstone.gemfire.test.dunit.standalone;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,8 +36,6 @@ import org.apache.commons.io.FileUtils;
 
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
-
-import dunit.RemoteDUnitVMIF;
 
 /**
  * @author dsmith
