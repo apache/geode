@@ -22,6 +22,9 @@ import java.net.InetAddress;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
 import junit.framework.Assert;
 
 import com.gemstone.gemfire.cache.CacheException;
@@ -32,6 +35,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -44,12 +48,14 @@ import dunit.VM;
  * @author shobhit
  *
  */
-public class TcpServerBackwardCompatDUnitDisabledTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+@Ignore("Test was disabled by renaming to DisabledTest")
+public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
 
   /**
    * @param name
    */
-  public TcpServerBackwardCompatDUnitDisabledTest(String name) {
+  public TcpServerBackwardCompatDUnitTest(String name) {
     super(name);
   }
 

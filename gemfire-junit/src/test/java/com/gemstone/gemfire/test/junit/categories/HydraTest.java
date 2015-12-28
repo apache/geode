@@ -14,29 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
-
-import junit.framework.*;
-
+package com.gemstone.gemfire.test.junit.categories;
 /**
- * This test provides examples of a test failing and a test getting an
- * error.  We use it to test JUnit failure reporting.
+ * JUnit Test Category that specifies a hydra test.
+ *  
+ * @author Kirk Lund
  */
-public class BadTest extends TestCase {
-
-  public BadTest(String name) {
-    super(name);
-  }
-
-  ////////  Test Methods
-
-  public void testFailure() {
-    fail("I'm failing away...");
-  }
-
-  public void testError() {
-    String s = "I've failed";
-    throw new RuntimeException(s);
-  }
-
+public interface HydraTest {
 }

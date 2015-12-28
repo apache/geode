@@ -38,6 +38,7 @@ import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 import dunit.RemoteDUnitVMIF;
+import dunit.standalone.ChildVM;
 
 /**
  * @author dsmith
@@ -183,7 +184,7 @@ public class ProcessManager {
       "-Dgemfire.disallowMcastDefaults=true",
       "-ea",
       agent,
-      "dunit.standalone.ChildVM"
+      ChildVM.class.getName()
     };
   }
   

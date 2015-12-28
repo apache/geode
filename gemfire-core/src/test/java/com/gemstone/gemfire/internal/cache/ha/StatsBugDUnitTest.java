@@ -19,6 +19,9 @@ package com.gemstone.gemfire.internal.cache.ha;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -31,6 +34,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -49,7 +53,9 @@ import dunit.VM;
  * @author Dinesh Patel
  * 
  */
-public class StatsBugDUnitDisabledTest extends DistributedTestCase
+@Category(DistributedTest.class)
+@Ignore("Test was disabled by renaming to DisabledTest")
+public class StatsBugDUnitTest extends DistributedTestCase
 {
   /** primary cache server */
   VM primary = null;
@@ -93,7 +99,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
    * @param name -
    *          name for this test instance
    */
-  public StatsBugDUnitDisabledTest(String name) {
+  public StatsBugDUnitTest(String name) {
     super(name);
   }
 
@@ -111,9 +117,9 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
     primary = host.getVM(0);
     secondary = host.getVM(1);
     client1 = host.getVM(2);
-    PORT1 = ((Integer)primary.invoke(StatsBugDUnitDisabledTest.class,
+    PORT1 = ((Integer)primary.invoke(StatsBugDUnitTest.class,
         "createServerCache")).intValue();
-    PORT2 = ((Integer)secondary.invoke(StatsBugDUnitDisabledTest.class,
+    PORT2 = ((Integer)secondary.invoke(StatsBugDUnitTest.class,
         "createServerCache")).intValue();
   }
 
@@ -149,11 +155,11 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
   {
     super.tearDown2();
     // close client
-    client1.invoke(StatsBugDUnitDisabledTest.class, "closeCache");
+    client1.invoke(StatsBugDUnitTest.class, "closeCache");
 
     // close server
-    primary.invoke(StatsBugDUnitDisabledTest.class, "closeCache");
-    secondary.invoke(StatsBugDUnitDisabledTest.class, "closeCache");
+    primary.invoke(StatsBugDUnitTest.class, "closeCache");
+    secondary.invoke(StatsBugDUnitTest.class, "closeCache");
   }
 
   /**
@@ -172,13 +178,13 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
   public void testBug36109() throws Exception
   {
     getLogWriter().info("testBug36109 : BEGIN");
-    client1.invoke(StatsBugDUnitDisabledTest.class, "createClientCacheForInvalidates", new Object[] {
+    client1.invoke(StatsBugDUnitTest.class, "createClientCacheForInvalidates", new Object[] {
         getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2) });
-    client1.invoke(StatsBugDUnitDisabledTest.class, "prepopulateClient");
-    primary.invoke(StatsBugDUnitDisabledTest.class, "doEntryOperations",
+    client1.invoke(StatsBugDUnitTest.class, "prepopulateClient");
+    primary.invoke(StatsBugDUnitTest.class, "doEntryOperations",
         new Object[] { primaryPrefix });
     pause(3000);
-    primary.invoke(StatsBugDUnitDisabledTest.class, "stopServer");
+    primary.invoke(StatsBugDUnitTest.class, "stopServer");
     try {
       Thread.sleep(5000);
     }
@@ -186,7 +192,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
       fail("interrupted");
     }
 
-    secondary.invoke(StatsBugDUnitDisabledTest.class, "doEntryOperations",
+    secondary.invoke(StatsBugDUnitTest.class, "doEntryOperations",
         new Object[] { secondaryPrefix });
     try {
       Thread.sleep(5000);
@@ -195,7 +201,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
       fail("interrupted");
     }
 
-    client1.invoke(StatsBugDUnitDisabledTest.class, "verifyNumInvalidates");
+    client1.invoke(StatsBugDUnitTest.class, "verifyNumInvalidates");
     getLogWriter().info("testBug36109 : END");
   }
 
@@ -208,7 +214,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
    */
   public static Integer createServerCache() throws Exception
   {
-    StatsBugDUnitDisabledTest test = new StatsBugDUnitDisabledTest("temp");
+    StatsBugDUnitTest test = new StatsBugDUnitTest("temp");
     Properties props = new Properties();
     cache = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();
@@ -241,7 +247,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
   public static void createClientCache(String host, Integer port1, Integer port2)
       throws Exception
   {
-    StatsBugDUnitDisabledTest test = new StatsBugDUnitDisabledTest("temp");
+    StatsBugDUnitTest test = new StatsBugDUnitTest("temp");
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -265,7 +271,7 @@ public class StatsBugDUnitDisabledTest extends DistributedTestCase
   public static void createClientCacheForInvalidates(String host, Integer port1, Integer port2)
       throws Exception
   {
-    StatsBugDUnitDisabledTest test = new StatsBugDUnitDisabledTest("temp");
+    StatsBugDUnitTest test = new StatsBugDUnitTest("temp");
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

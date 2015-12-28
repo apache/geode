@@ -22,10 +22,15 @@ import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.util.*;
 import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.internal.tcp.Connection;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import dunit.*;
 
 import java.io.*;
 import java.util.*;
+
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test to make sure slow receiver queuing is working
@@ -33,9 +38,11 @@ import java.util.*;
  * @author darrel
  * @since 4.2.1
  */
-public class SlowRecDUnitDisabledTest extends CacheTestCase {
+@Category(DistributedTest.class)
+@Ignore("Test was disabled by renaming to DisabledTest")
+public class SlowRecDUnitTest extends CacheTestCase {
 
-  public SlowRecDUnitDisabledTest(String name) {
+  public SlowRecDUnitTest(String name) {
     super(name);
   }
 
