@@ -215,6 +215,26 @@ public class DistributionStats implements DMStats {
   private final static int eldersId;
   private final static int initialImageMessagesInFlightId;
   private final static int initialImageRequestsInProgressId;
+  
+  //For GMSHealthMonitor
+  private final static int heartbeatRequestsSentId;  
+  private final static int heartbeatRequestsReceivedId;  
+  private final static int heartbeatsSentId;  
+  private final static int heartbeatsReceivedId;  
+  private final static int suspectsSentId;  
+  private final static int suspectsReceivedId;
+  private final static int finalCheckRequestsSentId;  
+  private final static int finalCheckRequestsReceivedId;  
+  private final static int finalCheckResponsesSentId;  
+  private final static int finalCheckResponsesReceivedId;  
+  private final static int tcpFinalCheckRequestsSentId; 
+  private final static int tcpFinalCheckRequestsReceivedId;  
+  private final static int tcpFinalCheckResponsesSentId;  
+  private final static int tcpFinalCheckResponsesReceivedId;
+  private final static int udpFinalCheckRequestsSentId;
+  private final static int udpFinalCheckRequestsReceivedId;
+  private final static int udpFinalCheckResponsesSentId;
+  private final static int udpFinalCheckResponsesReceivedId;
 
   static {
     String statName = "DistributionStats";
@@ -317,6 +337,33 @@ public class DistributionStats implements DMStats {
     final String initialImageMessagesInFlightDesc = "The number of messages with initial image data sent from this member that have not yet been acknowledged.";
     final String initialImageRequestsInProgressDesc = "The number of initial images this member is currently receiving.";
 
+    //For GMSHealthMonitor
+    final String heartbeatRequestsSentDesc = "The number of heartbeat request messages that this member has sent.";
+    final String heartbeatRequestsReceivedDesc = "The number of heartbeat request messages that this member has received.";
+    
+    final String heartbeatsSentDesc = "The number of heartbeat messages that this member has sent.";
+    final String heartbeatsReceivedDesc = "The number of heartbeat messages that this member has received.";
+    
+    final String suspectsSentDesc = "The number of suspect member messages that this member has sent.";
+    final String suspectsReceivedDesc = "The number of suspect member messages that this member has received.";
+    
+    final String finalCheckRequestsSentDesc = "The number of final check requests that this member has sent.";
+    final String finalCheckRequestsReceivedDesc = "The number of final check requests that this member has received.";
+    
+    final String finalCheckResponsesSentDesc = "The number of final check responses that this member has sent.";
+    final String finalCheckResponsesReceivedDesc = "The number of final check responses that this member has received.";    
+    
+    final String tcpFinalCheckRequestsSentDesc = "The number of TCP final check requests that this member has sent.";
+    final String tcpFinalCheckRequestsReceivedDesc = "The number of TCP final check requests that this member has received.";
+    
+    final String tcpFinalCheckResponsesSentDesc = "The number of TCP final check responses that this member has sent.";
+    final String tcpFinalCheckResponsesReceivedDesc = "The number of TCP final check responses that this member has received.";
+
+    final String udpFinalCheckRequestsSentDesc = "The number of UDP final checks that this member has sent.";
+    final String udpFinalCheckRequestsReceivedDesc = "The number of UDP final check requests that this member has received.";
+    
+    final String udpFinalCheckResponsesSentDesc = "The number of UDP final check responses that this member has sent.";
+    final String udpFinalCheckResponsesReceivedDesc = "The number of UDP final check responses that this member has received.";
 
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
@@ -486,6 +533,26 @@ public class DistributionStats implements DMStats {
         f.createIntGauge("elders", eldersDesc, "elders"),
         f.createIntGauge("initialImageMessagesInFlight", initialImageMessagesInFlightDesc, "messages"),
         f.createIntGauge("initialImageRequestsInProgress", initialImageRequestsInProgressDesc, "requests"),
+        
+        //For GMSHealthMonitor
+        f.createLongCounter("heartbeatRequestsSent", heartbeatRequestsSentDesc, "messages"),
+        f.createLongCounter("heartbeatRequestsReceived", heartbeatRequestsReceivedDesc, "messages"),
+        f.createLongCounter("heartbeatsSent", heartbeatsSentDesc, "messages"),
+        f.createLongCounter("heartbeatsReceived", heartbeatsReceivedDesc, "messages"),
+        f.createLongCounter("suspectsSent", suspectsSentDesc, "messages"),
+        f.createLongCounter("suspectsReceived", suspectsReceivedDesc, "messages"),
+        f.createLongCounter("finalCheckRequestsSent", finalCheckRequestsSentDesc, "messages"),
+        f.createLongCounter("finalCheckRequestsReceived", finalCheckRequestsReceivedDesc, "messages"),
+        f.createLongCounter("finalCheckResponsesSent", finalCheckResponsesSentDesc, "messages"),
+        f.createLongCounter("finalCheckResponsesReceived", finalCheckResponsesReceivedDesc, "messages"),
+        f.createLongCounter("tcpFinalCheckRequestsSent", tcpFinalCheckRequestsSentDesc, "nanoseconds", false),
+        f.createLongCounter("tcpFinalCheckRequestsReceived", tcpFinalCheckRequestsReceivedDesc, "nanoseconds", false),
+        f.createLongCounter("tcpFinalCheckResponsesSent", tcpFinalCheckResponsesSentDesc, "nanoseconds", false),
+        f.createLongCounter("tcpFinalCheckResponsesReceived", tcpFinalCheckResponsesReceivedDesc, "nanoseconds", false),
+        f.createLongCounter("udpFinalCheckRequestsSent", udpFinalCheckRequestsSentDesc, "messages"),
+        f.createLongCounter("udpFinalCheckRequestsReceived", udpFinalCheckRequestsReceivedDesc, "messages"),
+        f.createLongCounter("udpFinalCheckResponsesSent", udpFinalCheckResponsesSentDesc, "messages"),
+        f.createLongCounter("udpFinalCheckResponsesReceived", udpFinalCheckResponsesReceivedDesc, "messages"),
       }
     );
 
@@ -654,6 +721,26 @@ public class DistributionStats implements DMStats {
     eldersId = type.nameToId("elders");
     initialImageMessagesInFlightId = type.nameToId("initialImageMessagesInFlight");
     initialImageRequestsInProgressId = type.nameToId("initialImageRequestsInProgress");
+    
+    //For GMSHealthMonitor
+    heartbeatRequestsSentId = type.nameToId("heartbeatRequestsSent");
+    heartbeatRequestsReceivedId = type.nameToId("heartbeatRequestsReceived");
+    heartbeatsSentId = type.nameToId("heartbeatsSent");
+    heartbeatsReceivedId = type.nameToId("heartbeatsReceived");
+    suspectsSentId = type.nameToId("suspectsSent");
+    suspectsReceivedId = type.nameToId("suspectsReceived");
+    finalCheckRequestsSentId = type.nameToId("finalCheckRequestsSent");
+    finalCheckRequestsReceivedId = type.nameToId("finalCheckRequestsReceived");
+    finalCheckResponsesSentId = type.nameToId("finalCheckResponsesSent");
+    finalCheckResponsesReceivedId = type.nameToId("finalCheckResponsesReceived");
+    tcpFinalCheckRequestsSentId = type.nameToId("tcpFinalCheckRequestsSent");
+    tcpFinalCheckRequestsReceivedId = type.nameToId("tcpFinalCheckRequestsReceived");
+    tcpFinalCheckResponsesSentId = type.nameToId("tcpFinalCheckResponsesSent");
+    tcpFinalCheckResponsesReceivedId = type.nameToId("tcpFinalCheckResponsesReceived");
+    udpFinalCheckRequestsSentId = type.nameToId("udpFinalCheckRequestsSent");
+    udpFinalCheckRequestsReceivedId = type.nameToId("udpFinalCheckRequestsReceived");
+    udpFinalCheckResponsesSentId = type.nameToId("udpFinalCheckResponsesSent");
+    udpFinalCheckResponsesReceivedId = type.nameToId("udpFinalCheckResponsesReceived");
   }
 
   /** The Statistics object that we delegate most behavior to */
@@ -1811,4 +1898,154 @@ public class DistributionStats implements DMStats {
   public Statistics getStats(){
     return stats;
   }
+  
+  //For GMSHealthMonitor
+  public long getHeartbeatRequestsSent() {
+    return this.stats.getLong(heartbeatRequestsSentId);
+  }
+  
+  public void incHeartbeatRequestsSent() {
+    this.stats.incLong(heartbeatRequestsSentId, 1L);
+  }
+  
+  public long getHeartbeatRequestsReceived() {
+    return this.stats.getLong(heartbeatRequestsReceivedId);
+  }
+  
+  public void incHeartbeatRequestsReceived() {
+    this.stats.incLong(heartbeatRequestsReceivedId, 1L);
+  }
+  
+  public long getHeartbeatsSent() {
+    return this.stats.getLong(heartbeatsSentId);
+  }
+  
+  public void incHeartbeatsSent() {
+    this.stats.incLong(heartbeatsSentId, 1L);
+  }
+  
+  public long getHeartbeatsReceived() {
+    return this.stats.getLong(heartbeatsReceivedId);
+  }
+  
+  public void incHeartbeatsReceived() {
+    this.stats.incLong(heartbeatsReceivedId, 1L);
+  }
+  
+  public long getSuspectsSent() {
+    return this.stats.getLong(suspectsSentId);
+  }
+  
+  public void incSuspectsSent() {
+    this.stats.incLong(suspectsSentId, 1L);
+  }
+
+  public long getSuspectsReceived() {
+    return this.stats.getLong(suspectsReceivedId);
+  }
+  
+  public void incSuspectsReceived() {
+    this.stats.incLong(suspectsReceivedId, 1L);
+  }
+  
+  public long getFinalCheckRequestsSent() {
+    return this.stats.getLong(finalCheckRequestsSentId);
+  }
+  
+  public void incFinalCheckRequestsSent() {
+    this.stats.incLong(finalCheckRequestsSentId, 1L);
+  }
+  
+  public long getFinalCheckRequestsReceived() {
+    return this.stats.getLong(finalCheckRequestsReceivedId);
+  }
+  
+  public void incFinalCheckRequestsReceived() {
+    this.stats.incLong(finalCheckRequestsReceivedId, 1L);
+  }
+  
+  public long getFinalCheckResponsesSent() {
+    return this.stats.getLong(finalCheckResponsesSentId);
+  }
+  
+  public void incFinalCheckResponsesSent() {
+    this.stats.incLong(finalCheckResponsesSentId, 1L);
+  }
+  
+  public long getFinalCheckResponsesReceived() {
+    return this.stats.getLong(finalCheckResponsesReceivedId);
+  }
+  
+  public void incFinalCheckResponsesReceived() {
+    this.stats.incLong(finalCheckResponsesReceivedId, 1L);
+  }
+  
+///
+  public long getTcpFinalCheckRequestsSent() {
+    return this.stats.getLong(tcpFinalCheckRequestsSentId);
+  }
+  
+  public void incTcpFinalCheckRequestsSent() {
+    this.stats.incLong(tcpFinalCheckRequestsSentId, 1L);
+  }
+  
+  public long getTcpFinalCheckRequestsReceived() {
+    return this.stats.getLong(tcpFinalCheckRequestsReceivedId);
+  }
+  
+  public void incTcpFinalCheckRequestsReceived() {
+    this.stats.incLong(tcpFinalCheckRequestsReceivedId, 1L);
+  }
+  
+  public long getTcpFinalCheckResponsesSent() {
+    return this.stats.getLong(tcpFinalCheckResponsesSentId);
+  }
+  
+  public void incTcpFinalCheckResponsesSent() {
+    this.stats.incLong(tcpFinalCheckResponsesSentId, 1L);
+  }
+  
+  public long getTcpFinalCheckResponsesReceived() {
+    return this.stats.getLong(tcpFinalCheckResponsesReceivedId);
+  }
+  
+  public void incTcpFinalCheckResponsesReceived() {
+    this.stats.incLong(tcpFinalCheckResponsesReceivedId, 1L);
+  }
+ 
+///
+  public long getUdpFinalCheckRequestsSent() {
+    return this.stats.getLong(udpFinalCheckRequestsSentId);
+  }
+  
+  public void incUdpFinalCheckRequestsSent() {
+    this.stats.incLong(udpFinalCheckRequestsSentId, 1L);
+  }
+
+//  UDP final check is implemented using HeartbeatRequestMessage and HeartbeatMessage
+//  So the following code is commented out  
+//  public long getUdpFinalCheckRequestsReceived() {
+//    return this.stats.getLong(udpFinalCheckRequestsReceivedId);
+//  }
+//  
+//  public void incUdpFinalCheckRequestsReceived() {
+//    this.stats.incLong(udpFinalCheckRequestsReceivedId, 1L);
+//  }
+//  
+//  public long getUdpFinalCheckResponsesSent() {
+//    return this.stats.getLong(udpFinalCheckResponsesSentId);
+//  }
+//  
+//  public void incUdpFinalCheckResponsesSent() {
+//    this.stats.incLong(udpFinalCheckResponsesSentId, 1L);
+//  }
+  
+  public long getUdpFinalCheckResponsesReceived() {
+    return this.stats.getLong(udpFinalCheckResponsesReceivedId);
+  }
+  
+  public void incUdpFinalCheckResponsesReceived() {
+    this.stats.incLong(udpFinalCheckResponsesReceivedId, 1L);
+  }
+
 }

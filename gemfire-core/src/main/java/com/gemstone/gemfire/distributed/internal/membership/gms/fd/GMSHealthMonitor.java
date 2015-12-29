@@ -32,7 +32,6 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,6 +58,7 @@ import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -139,10 +139,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   final private ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberInView = new ConcurrentHashMap<>();
   
-  /**
-   * Members undergoing final checks
-   */
-  final private List<InternalDistributedMember> membersInFinalCheck = Collections.synchronizedList(new ArrayList<>(30));
+//  /**
+//   * Members undergoing final checks
+//   */
+//  final private List<InternalDistributedMember> membersInFinalCheck = Collections.synchronizedList(new ArrayList<>(30));
 
   /**
    * Replies to messages
@@ -175,6 +175,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   static final int ERROR = 0x00;  
   private volatile int socketPort;
   private volatile ServerSocket serverSocket;
+  
+  /** Statistics about health monitor */
+  protected DMStats stats;
 
   /**
    * this class is to avoid garbage
@@ -282,6 +285,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         int  vmViewId = in.readInt();
         long uuidLSBs = in.readLong();
         long uuidMSBs = in.readLong();
+        GMSHealthMonitor.this.stats.incFinalCheckRequestsReceived();
+        GMSHealthMonitor.this.stats.incTcpFinalCheckRequestsReceived();
         boolean debug = logger.isDebugEnabled();
         GMSMember gmbr = (GMSMember) GMSHealthMonitor.this.localAddress.getNetMember();
         UUID myUUID = gmbr.getUUID();
@@ -311,6 +316,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           out.write(OK);
           out.flush();
           socket.shutdownOutput();
+          GMSHealthMonitor.this.stats.incFinalCheckResponsesSent();
+          GMSHealthMonitor.this.stats.incTcpFinalCheckResponsesSent();
           if (debug) {
             logger.debug("GMSHealthMonitor server socket replied OK.");
           }
@@ -320,6 +327,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           out.write(ERROR);
           out.flush();
           socket.shutdownOutput();
+          GMSHealthMonitor.this.stats.incFinalCheckResponsesSent();
+          GMSHealthMonitor.this.stats.incTcpFinalCheckResponsesSent();
           if (debug) {
             logger.debug("GMSHealthMonitor server socket replied ERROR.");
           }
@@ -358,9 +367,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public void contactedBy(InternalDistributedMember sender) {
     TimeStamp cTS = new TimeStamp(currentTimeStamp);
     cTS = memberTimeStamps.putIfAbsent(sender, cTS);
-    if (cTS != null) {
-      cTS.setTimeStamp(currentTimeStamp);
-    }
+//    if (cTS != null) {
+//      cTS.setTimeStamp(currentTimeStamp);
+//    }
     if (suspectedMemberInView.remove(sender) != null) {
       logger.info("No longer suspecting {}", sender);
     }
@@ -369,10 +378,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private HeartbeatRequestMessage constructHeartbeatRequestMessage(final InternalDistributedMember mbr) {
     final int reqId = requestId.getAndIncrement();
-    final HeartbeatRequestMessage prm = new HeartbeatRequestMessage(mbr, reqId);
-    prm.setRecipient(mbr);
+    final HeartbeatRequestMessage hrm = new HeartbeatRequestMessage(mbr, reqId);
+    hrm.setRecipient(mbr);
 
-    return prm;
+    return hrm;
   }
 
   private void checkMember(final InternalDistributedMember mbr) {
@@ -424,11 +433,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       return true;
     }
     logger.trace("Checking member {}", member);
-    final HeartbeatRequestMessage prm = constructHeartbeatRequestMessage(member);
+    final HeartbeatRequestMessage hrm = constructHeartbeatRequestMessage(member);
     final Response pingResp = new Response();
-    requestIdVsResponse.put(prm.getRequestId(), pingResp);
+    requestIdVsResponse.put(hrm.getRequestId(), pingResp);
     try {
-      Set<InternalDistributedMember> membersNotReceivedMsg = this.services.getMessenger().send(prm);
+      Set<InternalDistributedMember> membersNotReceivedMsg = this.services.getMessenger().send(hrm);
+      this.stats.incHeartbeatRequestsSent();
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(member)) {
         // member is not part of current view.
         logger.trace("Member {} is not part of current view.", member);
@@ -446,6 +456,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             return false;
           } else {
             logger.trace("received heartbeat from {}", member);
+            this.stats.incHeartbeatsReceived();
             if (ts != null) {
               ts.setTimeStamp(System.currentTimeMillis());
             }
@@ -456,7 +467,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     } catch (InterruptedException e) {
       logger.debug("GMSHealthMonitor checking thread interrupted, while waiting for response from member: {} .", member);
     } finally {
-      requestIdVsResponse.remove(prm.getRequestId());
+      requestIdVsResponse.remove(hrm.getRequestId());
     }
     return false;
   }
@@ -502,8 +513,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         GMSMember gmbr = (GMSMember) suspectMember.getNetMember();
         writeMemberToStream(gmbr, out);
         clientSocket.shutdownOutput();
+        this.stats.incFinalCheckRequestsSent();
+        this.stats.incTcpFinalCheckRequestsSent();
         logger.debug("Connected - reading response from suspect member {}", suspectMember);
         int b = in.read();
+        this.stats.incFinalCheckResponsesReceived();
+        this.stats.incTcpFinalCheckResponsesReceived();
         logger.debug("Received {}", (b == OK ? "OK" : (b == ERROR ? "ERROR" : b)), suspectMember);
         if (b == OK) {
           TimeStamp ts = memberTimeStamps.get(suspectMember);
@@ -535,12 +550,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     out.flush();
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.gemstone.gemfire.distributed.internal.membership.gms.fd.HealthMonitor#suspectMember(com.gemstone.gemfire.distributed.DistributedMember,
-   * java.lang.String)
-   */
   @Override
   public void suspect(InternalDistributedMember mbr, String reason) {
     initiateSuspicion(mbr, reason);
@@ -722,6 +731,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               return;
             }
             services.getMessenger().sendUnreliably(message);
+            GMSHealthMonitor.this.stats.incHeartbeatsSent();
           } catch (CancelException e) {
             return;
           }
@@ -748,6 +758,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           message.setRecipient(mbr);
           try {
             services.getMessenger().sendUnreliably(message);
+            GMSHealthMonitor.this.stats.incHeartbeatsSent();
             numSent++;
             if (numSent >= NUM_HEARTBEATS) {
               break;
@@ -843,11 +854,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     isStopping = false;
     services = s;
     memberTimeout = s.getConfig().getMemberTimeout();
+    this.stats = services.getStatistics();
     services.getMessenger().addHandler(HeartbeatRequestMessage.class, this);
     services.getMessenger().addHandler(HeartbeatMessage.class, this);
     services.getMessenger().addHandler(SuspectMembersMessage.class, this);
   }
-
+  
   @Override
   public void started() {
     setLocalAddress( services.getMessenger().getMemberID());
@@ -993,6 +1005,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private void processHeartbeatRequest(HeartbeatRequestMessage m) {
     
+    this.stats.incHeartbeatRequestsReceived();
+    
     if (this.isStopping || this.playingDead) {
       return;
     }
@@ -1001,9 +1015,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     InternalDistributedMember me = localAddress;
 
     if (me.getVmViewId() >= 0  &&  m.getTarget().equals(me)) {
-      HeartbeatMessage prm = new HeartbeatMessage(m.getRequestId());
-      prm.setRecipient(m.getSender());
-      Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(prm);
+      HeartbeatMessage hm = new HeartbeatMessage(m.getRequestId());
+      hm.setRecipient(m.getSender());
+      Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(hm);
+      this.stats.incHeartbeatsSent();
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(m.getSender())) {
         logger.debug("Unable to send heartbeat to member: {}", m.getSender());
       }
@@ -1013,6 +1028,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void processHeartbeat(HeartbeatMessage m) {
+    this.stats.incHeartbeatsReceived();
     if (m.getRequestId() < 0) {
       // a periodic heartbeat
       contactedBy(m.getSender());
@@ -1037,6 +1053,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @param incomingRequest
    */
   private void processSuspectMembersRequest(SuspectMembersMessage incomingRequest) {
+    
+    this.stats.incSuspectsReceived();
+    
     NetView cv = currentView;
 
     if (cv == null) {
@@ -1062,6 +1081,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           message.setRecipient(sender);
           try {
             services.getMessenger().send(message);
+            this.stats.incHeartbeatsSent();
             it.remove();
           } catch (CancelException e) {
             return;
@@ -1132,13 +1152,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private void doFinalCheck(final InternalDistributedMember initiator,
       List<SuspectRequest> sMembers, NetView cv, InternalDistributedMember localAddress) {
 
-    List<InternalDistributedMember> membersChecked = new ArrayList<>(10);
+//    List<InternalDistributedMember> membersChecked = new ArrayList<>(10);
     try {
       for (int i = 0; i < sMembers.size(); i++) {
         final SuspectRequest sr = sMembers.get(i);
         final InternalDistributedMember mbr = sr.getSuspectMember();
 
-        if (!cv.contains(mbr) || membersInFinalCheck.contains(mbr)) {
+        if (!cv.contains(mbr) /*|| membersInFinalCheck.contains(mbr)*/) {
           continue;
         }
 
@@ -1146,7 +1166,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           continue;// self
         }
         
-        membersChecked.add(mbr);
+//        membersChecked.add(mbr);
 
         // suspectMemberInView is now set by the heartbeat monitoring code
         // to allow us to move on from watching members we've already
@@ -1181,6 +1201,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
                   logger.debug("\ncurrent view: {}\nports: {}", view, Arrays.toString(view.getFailureDetectionPorts()));
                 }
                 pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+                GMSHealthMonitor.this.stats.incFinalCheckRequestsSent();
+                GMSHealthMonitor.this.stats.incUdpFinalCheckRequestsSent();
+                if (pinged) {
+                  GMSHealthMonitor.this.stats.incFinalCheckResponsesReceived();
+                  GMSHealthMonitor.this.stats.incUdpFinalCheckResponsesReceived();
+                }
               } else {
                 pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
               }
@@ -1214,7 +1240,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         //      }// scheduling for final check and removing it..
       }
     } finally {
-      membersInFinalCheck.removeAll(membersChecked);
+//      membersInFinalCheck.removeAll(membersChecked);
     }
   }
   @Override
@@ -1253,10 +1279,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       recipients = currentView.getMembers();
 //    }
 
-    SuspectMembersMessage rmm = new SuspectMembersMessage(recipients, requests);
+    SuspectMembersMessage smm = new SuspectMembersMessage(recipients, requests);
     Set<InternalDistributedMember> failedRecipients;
     try {
-      failedRecipients = services.getMessenger().send(rmm);
+      failedRecipients = services.getMessenger().send(smm);
+      this.stats.incSuspectsSent();
     } catch (CancelException e) {
       return;
     }
@@ -1298,5 +1325,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
     }
     
+  }
+  
+  public DMStats getStats() {
+    return this.stats;
   }
 }

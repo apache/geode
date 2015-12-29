@@ -573,6 +573,70 @@ public class LonerDistributionManager implements DM {
     @Override
     public void incThreadOwnedReceivers(long value, int dominoCount) {
     }
+    @Override
+    public long getHeartbeatRequestsSent() {return 0;}
+    @Override
+    public void incHeartbeatRequestsSent() {}
+    @Override
+    public long getHeartbeatRequestsReceived() {return 0;}
+    @Override
+    public void incHeartbeatRequestsReceived() {}
+    @Override
+    public long getHeartbeatsSent() {return 0;}
+    @Override
+    public void incHeartbeatsSent() {}
+    @Override
+    public long getHeartbeatsReceived() {return 0;}
+    @Override
+    public void incHeartbeatsReceived() {}
+    @Override
+    public long getSuspectsSent() {return 0;}
+    @Override
+    public void incSuspectsSent() {}
+    @Override
+    public long getSuspectsReceived() {return 0;}
+    @Override
+    public void incSuspectsReceived() {}
+    @Override
+    public long getFinalCheckRequestsSent() {return 0;}
+    @Override
+    public void incFinalCheckRequestsSent() {}
+    @Override
+    public long getFinalCheckRequestsReceived() {return 0;}
+    @Override
+    public void incFinalCheckRequestsReceived() {}
+    @Override
+    public long getFinalCheckResponsesSent() {return 0;}
+    @Override
+    public void incFinalCheckResponsesSent() {}
+    @Override
+    public long getFinalCheckResponsesReceived() {return 0;}
+    @Override
+    public void incFinalCheckResponsesReceived() {}
+    @Override    
+    public long getTcpFinalCheckRequestsSent() {return 0;}
+    @Override
+    public void incTcpFinalCheckRequestsSent() {}
+    @Override
+    public long getTcpFinalCheckRequestsReceived() {return 0;}
+    @Override
+    public void incTcpFinalCheckRequestsReceived() {}
+    @Override
+    public long getTcpFinalCheckResponsesSent() {return 0;}
+    @Override
+    public void incTcpFinalCheckResponsesSent() {}
+    @Override
+    public long getTcpFinalCheckResponsesReceived() {return 0;}
+    @Override
+    public void incTcpFinalCheckResponsesReceived() {}
+    @Override
+    public long getUdpFinalCheckRequestsSent() {return 0;}
+    @Override
+    public void incUdpFinalCheckRequestsSent() {}
+    @Override
+    public long getUdpFinalCheckResponsesReceived() {return 0;}
+    @Override
+    public void incUdpFinalCheckResponsesReceived() {}
   }
   protected static class DummyExecutor implements ExecutorService {
     @Override

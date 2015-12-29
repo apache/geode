@@ -39,6 +39,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 
 import org.jgroups.util.UUID;
 import org.junit.After;
@@ -49,8 +50,11 @@ import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
@@ -80,6 +84,7 @@ public class GMSHealthMonitorJUnitTest {
   private JoinLeave joinLeave;
   private GMSHealthMonitor gmsHealthMonitor;
   private Manager manager;
+  private long statsId = 123;
   final long memberTimeout = 1000l;
   private int[] portRange= new int[]{0, 65535};
 
@@ -92,7 +97,20 @@ public class GMSHealthMonitorJUnitTest {
     joinLeave = mock(JoinLeave.class);
     manager = mock(Manager.class);
     services = mock(Services.class);
-    Stopper stopper = mock(Stopper.class);
+    Stopper stopper = mock(Stopper.class); 
+    
+    Properties nonDefault = new Properties();
+    nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
+    nonDefault.put(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "10");
+    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
+    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
+    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
+    nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
+    DM dm = mock(DM.class);    
+    InternalDistributedSystem system = InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
 
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
     when(mockConfig.getMemberTimeout()).thenReturn(memberTimeout);
@@ -102,8 +120,8 @@ public class GMSHealthMonitorJUnitTest {
     when(services.getJoinLeave()).thenReturn(joinLeave);
     when(services.getCancelCriterion()).thenReturn(stopper);
     when(services.getManager()).thenReturn(manager);
+    when(services.getStatistics()).thenReturn(new DistributionStats(system, statsId));
     when(stopper.isCancelInProgress()).thenReturn(false);
-    
 
     if (mockMembers == null) {
       mockMembers = new ArrayList<InternalDistributedMember>();
@@ -142,6 +160,8 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.processMessage(new HeartbeatRequestMessage(mbr, 1));
     verify(messenger, atLeastOnce()).send(any(HeartbeatMessage.class));
+    Assert.assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatRequestsReceived());
+    Assert.assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatsSent());
   }
 
   /**
@@ -187,7 +207,7 @@ public class GMSHealthMonitorJUnitTest {
     // neighbor should change to 5th
     System.out.println("testHMNextNeighborAfterTimeout ending");
     Assert.assertEquals("expected " + expected + " but found " + neighbor
-        + ".  view="+v, expected, neighbor);
+        + ".  view="+v, expected, neighbor);  
   }
 
   /**
@@ -239,6 +259,8 @@ public class GMSHealthMonitorJUnitTest {
 
     System.out.println("testSuspectMembersCalledThroughMemberCheckThread ending");
     assertTrue(gmsHealthMonitor.isSuspectMember(mockMembers.get(4)));
+    Assert.assertTrue(gmsHealthMonitor.getStats().getHeartbeatRequestsSent() > 0);
+    Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsSent() > 0);
   }
 
   /***
@@ -282,6 +304,8 @@ public class GMSHealthMonitorJUnitTest {
     Thread.sleep(GMSHealthMonitor.MEMBER_SUSPECT_COLLECTION_INTERVAL + 1000);
 
     verify(messenger, atLeastOnce()).send(any(SuspectMembersMessage.class));
+    
+    Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsSent() > 0);
   }
 
   /***
@@ -306,6 +330,8 @@ public class GMSHealthMonitorJUnitTest {
     }
 
     verify(messenger, atLeastOnce()).send(isA(SuspectMembersMessage.class));
+    
+    Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsSent() > 0);
   }
 
   /***
@@ -338,6 +364,7 @@ public class GMSHealthMonitorJUnitTest {
 
     System.out.println("testRemoveMemberCalled ending");
     verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class), any(String.class));
+    Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
 
   /***
@@ -373,6 +400,7 @@ public class GMSHealthMonitorJUnitTest {
 
     System.out.println("testRemoveMemberNotCalledBeforeTimeout ending");
     verify(joinLeave, never()).remove(any(InternalDistributedMember.class), any(String.class));
+    Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
 
   /***
@@ -407,6 +435,7 @@ public class GMSHealthMonitorJUnitTest {
     Thread.sleep(memberTimeout + 200);
 
     verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class), any(String.class));
+    Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
 
   /***
@@ -548,6 +577,9 @@ public class GMSHealthMonitorJUnitTest {
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
     int byteReply = dis.read();
     Assert.assertEquals(expectedResult, byteReply);
+    
+    Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckResponsesSent() > 0);
+    Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckResponsesSent() > 0);
   }
   
   @Test
@@ -610,6 +642,10 @@ public class GMSHealthMonitorJUnitTest {
     when(fakeSocket.isConnected()).thenReturn(true);
     
     Assert.assertEquals(expectedResult, gmsHealthMonitor.doTCPCheckMember(otherMember, fakeSocket));
+    Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckRequestsSent() > 0);
+    Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckRequestsSent() > 0);
+    Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckResponsesReceived() > 0);
+    Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckResponsesReceived() > 0);
     
     //we can check to see if the gms member information was written out by the tcp check
     byte[] bytesWritten = outputStream.toByteArray();
