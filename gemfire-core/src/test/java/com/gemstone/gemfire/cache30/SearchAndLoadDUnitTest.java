@@ -16,17 +16,17 @@
  */
 package com.gemstone.gemfire.cache30;
 
-//import com.gemstone.gemfire.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import com.gemstone.gemfire.cache.*;
 
 import dunit.*;
-//import hydra.ClientMgr;
 
 /**
  * This class tests various search load and write scenarios for distributed regions
- * @author Sudhir Menon
- *
  */
+@SuppressWarnings({"deprecation", "unchecked", "rawtypes", "serial"})
 public class SearchAndLoadDUnitTest extends CacheTestCase {
 
   static boolean loaderInvoked;
@@ -47,6 +47,10 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
 
   /** A <code>CacheWriter</code> used by a test */
   protected static TestCacheWriter writer;
+
+  static boolean exceptionThrown;
+  static final CountDownLatch readyForExceptionLatch = new CountDownLatch(1);
+  static final CountDownLatch loaderInvokedLatch = new CountDownLatch(1);
 
   public SearchAndLoadDUnitTest(String name) {
     super(name);
@@ -171,8 +175,166 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
     });
   }
 
-  public void testNetLoadNoLoaders()
-  throws CacheException, InterruptedException {
+
+  /**
+   * This test is for a bug in which a cache loader threw an exception
+   * that caused the wrong value to be put in a Future in nonTxnFindObject.  This
+   * in turn caused a concurrent search for the object to not invoke the loader a
+   * second time.
+   * 
+   * VM0 is used to create a cache and a region having a loader that simulates the
+   * conditions that caused the bug.  One async thread then does a get() which invokes
+   * the loader.  Another async thread does a get() which reaches nonTxnFindObject
+   * and blocks waiting for the first thread's load to complete.  The loader then
+   * throws an exception that is sent back to the first thread.  The second thread
+   * should then cause the loader to be invoked again, and this time the loader will
+   * return a value.  Both threads then validate that they received the expected
+   * result.
+   */
+  public void testConcurrentLoad() throws Throwable {
+
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    
+    final String name = this.getUniqueName() + "Region";
+    final String objectName = "theKey";
+    final Integer value = new Integer(44);
+    final String exceptionString = "causing first cache-load to fail";
+
+    remoteLoaderInvoked = false;
+    loaderInvoked = false;
+    
+    vm0.invoke(new CacheSerializableRunnable("create region " + name + " in vm0") {
+      public void run2() {
+        remoteLoaderInvoked = false;
+        loaderInvoked = false;
+        AttributesFactory factory = new AttributesFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setConcurrencyChecksEnabled(true);
+        factory.setCacheLoader(new CacheLoader() {
+          boolean firstInvocation = true;
+          public synchronized Object load(LoaderHelper helper) {
+            System.out.println("invoked cache loader for " + helper.getKey());
+            loaderInvoked = true;
+            loaderInvokedLatch.countDown();
+            if (firstInvocation) {
+              firstInvocation = false;
+              try { 
+                // wait for both threads to be ready for the exception to be thrown
+                System.out.println("waiting for vm0t2 to be ready before throwing exception");
+                readyForExceptionLatch.await(30, TimeUnit.SECONDS);
+                // give the second thread time to get into loader code
+                Thread.sleep(5000);
+              } catch (InterruptedException e) {
+                fail("interrupted");
+              }
+              System.out.println("throwing exception");
+              exceptionThrown = true;
+              throw new RuntimeException(exceptionString);
+            }
+            System.out.println("returning value="+value);
+            return value;
+          }
+
+          public void close() {
+
+          }
+        });
+
+        Region region = createRegion(name,factory.create());
+        region.create(objectName, null);
+        addExpectedException(exceptionString);
+      }
+    });
+
+    AsyncInvocation async1 = null;
+    try {
+      async1 = vm0.invokeAsync(new CacheSerializableRunnable("Concurrently invoke the remote loader on the same key - t1") {
+        public void run2() {
+          Region region = getCache().getRegion("root/"+name);
+  
+          getLogWriter().info("t1 is invoking get("+objectName+")");
+          try {
+            getLogWriter().info("t1 retrieved value " + region.get(objectName));
+            fail("first load should have triggered an exception");
+          } catch (RuntimeException e) {
+            if (!e.getMessage().contains(exceptionString)) {
+              throw e;
+            }
+          }
+        }
+      });
+      vm0.invoke(new CacheSerializableRunnable("Concurrently invoke the loader on the same key - t2") {
+        public void run2() {
+          final Region region = getCache().getRegion("root/"+name);
+          final Object[] valueHolder = new Object[1];
+  
+          // wait for vm1 to cause the loader to be invoked
+          getLogWriter().info("t2 is waiting for loader to be invoked by t1");
+          try {
+            loaderInvokedLatch.await(30, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            fail("interrupted");
+          }
+          assertTrue(loaderInvoked);
+          
+          Thread t = new Thread("invoke get()") {
+            public void run() {
+              try {
+                valueHolder[0] = region.get(objectName);
+              } catch (RuntimeException e) {
+                valueHolder[0] = e;
+              }
+            }
+          };
+          
+          t.setDaemon(true);
+          t.start();
+          try {
+            // let the thread get to the point of blocking on vm1's Future
+            // in LocalRegion.nonTxnFindObject()
+            Thread.sleep(5000);
+          } catch (InterruptedException e) {
+            fail("interrupted");
+          }
+          
+          readyForExceptionLatch.countDown();
+          try {
+            t.join(30000);
+          } catch (InterruptedException e) {
+            fail("interrupted");
+          }
+          if (t.isAlive()) {
+            t.interrupt();
+            fail("get() operation blocked for too long - test needs some work");
+          }
+          
+          getLogWriter().info("t2 is invoking get("+objectName+")");
+          Object value = valueHolder[0];
+          if (value instanceof RuntimeException) {
+            if ( ((Exception)value).getMessage().contains(exceptionString) ) {
+              fail("second load should not have thrown an exception");
+            } else {
+              throw (RuntimeException)value;
+            }
+          } else {
+            getLogWriter().info("t2 retrieved value " + value);
+            assertNotNull(value);
+          }
+        }
+      });
+    } finally {
+      if (async1 != null) {
+        async1.join();
+        if (async1.exceptionOccurred()) {
+          throw async1.getException();
+        }
+      }
+    }
+  }
+  
+  
+  public void testNetLoadNoLoaders() throws CacheException, InterruptedException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -318,7 +480,6 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
     VM vm2 = host.getVM(2);
     final String name = this.getUniqueName() + "-ACK";
     final String objectName = "B";
-    final Integer value = new Integer(43);
     loaderInvoked = false;
     remoteLoaderInvoked = false;
     remoteLoaderInvokedCount = 0;
@@ -369,7 +530,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
 
                 }
               });
-            Region region = createRegion(name,factory.create());
+            createRegion(name,factory.create());
           }
           catch (CacheException ex) {
             fail("While creating ACK region", ex);
