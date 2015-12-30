@@ -1,0 +1,36 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+jar {
+  baseName = 'gemfire-modules-hibernate'
+}
+
+dependencies {
+  compile project(':extensions/gemfire-modules')
+  compile 'org.hibernate:hibernate-core:3.5.0-Final'
+  compile 'org.hibernate:hibernate-annotations:3.5.5-Final'
+  compile 'javax.persistence:persistence-api:1.0.2'
+
+  runtime 'dom4j:dom4j:1.6.1'
+
+  testRuntime 'org.hibernate:hibernate-annotations:3.5.5-Final'
+  testRuntime 'org.slf4j:slf4j-jdk14:1.7.7'
+  testRuntime 'org.hsqldb:hsqldb:2.0.0'
+  testRuntime 'org.javassist:javassist:3.13.0-GA'
+
+  provided project(path: ':gemfire-junit', configuration: 'testOutput')
+}

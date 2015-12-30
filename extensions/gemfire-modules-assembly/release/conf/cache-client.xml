@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Licensed to the Apache Software Foundation (ASF) under one or more
+	contributor license agreements.  See the NOTICE file distributed with
+	this work for additional information regarding copyright ownership.
+	The ASF licenses this file to You under the Apache License, Version 2.0
+	(the "License"); you may not use this file except in compliance with
+	the License.  You may obtain a copy of the License at
+
+	     http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+<client-cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd"
+    version="9.0">
+
+  <!-- The default pool connects to a cache server running on  localhost at
+       port 40404. To connect to a different server host and port, modify
+       the following pool server host and port. -->
+  <pool name="sessions" subscription-enabled="true">
+    <server host="localhost" port="40404"/>
+  </pool>
+
+  <!-- To configure the client to use a locator instead of a server, replace
+       the server pool above with the locator pool below and modify the locator
+       host and port as necessary. -->
+  <!--
+  <pool name="sessions" subscription-enabled="true">
+    <locator host="localhost" port="10334"/>
+  </pool>
+  -->
+  
+</client-cache>

@@ -1,0 +1,392 @@
+#!/usr/bin/env bash
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+X=`dirname $0`
+EXE_DIR=`cd $X; pwd`
+LIB_DIR=`cd ${X}/../lib; pwd`
+
+SESSION_JAR="${LIB_DIR}/gemfire-modules-session-external-@GEMFIRE_MODULES_VERSION@.jar"
+
+declare -a OTHER_JARS
+OTHER_JARS=(${LIB_DIR}/gemfire.jar \
+    ${LIB_DIR}/antlr.jar
+    ${LIB_DIR}/gemfire-modules-@GEMFIRE_MODULES_VERSION@.jar \
+    ${LIB_DIR}/gemfire-modules-session-@GEMFIRE_MODULES_VERSION@.jar \
+    ${LIB_DIR}/slf4j-api-@SLF4J_VERSION@.jar)
+
+# This is required for GemFire 8.1
+LOG4J_API=$(ls ${LIB_DIR}/log4j-api*jar)
+LOG4J_CORE=$(ls ${LIB_DIR}/log4j-core*jar)
+if [ -f ${LOG4J_API} -a -f ${LOG4J_CORE} ]; then
+    OTHER_JARS[${#OTHER_JARS[*]}]=$LOG4J_API
+    OTHER_JARS[${#OTHER_JARS[*]}]=$LOG4J_CORE
+fi
+
+TMP_DIR="/tmp/modify_war.$$"
+
+ARG_INPUT_FILE=""
+ARG_WAR_LIB_DIR="WEB-INF/lib"
+ARG_EAR_LIB_DIR="lib"
+ARG_OUTPUT_FILE=""
+ARG_TEST_RUN=0
+ARG_CACHE_TYPE="peer-to-peer"
+ARG_PROCESS_LIBS=1
+declare -a ARG_GEMFIRE_PARAMETERS=""
+declare -a ARG_WAR_LIBS="$SESSION_JAR"
+declare -a ARG_EAR_LIBS=""
+declare -a ARG_JVM_OPTS=""
+
+function usage() {
+    cat <<EOF
+USAGE: modify_war <args>
+WHERE <args>:
+
+    -e <jar>
+                    Assumes the input file is an .ear file and will add the
+                    given jar as a shared, application library. The file will
+                    be added in a /lib directory (by default) and any embedded
+                    .war files will have a corresponding Class-Path entry added
+                    to their MANIFEST.MF file. The option can be given multiple times.
+
+    -h
+                    Displays this help message.
+
+    -j <jar>
+                    Additional library to add to the input file. Can be given
+                    multiple times.
+
+    -J <jvm opt>
+                    JVM argument to pass to sub-commands. Typically this might
+                    be to define proxy values. For example -J"-Dhttp.proxyHost=my-proxy"
+
+    -l <lib>
+                    Library directory where new jars will be placed inside war.
+                    Defaults to WEB-INF/lib.
+
+    -m <lib>
+                    Library directory where new jars will be placed inside ear.
+                    Defaults to /lib.
+
+    -o <file>
+                    The output file.
+
+    -p <param=value>
+                    Specific parameter for inclusion into the session filter
+                    definition as a regular init-param. Can be given multiple times.
+
+    -r
+                    Test run which only outputs an updated web.xml file.
+
+    -t <cache-type>
+                    Type of cache. Must be one of 'peer-to-peer' or
+                    'client-server'. Default is peer-to-peer.
+
+    -v              
+                    Verbose output
+ 
+    -w <war/ear file>
+                    The input file - either a WAR or EAR. The following actions
+                    will be performed depending on the type of file:
+                    WARs will have a <filter> element added to the web.xml and
+                    will have the appropriate jars copied to WEB-INF/lib.
+                    If the file is an EAR, then the appropriate jars will be
+                    copied to lib, within the ear and each embedded war files'
+                    manifest will have a Class-Path entry added (if one does
+                    not already exist).
+                    An appropriate slf4j binding jar must be included for ears
+                    or wars using -e or -j respectively. The following jars are
+                    provided:
+                        slf4j-jdk14
+                        slf4j-log4j12
+                        gemfire-modules-slf4j-weblogic
+
+    -x
+                    Do not create a self-contained war/ear file by copying all
+                    necessary jars into the file. When this option is used,
+                    additional jars will need to be made available to the
+                    container:
+                        gemfire.jar
+                        gemfire-modules.jar
+                        gemfire-modules-session.jar
+                        slf4j-api.jar
+                        slf4j-jdk14.jar (not for WebLogic)
+                        gemfire-modules-slf4j-weblogic.jar (WebLogic only)
+                    This option still modifes any web.xml files.
+                        
+EOF
+}
+
+
+# Two logging levels - 'I'nfo and 'D'ebug
+function log() {
+    local MSG=$1
+    local LVL=${2:-I}
+
+    if [ "$LVL" == "D" ]; then
+        if [ -n "$DEBUG" ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S')  $LVL  $MSG" >&2
+        fi
+    else
+        echo "$(date '+%Y-%m-%d %H:%M:%S')  $LVL  $MSG" >&2
+    fi
+}
+
+
+function exiting() {
+    local MSG=$1
+    local CODE=${2:-0}
+
+    if [ -n "$MSG" ]; then
+        echo "ERROR: $MSG"
+    fi
+
+    rm -rf $TMP_DIR
+    exit $CODE
+}
+
+
+function add_war_jars() {
+    local WAR_LIB_DIR=$1/$ARG_WAR_LIB_DIR/
+    mkdir -p $WAR_LIB_DIR
+
+    log "Copying jar(s) into war's '$ARG_WAR_LIB_DIR' directory" D
+    for J in ${ARG_WAR_LIBS[*]}; do
+        log "    $J" D
+        cp $J $WAR_LIB_DIR || exiting "Unable to copy $J to temp location $WAR_LIB_DIR" 1
+    done
+}
+
+
+function process_manifest() {
+    local MANIFEST=$1
+    local TMP_MANIFEST
+
+    log "Processing manifest $MANIFEST" D
+
+    CP_LIBS=""
+    for J in ${OTHER_JARS[*]} ${ARG_EAR_LIBS[*]}; do
+        CP_LIBS="$CP_LIBS $ARG_EAR_LIB_DIR/$(basename $J)"
+    done
+
+    TMP_MANIFEST="$TMP_DIR/manifest.mf.$$"
+    cp $MANIFEST $TMP_MANIFEST
+
+    awk -v CP_LIBS="$CP_LIBS" '
+        BEGIN {
+            cp = 0
+            split(CP_LIBS, cp_array)
+        }
+        /^Class-Path/ {print $0 CP_LIBS; cp = 1; getline}
+        /^ *\r?$/ {
+            if (cp == 0) {
+                print "Class-Path:" CP_LIBS
+                cp = 1
+            }
+        }
+        {print $0}
+        END { if (cp == 0) print "Class-Path:" CP_LIBS }
+    ' $TMP_MANIFEST > $MANIFEST
+
+    rm $TMP_MANIFEST
+}
+
+
+function process_web_xml() {
+    local WORK_DIR=$1
+    local ARG_P=""
+    local JVM_OPTS=""
+
+    for i in ${ARG_GEMFIRE_PARAMETERS[*]}; do
+        ARG_P="$ARG_P -p $i"
+    done
+
+    for j in ${ARG_JVM_OPTS[*]}; do
+        JVM_OPTS="$JVM_OPTS $j"
+    done
+    
+    WEB_XML=$(find $WORK_DIR -name web.xml)
+    TMP_WEB_XML="${WORK_DIR}/web.xml.$$"
+    JAVA_CMD="java $JVM_OPTS -jar $SESSION_JAR $ARG_P -t $ARG_CACHE_TYPE -w $WEB_XML"
+    log "Executing java cmd: $JAVA_CMD" D
+
+    if [ $ARG_TEST_RUN -eq 0 ]; then
+        eval $JAVA_CMD > $TMP_WEB_XML || exiting "Error updating web.xml" 1
+        cp $TMP_WEB_XML $WEB_XML
+        rm -f $TMP_WEB_XML
+    else
+        eval $JAVA_CMD || exiting "Error updating web.xml" 1
+    fi
+}
+
+
+function process_input_file() {
+    local WORK_DIR=$1
+
+    if [[ "$ARG_INPUT_FILE" =~ \.war$ ]]; then
+        process_web_xml $WORK_DIR
+        add_war_jars $WORK_DIR
+        return
+    fi
+ 
+    WAR_LIST=$( find $WORK_DIR -name '*.war' )
+    for WAR in $WAR_LIST; do
+        log "Processing embedded war file $WAR" D
+        TMP_WAR_DIR="${WAR}.$$"
+
+        log "Unzipping war to $TMP_WAR_DIR" D
+        unzip -q -o -d $TMP_WAR_DIR $WAR
+
+        process_web_xml $TMP_WAR_DIR
+        if [ $ARG_TEST_RUN -eq 0 ]; then
+            add_war_jars $TMP_WAR_DIR
+
+            MANIFEST=$( find $TMP_WAR_DIR -name MANIFEST.MF )
+
+            if [ $ARG_PROCESS_LIBS -eq 1 -a -n "$MANIFEST" ]; then
+                process_manifest $MANIFEST
+            fi
+
+            log "Creating new war $WAR" D
+            if [ -n "$MANIFEST" ]; then
+                jar cmf $MANIFEST $WAR -C $TMP_WAR_DIR .
+            else
+                jar cf $WAR -C $TMP_WAR_DIR .
+            fi
+        fi
+
+        rm -rf $TMP_WAR_DIR
+    done
+}
+
+trap exiting INT QUIT TERM
+
+mkdir $TMP_DIR
+
+CMD_ARGS="-j $SESSION_JAR"
+
+while getopts "e:hj:J:l:m:o:p:rt:vw:x" OPT; do
+    case $OPT in
+        e)
+            if [ ! -f $OPTARG ]; then
+                exiting "Cannot read file '$OPTARG' given with option -e" 1
+            fi
+            ARG_EAR_LIBS[${#ARG_EAR_LIBS[@]}]=$OPTARG
+            ;;
+        h)
+            usage
+            exiting "" 1
+            ;;
+        j)
+            if [ ! -f $OPTARG ]; then
+                exiting "Cannot read file '$OPTARG' given with option -j" 1
+            fi
+            ARG_WAR_LIBS[${#ARG_WAR_LIBS[@]}]=$OPTARG
+            ;;
+        J)
+            ARG_JVM_OPTS[${#ARG_JVM_OPTS[@]}]=$OPTARG
+            ;;
+        l)
+            ARG_WAR_LIB_DIR=$OPTARG
+            ;;
+        m)
+            ARG_EAR_LIB_DIR=$OPTARG
+            ;;
+        o)
+            ARG_OUTPUT_FILE=$OPTARG
+            ;;
+        p)
+            ARG_GEMFIRE_PARAMETERS[${#ARG_GEMFIRE_PARAMETERS[@]}]=$OPTARG
+            ;;
+        r)
+            ARG_TEST_RUN=1
+            ;;
+        t)
+            case $OPTARG in
+                peer-to-peer|client-server)
+                    ARG_CACHE_TYPE=$OPTARG
+                    ;;
+                *)
+                    exiting "Invalid cache type '$OPTARG' given with option -t. Options are 'peer-to-peer' or 'client-server'." 1
+                    ;;
+            esac
+            ;;
+        v)
+            DEBUG=1
+            ;;
+        w)
+            if [ ! -f $OPTARG ]; then
+                exiting "Cannot read file '$OPTARG' given with option -w" 1
+            fi
+            ARG_INPUT_FILE=$OPTARG
+            ;;
+        x)
+            ARG_PROCESS_LIBS=0
+            ;;
+        [?])
+            echo "Unknown option '$OPTARG'"
+            echo
+            usage
+            exit 1
+            ;;
+        :)
+            echo "Option '$OPTARG' requires an argument"
+            echo
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# Some validation
+if [ -z "$ARG_INPUT_FILE" ]; then
+    exiting "Please supply an input file with the -w option" 1
+fi
+
+if [ -z "$ARG_OUTPUT_FILE" ]; then
+    ARG_OUTPUT_FILE="sessions-$(basename $ARG_INPUT_FILE)"
+fi
+
+if [[ "$ARG_INPUT_FILE" =~ \.war$ && -n "${ARG_EAR_LIBS[*]}" ]]; then
+    log "Input file appears to be a war but -e also specified. EAR processing will be skipped." W
+fi
+
+if [[ "$ARG_INPUT_FILE" =~ \.war$ && $ARG_PROCESS_LIBS -eq 1 ]]; then
+    for J in ${OTHER_JARS[*]}; do
+        ARG_WAR_LIBS[${#ARG_WAR_LIBS[@]}]=$J
+    done
+fi
+
+unzip -q -o -d $TMP_DIR $ARG_INPUT_FILE
+process_input_file $TMP_DIR
+
+if [[ $ARG_TEST_RUN -eq 0 && $ARG_PROCESS_LIBS -eq 1 && "$ARG_INPUT_FILE" =~ \.ear$ ]]; then
+    log "Copying additional jars into ear's '$ARG_EAR_LIB_DIR' directory" D
+    mkdir -p $TMP_DIR/$ARG_EAR_LIB_DIR
+    for i in ${OTHER_JARS[*]} ${ARG_EAR_LIBS[*]}; do
+        log "    $i" D
+        cp $i $TMP_DIR/$ARG_EAR_LIB_DIR/ || exiting "Unable to copy $i to $TMP_DIR/$ARG_EAR_LIB_DIR" 1
+    done
+fi
+
+if [ $ARG_TEST_RUN -eq 0 ]; then
+    mkdir -p $TMP_DIR/META-INF
+    touch $TMP_DIR/META-INF/MANIFEST.MF
+    jar cmf $TMP_DIR/META-INF/MANIFEST.MF $ARG_OUTPUT_FILE -C $TMP_DIR .
+    log "Created file: $ARG_OUTPUT_FILE" I
+fi
+
+exiting

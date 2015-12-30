@@ -1,0 +1,251 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+configurations {
+  slf4jDeps
+}
+
+configurations {
+  servletApiDeps
+}
+
+dependencies {
+  slf4jDeps 'org.slf4j:slf4j-api:1.7.7'
+  slf4jDeps 'org.slf4j:slf4j-jdk14:1.7.7'
+}
+
+dependencies {
+  servletApiDeps 'javax.servlet:servlet-api:2.5'
+}
+
+jar.enabled = false
+
+def configureTcServerAssembly = {
+  archiveName = "Apache_Geode_Modules-${version}-tcServer.zip"
+
+  // All client-server files
+  into('gemfire-cs/lib') {
+    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+  into('gemfire-cs/bin') {
+    from('release/scripts') {
+      include '*'
+    }
+    from('release/tcserver/gemfire-cs') {
+      include 'modules.env'
+    }
+    filter { it.replaceAll('@GEMFIRE_MODULES_VERSION@', version) }
+  }
+  into('gemfire-cs/conf') {
+    from('release/conf') {
+      exclude 'cache-peer.xml'
+    }
+    from('release/tcserver/gemfire-cs') {
+      include 'context-fragment.xml'
+      include 'server-fragment.xml'
+    }
+  }
+  into('gemfire-cs') {
+    from('release/tcserver/gemfire-cs') {
+      include 'configuration-prompts.properties'
+      include 'README.txt'
+      filter { it.replaceAll('@VERSION@', version) }
+    }
+  }
+
+  // Tomncat 7 specifics
+  into('gemfire-cs-tomcat-7/conf') {
+    from('release/tcserver/gemfire-cs-tomcat-7') {
+      include 'context-fragment.xml'
+    }
+  }
+  into('gemfire-cs-tomcat-7/bin') {
+    from('release/tcserver/gemfire-cs-tomcat-7') {
+      include 'modules.env'
+    }
+  }
+  // All peer-to-peer files
+  into('gemfire-p2p/lib') {
+    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+  into('gemfire-p2p/bin') {
+    from('release/scripts') {
+      include 'gemfire.*'
+      include 'setenv.properties'
+    }
+    from('release/tcserver/gemfire-p2p') {
+      include 'modules.env'
+    }
+  }
+  into('gemfire-p2p/conf') {
+    from('release/conf') {
+      include 'cache-peer.xml'
+    }
+    from('release/tcserver/gemfire-p2p') {
+      include 'context-fragment.xml'
+      include 'server-fragment.xml'
+    }
+  }
+  into('gemfire-p2p') {
+    from('release/tcserver/gemfire-p2p') {
+      include 'configuration-prompts.properties'
+      include 'README.txt'
+      filter { it.replaceAll('@VERSION@', version) }
+    }
+  }
+
+  // Tomncat 7 specifics
+  into('gemfire-p2p-tomcat-7/conf') {
+    from('release/tcserver/gemfire-p2p-tomcat-7') {
+      include 'context-fragment.xml'
+    }
+  }
+  into('gemfire-p2p-tomcat-7/bin') {
+    from('release/tcserver/gemfire-p2p-tomcat-7') {
+      include 'modules.env'
+    }
+  }
+}
+
+def configureTcServer30Assembly = {
+  archiveName = "Apache_Geode_Modules-${version}-tcServer30.zip"
+
+  into('gemfire-cs-tomcat-8/bin') {
+    from('release/tcserver/gemfire-cs-tomcat-8') {
+      include 'modules.env'
+    }
+  }
+  into('gemfire-cs-tomcat-8/conf') {
+    from('release/tcserver/gemfire-cs-tomcat-8') {
+      include 'context-fragment.xml'
+    }
+  }
+
+  into('gemfire-p2p-tomcat-8/bin') {
+    from('release/tcserver/gemfire-p2p-tomcat-8') {
+      include 'modules.env'
+    }
+  }
+  into('gemfire-p2p-tomcat-8/conf') {
+    from('release/tcserver/gemfire-p2p-tomcat-8') {
+      include 'context-fragment.xml'
+    }
+  }
+}
+
+task distTomcat(type: Zip) {
+  archiveName = "Apache_Geode_Modules-${version}-Tomcat.zip"
+
+  // All client-server files
+  into('lib') {
+    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+  into('bin') {
+    from('release/scripts') {
+      include '*'
+      exclude 'setenv.properties'
+    }
+  }
+  into('conf') {
+    from('release/conf') {
+      include '*'
+    }
+  }
+
+  from('release/tomcat') {
+    include 'readme.txt'
+    filter { it.replaceAll('@VERSION@', version) }
+  }
+}
+
+task distHibernate(type: Zip) {
+  archiveName = "Apache_Geode_Modules-${version}-Hibernate.zip"
+
+  into('lib') {
+    from project(':extensions/gemfire-modules-hibernate').configurations.archives.allArtifacts.files
+  }
+  from('release/hibernate') {
+    include 'readme.txt'
+    filter { it.replaceAll('@VERSION@', version) }
+  }
+}
+
+task distAppServer(type: Zip) {
+  archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
+
+  into('lib') {
+    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
+    from project(':extensions/gemfire-modules-session').configurations.archives.allArtifacts.files
+//    from project(':extensions/gemfire-modules-session-external').configurations.archives.allArtifacts.files
+    from configurations.slf4jDeps
+    from configurations.servletApiDeps
+    from('release/3rdparty_license') {
+      include "open_source_licenses*${version}.txt"
+    }
+  }
+
+  into('bin') {
+    from('release/session/bin/') {
+      include 'setenv.properties'
+      include 'modify_war'
+      include 'cacheserver.*'
+      include 'gemfire.*'
+
+      def slf4j_version = '1.7.7'
+      def servlet_api_version = '2.5'
+      filter { it.replaceAll('@GEMFIRE_MODULES_VERSION@', version) }
+      filter { it.replaceAll('@SLF4J_VERSION@', "${slf4j_version}") }
+      filter { it.replaceAll('@SERVLET_API_VERSION@', "${servlet_api_version}") }
+      filter { it.replaceAll('@GEMFIRE_VERSION@', version) }
+    }
+  }
+
+  into('conf') {
+    from('release/conf')
+  }
+
+  from('release/session') {
+    include 'readme.txt'
+    filter { it.replaceAll('@VERSION@', version) }
+  }
+}
+
+task distTcServer(type: Zip, dependsOn: 'build') {
+  configure(configureTcServerAssembly)
+}
+
+task distTcServer30(type: Zip, dependsOn: 'build') {
+  configure(configureTcServerAssembly)
+  configure(configureTcServer30Assembly)
+}
+
+task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distHibernate', 'distAppServer'])

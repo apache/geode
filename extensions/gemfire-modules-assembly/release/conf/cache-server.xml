@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Licensed to the Apache Software Foundation (ASF) under one or more
+	contributor license agreements.  See the NOTICE file distributed with
+	this work for additional information regarding copyright ownership.
+	The ASF licenses this file to You under the Apache License, Version 2.0
+	(the "License"); you may not use this file except in compliance with
+	the License.  You may obtain a copy of the License at
+
+	     http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+<cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-9.0.xsd"
+    version="9.0">
+
+  <!-- Uncomment the following gateway-hub element to create a gateway hub -->
+  <!--
+  <gateway-hub id="NY" port="11110">
+    <gateway id="LN">
+      <gateway-endpoint id="LN-1" host="localhost" port="22220"/>
+      <gateway-queue disk-store-name="NY_GATEWAY"/>
+    </gateway>
+  </gateway-hub>
+  -->
+
+  <!-- Uncomment the following cache-server element to modify the listen port -->
+  <!--
+  <cache-server port="44444"/>
+  -->
+
+  <!-- Uncomment the following disk-store element to modify the default disk store directory -->
+  <!--
+  <disk-store name="DEFAULT">
+    <disk-dirs>
+      <disk-dir>/path/to/persistent/data</disk-dir>
+    </disk-dirs>
+  </disk-store>
+  -->
+  
+  <!-- Uncomment the following disk-store element to create the NY_GATEWAY disk store
+       (for the gateway-hub element defined above) -->
+  <!--
+  <disk-store name="NY_GATEWAY">
+    <disk-dirs>
+      <disk-dir>/path/to/persistent/data</disk-dir>
+    </disk-dirs>
+  </disk-store>
+  -->
+  
+  <!-- This is the definition of the default session region -->
+  <!--
+  <region name="gemfire_modules_sessions">
+    <region-attributes enable-gateway="false" data-policy="partition" statistics-enabled="true">
+      <entry-idle-time>
+        <expiration-attributes timeout="0" action="invalidate">
+          <custom-expiry>
+            <class-name>com.gemstone.gemfire.modules.util.SessionCustomExpiry</class-name>
+          </custom-expiry>
+        </expiration-attributes>
+      </entry-idle-time>
+      <partition-attributes redundant-copies="1" total-num-buckets="113"/>
+    </region-attributes>
+  </region>
+  -->
+
+</cache>
