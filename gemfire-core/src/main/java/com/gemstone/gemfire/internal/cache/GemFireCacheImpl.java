@@ -1359,12 +1359,16 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
             LocalizedStrings.GemFireCache_CACHE_INITIALIZED_USING__0__1, new Object[] {"generated description from old cache", cacheXmlDescription}));
       }
     } catch (IOException ex) {
-      throw new CacheXmlException(LocalizedStrings.GemFireCache_WHILE_OPENING_CACHE_XML_0_THE_FOLLOWING_ERROR_OCCURRED_1
-          .toLocalizedString(new Object[] { url.toString(), ex }));
+      String exceptionMsg = LocalizedStrings.GemFireCache_WHILE_OPENING_CACHE_XML_0_THE_FOLLOWING_ERROR_OCCURRED_1
+          .toLocalizedString(new Object[] { url.toString(), ex });
+      logger.error(exceptionMsg);
+      throw new CacheXmlException(exceptionMsg);
 
     } catch (CacheXmlException ex) {
-      CacheXmlException newEx = new CacheXmlException(LocalizedStrings.GemFireCache_WHILE_READING_CACHE_XML_0_1
-          .toLocalizedString(new Object[] { url, ex.getMessage() }));
+      String exceptionMsg = LocalizedStrings.GemFireCache_WHILE_READING_CACHE_XML_0_1
+          .toLocalizedString(new Object[] { url, ex.getMessage() });
+      logger.error(exceptionMsg);
+      CacheXmlException newEx = new CacheXmlException(exceptionMsg);
       newEx.setStackTrace(ex.getStackTrace());
       newEx.initCause(ex.getCause());
       throw newEx;

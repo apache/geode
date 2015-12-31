@@ -285,12 +285,15 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testMalformed() {
     setXmlFile(findFile("malformed.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
 
     } catch (CacheXmlException ex) {
       assertTrue(ex.getCause() instanceof SAXException);
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -300,6 +303,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadInt() {
     setXmlFile(findFile("badInt.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -310,6 +314,8 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
       assertTrue("Didn't expect cause:" + cause + " (a " +
                  cause.getClass().getName() + ")",
                  cause instanceof NumberFormatException);
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -319,12 +325,15 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadFloat() {
     setXmlFile(findFile("badFloat.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
 
     } catch (CacheXmlException ex) {
       assertTrue(ex.getCause() instanceof NumberFormatException);
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -335,12 +344,15 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadScope() {
     setXmlFile(findFile("badScope.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
 
     } catch (CacheXmlException ex) {
       assertTrue(ex.getCause() instanceof SAXException);
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -351,12 +363,15 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testBadKeyConstraintClass() {
     setXmlFile(findFile("badKeyConstraintClass.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
 
     } catch (CacheXmlException ex) {
       assertTrue(ex.getCause() instanceof ClassNotFoundException);
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -367,6 +382,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testCallbackNotDeclarable() {
     setXmlFile(findFile("callbackNotDeclarable.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -376,6 +392,8 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
       assertNull(/*"Didn't expect a cause of " + cause + " (a " +
                    cause.getClass().getName() + ")" + " from " + ex, */
                  cause);
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -386,6 +404,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testCallbackWithException() {
     setXmlFile(findFile("callbackWithException.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -394,6 +413,8 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
       if (!(ex.getCause() instanceof TestException)) {
         throw ex;
       }
+    } finally {
+      expectedException.remove();
     }
 
   }
@@ -405,6 +426,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
   public void testLoaderNotLoader() {
     setXmlFile(findFile("loaderNotLoader.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -412,6 +434,8 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
     } catch (CacheXmlException ex) {
       Throwable cause = ex.getCause();
       assertNull("Didn't expect a " + cause, cause);
+    } finally {
+      expectedException.remove();
     }
   }
 
