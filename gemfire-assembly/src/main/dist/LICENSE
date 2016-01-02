@@ -215,6 +215,24 @@ This product bundles Antlr which is available under a BSD license.
 For details see http://www.antlr.org/license.html.
 
 ---------------------------------------------------------------------------
+Backbone (http://backbonejs.org)
+---------------------------------------------------------------------------
+This product bundles Backbone which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+Handlebars (http://handlebarsjs.com)
+---------------------------------------------------------------------------
+This product bundles Handlebars which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+highlight.js (https://highlightjs.org)
+---------------------------------------------------------------------------
+This product bundles highlight.js which is available under a BSD 3 clauses license.  
+For details see http://opensource.org/licenses/BSD-3-Clause.
+
+---------------------------------------------------------------------------
 javax.activation (http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp) javax.activation:activation:1.1.1
 ---------------------------------------------------------------------------
 This product bundles javax.activation which is available under a CDDL license.  
@@ -251,10 +269,51 @@ This product bundles JLine which is available under a BSD license.
 For details see http://www.opensource.org/licenses/bsd-license.php.
 
 ---------------------------------------------------------------------------
+JOpt Simple (http://pholser.github.io/jopt-simple/)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery (https://jquery.com)
+---------------------------------------------------------------------------
+This product bundles jQuery which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery BBQ (http://benalman.com/projects/jquery-bbq-plugin/)
+---------------------------------------------------------------------------
+This product bundles jQuery BBQ which is available under an MIT and GPL dual license.  
+For details see http://benalman.com/about/license.
+
+---------------------------------------------------------------------------
+jQuery-slideto (https://github.com/Sleavely/jQuery-slideto)
+---------------------------------------------------------------------------
+This product bundles jQuery-slideto which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle)
+---------------------------------------------------------------------------
+This product bundles jQuery Wiggle which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+JSON (http://json.org)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under a BSD-like license.  
+For details see http://json.org/license.html.
+
+---------------------------------------------------------------------------
 Paranamer (https://github.com/paul-hammant/paranamer) com.thoughtworks.paranamer:paranamer:2.3
 ---------------------------------------------------------------------------
 This product bundles Paranamer which is available under a BSD license.  
 For details see http://www.opensource.org/licenses/bsd-license.php.
+
+---------------------------------------------------------------------------
+reset.css (http://meyerweb.com/eric/tools/css/reset/)
+---------------------------------------------------------------------------
+This product bundles reset.css which is available in the public domain.  
 
 ---------------------------------------------------------------------------
 scala-reflect (http://www.scala-lang.org/) org.scala-lang:scala-reflect:2.10.0
@@ -269,7 +328,19 @@ This product bundles scala-library which is available under a BSD-like license.
 For details see http://www.scala-lang.org/downloads/license.html.
 
 ---------------------------------------------------------------------------
+shred (https://github.com/pandastrike/shred)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under an MIT or ISC license.  
+For details see https://github.com/pandastrike/shred/blob/master/LICENSE.
+
+---------------------------------------------------------------------------
 SLF4J API (http://www.slf4j.org) org.slf4j:slf4j-api:jar:1.7.7
 ---------------------------------------------------------------------------
 This product bundles SLF4J API which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+underscore (http://underscorejs.org)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under an MIT license.  
 For details see http://www.opensource.org/licenses/mit-license.php.

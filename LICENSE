@@ -232,12 +232,6 @@ This product bundles JOpt Simple which is available under an MIT license.
 For details see http://www.opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
-JOpt Simple (http://pholser.github.io/jopt-simple/)
----------------------------------------------------------------------------
-This product bundles JOpt Simple which is available under a BSD-like license.  
-For details see http://json.org/license.html.
-
----------------------------------------------------------------------------
 jQuery (https://jquery.com)
 ---------------------------------------------------------------------------
 This product bundles jQuery which is available under an MIT license.  
@@ -260,6 +254,12 @@ jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle)
 ---------------------------------------------------------------------------
 This product bundles jQuery Wiggle which is available under an MIT license.  
 For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+JSON (http://json.org)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under a BSD-like license.  
+For details see http://json.org/license.html.
 
 ---------------------------------------------------------------------------
 reset.css (http://meyerweb.com/eric/tools/css/reset/)
