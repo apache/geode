@@ -200,3 +200,80 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+===========================================================================
+
+Apache Geode includes a number of components and libraries with separate 
+copyright notices and license terms. Your use of those components are 
+subject to the terms and conditions of the following licenses. 
+
+---------------------------------------------------------------------------
+Backbone (http://backbonejs.org)
+---------------------------------------------------------------------------
+This product bundles Backbone which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+Handlebars (http://handlebarsjs.com)
+---------------------------------------------------------------------------
+This product bundles Handlebars which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+highlight.js (https://highlightjs.org)
+---------------------------------------------------------------------------
+This product bundles highlight.js which is available under a BSD 3 clauses license.  
+For details see http://opensource.org/licenses/BSD-3-Clause.
+
+---------------------------------------------------------------------------
+JOpt Simple (http://pholser.github.io/jopt-simple/)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+JOpt Simple (http://pholser.github.io/jopt-simple/)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under a BSD-like license.  
+For details see http://json.org/license.html.
+
+---------------------------------------------------------------------------
+jQuery (https://jquery.com)
+---------------------------------------------------------------------------
+This product bundles jQuery which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery BBQ (http://benalman.com/projects/jquery-bbq-plugin/)
+---------------------------------------------------------------------------
+This product bundles jQuery BBQ which is available under an MIT and GPL dual license.  
+For details see http://benalman.com/about/license.
+
+---------------------------------------------------------------------------
+jQuery-slideto (https://github.com/Sleavely/jQuery-slideto)
+---------------------------------------------------------------------------
+This product bundles jQuery-slideto which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle)
+---------------------------------------------------------------------------
+This product bundles jQuery Wiggle which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
+
+---------------------------------------------------------------------------
+reset.css (http://meyerweb.com/eric/tools/css/reset/)
+---------------------------------------------------------------------------
+This product bundles reset.css which is available in the public domain.  
+
+---------------------------------------------------------------------------
+shred (https://github.com/pandastrike/shred)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under an MIT or ISC license.  
+For details see https://github.com/pandastrike/shred/blob/master/LICENSE.
+
+---------------------------------------------------------------------------
+underscore (http://underscorejs.org)
+---------------------------------------------------------------------------
+This product bundles JOpt Simple which is available under an MIT license.  
+For details see http://www.opensource.org/licenses/mit-license.php.
