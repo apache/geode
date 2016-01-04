@@ -192,6 +192,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  *    ratio should be before sending a recharge.  The rechargeBlockMs
  *    tells the sender how long to wait for a recharge before explicitly
  *    requesting one.</dd>
+ *   <dd><U>Deprecated</U>: as of 9.0 GemFire does not include a flow-of-control protocol for multicast messaging.</dd>
  *   <dd><U>Default</U>: "1048576,0.25,5000"</dd>
  *   <dd><U>Allowed values</U>: 100000-maxInt, 0.1-0.5, 500-60000</dd>
  *   <dd><U>Since</U>: 5.0</dd>
