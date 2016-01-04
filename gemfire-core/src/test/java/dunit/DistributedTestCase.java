@@ -88,8 +88,7 @@ import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
-import dunit.standalone.DUnitLauncher;
+import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 
 /**
  * This class is the superclass of all distributed unit tests.
