@@ -4269,7 +4269,6 @@ RETRY_LOOP:
   public final boolean removeTombstone(RegionEntry re, VersionHolder version, boolean isEviction, boolean isScheduledTombstone)  {
     boolean result = false;
     int destroyedVersion = version.getEntryVersion();
-    DiskRegion dr = this._getOwner().getDiskRegion();
 
     synchronized(this._getOwner().getSizeGuard()) { // do this sync first; see bug 51985
         synchronized (re) {
@@ -4303,7 +4302,10 @@ RETRY_LOOP:
                 if (isScheduledTombstone) {
                   _getOwner().incTombstoneCount(-1);
                 }
-                _getOwner().getVersionVector().recordGCVersion(version.getMemberID(), version.getRegionVersion());
+                RegionVersionVector vector = _getOwner().getVersionVector();
+                if (vector != null) {
+                  vector.recordGCVersion(version.getMemberID(), version.getRegionVersion());
+                }
               }
             } catch (RegionClearedException e) {
               // if the region has been cleared we don't need to remove the tombstone
