@@ -301,7 +301,7 @@ For details see http://www.opensource.org/licenses/mit-license.php.
 ---------------------------------------------------------------------------
 JSON (http://json.org)
 ---------------------------------------------------------------------------
-This product bundles JOpt Simple which is available under a BSD-like license.  
+This product bundles JSON which is available under a BSD-like license.  
 For details see http://json.org/license.html.
 
 ---------------------------------------------------------------------------
@@ -330,7 +330,7 @@ For details see http://www.scala-lang.org/downloads/license.html.
 ---------------------------------------------------------------------------
 shred (https://github.com/pandastrike/shred)
 ---------------------------------------------------------------------------
-This product bundles JOpt Simple which is available under an MIT or ISC license.  
+This product bundles shred which is available under an MIT or ISC license.  
 For details see https://github.com/pandastrike/shred/blob/master/LICENSE.
 
 ---------------------------------------------------------------------------
@@ -342,5 +342,5 @@ For details see http://www.opensource.org/licenses/mit-license.php.
 ---------------------------------------------------------------------------
 underscore (http://underscorejs.org)
 ---------------------------------------------------------------------------
-This product bundles JOpt Simple which is available under an MIT license.  
+This product bundles underscore which is available under an MIT license.  
 For details see http://www.opensource.org/licenses/mit-license.php.
