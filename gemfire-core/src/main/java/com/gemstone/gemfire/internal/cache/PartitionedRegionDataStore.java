@@ -491,6 +491,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
                   // so that other VMs which discover the real bucket via a
                   // profile exchange can send messages to the data store and
                   // safely use the bucket.
+                  observer.beforeAssignBucket(this.partitionedRegion, possiblyFreeBucketId);
                   assignBucketRegion(bukReg.getId(), bukReg);
                   buk.setHosting(true);
                   bukReg.invokePartitionListenerAfterBucketCreated();
@@ -997,17 +998,23 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * sent by the partitioned region when its loader has changed
    */
   protected void cacheLoaderChanged(final CacheLoader newLoader, final CacheLoader oldLoader) {
-    this.loader = newLoader;
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        AttributesMutator mut = r.getAttributesMutator();
-        if (logger.isDebugEnabled()) {
-          logger.debug("setting new cache loader in bucket region: {}", newLoader);
+    StoppableWriteLock lock = this.bucketCreationLock.writeLock();
+    lock.lock();
+    try {
+      this.loader = newLoader;
+      visitBuckets(new BucketVisitor() {
+        @Override
+        public void visit(Integer bucketId, Region r) {
+          AttributesMutator mut = r.getAttributesMutator();
+          if (logger.isDebugEnabled()) {
+            logger.debug("setting new cache loader in bucket region: {}", newLoader);
+          }
+          mut.setCacheLoader(newLoader);
         }
-        mut.setCacheLoader(newLoader);
-      }
-    });
+      });
+    } finally {
+      lock.unlock();
+    }
   }
   
   /**

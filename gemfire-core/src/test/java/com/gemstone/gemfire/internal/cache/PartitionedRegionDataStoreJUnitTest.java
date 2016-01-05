@@ -26,10 +26,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
+import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -37,6 +43,14 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.logging.PureLogWriter;
+import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverAdapter;
+import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverHolder;
 
 /**
  * This test checks functionality of the PartitionedRegionDatastore on a sinle
@@ -119,6 +133,65 @@ public class PartitionedRegionDataStoreJUnitTest
     pr.put(key, value);
     assertEquals(pr.get(key), value);
 
+  }
+  
+  @Test
+  public void testChangeCacheLoaderDuringBucketCreation() throws Exception
+  {
+    final PartitionedRegion pr = (PartitionedRegion)cache.createRegionFactory(RegionShortcut.PARTITION)
+        .create("testChangeCacheLoaderDuringBucketCreation");
+
+    //Add an observer which will block bucket creation and wait for a loader to be added
+    final CountDownLatch loaderAdded = new CountDownLatch(1);
+    final CountDownLatch bucketCreated = new CountDownLatch(1);
+    PartitionedRegionObserverHolder.setInstance(new PartitionedRegionObserverAdapter() {
+      @Override
+      public void beforeAssignBucket(PartitionedRegion partitionedRegion, int bucketId) {
+        try {
+          //Indicate that the bucket has been created
+          bucketCreated.countDown();
+          
+          //Wait for the loader to be added. if the synchronization
+          //is correct, this would wait for ever because setting the
+          //cache loader will wait for this method. So time out after
+          //1 second, which should be good enough to cause a failure
+          //if the synchronization is broken.
+          loaderAdded.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          throw new RuntimeException("Interrupted");
+        }
+      }
+    });
+    
+    Thread createBuckets = new Thread() {
+      public void run() {
+        PartitionRegionHelper.assignBucketsToPartitions(pr);
+      }
+    };
+    
+    createBuckets.start();
+    
+    CacheLoader loader = new CacheLoader() {
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public Object load(LoaderHelper helper) throws CacheLoaderException {
+        return null;
+      }
+    };
+    
+    bucketCreated.await();
+    pr.getAttributesMutator().setCacheLoader(loader);
+    loaderAdded.countDown();
+    createBuckets.join();
+    
+
+    //Assert that all buckets have received the cache loader
+    for(BucketRegion bucket: pr.getDataStore().getAllLocalBucketRegions()) {
+      assertEquals(loader, bucket.getCacheLoader()); 
+    }
   }
 
   /**

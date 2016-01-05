@@ -146,8 +146,15 @@ public interface AttributesMutator<K,V> {
    */
   public CacheWriter<K,V> setCacheWriter(CacheWriter<K,V> cacheWriter);
   
-  /** Changes the cache loader for the region.
-   * @param cacheLoader the cache loader
+  /**
+   * Changes the cache loader for the region.
+   * 
+   * Changing the cache loader for partitioned regions is not recommended due to
+   * the fact that it can result in an inconsistent cache loader configuration.
+   * This feature may be removed in future releases.
+   * 
+   * @param cacheLoader
+   *          the cache loader
    * @return the previous CacheLoader
    */
   public CacheLoader<K,V> setCacheLoader(CacheLoader<K,V> cacheLoader);
