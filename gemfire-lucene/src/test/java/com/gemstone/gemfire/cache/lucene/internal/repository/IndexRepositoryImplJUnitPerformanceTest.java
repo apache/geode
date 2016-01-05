@@ -42,7 +42,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.RAMDirectory;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -75,8 +74,7 @@ import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
  * stock lucene IndexWriter with a RAMDirectory.
  */
 @Category(PerformanceTest.class)
-@Ignore("Tests have no assertions")
-public class IndexRepositoryImplPerformanceTest {
+public class IndexRepositoryImplJUnitPerformanceTest {
   
   private static final int NUM_WORDS = 1000;
   private static int[] COMMIT_INTERVAL = new int[] {100, 1000, 5000};

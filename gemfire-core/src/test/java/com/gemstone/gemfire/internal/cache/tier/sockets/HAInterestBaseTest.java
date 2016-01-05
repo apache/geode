@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
@@ -52,13 +51,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.experimental.categories.Category;
-
 /**
  * Tests Interest Registration Functionality
  */
 @SuppressWarnings({"deprecation", "rawtypes", "serial", "unchecked"})
-public class HAInterestTestCase extends DistributedTestCase {
+public class HAInterestBaseTest extends DistributedTestCase {
   
   protected static final int TIMEOUT_MILLIS = 60 * 1000;
   protected static final int INTERVAL_MILLIS = 10;
@@ -92,7 +89,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   
   protected volatile static boolean exceptionOccured = false;
 
-  public HAInterestTestCase(String name) {
+  public HAInterestBaseTest(String name) {
     super(name);
   }
 
@@ -105,9 +102,9 @@ public class HAInterestTestCase extends DistributedTestCase {
     server3 = host.getVM(2);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     // start servers first
-    PORT1 = ((Integer) server1.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    PORT2 = ((Integer) server2.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
-    PORT3 = ((Integer) server3.invoke(HAInterestTestCase.class, "createServerCache")).intValue();
+    PORT1 = ((Integer) server1.invoke(HAInterestBaseTest.class, "createServerCache")).intValue();
+    PORT2 = ((Integer) server2.invoke(HAInterestBaseTest.class, "createServerCache")).intValue();
+    PORT3 = ((Integer) server3.invoke(HAInterestBaseTest.class, "createServerCache")).intValue();
     exceptionOccured = false;
     addExpectedException("java.net.ConnectException: Connection refused: connect");
   }
@@ -118,9 +115,9 @@ public class HAInterestTestCase extends DistributedTestCase {
     closeCache();
 
     // then close the servers
-    server1.invoke(HAInterestTestCase.class, "closeCache");
-    server2.invoke(HAInterestTestCase.class, "closeCache");
-    server3.invoke(HAInterestTestCase.class, "closeCache");
+    server1.invoke(HAInterestBaseTest.class, "closeCache");
+    server2.invoke(HAInterestBaseTest.class, "closeCache");
+    server3.invoke(HAInterestBaseTest.class, "closeCache");
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 
@@ -129,9 +126,9 @@ public class HAInterestTestCase extends DistributedTestCase {
     PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = false;
     PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = false;
-    HAInterestTestCase.isAfterRegistrationCallbackCalled = false;
-    HAInterestTestCase.isBeforeInterestRecoveryCallbackCalled = false;
-    HAInterestTestCase.isBeforeRegistrationCallbackCalled = false;
+    HAInterestBaseTest.isAfterRegistrationCallbackCalled = false;
+    HAInterestBaseTest.isBeforeInterestRecoveryCallbackCalled = false;
+    HAInterestBaseTest.isBeforeRegistrationCallbackCalled = false;
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -301,11 +298,11 @@ public class HAInterestTestCase extends DistributedTestCase {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRecovery() {
-        synchronized (HAInterestTestCase.class) {
+        synchronized (HAInterestBaseTest.class) {
           Thread t = new Thread() {
             public void run() {
-              getBackupVM().invoke(HAInterestTestCase.class, "startServer");
-              getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+              getBackupVM().invoke(HAInterestBaseTest.class, "startServer");
+              getPrimaryVM().invoke(HAInterestBaseTest.class, "stopServer");
             }
           };
           t.start();
@@ -314,8 +311,8 @@ public class HAInterestTestCase extends DistributedTestCase {
           } catch (Exception ignore) {
             exceptionOccured = true;
           }
-          HAInterestTestCase.isBeforeInterestRecoveryCallbackCalled = true;
-          HAInterestTestCase.class.notify();
+          HAInterestBaseTest.isBeforeInterestRecoveryCallbackCalled = true;
+          HAInterestBaseTest.class.notify();
           PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = false;
         }
       }
@@ -326,7 +323,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRecovery() {
-        synchronized (HAInterestTestCase.class) {
+        synchronized (HAInterestBaseTest.class) {
           Thread t = new Thread() {
             public void run() {
               Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
@@ -336,8 +333,8 @@ public class HAInterestTestCase extends DistributedTestCase {
           };
           t.start();
 
-          HAInterestTestCase.isBeforeInterestRecoveryCallbackCalled = true;
-          HAInterestTestCase.class.notify();
+          HAInterestBaseTest.isBeforeInterestRecoveryCallbackCalled = true;
+          HAInterestBaseTest.class.notify();
           PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = false;
         }
       }
@@ -346,9 +343,9 @@ public class HAInterestTestCase extends DistributedTestCase {
 
   public static void waitForBeforeInterestRecoveryCallBack() throws InterruptedException {
     assertNotNull(cache);
-    synchronized (HAInterestTestCase.class) {
+    synchronized (HAInterestBaseTest.class) {
       while (!isBeforeInterestRecoveryCallbackCalled) {
-        HAInterestTestCase.class.wait();
+        HAInterestBaseTest.class.wait();
       }
     }
   }
@@ -357,10 +354,10 @@ public class HAInterestTestCase extends DistributedTestCase {
     PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeInterestRegistration() {
-        synchronized (HAInterestTestCase.class) {
-          vm.invoke(HAInterestTestCase.class, "startServer");
-          HAInterestTestCase.isBeforeRegistrationCallbackCalled = true;
-          HAInterestTestCase.class.notify();
+        synchronized (HAInterestBaseTest.class) {
+          vm.invoke(HAInterestBaseTest.class, "startServer");
+          HAInterestBaseTest.isBeforeRegistrationCallbackCalled = true;
+          HAInterestBaseTest.class.notify();
           PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = false;
         }
       }
@@ -369,9 +366,9 @@ public class HAInterestTestCase extends DistributedTestCase {
 
   public static void waitForBeforeRegistrationCallback() throws InterruptedException {
     assertNotNull(cache);
-    synchronized (HAInterestTestCase.class) {
+    synchronized (HAInterestBaseTest.class) {
       while (!isBeforeRegistrationCallbackCalled) {
-        HAInterestTestCase.class.wait();
+        HAInterestBaseTest.class.wait();
       }
     }
   }
@@ -380,10 +377,10 @@ public class HAInterestTestCase extends DistributedTestCase {
     PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void afterInterestRegistration() {
-        synchronized (HAInterestTestCase.class) {
-          vm.invoke(HAInterestTestCase.class, "startServer");
-          HAInterestTestCase.isAfterRegistrationCallbackCalled = true;
-          HAInterestTestCase.class.notify();
+        synchronized (HAInterestBaseTest.class) {
+          vm.invoke(HAInterestBaseTest.class, "startServer");
+          HAInterestBaseTest.isAfterRegistrationCallbackCalled = true;
+          HAInterestBaseTest.class.notify();
           PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = false;
         }
       }
@@ -393,20 +390,20 @@ public class HAInterestTestCase extends DistributedTestCase {
   public static void waitForAfterRegistrationCallback() throws InterruptedException {
     assertNotNull(cache);
     if (!isAfterRegistrationCallbackCalled) {
-      synchronized (HAInterestTestCase.class) {
+      synchronized (HAInterestBaseTest.class) {
         while (!isAfterRegistrationCallbackCalled) {
-          HAInterestTestCase.class.wait();
+          HAInterestBaseTest.class.wait();
         }
       }
     }
   }
 
   public static void unSetClientServerObserverForRegistrationCallback() {
-    synchronized (HAInterestTestCase.class) {
+    synchronized (HAInterestBaseTest.class) {
       PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = false;
       PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = false;
-      HAInterestTestCase.isBeforeRegistrationCallbackCalled = false;
-      HAInterestTestCase.isAfterRegistrationCallbackCalled = false;
+      HAInterestBaseTest.isBeforeRegistrationCallbackCalled = false;
+      HAInterestBaseTest.isAfterRegistrationCallbackCalled = false;
     }
   }
 
@@ -594,7 +591,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close primaryEP
-    getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+    getPrimaryVM().invoke(HAInterestBaseTest.class, "stopServer");
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -624,7 +621,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     DistributedTestCase.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
 
     // close primaryEP
-    getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+    getPrimaryVM().invoke(HAInterestBaseTest.class, "stopServer");
     List list = new ArrayList();
     list.add(k1);
     srp.unregisterInterest(list, InterestType.KEY, false, false);
@@ -649,9 +646,9 @@ public class HAInterestTestCase extends DistributedTestCase {
 
     // close primaryEP
     VM backup = getBackupVM();
-    getPrimaryVM().invoke(HAInterestTestCase.class, "stopServer");
+    getPrimaryVM().invoke(HAInterestBaseTest.class, "stopServer");
     // close secondary
-    backup.invoke(HAInterestTestCase.class, "stopServer");
+    backup.invoke(HAInterestBaseTest.class, "stopServer");
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -686,7 +683,7 @@ public class HAInterestTestCase extends DistributedTestCase {
 
     // close secondary EP
     VM result = getBackupVM();
-    result.invoke(HAInterestTestCase.class, "stopServer");
+    result.invoke(HAInterestBaseTest.class, "stopServer");
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -722,7 +719,7 @@ public class HAInterestTestCase extends DistributedTestCase {
 
     // close secondary EP
     VM result = getBackupVM();
-    result.invoke(HAInterestTestCase.class, "stopServer");
+    result.invoke(HAInterestBaseTest.class, "stopServer");
     List list = new ArrayList();
     list.add(k1);
     srp.unregisterInterest(list, InterestType.KEY, false, false);
@@ -890,7 +887,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new HAInterestTestCase("temp").createCache(props);
+    new HAInterestBaseTest("temp").createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
     try {
@@ -924,7 +921,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new HAInterestTestCase("temp").createCache(props);
+    new HAInterestBaseTest("temp").createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
     try {
@@ -959,7 +956,7 @@ public class HAInterestTestCase extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new HAInterestTestCase("temp").createCache(props);
+    new HAInterestBaseTest("temp").createCache(props);
     PoolImpl p = (PoolImpl) PoolManager.createFactory()
         .addServer(hostName, PORT1)
         .setSubscriptionEnabled(true)
@@ -980,7 +977,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   }
 
   public static Integer createServerCache() throws Exception {
-    new HAInterestTestCase("temp").createCache(new Properties());
+    new HAInterestBaseTest("temp").createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
@@ -999,7 +996,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   }
 
   public static Integer createServerCacheWithLocalRegion() throws Exception {
-    new HAInterestTestCase("temp").createCache(new Properties());
+    new HAInterestBaseTest("temp").createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setConcurrencyChecksEnabled(true);

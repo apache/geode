@@ -345,7 +345,7 @@ subprojects {
   }
 
   test {
-    include '**/*Test.class'
+    include '**/*JUnitTest.class'
     useJUnit {
       includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
@@ -364,12 +364,10 @@ subprojects {
   //This target does not run any tests. Rather, it validates that there are no
   //tests that are missing a category annotation
   task checkMissedTests(type: Test) {
-    include '**/*Test.class'
+    include '**/*JUnitTest.class'
     useJUnit {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
     }    
 
     beforeTest { descriptor ->
@@ -379,7 +377,7 @@ subprojects {
   }
 
   task integrationTest(type:Test) {
-    include '**/*Test.class'
+    include '**/*JUnitTest.class'
     useJUnit {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
       includeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
@@ -394,16 +392,17 @@ subprojects {
   }
   
   task distributedTest(type:Test) {
-    include '**/*Test.class'
+    include '**/*DUnitTest.class'
     
     // maxParallelForks = 2
     // maxParallelForks = Runtime.runtime.availableProcessors()
     
-    useJUnit {
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-    }    
+// TODO add @Category(DistributedTest.class) to dunit tests
+//    useJUnit {
+//      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+//      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+//      includeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
+//    }    
     
     //I'm hoping this might deal with SOME OOMEs I've seen
     forkEvery 30

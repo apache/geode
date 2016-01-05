@@ -16,16 +16,10 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -33,18 +27,15 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * @author Shobhit Agarwal
  *
  */
-@Category(IntegrationTest.class)
-@Ignore("Test is broken and was named Bug40255JUnitDisabledTest")
-public class Bug40255JUnitTest {
+public class Bug40255JUnitDisabledTest extends TestCase{
 
-  private static final String BUG_40255_XML = Bug40255JUnitTest.class.getResource("bug40255xmlparameterization.xml").getFile();
-  private static final String BUG_40255_PROPS = Bug40255JUnitTest.class.getResource("bug40255_gemfire.properties").getFile();
+  private static final String BUG_40255_XML = Bug40255JUnitDisabledTest.class.getResource("bug40255xmlparameterization.xml").getFile();
+  private static final String BUG_40255_PROPS = Bug40255JUnitDisabledTest.class.getResource("bug40255_gemfire.properties").getFile();
 
   private static final String ATTR_PROPERTY_STRING = "region.disk.store";
 
@@ -67,7 +58,11 @@ public class Bug40255JUnitTest {
   DistributedSystem ds;
   Cache cache;
 
-  @Test
+  @Override
+  public void setName(String name) {
+    super.setName(name);
+  }
+
   public void testResolveReplacePropertyStringForLonerCache(){
     Properties props = new Properties();
     props.setProperty("mcast-port", "0");
@@ -97,7 +92,6 @@ public class Bug40255JUnitTest {
     assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE), CONCAT_ELEMENT_PROPERTY_VALUE);
   }
 
-  @Test
   public void testResolveReplacePropertyStringForNonLonerCache(){
     Properties props = new Properties();
     props.setProperty("mcast-port", "10333");
@@ -125,8 +119,9 @@ public class Bug40255JUnitTest {
     assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE+CONCAT_ELEMENT_PROPERTY_VALUE), ELEMENT_KEY_VALUE);
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @Override
+  protected void tearDown() throws Exception {
+    super.tearDown();
     if (this.cache != null) {
       this.cache.close();
       this.cache = null;
@@ -137,7 +132,8 @@ public class Bug40255JUnitTest {
     }
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
   }
 }
