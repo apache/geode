@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.standalone;
+package dunit.standalone;
+
+import hydra.MethExecutor;
+import hydra.MethExecutorResult;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -23,8 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.internal.logging.LogService;
 
-import hydra.MethExecutor;
-import hydra.MethExecutorResult;
+import dunit.RemoteDUnitVMIF;
 
 /**
  * @author dsmith

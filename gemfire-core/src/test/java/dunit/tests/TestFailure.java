@@ -14,23 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.standalone;
+package dunit.tests;
 
-import hydra.MethExecutorResult;
+import dunit.*;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+/**
+ * The tests in this class always fail.  It is used when developing
+ * DUnit to give us an idea of how test failure are logged, etc.
+ *
+ * @author David Whitlock
+ *
+ * @since 3.0
+ */
+public class TestFailure extends DistributedTestCase {
 
-public interface RemoteDUnitVMIF extends Remote {
+  public TestFailure(String name) {
+    super(name);
+  }
 
-  MethExecutorResult executeMethodOnObject(Object o, String methodName) throws RemoteException;
+  ////////  Test Methods
 
-  MethExecutorResult executeMethodOnObject(Object o, String methodName,
-      Object[] args) throws RemoteException;
+  public void testFailure() {
+    assertTrue("Test Failure", false);
+  }
 
-  MethExecutorResult executeMethodOnClass(String name, String methodName,
-      Object[] args) throws RemoteException;
+  public void testError() {
+    String s = "Test Error";
+    throw new Error(s);
+  }
 
-  void shutDownVM() throws RemoteException;
+  public void testHang() throws InterruptedException {
+    Thread.sleep(100000 * 1000);
+  }
 
 }

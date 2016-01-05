@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.standalone;
+package dunit.standalone;
 
 import hydra.Log;
 import hydra.MethExecutorResult;
@@ -57,8 +57,10 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJo
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.LogService;
 
+import dunit.BounceResult;
 import dunit.DUnitEnv;
 import dunit.Host;
+import dunit.RemoteDUnitVMIF;
 import dunit.SerializableCallable;
 import dunit.VM;
 

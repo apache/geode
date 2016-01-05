@@ -30,10 +30,10 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.logging.PureLogWriter;
-import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 
 import dunit.Host;
 import dunit.SerializableRunnable;
+import dunit.standalone.DUnitLauncher;
 
 /**
  * This class is extended by some PartitionedRegion related DUnit test cases 

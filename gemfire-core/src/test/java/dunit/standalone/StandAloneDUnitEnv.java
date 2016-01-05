@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.standalone;
+package dunit.standalone;
 
 import java.io.File;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
-import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher.MasterRemote;
-
+import dunit.BounceResult;
 import dunit.DUnitEnv;
+import dunit.standalone.DUnitLauncher.MasterRemote;
 
 public class StandAloneDUnitEnv extends DUnitEnv {
 

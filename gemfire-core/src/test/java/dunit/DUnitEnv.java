@@ -23,8 +23,6 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
-import com.gemstone.gemfire.test.dunit.standalone.BounceResult;
-
 
 /**
  * This class provides an abstraction over the environment
