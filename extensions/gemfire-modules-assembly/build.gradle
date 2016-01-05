@@ -157,7 +157,7 @@ def configureTcServer30Assembly = {
   }
 }
 
-task distTomcat(type: Zip) {
+task distTomcat(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
   archiveName = "Apache_Geode_Modules-${version}-Tomcat.zip"
 
   // All client-server files
@@ -187,7 +187,7 @@ task distTomcat(type: Zip) {
   }
 }
 
-task distHibernate(type: Zip) {
+task distHibernate(type: Zip, dependsOn: ':extensions/gemfire-modules-hibernate:build') {
   archiveName = "Apache_Geode_Modules-${version}-Hibernate.zip"
 
   into('lib') {
@@ -199,7 +199,7 @@ task distHibernate(type: Zip) {
   }
 }
 
-task distAppServer(type: Zip) {
+task distAppServer(type: Zip, dependsOn: ':extensions/gemfire-modules-session:build') {
   archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
 
   into('lib') {
@@ -239,11 +239,11 @@ task distAppServer(type: Zip) {
   }
 }
 
-task distTcServer(type: Zip, dependsOn: 'build') {
+task distTcServer(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: 'build') {
+task distTcServer30(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }
