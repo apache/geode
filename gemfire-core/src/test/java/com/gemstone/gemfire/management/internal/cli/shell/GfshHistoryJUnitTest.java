@@ -46,6 +46,7 @@ public class GfshHistoryJUnitTest {
 
   @Before
   public void setUp() throws Exception {
+    teardown();
     gfshHistoryFile = tempDirectory.newFile("historyFile");
     gfshConfig = new GfshConfig(gfshHistoryFile.getAbsolutePath(),
         "",                                         // defaultPrompt
