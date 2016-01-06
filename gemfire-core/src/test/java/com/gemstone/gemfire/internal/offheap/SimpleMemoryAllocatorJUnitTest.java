@@ -217,13 +217,13 @@ public class SimpleMemoryAllocatorJUnitTest {
         assertFalse(listener.isClosed());
         assertFalse(stats2.isClosed());
         stats = stats2;
-      } finally {
         ma.close();
         assertTrue(listener.isClosed());
         assertFalse(stats.isClosed());
+      } finally {
         SimpleMemoryAllocatorImpl.freeOffHeapMemory();
-        assertTrue(stats.isClosed());
       }
+      assertTrue(stats.isClosed());
     }
   }
   @Test
