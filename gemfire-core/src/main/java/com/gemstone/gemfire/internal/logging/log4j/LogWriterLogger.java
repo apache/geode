@@ -22,10 +22,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.spi.AbstractLogger;
 import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
@@ -36,9 +32,6 @@ import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.logging.GemFireHandler;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterFactory;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.org.apache.logging.log4j.core.config.xml.GemFireXmlConfiguration;
 import com.gemstone.org.apache.logging.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
