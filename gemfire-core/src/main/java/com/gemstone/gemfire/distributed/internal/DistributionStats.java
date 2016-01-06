@@ -338,32 +338,32 @@ public class DistributionStats implements DMStats {
     final String initialImageRequestsInProgressDesc = "The number of initial images this member is currently receiving.";
 
     //For GMSHealthMonitor
-    final String heartbeatRequestsSentDesc = "The number of heartbeat request messages that this member has sent.";
-    final String heartbeatRequestsReceivedDesc = "The number of heartbeat request messages that this member has received.";
+    final String heartbeatRequestsSentDesc = "Heartbeat request messages that this member has sent.";
+    final String heartbeatRequestsReceivedDesc = "Heartbeat request messages that this member has received.";
     
-    final String heartbeatsSentDesc = "The number of heartbeat messages that this member has sent.";
-    final String heartbeatsReceivedDesc = "The number of heartbeat messages that this member has received.";
+    final String heartbeatsSentDesc = "Heartbeat messages that this member has sent.";
+    final String heartbeatsReceivedDesc = "Heartbeat messages that this member has received.";
     
-    final String suspectsSentDesc = "The number of suspect member messages that this member has sent.";
-    final String suspectsReceivedDesc = "The number of suspect member messages that this member has received.";
+    final String suspectsSentDesc = "Suspect member messages that this member has sent.";
+    final String suspectsReceivedDesc = "Suspect member messages that this member has received.";
     
-    final String finalCheckRequestsSentDesc = "The number of final check requests that this member has sent.";
-    final String finalCheckRequestsReceivedDesc = "The number of final check requests that this member has received.";
+    final String finalCheckRequestsSentDesc = "Final check requests that this member has sent.";
+    final String finalCheckRequestsReceivedDesc = "Final check requests that this member has received.";
     
-    final String finalCheckResponsesSentDesc = "The number of final check responses that this member has sent.";
-    final String finalCheckResponsesReceivedDesc = "The number of final check responses that this member has received.";    
+    final String finalCheckResponsesSentDesc = "Final check responses that this member has sent.";
+    final String finalCheckResponsesReceivedDesc = "Final check responses that this member has received.";    
     
-    final String tcpFinalCheckRequestsSentDesc = "The number of TCP final check requests that this member has sent.";
-    final String tcpFinalCheckRequestsReceivedDesc = "The number of TCP final check requests that this member has received.";
+    final String tcpFinalCheckRequestsSentDesc = "TCP final check requests that this member has sent.";
+    final String tcpFinalCheckRequestsReceivedDesc = "TCP final check requests that this member has received.";
     
-    final String tcpFinalCheckResponsesSentDesc = "The number of TCP final check responses that this member has sent.";
-    final String tcpFinalCheckResponsesReceivedDesc = "The number of TCP final check responses that this member has received.";
+    final String tcpFinalCheckResponsesSentDesc = "TCP final check responses that this member has sent.";
+    final String tcpFinalCheckResponsesReceivedDesc = "TCP final check responses that this member has received.";
 
-    final String udpFinalCheckRequestsSentDesc = "The number of UDP final checks that this member has sent.";
-    final String udpFinalCheckRequestsReceivedDesc = "The number of UDP final check requests that this member has received.";
+    final String udpFinalCheckRequestsSentDesc = "UDP final check requests that this member has sent.";
+    final String udpFinalCheckRequestsReceivedDesc = "UDP final check requests that this member has received.";
     
-    final String udpFinalCheckResponsesSentDesc = "The number of UDP final check responses that this member has sent.";
-    final String udpFinalCheckResponsesReceivedDesc = "The number of UDP final check responses that this member has received.";
+    final String udpFinalCheckResponsesSentDesc = "UDP final check responses that this member has sent.";
+    final String udpFinalCheckResponsesReceivedDesc = "UDP final check responses that this member has received.";
 
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
