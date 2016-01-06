@@ -372,6 +372,8 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
         DistributedTestCase.waitForCriterion(ev, maxWaitTime, 200, true);
       }
     });
+    
+    pause(5000);
 
     //Do a put on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
