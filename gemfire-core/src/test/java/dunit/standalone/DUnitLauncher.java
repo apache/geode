@@ -242,7 +242,7 @@ public class DUnitLauncher {
         LogManager.getLogger(LogService.BASE_LOGGER_NAME)).getContext();
 
     final PatternLayout layout = PatternLayout.createLayout(
-        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n", null, null,
+        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n", null, null,null,
         Charset.defaultCharset(), true, false, "", "");
     
     final FileAppender fileAppender = FileAppender.createAppender(suspectFilename, "true", "false",

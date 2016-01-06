@@ -93,6 +93,7 @@ public class CompressionCacheConfigDUnitTest extends CacheTestCase {
    * @throws Exception
    */
   public void testCreateCacheWithBadCompressor() throws Exception {
+    addExpectedException("Unable to load class BAD_COMPRESSOR");
     File cacheXml = createCacheXml(BAD_COMPRESSOR);
     ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
