@@ -19,9 +19,9 @@ dependencies {
   compile project(':extensions/gemfire-modules')
   compile project(':gemfire-core')
 
-  testCompile 'javax.servlet:javax.servlet-api:3.1.0'
-  testCompile 'org.slf4j:slf4j-jdk14:1.7.7'
-  testCompile('com.mockrunner:mockrunner-servlet:1.0.8') {
+  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  testCompile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  testCompile('com.mockrunner:mockrunner-servlet:' + project.'mockrunner.version') {
     exclude group: 'jboss'
   }
   testCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')

@@ -41,10 +41,11 @@ dependencies {
   compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version'
 
   testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-  testRuntime 'javax.servlet:javax.servlet-api:3.1.0'
-  testRuntime 'javax.annotation:jsr250-api:1.0'
-  testRuntime 'javax.ejb:ejb-api:3.0'
-  testRuntime 'javax.persistence:persistence-api:1.0.2'
+
+  testRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
+  testRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
+  testRuntime 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
 
   provided(project(path: ':extensions/gemfire-modules', configuration: 'testOutput')) {
     // Remove everything related to Tomcat 6.x

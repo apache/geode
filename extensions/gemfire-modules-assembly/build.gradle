@@ -24,8 +24,8 @@ configurations {
 }
 
 dependencies {
-  slf4jDeps 'org.slf4j:slf4j-api:1.7.7'
-  slf4jDeps 'org.slf4j:slf4j-jdk14:1.7.7'
+  slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
 }
 
 dependencies {

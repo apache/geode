@@ -21,16 +21,17 @@ jar {
 
 dependencies {
   compile project(':extensions/gemfire-modules')
-  compile 'org.hibernate:hibernate-core:3.5.0-Final'
-  compile 'org.hibernate:hibernate-annotations:3.5.5-Final'
-  compile 'javax.persistence:persistence-api:1.0.2'
+  compile 'org.hibernate:hibernate-core:' + project.'hibernate.version'
+  compile 'org.hibernate:hibernate-annotations:' + project.'hibernate.version'
+  compile 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
 
-  runtime 'dom4j:dom4j:1.6.1'
+  runtime 'dom4j:dom4j:' + project.'dom4j.version'
 
-  testRuntime 'org.hibernate:hibernate-annotations:3.5.5-Final'
-  testRuntime 'org.slf4j:slf4j-jdk14:1.7.7'
-  testRuntime 'org.hsqldb:hsqldb:2.0.0'
-  testRuntime 'org.javassist:javassist:3.13.0-GA'
+  testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
+  testRuntime 'org.hibernate:hibernate-commons-annotations:' + project.'hibernate-commons-annotations.version'
+  testRuntime 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
+  testRuntime 'org.hsqldb:hsqldb:' + project.'hsqldb.version'
+  testRuntime 'org.javassist:javassist:' + project.'javassist.version'
 
   provided project(path: ':gemfire-junit', configuration: 'testOutput')
 }
