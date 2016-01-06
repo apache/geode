@@ -516,6 +516,7 @@ public class CacheServerTestUtil extends DistributedTestCase
    */
   public static void disableShufflingOfEndpoints()
   {
+    // TODO DISABLE_RANDOM doesn't seem to be used anywhere
     System.setProperty("gemfire.PoolImpl.DISABLE_RANDOM", "true");
     System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
   }
@@ -525,6 +526,7 @@ public class CacheServerTestUtil extends DistributedTestCase
    */
   public static void enableShufflingOfEndpoints()
   {
+    // TODO DISABLE_RANDOM doesn't seem to be used anywhere
     System.setProperty("gemfire.PoolImpl.DISABLE_RANDOM", "false");
     System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "false");
   }

@@ -281,7 +281,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
       verifyDeadAndLiveServers(2,1);
       server3.invoke(HAStartupAndFailoverDUnitTest.class, "verifyDispatcherIsAlive");
     }
-
+    
     /**
      * Tests failover initialization by cache operation Threads on secondary
      */
@@ -652,10 +652,13 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase
     cache.createRegion(REGION_NAME, attrs);
 
     pool = p;
-    conn = pool.acquireConnection();
+    // since the default minConnections is 1 we currently have a connection to
+    // server1 (vm_0).  Now we create a connection to server2 (vm_1)
+    conn = pool.acquireConnection(new ServerLocation(Host.getHost(0).getHostName(), PORT2));
+
+    // assert that the conn is to server2 since the tests assume that this is so
     assertNotNull(conn);
-
-
+    assertTrue(conn.getEndpoint().getLocation().getPort() == PORT2);
   }
 
   public static void createClientCacheWithIncorrectPrimary(String testName, String host) throws Exception
