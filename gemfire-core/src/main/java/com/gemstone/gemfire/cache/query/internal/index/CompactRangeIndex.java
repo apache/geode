@@ -16,7 +16,6 @@
  */
 
 package com.gemstone.gemfire.cache.query.internal.index;
-import  com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,6 +27,7 @@ import java.util.Set;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.AmbiguousNameException;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
@@ -908,6 +908,9 @@ public class CompactRangeIndex extends AbstractIndex {
                 result.add(new CqEntry(indexEntry.getDeserializedRegionKey(),
                     value));
               } else {
+                if (IndexManager.testHook != null) {
+                  IndexManager.testHook.hook(200);
+                }
                 applyProjection(projAttrib, context, result, value,
                     intermediateResults, isIntersection);
               }
@@ -920,6 +923,9 @@ public class CompactRangeIndex extends AbstractIndex {
         }
       } catch (ClassCastException e) {
         
+      }
+      catch(EntryDestroyedException e) {
+        //ignore it
       }
     }
   }
