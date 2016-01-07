@@ -42,9 +42,6 @@ def configureTcServerAssembly = {
     from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
     from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
     from configurations.slf4jDeps
-    from('release/3rdparty_license') {
-      include "open_source_licenses*${version}.txt"
-    }
   }
   into('gemfire-cs/bin') {
     from('release/scripts') {
@@ -165,9 +162,6 @@ task distTomcat(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
     from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
     from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
     from configurations.slf4jDeps
-    from('release/3rdparty_license') {
-      include "open_source_licenses*${version}.txt"
-    }
   }
   into('bin') {
     from('release/scripts') {
@@ -180,11 +174,6 @@ task distTomcat(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
       include '*'
     }
   }
-
-  from('release/tomcat') {
-    include 'readme.txt'
-    filter { it.replaceAll('@VERSION@', version) }
-  }
 }
 
 task distHibernate(type: Zip, dependsOn: ':extensions/gemfire-modules-hibernate:build') {
@@ -192,10 +181,6 @@ task distHibernate(type: Zip, dependsOn: ':extensions/gemfire-modules-hibernate:
 
   into('lib') {
     from project(':extensions/gemfire-modules-hibernate').configurations.archives.allArtifacts.files
-  }
-  from('release/hibernate') {
-    include 'readme.txt'
-    filter { it.replaceAll('@VERSION@', version) }
   }
 }
 
@@ -205,12 +190,8 @@ task distAppServer(type: Zip, dependsOn: ':extensions/gemfire-modules-session:bu
   into('lib') {
     from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
     from project(':extensions/gemfire-modules-session').configurations.archives.allArtifacts.files
-//    from project(':extensions/gemfire-modules-session-external').configurations.archives.allArtifacts.files
     from configurations.slf4jDeps
     from configurations.servletApiDeps
-    from('release/3rdparty_license') {
-      include "open_source_licenses*${version}.txt"
-    }
   }
 
   into('bin') {
@@ -220,22 +201,15 @@ task distAppServer(type: Zip, dependsOn: ':extensions/gemfire-modules-session:bu
       include 'cacheserver.*'
       include 'gemfire.*'
 
-      def slf4j_version = '1.7.7'
-      def servlet_api_version = '2.5'
       filter { it.replaceAll('@GEMFIRE_MODULES_VERSION@', version) }
-      filter { it.replaceAll('@SLF4J_VERSION@', "${slf4j_version}") }
-      filter { it.replaceAll('@SERVLET_API_VERSION@', "${servlet_api_version}") }
+      filter { it.replaceAll('@SLF4J_VERSION@', project.'slf4j-api.version') }
+      filter { it.replaceAll('@SERVLET_API_VERSION@', project.'javax.servlet-api_version') }
       filter { it.replaceAll('@GEMFIRE_VERSION@', version) }
     }
   }
 
   into('conf') {
     from('release/conf')
-  }
-
-  from('release/session') {
-    include 'readme.txt'
-    filter { it.replaceAll('@VERSION@', version) }
   }
 }
 
