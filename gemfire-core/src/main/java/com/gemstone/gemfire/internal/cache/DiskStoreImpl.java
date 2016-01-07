@@ -368,7 +368,7 @@ public class DiskStoreImpl implements DiskStore {
    */
   private DiskStoreID diskStoreID;
 
-  final CountDownLatch _testHandleDiskAccessException = new CountDownLatch(1);
+  private final CountDownLatch _testHandleDiskAccessException = new CountDownLatch(1);
   
   private final ThreadPoolExecutor diskStoreTaskPool;
   
@@ -2311,7 +2311,7 @@ public class DiskStoreImpl implements DiskStore {
     close(false);
   }
 
-  void waitForClose() {
+  protected void waitForClose() {
     if (diskException.get() != null) {
       try {
         _testHandleDiskAccessException.await();
