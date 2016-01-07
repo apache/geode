@@ -418,7 +418,12 @@ public class InternalLocator extends Locator implements ConnectListener {
 //  }
     InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
     if (sys != null) {
-      slocator.startServerLocation(sys);
+      try {
+        slocator.startServerLocation(sys);
+      } catch (RuntimeException e) {
+        slocator.stop();
+        throw e;
+      }
     }
     
     slocator.endStartLocator(null);
