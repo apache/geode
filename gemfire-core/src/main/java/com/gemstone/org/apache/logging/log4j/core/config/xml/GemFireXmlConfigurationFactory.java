@@ -21,6 +21,7 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Order;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
 /**
  * Factory to construct an XmlConfiguration.
@@ -45,7 +46,7 @@ public class GemFireXmlConfigurationFactory extends ConfigurationFactory {
      */
     @Override
     public Configuration getConfiguration(final ConfigurationSource source) {
-        return new com.gemstone.org.apache.logging.log4j.core.config.xml.GemFireXmlConfiguration(source);
+        return new XmlConfiguration(source);
     }
 
     /**
