@@ -12,9 +12,10 @@ _Caches_ are an abstraction that describe a node in a Geode distributed system.
 
 Within each cache, you define data _regions_. Data regions are analogous to tables in a relational database and manage data in a distributed fashion as name/value pairs. A _replicated_ region stores identical copies of the data on each cache member of a distributed system. A _partitioned_ region spreads the data among cache members. After the system is configured, client applications can access the distributed data in regions without knowledge of the underlying system architecture. You can define listeners to receive notifications when data has changed, and you can define expiration criteria to delete obsolete data in a region.
 
-_Locators_ provide both discovery and load balancing services. You configure clients with a list of locator services and the locators maintain a dynamic list of member servers. By default, Geode clients and servers use port 40404 and multicast to discover each other.
+_Locators_ provide clients with both discovery and server load balancing services. Clients are configured with locator information, and the locators maintain a dynamic list of member servers. The locators provide clients with connection information to a server. 
 
 Geode includes the following features:
+
 * Combines redundancy, replication, and a "shared nothing" persistence architecture to deliver fail-safe reliability and performance.
 * Horizontally scalable to thousands of cache members, with multiple cache topologies to meet different enterprise needs. The cache can be distributed across multiple computers.
 * Asynchronous and synchronous cache update propagation.
@@ -31,7 +32,8 @@ Geode includes the following features:
 
 # Geode in 5 minutes
 
-Extract and build from source (note: currently Geode supports jdk1.7.75):
+With JDK 1.8 or a more recent version installed, obtain the source archive. 
+Extract and build from source:
 
     $ cd geode
     $ ./gradlew build installDist
