@@ -213,7 +213,7 @@ public class ClientCacheFactory {
       
       return instance;
     } else {
-      GemFireCacheImpl gfc = GemFireCacheImpl.create(true, this.pf, system, cacheConfig);
+      GemFireCacheImpl gfc = GemFireCacheImpl.createClient(system, this.pf, cacheConfig);
       return gfc;
     }
     }

@@ -22,6 +22,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.*;
 
 import java.io.*;
 
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import dunit.DistributedTestCase;
 import org.xml.sax.SAXException;
 
@@ -143,6 +144,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
   {
     setXmlFile(findFile("unknownNamedAttributes.xml"));
 
+    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.RegionAttributesCreation_CANNOT_REFERENCE_NONEXISTING_REGION_ATTRIBUTES_NAMED_0.toLocalizedString());
     try {
       getCache();
       fail("Should have thrown an IllegalStateException");
@@ -150,6 +152,8 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
     }
     catch (IllegalStateException ex) {
       // pass...
+    } finally {
+      expectedException.remove();
     }
   }
 

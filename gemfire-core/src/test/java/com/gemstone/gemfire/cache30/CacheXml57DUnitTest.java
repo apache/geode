@@ -53,6 +53,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
 
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.VM;
@@ -326,10 +327,13 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setPoolName("mypool");
     cache.createVMRegion("rootNORMAL", attrs);
+    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.AbstractRegion_THE_CONNECTION_POOL_0_HAS_NOT_BEEN_CREATED.toLocalizedString("mypool"));
     try {
       testXml(cache);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
+    } finally {
+      expectedException.remove();
     }
   }
   public void testAlreadyExistingPool() throws CacheException {
@@ -341,10 +345,13 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
       // now make sure declarative cache can't create the same pool
       CacheCreation cache = new CacheCreation();
       cache.createPoolFactory().addLocator(ALIAS2, 12345).create("mypool");
+      ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.PoolManagerImpl_POOL_NAMED_0_ALREADY_EXISTS.toLocalizedString("mypool"));
       try {
         testXml(cache);
         fail("expected IllegalStateException");
       } catch (IllegalStateException expected) {
+      } finally {
+        expectedException.remove();
       }
     } finally {
       PoolManager.close();

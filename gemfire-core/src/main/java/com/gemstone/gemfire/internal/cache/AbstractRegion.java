@@ -1778,9 +1778,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     if (this.poolName != null) {
       PoolImpl cp = getPool();
       if (cp == null) {
-        throw new IllegalStateException("The connection pool \""
-                                        + this.poolName
-                                        + "\" has not been created");
+        throw new IllegalStateException(LocalizedStrings.
+            AbstractRegion_THE_CONNECTION_POOL_0_HAS_NOT_BEEN_CREATED.toLocalizedString(this.poolName));
       }
       cp.attach();
       if (cp.getMultiuserAuthentication() && !this.dataPolicy.isEmpty()) {

@@ -40,6 +40,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheTransactionManagerCreat
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.ClientCacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Tests 7.0 cache.xml feature : Fixed Partitioning.
@@ -352,11 +353,13 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     txMgrCreation.setWriter(new TestTransactionWriter());
     cc.addCacheTransactionManagerCreation(txMgrCreation);
+    ExpectedException expectedException = addExpectedException(LocalizedStrings.TXManager_NO_WRITER_ON_CLIENT.toLocalizedString());
     try {
-      addExpectedException("Connection refused: connect");
       testXml(cc);
       fail("expected exception not thrown");
     } catch (IllegalStateException e) {
+    } finally {
+      expectedException.remove();
     }
   }
   

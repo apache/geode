@@ -32,6 +32,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerializerCreation;
 
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import dunit.DistributedTestCase;
 
 import java.io.DataInput;
@@ -192,11 +193,13 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     rmc.setEvictionHeapPercentage(high);
     rmc.setCriticalHeapPercentage(low);
     cache.setResourceManagerCreation(rmc);
+    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE.toLocalizedString());
     try {
       testXml(cache);
       assertTrue(false);
     } catch (IllegalArgumentException expected) {
     } finally {
+      expectedException.remove();
       closeCache();
     }
 
