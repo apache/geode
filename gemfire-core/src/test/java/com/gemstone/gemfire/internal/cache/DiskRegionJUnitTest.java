@@ -548,7 +548,6 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
    * 
    * @author ashahid
    */
-  protected volatile  boolean[] putSuccessfull = new boolean[3];
 
   @Test
   public void testSingleDirectoryNotHanging()
@@ -568,31 +567,21 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
         diskRegionProperties, Scope.LOCAL);
 
     Puts puts = new Puts(region);
+    puts.performPuts();
 
-    Thread thread1 = new Thread(puts);
-    thread1.setDaemon(true);
-    thread1.start();
-
-    long startTime = System.currentTimeMillis();
-    DistributedTestCase.join(thread1, 40 * 1000, null);
-    long interval = System.currentTimeMillis() - startTime;
-    if (interval > 40000) {
-      fail(" Test took too long in going to join, it should have exited before 40000 ms");
-    }
-
-    if (!putSuccessfull[0]) {
+    if (!puts.putSuccessful(0)) {
       fail(" first put did not succeed");
     }
 
-    if (!putSuccessfull[1]) {
+    if (!puts.putSuccessful(1)) {
       fail(" second put did not succeed");
     }
 
-    if (!putSuccessfull[2]) {
+    if (!puts.putSuccessful(2)) {
       fail(" third put did not succeed");
     }
 
-    if (exceptionOccured) {
+    if (puts.exceptionOccurred()) {
       fail(" Exception was not supposed to occur but did occur");
     }
     closeDown();
@@ -612,42 +601,21 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
         diskRegionProperties, Scope.LOCAL);
 
     Puts puts = new Puts(region);
-    Thread thread1 = new Thread(puts);
-    thread1.setDaemon(true);
-    thread1.start();
-    if (!putsHaveStarted) {
-      synchronized (puts) {
-        if (!putsHaveStarted) {
-          try {
-            puts.wait();
-          }
-          catch (InterruptedException e) {
-            fail("Unexpected interrupted exception");
-          }
-        }
-      }
-    }
-   
-    long startTime = System.currentTimeMillis();
-    DistributedTestCase.join(thread1, 9 * 1000, null);
-    long interval = System.currentTimeMillis() - startTime;
-    if (interval > 9000) {
-      fail(" Test took too long in going to join, it should have exited before 9000 ms");
-    }
+    puts.performPuts();
 
-    if (!putSuccessfull[0]) {
+    if (!puts.putSuccessful(0)) {
       fail(" first put did not succeed");
     }
 
-    if (!putSuccessfull[1]) {
+    if (!puts.putSuccessful(1)) {
       fail(" second put did not succeed");
     }
 
-    if (!putSuccessfull[2]) {
+    if (!puts.putSuccessful(2)) {
       fail(" third put did not succeed");
     }
 
-    if (exceptionOccured) {
+    if (puts.exceptionOccurred()) {
       fail(" Exception was not supposed to occur but did occur");
     }
 
@@ -675,46 +643,25 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
     }
 
     Puts puts = new Puts(region, 1026);
+    puts.performPuts();
 
-    Thread thread1 = new Thread(puts);
-    thread1.setDaemon(true);
-    thread1.start();
-
-    
-    if (!putsHaveStarted) {
-      synchronized (puts) {
-        if (!putsHaveStarted) {
-          try {
-            puts.wait();
-          }
-          catch (InterruptedException e) {
-            fail("Unexpected interrupted exception");
-          }
-        }
-      }
-    }
-    long startTime = System.currentTimeMillis();
-    DistributedTestCase.join(thread1, 33 * 1000, null);
-    long interval = System.currentTimeMillis() - startTime;
-    if (interval > 33000) {
-      fail(" Test took too long in going to join, it should have exited before 33000 ms");
-    }
-
-    if (!exceptionOccured) {
+    if (!puts.exceptionOccurred()) {
       fail(" Exception was supposed to occur but did not occur");
     }
-    if (putSuccessfull[0]) {
+    if (puts.putSuccessful(0)) {
       fail(" first put did succeed when it was not supposed to");
     }
 
-    if (putSuccessfull[1]) {
+    if (puts.putSuccessful(1)) {
       fail(" second put did  succeed  when it was not supposed to");
     }
 
-    if (putSuccessfull[2]) {
+    if (puts.putSuccessful(2)) {
       fail(" third put did  succeed  when it was not supposed to");
     }
 
+    // if the exception occurred then the region should be closed already
+    ((LocalRegion) region).getDiskStore().waitForClose();
   }
 
   /**
@@ -788,6 +735,8 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
 
     private int dataSize = 1024;
     private Region region;
+    private volatile boolean[] putSuccessful = new boolean[3];
+    private volatile boolean exceptionOccurred = false;
 
     Puts(Region region) {
       this.region = region;
@@ -796,15 +745,24 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       this.region = region;
       this.dataSize = dataSize;
     }
-      
 
-    public void run()
-    {
-     
-      exceptionOccured = false;
-      putSuccessfull[0] = false;
-      putSuccessfull[1] = false;
-      putSuccessfull[2] = false;
+    public boolean exceptionOccurred() {
+      return exceptionOccurred;
+    }
+
+    public boolean putSuccessful(int index){
+      return putSuccessful[index];
+    }
+
+    public void run() {
+      performPuts();
+    }
+ 
+    public void performPuts(){
+      exceptionOccurred = false;
+      putSuccessful[0] = false;
+      putSuccessful[1] = false;
+      putSuccessful[2] = false;
 
       try {
         byte[] bytes = new byte[this.dataSize];
@@ -813,14 +771,14 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
           this.notify();
         }
         region.put("1", bytes);
-        putSuccessfull[0] = true;
+        putSuccessful[0] = true;
         region.put("2", bytes);
-        putSuccessfull[1] = true;
+        putSuccessful[1] = true;
         region.put("3", bytes);
-        putSuccessfull[2] = true;
+        putSuccessful[2] = true;
       }
       catch (DiskAccessException e) {
-        exceptionOccured = true;
+        exceptionOccurred = true;
       }
     }
   }
@@ -835,8 +793,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
     File dir = new File("testSingleDirectoryNotHanging");
     dir.mkdir();
     dir.deleteOnExit();
-    File[] dirs = new File[1];
-    dirs[0] = dir;
+    File[] dirs = new File[] {dir};
     int[] dirSizes = { 2048 };
     diskRegionProperties.setDiskDirsAndSizes(dirs, dirSizes);
     diskRegionProperties.setMaxOplogSize(2097152);
@@ -845,33 +802,30 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
         diskRegionProperties, Scope.LOCAL);
 
     Puts puts = new Puts(region);
+    puts.performPuts();
 
-    Thread thread1 = new Thread(puts);
-    thread1.setDaemon(true);
-    thread1.start();
-    DistributedTestCase.join(thread1, 30 * 1000, null);
-
-    if (!putSuccessfull[0]) {
+    if (!puts.putSuccessful(0)) {
       fail(" first put did not succeed");
     }
 
-    if (putSuccessfull[1]) {
+    if (puts.putSuccessful(1)) {
       fail(" second put should not succeed");
     }
 
-    if (!exceptionOccured) {
+    if (!puts.exceptionOccurred()) {
       fail(" Exception was supposed to occur but did not occur");
     }
-    closeDown();
+    // if the exception occurred then the region should be closed already
+    ((LocalRegion) region).getDiskStore().waitForClose();
 
+    closeDown();
   }
 
   /**
    * DiskRegDiskAccessExceptionTest : Disk region test for DiskAccessException.
-   * @throws InterruptedException 
    */
   @Test
-  public void testDiskFullExcep() throws InterruptedException
+  public void testDiskFullExcep()
   {
     int[] diskDirSize1 = new int[4];
     diskDirSize1[0] = (2048 + 500);
@@ -921,9 +875,8 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
                      + "</ExpectedException>");
     }
 
-    // if the exception Occurred then the region should be closed already
-    ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
-    ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+    // if the exception occurred then the region should be closed already
+    ((LocalRegion) region).getDiskStore().waitForClose();
     assertEquals(true, cache.isClosed());
   }
 
@@ -981,10 +934,9 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
   }
   /**
    * DiskRegDiskAccessExceptionTest : Disk region test for DiskAccessException.
-   * @throws InterruptedException 
    */
   @Test
-  public void testDiskFullExcepOverflowOnly() throws InterruptedException
+  public void testDiskFullExcepOverflowOnly()
   {
     int[] diskDirSize1 = new int[4];
     diskDirSize1[0] = (2048 + 500);
@@ -1038,8 +990,8 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
                      + "</ExpectedException>");
     }
 
-    // if the exception Occurred then the region should be closed already
-    ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+    // if the exception occurred then the region should be closed already
+    ((LocalRegion) region).getDiskStore().waitForClose();
     assertEquals(true, cache.isClosed());
   }
   
@@ -1983,7 +1935,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       // OK
     }
 
-    ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+    ((LocalRegion) region).getDiskStore().waitForClose();
     assertTrue(cache.isClosed());
     region = null;
   }
@@ -2047,7 +1999,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       // OK
     }
 
-    ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+    ((LocalRegion) region).getDiskStore().waitForClose();
     assertTrue(cache.isClosed());
     region = null;
   }
@@ -2113,7 +2065,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
     catch (DiskAccessException dae) {
       // OK
     }
-    ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+    ((LocalRegion) region).getDiskStore().waitForClose();
     assertTrue(cache.isClosed());
     region = null;
   }
@@ -2178,7 +2130,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       // OK
     }
 
-    ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+    ((LocalRegion) region).getDiskStore().waitForClose();
     assertTrue(cache.isClosed());
     region = null;
   }
@@ -2212,7 +2164,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       catch (DiskAccessException dae) {
         //OK
       }        
-      ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+      ((LocalRegion) region).getDiskStore().waitForClose();
       assertTrue(cache.isClosed());
       region = null;
   }
@@ -2245,7 +2197,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       catch (DiskAccessException dae) {
         //OK
       }       
-      ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+      ((LocalRegion) region).getDiskStore().waitForClose();
       assertTrue(cache.isClosed());
       region = null;
   }
@@ -2326,7 +2278,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
         }                
       }, 5000, 500, true);
       
-      ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+      ((LocalRegion) region).getDiskStore().waitForClose();
       assertTrue(cache.isClosed());
       region = null;
   }
@@ -2364,7 +2316,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase
       }catch(DiskAccessException dae) {
         //OK expected
       }
-      ((LocalRegion) region).getDiskStore()._testHandleDiskAccessException.await();
+      ((LocalRegion) region).getDiskStore().waitForClose();
       assertTrue(cache.isClosed());        
       region = null;
       List bsRunning = cache.getCacheServers();
