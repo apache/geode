@@ -134,7 +134,6 @@ public class DiskRegionTestingBase
       if (cache != null && !cache.isClosed()) {
         for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
           Region root = (Region)itr.next();
-//          String name = root.name.getMethodName();
           if(root.isDestroyed() || root instanceof HARegion) {
             continue;
           }

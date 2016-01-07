@@ -356,7 +356,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
     assertNotNull(gemfirecache);
   }
   
-  private static void validateRuningBridgeServerList() throws Exception{
+  private static void validateRuningBridgeServerList(){
     /*Region region = gemfirecache.getRegion(Region.SEPARATOR + REGION_NAME);
     assertNotNull(region);*/
     try {        
@@ -374,7 +374,7 @@ public class Bug39079DUnitTest extends CacheTestCase {
         fail("test failed due to ", e);
       }
       
-      ((LocalRegion)region).getDiskRegion().getDiskStore()._testHandleDiskAccessException.await();
+      ((LocalRegion) region).getDiskStore().waitForClose();
       assertTrue(region.getRegionService().isClosed());
       
       region = null;
