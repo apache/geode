@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -438,13 +437,9 @@ public class SimpleMemoryAllocatorJUnitTest {
     }
   }
 
-  /* This test fails intermittently.
-   * Disabling it until this test case is fixed. GEODE-701
-   * Sonar test coverage job has failed due to this test failure.
-   */
-  @Ignore("Disabled for GEODE-701")
   @Test
   public void testClose() {
+    assertEquals(false, Boolean.getBoolean(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY));
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
     boolean freeSlab = true;
     UnsafeMemoryChunk[] slabs = new UnsafeMemoryChunk[]{slab};

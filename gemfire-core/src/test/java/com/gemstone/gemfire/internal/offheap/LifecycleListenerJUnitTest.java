@@ -78,9 +78,6 @@ public class LifecycleListenerJUnitTest {
   @Test
   public void testCallbacksAreCalledAfterCreate() {
     LifecycleListener.addLifecycleListener(this.listener);
-    // saj
-    System.getProperties().put("gemfire.free-off-heap-memory", "true");
-    // saj above
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
     SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(),
         new UnsafeMemoryChunk[] { slab });
@@ -89,7 +86,7 @@ public class LifecycleListenerJUnitTest {
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
     Assert.assertEquals(0, this.beforeCloseCallbacks.size());
 
-    ma.close();
+    closeAndFree(ma);
 
     Assert.assertEquals(1, this.afterCreateCallbacks.size());
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
@@ -103,7 +100,7 @@ public class LifecycleListenerJUnitTest {
 
     LifecycleListener.addLifecycleListener(this.listener);
 
-    System.getProperties().put("gemfire.free-off-heap-memory", "false");
+    assertEquals(false, Boolean.getBoolean(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY));
 
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
     SimpleMemoryAllocatorImpl ma = createAllocator(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[] { slab });
@@ -146,12 +143,20 @@ public class LifecycleListenerJUnitTest {
     }
   }
   
+  private void closeAndFree(SimpleMemoryAllocatorImpl ma) {
+    assertEquals(false, Boolean.getBoolean(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY));
+    System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
+    try {
+      ma.close();
+    } finally {
+      System.clearProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY);
+    }
+  }
+  
   @Test
   public void testCallbacksAreCalledAfterReuseWithFreeTrue() {
 
     LifecycleListener.addLifecycleListener(this.listener);
-
-    System.getProperties().put("gemfire.free-off-heap-memory", "true");
 
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
     SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[] { slab });
@@ -160,7 +165,7 @@ public class LifecycleListenerJUnitTest {
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
     Assert.assertEquals(0, this.beforeCloseCallbacks.size());
 
-    ma.close();
+    closeAndFree(ma);
 
     Assert.assertEquals(1, this.afterCreateCallbacks.size());
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
@@ -173,7 +178,7 @@ public class LifecycleListenerJUnitTest {
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
     Assert.assertEquals(1, this.beforeCloseCallbacks.size());
 
-    ma.close();
+    closeAndFree(ma);
 
     Assert.assertEquals(2, this.afterCreateCallbacks.size());
     Assert.assertEquals(0, this.afterReuseCallbacks.size());
