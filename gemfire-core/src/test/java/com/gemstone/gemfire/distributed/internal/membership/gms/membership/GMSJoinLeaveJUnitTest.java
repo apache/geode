@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -49,6 +50,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.mockito.verification.Timeout;
 
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -739,7 +741,10 @@ public class GMSJoinLeaveJUnitTest {
       Thread.sleep(1000);
     }
     assertTrue(gmsJoinLeave.isCoordinator());
-    verify(messenger, times(2)).send(any(RemoveMemberMessage.class));
+    // wait for suspect processing
+    Thread.sleep(10000);
+    verify(healthMonitor, atLeast(1)).checkIfAvailable(isA(DistributedMember.class), isA(String.class), isA(Boolean.class));
+//    verify(messenger, atLeast(1)).send(isA(RemoveMemberMessage.class));
   }
 
   /**
