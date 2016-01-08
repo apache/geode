@@ -257,11 +257,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
     }
     
-    if( this.buckToDispatchLock == null) {
-      this.buckToDispatchLock = new StoppableReentrantLock(sender.getCancelCriterion());
+    if( buckToDispatchLock == null) {
+      buckToDispatchLock = new StoppableReentrantLock(sender.getCancelCriterion());
     }
-    if(this.regionToDispatchedKeysMapEmpty == null) {
-      this.regionToDispatchedKeysMapEmpty = this.buckToDispatchLock.newCondition();
+    if(regionToDispatchedKeysMapEmpty == null) {
+      regionToDispatchedKeysMapEmpty = buckToDispatchLock.newCondition();
     }
     
     queueEmptyLock = new StoppableReentrantLock(sender.getCancelCriterion());
@@ -269,10 +269,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     //at present, this won't be accessed by multiple threads, 
     //still, it is safer approach to synchronize it
     synchronized (ParallelGatewaySenderQueue.class) {
-      if (this.removalThread == null) {
-        this.removalThread = new BatchRemovalThread(
+      if (removalThread == null) {
+        removalThread = new BatchRemovalThread(
           (GemFireCacheImpl)sender.getCache(), this);
-        this.removalThread.start();
+        removalThread.start();
       }
     }
     
@@ -420,14 +420,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         	handleShadowPRExistsScenario(cache, prQ);
       }
       /*
-       * Here, enqueTempEvents need to be invoked when a sender is already
+         * Here, enqueueTempEvents need to be invoked when a sender is already
        * running and userPR is created later. When the flow comes here through
        * start() method of sender i.e. userPR already exists and sender is
-       * started later, the enqueTempEvents is done in the start() method of
+       * started later, the enqueueTempEvents is done in the start() method of
        * ParallelGatewaySender
        */
       if ((this.index == this.nDispatcher - 1) && this.sender.isRunning()) {
-        ((AbstractGatewaySender)sender).enqueTempEvents();
+        ((AbstractGatewaySender)sender).enqueueTempEvents();
       }
     }
     finally {
@@ -576,14 +576,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         this.userRegionNameToshadowPRMap.put(userPR.getFullPath(), prQ);
       }
       /*
-       * Here, enqueTempEvents need to be invoked when a sender is already
+       * Here, enqueueTempEvents need to be invoked when a sender is already
        * running and userPR is created later. When the flow comes here through
        * start() method of sender i.e. userPR already exists and sender is
-       * started later, the enqueTempEvents is done in the start() method of
+       * started later, the enqueueTempEvents is done in the start() method of
        * ParallelGatewaySender
        */
       if ((this.index == this.nDispatcher - 1) && this.sender.isRunning()) {
-        ((AbstractGatewaySender)sender).enqueTempEvents();
+        ((AbstractGatewaySender)sender).enqueueTempEvents();
       }
       afterRegionAdd(userPR);
       this.sender.lifeCycleLock.writeLock().unlock();
@@ -1164,21 +1164,24 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   // This method may need synchronization in case it is used by
   // ConcurrentParallelGatewaySender
   protected void addRemovedEvent(PartitionedRegion prQ, int bucketId, Object key) {
-    buckToDispatchLock.lock();
-    boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
-    try {
-      Map bucketIdToDispatchedKeys = (Map)regionToDispatchedKeysMap.get(prQ.getFullPath());
-      if (bucketIdToDispatchedKeys == null) {
-        bucketIdToDispatchedKeys = new ConcurrentHashMap();
-        regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+    StoppableReentrantLock lock = buckToDispatchLock;
+    if (lock != null) {
+      lock.lock();
+      boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
+      try {
+        Map bucketIdToDispatchedKeys = (Map)regionToDispatchedKeysMap.get(prQ.getFullPath());
+        if (bucketIdToDispatchedKeys == null) {
+          bucketIdToDispatchedKeys = new ConcurrentHashMap();
+          regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+        }
+        addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
+        if (wasEmpty) {
+          regionToDispatchedKeysMapEmpty.signal();        
+        }
       }
-      addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
-      if (wasEmpty) {
-        regionToDispatchedKeysMapEmpty.signal();        
+      finally {
+        lock.unlock();  
       }
-    }
-    finally {
-      buckToDispatchLock.unlock();  
     }
   }
 
@@ -1530,12 +1533,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    *          can be null.
    */
   public static void cleanUpStatics(AbstractGatewaySender sender) {
-    if (buckToDispatchLock != null) {
-      buckToDispatchLock = null;
-    }
-    if (regionToDispatchedKeysMapEmpty != null) {
-      regionToDispatchedKeysMapEmpty = null;
-    }
+    buckToDispatchLock = null;
+    regionToDispatchedKeysMapEmpty = null;
     regionToDispatchedKeysMap.clear();
     synchronized (ParallelGatewaySenderQueue.class) {
       if (removalThread != null) {

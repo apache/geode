@@ -18,7 +18,8 @@ package com.gemstone.gemfire.codeAnalysis.decode.cp;
 import java.io.*;
 
 /**
- * Cp represents an entry in the constant pool of a class
+ * Cp represents an entry in the constant pool of a class.
+ * See https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.4
  */
 public class Cp {
 
@@ -33,6 +34,9 @@ public class Cp {
     protected static final int TAG_Double = 6;
     protected static final int TAG_NameAndType = 12;
     protected static final int TAG_Utf8 = 1;
+    protected static final int TAG_MethodHandle = 15;
+    protected static final int TAG_MethodType = 16;
+    protected static final int TAG_InvokeDynamic = 18;
 
     public static Cp readCp( DataInputStream source ) throws IOException {
         byte tag;
@@ -61,8 +65,14 @@ public class Cp {
                 return new CpNameAndType(source);
             case TAG_Utf8:
                 return new CpUtf8(source);
+            case TAG_MethodHandle:
+                return new CpMethodHandle(source);
+            case TAG_MethodType:
+                return new CpMethodType(source);
+            case TAG_InvokeDynamic:
+                return new CpInvokeDynamic(source);
             default:
-                throw new Error("Unknown tag type in constant pool: " + tag);
+                throw new IOException("Unknown tag type in constant pool: " + tag);
         }
     }
 }

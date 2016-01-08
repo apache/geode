@@ -24,8 +24,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapRegionEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
 import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.DataAsAddress;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -88,10 +86,6 @@ public class OffHeapRegionEntryHelper {
     if (v == Token.END_OF_STREAM) return END_OF_STREAM_ADDRESS;
     if (v == Token.NOT_AVAILABLE) return NOT_AVAILABLE_ADDRESS;
     throw new IllegalStateException("Can not convert " + v + " to an off heap address.");
-  }
-
-  static Object encodedAddressToObject(long ohAddress) {
-    return encodedAddressToObject(ohAddress, true, true);
   }
   
   //TODO:Asif:Check if this is a valid equality conditions
@@ -282,23 +276,20 @@ public class OffHeapRegionEntryHelper {
     }
     return 0L;
   }
-  
-  public static Object encodedAddressToObject(long addr, boolean decompress, boolean deserialize) {
-    boolean isSerialized = (addr & SERIALIZED_BIT) != 0;
-    byte[] bytes = encodedAddressToBytes(addr, decompress, false);
-    if (isSerialized) {
-      if (deserialize) {
-        return EntryEventImpl.deserialize(bytes);
+
+  static Object decodeAddressToObject(long ohAddress) {
+      byte[] bytes = decodeAddressToBytes(ohAddress, true, false);
+
+      boolean isSerialized = (ohAddress & SERIALIZED_BIT) != 0;
+      if (isSerialized) {
+         return EntryEventImpl.deserialize(bytes);
       } else {
-        return CachedDeserializableFactory.create(bytes);
+          return bytes;
       }
-    } else {
-      return bytes;
-    }
   }
-  
-  static byte[] encodedAddressToBytes(long addr) {
-    byte[] result = encodedAddressToBytes(addr, true, false);
+
+  static byte[] decodeAddressToBytes(long addr) {
+    byte[] result = decodeAddressToBytes(addr, true, false);
     boolean isSerialized = (addr & SERIALIZED_BIT) != 0;
     if (!isSerialized) {
       result = EntryEventImpl.serialize(result);
@@ -306,15 +297,7 @@ public class OffHeapRegionEntryHelper {
     return result;
   }
 
-  /**
-   * If the address contains a byte[] return it.
-   * Otherwise return the serialize bytes in the address in a byte array.
-   */
-  static byte[] encodedAddressToRawBytes(long addr) {
-    return encodedAddressToBytes(addr, true, false);
-  }
-
-  private static byte[] encodedAddressToBytes(long addr, boolean decompress, boolean compressedOk) {
+  static byte[] decodeAddressToBytes(long addr, boolean decompress, boolean compressedOk) {
     assert (addr & ENCODED_BIT) != 0;
     boolean isCompressed = (addr & COMPRESSED_BIT) != 0;
     int size = (int) ((addr & SIZE_MASK) >> SIZE_SHIFT);
@@ -346,18 +329,6 @@ public class OffHeapRegionEntryHelper {
     }
     return bytes;
   }
-  public static byte[] encodedAddressToBytes(long addr, boolean decompress, RegionEntryContext context) {
-    byte[] bytes = encodedAddressToBytes(addr, decompress, true);
-    if (decompress) {
-      boolean isCompressed = (addr & COMPRESSED_BIT) != 0;
-      if (isCompressed) {
-        long time = context.getCachePerfStats().startDecompression();
-        bytes = context.getCompressor().decompress(bytes);
-        context.getCachePerfStats().endDecompression(time);      
-      }
-    }
-    return bytes;
-  }
 
   /**
    * The previous value at the address in 're' will be @Released and then the
@@ -371,9 +342,9 @@ public class OffHeapRegionEntryHelper {
     do {
       oldAddress = re.getAddress();
     } while (!re.setAddress(oldAddress, newAddress));
-    SimpleMemoryAllocatorImpl.setReferenceCountOwner(re);
+    ReferenceCountHelper.setReferenceCountOwner(re);
     releaseAddress(oldAddress);
-    SimpleMemoryAllocatorImpl.setReferenceCountOwner(null);
+    ReferenceCountHelper.setReferenceCountOwner(null);
   }
  
   public static Token getValueAsToken(@Unretained OffHeapRegionEntry re) {
@@ -422,7 +393,7 @@ public class OffHeapRegionEntryHelper {
         long addr2 = re.getAddress();
         retryCount++;
         if (retryCount > 100) {
-          throw new IllegalStateException("retain failed addr=" + addr + " addr2=" + addr + " 100 times" + " history=" + SimpleMemoryAllocatorImpl.getFreeRefCountInfo(addr));
+          throw new IllegalStateException("retain failed addr=" + addr + " addr2=" + addr + " 100 times" + " history=" + ReferenceCountHelper.getFreeRefCountInfo(addr));
         }
         addr = addr2;
         // Since retain returned false our region entry should have a different

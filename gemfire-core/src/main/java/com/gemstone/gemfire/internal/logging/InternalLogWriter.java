@@ -18,8 +18,7 @@ package com.gemstone.gemfire.internal.logging;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.org.jgroups.util.GFLogWriter;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Each logger has a level and it will only print messages whose
@@ -38,7 +37,7 @@ import com.gemstone.org.jgroups.util.StringId;
  * <li> {@link #NONE_LEVEL}
  * </ol>
  */
-public interface InternalLogWriter extends LogWriter, LogWriterI18n, GFLogWriter {
+public interface InternalLogWriter extends LogWriter, LogWriterI18n {
 
   /**
    * If the writer's level is <code>ALL_LEVEL</code> then all messages

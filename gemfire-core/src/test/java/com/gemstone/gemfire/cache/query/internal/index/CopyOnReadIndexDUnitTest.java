@@ -115,10 +115,9 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   
   private void configureServers() throws Exception {
     final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
-    startCacheServer(vm0, port[0], mcastPort);
-    startCacheServer(vm1, port[1], mcastPort);
-    startCacheServer(vm2, port[2], mcastPort);
+    startCacheServer(vm0, port[0]);
+    startCacheServer(vm1, port[1]);
+    startCacheServer(vm2, port[2]);
 
   }
   
@@ -583,7 +582,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
       }
     });
   }
-  private void startCacheServer(VM server, final int port, final int mcastPort) throws Exception {
+  private void startCacheServer(VM server, final int port) throws Exception {
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         getSystem(getServerProperties());

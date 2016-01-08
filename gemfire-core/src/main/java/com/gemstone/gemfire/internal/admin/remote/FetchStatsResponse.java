@@ -80,7 +80,7 @@ public final class FetchStatsResponse extends AdminResponse {
 
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

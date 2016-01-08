@@ -286,7 +286,7 @@ public class ClientServerTestCase extends CacheTestCase {
     WaitCriterion w = new WaitCriterion() {
 
       public String description() {
-        return "bridge never finished connecting";
+        return "bridge never finished connecting: " + system.getMemberId();
       }
 
       public boolean done() {
@@ -297,7 +297,7 @@ public class ClientServerTestCase extends CacheTestCase {
       }
       
     };
-    int waitMillis = 5000;
+    int waitMillis = 10000;
     int interval = 100;
     boolean throwException = true;
     waitForCriterion(w, waitMillis, interval, throwException);

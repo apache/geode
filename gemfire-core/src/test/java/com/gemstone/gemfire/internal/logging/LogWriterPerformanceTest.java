@@ -21,16 +21,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
 /**
  * Tests performance of logging when level is OFF.
  * 
  * @author Kirk Lund
  */
+@Category(PerformanceTest.class)
+@Ignore("Tests have no assertions")
 public class LogWriterPerformanceTest extends LoggingPerformanceTestCase {
 
   public LogWriterPerformanceTest(String name) {

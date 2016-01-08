@@ -35,8 +35,8 @@ public class AvailablePort {
   /** Is the port available for a Socket (TCP) connection? */
   public static final int SOCKET = 0;
 
-  /** Is the port available for a JGroups (UDP) connection */
-  public static final int JGROUPS = 1;
+  /** Is the port available for a JGroups (UDP) multicast connection */
+  public static final int MULTICAST = 1;
 
   ///////////////////////  Static Methods  ///////////////////////
   
@@ -50,7 +50,7 @@ public class AvailablePort {
       if (protocol == SOCKET) {
         name = System.getProperty("gemfire.bind-address");
       }
-      else if (protocol == JGROUPS) {
+      else if (protocol == MULTICAST) {
         name = System.getProperty("gemfire.mcast-address");
       }
       if (name != null) {
@@ -72,7 +72,7 @@ public class AvailablePort {
    *        The port to check
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -90,7 +90,7 @@ public class AvailablePort {
    *        The port to check
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind address (or mcast address) to use
    *
    * @throws IllegalArgumentException
@@ -106,7 +106,7 @@ public class AvailablePort {
       }
     }
     
-    else if (protocol == JGROUPS) {
+    else if (protocol == MULTICAST) {
       DatagramSocket socket = null;
       try {
         socket = new MulticastSocket();
@@ -170,7 +170,7 @@ public class AvailablePort {
       } else {
         return keepOneInterface(addr, port);
       }
-    } else if (protocol == JGROUPS) {
+    } else if (protocol == MULTICAST) {
       throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
     } else {
       throw new IllegalArgumentException(LocalizedStrings.AvailablePort_UNKNOWN_PROTOCOL_0.toLocalizedString(Integer.valueOf(protocol)));
@@ -294,7 +294,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -311,7 +311,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -326,7 +326,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    *
    * @throws IllegalArgumentException
    *         <code>protocol</code> is unknown
@@ -342,7 +342,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind-address or mcast address to use
    *
    * @throws IllegalArgumentException
@@ -353,7 +353,7 @@ public class AvailablePort {
       int port = getRandomWildcardBindPortNumber();
       if (isPortAvailable(port, protocol, addr)) {
         // don't return the products default multicast port
-        if ( !(protocol == JGROUPS && port == DistributionConfig.DEFAULT_MCAST_PORT) ){
+        if ( !(protocol == MULTICAST && port == DistributionConfig.DEFAULT_MCAST_PORT) ){
           return port;
         }
       }
@@ -374,7 +374,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind-address or mcast address to use
    *
    * @throws IllegalArgumentException
@@ -396,7 +396,7 @@ public class AvailablePort {
    *
    * @param protocol
    *        The protocol to check (either {@link #SOCKET} or {@link
-   *        #JGROUPS}). 
+   *        #MULTICAST}). 
    * @param addr the bind-address or mcast address to use
    *
    * @throws IllegalArgumentException
@@ -540,7 +540,7 @@ public class AvailablePort {
 
     } else if (protocolString.equalsIgnoreCase("javagroups") ||
       protocolString.equalsIgnoreCase("jgroups")) {
-      protocol = JGROUPS;
+      protocol = MULTICAST;
 
     } else {
       usage("Unknown protocol: " + protocolString);

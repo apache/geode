@@ -22,8 +22,6 @@ import java.io.InterruptedIOException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * A builder that caches the singleton value. 
  * 
@@ -205,7 +203,7 @@ public class SingletonValue<T extends Closeable> {
     }
   }
   
-  @SuppressFBWarnings(
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value="UL_UNRELEASED_LOCK", 
       justification="findbugs is wrong and Darrel agrees")
   public T get() throws IOException {
@@ -263,7 +261,7 @@ public class SingletonValue<T extends Closeable> {
     }
   }
   
-  @SuppressFBWarnings(
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value="UL_UNRELEASED_LOCK", 
       justification="findbugs is wrong and Darrel agrees")
   private T acquireValue() throws IOException {

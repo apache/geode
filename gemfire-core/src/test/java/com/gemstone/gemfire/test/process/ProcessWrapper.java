@@ -47,8 +47,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 public class ProcessWrapper {
   private static final Logger logger = LogService.getLogger();
 
-  protected static final String TIMEOUT_MILLIS_PROPERTY = "process.test.timeoutMillis";
-  protected static final long TIMEOUT_MILLIS_DEFAULT = 5 * 60 * 1000;
+  private static final long PROCESS_TIMEOUT_MILLIS = 10 * 60 * 1000L; // 10 minutes
   private static final long DELAY = 10;
 
   private final boolean headless;
@@ -323,11 +322,12 @@ public class ProcessWrapper {
   
         this.stdout = stdOut;
         this.stderr = stdErr;
-        this.outputReader = new ProcessOutputReader(this.process, stdOut, stdErr, this.allLines);
+        this.outputReader = new ProcessOutputReader(this.process, stdOut, stdErr);
         this.started = true;
       }
       
-      this.outputReader.waitFor();
+      this.outputReader.start();
+      this.outputReader.waitFor(PROCESS_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
       int code = this.process.waitFor();
       
       synchronized (this.exitValue) {
@@ -424,7 +424,7 @@ public class ProcessWrapper {
     private String[] mainArguments = null;
     private boolean useMainLauncher = true;
     private boolean headless = true;
-    private long timeoutMillis = TIMEOUT_MILLIS_DEFAULT;
+    private long timeoutMillis = PROCESS_TIMEOUT_MILLIS;
     private boolean inline = false;
     public Builder() {
       //nothing

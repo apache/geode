@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.admin.internal.*;
+import javax.management.ObjectName;
+import javax.management.modelmbean.ModelMBean;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.management.*;
-import javax.management.modelmbean.*;
+import com.gemstone.gemfire.admin.AdminException;
+import com.gemstone.gemfire.admin.GemFireHealth;
+import com.gemstone.gemfire.admin.GemFireHealthConfig;
+import com.gemstone.gemfire.admin.internal.GemFireHealthConfigImpl;
 
 /**
  * The JMX "managed resource" that represents the configuration for
@@ -46,7 +46,7 @@ import javax.management.modelmbean.*;
  *
  * @since 3.5
  */
-@SuppressFBWarnings(justification="This class is deprecated. Also, any further changes so close to the release is inadvisable.") 
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(justification="This class is deprecated. Also, any further changes so close to the release is inadvisable.") 
 public class GemFireHealthConfigJmxImpl
   implements GemFireHealthConfig, ManagedResource, java.io.Serializable {
 

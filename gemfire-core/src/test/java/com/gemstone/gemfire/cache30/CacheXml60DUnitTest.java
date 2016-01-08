@@ -307,22 +307,28 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     sc.registerInstantiator(NotDataSerializable.class, 15);
     closeCache();
     cc.setSerializerCreation(sc);
-    
+
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       testXml(cc);
       fail("Instantiator should not have registered due to bad class.");
+    } catch(Exception e) {
+    } finally {
+      expectedException.remove();
     }
-    catch(Exception e){}
     
     sc = new SerializerCreation();
     sc.registerSerializer(BadSerializer.class);
     closeCache();
     cc.setSerializerCreation(sc);
-    
+
+    ExpectedException expectedException1 = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       testXml(cc);
       fail("Serializer should not have registered due to bad class.");
+    } catch(Exception e){
+    } finally {
+      expectedException1.remove();
     }
-    catch(Exception e){}
   }
 }

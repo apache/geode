@@ -50,11 +50,11 @@ import com.gemstone.gemfire.internal.cache.WrappedCallbackArgument;
 import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ChunkWithHeapForm;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.Releasable;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.ChunkWithHeapForm;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
@@ -935,9 +935,9 @@ public class GatewaySenderEventImpl implements
     if (event.hasDelta()) {
       this.valueIsObject = 0x02;
     } else {
-      SimpleMemoryAllocatorImpl.setReferenceCountOwner(this);
+      ReferenceCountHelper.setReferenceCountOwner(this);
       so = event.getOffHeapNewValue();
-      SimpleMemoryAllocatorImpl.setReferenceCountOwner(null);      
+      ReferenceCountHelper.setReferenceCountOwner(null);      
         // TODO OFFHEAP MERGE: check for a cached serialized value first
         // so we can use it instead of reading offheap
         // If we do read offheap then add the serialize new value to the event cache

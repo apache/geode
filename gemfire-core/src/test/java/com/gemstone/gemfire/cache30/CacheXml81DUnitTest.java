@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import dunit.DistributedTestCase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.xml.sax.Locator;
@@ -140,6 +141,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       testXml(cache);
       fail("Excepted CacheXmlException");
@@ -149,6 +151,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
         assertTrue(((SAXParseException) e.getCause()).getColumnNumber() > 0);
         assertEquals("Value is 'exception'.", e.getCause().getMessage());
       }
+    } finally {
+      expectedException.remove();
     }
   }
 

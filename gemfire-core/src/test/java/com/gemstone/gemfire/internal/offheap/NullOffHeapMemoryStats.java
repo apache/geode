@@ -24,6 +24,7 @@ import com.gemstone.gemfire.Statistics;
  * @author Kirk Lund
  */
 public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
+  private boolean isClosed;
 
   public void incFreeMemory(long value) {
   }
@@ -100,9 +101,14 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
   }
   @Override
   public void close() {
+    this.isClosed = true;
   }
   @Override
   public void initialize(OffHeapMemoryStats stats) {
     stats.close();
   }     
+  
+  public boolean isClosed() {
+    return this.isClosed;
+  }
 }

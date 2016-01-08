@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.Hoplog;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogOrganizer;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.i18n.StringIdImpl;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -113,7 +113,7 @@ public class HDFSEventListener implements AsyncEventListener {
           list.add(new SortedHDFSQueuePersistedEvent(hdfsEvent));
         } catch (ClassNotFoundException e) {
           //TODO:HDFS add localized string
-          logger.warning(new StringIdImpl(0, "Error while converting HDFSGatewayEvent to PersistedEventImpl."), e);
+          logger.warning(new StringId(0, "Error while converting HDFSGatewayEvent to PersistedEventImpl."), e);
           return false;
         }
         prevBucketId = hdfsEvent.getBucketId();

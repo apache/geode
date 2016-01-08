@@ -34,7 +34,6 @@ import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.TXId;
-import com.gemstone.gemfire.internal.cache.execute.TransactionFunctionService;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**

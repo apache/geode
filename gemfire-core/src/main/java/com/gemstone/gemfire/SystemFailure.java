@@ -24,8 +24,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Catches and responds to JVM failure
  * <p>
@@ -190,7 +188,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author jpenney
  * @since 5.1
  */
-@SuppressFBWarnings(value="DM_GC", justification="This class performs System.gc as last ditch effort during out-of-memory condition.") 
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value="DM_GC", justification="This class performs System.gc as last ditch effort during out-of-memory condition.") 
 public final class SystemFailure {
 
   /**

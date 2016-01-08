@@ -77,7 +77,7 @@ public final class BucketProfileUpdateMessage extends DistributionMessage
   }
 
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

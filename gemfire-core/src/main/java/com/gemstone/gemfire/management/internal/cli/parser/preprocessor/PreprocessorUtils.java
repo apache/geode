@@ -19,9 +19,10 @@ package com.gemstone.gemfire.management.internal.cli.parser.preprocessor;
 
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * The methods in this class will be used by the {@link Preprocessor} class to
@@ -36,7 +37,7 @@ public class PreprocessorUtils {
     if (input != null) {
       // First remove the trailing white spaces, we do not need those
       if (!containsOnlyWhiteSpaces(input)) {
-        input = StringUtils.trimTrailingWhitespace(input);
+        input = StringUtils.stripEnd(input, null);
       }
       String output = input.trim();
       return new TrimmedInput(output, input.length() - output.length());
@@ -77,7 +78,7 @@ public class PreprocessorUtils {
       String inputCopy = input;
       StringBuffer output = new StringBuffer();
       // First remove the trailing white spaces, we do not need those
-      inputCopy = StringUtils.trimTrailingWhitespace(inputCopy);
+      inputCopy = StringUtils.stripEnd(inputCopy, null);
       // As this parser is for optionParsing, we also need to remove
       // the trailing optionSpecifiers provided it has previous
       // options. Remove the trailing LONG_OPTION_SPECIFIERs
@@ -85,11 +86,11 @@ public class PreprocessorUtils {
       // the case of non-mandatory arguments.
       // "^(.*)(\\s-+)$" - something that ends with a space followed by a series of hyphens.
       while (Pattern.matches("^(.*)(\\s-+)$", inputCopy)) {
-        inputCopy = StringUtils.removeSuffix(inputCopy, SyntaxConstants.SHORT_OPTION_SPECIFIER);
+        inputCopy = StringUtils.removeEnd(inputCopy, SyntaxConstants.SHORT_OPTION_SPECIFIER);
         
         // Again we need to trim the trailing white spaces
         // As we are in a loop
-        inputCopy = StringUtils.trimTrailingWhitespace(inputCopy);
+        inputCopy = StringUtils.stripEnd(inputCopy, null);
       }
       // Here we made use of the String class function trim to remove the
       // space and tabs if any at the

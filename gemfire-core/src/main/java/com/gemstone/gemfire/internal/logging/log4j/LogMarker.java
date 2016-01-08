@@ -73,7 +73,6 @@ public interface LogMarker {
   public static final Marker DISTRIBUTION_BRIDGE_SERVER = MarkerManager.getMarker("DISTRIBUTION_BRIDGE_SERVER").addParents(DISTRIBUTION, BRIDGE_SERVER);
   public static final Marker DISTRIBUTION_VIEWS = MarkerManager.getMarker("DISTRIBUTION_VIEWS").addParents(DISTRIBUTION);
   public static final Marker DM = MarkerManager.getMarker("DM").addParents(DISTRIBUTION);
-  public static final Marker DM_VIEWS = MarkerManager.getMarker("DM_VIEWS").addParents(DM, DISTRIBUTION_VIEWS);
   public static final Marker DM_BRIDGE_SERVER = MarkerManager.getMarker("DM_BRIDGE").addParents(BRIDGE_SERVER, DM);
   public static final Marker DA = MarkerManager.getMarker("DA").addParents(DISTRIBUTION);
 

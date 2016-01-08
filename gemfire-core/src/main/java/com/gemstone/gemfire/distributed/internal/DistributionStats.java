@@ -23,7 +23,6 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -113,14 +112,12 @@ public class DistributionStats implements DMStats {
 
   private final static int ucastReadsId;
   private final static int ucastReadBytesId;
-  private final static int ucastWriteTimeId;
   private final static int ucastWritesId;
   private final static int ucastWriteBytesId;
   private final static int ucastRetransmitsId;
 
   private final static int mcastReadsId;
   private final static int mcastReadBytesId;
-  private final static int mcastWriteTimeId;
   private final static int mcastWritesId;
   private final static int mcastWriteBytesId;
   private final static int mcastRetransmitsId;
@@ -150,46 +147,8 @@ public class DistributionStats implements DMStats {
   private final static int batchWaitTimeId;
   private final static int batchFlushTimeId;
 
-  private final static int ucastFlushesId;
-  private final static int ucastFlushTimeId;
-
-  private final static int flowControlWaitsInProgressId;
-  private final static int flowControlThrottleWaitsInProgressId;
-  private final static int flowControlRequestsId;
-  private final static int flowControlResponsesId;
-
-  private final static int jgUNICASTdataReceivedTimeId;
-
-  private final static int jgReceivedMessagesSizeId;
-  private final static int jgQueuedMessagesSizeId;
-  private final static int jgSentMessagesPoolSizeId;
-
-  private final static int jgUcastReceivedMessagesSizeId;
-  private final static int jgUcastSentMessagesSizeId;
-  private final static int jgUcastSentHighPriorityMessagesSizeId;
-
-  private final static int jgSTABLEsuspendTimeId;
-  private final static int jgSTABLEmessagesId;
-  private final static int jgSTABLEmessagesSentId;
-  private final static int jgSTABILITYmessagesId;
-
-  private final static int jgDownTimeId;
-  private final static int jgUpTimeId;
-  private final static int jChannelUpTimeId;
-
-  private final static int jgFCsendBlocksId;
-  private final static int jgFCautoRequestsId;
-  private final static int jgFCreplenishId;
-  private final static int jgFCresumesId;
-  private final static int jgFCsentCreditsId;
-  private final static int jgFCsentThrottleRequestsId;
-  private final static int jgNAKACKwaitsId;
-
   private final static int threadOwnedReceiversId;
   private final static int threadOwnedReceiversId2;
-
-  private final static int jgFragmentationsPerformedId;
-  private final static int jgFragmentsCreatedId;
 
   private final static int asyncSocketWritesInProgressId;
   private final static int asyncSocketWritesId;
@@ -256,6 +215,26 @@ public class DistributionStats implements DMStats {
   private final static int eldersId;
   private final static int initialImageMessagesInFlightId;
   private final static int initialImageRequestsInProgressId;
+  
+  //For GMSHealthMonitor
+  private final static int heartbeatRequestsSentId;  
+  private final static int heartbeatRequestsReceivedId;  
+  private final static int heartbeatsSentId;  
+  private final static int heartbeatsReceivedId;  
+  private final static int suspectsSentId;  
+  private final static int suspectsReceivedId;
+  private final static int finalCheckRequestsSentId;  
+  private final static int finalCheckRequestsReceivedId;  
+  private final static int finalCheckResponsesSentId;  
+  private final static int finalCheckResponsesReceivedId;  
+  private final static int tcpFinalCheckRequestsSentId; 
+  private final static int tcpFinalCheckRequestsReceivedId;  
+  private final static int tcpFinalCheckResponsesSentId;  
+  private final static int tcpFinalCheckResponsesReceivedId;
+  private final static int udpFinalCheckRequestsSentId;
+  private final static int udpFinalCheckRequestsReceivedId;
+  private final static int udpFinalCheckResponsesSentId;
+  private final static int udpFinalCheckResponsesReceivedId;
 
   static {
     String statName = "DistributionStats";
@@ -358,6 +337,33 @@ public class DistributionStats implements DMStats {
     final String initialImageMessagesInFlightDesc = "The number of messages with initial image data sent from this member that have not yet been acknowledged.";
     final String initialImageRequestsInProgressDesc = "The number of initial images this member is currently receiving.";
 
+    //For GMSHealthMonitor
+    final String heartbeatRequestsSentDesc = "Heartbeat request messages that this member has sent.";
+    final String heartbeatRequestsReceivedDesc = "Heartbeat request messages that this member has received.";
+    
+    final String heartbeatsSentDesc = "Heartbeat messages that this member has sent.";
+    final String heartbeatsReceivedDesc = "Heartbeat messages that this member has received.";
+    
+    final String suspectsSentDesc = "Suspect member messages that this member has sent.";
+    final String suspectsReceivedDesc = "Suspect member messages that this member has received.";
+    
+    final String finalCheckRequestsSentDesc = "Final check requests that this member has sent.";
+    final String finalCheckRequestsReceivedDesc = "Final check requests that this member has received.";
+    
+    final String finalCheckResponsesSentDesc = "Final check responses that this member has sent.";
+    final String finalCheckResponsesReceivedDesc = "Final check responses that this member has received.";    
+    
+    final String tcpFinalCheckRequestsSentDesc = "TCP final check requests that this member has sent.";
+    final String tcpFinalCheckRequestsReceivedDesc = "TCP final check requests that this member has received.";
+    
+    final String tcpFinalCheckResponsesSentDesc = "TCP final check responses that this member has sent.";
+    final String tcpFinalCheckResponsesReceivedDesc = "TCP final check responses that this member has received.";
+
+    final String udpFinalCheckRequestsSentDesc = "UDP final check requests that this member has sent.";
+    final String udpFinalCheckRequestsReceivedDesc = "UDP final check requests that this member has received.";
+    
+    final String udpFinalCheckResponsesSentDesc = "UDP final check responses that this member has sent.";
+    final String udpFinalCheckResponsesReceivedDesc = "UDP final check responses that this member has received.";
 
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
@@ -428,14 +434,12 @@ public class DistributionStats implements DMStats {
 
         f.createIntCounter("ucastReads", "Total number of unicast datagrams received", "datagrams"),
         f.createLongCounter("ucastReadBytes", "Total number of bytes received in unicast datagrams", "bytes"),
-        f.createLongCounter("ucastWriteTime", "Total amount of time, in nanoseconds, spent in unicast datagram socket write calls.", "nanoseconds"),
         f.createIntCounter("ucastWrites", "Total number of unicast datagram socket write calls.", "writes"),
         f.createLongCounter("ucastWriteBytes", "Total number of bytes sent out on unicast datagram sockets.", "bytes"),
         f.createIntCounter("ucastRetransmits", "Total number of unicast datagram socket retransmissions", "writes"),
 
         f.createIntCounter("mcastReads", "Total number of multicast datagrams received", "datagrams"),
         f.createLongCounter("mcastReadBytes", "Total number of bytes received in multicast datagrams", "bytes"),
-        f.createLongCounter("mcastWriteTime", "Total amount of time, in nanoseconds, spent in multicast datagram socket write calls.", "nanoseconds"),
         f.createIntCounter("mcastWrites", "Total number of multicast datagram socket write calls.", "writes"),
         f.createLongCounter("mcastWriteBytes", "Total number of bytes sent out on multicast datagram sockets.", "bytes"),
         f.createIntCounter("mcastRetransmits", "Total number of multicast datagram socket retransmissions", "writes"),
@@ -462,67 +466,6 @@ public class DistributionStats implements DMStats {
         f.createLongCounter("batchCopyTime", "Total amount of time, in nanoseconds, spent copying messages for batched transmission", "nanoseconds"),
         f.createLongCounter("batchFlushTime", "Total amount of time, in nanoseconds, spent flushing batched messages to the network", "nanoseconds"),
 
-        f.createIntCounter("ucastFlushes", "Total number of flushes of the unicast datagram protocol, prior to sending a multicast message", "flushes"),
-        f.createLongCounter("ucastFlushTime", "Total amount of time, in nanoseconds, spent waiting for acknowledgements for outstanding unicast datagram messages", "nanoseconds"),
-
-        f.createIntCounter("flowControlRequests", "Total number of flow control credit requests sent to other processes", "messages"),
-        f.createIntCounter("flowControlResponses", "Total number of flow control credit responses sent to a requestor", "messages"),
-        f.createIntGauge("flowControlWaitsInProgress", "Number of threads blocked waiting for flow-control recharges from other processes", "threads"),
-        f.createLongCounter("flowControlWaitTime", "Total amount of time, in nanoseconds, spent waiting for other processes to recharge the flow of control meter", "nanoseconds"),
-        f.createIntGauge("flowControlThrottleWaitsInProgress", "Number of threads blocked waiting due to flow-control throttle requests from other members", "threads"),
-
-        f.createLongGauge("jgNAKACKreceivedMessages", "Number of received messages awaiting stability in NAKACK", "messages"),
-        f.createLongGauge("jgNAKACKsentMessages", "Number of sent messages awaiting stability in NAKACK", "messages"),
-
-        f.createLongGauge("jgQueuedMessages", "Number of messages queued by transport and awaiting processing", "messages"),
-
-        f.createLongGauge("jgUNICASTreceivedMessages", "Number of received messages awaiting receipt of prior messages", "messages"),
-        f.createLongGauge("jgUNICASTsentMessages", "Number of un-acked normal priority messages", "messages"),
-        f.createLongGauge("jgUNICASTsentHighPriorityMessages", "Number of un-acked high priority messages", "messages"),
-
-        f.createLongCounter("jgUNICASTdataReceivedTime", "Amount of time spent in JGroups UNICAST send", "nanoseconds"),
-        f.createLongCounter("jgSTABLEsuspendTime", "Amount of time JGroups STABLE is suspended", "nanoseconds"),
-        f.createLongCounter("jgSTABLEmessages", "Number of STABLE messages received by JGroups", "messages"),
-        f.createLongCounter("jgSTABLEmessagesSent", "Number of STABLE messages sent by JGroups", "messages"),
-        f.createLongCounter("jgSTABILITYmessages", "Number of STABILITY messages received by JGroups", "messages"),
-
-//        f.createLongCounter("jgUDPupTime", "Time spent in JGroups UDP processing up events", "nanoseconds"),
-//        f.createLongCounter("jgUDPdownTime", "Time spent in JGroups UDP processing down events", "nanoseconds"),
-//        f.createLongCounter("jgNAKACKupTime", "Time spent in JGroups NAKACK processing up events", "nanoseconds"),
-//        f.createLongCounter("jgNAKACKdownTime", "Time spent in JGroups NAKACK processing down events", "nanoseconds"),
-//        f.createLongCounter("jgUNICASTupTime", "Time spent in JGroups UNICAST processing up events", "nanoseconds"),
-//        f.createLongCounter("jgUNICASTdownTime", "Time spent in JGroups UNICAST processing down events", "nanoseconds"),
-//        f.createLongCounter("jgSTABLEupTime", "Time spent in JGroups STABLE processing up events", "nanoseconds"),
-//        f.createLongCounter("jgSTABLEdownTime", "Time spent in JGroups STABLE processing down events", "nanoseconds"),
-//        f.createLongCounter("jgFRAG2upTime", "Time spent in JGroups FRAG2 processing up events", "nanoseconds"),
-//        f.createLongCounter("jgFRAG2downTime", "Time spent in JGroups FRAG2 processing down events", "nanoseconds"),
-//        f.createLongCounter("jgGMSupTime", "Time spent in JGroups GMS processing up events", "nanoseconds"),
-//        f.createLongCounter("jgGMSdownTime", "Time spent in JGroups GMS processing down events", "nanoseconds"),
-//        f.createLongCounter("jgFCupTime", "Time spent in JGroups FC processing up events", "nanoseconds"),
-//        f.createLongCounter("jgFCdownTime", "Time spent in JGroups FC processing down events", "nanoseconds"),
-//        f.createLongCounter("jgDirAckupTime", "Time spent in JGroups DirAck processing up events", "nanoseconds"),
-//        f.createLongCounter("jgDirAckdownTime", "Time spent in JGroups DirAck processing down events", "nanoseconds"),
-//
-//        f.createLongCounter("jgVIEWSYNCdownTime", "Time spent in JGroups VIEWSYNC processing down events", "nanoseconds"),
-//        f.createLongCounter("jgVIEWSYNCupTime", "Time spent in JGroups VIEWSYNC processing up events", "nanoseconds"),
-//        f.createLongCounter("jgFDdownTime", "Time spent in JGroups FD processing down events", "nanoseconds"),
-//        f.createLongCounter("jgFDupTime", "Time spent in JGroups FD processing up events", "nanoseconds"),
-//        f.createLongCounter("jgTCPGOSSIPdownTime", "Time spent in JGroups TCPGOSSIP processing down events", "nanoseconds"),
-//        f.createLongCounter("jgTCPGOSSIPupTime", "Time spent in JGroups TCPGOSSIP processing up events", "nanoseconds"),
-//        f.createLongCounter("jgDISCOVERYdownTime", "Time spent in JGroups DISCOVERY processing down events", "nanoseconds"),
-//        f.createLongCounter("jgDISCOVERYupTime", "Time spent in JGroups DISCOVERY processing up events", "nanoseconds"),
-
-        f.createLongCounter("jgDownTime", "Down Time spent in JGroups stacks", "nanoseconds"),
-        f.createLongCounter("jgUpTime", "Up Time spent in JGroups stacks", "nanoseconds"),
-        f.createLongCounter("jChannelUpTime", "Up Time spent in JChannel including jgroup stack", "nanoseconds"),
-
-        f.createLongCounter("jgFCsendBlocks", "Number of times JGroups FC halted sends due to backpressure", "events"),
-        f.createLongCounter("jgFCautoRequests", "Number of times JGroups FC automatically sent replenishment requests", "events"),
-        f.createLongCounter("jgFCreplenish", "Number of times JGroups FC received replenishments from receivers", "messages"),
-        f.createLongCounter("jgFCresumes", "Number of times JGroups FC resumed sends due to backpressure", "events"),
-        f.createLongCounter("jgFCsentCredits", "Number of times JGroups FC sent credits to a sender", "events"),
-        f.createLongCounter("jgFCsentThrottleRequests","Number of times JGroups FC sent throttle requests to a sender", "events"),
-
         f.createIntGauge("asyncSocketWritesInProgress", "Current number of non-blocking socket write calls in progress.", "writes"),
         f.createIntCounter("asyncSocketWrites", "Total number of non-blocking socket write calls completed.", "writes"),
         f.createIntCounter("asyncSocketWriteRetries", "Total number of retries needed to write a single block of data using non-blocking socket write calls.", "writes"),
@@ -548,13 +491,9 @@ public class DistributionStats implements DMStats {
         f.createIntGauge("asyncThreadInProgress", asyncThreadInProgressDesc, "operations"),
         f.createIntCounter("asyncThreadCompleted", asyncThreadCompletedDesc, "operations"),
         f.createLongCounter("asyncThreadTime", asyncThreadTimeDesc, "nanoseconds", false),
-        f.createLongCounter("jgNAKACKwaits", "Number of delays created by NAKACK sent_msgs overflow", "events"),
 
         f.createLongGauge("receiversTO", "Number of receiver threads owned by non-receiver threads in other members.", "threads"),
         f.createLongGauge("receiversTO2", "Number of receiver threads owned in turn by receiver threads in other members", "threads"),
-
-        f.createLongCounter("jgFragmentationsPerformed", "Number of message fragmentation operations performed", "operations"),
-        f.createLongCounter("jgFragmentsCreated", "Number of message fragments created", "fragments"),
 
         f.createLongGauge("receiverDirectBufferSize", receiverDirectBufferSizeDesc, "bytes"),
         f.createLongGauge("receiverHeapBufferSize", receiverHeapBufferSizeDesc, "bytes"),
@@ -594,6 +533,26 @@ public class DistributionStats implements DMStats {
         f.createIntGauge("elders", eldersDesc, "elders"),
         f.createIntGauge("initialImageMessagesInFlight", initialImageMessagesInFlightDesc, "messages"),
         f.createIntGauge("initialImageRequestsInProgress", initialImageRequestsInProgressDesc, "requests"),
+        
+        //For GMSHealthMonitor
+        f.createLongCounter("heartbeatRequestsSent", heartbeatRequestsSentDesc, "messages"),
+        f.createLongCounter("heartbeatRequestsReceived", heartbeatRequestsReceivedDesc, "messages"),
+        f.createLongCounter("heartbeatsSent", heartbeatsSentDesc, "messages"),
+        f.createLongCounter("heartbeatsReceived", heartbeatsReceivedDesc, "messages"),
+        f.createLongCounter("suspectsSent", suspectsSentDesc, "messages"),
+        f.createLongCounter("suspectsReceived", suspectsReceivedDesc, "messages"),
+        f.createLongCounter("finalCheckRequestsSent", finalCheckRequestsSentDesc, "messages"),
+        f.createLongCounter("finalCheckRequestsReceived", finalCheckRequestsReceivedDesc, "messages"),
+        f.createLongCounter("finalCheckResponsesSent", finalCheckResponsesSentDesc, "messages"),
+        f.createLongCounter("finalCheckResponsesReceived", finalCheckResponsesReceivedDesc, "messages"),
+        f.createLongCounter("tcpFinalCheckRequestsSent", tcpFinalCheckRequestsSentDesc, "nanoseconds", false),
+        f.createLongCounter("tcpFinalCheckRequestsReceived", tcpFinalCheckRequestsReceivedDesc, "nanoseconds", false),
+        f.createLongCounter("tcpFinalCheckResponsesSent", tcpFinalCheckResponsesSentDesc, "nanoseconds", false),
+        f.createLongCounter("tcpFinalCheckResponsesReceived", tcpFinalCheckResponsesReceivedDesc, "nanoseconds", false),
+        f.createLongCounter("udpFinalCheckRequestsSent", udpFinalCheckRequestsSentDesc, "messages"),
+        f.createLongCounter("udpFinalCheckRequestsReceived", udpFinalCheckRequestsReceivedDesc, "messages"),
+        f.createLongCounter("udpFinalCheckResponsesSent", udpFinalCheckResponsesSentDesc, "messages"),
+        f.createLongCounter("udpFinalCheckResponsesReceived", udpFinalCheckResponsesReceivedDesc, "messages"),
       }
     );
 
@@ -662,14 +621,12 @@ public class DistributionStats implements DMStats {
 
     ucastReadsId = type.nameToId("ucastReads");
     ucastReadBytesId = type.nameToId("ucastReadBytes");
-    ucastWriteTimeId = type.nameToId("ucastWriteTime");
     ucastWritesId = type.nameToId("ucastWrites");
     ucastWriteBytesId = type.nameToId("ucastWriteBytes");
     ucastRetransmitsId = type.nameToId("ucastRetransmits");
 
     mcastReadsId = type.nameToId("mcastReads");
     mcastReadBytesId = type.nameToId("mcastReadBytes");
-    mcastWriteTimeId = type.nameToId("mcastWriteTime");
     mcastWritesId = type.nameToId("mcastWrites");
     mcastWriteBytesId = type.nameToId("mcastWriteBytes");
     mcastRetransmitsId = type.nameToId("mcastRetransmits");
@@ -697,41 +654,6 @@ public class DistributionStats implements DMStats {
     batchWaitTimeId = type.nameToId("batchWaitTime");
     batchFlushTimeId = type.nameToId("batchFlushTime");
 
-    ucastFlushesId = type.nameToId("ucastFlushes");
-    ucastFlushTimeId = type.nameToId("ucastFlushTime");
-
-    flowControlRequestsId = type.nameToId("flowControlRequests");
-    flowControlResponsesId = type.nameToId("flowControlResponses");
-    flowControlWaitsInProgressId = type.nameToId("flowControlWaitsInProgress");
-    flowControlThrottleWaitsInProgressId = type.nameToId("flowControlThrottleWaitsInProgress");
-
-    jgUNICASTdataReceivedTimeId = type.nameToId("jgUNICASTdataReceivedTime");
-
-    jgReceivedMessagesSizeId = type.nameToId("jgNAKACKreceivedMessages");
-    jgSentMessagesPoolSizeId = type.nameToId("jgNAKACKsentMessages");
-    jgQueuedMessagesSizeId = type.nameToId("jgQueuedMessages");
-    jgSTABLEsuspendTimeId = type.nameToId("jgSTABLEsuspendTime");
-    jgSTABLEmessagesId = type.nameToId("jgSTABLEmessages");
-    jgSTABLEmessagesSentId = type.nameToId("jgSTABLEmessagesSent");
-    jgSTABILITYmessagesId = type.nameToId("jgSTABILITYmessages");
-    jgFragmentationsPerformedId = type.nameToId("jgFragmentationsPerformed");
-    jgFragmentsCreatedId = type.nameToId("jgFragmentsCreated");
-
-    jgUcastReceivedMessagesSizeId = type.nameToId("jgUNICASTreceivedMessages");
-    jgUcastSentMessagesSizeId = type.nameToId("jgUNICASTsentMessages");
-    jgUcastSentHighPriorityMessagesSizeId = type.nameToId("jgUNICASTsentHighPriorityMessages");
-
-    jgDownTimeId = type.nameToId("jgDownTime");
-    jgUpTimeId = type.nameToId("jgUpTime");
-    jChannelUpTimeId = type.nameToId("jChannelUpTime");
-
-    jgFCsendBlocksId = type.nameToId("jgFCsendBlocks");
-    jgFCautoRequestsId = type.nameToId("jgFCautoRequests");
-    jgFCreplenishId = type.nameToId("jgFCreplenish");
-    jgFCresumesId = type.nameToId("jgFCresumes");
-    jgFCsentCreditsId = type.nameToId("jgFCsentCredits");
-    jgFCsentThrottleRequestsId = type.nameToId("jgFCsentThrottleRequests");
-
     asyncSocketWritesInProgressId = type.nameToId("asyncSocketWritesInProgress");
     asyncSocketWritesId = type.nameToId("asyncSocketWrites");
     asyncSocketWriteRetriesId = type.nameToId("asyncSocketWriteRetries");
@@ -757,8 +679,6 @@ public class DistributionStats implements DMStats {
     asyncThreadInProgressId = type.nameToId("asyncThreadInProgress");
     asyncThreadCompletedId = type.nameToId("asyncThreadCompleted");
     asyncThreadTimeId = type.nameToId("asyncThreadTime");
-
-    jgNAKACKwaitsId = type.nameToId("jgNAKACKwaits");
 
     threadOwnedReceiversId = type.nameToId("receiversTO");
     threadOwnedReceiversId2 = type.nameToId("receiversTO2");
@@ -801,6 +721,26 @@ public class DistributionStats implements DMStats {
     eldersId = type.nameToId("elders");
     initialImageMessagesInFlightId = type.nameToId("initialImageMessagesInFlight");
     initialImageRequestsInProgressId = type.nameToId("initialImageRequestsInProgress");
+    
+    //For GMSHealthMonitor
+    heartbeatRequestsSentId = type.nameToId("heartbeatRequestsSent");
+    heartbeatRequestsReceivedId = type.nameToId("heartbeatRequestsReceived");
+    heartbeatsSentId = type.nameToId("heartbeatsSent");
+    heartbeatsReceivedId = type.nameToId("heartbeatsReceived");
+    suspectsSentId = type.nameToId("suspectsSent");
+    suspectsReceivedId = type.nameToId("suspectsReceived");
+    finalCheckRequestsSentId = type.nameToId("finalCheckRequestsSent");
+    finalCheckRequestsReceivedId = type.nameToId("finalCheckRequestsReceived");
+    finalCheckResponsesSentId = type.nameToId("finalCheckResponsesSent");
+    finalCheckResponsesReceivedId = type.nameToId("finalCheckResponsesReceived");
+    tcpFinalCheckRequestsSentId = type.nameToId("tcpFinalCheckRequestsSent");
+    tcpFinalCheckRequestsReceivedId = type.nameToId("tcpFinalCheckRequestsReceived");
+    tcpFinalCheckResponsesSentId = type.nameToId("tcpFinalCheckResponsesSent");
+    tcpFinalCheckResponsesReceivedId = type.nameToId("tcpFinalCheckResponsesReceived");
+    udpFinalCheckRequestsSentId = type.nameToId("udpFinalCheckRequestsSent");
+    udpFinalCheckRequestsReceivedId = type.nameToId("udpFinalCheckRequestsReceived");
+    udpFinalCheckResponsesSentId = type.nameToId("udpFinalCheckResponsesSent");
+    udpFinalCheckResponsesReceivedId = type.nameToId("udpFinalCheckResponsesReceived");
   }
 
   /** The Statistics object that we delegate most behavior to */
@@ -1228,36 +1168,27 @@ public class DistributionStats implements DMStats {
     stats.incLong(bufferAcquireTimeId, ts-start);
   }
 
-  public long startUcastWrite() {
-    return getStatTime();
-  }
-  public void endUcastWrite(long start, int bytesWritten) {
-    if (enableClockStats) {
-      stats.incLong(ucastWriteTimeId, getStatTime()-start);
-    }
+  public void incUcastWriteBytes(int bytesWritten) {
     stats.incInt(ucastWritesId, 1);
     stats.incLong(ucastWriteBytesId, bytesWritten);
   }
 
-  public long startMcastWrite() {
-    return getStatTime();
-  }
-  public void endMcastWrite(long start, int bytesWritten) {
+  public void incMcastWriteBytes(int bytesWritten) {
     stats.incInt(mcastWritesId, 1);
-    if (enableClockStats) {
-      stats.incLong(mcastWriteTimeId, getStatTime()-start);
-    }
     stats.incLong(mcastWriteBytesId, bytesWritten);
   }
 
   public int getMcastWrites() {
     return stats.getInt(mcastWritesId);
   }
-  public void incMcastReadBytes(long amount) {
+  public int getMcastReads() {
+    return stats.getInt(mcastReadsId);
+  }
+  public void incMcastReadBytes(int amount) {
     stats.incInt(mcastReadsId, 1);
     stats.incLong(mcastReadBytesId, amount);
   }
-  public void incUcastReadBytes(long amount) {
+  public void incUcastReadBytes(int amount) {
     stats.incInt(ucastReadsId, 1);
     stats.incLong(ucastReadBytesId, amount);
   }
@@ -1791,172 +1722,6 @@ public class DistributionStats implements DMStats {
   public int getMcastRetransmits() {
     return stats.getInt(mcastRetransmitsId);
   }
-  public long startUcastFlush() {
-    stats.incInt(ucastFlushesId, 1);
-    return getStatTime();
-  }
-  public void endUcastFlush(long start) {
-    if (enableClockStats) {
-      stats.incLong(ucastFlushTimeId, getStatTime()-start);
-    }
-  }
-  public void incFlowControlRequests() {
-    stats.incInt(flowControlRequestsId, 1);
-  }
-  public void incFlowControlResponses() {
-    stats.incInt(flowControlResponsesId, 1);
-  }
-  public long startFlowControlWait() {
-    stats.incInt(flowControlWaitsInProgressId, 1);
-    return 1;
-  }
-  public void endFlowControlWait(long start) {
-    stats.incInt(flowControlWaitsInProgressId, -1);
-  }
-  public long startFlowControlThrottleWait() {
-    stats.incInt(flowControlThrottleWaitsInProgressId, 1);
-    return 1;
-  }
-
-  public void endFlowControlThrottleWait(long start) {
-    stats.incInt(flowControlThrottleWaitsInProgressId, -1);
-  }
-  public void incJgUNICASTdataReceived(long amount) {
-    stats.incLong(jgUNICASTdataReceivedTimeId, amount);
-  }
-
-//  public void incjgUDPup(long amount) {
-//    stats.incLong(jgUDPupId, amount);
-//  }
-//  public void incjgUDPdown(long amount) {
-//    stats.incLong(jgUDPdownId, amount);
-//  }
-//  public void incjgNAKACKup(long amount) {
-//    stats.incLong(jgNAKACKupId, amount);
-//  }
-//  public void incjgNAKACKdown(long amount) {
-//    stats.incLong(jgNAKACKdownId, amount);
-//  }
-//  public void incjgUNICASTup(long amount) {
-//    stats.incLong(jgUNICASTupId, amount);
-//  }
-//  public void incjgUNICASTdown(long amount) {
-//    stats.incLong(jgUNICASTdownId, amount);
-//  }
-//  public void incjgSTABLEup(long amount) {
-//    stats.incLong(jgSTABLEupId, amount);
-//  }
-//  public void incjgSTABLEdown(long amount) {
-//    stats.incLong(jgSTABLEdownId, amount);
-//  }
-//  public void incjgFRAG2up(long amount) {
-//    stats.incLong(jgFRAG2upId, amount);
-//  }
-//  public void incjgFRAG2down(long amount) {
-//    stats.incLong(jgFRAG2downId, amount);
-//  }
-//  public void incjgGMSup(long amount) {
-//    stats.incLong(jgGMSupId, amount);
-//  }
-//  public void incjgGMSdown(long amount) {
-//    stats.incLong(jgGMSdownId, amount);
-//  }
-//  public void incjgFCup(long amount) {
-//    stats.incLong(jgFCupId, amount);
-//  }
-//  public void incjgFCdown(long amount) {
-//    stats.incLong(jgFCdownId, amount);
-//  }
-
-  public void setJgQueuedMessagesSize(long amount) {
-    stats.setLong(jgQueuedMessagesSizeId, amount);
-  }
-
-  public void setJgSTABLEreceivedMessagesSize(long amount) {
-    stats.setLong(jgReceivedMessagesSizeId, amount);
-  }
-  public void setJgSTABLEsentMessagesSize(long amount) {
-    stats.setLong(jgSentMessagesPoolSizeId, amount);
-  }
-  public void incJgSTABLEsuspendTime(long value)
-  {
-    stats.incLong(jgSTABLEsuspendTimeId, value);
-  }
-  public void incJgSTABLEmessages(long value)
-  {
-    stats.incLong(jgSTABLEmessagesId, value);
-  }
-  public void incJgSTABLEmessagesSent(long value)
-  {
-    stats.incLong(jgSTABLEmessagesSentId, value);
-  }
-  public void incJgSTABILITYmessages(long value)
-  {
-    stats.incLong(jgSTABILITYmessagesId, value);
-  }
-  public void incJgFragmentationsPerformed() {
-    stats.incLong(jgFragmentationsPerformedId, 1);
-  }
-  public void incJgFragmentsCreated(long numFrags) {
-    stats.incLong(jgFragmentsCreatedId, numFrags);
-  }
-  public void setJgUNICASTreceivedMessagesSize(long amount) {
-    stats.setLong(jgUcastReceivedMessagesSizeId, amount);
-  }
-  public void setJgUNICASTsentMessagesSize(long amount) {
-    stats.setLong(jgUcastSentMessagesSizeId, amount);
-  }
-  public void setJgUNICASTsentHighPriorityMessagesSize(long amount) {
-    stats.setLong(jgUcastSentHighPriorityMessagesSizeId, amount);
-  }
-
-
-  public void incjgDownTime(long value)
-  {
-    stats.incLong(jgDownTimeId, value);
-  }
-
-  public void incjgUpTime(long value)
-  {
-    stats.incLong(jgUpTimeId, value);
-  }
-
-  public void incjChannelUpTime(long value)
-  {
-    stats.incLong(jChannelUpTimeId, value);
-  }
-
-  public void incJgFCsendBlocks(long value)
-  {
-   stats.incLong(jgFCsendBlocksId, value);
-
-  }
-  public void incJgFCautoRequests(long value)
-  {
-    stats.incLong(jgFCautoRequestsId, value);
-
-  }
-  public void incJgFCreplenish(long value)
-  {
-    stats.incLong(jgFCreplenishId, value);
-
-  }
-  public void incJgFCresumes(long value)
-  {
-   stats.incLong(jgFCresumesId, value);
-  }
-  public void incJgFCsentCredits(long value)
-  {
-    stats.incLong(jgFCsentCreditsId, value);
-  }
-  public void incJgFCsentThrottleRequests(long value)
-  {
-    stats.incLong(jgFCsentThrottleRequestsId, value);
-  }
-
-  public void incJgNAKACKwaits(long value) {
-    stats.incLong(jgNAKACKwaitsId, value);
-  }
 
   public void incThreadOwnedReceivers(long value, int dominoCount)
   {
@@ -2133,4 +1898,154 @@ public class DistributionStats implements DMStats {
   public Statistics getStats(){
     return stats;
   }
+  
+  //For GMSHealthMonitor
+  public long getHeartbeatRequestsSent() {
+    return this.stats.getLong(heartbeatRequestsSentId);
+  }
+  
+  public void incHeartbeatRequestsSent() {
+    this.stats.incLong(heartbeatRequestsSentId, 1L);
+  }
+  
+  public long getHeartbeatRequestsReceived() {
+    return this.stats.getLong(heartbeatRequestsReceivedId);
+  }
+  
+  public void incHeartbeatRequestsReceived() {
+    this.stats.incLong(heartbeatRequestsReceivedId, 1L);
+  }
+  
+  public long getHeartbeatsSent() {
+    return this.stats.getLong(heartbeatsSentId);
+  }
+  
+  public void incHeartbeatsSent() {
+    this.stats.incLong(heartbeatsSentId, 1L);
+  }
+  
+  public long getHeartbeatsReceived() {
+    return this.stats.getLong(heartbeatsReceivedId);
+  }
+  
+  public void incHeartbeatsReceived() {
+    this.stats.incLong(heartbeatsReceivedId, 1L);
+  }
+  
+  public long getSuspectsSent() {
+    return this.stats.getLong(suspectsSentId);
+  }
+  
+  public void incSuspectsSent() {
+    this.stats.incLong(suspectsSentId, 1L);
+  }
+
+  public long getSuspectsReceived() {
+    return this.stats.getLong(suspectsReceivedId);
+  }
+  
+  public void incSuspectsReceived() {
+    this.stats.incLong(suspectsReceivedId, 1L);
+  }
+  
+  public long getFinalCheckRequestsSent() {
+    return this.stats.getLong(finalCheckRequestsSentId);
+  }
+  
+  public void incFinalCheckRequestsSent() {
+    this.stats.incLong(finalCheckRequestsSentId, 1L);
+  }
+  
+  public long getFinalCheckRequestsReceived() {
+    return this.stats.getLong(finalCheckRequestsReceivedId);
+  }
+  
+  public void incFinalCheckRequestsReceived() {
+    this.stats.incLong(finalCheckRequestsReceivedId, 1L);
+  }
+  
+  public long getFinalCheckResponsesSent() {
+    return this.stats.getLong(finalCheckResponsesSentId);
+  }
+  
+  public void incFinalCheckResponsesSent() {
+    this.stats.incLong(finalCheckResponsesSentId, 1L);
+  }
+  
+  public long getFinalCheckResponsesReceived() {
+    return this.stats.getLong(finalCheckResponsesReceivedId);
+  }
+  
+  public void incFinalCheckResponsesReceived() {
+    this.stats.incLong(finalCheckResponsesReceivedId, 1L);
+  }
+  
+///
+  public long getTcpFinalCheckRequestsSent() {
+    return this.stats.getLong(tcpFinalCheckRequestsSentId);
+  }
+  
+  public void incTcpFinalCheckRequestsSent() {
+    this.stats.incLong(tcpFinalCheckRequestsSentId, 1L);
+  }
+  
+  public long getTcpFinalCheckRequestsReceived() {
+    return this.stats.getLong(tcpFinalCheckRequestsReceivedId);
+  }
+  
+  public void incTcpFinalCheckRequestsReceived() {
+    this.stats.incLong(tcpFinalCheckRequestsReceivedId, 1L);
+  }
+  
+  public long getTcpFinalCheckResponsesSent() {
+    return this.stats.getLong(tcpFinalCheckResponsesSentId);
+  }
+  
+  public void incTcpFinalCheckResponsesSent() {
+    this.stats.incLong(tcpFinalCheckResponsesSentId, 1L);
+  }
+  
+  public long getTcpFinalCheckResponsesReceived() {
+    return this.stats.getLong(tcpFinalCheckResponsesReceivedId);
+  }
+  
+  public void incTcpFinalCheckResponsesReceived() {
+    this.stats.incLong(tcpFinalCheckResponsesReceivedId, 1L);
+  }
+ 
+///
+  public long getUdpFinalCheckRequestsSent() {
+    return this.stats.getLong(udpFinalCheckRequestsSentId);
+  }
+  
+  public void incUdpFinalCheckRequestsSent() {
+    this.stats.incLong(udpFinalCheckRequestsSentId, 1L);
+  }
+
+//  UDP final check is implemented using HeartbeatRequestMessage and HeartbeatMessage
+//  So the following code is commented out  
+//  public long getUdpFinalCheckRequestsReceived() {
+//    return this.stats.getLong(udpFinalCheckRequestsReceivedId);
+//  }
+//  
+//  public void incUdpFinalCheckRequestsReceived() {
+//    this.stats.incLong(udpFinalCheckRequestsReceivedId, 1L);
+//  }
+//  
+//  public long getUdpFinalCheckResponsesSent() {
+//    return this.stats.getLong(udpFinalCheckResponsesSentId);
+//  }
+//  
+//  public void incUdpFinalCheckResponsesSent() {
+//    this.stats.incLong(udpFinalCheckResponsesSentId, 1L);
+//  }
+  
+  public long getUdpFinalCheckResponsesReceived() {
+    return this.stats.getLong(udpFinalCheckResponsesReceivedId);
+  }
+  
+  public void incUdpFinalCheckResponsesReceived() {
+    this.stats.incLong(udpFinalCheckResponsesReceivedId, 1L);
+  }
+
 }

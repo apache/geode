@@ -73,6 +73,18 @@ public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRe
     return factory.create();
   }
 
+//  public void testClearWithConcurrentEventsAsync() throws Exception {
+//    int end = 100;
+//    for (int i=0; i<end; i++) {
+//      System.out.println("Starting run #" + i);
+//      super.testClearWithConcurrentEventsAsync();
+//      if (i<(end-1)) {
+//        tearDown();
+//        setUp();
+//      }
+//    }
+//  }
+  
   public void testClearOnNonReplicateWithConcurrentEvents() {}
   
   public void testConcurrentEventsOnNonReplicatedRegion() {}

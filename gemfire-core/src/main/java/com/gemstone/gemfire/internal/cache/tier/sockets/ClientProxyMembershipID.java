@@ -46,8 +46,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * This class represents a ConnectionProxy of the CacheClient
  * 
@@ -104,8 +102,6 @@ public final class ClientProxyMembershipID
 
   protected int uniqueId;
   
-  private transient Version clientVersion;
-
   // private final String proxyIDStr;
   // private final String clientIdStr ;
 
@@ -354,14 +350,13 @@ public final class ClientProxyMembershipID
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException
   {
-    this.clientVersion = InternalDataSerializer.getVersionForDataStream(in);
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
 //    {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}
   }
   
   public Version getClientVersion() {
-    return this.clientVersion;
+    return ((InternalDistributedMember)getDistributedMember()).getVersionObject();
   }
 
   public String getDSMembership()
@@ -406,15 +401,12 @@ public final class ClientProxyMembershipID
   public DistributedMember getDistributedMember()  {
     if (memberId == null) {      
       ByteArrayInputStream bais = new ByteArrayInputStream(identity);
-      DataInputStream dis = new VersionedDataInputStream(bais, clientVersion);
+      DataInputStream dis = new VersionedDataInputStream(bais, Version.CURRENT);
       try {
         memberId = (DistributedMember)DataSerializer.readObject(dis);
       }
       catch (Exception e) {
-        DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-        if(ds != null){
-          logger.error(LocalizedMessage.create(LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_DESERIALIZE_MEMBERSHIP_ID), e);
-        }
+        logger.error(LocalizedMessage.create(LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_DESERIALIZE_MEMBERSHIP_ID), e);
       }
     }
     return memberId;
@@ -482,7 +474,7 @@ public final class ClientProxyMembershipID
   /**
    * call this when the distributed system ID has been modified
    */
-  @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Only applicable in client DS and in that case too multiple instances do not modify it at the same time.")
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Only applicable in client DS and in that case too multiple instances do not modify it at the same time.")
   public void updateID(DistributedMember idm) {
 //    this.transientPort = ((InternalDistributedMember)this.memberId).getPort();
 //    if (this.transientPort == 0) {

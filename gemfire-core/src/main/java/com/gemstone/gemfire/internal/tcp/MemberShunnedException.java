@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.internal.tcp;
 
 import com.gemstone.gemfire.GemFireException;
+import com.gemstone.gemfire.distributed.DistributedMember;
 
 /**
  * MemberShunnedException may be thrown to prevent ack-ing a message
@@ -28,13 +29,13 @@ import com.gemstone.gemfire.GemFireException;
 public class MemberShunnedException extends GemFireException
 {
   private static final long serialVersionUID = -8453126202477831557L;
-  private Stub member;
+  private DistributedMember member;
   
   /**
    * constructor
    * @param member the member that was shunned
    */
-  public MemberShunnedException(Stub member) {
+  public MemberShunnedException(DistributedMember member) {
     super("");
     this.member = member;
   }
@@ -42,7 +43,7 @@ public class MemberShunnedException extends GemFireException
   /**
    * @return the member that was shunned
    */
-  public Stub getShunnedMember() {
+  public DistributedMember getShunnedMember() {
     return this.member;
   }
 

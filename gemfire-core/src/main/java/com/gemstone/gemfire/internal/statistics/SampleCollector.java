@@ -37,8 +37,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Captures sample of statistics. The SampleCollector contains maps of 
  * StatisticsTypes to ResourceTypes and Statistics instances to 
@@ -148,7 +146,7 @@ public class SampleCollector {
    * @param config defines the configuration for the StatArchiveHandler
    * @param nanosTimeStamp the nanos time stamp to initialize stat archiver with
    */
-  @SuppressFBWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="There is never more than one SampleCollector instance.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="There is never more than one SampleCollector instance.") 
   public void initialize(StatArchiveHandlerConfig config, long nanosTimeStamp) {
     synchronized (SampleCollector.class) {
       instance = this;

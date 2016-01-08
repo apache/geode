@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 //import java.io.*;
 //import java.util.Set;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /** Provides a set of APIs to help the
  * implementation of the <code>CacheLoader</code> load method. An instance of <code>LoaderHelper</code>

@@ -252,22 +252,19 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.Chunk;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.TransformUtils;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * A Region whose total storage is split into chunks of data (partitions) which
  * are copied up to a configurable level (for high availability) and placed on
  * multiple VMs for improved performance and increased storage capacity.
  * 
- * @since 5.0
- * @author Rohit Reja, Tushar Apshankar, Girish Thombare, Negi Tribhuwan, Greg
- *         Passmore, Mitch Thomas, Bruce Schuchardt
  */
 public class PartitionedRegion extends LocalRegion implements 
   CacheDistributionAdvisee, QueryExecutor {
@@ -3313,78 +3310,6 @@ public class PartitionedRegion extends LocalRegion implements
      }
   }
 
-  /**
-    * override the one in LocalRegion since we don't need to do getDeserialized.
-    */
-   @Override Object nonTxnFindObject(KeyInfo keyInfo, boolean isCreate,
-      boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD,
-      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) 
-      throws TimeoutException, CacheLoaderException
-  {
-    Object result = null;
-    FutureResult thisFuture = new FutureResult(getCancelCriterion());
-    Future otherFuture = (Future)this.getFutures.putIfAbsent(keyInfo.getKey(), thisFuture);
-    // only one thread can get their future into the map for this key at a time
-    if (otherFuture != null) {
-      try {
-        result = otherFuture.get();
-        if (result != null) {
-          if (!preferCD && result instanceof CachedDeserializable) {
-            CachedDeserializable cd = (CachedDeserializable)result;
-            // fix for bug 43023
-            if (!disableCopyOnRead && isCopyOnRead()) {
-              result = cd.getDeserializedWritableCopy(null, null);
-            } else {
-              result = cd.getDeserializedForReading();
-            }
-            
-          } else if (!disableCopyOnRead) {
-            result = conditionalCopy(result);
-          }
-          
-        //For sqlf since the deserialized value is nothing but chunk
-          // before returning the found value increase its use count
-         /* if(GemFireCacheImpl.sqlfSystem() && result instanceof Chunk) {
-            if(!((Chunk)result).use()) {
-              return null;
-            }
-          }*/
-           // what was a miss is now a hit
-          RegionEntry re = null;
-          if (isCreate) {
-            re = basicGetEntry(keyInfo.getKey());
-            updateStatsForGet(re, true);
-          }
-          return result;
-        }
-        // if value == null, try our own search/load
-      }
-      catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        // TODO check a CancelCriterion here?
-        return null;
-      }
-      catch (ExecutionException e) {
-        // unexpected since there is no background thread
-        AssertionError err = new AssertionError("unexpected exception");
-        err.initCause(err);
-        throw err;
-      }
-    }
-    try {
-      result = getSharedDataView().findObject(keyInfo, this, true/*isCreate*/, generateCallbacks,
-          localValue, disableCopyOnRead, preferCD, null, null, false, allowReadFromHDFS);
-    }
-    finally {
-      if (result instanceof Chunk) {
-        thisFuture.set(null);
-      } else {
-        thisFuture.set(result);
-      }
-      this.getFutures.remove(keyInfo.getKey());
-    }
-    return result;
-  }
   /**
    * override the one in LocalRegion since we don't need to do getDeserialized.
    */
@@ -9968,7 +9893,7 @@ public class PartitionedRegion extends LocalRegion implements
     }
 
     public void memberSuspect(InternalDistributedMember id,
-        InternalDistributedMember whoSuspected) {
+        InternalDistributedMember whoSuspected, String reason) {
     }
     
     public synchronized void memberDeparted(InternalDistributedMember id,

@@ -136,7 +136,7 @@ public final class ProductUseLog implements MembershipListener {
 
   @Override
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
   }
 
   @Override

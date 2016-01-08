@@ -103,7 +103,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Implementation of DataStore (DS) for a PartitionedRegion (PR). This will be
@@ -119,7 +119,7 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQue
  * @author tapshank
  * @author Mitch Thomas
  */
-public final class PartitionedRegionDataStore implements HasCachePerfStats
+public class PartitionedRegionDataStore implements HasCachePerfStats
 {
   private static final Logger logger = LogService.getLogger();
   

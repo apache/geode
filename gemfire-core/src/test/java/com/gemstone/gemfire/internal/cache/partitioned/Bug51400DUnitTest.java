@@ -93,8 +93,7 @@ public class Bug51400DUnitTest extends DistributedTestCase {
   public static Integer createServerCache(Integer mcastPort,
       Integer maxMessageCount) throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", String.valueOf(mcastPort));
+    props.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
 //    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
 //    props.setProperty("log-level", "fine");
 //    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
@@ -172,10 +171,9 @@ public class Bug51400DUnitTest extends DistributedTestCase {
     int maxQSize = 5;
     // Set infinite ack interval so that the queue will not be drained.
     int ackInterval = Integer.MAX_VALUE;
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
 
     int port1 = (Integer) server0.invoke(Bug51400DUnitTest.class,
-        "createServerCache", new Object[] { mcastPort, maxQSize });
+        "createServerCache", new Object[] { maxQSize });
 
     client1.invoke(Bug51400DUnitTest.class, "createClientCache",
         new Object[] { getServerHostName(Host.getHost(0)), new Integer[]{port1}, ackInterval});

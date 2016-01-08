@@ -42,7 +42,7 @@ public final class ShutdownMessage extends HighPriorityDistributionMessage imple
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
   

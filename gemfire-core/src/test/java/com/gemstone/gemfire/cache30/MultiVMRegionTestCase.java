@@ -8229,12 +8229,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     return !o1.equals(o2);
   }
   
-  protected AsyncInvocation performOps4ClearWithConcurrentEvents(VM vm, final int opNum) {
+  protected AsyncInvocation performOps4ClearWithConcurrentEvents(VM vm, final int msToRun) {
     SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
       public void run() {
         try {
           boolean includeClear = true;
-          doOpsLoop(opNum, includeClear);
+          doOpsLoop(msToRun, includeClear);
         } catch (CacheException e) {
           fail("while performing concurrent operations", e);
         }
@@ -8494,14 +8494,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         public void run() {
           final long count = CCRegion.getTombstoneCount();
           assertEquals("expected "+numEntries+" tombstones", numEntries, count);
+          // ensure that some GC is performed - due to timing it may not
+          // be the whole batch, but some amount should be done
           WaitCriterion waitForExpiration = new WaitCriterion() {
             @Override
             public boolean done() {
-              return CCRegion.getTombstoneCount() ==  0;
+              return CCRegion.getTombstoneCount() < numEntries;
             }
             @Override
             public String description() {
-              return "Waiting for all tombstones to expire.  There are now " + CCRegion.getTombstoneCount()
+              return "Waiting for some tombstones to expire.  There are now " + CCRegion.getTombstoneCount()
                 + " tombstones left out of " + count + " initial tombstones";
             }
           };
@@ -9036,222 +9038,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
   }
 
-  
-  public void versionTestRegionVersionVectors() throws Exception {
-    // this is just a quick set of unit tests for basic RVV functionality
-    
-    final String local = DistributedTestCase.getIPLiteral();
-    InternalDistributedMember server1 = new InternalDistributedMember(local, 101);
-    InternalDistributedMember server2 = new InternalDistributedMember(local, 102);
-    InternalDistributedMember server3 = new InternalDistributedMember(local, 103);
-    InternalDistributedMember server4 = new InternalDistributedMember(local, 104);
-
-    RegionVersionVector rv1 = null;
-    
-    // (a) Test that an exception is mended when the versions that are missing are
-    // added
-    rv1 = new VMRegionVersionVector(server1);
-    rv1.recordVersion(server2, 1);
-    rv1.recordVersion(server2, 5);
-    rv1.recordVersion(server2, 8);
-    getLogWriter().info("for test (a) formed this RVV: " + rv1.fullToString());
-    // there should now be two exceptions:  1-5 and 5-8
-    assertEquals(8, rv1.getVersionForMember(server2));
-    assertEquals(2, rv1.getExceptionCount(server2));
-    rv1.recordVersion(server2, 3);
-    getLogWriter().info("for test (a) RVV is now: " + rv1.fullToString());
-    assertEquals(8, rv1.getVersionForMember(server2));
-    assertEquals(2, rv1.getExceptionCount(server2));
-    rv1.recordVersion(server2, 4);
-    rv1.recordVersion(server2, 2);
-    getLogWriter().info("for test (a) RVV is now: " + rv1.fullToString());
-    assertEquals(1, rv1.getExceptionCount(server2));
-    rv1.recordVersion(server2, 6);
-    rv1.recordVersion(server2, 7);
-    getLogWriter().info("for test (a) RVV is now: " + rv1.fullToString());
-    assertEquals(0, rv1.getExceptionCount(server2));
-    
-    // (b) Test the contains() operation
-    rv1 = new VMRegionVersionVector(server1);
-    rv1.recordVersion(server2, 1);
-    rv1.recordVersion(server2, 5);
-    rv1.recordVersion(server2, 8);
-    rv1.recordVersion(server2, 10);
-    getLogWriter().info("for test (b) formed this RVV: " + rv1.fullToString());
-    assertTrue(rv1.contains(server2, 1));
-    assertTrue(rv1.contains(server2, 5));
-    assertTrue(rv1.contains(server2, 8));
-    assertTrue(rv1.contains(server2, 10));
-    assertFalse(rv1.contains(server2, 2));
-    assertFalse(rv1.contains(server2, 3));
-    assertFalse(rv1.contains(server2, 4));
-    assertFalse(rv1.contains(server2, 9));
-    assertFalse(rv1.contains(server2, 11));
-    rv1.recordVersion(server2, 3);
-    getLogWriter().info("for test (b) RVV is now: " + rv1.fullToString());
-    assertTrue(rv1.contains(server2, 3));
-    rv1.recordVersion(server2, 2);
-    getLogWriter().info("for test (b) RVV is now: " + rv1.fullToString());
-    assertTrue(rv1.contains(server2, 2));
-    assertTrue(rv1.contains(server2, 3));
-    rv1.recordVersion(server2, 4);
-    getLogWriter().info("for test (b) RVV is now: " + rv1.fullToString());
-    assertTrue(rv1.contains(server2, 1));
-    assertTrue(rv1.contains(server2, 2));
-    assertTrue(rv1.contains(server2, 3));
-    assertTrue(rv1.contains(server2, 4));
-    assertTrue(rv1.contains(server2, 5));
-    rv1.recordVersion(server2, 11);
-    getLogWriter().info("for test (b) RVV is now: " + rv1.fullToString());
-    assertTrue(rv1.contains(server2, 11));
-    assertTrue(rv1.contains(server2, 10));
-    getLogWriter().info("for test (b) RVV is now: " + rv1.fullToString());
-    rv1.recordVersion(server2, 6);
-    assertTrue(rv1.contains(server2, 2));
-    assertTrue(rv1.contains(server2, 5));
-    assertTrue(rv1.contains(server2, 6));
-    assertFalse(rv1.contains(server2, 7));
-    assertTrue(rv1.contains(server2, 8));
-    rv1.recordVersion(server2, 7);
-    getLogWriter().info("for test (b) RVV is now: " + rv1.fullToString());
-    assertTrue(rv1.contains(server2, 7));
-    rv1.recordVersion(server2, 9);
-    getLogWriter().info("for test (b) RVV is now: " + rv1.fullToString());
-    assertTrue(rv1.contains(server2, 9));
-    assertTrue(rv1.getExceptionCount(server2) == 0);
-    assertTrue(rv1.contains(server2, 8));
-    
-    
-    // Test RVV comparisons for GII Delta
-    rv1 = new VMRegionVersionVector(server1);
-    rv1.recordVersion(server2, 1);
-    rv1.recordVersion(server2, 4);
-    rv1.recordVersion(server2, 8);
-    rv1.recordVersion(server2, 9);
-    rv1.recordVersion(server2, 10);
-    rv1.recordVersion(server2, 11);
-    rv1.recordVersion(server2, 12);
-    
-    rv1.recordVersion(server3, 2);
-    rv1.recordVersion(server3, 3);
-    rv1.recordVersion(server3, 4);
-    rv1.recordVersion(server3, 6);
-    rv1.recordVersion(server3, 7);
-    
-    RegionVersionVector rv2 = rv1.getCloneForTransmission();
-    getLogWriter().info("rv1 is " + rv1.fullToString());
-    getLogWriter().info("rv2 is " + rv2.fullToString());
-    assertFalse(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    assertFalse(rv2.isNewerThanOrCanFillExceptionsFor(rv1));
-
-    rv1.recordVersion(server2, 6);
-    assertTrue(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    rv2.recordVersion(server2, 6);
-    assertFalse(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-
-    // fill an exception gap
-    rv1.recordVersion(server2, 5);
-    assertTrue(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    rv2.recordVersion(server2, 5);
-    assertFalse(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    rv1.recordVersion(server2, 7);
-    assertTrue(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    rv2.recordVersion(server2, 7);
-    assertFalse(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-
-    // add a more recent revision
-    rv1.recordVersion(server3, 8);
-    assertTrue(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    rv2.recordVersion(server3, 8);
-    assertFalse(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-
-    // fill another exception gap
-    rv1.recordVersion(server3, 5);
-    assertTrue(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    rv2.recordVersion(server3, 5);
-    assertFalse(rv1.isNewerThanOrCanFillExceptionsFor(rv2));
-    
-    // test that old members are removed from the vector
-    InternalDistributedMember server5 = new InternalDistributedMember(local, 105);
-    rv1 = new VMRegionVersionVector(server1);
-    rv1.recordVersion(server2, 1);
-    rv1.recordVersion(server3, 1);
-    rv1.recordVersion(server4, 1);
-    rv1.recordVersion(server5, 1);
-    rv1.memberDeparted(server2, false);
-    rv1.memberDeparted(server4, true);
-    assertTrue(rv1.containsMember(server2));
-    assertTrue(rv1.containsMember(server3));
-    assertTrue(rv1.containsMember(server4));
-    Set retain = new HashSet();
-      retain.add(server2);  // still have data from server2
-      retain.add(server3);  // still have data from server3
-      // no data found from server4 in region
-      retain.add(server5);  // still have data from server5
-    rv1.removeOldMembers(retain);
-    assertFalse(rv1.containsMember(server4));
-
-    rv1.memberDeparted(server3, false); // {server2, server3(departed), server5}
-
-    // Now test that departed members are transferred with GII.  We simulate
-    // a new server, server6, doing a GII from server1
-
-    InternalDistributedMember server6 = new InternalDistributedMember(local, 106);
-    RegionVersionVector giiReceiverRVV = new VMRegionVersionVector(server6);
-    // the gii request will cause server1 to clone its RVV and send it to server6
-    rv2 = rv1.getCloneForTransmission();
-    // serialize/deserialize to mimic sending the rvv in a message
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
-    DataOutputStream out = new DataOutputStream(baos);
-    DataSerializer.writeObject(rv2, out);
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream in = new DataInputStream(bais);
-    RegionVersionVector transmittedVector = (RegionVersionVector)DataSerializer.readObject(in);
-    // record the provider's rvv in the receiver of the image
-    giiReceiverRVV.recordVersions(transmittedVector);
-    // removedMembers in the receiver should hold {server4, server3}.  Simulate
-    // another member departure to kick out server4
-    assertTrue(giiReceiverRVV.containsMember(server2));
-    assertTrue(giiReceiverRVV.containsMember(server5));
-    assertTrue(giiReceiverRVV.containsMember(server3));
-    assertTrue(giiReceiverRVV.isDepartedMember(server3));
-
-    // unit test for bit-set boundary.  First boundary is 3/4 of bitset width,
-    // which is the amount dumped to the exceptions list when the bitset becomes full
-    rv1 = new VMRegionVersionVector(server1);
-    long bitSetRollPoint = RegionVersionHolder.BIT_SET_WIDTH + 1;
-    long boundary = RegionVersionHolder.BIT_SET_WIDTH * 3 / 4;
-    for (long i=1; i<boundary; i++) {
-      rv1.recordVersion(server2, i);
-      assertTrue(rv1.contains(server2, i));
-    }
-    assertFalse(rv1.contains(server2, boundary+1));
-    
-    RegionVersionVector.DEBUG = true;
-
-    rv1.recordVersion(server2, bitSetRollPoint);
-    rv1.recordVersion(server2, bitSetRollPoint+1); // bitSet should be rolled at this point
-    RegionVersionHolder h = (RegionVersionHolder)rv1.getMemberToVersion().get(server2);
-    long versionBoundary = h.getBitSetVersionForTesting();
-    assertEquals("expected holder bitset version to roll to this value", boundary-1, versionBoundary);
-    assertFalse(rv1.contains(server2, bitSetRollPoint-1));
-    assertTrue(rv1.contains(server2, bitSetRollPoint));
-    assertTrue(rv1.contains(server2, bitSetRollPoint+1));
-    assertFalse(rv1.contains(server2, bitSetRollPoint+2));
-    
-    assertTrue(rv1.contains(server2, boundary-1));
-    assertFalse(rv1.contains(server2, boundary));
-    assertFalse(rv1.contains(server2, boundary+1));
-
-    // now test the merge
-    getLogWriter().info("testing merge for " + rv1.fullToString());
-    assertEquals(1, rv1.getExceptionCount(server2)); // one exception from boundary-1 to bitSetRollPoint
-    assertFalse(rv1.contains(server2, bitSetRollPoint-1));
-    assertTrue(rv1.contains(server2, bitSetRollPoint));
-    assertTrue(rv1.contains(server2, bitSetRollPoint+1));
-    assertFalse(rv1.contains(server2, bitSetRollPoint+2));
-  
-  }
   
   
   protected boolean waitForAsyncProcessing(AsyncInvocation async, String expectedError) {

@@ -40,14 +40,11 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionExistsException;
 import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.HARegion;
@@ -57,13 +54,9 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.org.jgroups.Event;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.stack.Protocol;
 
 import dunit.DistributedTestCase;
 import dunit.Host;
-import dunit.SerializableCallable;
 import dunit.VM;
 
 /**
@@ -185,53 +178,6 @@ public abstract class CacheTestCase extends DistributedTestCase {
     }
   }
 
-  /**
-   * Creates the <code>Cache</code> for this test that has its own mcast group
-   */
-  public Cache createMcastCache() {
-    synchronized(CacheTestCase.class) {
-      try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        Cache c = CacheFactory.create(getMcastSystem()); 
-        cache = c;
-      } catch (CacheExistsException e) {
-        fail("the cache already exists", e);
-
-      } catch (RuntimeException ex) {
-        throw ex;
-
-      } catch (Exception ex) {
-        fail("Checked exception while initializing cache??", ex);
-      } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-      }
-      return cache;
-    }
-  }
-
-  /**
-   * Creates the <code>Cache</code> for this test that has its own mcast group
-   */
-  public Cache createMcastCache(int jgroupsPort) {
-    synchronized(CacheTestCase.class) {
-      try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        Cache c = CacheFactory.create(getMcastSystem(jgroupsPort)); 
-        cache = c;
-      } catch (CacheExistsException e) {
-        fail("the cache already exists", e);
-
-      } catch (RuntimeException ex) {
-        throw ex;
-
-      } catch (Exception ex) {
-        fail("Checked exception while initializing cache??", ex);
-      } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-      }
-      return cache;
-    }
-  }
   /**
    * Sets this test up with a CacheCreation as its cache.
    * Any existing cache is closed. Whoever calls this must also call finishCacheXml

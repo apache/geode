@@ -37,8 +37,8 @@ public class OffHeapHelper {
    * Note even if o is sqlf off-heap byte[] or byte[][] the heap form will be created.
    */
   public static Object getHeapForm(Object o) {
-    if (o instanceof OffHeapReference) {
-      return ((OffHeapReference) o).getValueAsDeserializedHeapObject();
+    if (o instanceof StoredObject) {
+      return ((StoredObject) o).getValueAsDeserializedHeapObject();
     } else {
       return o;
     }
@@ -106,9 +106,9 @@ public class OffHeapHelper {
    */
   public static boolean releaseWithNoTracking(@Released Object o) {
     if (o instanceof MemoryChunkWithRefCount) {
-      SimpleMemoryAllocatorImpl.skipRefCountTracking();
+      ReferenceCountHelper.skipRefCountTracking();
       ((MemoryChunkWithRefCount) o).release();
-      SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+      ReferenceCountHelper.unskipRefCountTracking();
       return true;
     } else {
       return false;
@@ -121,9 +121,9 @@ public class OffHeapHelper {
    */
   public static boolean releaseAndTrackOwner(@Released final Object o, final Object owner) {
     if (o instanceof MemoryChunkWithRefCount) {
-      SimpleMemoryAllocatorImpl.setReferenceCountOwner(owner);
+      ReferenceCountHelper.setReferenceCountOwner(owner);
       ((MemoryChunkWithRefCount) o).release();
-      SimpleMemoryAllocatorImpl.setReferenceCountOwner(null);
+      ReferenceCountHelper.setReferenceCountOwner(null);
       return true;
     } else {
       return false;

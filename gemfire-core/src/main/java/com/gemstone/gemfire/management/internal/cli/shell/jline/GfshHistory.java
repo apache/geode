@@ -18,7 +18,12 @@ package com.gemstone.gemfire.management.internal.cli.shell.jline;
 
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
 
-import jline.History;
+import jline.console.history.MemoryHistory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Overrides jline.History to add History without newline characters.
@@ -26,14 +31,17 @@ import jline.History;
  * @author Abhishek Chaudhari
  * @since 7.0
  */
-public class GfshHistory extends History {
+public class GfshHistory extends MemoryHistory {
+
+  // Pattern which is intended to pick up any params containing the word 'password'.
+  private static final Pattern passwordRe = Pattern.compile("(--[^=\\s]*password[^=\\s]*\\s*=\\s*)([^\\s]*)");
+
   // let the history from history file get added initially
   private boolean autoFlush = true;
-  
-  @Override
+
   public void addToHistory(String buffer) {
     if (isAutoFlush()) {
-      super.addToHistory(toHistoryLoggable(buffer));
+      super.add(toHistoryLoggable(buffer));
     }
   }
 
@@ -46,6 +54,10 @@ public class GfshHistory extends History {
   }
   
   public static String toHistoryLoggable(String buffer) {
-    return PreprocessorUtils.trim(buffer, false).getString();
+    String trimmed = PreprocessorUtils.trim(buffer, false).getString();
+
+    Matcher matcher = passwordRe.matcher(trimmed);
+    String sanitized = matcher.replaceAll("$1*****");
+    return sanitized;
   }
 }

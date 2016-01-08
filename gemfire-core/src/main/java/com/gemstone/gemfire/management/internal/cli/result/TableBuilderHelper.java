@@ -31,6 +31,8 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 public class TableBuilderHelper {
 
+  private static final int SCREEN_WIDTH_MARGIN_BUFFER = 5;
+
   public static class Column implements Comparable<Column>{
     int length;
     int originalIndex;
@@ -85,21 +87,19 @@ public class TableBuilderHelper {
       int totalExtra = 0;
       for (Column s : stringList) {
         int newLength = totalLength + s.length;
-        if (newLength > screenWidth) {
+        // Ensure that the spaceLeft is never < 2 which would prevent displaying a trimmed value
+        // even when there is space available on the screen.
+        if (newLength + SCREEN_WIDTH_MARGIN_BUFFER > screenWidth) {
           s.markForTrim = true;
           totalExtra += s.length;
-          if (spaceLeft == 0)
+          if (spaceLeft == 0) {
             spaceLeft = screenWidth - totalLength;
+          }
         }
         totalLength = newLength;
       }
 
-      Collections.sort(stringList, new Comparator<Column>() {
-        @Override
-        public int compare(Column o1, Column o2) {
-          return o1.originalIndex - o2.originalIndex;
-        }
-      });
+      Collections.sort(stringList, (o1, o2) -> o1.originalIndex - o2.originalIndex);
 
       //calculate trimmed width for columns marked for
       //distribute the trimming as per percentage
@@ -129,7 +129,7 @@ public class TableBuilderHelper {
           throw new TooManyColumnsException(
               "Computed ColSize="
                   + colSize
-                  + " Set RESULT_VIEWER to external (uses less commands for enabling horizontal scroll) to see wider results");
+                  + " Set RESULT_VIEWER to external. This uses the 'less' command (with horizontal scrolling) to see wider results");
         totalLength += colSize;
         index++;
       }

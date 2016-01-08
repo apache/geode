@@ -53,6 +53,7 @@ public class PdxCopyOnReadQueryJUnitTest {
     CacheFactory cf = new CacheFactory();
     cf.setPdxSerializer(serializer);
     cf.setPdxReadSerialized(false);
+    cf.set("mcast-port", "0");
     cache = cf.create();
     cache.setCopyOnRead(true);
     

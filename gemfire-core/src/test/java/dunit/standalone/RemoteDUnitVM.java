@@ -135,11 +135,10 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
     
   }
 
-  public void shutDownVM(boolean disconnect, boolean runShutdownHook)
-      throws RemoteException {
+  public void shutDownVM() throws RemoteException {
+    ChildVM.stopVM();
   }
 
-  public void disconnectVM()
-  throws RemoteException {
+  public void disconnectVM() throws RemoteException {
   }
 }

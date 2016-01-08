@@ -170,7 +170,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       catch (Exception e) {
         try {
           // not in the file system, try the classpath
-          properties.load(AbstractLauncher.class.getResourceAsStream(DistributedSystem.PROPERTY_FILE));
+          properties.load(AbstractLauncher.class.getResourceAsStream(DistributedSystem.getPropertiesFile()));
         }
         catch (Exception ignore) {
           // not in the file system or the classpath; gemfire.properties does not exist

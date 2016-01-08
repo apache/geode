@@ -3545,21 +3545,26 @@ public class DataSerializableJUnitTest extends TestCase
   }
 
   public void testObjectEnum() throws Exception {
-    System.getProperties().setProperty("DataSerializer.DEBUG", "true");
-    DAY_OF_WEEK e = DAY_OF_WEEK.SUN;
-    MONTH m = MONTH.FEB;
-    DataOutputStream out = getDataOutput();
-    DataSerializer.writeObject(e, out);
-    DataSerializer.writeObject(m, out);
-    out.flush();
-
-    DataInput in = getDataInput();
-    DAY_OF_WEEK e2 = (DAY_OF_WEEK)DataSerializer.readObject(in);
-    MONTH m2 = (MONTH)DataSerializer.readObject(in);
-    assertEquals(e, e2);
-    assertEquals(m, m2);
-    // Make sure there's nothing left in the stream
-    assertEquals(0, in.skipBytes(1));
+    final String propName = "DataSerializer.DEBUG";
+    System.setProperty(propName, "true");
+    try {
+      DAY_OF_WEEK e = DAY_OF_WEEK.SUN;
+      MONTH m = MONTH.FEB;
+      DataOutputStream out = getDataOutput();
+      DataSerializer.writeObject(e, out);
+      DataSerializer.writeObject(m, out);
+      out.flush();
+  
+      DataInput in = getDataInput();
+      DAY_OF_WEEK e2 = (DAY_OF_WEEK)DataSerializer.readObject(in);
+      MONTH m2 = (MONTH)DataSerializer.readObject(in);
+      assertEquals(e, e2);
+      assertEquals(m, m2);
+      // Make sure there's nothing left in the stream
+      assertEquals(0, in.skipBytes(1));
+    } finally {
+      System.getProperties().remove(propName);
+    }
   }
   
   /**

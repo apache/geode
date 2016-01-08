@@ -76,7 +76,7 @@ public class ManagementMembershipListener implements MembershipListener {
   }
 
   @Override
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected) {
+  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {
 
     if (logger.isDebugEnabled()) {
       logger.debug("ManagementMembershipListener member suspected .. {}", id.getId());
@@ -85,7 +85,7 @@ public class ManagementMembershipListener implements MembershipListener {
       if (logger.isDebugEnabled()) {
         logger.debug("Suspecting member {}", id.getId());
       }
-      service.getFederatingManager().suspectMember(id, whoSuspected);
+      service.getFederatingManager().suspectMember(id, whoSuspected, reason);
     }
   }
 

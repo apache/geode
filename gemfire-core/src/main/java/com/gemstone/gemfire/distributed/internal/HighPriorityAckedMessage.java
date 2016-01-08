@@ -66,8 +66,12 @@ public final class HighPriorityAckedMessage extends HighPriorityDistributionMess
   public HighPriorityAckedMessage() {
     super();
     InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    this.originDm = (DistributionManager)ds.getDistributionManager();
-    this.id = this.originDm.getDistributionManagerId();
+    if (ds != null) {
+      this.originDm = (DistributionManager)ds.getDistributionManager();
+    }
+    if (this.originDm != null) {
+      this.id = this.originDm.getDistributionManagerId();
+    }
   }
   
   /**

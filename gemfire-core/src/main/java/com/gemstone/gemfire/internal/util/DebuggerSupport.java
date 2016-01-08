@@ -20,8 +20,6 @@ package com.gemstone.gemfire.internal.util;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  *
  * @author Eric Zoerner
@@ -38,7 +36,7 @@ public abstract class DebuggerSupport  {
     waitForJavaDebugger(logger, null);
   }
   
-  @SuppressFBWarnings(value="IL_INFINITE_LOOP", justification="Endless loop is for debugging purposes.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="IL_INFINITE_LOOP", justification="Endless loop is for debugging purposes.") 
   public static void waitForJavaDebugger(LogWriterI18n logger, String extraLogMsg) {
     boolean cont = false;
     String msg = ":";

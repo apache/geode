@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
@@ -44,6 +46,8 @@ import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.NotificationHub.NotificationHubListener;
 
+import static com.jayway.awaitility.Awaitility.*;
+import static org.hamcrest.Matchers.*;
 import dunit.AsyncInvocation;
 import dunit.DistributedTestCase;
 import dunit.SerializableRunnable;
@@ -938,10 +942,9 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
         // Even though we got 15 notification only 10 should be there due to
         // eviction attributes set in notification region
 
-        assertEquals(10, member1NotifRegion.size());
-        assertEquals(10, member2NotifRegion.size());
-        assertEquals(10, member3NotifRegion.size());
-
+        waitAtMost(5, TimeUnit.SECONDS).untilCall(to(member1NotifRegion).size(), equalTo(10));
+        waitAtMost(5, TimeUnit.SECONDS).untilCall(to(member2NotifRegion).size(), equalTo(10));
+        waitAtMost(5, TimeUnit.SECONDS).untilCall(to(member3NotifRegion).size(), equalTo(10));
       }
     });
 

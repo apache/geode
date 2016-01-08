@@ -613,7 +613,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
         // bug #50683 - secondary durable queue retains all GC messages
         cf.set("durable-client-id", ""+vm.getPid());
         cf.set("durable-client-timeout", "" + 200);
-        cf.set("log-level", "fine");
+        cf.set("log-level", getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
         crf.setConcurrencyChecksEnabled(ccEnabled);

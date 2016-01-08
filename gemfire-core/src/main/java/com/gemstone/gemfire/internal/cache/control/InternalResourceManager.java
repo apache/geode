@@ -89,7 +89,7 @@ public class InternalResourceManager implements ResourceManager {
 
   final GemFireCacheImpl cache;
   
-  private final LoadProbe loadProbe;
+  private LoadProbe loadProbe;
   
   private final ResourceManagerStats stats;
   private final ResourceAdvisor resourceAdvisor;
@@ -165,7 +165,7 @@ public class InternalResourceManager implements ResourceManager {
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<ResourceType, ResourceMonitor>();
     tempMonitors.put(ResourceType.HEAP_MEMORY, new HeapMemoryMonitor(this, cache, this.stats));
-    tempMonitors.put(ResourceType.OFFHEAP_MEMORY, new OffHeapMemoryMonitor(this, cache, this.stats));
+    tempMonitors.put(ResourceType.OFFHEAP_MEMORY, new OffHeapMemoryMonitor(this, cache, cache.getOffHeapStore(), this.stats));
     this.resourceMonitors = Collections.unmodifiableMap(tempMonitors);
     
     // Initialize the listener sets so that it only needs to be done once
@@ -543,6 +543,15 @@ public class InternalResourceManager implements ResourceManager {
 
   public LoadProbe getLoadProbe() {
     return this.loadProbe;
+  }
+
+  /**
+   * This method is test purposes only.
+   */
+  public LoadProbe setLoadProbe(LoadProbe probe) {
+    LoadProbe old = this.loadProbe;
+    this.loadProbe = probe;
+    return old;
   }
 
   /* (non-Javadoc)

@@ -444,7 +444,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Queueing event ({}): {}", sender.getId(), (statistics.getEventsQueued() + 1), gatewayEvent);
     }
-    if (!sender.beforeEnque(gatewayEvent)) {
+    if (!sender.beforeEnqueue(gatewayEvent)) {
       if (logger.isDebugEnabled()) {
         logger.debug("Event {} is not added to queue.", gatewayEvent);
       }
@@ -683,7 +683,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       catch (Exception e) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_FAILED_TO_BE_INITIALIZED_0, gatewayEvent), e);
       }
-      if (!sender.beforeEnque(gatewayEvent)) {
+      if (!sender.beforeEnqueue(gatewayEvent)) {
         statistics.incEventsFiltered();
         return;
       }

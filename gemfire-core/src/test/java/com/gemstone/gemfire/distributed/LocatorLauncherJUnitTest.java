@@ -17,14 +17,9 @@
 package com.gemstone.gemfire.distributed;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
@@ -34,8 +29,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import joptsimple.OptionException;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 /**
  * The LocatorLauncherJUnitTest class is a test suite of test cases for testing the contract and functionality of
@@ -52,46 +50,13 @@ import org.junit.experimental.categories.Category;
  * @since 7.0
  */
 @Category(UnitTest.class)
-public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
+public class LocatorLauncherJUnitTest {
 
-  @Test
-  public void testBuilderParseArguments() throws Exception {
-    String expectedWorkingDirectory = this.temporaryFolder.getRoot().getCanonicalPath().toString();
-    Builder builder = new Builder();
-
-    builder.parseArguments("start", "memberOne", "--bind-address", InetAddress.getLocalHost().getHostAddress(),
-      "--dir", expectedWorkingDirectory, "--hostname-for-clients", "Tucows", "--pid", "1234", "--port", "11235",
-        "--redirect-output", "--force", "--debug");
-
-    assertEquals(Command.START, builder.getCommand());
-    assertEquals(InetAddress.getLocalHost(), builder.getBindAddress());
-    assertEquals(expectedWorkingDirectory, builder.getWorkingDirectory());
-    assertEquals("Tucows", builder.getHostnameForClients());
-    assertEquals(1234, builder.getPid().intValue());
-    assertEquals(11235, builder.getPort().intValue());
-    assertTrue(builder.getRedirectOutput());
-    assertTrue(builder.getForce());
-    assertTrue(builder.getDebug());
-  }
-
-  @Test
-  public void testBuilderParseArgumentsWithCommandInArguments() throws Exception {
-    String expectedWorkingDirectory = this.temporaryFolder.getRoot().getCanonicalPath().toString();
-    Builder builder = new Builder();
-
-    builder.parseArguments("start", "--dir=" + expectedWorkingDirectory, "--port", "12345", "memberOne");
-
-    assertEquals(Command.START, builder.getCommand());
-    assertFalse(Boolean.TRUE.equals(builder.getDebug()));
-    assertFalse(Boolean.TRUE.equals(builder.getForce()));
-    assertFalse(Boolean.TRUE.equals(builder.getHelp()));
-    assertNull(builder.getBindAddress());
-    assertNull(builder.getHostnameForClients());
-    assertEquals("12345", builder.getMemberName());
-    assertNull(builder.getPid());
-    assertEquals(expectedWorkingDirectory, builder.getWorkingDirectory());
-    assertEquals(12345, builder.getPort().intValue());
-  }
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  
+  @Rule
+  public final TestName testName = new TestName();
 
   @Test(expected = IllegalArgumentException.class)
   public void testBuilderParseArgumentsWithNonNumericPort() {
@@ -307,59 +272,6 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testSetAndGetWorkingDirectory() throws Exception {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath().toString();
-    Builder builder = new Builder();
-
-    assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(null));
-    assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(""));
-    assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory("  "));
-    assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(rootFolder));
-    assertEquals(rootFolder, builder.getWorkingDirectory());
-    assertSame(builder, builder.setWorkingDirectory(null));
-    assertEquals(AbstractLauncher.DEFAULT_WORKING_DIRECTORY, builder.getWorkingDirectory());
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testSetWorkingDirectoryToFile() throws IOException {
-    File tmpFile = File.createTempFile("tmp", "file");
-
-    assertNotNull(tmpFile);
-    assertTrue(tmpFile.isFile());
-
-    tmpFile.deleteOnExit();
-
-    try {
-      new Builder().setWorkingDirectory(tmpFile.getCanonicalPath());
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Locator"), expected.getMessage());
-      assertTrue(expected.getCause() instanceof FileNotFoundException);
-      assertEquals(tmpFile.getCanonicalPath(), expected.getCause().getMessage());
-      throw expected;
-    }
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testSetWorkingDirectoryToNonExistingDirectory() {
-    try {
-      new Builder().setWorkingDirectory("/path/to/non_existing/directory");
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Locator"), expected.getMessage());
-      assertTrue(expected.getCause() instanceof FileNotFoundException);
-      assertEquals("/path/to/non_existing/directory", expected.getCause().getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
   public void testBuild() throws Exception {
     Builder builder = new Builder();
 
@@ -396,26 +308,6 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
   }
 
   @Test
-  public void testBuildWithMemberNameSetInGemfirePropertiesOnStart() throws Exception {
-    System.setProperty("user.dir", this.temporaryFolder.getRoot().getCanonicalPath());
-    
-    Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty(DistributionConfig.NAME_NAME, "locator123");
-    File gemfirePropertiesFile = writeGemFirePropertiesToFile(gemfireProperties, "gemfire.properties",
-      String.format("Test gemfire.properties file for %1$s.%2$s.", getClass().getSimpleName(),
-        "testBuildWithMemberNameSetInGemfirePropertiesOnStart"));
-
-    assertNotNull(gemfirePropertiesFile);
-    assertTrue(gemfirePropertiesFile.isFile());
-
-    LocatorLauncher launcher = new Builder().setCommand(Command.START).setMemberName(null).build();
-
-    assertNotNull(launcher);
-    assertEquals(Command.START, launcher.getCommand());
-    assertNull(launcher.getMemberName());
-  }
-
-  @Test
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, "locatorXYZ");
 
@@ -427,33 +319,5 @@ public class LocatorLauncherJUnitTest extends CommonLauncherTestSuite {
     assertNotNull(launcher);
     assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
     assertNull(launcher.getMemberName());
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void testBuildWithNoMemberNameOnStart() throws Exception {
-    System.setProperty("user.dir", this.temporaryFolder.getRoot().getCanonicalPath());
-    try {
-      new Builder().setCommand(Command.START).build();
-    }
-    catch (IllegalStateException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE.toLocalizedString("Locator"),
-        expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void testBuildWithMismatchingCurrentAndWorkingDirectoryOnStart() throws Exception {
-    try {
-      new Builder().setCommand(Command.START)
-        .setMemberName("memberOne")
-        .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath().toString())
-        .build();
-    }
-    catch (IllegalStateException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-        .toLocalizedString("Locator"), expected.getMessage());
-      throw expected;
-    }
   }
 }

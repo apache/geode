@@ -53,6 +53,18 @@ public class CopyOnWriteWeakHashMap<K,V> extends AbstractMap<K, V> {
     map = Collections.unmodifiableMap(tmp);
     return result;
   }
+  
+  public synchronized V putIfAbsent(K key, V value) {
+    V oldValue = map.get(key);
+    if(oldValue != null) {
+      return oldValue;
+    }
+    
+    WeakHashMap<K, V> tmp = new WeakHashMap<K, V>(map);
+    V result = tmp.put(key, value);
+    map = Collections.unmodifiableMap(tmp);
+    return result;
+  }
 
 
 

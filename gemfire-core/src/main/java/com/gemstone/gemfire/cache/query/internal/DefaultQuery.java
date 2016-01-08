@@ -360,6 +360,7 @@ public class DefaultQuery implements Query {
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook.doTestHook(1);
         }
+
         result = qe.executeQuery(this, parameters, null);
         // For local queries returning pdx objects wrap the resultset with ResultsCollectionPdxDeserializerWrapper
         // which deserializes these pdx objects.
@@ -382,6 +383,7 @@ public class DefaultQuery implements Query {
         // starts on the Local Buckets.
         queryMonitor.monitorQueryThread(Thread.currentThread(), this);
       }
+
       context.setCqQueryContext(this.isCqQuery);
       result = executeUsingContext(context);
       //Only wrap/copy results when copy on read is set and an index is used
@@ -552,7 +554,6 @@ public class DefaultQuery implements Query {
   public Object executeUsingContext(ExecutionContext context)
   throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryObserver observer = QueryObserverHolder.getInstance();
-
     long startTime = CachePerfStats.getStatTime();
     TXStateProxy tx = null;
     if (!((GemFireCacheImpl)this.cache).isClient()) { // fixes bug 42294
@@ -562,6 +563,10 @@ public class DefaultQuery implements Query {
       observer.startQuery(this);
       observer.beforeQueryEvaluation(compiledQuery, context);
       Object results = null;
+      
+      if (DefaultQuery.testHook != null) {
+        DefaultQuery.testHook.doTestHook(6);
+      }
       try {
         // two-pass evaluation.
         // first pre-compute dependencies, cached in the context.
@@ -990,7 +995,6 @@ public class DefaultQuery implements Query {
   public Object execute(RegionFunctionContext context, Object[] parameters)
       throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-
     Object result = null;
 
     // Supported only with RegionFunctionContext

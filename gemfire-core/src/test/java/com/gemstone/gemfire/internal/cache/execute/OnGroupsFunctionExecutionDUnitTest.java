@@ -181,7 +181,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         int count = 0;
         synchronized (OnGroupsFunction.class) {
         	count = f.invocationCount;
-            f.invocationCount = 0;
+        //    f.invocationCount = 0;
 		}
         
         return count;
@@ -746,7 +746,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         } else {
           e.execute(new OnGroupsFunction()).getResult();
         }
-        return null;
+        return null;    
       }
     });
     verifyAndResetInvocationCount(server0, 1);
@@ -1235,5 +1235,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
       }
     };
     DistributedTestCase.waitForCriterion(wc2, 30000, 1000, true);
+    resetInvocationCount(server0);
+    resetInvocationCount(server1);
+    resetInvocationCount(server2);
   }
 }

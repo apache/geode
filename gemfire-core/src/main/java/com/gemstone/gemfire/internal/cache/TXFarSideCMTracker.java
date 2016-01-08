@@ -211,7 +211,7 @@ public class TXFarSideCMTracker
         public void memberJoined(InternalDistributedMember id) {
         }
         public void memberSuspect(InternalDistributedMember id,
-            InternalDistributedMember whoSuspected) {
+            InternalDistributedMember whoSuspected, String reason) {
         }
         public void memberDeparted(InternalDistributedMember id, boolean crashed) {
           if (memberId.equals(id)) {

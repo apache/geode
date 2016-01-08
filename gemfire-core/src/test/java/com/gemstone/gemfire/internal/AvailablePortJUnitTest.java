@@ -69,4 +69,6 @@ public class AvailablePortJUnitTest {
     socket.bind(new InetSocketAddress((InetAddress)null, port));
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
   }
+  
+  // multicast availability is tested in JGroupsMessengerJUnitTest
 }

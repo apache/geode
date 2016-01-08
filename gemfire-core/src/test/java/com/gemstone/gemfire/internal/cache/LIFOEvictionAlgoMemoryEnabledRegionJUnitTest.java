@@ -46,6 +46,8 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.internal.cache.lru.LRUClockNode;
+import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 
 /**
  * This is a test verifies region is LIFO enabled by MEMORY verifies correct
@@ -305,6 +307,53 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
       fail("Test failed");
     }
   }
+  
+//Basic checks to validate lifo queue implementation works as expected
+    @Test
+    public void testLIFOQueue() {
+        try {
+            assertNotNull(cache);
+            Region rgn = cache.getRegion(Region.SEPARATOR + regionName);
+            assertNotNull(rgn);
+            //insert data
+            lifoClockHand.appendEntry(new TestLRUNode(1));
+            lifoClockHand.appendEntry(new TestLRUNode(2));
+            lifoClockHand.appendEntry(new TestLRUNode(3));
+            assertTrue(lifoClockHand.size() == 3);
+            //make sure data is removed in LIFO fashion
+            TestLRUNode tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+            assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 3);
+            assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 2);
+            tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+            assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 2);
+            assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 1);
+            tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+            assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 1);
+            assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
+            tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+            assertTrue("No Value - null", tailValue == null);
+            assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
+            //check that entries not available or already evicted are skipped and removed
+            TestLRUNode testlrunode = new TestLRUNode(1);
+            lifoClockHand.appendEntry(testlrunode);
+            testlrunode = new TestLRUNode(2);
+            testlrunode.setEvicted();
+            lifoClockHand.appendEntry(testlrunode);
+            testlrunode = new TestLRUNode(3);
+            testlrunode.setEvicted();
+            lifoClockHand.appendEntry(testlrunode);
+            tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+            assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 1);
+            assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
+            tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+            assertTrue("No Value - null", tailValue == null);
+            assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
+            //TODO : need tests for data still part of transaction 
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+    }
 
   
   // purpose to create object ,size of byteArraySize 
@@ -313,5 +362,75 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
     Arrays.fill(value,(byte)i);
     return value;
   }
+}
+
+//test class for validating LIFO queue
+class TestLRUNode implements LRUClockNode{
+  
+    LRUClockNode next=null;
+    LRUClockNode prev=null;
+    boolean evicted=false;
+    boolean recentlyUsed=false;
+    int value=0;
+    
+  public TestLRUNode(int value){
+      this.value=value;
+  }
+  
+  public int getValue(){ 
+      return value;
+  }
+  
+  public void setNextLRUNode( LRUClockNode next ){
+      this.next=next;
+  }
+  
+  public void setPrevLRUNode( LRUClockNode prev ){
+      this.prev=prev;
+  }
+  
+  public LRUClockNode nextLRUNode(){
+      return next;
+  }
+  
+  public LRUClockNode prevLRUNode(){
+      return prev;
+  }
+
+  public int updateEntrySize(EnableLRU ccHelper){
+      return 0;
+  }
+ 
+  public int updateEntrySize(EnableLRU ccHelper, Object value){
+      return 0;
+  }
+  
+  public int getEntrySize(){
+      return 0;
+  }
+  
+  public boolean testRecentlyUsed(){
+      return recentlyUsed;
+  }
+  
+  public void setRecentlyUsed(){
+      recentlyUsed=true;
+  }
+  
+  public void unsetRecentlyUsed(){
+      recentlyUsed=false;
+  }
+  
+  public void setEvicted(){
+      evicted=true;
+  }
+  
+  public void unsetEvicted(){
+      evicted=false;
+  }
+  
+  public boolean testEvicted(){
+      return evicted;
+  } 
 }
 

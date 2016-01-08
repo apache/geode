@@ -121,7 +121,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       
       logger.info(LocalizedMessage.create(LocalizedStrings.SerialGatewaySenderImpl_STARTED__0, this));
   
-      enqueTempEvents();
+      enqueueTempEvents();
     } finally {
       this.lifeCycleLock.writeLock().unlock();
     }

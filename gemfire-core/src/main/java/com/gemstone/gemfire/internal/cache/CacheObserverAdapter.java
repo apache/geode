@@ -147,4 +147,8 @@ public class CacheObserverAdapter implements CacheObserver {
   public void beforeDeletingEmptyOplog(Oplog emptyOplog)
   {
   }
+  
+  @Override
+  public void beforeShutdownAll() {
+  }
 }

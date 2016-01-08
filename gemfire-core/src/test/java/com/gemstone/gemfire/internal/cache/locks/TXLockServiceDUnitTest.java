@@ -661,7 +661,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
   
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty("log-level", "fine");
+    props.setProperty("log-level", getDUnitLogLevel());
     return props;
   }
 

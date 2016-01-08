@@ -31,4 +31,6 @@ public interface RemoteDUnitVMIF extends Remote {
   MethExecutorResult executeMethodOnClass(String name, String methodName,
       Object[] args) throws RemoteException;
 
+  void shutDownVM() throws RemoteException;
+
 }

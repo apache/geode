@@ -110,7 +110,7 @@ public class AvailablePortHelper {
   public static int[] getRandomAvailableUDPPorts(int count) {
     Set set = new HashSet();
     while (set.size() < count) {
-      int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+      int port = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
       set.add(new Integer(port));
     }
     int[] ports = new int[set.size()];
@@ -125,7 +125,7 @@ public class AvailablePortHelper {
   /**
    * Returns randomly available udp port.
    */
-  public static int getRandomAvailableUDPPort() {
+ public static int getRandomAvailableUDPPort() {
     return getRandomAvailableUDPPorts(1)[0];
   }
   

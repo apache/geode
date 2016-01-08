@@ -94,7 +94,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
   
   private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
   
-  static List<Notification> notifList = new ArrayList<Notification>();
+  static List<Notification> notifList = new ArrayList<>();
   
   static Map<ObjectName , NotificationListener> notificationListenerMap = new HashMap<ObjectName , NotificationListener>();
   
@@ -148,40 +148,47 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
   public void testAlertManagedNodeFirst() throws Exception {
-    
 
     for (VM vm : getManagedNodeList()) {
       createCache(vm);
       warnLevelAlert(vm);
       severeLevelAlert(vm);
-      
     }
+
     VM managingNode = getManagingNode();
+
     createManagementCache(managingNode);
     startManagingNode(managingNode);
-    
     addAlertListener(managingNode);
-      
     checkAlertCount(managingNode, 0, 0);
-    
+
     final DistributedMember managingMember = getMember(managingNode);
-    
+
+    // Before we start we need to ensure that the initial (implicit) SEVERE alert has propagated everywhere.
     for (VM vm : getManagedNodeList()) {
       ensureLoggerState(vm, managingMember, Alert.SEVERE);
-      warnLevelAlert(vm);
-      severeLevelAlert(vm);
     }
-    checkAlertCount(managingNode, 3, 0);
-    resetAlertCounts(managingNode);
+
     setAlertLevel(managingNode, AlertDetails.getAlertLevelAsString(Alert.WARNING));
- 
+
     for (VM vm : getManagedNodeList()) {
       ensureLoggerState(vm, managingMember, Alert.WARNING);
       warnLevelAlert(vm);
       severeLevelAlert(vm);
     }
-    
+
     checkAlertCount(managingNode, 3, 3);
+    resetAlertCounts(managingNode);
+
+    setAlertLevel(managingNode, AlertDetails.getAlertLevelAsString(Alert.SEVERE));
+
+    for (VM vm : getManagedNodeList()) {
+      ensureLoggerState(vm, managingMember, Alert.SEVERE);
+      warnLevelAlert(vm);
+      severeLevelAlert(vm);
+    }
+
+    checkAlertCount(managingNode, 3, 0);
     resetAlertCounts(managingNode);
     
     for (VM vm : getManagedNodeList()) {
@@ -189,7 +196,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
     }
 
     closeCache(managingNode);
-
   }
   
   @SuppressWarnings("serial")
@@ -221,7 +227,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
 
     }
   }
-  
   
   /**
    * Tests each and every operations that is defined on the MemberMXBean
@@ -266,9 +271,9 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
 
     class NotificationHubTestListener implements NotificationListener {
       @Override
-      public void handleNotification(Notification notification, Object handback) {
+      public synchronized void handleNotification(Notification notification, Object handback) {
+        logger.info("Notification received {}", notification);
         notifList.add(notification);
-
       }
     }
 
@@ -291,9 +296,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
                 } else {
                   return false;
                 }
-
               }
-
             }, MAX_WAIT, 500, true);
             for (ObjectName objectName : bean.listMemberObjectNames()) {
               NotificationHubTestListener listener = new NotificationHubTestListener();
@@ -331,7 +334,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
            * added for each member mbean by distributed system mbean One for the
            * added listener in test
            */
-
           assertEquals(2, listener.getNumCounter());
 
           // Raise some notifications
@@ -369,9 +371,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
             } else {
               return false;
             }
-
           }
-
         }, MAX_WAIT, 500, true);
 
         notifList.clear();
@@ -414,11 +414,9 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
               .get(memberMBeanName);
 
           /*
-           * Counter of listener should be 2 . One for default Listener which is
-           * added for each member mbean by distributed system mbean One for the
-           * added listener in test
+           * Counter of listener should be 1 for the default Listener which is
+           * added for each member mbean by distributed system mbean.
            */
-
           assertEquals(1, listener.getNumCounter());
 
         }
@@ -488,7 +486,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
         }
       });
     }
-
   }
   
   /**
@@ -543,7 +540,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
     setAlertLevel(managingNode, AlertDetails.getAlertLevelAsString(Alert.OFF));
     
     for (VM vm : getManagedNodeList()) {
-     // ensureLoggerState(vm, managingMember, Alert.OFF);
+      ensureLoggerState(vm, managingMember, Alert.OFF);
       warnLevelAlert(vm);
       severeLevelAlert(vm);
     }
@@ -609,9 +606,6 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
       });
 
     }
-    // Two Seconds for each member
-    //sleeps to avoid false failures
-    pause(1000 *10);
   }
   
   @SuppressWarnings("serial")
@@ -634,7 +628,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
   @SuppressWarnings("serial")
   public void resetAlertCounts(VM vm1) throws Exception {
     {
-      vm1.invoke(new SerializableCallable("Reset Alert Ccount") {
+      vm1.invoke(new SerializableCallable("Reset Alert Count") {
 
         public Object call() throws Exception {
           AlertNotifListener nt =  AlertNotifListener.getInstance();
@@ -868,8 +862,9 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
     private int severAlertCount = 0;
 
     @Override
-    public void handleNotification(Notification notification, Object handback) {
+    public synchronized void handleNotification(Notification notification, Object handback) {
       assertNotNull(notification);
+      logger.info("Notification received {}", notification);
       Map<String,String> notifUserData = (Map<String,String>)notification.getUserData();
       if (notifUserData.get(JMXNotificationUserData.ALERT_LEVEL).equalsIgnoreCase("warning")) {
         assertEquals(WARNING_LEVEL_MESSAGE,notification.getMessage());

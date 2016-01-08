@@ -287,6 +287,11 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     if (regionCreateArgs.isSetCloningEnabled()) {
       factory.setCloningEnabled(regionCreateArgs.isCloningEnabled());
     }
+    
+    // multicast enabled for replication
+    if (regionCreateArgs.isSetMcastEnabled()) {
+      factory.setMulticastEnabled(regionCreateArgs.isMcastEnabled());
+    }
 
     // Set plugins
     final Set<String> cacheListeners = regionCreateArgs.getCacheListeners();

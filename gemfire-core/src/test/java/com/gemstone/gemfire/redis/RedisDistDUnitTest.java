@@ -21,15 +21,16 @@ import java.util.Random;
 import redis.clients.jedis.Jedis;
 
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.SocketCreator;
 
 import dunit.AsyncInvocation;
+import dunit.DistributedTestCase;
 import dunit.Host;
 import dunit.SerializableCallable;
 import dunit.VM;
 
-public class RedisDistDUnitTest extends CacheTestCase {
+public class RedisDistDUnitTest extends DistributedTestCase {
 
   public static final String TEST_KEY = "key";
   public static int pushes = 200;
@@ -42,6 +43,8 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
   private int server1Port;
   private int server2Port;
+  
+  private String localHost = SocketCreator.getLocalHost().getHostName();
   
   private static final int JEDIS_TIMEOUT = 20 * 1000;
 
@@ -67,18 +70,22 @@ public class RedisDistDUnitTest extends CacheTestCase {
     server2 = host.getVM(1);
     client1 = host.getVM(2);
     client2 = host.getVM(3);  
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int locatorPort = getDUnitLocatorPort();
     final SerializableCallable<Object> startRedisAdapter = new SerializableCallable<Object>() {
 
       private static final long serialVersionUID = 1978017907725504294L;
 
       @Override
       public Object call() throws Exception {
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = ports[VM.getCurrentVMNum()];
         CacheFactory cF = new CacheFactory();
-        cF.set("log-level", "info");
-        cF.set("redis-bind-address", "localhost");
+        String locator = SocketCreator.getLocalHost().getHostName() + "[" + locatorPort + "]";
+        cF.set("log-level", getDUnitLogLevel());
+        cF.set("redis-bind-address", localHost);
         cF.set("redis-port", ""+port);
-        cF.set("mcast-port", "40404");
+        cF.set("mcast-port", "0");
+        cF.set("locators", locator);
         cF.create();
         return Integer.valueOf(port);
       }
@@ -99,8 +106,8 @@ public class RedisDistDUnitTest extends CacheTestCase {
   }
 
   public void testConcListOps() throws Throwable {
-    final Jedis jedis1 = new Jedis("localhost", server1Port, JEDIS_TIMEOUT);
-    final Jedis jedis2 = new Jedis("localhost", server2Port, JEDIS_TIMEOUT);
+    final Jedis jedis1 = new Jedis(localHost, server1Port, JEDIS_TIMEOUT);
+    final Jedis jedis2 = new Jedis(localHost, server2Port, JEDIS_TIMEOUT);
     final int pushes = 20;
     class ConcListOps extends ClientTestBase {
       protected ConcListOps(int port) {
@@ -109,7 +116,7 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
       @Override
       public Object call() throws Exception {
-        Jedis jedis = new Jedis("localhost", port, JEDIS_TIMEOUT);
+        Jedis jedis = new Jedis(localHost, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < pushes; i++) {
           if (r.nextBoolean()) {
@@ -148,7 +155,7 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
       @Override
       public Object call() throws Exception {
-        Jedis jedis = new Jedis("localhost", port, JEDIS_TIMEOUT);
+        Jedis jedis = new Jedis(localHost, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
           int n = r.nextInt(4);
@@ -208,7 +215,7 @@ public class RedisDistDUnitTest extends CacheTestCase {
 
       @Override
       public Object call() throws Exception {
-        Jedis jedis = new Jedis("localhost", port, JEDIS_TIMEOUT);
+        Jedis jedis = new Jedis(localHost, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
           int n = r.nextInt(4);

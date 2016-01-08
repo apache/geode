@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.execute.Execution;
@@ -56,7 +58,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.execute.TransactionFunctionService;
 import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
@@ -125,7 +126,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.REPLICATE);
         Properties props = getDistributedSystemProperties();
-        props.put("mcast-port", ""+AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS));
+        props.put("mcast-port", "0");
         props.remove("locators");
         system = (InternalDistributedSystem)DistributedSystem.connect(props);
         Cache cache = CacheFactory.create(system);
@@ -2607,22 +2608,6 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     }
   }
   
-  class TestCommitFunction extends FunctionAdapter {
-    @Override
-    public void execute(FunctionContext context) {
-      CacheTransactionManager mgr = getCache().getCacheTransactionManager();
-      TransactionId txId = (TransactionId) context.getArguments();
-      assertTrue(mgr.isSuspended(txId));
-      mgr.resume(txId);
-      mgr.commit();
-      context.getResultSender().lastResult(Boolean.TRUE);
-    }
-    @Override
-    public String getId() {
-      return "CommitFunction";
-    }
-  }
-  
   public void testBasicResumableTX() {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -2649,7 +2634,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         result = (List) FunctionService.onRegion(cust).withArgs(args).execute(new TXFunction()).getResult();
         TransactionId txId2 = (TransactionId) result.get(0);
         assertEquals(txId, txId2);
-        result = (List) TransactionFunctionService.onTransaction(txId).execute(new TestCommitFunction()).getResult();
+        result = (List) FunctionService.onServer(getCache()).withArgs(txId).execute(new CommitFunction()).getResult();
         Boolean b = (Boolean) result.get(0);
         assertEquals(Boolean.TRUE, b);
         assertEquals(new Customer("name0", "address0"), cust.get(new CustId(0)));
@@ -2667,8 +2652,8 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   public void testClientCommitFunction() {
     doFunctionWork(true);
   }
-  @Ignore("Bug 52331")
-  public void DISABLED_testClientRollbackFunction() {
+  
+  public void testClientRollbackFunction() {
     doFunctionWork(false);
   }
   private void doFunctionWork(final boolean commit) {
@@ -2741,9 +2726,9 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
           }
           List list = null;
           if (commit) {
-            list = (List) TransactionFunctionService.onTransaction(txId).execute(new CommitFunction()).getResult();
+            list = (List) FunctionService.onServer(getCache()).withArgs(txId).execute(new CommitFunction()).getResult();
           } else {
-            list = (List) TransactionFunctionService.onTransaction(txId).execute(new RollbackFunction()).getResult();
+            list = (List) FunctionService.onServer(getCache()).withArgs(txId).execute(new RollbackFunction()).getResult();
           }
           assertEquals(Boolean.TRUE, list.get(0));
           if (commit) {
@@ -2889,7 +2874,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Execution exe = TransactionFunctionService.onTransaction(txId);
+        Execution exe = FunctionService.onMember(((TXId) txId).getMemberId()).withArgs(txId);
         List list = null;
         if (commit) {
           list = (List) exe.execute(new CommitFunction()).getResult();

@@ -27,7 +27,6 @@ import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.pdx.PdxSerializer;
@@ -260,10 +259,4 @@ public interface GemFireCache extends RegionService {
    * @since 6.6
    */
   public Properties getInitializerProps();
-
-  /**
-   * Returns the LuceneService singleton instance.
-   * @since 8.5
-   */
-  public LuceneService getLuceneService();
 }

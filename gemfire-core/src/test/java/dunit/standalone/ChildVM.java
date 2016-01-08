@@ -34,6 +34,15 @@ import dunit.standalone.DUnitLauncher.MasterRemote;
  */
 public class ChildVM {
   
+  private static boolean stopMainLoop = false;
+  
+  /**
+   * tells the main() loop to exit
+   */
+  public static void stopVM() {
+    stopMainLoop = true;
+  }
+  
   static {
     createHydraLogWriter();
   }
@@ -54,7 +63,7 @@ public class ChildVM {
       Naming.rebind("//localhost:" + namingPort + "/vm" + vmNum, dunitVM);
       holder.signalVMReady();
       //This loop is here so this VM will die even if the master is mean killed.
-      while(true) {
+      while (!stopMainLoop) {
         holder.ping();
         Thread.sleep(1000);
       }

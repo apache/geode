@@ -52,7 +52,7 @@ import com.gemstone.gemfire.internal.util.StopWatch;
  * @since 8.0
  */
 public abstract class AbstractLauncherJUnitTestCase {
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
   
   protected static final int WAIT_FOR_PROCESS_TO_DIE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
   protected static final int TIMEOUT_MILLISECONDS = WAIT_FOR_PROCESS_TO_DIE_TIMEOUT;

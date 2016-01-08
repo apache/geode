@@ -423,7 +423,7 @@ public class MBeanAggregator implements ProxyListener {
 
   @Override
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
     distributedSystemBridge.memberSuspect(id, whoSuspected);
   }
   
