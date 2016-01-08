@@ -46,7 +46,7 @@ import dunit.Host;
 import dunit.SerializableRunnable;
 import dunit.VM;
 
-public class Bug42010StatsDUnitTest extends CacheTestCase{
+public class SingleHopStatsDUnitTest extends CacheTestCase{
 
   
   private static final String Region_Name = "42010";
@@ -91,7 +91,7 @@ public class Bug42010StatsDUnitTest extends CacheTestCase{
   
   private static long nonSingleHopsCount_Shipment;
   
-  public Bug42010StatsDUnitTest(String name) {
+  public SingleHopStatsDUnitTest(String name) {
     super(name);
 
     // TODO Auto-generated constructor stub
@@ -110,10 +110,10 @@ public class Bug42010StatsDUnitTest extends CacheTestCase{
     try {
 
       // close the clients first
-      member0.invoke(Bug42010StatsDUnitTest.class, "closeCache");
-      member1.invoke(Bug42010StatsDUnitTest.class, "closeCache");
-      member2.invoke(Bug42010StatsDUnitTest.class, "closeCache");
-      member3.invoke(Bug42010StatsDUnitTest.class, "closeCache");
+      member0.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+      member1.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+      member2.invoke(SingleHopStatsDUnitTest.class, "closeCache");
+      member3.invoke(SingleHopStatsDUnitTest.class, "closeCache");
       closeCache();
 
       super.tearDown2();
@@ -138,68 +138,68 @@ public class Bug42010StatsDUnitTest extends CacheTestCase{
     }
   }
 
-  public void test_clientStats_PR(){
+  public void testClientStatsPR(){
     VM server1 = member0;
     VM server2 = member1;
     VM server3 = member2;
     VM client1 = member3;
     
     Integer port0 = (Integer)member0.invoke(
-        Bug42010StatsDUnitTest.class, "createServerForStats",
+        SingleHopStatsDUnitTest.class, "createServerForStats",
         new Object[] { 0, 113,"No_Colocation"});
     Integer port1 = (Integer)member1.invoke(
-        Bug42010StatsDUnitTest.class, "createServerForStats",
+        SingleHopStatsDUnitTest.class, "createServerForStats",
         new Object[] { 0, 113,"No_Colocation"});
     Integer port2 = (Integer)member2.invoke(
-        Bug42010StatsDUnitTest.class, "createServerForStats",
+        SingleHopStatsDUnitTest.class, "createServerForStats",
         new Object[] { 0, 113,"No_Colocation"});
      client1.invoke(
-        Bug42010StatsDUnitTest.class, "createClient",
+        SingleHopStatsDUnitTest.class, "createClient",
         new Object[] {port0, port1, port2,"No_Colocation"});
      
     createClient(port0, port1, port2, "No_Colocation");
 
     client1.invoke(
-        Bug42010StatsDUnitTest.class, "createPR",
+        SingleHopStatsDUnitTest.class, "createPR",
         new Object[] {"FirstClient", "No_Colocation"});
     createPR("SecondClient", "No_Colocation");
     
     client1.invoke(
-        Bug42010StatsDUnitTest.class, "getPR",
+        SingleHopStatsDUnitTest.class, "getPR",
         new Object[] {"FirstClient", "No_Colocation"});
     getPR("SecondClient", "No_Colocation");
     
     client1.invoke(
-        Bug42010StatsDUnitTest.class, "updatePR",
+        SingleHopStatsDUnitTest.class, "updatePR",
         new Object[] {"FirstClient", "No_Colocation"});
   }
   
-  public void test_clientStatsColocation_PR(){
+  public void testClientStatsColocationPR(){
     VM server1 = member0;
     VM server2 = member1;
     VM server3 = member2;
     VM client1 = member3;
     
     Integer port0 = (Integer)member0.invoke(
-        Bug42010StatsDUnitTest.class, "createServerForStats",
+        SingleHopStatsDUnitTest.class, "createServerForStats",
         new Object[] { 0, 4, "Colocation" });
     Integer port1 = (Integer)member1.invoke(
-        Bug42010StatsDUnitTest.class, "createServerForStats",
+        SingleHopStatsDUnitTest.class, "createServerForStats",
         new Object[] { 0, 4, "Colocation" });
     Integer port2 = (Integer)member2.invoke(
-        Bug42010StatsDUnitTest.class, "createServerForStats",
+        SingleHopStatsDUnitTest.class, "createServerForStats",
         new Object[] { 0, 4, "Colocation"});
      client1.invoke(
-        Bug42010StatsDUnitTest.class, "createClient",
+        SingleHopStatsDUnitTest.class, "createClient",
         new Object[] {port0, port1, port2, "Colocation"});
     createClient(port0, port1, port2, "Colocation");
 
     client1.invoke(
-        Bug42010StatsDUnitTest.class, "createPR",
+        SingleHopStatsDUnitTest.class, "createPR",
         new Object[] {"FirstClient", "Colocation"});
     
     client1.invoke(
-        Bug42010StatsDUnitTest.class, "getPR",
+        SingleHopStatsDUnitTest.class, "getPR",
         new Object[] {"FirstClient", "Colocation"});
   }
 
@@ -209,8 +209,8 @@ public class Bug42010StatsDUnitTest extends CacheTestCase{
     props = new Properties();
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
-    CacheTestCase test = new Bug42010StatsDUnitTest(
-        "Bug42010StatsDUnitTest");
+    CacheTestCase test = new SingleHopStatsDUnitTest(
+        "SingleHopStatsDUnitTest");
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -229,8 +229,8 @@ public class Bug42010StatsDUnitTest extends CacheTestCase{
   }
 
   public static int createServerForStats(int redundantCopies, int totalNoofBuckets, String colocation) {
-    CacheTestCase test = new Bug42010StatsDUnitTest(
-        "Bug42010StatsDUnitTest");
+    CacheTestCase test = new SingleHopStatsDUnitTest(
+        "SingleHopStatsDUnitTest");
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -347,10 +347,12 @@ public class Bug42010StatsDUnitTest extends CacheTestCase{
     }
   }
   
-  public static void createPR(String FromClient,
+  public static void createPR(String fromClient,
       String colocation) {
     if (colocation.equals("No_Colocation")) {
-      if (FromClient.equals("FirstClient")) {
+      if (fromClient.equals("FirstClient")) {
+        
+        System.out.println("first pass...");
         for (int i = 0; i < 113; i++) {
           region.create(new Integer(i), "create" + i);
         }
@@ -360,6 +362,7 @@ public class Bug42010StatsDUnitTest extends CacheTestCase{
             .getClientPRMetadata_TEST_ONLY();
         assertEquals(0, regionMetaData.size());
 
+        System.out.println("second pass...");
         for (int i = 113; i < 226; i++) {
           region.create(new Integer(i), "create" + i);
         }
