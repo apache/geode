@@ -155,6 +155,8 @@ public class Bug37210DUnitTest extends DistributedTestCase
     server.invoke(Bug37210DUnitTest.class,
         "closeCacheClientProxyAndVerifyStats");
     client.invoke(Bug37210DUnitTest.class, "closeCache");
+  //we don't send close response thus needs to wait for client termination
+    Thread.currentThread().sleep(1000);
     server.invoke(Bug37210DUnitTest.class,
             "closeCacheClientProxyAndVerifyStats2");
     getLogWriter().info("testHAStatsCleanup : END");
