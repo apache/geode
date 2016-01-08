@@ -1656,23 +1656,25 @@ public class HARegionQueue implements RegionQueue
     int currSize = this.idsAvailable.size();
     int limit = currSize >= batchSize ? batchSize : currSize;
 
-    Object event = null;
     List peekedEventsThreadContext;
     if ((peekedEventsThreadContext = (List)HARegionQueue.peekedEventsContext.get()) == null) {
       peekedEventsThreadContext = new LinkedList();
     }
     for (int i = 0; i < limit; i++) {
       Long counter = (Long)itr.next();
-      event = this.region.get(counter);
-      event = (event instanceof HAEventWrapper) ? this.haContainer
-          .get(event) : event;
-      //Since this method is invoked in a readlock , the entry in HARegion
-      // cannot be null
-      if (event == null) {
-        Assert.assertTrue(this.destroyInProgress,
-            "Got event null when queue was not being destroyed");
+      Object eventOrWrapper = this.region.get(counter);
+      Object event;
+      if (eventOrWrapper instanceof HAEventWrapper) {
+        event = haContainer.get(eventOrWrapper);
+        if (event == null) {
+          event = ((HAEventWrapper)eventOrWrapper).getClientUpdateMessage();
+        }
+      } else {
+        event = eventOrWrapper;
       }
-      batch.add(event);
+      if (event != null) {
+        batch.add(event);
+      }
       peekedEventsThreadContext.add(counter);
     }
 
