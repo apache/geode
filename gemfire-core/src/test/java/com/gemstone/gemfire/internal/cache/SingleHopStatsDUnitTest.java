@@ -358,7 +358,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
         }
         ClientMetadataService cms = ((GemFireCacheImpl)cache)
             .getClientMetadataService();
-        Map<String, ClientPartitionAdvisor> regionMetaData = cms
+        final Map<String, ClientPartitionAdvisor> regionMetaData = cms
             .getClientPRMetadata_TEST_ONLY();
         assertEquals(0, regionMetaData.size());
 
@@ -367,8 +367,17 @@ public class SingleHopStatsDUnitTest extends CacheTestCase{
           region.create(new Integer(i), "create" + i);
         }
         cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-        regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
-        assertEquals(1, regionMetaData.size());
+        // since PR metadata is fetched in a background executor thread
+        // we need to wait for it to arrive for a bit
+        waitForCriterion(new WaitCriterion(){
+          public boolean done() {
+            return regionMetaData.size() == 1;
+          }
+          public String description() {
+            return "waiting for metadata to arrive: " + regionMetaData;
+          }
+          
+        }, 30000, 500, true);
         assertTrue(regionMetaData.containsKey(region.getFullPath()));
         ClientPartitionAdvisor prMetaData = regionMetaData.get(region
             .getFullPath());
