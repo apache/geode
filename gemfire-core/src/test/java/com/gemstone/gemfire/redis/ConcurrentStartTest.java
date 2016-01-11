@@ -18,11 +18,16 @@ package com.gemstone.gemfire.redis;
 
 import static org.junit.Assert.assertFalse;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -30,20 +35,39 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class ConcurrentStartTest {
 
-  int numServers = 10;
+  private Cache cache;
+  private int numServers = 10;
+  
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  
+  @Before
+  public void setUp() {
+    System.setProperty(DistributedSystem.PROPERTIES_FILE_PROPERTY, getClass().getSimpleName() + ".properties");
+  }
+
+  @After
+  public void tearDown() {
+    if (this.cache != null) {
+      this.cache.close();
+      this.cache = null;
+    }
+  }
+  
   @Test
   public void testCachelessStart() throws InterruptedException {
     runNServers(numServers);
     GemFireCacheImpl.getInstance().close();
   }
+  
   @Test
   public void testCachefulStart() throws InterruptedException {
     CacheFactory cf = new CacheFactory();
     cf.set("mcast-port", "0");
     cf.set("locators", "");
-    Cache c = cf.create();
+    this.cache = cf.create();
+    
     runNServers(numServers);
-    c.close();
   }
   
   private void runNServers(int n) throws InterruptedException {
@@ -68,7 +92,7 @@ public class ConcurrentStartTest {
     }
     for (Thread t : threads)
       t.join();
-    Cache c = GemFireCacheImpl.getInstance();
-    assertFalse(c.isClosed());
+    this.cache = GemFireCacheImpl.getInstance();
+    assertFalse(this.cache.isClosed());
   }
 }
