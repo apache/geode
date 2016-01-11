@@ -143,11 +143,7 @@ public class PulseController {
    */
   protected boolean isUserLoggedIn(HttpServletRequest request) {
 
-    if (null != request.getUserPrincipal()) {
-      return true;
-    } else {
-      return false;
-    }
+    return null != request.getUserPrincipal();
   }
 
   @RequestMapping(value = "/clusterLogout", method = RequestMethod.GET)

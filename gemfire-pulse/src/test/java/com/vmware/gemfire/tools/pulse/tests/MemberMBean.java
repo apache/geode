@@ -8,68 +8,68 @@
 package com.vmware.gemfire.tools.pulse.tests;
 
 public interface MemberMBean {
-  public static final String OBJECT_NAME = "GemFire:type=Member";
+  String OBJECT_NAME = "GemFire:type=Member";
 
-  public boolean getManager();
+  boolean getManager();
 
-  public int getTotalRegionCount();
+  int getTotalRegionCount();
 
-  public boolean getLocator();
+  boolean getLocator();
 
-  public long getTotalDiskUsage();
+  long getTotalDiskUsage();
 
-  public boolean getServer();
+  boolean getServer();
 
-  public String[] getGroups();
+  String[] getGroups();
 
   //public String[] getRedundancyZone();
-  public String getRedundancyZone();
+  String getRedundancyZone();
 
-  public long getTotalFileDescriptorOpen();
+  long getTotalFileDescriptorOpen();
 
-  public double getLoadAverage();
+  double getLoadAverage();
 
-  public float getDiskWritesRate();
+  float getDiskWritesRate();
 
-  public long getJVMPauses();
+  long getJVMPauses();
 
-  public long getCurrentHeapSize();
+  long getCurrentHeapSize();
 
-  public long getMaximumHeapSize();
+  long getMaximumHeapSize();
 
-  public long getUsedMemory();
+  long getUsedMemory();
 
-  public long getMaxMemory();
+  long getMaxMemory();
 
-  public int getNumThreads();
+  int getNumThreads();
 
-  public long getMemberUpTime();
+  long getMemberUpTime();
 
-  public String getHost();
+  String getHost();
 
-  public long getTotalBytesOnDisk();
+  long getTotalBytesOnDisk();
 
-  public float getCpuUsage();
+  float getCpuUsage();
 
-  public String getMember();
+  String getMember();
 
-  public String getId();
+  String getId();
 
-  public float getAverageReads();
+  float getAverageReads();
 
-  public float getAverageWrites();
+  float getAverageWrites();
 
-  public int getPort();
+  int getPort();
 
-  public long getFoo();
+  long getFoo();
 
-  public long getOffHeapFreeSize();
+  long getOffHeapFreeSize();
 
-  public long getOffHeapUsedSize();
+  long getOffHeapUsedSize();
 
-  public long getOffHeapFreeMemory();
+  long getOffHeapFreeMemory();
 
-  public long getOffHeapUsedMemory();
+  long getOffHeapUsedMemory();
 
-  public String getVersion();
+  String getVersion();
 }

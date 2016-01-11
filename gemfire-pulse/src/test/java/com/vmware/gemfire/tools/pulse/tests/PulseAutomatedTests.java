@@ -415,27 +415,27 @@ class PulseBaseTests extends PulseTests {
 	}
 
 	public void verifyElementPresentById(String id) {
-		WebDriverWait wait = (WebDriverWait) new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id(id)));
 	}
 	
 	public void verifyElementPresentByLinkText(String lnkText) {
-		WebDriverWait wait = (WebDriverWait) new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.linkText(lnkText)));
 	}
 
 	public void verifyElementPresentByXpath(String xpath) {
-		WebDriverWait wait = (WebDriverWait) new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(xpath)));
 	}
 
 	public void verifyTextPresrntById(String id, String text) {
-		WebDriverWait wait = (WebDriverWait) new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id(id), text));
 	}
 
 	public void verifyTextPresrntByXpath(String xpath, String text) {
-		WebDriverWait wait = (WebDriverWait) new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.textToBePresentInElementLocated(By.xpath(xpath), text));
 	}
 

@@ -10,39 +10,39 @@ package com.vmware.gemfire.tools.pulse.tests;
 import javax.management.openmbean.CompositeData;
 
 public interface RegionMBean {
-  public static final String OBJECT_NAME = "GemFire:service=Region,type=Distributed";
+  String OBJECT_NAME = "GemFire:service=Region,type=Distributed";
 
-  public String[] getMembers();
+  String[] getMembers();
 
-  public String getFullPath();
+  String getFullPath();
 
-  public float getDiskReadsRate();
+  float getDiskReadsRate();
 
-  public float getDiskWritesRate();
+  float getDiskWritesRate();
 
-  public int getEmptyNodes();
+  int getEmptyNodes();
 
-  public float getGetsRate();
+  float getGetsRate();
 
-  public float getLruEvictionRate();
+  float getLruEvictionRate();
 
-  public float getPutsRate();
+  float getPutsRate();
 
-  public String getRegionType();
+  String getRegionType();
 
-  public long getEntrySize();
+  long getEntrySize();
 
-  public long getSystemRegionEntryCount();
+  long getSystemRegionEntryCount();
 
-  public int getMemberCount();
+  int getMemberCount();
 
-  public boolean getPersistentEnabled();
+  boolean getPersistentEnabled();
 
-  public String getName();
+  String getName();
 
-  public boolean getGatewayEnabled();
+  boolean getGatewayEnabled();
 
-  public long getDiskUsage();
+  long getDiskUsage();
 
-  public CompositeData listRegionAttributes();
+  CompositeData listRegionAttributes();
 }

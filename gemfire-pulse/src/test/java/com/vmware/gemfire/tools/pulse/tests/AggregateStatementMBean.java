@@ -8,63 +8,63 @@
 package com.vmware.gemfire.tools.pulse.tests;
 
 public interface AggregateStatementMBean {
-  public static final String OBJECT_NAME = "GemFireXD:service=Statement,type=Aggregate";
+  String OBJECT_NAME = "GemFireXD:service=Statement,type=Aggregate";
 
   /**
    * Query definition
    *
    * @return
    */
-  public String getQueryDefinition();
+  String getQueryDefinition();
 
   /**
    * Number of times this statement is compiled (including re compilations)
    *
    * @return
    */
-  public long getNumTimesCompiled();
+  long getNumTimesCompiled();
 
   /**
    * Number of times this statement is executed
    *
    * @return
    */
-  public long getNumExecution();
+  long getNumExecution();
 
   /**
    * Statements that are actively being processed during the statistics snapshot
    *
    * @return
    */
-  public long getNumExecutionsInProgress();
+  long getNumExecutionsInProgress();
 
   /**
    * Number of times global index lookup message exchanges occurred
    *
    * @return
    */
-  public long getNumTimesGlobalIndexLookup();
+  long getNumTimesGlobalIndexLookup();
 
   /**
    * Number of rows modified by DML operation of insert/delete/update
    *
    * @return
    */
-  public long getNumRowsModified();
+  long getNumRowsModified();
 
   /**
    * Time spent(in milliseconds) in parsing the query string
    *
    * @return
    */
-  public long getParseTime();
+  long getParseTime();
 
   /**
    * Time spent (in milliseconds) mapping this statement with database object's metadata (bind)
    *
    * @return
    */
-  public long getBindTime();
+  long getBindTime();
 
   /**
    * Time spent (in milliseconds) determining the best execution path for this statement
@@ -72,7 +72,7 @@ public interface AggregateStatementMBean {
    *
    * @return
    */
-  public long getOptimizeTime();
+  long getOptimizeTime();
 
   /**
    * Time spent (in milliseconds) compiling details about routing information of query strings to
@@ -80,35 +80,35 @@ public interface AggregateStatementMBean {
    *
    * @return
    */
-  public long getRoutingInfoTime();
+  long getRoutingInfoTime();
 
   /**
    * Time spent (in milliseconds) to generate query execution plan definition (activation class)
    *
    * @return
    */
-  public long getGenerateTime();
+  long getGenerateTime();
 
   /**
    * Total compilation time (in milliseconds) of the statement on this node (prepMinion)
    *
    * @return
    */
-  public long getTotalCompilationTime();
+  long getTotalCompilationTime();
 
   /**
    * Time spent (in nanoseconds) in creation of all the layers of query processing (ac.execute)
    *
    * @return
    */
-  public long getExecutionTime();
+  long getExecutionTime();
 
   /**
    * Time to apply (in nanoseconds) the projection and additional filters. (projectrestrict)
    *
    * @return
    */
-  public long getProjectionTime();
+  long getProjectionTime();
 
   /**
    * Total execution time (in nanoseconds) taken to process the statement on this node
@@ -116,21 +116,21 @@ public interface AggregateStatementMBean {
    *
    * @return
    */
-  public long getTotalExecutionTime();
+  long getTotalExecutionTime();
 
   /**
    * Time taken (in nanoseconds) to modify rows by DML operation of insert/delete/update
    *
    * @return
    */
-  public long getRowsModificationTime();
+  long getRowsModificationTime();
 
   /**
    * Number of rows returned from remote nodes (ResultHolder/Get convertibles)
    *
    * @return
    */
-  public long getQNNumRowsSeen();
+  long getQNNumRowsSeen();
 
   /**
    * TCP send time (in nanoseconds) of all the messages including serialization time and queue
@@ -138,20 +138,20 @@ public interface AggregateStatementMBean {
    *
    * @return
    */
-  public long getQNMsgSendTime();
+  long getQNMsgSendTime();
 
   /**
    * Serialization time (in nanoseconds) for all the messages while sending to remote node(s)
    *
    * @return
    */
-  public long getQNMsgSerTime();
+  long getQNMsgSerTime();
 
   /**
    *
    *
    * @return
    */
-  public long getQNRespDeSerTime();
+  long getQNRespDeSerTime();
 
 }

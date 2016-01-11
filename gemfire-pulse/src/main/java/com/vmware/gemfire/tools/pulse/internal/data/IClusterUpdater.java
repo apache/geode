@@ -21,7 +21,7 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * 
  */
 public interface IClusterUpdater {
-  public boolean updateData();
+  boolean updateData();
 
-  public JSONObject executeQuery(String queryText, String members, int limit) throws JSONException;
+  JSONObject executeQuery(String queryText, String members, int limit) throws JSONException;
 }

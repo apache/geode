@@ -45,8 +45,8 @@ public class PulseUITest {
   private TestBed testBed;
   private final String testBedPropertyfile = System.getProperty("pulse.propMockDataUpdaterFile");  
   private static String pulseURL = System.getProperty("pulse.url");
-  private static String path =System.getProperty("pulse.war");;
-  
+  private static String path =System.getProperty("pulse.war");
+
   private static final String userName = "admin";
   private static final String pasword = "admin";
   

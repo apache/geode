@@ -23,10 +23,10 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  */
 public interface PulseService {
 
-  public final String VALUE_NA = "NA";
-  public final String VALUE_ON = "ON";
-  public final String VALUE_OFF = "OFF";
+  String VALUE_NA = "NA";
+  String VALUE_ON = "ON";
+  String VALUE_OFF = "OFF";
 
-  public JSONObject execute(HttpServletRequest httpServletRequest)
+  JSONObject execute(HttpServletRequest httpServletRequest)
       throws Exception;
 }

@@ -10,59 +10,59 @@ package com.vmware.gemfire.tools.pulse.tests;
 import javax.management.openmbean.TabularData;
 
 public interface ServerObjectMBean {
-  public static final String OBJECT_NAME = "GemFire:service=System,type=Distributed";
+  String OBJECT_NAME = "GemFire:service=System,type=Distributed";
 
-  public TabularData viewRemoteClusterStatus();
+  TabularData viewRemoteClusterStatus();
 
-  public int getMemberCount();
+  int getMemberCount();
 
-  public int getNumClients();
+  int getNumClients();
 
-  public int getDistributedSystemId();
+  int getDistributedSystemId();
 
-  public int getLocatorCount();
+  int getLocatorCount();
 
-  public int getTotalRegionCount();
+  int getTotalRegionCount();
 
-  public int getNumRunningFunctions();
+  int getNumRunningFunctions();
 
-  public long getRegisteredCQCount();
+  long getRegisteredCQCount();
 
-  public int getNumSubscriptions();
+  int getNumSubscriptions();
 
-  public int getTransactionCommitted();
+  int getTransactionCommitted();
 
-  public int getTransactionRolledBack();
+  int getTransactionRolledBack();
 
-  public long getTotalHeapSize();
+  long getTotalHeapSize();
 
-  public long getUsedHeapSize();
+  long getUsedHeapSize();
 
-  public long getMaxMemory();
+  long getMaxMemory();
 
-  public long getUsedMemory();
+  long getUsedMemory();
 
-  public long getTotalRegionEntryCount();
+  long getTotalRegionEntryCount();
 
-  public int getCurrentQueryCount();
+  int getCurrentQueryCount();
 
-  public long getTotalDiskUsage();
+  long getTotalDiskUsage();
 
-  public float getDiskWritesRate();
+  float getDiskWritesRate();
 
-  public float getAverageWrites();
+  float getAverageWrites();
 
-  public float getAverageReads();
+  float getAverageReads();
 
-  public float getQueryRequestRate();
+  float getQueryRequestRate();
 
-  public float getDiskReadsRate();
+  float getDiskReadsRate();
 
-  public long getJVMPauses();
+  long getJVMPauses();
 
-  public String[] listCacheServers();
+  String[] listCacheServers();
 
-  public String[] listServers();
+  String[] listServers();
 
-  public String queryData(String p0, String p1, int p2);
+  String queryData(String p0, String p1, int p2);
 }

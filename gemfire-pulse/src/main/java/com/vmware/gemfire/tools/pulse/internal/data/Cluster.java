@@ -2904,12 +2904,12 @@ public class Cluster extends Thread {
       queriesPerSecTrend.add(queriesPerSec);
 
       loadPerSec = Math.abs(r.nextInt(100));
-      totalHeapSize = (long) totalHeapSize;
-      totalBytesOnDisk = (long) totalHeapSize;
+      totalHeapSize = totalHeapSize;
+      totalBytesOnDisk = totalHeapSize;
 
       totalBytesOnDiskTrend.add(totalBytesOnDisk);
 
-      memoryUsageTrend.add((long) usedHeapSize);
+      memoryUsageTrend.add(usedHeapSize);
       throughoutWritesTrend.add(writePerSec);
       throughoutReadsTrend.add(readPerSec);
 
@@ -3174,11 +3174,7 @@ public class Cluster extends Thread {
 
       memberRegion.regionType = "REPLICATE_PARTITIONED_NORMAL";
       memberRegion.persistentEnabled = true;
-      if (count % 2 == 0) {
-        memberRegion.wanEnabled = true;
-      } else {
-        memberRegion.wanEnabled = false;
-      }
+      memberRegion.wanEnabled = count % 2 == 0;
       memberRegion.wanEnabled = true;
       memberRegion.setSystemRegionEntryCount(Long.valueOf(String.valueOf(Math
           .abs(randomGenerator.nextInt(100)))));
