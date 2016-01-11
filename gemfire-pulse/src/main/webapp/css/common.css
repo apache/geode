@@ -1,0 +1,221 @@
+@charset "utf-8";
+/**********************************************************************************************
+
+	CSS3
+	Title: vmware
+	Date:  September 2012
+
+***********************************************************************************************
+
+	1. BASE
+			1.1 Reset & Standards
+			1.2 Links
+			1.3 Lists
+			1.4 Tables
+			1.5 Misc
+			1.6 Typography
+			1.7 Block Width
+			1.8 Font Size
+			1.9 Font Color
+			1.10 Line Height
+			1.11 Input
+			1.12 Margin & Padding
+			
+***********************************************************************************************/
+/*	--------------------------------------------------
+	1.BASE
+	-------------------------------------------------- */
+
+/*	--------------------------------------------------
+	1.1 Global Reset & Standards
+	-------------------------------------------------- */
+	html, body, div, span, applet, object, iframe,  h1, h2, h3, h4, h5, h6, p, blockquote, pre,  a, abbr, acronym, address, big, cite, code,  del, dfn, em, img, ins, kbd, q, s, samp,  small, strike, strong, sub, sup, tt, var,  b, u, i, center,  dl, dt, dd, ol, ul, li,  fieldset, form, label, legend,  table, caption, tbody, tfoot, thead, tr, th, td,  article, aside, canvas, details, embed,  figure, figcaption, footer, header, hgroup,  menu, nav, output, ruby, section, summary,  time, mark, audio, video { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; outline:none }
+	body { min-width:1000px};
+	html, body { margin: 0; padding: 0; height: 100%; }
+	html { /*overflow-y:auto;*/ overflow-y:scroll;}
+	sub { vertical-align: sub; }
+	sup { vertical-align: super; }
+	textarea { resize:none; }
+	ol, ul { list-style: none; }
+	blockquote, q { quotes: none; }
+	blockquote:before, blockquote:after,  q:before, q:after { content: ''; content: none; }
+	/*table { border-collapse: collapse; border-spacing: 0; border:0px }*/
+/*	--------------------------------------------------
+	1.2 Links
+	-------------------------------------------------- */
+	a { color: #414141; text-decoration: none; line-height: inherit; cursor:pointer; outline:0/* set dotted border zero for IE8 & IE9*/ }
+	a:hover { color: #0363a0; }
+	p a, p a:visited { line-height: inherit; }
+/*	--------------------------------------------------
+	1.3 Lists
+	-------------------------------------------------- */
+	ul, ol { margin: 0px; }
+	ul { list-style: none outside; }
+	ol { list-style: none outside none }
+	ol, ul.square, ul.circle, ul.disc { margin:0px; padding:0px }
+	ul.square { list-style: square outside; }
+	ul.circle { list-style: circle outside; }
+	ul.disc { list-style: disc outside; }
+	li { margin: 0px; }
+	ul.large li { line-height: 21px; }
+/*	--------------------------------------------------
+	1.4 Tables
+	-------------------------------------------------- */
+	table { margin: 0 0 0 0px; }
+	table thead, table tfoot { background: #f5f5f5; }
+	table thead tr th,  table tfoot tr th,  table tbody tr td,  table tr td,  table tfoot tr td { font-size: 0.9em; line-height: 18px; text-align: left; }
+	table thead tr th,  table tfoot tr td { padding: 8px 10px 9px; font-size: 14px; font-weight: bold; color: #222; }
+	table tbody tr.even,  table tbody tr.alt { background: #f9f9f9; }
+	table tbody tr td { color: #414141; padding: 0px; vertical-align: top; border: none; }
+
+/* -------------------------------------------------- 
+	1.5 Misc
+---------------------------------------------------*/
+	.left { float: left; }
+	.right { float: right; }
+	.text-left { text-align: left; }
+	.text-right { text-align: right; }
+	.text-center { text-align: center; }
+	.postical-absolute { position:absolute }
+	.position-relative { position:relative }
+	.hide { display: none; }
+	.show { display:block }
+	.clear { clear:both; height:0; font-size:0px; line-height:0; }
+	.widthfull-100per { width:100%; }
+	.display-inline-block { display:inline-block }
+	.display-block { display:block }
+	.display-none { display:none }
+	.clearfix { height: 1%; overflow: visible; }
+	.verticalTop { vertical-align:top !important }
+	.verticalMiddle { vertical-align:middle !important }
+/*	--------------------------------------------------
+    1.6 Typography
+	-------------------------------------------------- */
+	h1, h2, h3, h4, h5, h6 { color: #181818; font-weight: bold; line-height: 1.25 }
+	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit; }
+	p { margin: 0 0 0 0; }
+	p img { margin: 0; }
+/*	--------------------------------------------------
+    1.7 Block width
+	-------------------------------------------------- */
+	/* multi of 5*/
+	.width-5 { width:5% }
+	.width-10 { width:10% }
+	.width-15 { width:15% }
+	.width-20 { width:20% }
+	.width-25 { width:25% }
+	.width-30 { width:30% }
+	.width-35 { width:35% }
+	.width-40 { width:40% }
+	.width-45 { width:45% }
+	.width-50 { width:50% }
+	.width-55 { width:55% }
+	.width-60 { width:60% }
+	.width-65 { width:65% }
+	.width-70 { width:70% }
+	.width-75 { width:75% }
+	.width-80 { width:80% }
+	.width-85 { width:85% }
+	.width-90 { width:90% }
+	.width-95 { width:95% }
+/*even*/
+	.width-4 { width:4% }
+	.width-6 { width:6% }
+	.width-8 { width:8% }
+	.width-12 { width:12% }
+	.width-14 { width:14% }
+	.width-16 { width:16% }
+	.width-28 { width:28% }
+	.width-46 { width:46% }
+	.width-76 { width:76% }
+	.width-94 { width:94% }
+/*odd*/
+	.width-11 { width:11% }
+	.width-13 { width:13% }
+	.width-7 { width:7% }
+	.width-39 { width:39% }
+	.width-49 { width:49% }
+	.width-77 { width:77% }
+	.width-83 { width:83% }
+	.width-87 { width:87% }
+	.width-53 { width:53% }
+	.width-27 { width:27% }
+	.width-47 { width:47% }
+/*	--------------------------------------------------
+	1.8 Font Size
+	-------------------------------------------------- */
+	.font-size20{font-size:20px;}
+	.font-size23{font-size:23px;}
+	.font-size14{font-size:14px;}
+	.font-size15{font-size:15px;}
+	.font-size40{font-size:40px;}
+	.font-size17{font-size:17px;}
+	.font-size13{font-size:13px;}
+
+/*	--------------------------------------------------
+	1.9 Font Color
+	-------------------------------------------------- */
+	.color-fff { color:#ffffff }
+	.color-d2d5d7{color:#d2d5d7}
+	
+
+/*	--------------------------------------------------
+	1.10 Line Height
+	-------------------------------------------------- */
+	.line-height-22 { line-height:22px }
+/*Height*/
+	.height16 { height:16px !important; vertical-align:top }
+	.height18 { height:18px !important; vertical-align:top !important; }
+	.height40 { height:40px; }
+	.height80 { height:80px; }
+	.height87 { height:87px; }
+	.height30 { height:30px; }
+	.height36 { height:36px; line-height:20px }
+	.height60 { height:65px; width:inherit }
+	.height20 { height:20px !important; line-height:20px !important; font-size:11px !important; }
+	.height71 { height:71px; }
+/*	--------------------------------------------------
+	1.11 Input
+	-------------------------------------------------- */
+	
+	input[type="text"] { border: 1px solid #afafaf; border-radius: 2px 2px 2px 2px; color: #414141; font-family: Arial; font-size: 12px; padding: 5px 8px; outline:none }	
+	textarea {border:0px; border-bottom:1px solid #27333b; !important; border-radius: 2px 2px 2px 2px; color: #878e92; font-family: Arial; font-size: 12px; padding: 5px 8px; outline:none; background:#0f1c25}
+	select { border:1px #b1b1b1 solid; border-radius:3px 3px 3px 3px; padding:3px 3px !important; color:#414141; outline: none; line-height:20px; }
+/*	--------------------------------------------------
+	1.12 Margin & Padding
+	-------------------------------------------------- */
+.marginTB10{margin:10px 0px}
+.marginLR10{margin:0px 10px}
+.marginL10{margin-left:10px}
+.marginR10{margin-right:10px}
+.marginB5{margin-bottom:5px;}
+.marginB10{margin-bottom:10px;}
+.marginB11{margin-bottom:11px;}
+.marginBR10-11{margin-bottom:10px; margin-right:11px;}
+.paddingTop0{padding-top:0px !important}
+.margin5All{margin:5px}
+
+/*padding*/
+.paddingL5{padding-left:5px;}
+/*cursor types*/
+.pointerCursor{cursor: pointer;}
+.defaultCursor{cursor: default;}
+
+/* background:transparent url(../images/RegionView_Popup.png); */
+ /* .tooltip {
+    display:none;
+    background:repeat #202b39;
+    background: url("../images/PopupImage.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0);
+    font-size:12px;
+    height:317px;
+    width:350px;
+    padding:5px;
+    color:#eee;
+  } */
+  
+  .regionTipHeaderEnhancement {
+  	font-size:12px; 
+  	padding:5px 0px; 
+  	color: #ababab;
+  }
+  

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="CACHE-CONTROL" content="NO-CACHE,NO-STORE" />
+<meta http-equiv="PRAGMA" content="NO-CACHE" />
+<meta http-equiv="EXPIRES" content="-1">
+<title>Pulse</title>
+<link href="css/common.css" rel="stylesheet" type="text/css" />
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<link type="text/css" href="css/base.css" rel="stylesheet" />
+<link type="text/css" href="css/Treemap.css" rel="stylesheet" />
+<link type="text/css" href="css/jquery.jscrollpane.css" rel="stylesheet" media="all" />
+<link rel="stylesheet" type="text/css" media="screen" href="css/grid/ui.jqgrid.css" />
+<!-- fix IE Ui issues-->
+<!--[if IE 7]>
+  <link href="css/ie/ie7.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--[if IE 8]>
+  <link href="css/ie/ie8.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--[if IE 9]>
+  <link href="css/ie/ie9.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!-- IE Fix for HTML5 Tags -->
+<!--[if lt IE 9]>
+<script src='scripts/lib/html5.js'></script>
+<script type="text/javascript" src="scripts/lib/excanvas.js"></script>
+<script type="text/javascript"> if (!window.console) console = {log: function() {}}; </script>
+  <![endif]-->
+<script type="text/javascript" src="scripts/lib/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="scripts/lib/jit.js"></script>
+<script type="text/javascript" src='scripts/lib/common.js'></script>
+<script type="text/javascript" src="scripts/lib/jquery.mousewheel.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.jscrollpane.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.placeholder.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.sparkline.js"></script>
+<script type="text/javascript" src="scripts/lib/grid.locale-en.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.jqGrid.src.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.tablednd.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.timeago.js"></script>
+
+<script type="text/javascript" src='scripts/pulsescript/regionView.js'></script>
+<script type="text/javascript" src="scripts/pulsescript/PulseCallbacks.js"></script>
+<script type="text/javascript" src="scripts/pulsescript/PulseFunctions.js"></script>
+<script type="text/javascript" src='scripts/pulsescript/common.js'></script>
+<script type="text/javascript" src="scripts/lib/tooltip.js"></script>
+
+<STYLE type="text/css">
+	div.jspDrag {left: -3px;}
+</STYLE>
+</head>
+
+<body onload="return checkMedia();">
+
+<!-- popup (Riya) -->
+<div id="popupDiv" style="position:relative; display: none;"  data-role="widget" data-widgetid="ClusterSelectedRegionsMember" data-active ="yes" data-timeline="5000">
+
+	<!-- Large Block-->
+    <div class="content" style="background: none repeat scroll 0 0 #132634;">
+      <h3><span id="idMemberName">M1</span></h3>
+        
+        <div class="clearfix">
+          <div class="widthfull-100per left " style="padding-top:5px;">
+            <div class=" popupdetailsBlock">
+						  <div class="color-fff font-size15" id="regionMemberEntryCount">0</div>
+						  <span class="labeltext">Entry Count</span>
+					  </div>
+					  <div class="popupdetailsBlock">
+						  <div class="color-fff font-size15" id="regionMemberEntrySize">0</div>
+						  <span class="labeltext">Entry Size(MB)</span>
+					  </div>
+					  <div class="marginB5 popupdetailsBlock">
+						  <div class="color-fff font-size15" id="regionMemberAccessor">-</div>
+						  <span class="labeltext">Accessor</span>
+					  </div>
+          </div>
+				  <div class="left popupCanvasContentBlock" id="SmallBlock_3">
+				    <div style="border-top: 1px solid #4e6277; margin: 0px 10px 5px;"></div>
+                    <div class="marginB11 graphBlocksContent">
+                        <div class="left">
+                            <span class="left">Last 15 Minutes</span>
+                        </div>
+                        <div class="right marginL10">
+		                    <span data-prod-custom="pulse-reads-custom" class="left">Reads</span>
+		                    <span class="left marginL5 colorCodeBlockOnPopup diskReadsCode"></span>
+		                </div>
+		                <div class="right marginL10">
+		                    <span data-prod-custom="pulse-writes-custom" class="left">Writes</span>
+		                    <span class="left marginL5 colorCodeBlockOnPopup diskWritesCode"></span>
+		                </div>
+                    </div>
+                    <div class="clearfix">
+                        <div class="left" style="width:135px;">
+                            <div class="graphBlocksContent">
+                                <div class="color-fff font-size15">
+                                    <span id="memberMemoryReadsThroughput">&nbsp;</span>
+                                </div>
+                                <div class="width100Per">
+                                    <span class="">Reads</span>
+                                </div>
+                                <div class="left marginTop6 graphborder" style="background: #132634;">
+                                	<span class="left lineGraph" id="memberMemoryReadsTrend">&nbsp;</span>
+                            	</div>
+                            </div>
+                        </div>
+                        <div class="left" style="width:135px;">
+                            <div class="graphBlocksContent">
+                                <div class="color-fff font-size15">
+                                    <span id="memberMemoryWritesThroughput">&nbsp;</span>
+                                </div>
+                                <div class="width100Per ">
+                                    <span class="">Writes</span>
+                                </div>
+                                <div class="left marginTop6 graphborder" style="background: #132634;">
+                                	<span class="left lineGraph" id="memberMemoryWritesTrend">&nbsp;</span>
+                            	</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix">
+                        <div class="left" style="width:135px;">
+                            <div class="graphBlocksContent">
+                                <div class="color-fff font-size15">
+                                    <span id="memberDiskReadsThroughput">&nbsp;</span>
+                                </div>
+                                <div class="width100Per">
+                                    <span class="">Disk Reads</span>
+                                </div>
+                                <div class="left marginTop6 graphborder" style="background: #132634;">
+                                	<span class="left lineGraph" id="memberDiskReadsTrend">&nbsp;</span>
+                            	</div>
+                            </div>
+                        </div>
+                        <div class="left" style="width:135px; border: 0px solid #889eb9;">
+                            <div class="graphBlocksContent" >
+                                <div class="color-fff font-size15">
+                                    <span id="memberDiskWritesThroughput">&nbsp;</span>
+                                </div>
+                                <div class="width100Per">
+                                    <span class="">Disk Writes</span>
+                                </div>
+                                <div class="left marginTop6 graphborder" style="background: #132634;">
+                                <span class="left lineGraph" id="memberDiskWritesTrend">&nbsp;</span>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- </div>
+            </div> -->
+        </div>
+    </div>
+</div>
+<!-- popup (Riya) -->
+
+<!-- Connection lost-->
+<div class="connectionLostMasterBlock hide" id="connectionStatusDiv" >
+<div class="connectionLostInnerBlock">
+    <label class="left">Connecting ...</label>
+    <div class="clear"></div>
+    <div id="connectionErrorMsgDiv" class="right"></div>
+</div>
+</div>
+<div id="canvasWidth">
+<!--Top Links-->
+  <div class="headerTopLinksMaster">
+    <div class="right">
+      <div class="left position-relative"><a href="#."class="left headerTopLinks aboutClicked-Off">About</a> 
+        <!-- About Dropdown-->
+        <div id="detailsAbout" class="aboutBlock display-none">
+          <div class="aboutDetailsBlock">
+            <div class="left widthfull-100per marginBottom30">
+              <div class="left"><img data-prod-custom="pulse-aboutimg-custom" src="images/about.png">
+                <div>
+                 <div class="aboutVersionBlock left" id="pulseVersion"></div>
+                 <div class="left termsBlock">&nbsp;<a id="pulseVersionDetailsLink"  href="#dialog1" class="display-none" >Version Details</a></div>
+                </div>
+              </div>
+              <div data-prod-custom="pulse-about-custom" class="right aboutText">The Pulse tool monitors Pivotal&#0153; GemFire&#0169; system in real time. It provides health information, detailed operational and configuration data, system alerts, throughput performance and statistics for system members and connected clients.</div>
+            </div>
+           <div class="left widthfull-100per">
+                <div class="left copyright">
+                  Copyright &#0169; 2012-2014 Pivotal Software, Inc. All Rights Reserved. 
+                  This product is protected by U.S. and international copyright and 
+                  intellectual property laws. Pivotal products are covered by one or 
+                  more patents listed at <a href="http://www.pivotal.io/patents"
+                  target="_blank" class="termsBlockLink text-center">http://www.pivotal.io/patents</a>.
+                </div>
+                
+                <div class="left copyright">Pivotal is a registered
+                  trademark or trademark of Pivotal Software, Inc. in the United States and
+                  other jurisdictions. All other marks and names mentioned herein
+                  may be trademarks of their respective companies.</div>
+                
+                <div class="left termsBlock">
+                  <a href="oslicenses.txt" target="_blank">Open Source
+                    Licenses</a>
+                </div>
+               <!-- <div class="right termsBlock">
+                  Pulse <a href="#.">Terms of Service</a>
+                </div>-->
+              </div>
+            </div>
+        </div>
+        <!-- Version Details Popup -->
+      </div>
+      <div class="left headerTopSeperator"></div>
+      <div class="left"><a data-prod-custom="pulse-help-custom"  target="_blank" href="http://gemfire.docs.pivotal.io/latest/userguide/index.html#tools_modules/pulse/chapter_overview.html" class="left headerTopLinks">Help</a></div>
+      <div class="left headerTopSeperator"></div>
+      <div class="left headerTopLinks welcomeLabelPRZero">Welcome</div>
+      <div class="left headerTopLinks textbold font-size12" id="userName"></div>
+      <div class="left headerTopSeperator"></div>
+      <div class="left"><a href="pulse/clusterLogout" class="left headerTopLinks">Sign Out</a></div>
+    </div>
+  </div> 
+  <!-- Header block-->
+  <header>
+    <div class="left">
+      <a href="#." class="left textbold HeaderLink HeaderLinkActive" id="clusterName"  onclick="openClusterDetail();"></a>
+    </div>
+    <div class="textbold right logoBlock"><a href="#.">[LOGO]</a></div>
+  </header>
+  <div class="clear"></div>
+  <div class="subHeader">
+			<ul>
+				<li><a href="#." class="active" onclick="openClusterDetail();">Cluster View</a></li>
+				<!-- Hide Data Browser tab for gemfirexd (Pulse-Cheetah Release) -->
+				<li><a href="#."  onclick="openDataBrowser();">Data Browser</a></li>
+				<!-- Hide Query Statistics tab for gemfire -->
+				<li id="subTabQueryStatistics"><a href="#." onclick="openQueryStatistics();">Query Statistics</a></li>
+			</ul>
+		<div class="clear"></div>
+		</div>
+  <!-- Middle block-->
+  <div class="left widthfull-100per"> 
+    <!--Top Right Block 1-->
+    <div class="right widthfull-100per marginTB10">
+    <!-- Tab -->
+    <div id="notificationsPanel" class="right marginL10 TabTopPanel position-relative" 
+    data-role="widget" data-widgetid="CluserAlertNotification" data-active ="yes" data-timeline="5000">
+    </div>
+      <div class="left position-relative membersNameTopMargin"><span class="member_txt" style="font-size: 14px;">Region Name&nbsp;:&nbsp;<span id="regionNameText"></span></span> </div>
+    </div>
+    <!--Middle Block 1-->
+    <div class="left leftBlockCanvas">
+      <div  data-role="widget" data-widgetid="ClusterSelectedRegion" data-active ="yes" data-timeline="5000">
+        <div class="dataViewTreeViewBlock"> 
+          <!-- Large Block-->
+          <div class="canvasBlockLargeDataView marginBR10-11 left">
+            <div class="left widthfull-100per canvasBlockInnerBlock">
+              <span data-prod-custom="pulse-rtSummaryBySize-custom" class="left marginL10 canvasHeading">Region Members</span>
+              <a id="btngridIcon" class="gridIcon " onClick="tabClusterGrid();"></a>
+              <a id="btnchartIcon" class="chartIconActive" onClick="tabTreeMap();" ></a>
+            </div>
+            <div class="left widthfull-100per canvasBlockInnerBlock regionHeading">
+              <!-- Search-->
+              <div class="left marginBottom6 marginL10 marginTop6">
+                <div class="searchBlockMaster">
+                  <input type="button" class="searchButton">
+                  <!-- <input type="text" placeholder="Search" 
+                    onkeyup="applyFilterOnClusterRegions();" class="searchBox"
+                    id="filterClusterRegionsBox"> -->
+                    <input type="text" placeholder="Search" 
+                    onkeyup="applyFilterOnRegionMembers();" class="searchBox"
+                    id="filterRegionMembersBox">
+                </div>
+              </div>
+            </div>
+            <div class="left canvasInnerBlock canvasBlockLargeContentDataView" id="LargeBlock_1"> 
+              <!--Grid  Block-->
+              <div class="graphBlocksPanelDataView left display-none" id="gridBlocks_Panel">
+                <div class="left widthfull-100per">
+                  <table id="memberList"></table>
+                </div>
+              </div>
+              <!--chart  Block-->
+              <div class="chartBlocksPanelDataView left" id="chartBlocks_Panel">
+                <div class="left widthfull-100per">
+                  <div class="clear"></div>
+                  <div class="treeViewGraphDataView position-relative">
+                    <div id="GraphTreeMap" style="width: 100%; height: 690px; overflow: hidden;"></div> 
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Right Block-->
+        <div class="rightBlockDataView"> 
+          <!-- Block 1-->
+          <div class="canvasBlockDataView marginB10 left">
+            <!-- <div class="selectedRegionLabel" id="regionName"></div> -->
+            <div class="selectedRegionLabel" id="regionPath"></div>
+            <div class="left width563 canvasBlockInnerBlock regionHeading">
+              <span class="left marginL10 canvasHeading">
+                <!-- <span data-prod-custom="pulse-regionstablePath-custom" class="left">Region Path:&nbsp;</span>
+                <label id="regionPath"></label> -->
+                <span data-prod-custom="pulse-regionstableType-custom" class="left">Region Type:&nbsp;</span>
+                <label id="regionType"></label>
+              </span>
+            </div>
+            <div class="left canvasInnerBlock canvasContentBlockDataView" id="SmallBlock_1"> 
+              <!-- block 1-->
+              <div class="graphBlocksContentDataView left">
+                <div class="detailsBlock-memberDataView">
+                  <div class="color-d2d5d7 font-size20" id="regionMembersText"></div>
+                  <span class="labeltext">Members</span></div>
+                <div class="detailsBlock-memberDataView">
+                  <div class="color-d2d5d7 font-size20" id="regionEmptyNodes"></div>
+                  <span class="labeltext">Empty Nodes</span></div>
+                <div class="detailsBlock-memberDataView">
+                  <div class="color-d2d5d7 font-size20"  id="regionEntryCountText"></div>
+                  <span class="labeltext" data-prod-custom="pulse-entrycount-custom">Entry Count</span></div>
+                <div class="detailsBlock-memberDataView">
+                  <div class="color-d2d5d7 font-size20" id="regionDiskUsage"></div>
+                  <span class="labeltext">Disk Usage</span></div>
+                <div class="detailsBlock-memberDataView">
+                  <div class="color-d2d5d7 font-size20" id="regionPersistence"></div>
+                  <span class="labeltext">Persistence</span></div>
+                <!-- <div class="detailsBlock-memberDataView">
+                  <div class="color-d2d5d7 font-size20" id="regionIsEnableOffHeapMemory"></div>
+                  <span class="labeltext">Off-Heap</span></div>
+                <div class="detailsBlock-memberDataView">
+                  <div class="color-d2d5d7 font-size20" id="regionIsHdfsWriteOnly"></div>
+                  <span class="labeltext">HDFS Write Only</span></div> -->
+              </div>
+              <div class="clear"></div>
+              <div class="horizontalSeparator"></div>
+              <div class="left widthfull-100per">
+                <div class="left dataViewLeftBlock"> 
+                  <!-- B1 -->
+                  <div class="left display-block widthfull-100per marginTop10" id="memoryUsageDiv">
+                    <div class="pointGridHeading border-topZero">
+                      <span data-prod-custom="pulse-regionMemoryUsage-custom" class="pointHeadingPadding textUpper">Memory Usage</span>
+                    </div>
+                    <div class="pointGridDataView">
+                      <div class="left dataViewUsedMasterBlock">
+                        <div class="left widthfull-100per">
+                          <div class="usageDataView firstPaddingLeftZero left">
+                            <div class="color-d2d5d7 font-size20">
+                              <span id="memoryUsed">0</span>
+                              <span class="font-size13 paddingL5" id="memoryUsedMBSpan">MB</span>
+                            </div>
+                            <span class="labeltext">Used</span> </div>
+                          <div class="usageDataView lastPaddingLeftZero right">
+                            <div class="color-d2d5d7 font-size20">
+                              <span id="totalMemory">0</span>
+                              <span class="font-size13 paddingL5">MB</span>
+                            </div>
+                            <span class="labeltext">Total</span> </div>
+                        </div>
+                        <div class="dataUsedProgressbar">
+                          <div class="widthfull-100per">
+                            <div class="memoryUsageChart" id="memoryUsage"></div>
+                            <div class="memoryUsageValue">
+                              <span id="memoryUsageVal"></span>
+                              <span class="PerRightMargin">%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="clear"></div>
+                  <div class="horizontalSeparator"></div>
+                  <!--B2-->
+                  <div class=" border-topZero">
+                        <span data-prod-custom="pulse-regionMemoryReadsWrites-custom" class="pointHeadingPadding textUpper">In-Memory Read/Write</span>
+                  </div>
+	                <div class="dataViewGraphMaster marginzero width100Per">
+		                  <div class="left display-block widthfull-100per">
+		                    <div class="left widthfull-100per">
+		                      <div class="left dataViewUsedMasterBlock">
+		                        <div class="graphBlocksContent marginB11 ">
+		                          <div class="left">
+		                            <span class="left">Last 15 Minutes</span>
+		                          </div>
+		                          <div class="right marginL10">
+		                            <span data-prod-custom="pulse-reads-custom" class="left">Reads</span>
+		                            <span class="left marginL10 colorCodeBlock diskReadsCode"></span>
+		                          </div>
+		                          <div class="right marginL10">
+		                            <span data-prod-custom="pulse-writes-custom" class="left">Writes</span>
+		                            <span class="left marginL10 colorCodeBlock diskWritesCode"></span>
+		                          </div>
+		                        </div>
+		                        <div class="">
+		                         <div class="graphBlocksContent">
+		                            <div class="color-d2d5d7 font-size20" id="currentReadsPerSec"></div>
+		                            <span class="labeltext">Reads</span>
+		                         </div>
+		                          <div class="widthfull-100per">
+		                            <div class="dataViewGraph"><span class="left lineGraph" id="readsPerSecTrend"></span></div>
+		                          </div>
+		                        </div>
+		                      </div>
+		                    </div>
+		                  </div>
+		                  <div class="left display-block widthfull-100per">
+		                    <div class="left widthfull-100per">
+		                      <div class="left dataViewUsedMasterBlock marginTop4">
+		                        <div class="">
+		                         <div class="graphBlocksContent">
+		                            <div class="color-d2d5d7 font-size20" id="currentWritesPerSec"></div>
+		                            <span class="labeltext">Writes</span>
+		                         </div>
+		                          <div class="widthfull-100per">
+		                            <div class="dataViewGraph"><span class="left lineGraph" id="writesPerSecTrend"></span></div>
+		                          </div>
+		                        </div>
+		                      </div>
+		                    </div>
+		                  </div>
+	                </div>
+                </div>
+                <div class="left dataViewRightBlock marginL10">
+                  <!--B3-->
+                  <div class="left display-block widthfull-100per margin marginTop10" id="regionMembersWidgetContainer">
+                    <!-- <div class="pointGridHeading border-topZero"><span data-prod-custom="pulse-regionstableMembers-custom" class="pointHeadingPadding textUpper">Region Members</span></div> -->
+                    <div>
+                      <div class="left regionMembersMasterBlock">
+                        <!-- <div class="left widthfull-100per"> 
+                          Search
+                          <div class="left marginB10 marginL10">
+                           <div class="searchBlockMaster">
+                            <input type="button" class="searchButton">
+                            <input type="text" placeholder="Search" onkeyup="applyFilterOnMembersList();" class="searchBox" id="filterMembersListBox">
+                          </div>
+                          </div>
+                          <div class="clear"></div>
+                           <div class="left regionMembersSearchBlock">
+                           <div id="memberNames" class="memberNamescls"></div>
+                          </div>
+                        </div> -->
+                      </div>
+                    </div>
+                  </div>
+                  <div class="clear"></div>
+                  <div class="horizontalSeparator"></div>
+                  <!--B4-->
+                  <div class=" border-topZero">
+                        <span data-prod-custom="pulse-regionDiskReadsWrites-custom" class="pointHeadingPadding textUpper">Disk Read/Write</span>
+                  </div>
+                  <div class="dataViewGraphMaster marginzero width100Per">
+                      <div class="left display-block widthfull-100per">
+                        <div class="left widthfull-100per">
+                          <div class="left dataViewUsedMasterBlock ">
+                            <div class="graphBlocksContent marginB11 ">
+                              <div class="left">
+                                <span class="left">Last 15 Minutes</span>
+                              </div>
+                              <div class="right marginL10">
+                                <span data-prod-custom="pulse-reads-custom" class="left">Reads</span>
+                                <span class="left marginL10 colorCodeBlock diskReadsCode"></span>
+                              </div>
+                              <div class="right marginL10">
+                                <span data-prod-custom="pulse-writes-custom" class="left">Writes</span>
+                                <span class="left marginL10 colorCodeBlock diskWritesCode"></span>
+                              </div>
+                            </div>
+                            <div class="">
+                             <div class="graphBlocksContent">
+                                <div class="color-d2d5d7 font-size20" id="currentDiskReadsPerSec"></div>
+                                <span class="labeltext">Reads</span>
+                             </div>
+                              <div class="widthfull-100per">
+                                <div class="dataViewGraph"><span class="left lineGraph" id="diskReadsPerSecTrend"></span></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="left display-block widthfull-100per">
+                        <div class="left widthfull-100per">
+                          <div class="left dataViewUsedMasterBlock marginTop4">
+                            <div class="">
+                             <div class="graphBlocksContent">
+                                <div class="color-d2d5d7 font-size20" id="currentDiskWritesPerSec"></div>
+                                <span class="labeltext">Writes</span>
+                             </div>
+                              <div class="widthfull-100per">
+                                <div class="dataViewGraph"><span class="left lineGraph" id="diskWritesPerSecTrend"></span></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                 </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="clear"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Placeholder--> 
+<script>
+$('input[placeholder], textarea[placeholder]').placeholder();
+</script>
+<!--Popups Block-->
+<div id="boxes"> 
+  <!-- Version Details popup-->
+ <div id="dialog1" class="window width345" data-role="widget" data-widgetid="PulseVersionDetails" data-active ="yes" data-timeline="5000">
+    <div class="popup_heading"><span>Version Details</span><a href="#" class="closePopup">&nbsp;</a></div>
+    <div class="popup_contentBlock">
+      <div class="popup-innerblock">
+        <ul class="widthfull-100per left">
+          <li class="left widthfull-100per">
+            <label class="width-40 display-inline-block">Pulse Version:</label>
+            <label class="width-58 display-inline-block" id="pulseVer"></label>
+          </li>
+          <li class="left widthfull-100per">
+            <label class="width-40 display-inline-block">Build Id:</label>
+            <label class="width-58 display-inline-block" id="buildId"></label>
+          </li>
+          <li class="left widthfull-100per">
+            <label class="width-40 display-inline-block">Build Date:</label>
+            <label class="width-58 display-inline-block" id="buildDate"></label>
+          </li>
+          <li class="left widthfull-100per">
+            <label class="width-40 display-inline-block">Source Date:</label>
+            <label class="width-58 display-inline-block" id="sourceDate"></label>
+          </li>
+          <li class="left widthfull-100per">
+            <label class="width-40 display-inline-block">Source Revision:</label>
+            <label class="width-58 display-inline-block" id="sourceRevision"></label>
+          </li>
+          <li class="left widthfull-100per">
+            <label class="width-40 display-inline-block">Source Repository:</label>
+            <label class="width-58 display-inline-block" id="sourceRepository"></label>
+          </li>
+        </ul>
+        <div class="clear"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Mask to cover the whole screen -->
+  <div id="mask"></div>
+</div>
+<div id="tooltip" class="tooltip"></div>
+<div id="region_tooltip" class="tooltip"></div>
+</body>
+</html>

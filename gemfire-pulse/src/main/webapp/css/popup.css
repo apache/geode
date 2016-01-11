@@ -1,0 +1,36 @@
+#mask {
+  position:absolute;
+  left:0;
+  top:0;
+  z-index:9000;
+  background:url(../images/mask-bg.png) repeat;
+  display:none;
+}
+  
+#boxes .window {
+  position:fixed;
+  left:0;
+  top:0;
+  display:none;
+  z-index:9999;
+  border:1px solid #49596a;
+  
+}
+.popup_heading{background:#142e41 ; display:block; width:100%; float:left;border-bottom:1px solid #49596a; }
+.popup_heading span{ color:#8a97a0; font-size:14px; float:left; width:82%; padding:10px 5px 10px 10px;}
+.closePopup{color:#fff; float:right; background:url(../images/popup-close-button.png) no-repeat; display:inline-block; width:14px; height:14px; margin:12px 10px 12px 5px;}
+/*popup Content Block*/
+.popup_contentBlock{float:left; width:100%}
+.popup-innerblock{background:#283649;  padding:10px; color:#949ba4; font-size:13px;}
+.popup-innerblock ul li{margin-bottom:5px;}
+.dataSeperator{margin:0px 5px;}
+.width-58{width:58%}
+/*Popup Width*/
+.width345 {
+  width:345px; 
+}
+.width700 {
+  width:700px; 
+}
+
+#gridPopup .popup-innerblock { background:#132634; }

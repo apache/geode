@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="CACHE-CONTROL" content="NO-CACHE,NO-STORE" />
+<meta http-equiv="PRAGMA" content="NO-CACHE" />
+<meta http-equiv="EXPIRES" content="-1">
+<title>Pulse</title>
+<link href="css/common.css" rel="stylesheet" type="text/css" />
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+
+<!-- fix IE Ui issues-->
+<!--[if IE 7]>
+ 	<link href="css/ie/ie7.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--[if IE 8]>
+ 	<link href="css/ie/ie8.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!--[if IE 9]>
+ 	<link href="css/ie/ie9.css" type="text/css" rel="stylesheet"/>
+ <![endif]-->
+<!-- IE Fix for HTML5 Tags -->
+<!--[if lt IE 9]>
+<script src='scripts/lib/html5.js'></script>
+<script type="text/javascript" src="scripts/lib/excanvas.js"></script>
+<script type="text/javascript"> if (!window.console) console = {log: function() {}}; </script>
+	<![endif]-->
+
+<script type="text/javascript" src='scripts/lib/jquery-1.7.2.js'></script>
+<script type="text/javascript" src='scripts/lib/common.js'></script>
+<script type="text/javascript" src="scripts/lib/jquery.i18n.properties.js"></script>
+<!--Custom Scroll Bar-->
+<!-- styles needed by jScrollPane - include in your own sites -->
+<link type="text/css" href="css/jquery.jscrollpane.css" rel="stylesheet"
+	media="all" />
+<!-- the mousewheel plugin -->
+<script type="text/javascript" src="scripts/lib/jquery.mousewheel.js"></script>
+<!-- the jScrollPane script -->
+<script type="text/javascript" src="scripts/lib/jquery.jscrollpane.js"></script>
+<!-- Rgraph and TreeMap-->
+<link type="text/css" href="css/base.css" rel="stylesheet" />
+<link type="text/css" href="css/Treemap.css" rel="stylesheet" />
+<script type="text/javascript" src="scripts/lib/jit.js"></script>
+<script type="text/javascript" src="scripts/lib/jquery.sparkline.js"></script>
+
+<!-- Grid view CSS and js-->
+<link rel="stylesheet" type="text/css" media="screen" href="css/grid/ui.jqgrid.css" />
+<script src="scripts/lib/grid.locale-en.js" type="text/javascript"></script>
+<script src="scripts/lib/jquery.jqGrid.src.js" type="text/javascript"></script>
+<script src="scripts/lib/jquery.tablednd.js" type="text/javascript"></script>
+<!-- -->
+<!-- jQuery plugin to support automatically updating fuzzy timestamps 
+(e.g. "4 minutes ago" or "about 1 day ago") -->
+<script type="text/javascript" src="scripts/lib/jquery.timeago.js"></script>
+
+<!-- start:Cluster widget based js files -->
+<script type="text/javascript" src="scripts/pulsescript/PulseCallbacks.js"></script>
+<script type="text/javascript" src="scripts/pulsescript/PulseFunctions.js"></script>
+<script type="text/javascript" src='scripts/pulsescript/common.js'></script>
+<script type="text/javascript" src='scripts/pulsescript/clusterRGraphMembers.js'></script>
+<script type="text/javascript" src='scripts/pulsescript/clusterDetail.js'></script>
+
+</head>
+
+
+<body onload="return checkMedia();">
+<!-- Connection lost-->
+<div class="connectionLostMasterBlock hide" id="connectionStatusDiv" >
+<div class="connectionLostInnerBlock">
+    <label id="lblConnectionErrorMsgDiv" class="left">Connecting ...</label>
+    <div class="clear"></div>
+    <div id="connectionErrorMsgDiv" class="right"></div>
+</div>
+</div>
+	<div id="canvasWidth">
+	<!--Top Links-->
+  <div class="headerTopLinksMaster">
+    <div class="right">
+      <div class="left position-relative"><a href="#."class="left headerTopLinks aboutClicked-Off">About</a> 
+        <!-- About Dropdown-->
+        <div id="detailsAbout" class="aboutBlock display-none">
+          <div class="aboutDetailsBlock">
+            <div class="left widthfull-100per marginBottom30">
+              <div class="left"><img data-prod-custom="pulse-aboutimg-custom" src="images/about.png">
+                <div>
+                  <div class="aboutVersionBlock left" id="pulseVersion"></div>
+                  <div class="left termsBlock">&nbsp;<a id="pulseVersionDetailsLink" href="#dialog1" class="display-none" >Version Details</a></div>
+                </div>
+              </div>
+              <div data-prod-custom="pulse-about-custom" class="right aboutText">The Pulse tool monitors Pivotal&#0153; GemFire&#0169; system in real time. It provides health information, detailed operational and configuration data, system alerts, throughput performance and statistics for system members and connected clients.</div>
+            </div>
+							<div class="left widthfull-100per">
+								<div class="left copyright">
+									Copyright &#0169; 2012-2014 Pivotal Software, Inc. All Rights Reserved.
+									This product is protected by U.S. and international copyright 
+									and intellectual property laws. Pivotal products are covered by
+									one or more patents listed at <a href="http://www.pivotal.io/patents"
+									target="_blank" class="termsBlockLink text-center">http://www.pivotal.io/patents</a>.
+								</div>
+								
+								<div class="left copyright">Pivotal is a registered
+									trademark or trademark of Pivotal Software, Inc. in the United States and
+									other jurisdictions. All other marks and names mentioned herein
+									may be trademarks of their respective companies.</div>
+								
+								<div class="left termsBlock">
+									<a href="oslicenses.txt" target="_blank">Open Source
+										Licenses</a>
+								</div>
+								<!-- <div class="right termsBlock">
+									Pulse <a href="#.">Terms of Service</a>
+								</div>-->
+							</div>
+						</div>
+        </div>
+      </div>
+      <div class="left headerTopSeperator"></div>
+      <div class="left"><a data-prod-custom="pulse-help-custom" target="_blank" href="http://gemfire.docs.pivotal.io/latest/userguide/index.html#tools_modules/pulse/chapter_overview.html" class="left headerTopLinks" class="left headerTopLinks">Help</a></div>
+      <div class="left headerTopSeperator"></div>
+      <div class="left headerTopLinks welcomeLabelPRZero">Welcome</div>
+      <div class="left headerTopLinks textbold font-size12" id="userName"></div>
+      <div class="left headerTopSeperator"></div>
+      <div class="left"><a href="pulse/clusterLogout" class="left headerTopLinks">Sign Out</a></div>
+    </div>
+  </div>
+		<!-- Header block-->
+		<header>
+			<div class="left">
+				<a href="#." onclick="openClusterDetail();" class="left textbold HeaderLink HeaderLinkActive"
+					id="clusterName" ></a>
+			</div>
+			<div class="textbold right logoBlock">
+				<a href="#.">[LOGO]</a>
+			</div>
+		</header>
+		<div class="clear"></div>
+		<div class="subHeader">
+			<ul>
+				<li><a href="#." class="active" onclick="openClusterDetail();">Cluster View</a></li>
+				<!-- Hide Data Browser tab for gemfirexd (Pulse-Cheetah Release) -->
+				<li><a href="#."  onclick="openDataBrowser();">Data Browser</a></li>
+				<!-- Hide Query Statistics tab for gemfire -->
+				<li id="subTabQueryStatistics"><a href="#." onclick="openQueryStatistics();">Query Statistics</a></li>
+			</ul>
+		<div class="clear"></div>
+		</div>
+		<!-- Middle block-->
+		<div class="left widthfull-100per">
+			<!--Top Right Block 1-->
+			<div class="right widthfull-100per marginTB10">
+                            
+				<!-- Tab-->
+				<div id="notificationsPanel" class="right marginL10 TabTopPanel position-relative" 
+				data-role="widget" data-widgetid="CluserAlertNotification" data-active ="yes" data-timeline="5000">
+				</div>
+				<!-- <div class="right marginL10">
+					<a href="#." class="left linkButton" onclick="openDataView();">Data View</a>
+				</div> -->
+			<!-- </div> -->
+			<!--Middle Block 1-->
+			<div class="left leftBlockCanvas">
+				<!-- Status Block-->
+				<div class="statusmasterBlock left" data-role="widget" data-widgetid="CluserBasicDetails" data-active ="yes" data-timeline="5000">
+					<!--Status Block Normal-->
+					<div class="statusFirstBlock left">
+						<div class="statusMasterBlock" id="clusterStatusIcon">
+							<div class="textbold" id="clusterStatusText"></div>
+							<div class="labeltext">Cluster Status</div>
+						</div>
+					</div>
+					<!-- Deails B1-->
+					<div class="borderRightDarkBlue detailsBlock">
+						<div class="color-d2d5d7 font-size23">
+							<span id="clusterTotalHeap"></span><span
+								class="font-size17 paddingL5">GB</span>
+						</div>
+						<span class="labeltext" >Total Heap</span>
+					</div>
+					<!-- Deails B2-->
+					<div class=" detailsBlock">
+						<div class="color-d2d5d7 font-size23" id="clusterTotalMembersText"></div>
+						<span class="labeltext" >Members</span>
+					</div>
+					<!-- Deails B3-->
+					<div class="detailsBlock">
+						<div class="color-d2d5d7 font-size23" id="clusterServersText"></div>
+						<span class="labeltext" >Servers</span>
+					</div>
+					<!-- Deails B4-->
+					<div class="detailsBlock">
+						<div class="color-d2d5d7 font-size23" id="clusterClientsText"></div>
+						<span class="labeltext" >Clients</span>
+					</div>
+					<!-- Deails B5-->
+					<div class="detailsBlock">
+						<div class="color-d2d5d7 font-size23" id="clusterLocatorsText"></div>
+						<span class="labeltext" >Locators</span>
+					</div>
+					<!-- Deails B6-->
+					<div class="detailsBlock">
+						<div class="color-d2d5d7 font-size23" id="clusterTotalRegionsText"></div>
+						<span data-prod-custom="pulse-regionstableCaps-custom" class="labeltext" >Regions</span>
+					</div>
+					<!-- Deails B7-->
+					<div class="detailsBlock">
+						<div class="color-d2d5d7 font-size23" id="clusterFunctions"></div>
+						<span data-prod-custom="pulse-functionprocedureCaps-custom" class="labeltext" >Functions</span>
+					</div>
+					<!-- Deails B8-->
+					<div class="detailsBlock" id="clusterUniqueCQsContainer">
+						<div class="color-d2d5d7 font-size23" id="clusterUniqueCQs"></div>
+						<span class="labeltext" >Unique CQs</span>
+					</div>
+					<!-- Deails B9-->
+					<div class="detailsBlock" id="SubscriptionsContainer">
+						<div class="color-d2d5d7 font-size23"
+							id="clusterSubscriptionsText"></div>
+						<span class="labeltext" >Subscriptions</span>
+					</div>
+					<!-- Deails B10-->
+					<div class="detailsBlock" id="TxnCommittedContainer">
+					  <div class="color-d2d5d7 font-size23"
+					    id="clusterTxnCommittedText"></div>
+					  <span class="labeltext" >Txn. Committed</span>
+					</div>
+					<!-- Deails B11-->
+					<div class="detailsBlock" id="TxnRollbackContainer">
+					  <div class="color-d2d5d7 font-size23"
+					    id="clusterTxnRollbackText"></div>
+					  <span class="labeltext" >Txn. Rollback</span>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div>
+					<div class="middleTopologyBlock">
+						<!-- Large Block-->
+						<div class="canvasBlockLarge loaderParent marginBR10-11 left">
+							<div class="left widthfull-100per canvasBlockInnerBlock">
+								<!-- Drop Down list -->
+								<div class="left members_data" onClick="">
+									<ul class="inactive">
+										<li class="selected" id="members_data1">
+										  <a href="javascript:onChangeClusterPerspective(1);">Members</a>
+										</li>
+										<li id="members_data2">
+										  <a href="javascript:onChangeClusterPerspective(2);">Data</a>
+										</li>
+									</ul>
+								</div>
+								<!-- Expand/Collapse button -->
+								<a id="btnLargeBlock_1" class="minusIcon borderLeftToggleBlock"
+									onclick="toggleDiv(&#39;LargeBlock_1&#39;);"></a>
+								<!-- Visualization Icons -->
+								<div class="icons">
+									<!-- Members Topology default buttons -->
+									<div id="icons_member_view_option_default" style="display: block;">
+										<a id="default_grid_button" class="gridIcon"
+											onclick="openViewPanel('member', 'default','grid');"
+											data-perspective="member" data-view="default"
+											data-viewoption="grid"></a>
+										<a id="default_treemap_button" class="chartIcon" 
+										  onclick="openViewPanel('member', 'default','treemap');"
+											data-perspective="member" data-view="default"
+											data-viewoption="treemap"></a>
+										<a id="default_rgraph_button" class="graphIcon active"
+											onclick="openViewPanel('member', 'default','rgraph');"
+											data-perspective="member" data-view="default"
+											data-viewoption="rgraph"></a>
+									</div>
+									<!-- Members Server Group buttons -->
+									<div id="icons_member_view_option_servergroups" style="display: none;">
+										<a id="servergroups_grid_button" class="gridIcon"
+											onclick="openViewPanel('member', 'servergroups','grid');" 
+											data-perspective="member" data-view="servergroups" data-viewoption="grid"></a>
+										<a id="servergroups_treemap_button" class="chartIcon active"
+											onclick="openViewPanel('member', 'servergroups','treemap');"
+											data-perspective="member" data-view="servergroups" data-viewoption="treemap"></a>
+									</div>
+									<!-- Members Redundancy Zones buttons -->
+									<div id="icons_member_view_option_redundancyzones" style="display: none;">
+										<a id="redundancyzones_grid_button" class="gridIcon"
+											onclick="openViewPanel('member', 'redundancyzones','grid');"
+											data-perspective="member" data-view="redundancyzones" data-viewoption="grid"></a>
+										<a id="redundancyzones_treemap_button" class="chartIcon active"
+											onclick="openViewPanel('member', 'redundancyzones','treemap');"
+											data-perspective="member" data-view="redundancyzones" data-viewoption="treemap"></a>
+									</div>
+									<!-- Data buttons -->
+									<div id="icons_data_view" style="display: none;">
+										<a id="data_grid_button" class="gridIcon"
+											onclick="openViewPanel('data','data','grid');"
+											data-perspective="data" data-view="data" data-viewoption="grid"></a>
+										<a id="data_treemap_button" class="chartIcon active"
+											onclick="openViewPanel('data','data','treemap');"
+											data-perspective="data" data-view="data" data-viewoption="treemap"></a>
+									</div>
+								</div>
+							</div>
+							<div id="loadingSymbol" class="loader"></div>
+							<div class="left canvasInnerBlock canvasBlockLargeContent" id="LargeBlock_1">
+								<div id="member_view_options" class="left members_view" style="display: block;">
+									<ul>
+										<li id="member_view_option_default" class="selected">
+										  <LABEL class="label_radio r_on" for="radio-default">
+										    <INPUT name="radio-group" id="radio-default" value="1"
+												type="radio">Topology</LABEL>
+										</li>
+										<li id="member_view_option_servergroups">
+										  <LABEL class="label_radio" for="radio-servergroups">
+										    <INPUT name="radio-group" id="radio-servergroups" value="2"
+												type="radio">Server Groups</LABEL>
+										</li>
+										<li id="member_view_option_redundancyzones">
+										  <LABEL class="label_radio" for="radio-redundancyzones">
+										    <INPUT name="radio-group" id="radio-redundancyzones" value="3"
+												  type="radio">Redundancy Zones</LABEL>
+										</li>
+									</ul>
+								</div>
+								<!-- Hot Spot Drop down -->
+								<div id="hotspotParentContainer" class="right marginBottom10 marginR10 displayNone">
+								  <div class="left position-relative hotspotNameTopMargin">
+								    <a href="#." class="hotspotClicked-Off" id="userLink">
+								      <span id="currentHotSpot" class="hotspot_txt">Current Hot Spot</span>
+								    </a>
+								    <!-- Setting Dropdown-->
+								    <div id="hotspotSetting" class="settingBlock" style="display: none">
+								      <div id="hotspotListContainer" class="jsonSuggestScrollFilter">
+								        <div id="hotspotList"></div>
+								      </div>
+								    </div>
+								  </div>
+								</div>
+								<div data-role="widget" data-widgetid="ClusterMembers"
+									data-active="yes" data-timeline="5000">
+									<!-- Topology R-graph Block - Member - Default view -->
+									<div class="graphBlocksPanel left display-block"
+										id="default_rgraph_block" data-role="widget"
+										data-widgetid="ClusterMembersRGraph" data-active="yes"
+										data-timeline="5000">
+										<!-- R-graph -->
+										<div class="left widthfull-100per marginB10" id="rGraphDiv">
+											<div class="topologyGraph">
+												<div id="container">
+													<div id="center-container">
+														<div id="infovis" style="width: 100%;"></div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<!-- R-graph legends -->
+										<div class="marginB11 left widthfull-100per" id="rGraphLegends">
+											<div class="left marginL10">
+												<span class="left colorCodeBlock managerCode"></span>
+												<span class="left marginL10 ">Managers</span>
+											</div>
+											<div class="left marginL10">
+												<span class="left colorCodeBlock locatorsCode"></span>
+												<span class="left marginL10 ">Locators</span>
+											</div>
+											<div class="left marginL10">
+												<span class="left colorCodeBlock severeCode"></span>
+												<span class="left marginL10 ">Server</span>
+											</div>
+										</div>
+									</div>
+
+									<!--Treemap Block - Member - Default view -->
+									<div class="chartBlocksPanel left" id="default_treemap_block">
+										<div class="left widthfull-100per">
+											<div class="treeViewGraphClusterView">
+												<div id="GraphTreeMap" style="height: 415px; width: 720px;"></div>
+											</div>
+										</div>
+									</div>
+
+									<!--Grid Block - Member - Default view -->
+									<div class="gridBlocksPanel left display-none" id="default_grid_block">
+										<div class="left widthfull-100per">
+											<table id="memberList"></table>
+										</div>
+									</div>
+
+									<!--Treemap Block - Member - Server Group view -->
+									<div class="chartBlocksPanel left" id="servergroups_treemap_block">
+										<div class="left widthfull-100per">
+											<div class="treeViewGraphClusterView">
+												<div id="GraphTreeMapSG" style="height: 415px; width: 720px;"></div>
+											</div>
+										</div>
+									</div>
+
+									<!--Grid Block - Member - Server Group view -->
+									<div class="chartBlocksPanel left display-none" id="servergroups_grid_block">
+										<div class="left widthfull-100per">
+											<div class="treeViewGraphClusterView">
+											  <table id="memberListSG"></table>
+											</div>
+										</div>
+									</div>
+
+									<!--Treemap Block - Member - Redundancy Zones view -->
+									<div class="chartBlocksPanel left" id="redundancyzones_treemap_block">
+										<div class="left widthfull-100per">
+											<div class="treeViewGraphClusterView">
+												<div id="GraphTreeMapRZ" style="height: 415px; width: 720px;"></div>
+											</div>
+										</div>
+									</div>
+
+									<!--Grid Block - Member - Redundancy Zones view -->
+									<div class="chartBlocksPanel left display-none" id="redundancyzones_grid_block">
+										<div class="left widthfull-100per">
+											<div class="treeViewGraphClusterView">
+												<table id="memberListRZ"></table>
+											</div>
+										</div>
+									</div>
+
+									<!--Treemap Block - Data -->
+									<div data-role="widget" data-widgetid="ClusterRegions"
+                  data-active="yes" data-timeline="5000" 
+                  class="chartBlocksPanel left" id="data_treemap_block">
+										<div class="left widthfull-100per">
+											<div class="treeViewGraphClusterView">
+												<div id="GraphTreeMapClusterData" style="height: 415px; width: 720px;"></div>
+											</div>
+										</div>
+									</div>
+
+									<!--Grid Block - Data -->
+									<div class="chartBlocksPanel left display-none" id="data_grid_block">
+										<div class="left widthfull-100per">
+											<div class="treeViewGraphClusterView">
+												<table id="regionsList"></table>
+											</div>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</div>
+						<!-- Block 4-->
+						<div class="canvasBlockKeyStats marginBR10-11 left" data-role="widget" data-widgetid="ClusterKeyStatistics" data-active ="yes" data-timeline="5000">
+							<div class="left width495 canvasBlockInnerBlock">
+								<span class="left marginL10 canvasHeading" >Key Statistics</span><a
+									id="btnSmallBlock_4" class="minusIcon"
+									onClick="toggleDiv('SmallBlock_4');" ></a>
+							</div>
+							<div class="left canvasInnerBlock canvasContentBlockKeyStats"
+								id="SmallBlock_4">
+								<div class="graphBlocksContent left">
+									<span class="marginB11 left widthfull-100per" >Last 15
+										Minutes</span>
+									<!--Line 1-->
+									<div class="left widthfull-100per marginB10">
+										<span class="left lineGraphKeyStats" id="writePerSecSparkLine"></span><span
+											class="color-d2d5d7 font-size23" id="writePerSec"></span><span data-prod-custom="pulse-writeputpersec-custom"
+											class="paddingL5" >Write/Sec</span>
+									</div>
+									<!--Line 2-->
+									<div class="left widthfull-100per marginB10">
+										<span class="left lineGraphKeyStats" id="readPerSecSparkLine"></span><span
+											class="color-d2d5d7 font-size23" id="readPerSec"></span><span data-prod-custom="pulse-readgetpersec-custom"
+											class="paddingL5" >Read/Sec</span>
+									</div>
+									<!--Line 3-->
+									<div class="left widthfull-100per marginB10" id="queriesPerSecContainer">
+										<span class="left lineGraphKeyStats" id="queriesPerSecSparkLine"></span><span
+											class="color-d2d5d7 font-size23" id="queriesPerSec"></span><span
+											class="paddingL5" >Queries/Sec</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- Block 5-->
+						
+						<!-- Block 6-->
+						<div class="canvasBlock marginBR10-11 left" data-role="widget" data-widgetid="ClusterJVMPAuses" data-active ="yes" data-timeline="5000">
+							<div class="left width242 canvasBlockInnerBlock">
+								<span class="left marginL10 canvasHeading" >No. of JVM
+									Pauses</span><a id="btnSmallBlock_6" class="minusIcon"
+									onClick="toggleDiv('SmallBlock_6');" ></a>
+							</div>
+							<div class="left canvasInnerBlock canvasContentBlock"
+								id="SmallBlock_6">
+								<div class="graphBlocksContent">
+									<div class="color-d2d5d7 font-size40">
+										<span id="currentGCPauses"></span><span
+											class="font-size23 paddingL5"></span>
+									</div>
+									<span >Last 15 Minutes</span>
+								</div>
+								<div class="left graphChart">
+									<span class="left lineGraph" id="gcPauses"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- Right Block-->
+					<div class="rightBlockCanvas">
+						<!-- Block 1-->
+						<div class="canvasBlock marginB10 left" id="wanInfoWidget" data-role="widget" data-widgetid="ClusterWanInformation" data-active ="yes" data-timeline="5000">
+							<div class="left width242 canvasBlockInnerBlock">
+								<span class="left marginL10 canvasHeading">WAN
+									Information</span><a id="btnSmallBlock_1" class="minusIcon"
+									onClick="toggleDiv('SmallBlock_1');"></a>
+							</div>
+							<div class="left canvasInnerBlock canvasContentBlock"
+								id="SmallBlock_1">
+								<div class="scroll-pane_1">
+									<div id="wanInfoList"></div>
+								</div>
+							</div>
+						</div>
+						<div class="clear"></div>
+						<!-- Block 5-->
+						<div class="canvasBlock marginBR10-11 left" data-role="widget" data-widgetid="ClusterMemoryUsage" data-active ="yes" data-timeline="5000">
+							<div class="left width242 canvasBlockInnerBlock">
+								<span class="left marginL10 canvasHeading" >Memory Usage</span><a
+									id="btnSmallBlock_5" class="minusIcon"
+									onClick="toggleDiv('SmallBlock_5');"></a>
+							</div>
+							<div class="left canvasInnerBlock canvasContentBlock"
+								id="SmallBlock_5">
+								<div class="graphBlocksContent">
+									<div class="color-d2d5d7 font-size40">
+										<span id="currentMemoryUsage"></span><span
+											class="font-size23 paddingL5" id="memoryUsageMB" >MB</span>
+									</div>
+									<span >Last 15 Minutes</span>
+								</div>
+								<div class="left graphChart">
+									<span class="left lineGraph" id="memoryUsage"></span>
+								</div>
+							</div>
+						</div>
+						<!-- Block 2-->
+					<!-- 	<div class="canvasBlock marginB10 left">
+							<div class="left width242 canvasBlockInnerBlock">
+								<span class="left marginL10 canvasHeading">Disk Storage
+									Used</span><a id="btnSmallBlock_2" class="minusIcon"
+									onClick="toggleDiv('SmallBlock_2');"></a>
+							</div>
+							<div class="left canvasInnerBlock canvasContentBlock"
+								id="SmallBlock_2">
+								<div class="graphBlocksContent">
+									<div class="color-d2d5d7 font-size40">
+										<span id="currentDiskStorage"></span><span
+											class="font-size23 paddingL5" id="diskStorageMBGB">MB</span>
+									</div>
+									<span>Last 15 Minutes</span>
+								</div>
+								<div class="left graphChart">
+								  <span class="left lineGraph" id="diskStorageGraph"></span>
+								</div>
+							</div>
+						</div>
+						<div class="clear"></div> -->
+						<!-- Block 3-->
+						<div class="canvasBlock marginB10 left" data-role="widget" data-widgetid="ClusterDiskThroughput" data-active="yes" data-timeline="5000">
+							<div class="left width242 canvasBlockInnerBlock">
+								<span class="left marginL10 canvasHeading">Disk Throughput</span>
+								<a id="btnSmallBlock_3" class="minusIcon"
+									onClick="toggleDiv('SmallBlock_3');"></a>
+							</div>
+							<div class="left canvasInnerBlock canvasContentBlock"
+								id="SmallBlock_3">
+								<div class="graphBlocksContent marginB11 ">
+									<div class="left">
+										<span class="left">Last 15 Minutes</span>
+									</div>
+									<div class="right marginL10">
+										<span data-prod-custom="pulse-reads-custom" class="left">Reads</span>
+										<span class="left marginL10 colorCodeBlock diskReadsCode"></span>
+									</div>
+									<div class="right marginL10">
+										<span data-prod-custom="pulse-writes-custom" class="left">Writes</span>
+										<span class="left marginL10 colorCodeBlock diskWritesCode"></span>
+									</div>
+								</div>
+								<div class="graphBlocksContent width91Per left">
+									<div class="color-d2d5d7 font-size20">
+										<span id="diskReadsThroughput"></span>
+									</div>
+									<div class="width100Per left">
+										<span class="left">Reads</span> <span class="right"
+											id="currentDiskReadsThroughput"></span>
+									</div>
+								</div>
+								<div class="left graphChart marginB11">
+									<span class="left lineGraph" id="diskReadsThroughputTrend"></span>
+								</div>
+								<div class="graphBlocksContent width91Per left">
+									<div class="color-d2d5d7 font-size20">
+										<span id="diskWritesThroughput"></span>
+									</div>
+									<div class="width100Per left">
+										<span class="left">Writes</span> <span class="right"
+											id="currentDiskWritesThroughput"></span>
+									</div>
+								</div>
+								<div class="left graphChart">
+									<span class="left lineGraph" id="diskWritesThroughputTrend"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+      </div>
+		</div>
+	</div>
+	<!--Popups Block-->
+<div id="boxes"> 
+  <!-- Version Details popup-->
+  <div id="dialog1" class="window width345"  data-role="widget" data-widgetid="PulseVersionDetails" data-active ="yes" data-timeline="5000">
+    <div class="popup_heading"><span>Version Details</span><a href="#" class="closePopup">&nbsp;</a></div>
+    <div class="popup_contentBlock">
+      <div class="popup-innerblock">
+        <ul class="widthfull-100per left"  >
+          <li class="left widthfull-100per"  >
+            <label class="width-40 display-inline-block"  >Pulse Version:</label>
+            <label class="width-58 display-inline-block" id="pulseVer"></label>
+          </li>
+          <li class="left widthfull-100per"  >
+            <label class="width-40 display-inline-block"  >Build Id:</label>
+            <label class="width-58 display-inline-block" id="buildId"></label>
+          </li>
+          <li class="left widthfull-100per"  >
+            <label class="width-40 display-inline-block"  >Build Date:</label>
+            <label class="width-58 display-inline-block" id="buildDate"></label>
+          </li>
+          <li class="left widthfull-100per"  >
+            <label class="width-40 display-inline-block"  >Source Date:</label>
+            <label class="width-58 display-inline-block" id="sourceDate"></label>
+          </li>
+          <li class="left widthfull-100per"  >
+            <label class="width-40 display-inline-block"  >Source Revision:</label>
+            <label class="width-58 display-inline-block" id="sourceRevision"></label>
+          </li>
+          <li class="left widthfull-100per"  >
+            <label class="width-40 display-inline-block"  >Source Repository:</label>
+            <label class="width-58 display-inline-block" id="sourceRepository"></label>
+          </li>
+        </ul>
+        <div class="clear"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Mask to cover the whole screen -->
+  <div id="mask"></div>
+</div>
+<div id="tooltip" class="tooltip"></div>
+</body>
+
+
+</html>

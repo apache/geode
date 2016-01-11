@@ -1,0 +1,295 @@
+/* theme specific */
+
+/* Interaction Cues
+----------------------------------*/
+.ui-state-disabledSelect {
+	cursor: default !important;
+}
+
+.ui-icon {
+	display: block;
+	text-indent: -99999px;
+	overflow: hidden;
+	background-repeat: no-repeat;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+/* Interaction states
+----------------------------------*/
+.ui-state-defaultSelect,.ui-widget-contentSelect .ui-state-defaultSelect,.ui-widget-headerSelect .ui-state-defaultSelect
+	{
+	border: 0px solid #4D5B66;
+	background: #0F1C25 50% 50%	repeat-x;
+	color: #83939A !important;
+}
+
+.ui-state-defaultSelect a,.ui-state-defaultSelect a:link,.ui-state-defaultSelect a:visited
+	{
+	color: #3775c5;
+	text-decoration: none;
+}
+
+.ui-state-hoverSelect,.ui-widget-contentSelect .ui-state-hoverSelect,.ui-widget-headerSelect .ui-state-hoverSelect,.ui-state-focusSelect,.ui-widget-contentSelect .ui-state-focusSelect,.ui-widget-headerSelect .ui-state-focusSelect
+	{
+	border: 0px solid #3775c5;
+	background: #1f313f 50% 50% repeat-x;
+	font-weight: bold;
+	color: #b7b9bb; /*#3775c5;*/
+}
+
+.ui-state-hoverSelect a,.ui-state-hoverSelect a:hover,.ui-state-hoverSelect a:link,.ui-state-hoverSelect a:visited
+	{
+	color: #b7b9bb !important; /*#3775c5;*/
+	text-decoration: none;
+}
+
+.ui-state-activeSelect,.ui-widget-contentSelect .ui-state-activeSelect,.ui-widget-headerSelect .ui-state-activeSelect
+	{
+	border: 1px solid #4D5B66;
+	background: #132634 50% 50% repeat-x;
+	font-weight: bold;
+	color: #b7b9bb; /*#3775c5;*/
+}
+
+.ui-state-activeSelect a,.ui-state-activeSelect a:link,.ui-state-activeSelect a:visited
+	{
+	color: #3775c5;
+	text-decoration: none;
+}
+
+.ui-helper-resetSelect {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	line-height: 1.3;
+	text-decoration: none;
+	font-size: 100%;
+	list-style: none;
+}
+
+.ui-helper-clearfixSelect:before,.ui-helper-clearfixSelect:after {
+	content: "";
+	display: table;
+	border-collapse: collapse;
+}
+
+.ui-helper-clearfixSelect:after {
+	clear: both;
+}
+
+.ui-helper-clearfixSelect {
+	min-height: 0; /* support: IE7 */
+}
+
+/* Component containers
+----------------------------------*/
+.ui-widgetSelect {
+	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+	font-size: 1.1em;
+}
+
+.ui-widgetSelect .ui-widgetSelect {
+	font-size: 1em;
+}
+
+.ui-widgetSelect input,.ui-widgetSelect select,.ui-widgetSelect textarea,.ui-widgetSelect button
+	{
+	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+	font-size: 1em;
+}
+
+.ui-widget-contentSelect {
+	border: 1px solid #4D5B66;
+	background: #eeeeee 50% top repeat-x;
+	color: #333333;
+}
+
+.ui-widget-contentSelect a {
+	color: #333333;
+}
+
+.ui-widget-headerSelect a {
+	color: #ffffff;
+}
+
+.ui-widget-headerSelect {
+	border: 0px solid #FFF;
+	background: #132634 50% 50% repeat-x;
+	color: #cfdced;
+	font-weight: bold;
+}
+
+/* Corner radius */
+.ui-corner-allSelect,.ui-corner-topSelect,.ui-corner-leftSelect,.ui-corner-tlSelect
+	{
+	border-top-left-radius: 4px;
+}
+
+.ui-corner-allSelect,.ui-corner-topSelect,.ui-corner-rightSelect,.ui-corner-trSelect
+	{
+	border-top-right-radius: 4px;
+}
+
+.ui-corner-allSelect,.ui-corner-bottomSelect,.ui-corner-leftSelect,.ui-corner-blSelect
+	{
+	border-bottom-left-radius: 4px;
+}
+
+.ui-corner-allSelect,.ui-corner-bottomSelect,.ui-corner-rightSelect,.ui-corner-brSelect
+	{
+	border-bottom-right-radius: 4px;
+}
+
+/* theme specific */
+.ui-multiselect {
+	padding: 1px 1px 1px 1px;
+	text-align: left;
+	float: right;
+}
+
+.ui-multiselect-spanlink {
+	color: #83939A;
+	font-weight: normal;
+	text-decoration: underline;
+}
+
+.ui-multiselect span.ui-icon {
+	float: right
+}
+
+.ui-multiselect-single .ui-multiselect-checkboxes input {
+	position: absolute !important;
+	top: auto !important;
+	left: -9999px;
+}
+
+.ui-multiselect-single .ui-multiselect-checkboxes label {
+	padding: 5px !important
+}
+
+.ui-multiselect-header {
+	margin-bottom: 3px;
+	padding: 3px 5px 3px 0px
+}
+
+.ui-multiselect-header ul {
+	font-size: 0.9em
+}
+
+.ui-multiselect-header ul li {
+	float: left;
+	padding: 0 10px 0 0
+}
+
+.ui-multiselect-header a {
+	text-decoration: none
+}
+
+.ui-multiselect-header a:hover {
+	text-decoration: underline
+}
+
+.ui-multiselect-header span.ui-icon {
+	float: left
+}
+
+.ui-multiselect-header li.ui-multiselect-close {
+	float: right;
+	text-align: right;
+	padding-right: 0
+}
+
+.ui-multiselect-menu {
+	display: none;
+	padding: 3px;
+	position: absolute;
+	z-index: 10000;
+	text-align: left;
+	background: none repeat scroll 0 0 #283649;
+	height: 450px;
+}
+
+.ui-multiselect-checkboxes {
+	position: relative /* fixes bug in IE6/7 */; /*overflow-y:auto*/
+}
+
+.ui-multiselect-checkboxes label {
+	cursor: default;
+	display: block;
+	border: 1px solid transparent;
+	padding: 1px 1px
+}
+
+.ui-multiselect-checkboxes label input {
+	position: relative;
+	top: 1px
+}
+
+.ui-multiselect-checkboxes li {
+	clear: both;
+	font-size: 0.9em;
+	padding-right: 3px
+}
+
+.ui-multiselect-checkboxes li.ui-multiselect-optgroup-label {
+	text-align: center;
+	font-weight: bold;
+	border-bottom: 1px solid
+}
+
+.ui-multiselect-checkboxes li.ui-multiselect-optgroup-label a {
+	display: block;
+	padding: 3px;
+	margin: 1px 0;
+	text-decoration: none
+}
+
+/* remove label borders in IE6 because IE6 does not support transparency */
+.ui-multiselect-checkboxes label {
+	border: none
+}
+
+.ui-helper-resetSelect li a img {
+	float: left;
+}
+
+button img {
+	float: left;
+}
+
+.ui-state-defaultSelect {
+	font-weight: normal;
+	line-height: 25px;
+}
+
+.ui-state-hoverSelect {
+	
+}
+
+.ui-icon-triangle-1-s {
+	background-position: right center
+}
+
+;
+.ui-multiselect-close>img {
+	float: right !important;
+}
+
+.ui-multiselect-close .ui-icon.ui-icon-circle-close {
+	display: none;
+}
+
+.ui-helper-resetSelect a {
+	text-decoration: none !important;
+}
+
+.ui-helper-resetSelect a:hover .ui-multiselect-spanlink {
+	color: #B7B9BB;
+}
+
+.ui-multiselect-checkboxes li label {
+	line-height: 20px;
+	font-weight: bold;
+}
