@@ -52,7 +52,7 @@ dependencies {
   archives project(':gemfire-lucene')
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
-  archives project(':pulse')
+  archives project(':gemfire-pulse')
 
   testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
   testCompile project(path: ':gemfire-core', configuration: 'testOutput')
@@ -282,7 +282,7 @@ distributions {
       }
 
       into ('tools/Pulse') {
-        from (project(":pulse").configurations.archives.allArtifacts.files) {
+        from (project(":gemfire-pulse").configurations.archives.allArtifacts.files) {
           exclude '*.jar'
         }
       }
