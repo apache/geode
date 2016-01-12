@@ -177,6 +177,17 @@ task gfshDepsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
   }
 }
 
+gradle.taskGraph.whenReady( { graph ->
+  tasks.withType(AbstractArchiveTask).findAll {
+    it.name.toLowerCase().contains("dist")
+  }.each { archive ->
+    archive.doLast {
+      ant.checksum file:"${archive.archivePath}", algorithm:"md5"
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256"
+    }
+  }
+})
+
 distributions {
   src {
     baseName = 'apache-geode-src'
