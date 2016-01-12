@@ -17,6 +17,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -26,12 +28,10 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
+import org.junit.experimental.categories.Category;
 
 
 /**
@@ -44,32 +44,20 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * @author rbhandekar
  *
  */
+@Ignore
+@Category(IntegrationTest.class)
 public abstract class BaseServiceTest {
 
   protected static Properties propsForJUnit = new Properties();
   protected static String strHost = null;
-  protected static String strPort = null;
+    protected static String strPort = null;
+    protected static String LOGIN_URL;
+    protected static String LOGOUT_URL;
+    protected static String IS_AUTHENTICATED_USER_URL;
+    protected static String PULSE_UPDATE_URL;
 
-  static{
-
-    InputStream stream = BaseServiceTest.class.getClassLoader().getResourceAsStream("pulse.properties");
-
-    try{
-      propsForJUnit.load(stream);
-    } catch(Exception exProps){
-      System.out.println("BaseServiceTest :: Error loading properties from pulse.properties in classpath");
-    }
-    strHost = propsForJUnit.getProperty("pulse.host");
-    strPort = propsForJUnit.getProperty("pulse.port");
-    System.out.println("BaseServiceTest :: Loaded properties from classpath. Checking properties for hostname. Hostname found = " + strHost);
-  }
-
-  protected static final String LOGIN_URL =                 "http://" + strHost + ":" + strPort + "/pulse/j_spring_security_check";
-  protected static final String LOGOUT_URL =                "http://" + strHost + ":" + strPort + "/pulse/clusterLogout";
-  protected static final String IS_AUTHENTICATED_USER_URL = "http://" + strHost + ":" + strPort + "/pulse/authenticateUser";
-  protected static final String PULSE_UPDATE_URL =          "http://" + strHost + ":" + strPort + "/pulse/pulseUpdate";
-  protected static final String PULSE_UPDATE_PARAM = "pulseData";
-  protected static final String PULSE_UPDATE_1_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
+    protected static final String PULSE_UPDATE_PARAM = "pulseData";
+    protected static final String PULSE_UPDATE_1_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
   protected static final String PULSE_UPDATE_2_VALUE = "{'ClusterSelectedRegion':{'regionFullPath':'/Rubbish'}}";
 
   protected static final String PULSE_UPDATE_3_VALUE = "{'ClusterSelectedRegionsMember':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
@@ -80,6 +68,24 @@ public abstract class BaseServiceTest {
   protected static CloseableHttpClient httpclient = null;
 
 
+    @BeforeClass
+    public static void beforeClass() throws Exception{
+        InputStream stream = BaseServiceTest.class.getClassLoader().getResourceAsStream("pulse.properties");
+
+        try{
+            propsForJUnit.load(stream);
+        } catch(Exception exProps){
+            System.out.println("BaseServiceTest :: Error loading properties from pulse.properties in classpath");
+        }
+        strHost = propsForJUnit.getProperty("pulse.host");
+        strPort = propsForJUnit.getProperty("pulse.port");
+        System.out.println("BaseServiceTest :: Loaded properties from classpath. Checking properties for hostname. Hostname found = " + strHost);
+        LOGIN_URL =                 "http://" + strHost + ":" + strPort + "/pulse/j_spring_security_check";
+        LOGOUT_URL =                "http://" + strHost + ":" + strPort + "/pulse/clusterLogout";
+        IS_AUTHENTICATED_USER_URL = "http://" + strHost + ":" + strPort + "/pulse/authenticateUser";
+        PULSE_UPDATE_URL =          "http://" + strHost + ":" + strPort + "/pulse/pulseUpdate";
+
+    }
   /**
   *
   * @author rbhandekar

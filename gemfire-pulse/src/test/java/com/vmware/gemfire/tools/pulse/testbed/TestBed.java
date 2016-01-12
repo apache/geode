@@ -19,7 +19,21 @@ public class TestBed {
   private String fileName=null;
   PropFileHelper propertiesFile =null;
   GemFireDistributedSystem ds = null;
-  
+
+  public TestBed(){
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    InputStream inputStream = classLoader.getResourceAsStream("testbed.properties");
+    Properties properties = new Properties();
+    try {
+      properties.load(inputStream);
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
+    }
+    propertiesFile = new PropFileHelper(properties);
+    ds = new GemFireDistributedSystem("t1", propertiesFile.getProperties());
+  }
+
   public TestBed(String fileName) throws FileNotFoundException, IOException{
     this.fileName = fileName;
     propertiesFile = new PropFileHelper(fileName);
