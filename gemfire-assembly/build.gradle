@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
 
 buildscript {
     repositories {
@@ -30,10 +31,16 @@ apply plugin: 'maven-publish-auth'
 
 jar.enabled = false
 
-
 configurations {
   archives
 }
+
+// gradle doesn't automatically remove the jar artifact even though we disabled it
+// this causes the signing plugin to fail
+configurations.all {
+  artifacts.removeAll artifacts.findAll { it instanceof ArchivePublishArtifact && !it.archiveTask.enabled }
+}
+
 
 dependencies {
   provided project(':gemfire-core')
@@ -184,6 +191,13 @@ gradle.taskGraph.whenReady( { graph ->
     archive.doLast {
       ant.checksum file:"${archive.archivePath}", algorithm:"md5"
       ant.checksum file:"${archive.archivePath}", algorithm:"sha-256"
+
+      if (isReleaseVersion) {      
+        signing {
+          required { isReleaseVersion }
+          sign archive.archivePath
+        }
+      }
     }
   }
 })
@@ -193,6 +207,7 @@ distributions {
     baseName = 'apache-geode-src'
     contents {
       from (rootDir) {
+        exclude 'KEYS'
         exclude 'gradlew'
         exclude 'gradlew.bat'
         exclude 'gradle/wrapper/gradle-wrapper.jar'
@@ -216,6 +231,7 @@ distributions {
     baseName = 'apache-geode' //TODO rootProject.name
     contents {
       duplicatesStrategy 'exclude'
+      exclude '*.asc'
       
       exclude '*.asc'
       exclude '*-sources.jar'
@@ -327,7 +343,7 @@ afterEvaluate {
   // the ones defined in root ASF pom
   publishing {
     repositories {
-      if (project.version.endsWith('-SNAPSHOT')) {
+      if (!isReleaseVersion) {
         // Apache Development Snapshot Repository
         maven {
           name "apache.snapshots.https"
