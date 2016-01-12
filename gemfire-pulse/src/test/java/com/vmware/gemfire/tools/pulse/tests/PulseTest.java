@@ -7,24 +7,23 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.Assert;
 
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -36,13 +35,11 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+@Category(IntegrationTest.class)
 @FixMethodOrder(MethodSorters.JVM)
-public class PulseTests {
- // private final static String jmxPropertiesFile = "E:\\springsource\\springsourceWS\\Pulse-Cedar\\src\\test\\resources\\test.properties";
-  //private static String path = "D:\\springsource\\springsourceWS\\Pulse-Cedar\\build-artifacts\\win\\dist\\pulse-7.5.war";
-  private final static String jmxPropertiesFile = System
-      .getProperty("pulse.propfile");
-  private static String path = System.getProperty("pulse.war");
+public class PulseTest {
+  private static String jmxPropertiesFile;
+  private static String path;
 
   private static Tomcat tomcat = null;
   private static Server server = null;
@@ -130,7 +127,9 @@ public class PulseTests {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    try {
+      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+      jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
+      path = getPulseWarPath();
       server = Server.createServer(9999, jmxPropertiesFile);
 
       String host = "localhost";// InetAddress.getLocalHost().getHostAddress();
@@ -141,16 +140,7 @@ public class PulseTests {
       pulseURL = "http://" + host + ":" + port + context;
 
       Thread.sleep(5000); // wait till tomcat settles down
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-      Assert.fail("Error " + e.getMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-      Assert.fail("Error " + e.getMessage());
-    } catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail("Error " + e.getMessage());
-    }
+
 
     driver = new FirefoxDriver();
     driver.manage().window().maximize();
@@ -174,6 +164,20 @@ public class PulseTests {
     driver.navigate().refresh();
     Thread.sleep(7000);
   }
+
+    public static String getPulseWarPath() throws Exception{
+        String warPath = null;
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream inputStream = classLoader
+                .getResourceAsStream("pulseversion.properties");
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        String version = properties.getProperty("pulse.version");
+        warPath = "gemfire-pulse-"+version+".war";
+        String propFilePath = classLoader.getResource("pulseversion.properties").getPath();
+        warPath = propFilePath.substring(0, propFilePath.indexOf("resources"))+"libs/"+warPath;
+        return warPath;
+    }
 
   protected void searchByLinkAndClick(String linkText) {
     WebElement element = By.linkText(linkText).findElement(driver);

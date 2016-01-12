@@ -63,18 +63,4 @@ public class TomcatHelper {
 
     return tomcat;
   }
-  
-  public static void main(String[] args) throws Exception {    
-    String host = InetAddress.getLocalHost().getHostAddress();
-    int port = 8080;
-    String path = "/tushark1/code-checkout/tools/Pulse/trunk/build-artifacts/linux/dist/pulse-7.0.1.RC1.war";
-    String context = "/pulse";      
-    System.setProperty("pulse.propMockDataUpdaterClass", "com.vmware.gemfire.tools.pulse.testbed.PropMockDataUpdater");      
-    Tomcat tomcat = TomcatHelper.startTomcat("localhost", port, context, path);   
-    Thread.sleep(30000);
-    System.out.println("Sleep completed");
-    System.out.println("Exiting ....");
-    tomcat.stop();
-    tomcat.destroy();
-  }
 }

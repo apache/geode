@@ -19,12 +19,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.vmware.gemfire.tools.pulse.internal.json.JSONArray;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
@@ -35,6 +30,7 @@ import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
  * @author rbhandekar
  *
  */
+@Ignore
 public class MemberGatewayHubServiceTest extends BaseServiceTest {
 
   /**
