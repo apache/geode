@@ -37,6 +37,8 @@ dependencyVersions.keys().each{ k -> project.ext[k] = dependencyVersions[k]}
 
 allprojects {
   version = versionNumber + '-' + releaseType
+  ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
   // We want to see all test results.  This is equivalatent to setting --continue
   // on the command line.
   gradle.startParameter.continueOnFailure = true
@@ -108,6 +110,17 @@ gradle.taskGraph.whenReady({ graph ->
 
 subprojects {
   apply plugin: 'java'
+  apply plugin: 'signing'
+
+  // set these properties in ~/.gradle/gradle.properties file: 
+  // signing.keyId
+  // signing.password
+  // signing.secretKeyRingFile
+  if (isReleaseVersion) {
+    signing {
+      sign configurations.archives
+    }
+  }
 
   // apply compiler options
   gradle.taskGraph.whenReady( { graph ->
