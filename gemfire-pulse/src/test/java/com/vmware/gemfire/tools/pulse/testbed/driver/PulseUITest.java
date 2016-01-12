@@ -12,15 +12,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.vmware.gemfire.tools.pulse.tests.PulseTest;
 import junit.framework.Assert;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -39,13 +39,14 @@ import com.vmware.gemfire.tools.pulse.testbed.TestBed;
  * @author tushark
  *
  */
+@Ignore
+@Category(IntegrationTest.class)
 public class PulseUITest {
 
-  private WebDriver driver;
-  private TestBed testBed;
-  private final String testBedPropertyfile = System.getProperty("pulse.propMockDataUpdaterFile");  
-  private static String pulseURL = System.getProperty("pulse.url");
-  private static String path =System.getProperty("pulse.war");
+  private static WebDriver driver;
+  private static TestBed testBed;
+  private static String pulseURL;
+  private static String path;
 
   private static final String userName = "admin";
   private static final String pasword = "admin";
@@ -57,57 +58,23 @@ public class PulseUITest {
   private static final String CLUSTER_VIEW_REGIONS_ID = "clusterTotalRegionsText";
   
   private static Tomcat tomcat = null;
-  private static WebDriver initdriver = null;
   
   @BeforeClass
-  public static void setUpTomcat(){
-    try {      
+  public static void setUpTomcat() throws Exception{
       String host = InetAddress.getLocalHost().getHostAddress();
       int port = 8080;      
-      String context = "/pulse";      
+      String context = "/pulse";
+      path = PulseTest.getPulseWarPath();
       //System.setProperty("pulse.propMockDataUpdaterClass", "com.vmware.gemfire.tools.pulse.testbed.PropMockDataUpdater");      
-      tomcat = TomcatHelper.startTomcat(host, port, context, path);   
+      tomcat = TomcatHelper.startTomcat(host, port, context, path);
       pulseURL = "http://" + host  + ":" + port + context;
       Thread.sleep(1000); //wait till tomcat settles down
-      initdriver = new FirefoxDriver();
-      loginToPulse(initdriver, userName, pasword);
-      Thread.sleep(5000); //wait till pulse starts polling threads...
-      initdriver.close();
-    } catch (FileNotFoundException e) {      
-      e.printStackTrace();
-      Assert.fail("Error " +e.getMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-      Assert.fail("Error " +e.getMessage());
-    } catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail("Error " +e.getMessage());
-    }        
-  }
-  
+      driver = new FirefoxDriver();
+      driver.manage().window().maximize();//required to make all elements visible
 
-  @Before  
-  public void setUp() {
-    try {
-      testBed = new TestBed(testBedPropertyfile,true);
-    } catch (FileNotFoundException e) {      
-      e.printStackTrace();
-      Assert.fail("Error " +e.getMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-      Assert.fail("Error " +e.getMessage());
-    } catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail("Error " +e.getMessage());
-    }    
-        
-    driver = new FirefoxDriver();
-    driver.manage().window().maximize();//required to make all elements visible
-    loginToPulse();    
-  }
-  
-  private void loginToPulse() {    
-    loginToPulse(driver, userName, pasword);
+      Thread.sleep(5000); //wait till pulse starts polling threads...
+      testBed = new TestBed();
+      loginToPulse(driver, userName, pasword);
   }
 
   private static void loginToPulse(WebDriver driver, String userName,String password){
