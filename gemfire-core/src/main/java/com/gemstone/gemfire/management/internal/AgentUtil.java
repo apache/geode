@@ -38,8 +38,8 @@ public class AgentUtil {
   private static final String LIB_WEB_API_WAR = "/lib/gemfire-web-api-";
   private static final String TOOLS_WEB_WAR = "/tools/Extensions/gemfire-web-";
   private static final String LIB_WEB_WAR = "/lib/gemfire-web-";
-  private static final String TOOLS_PULSE_WAR = "/tools/Pulse/pulse.war";
-  private static final String LIB_PULSE_WAR = "/lib/pulse.war";
+  private static final String TOOLS_PULSE_WAR = "/tools/Pulse/gemfire-pulse-";
+  private static final String LIB_PULSE_WAR = "/lib/gemfire-pulse-";
   public static final String ERROR_VARIABLE_NOT_SET = "The GEMFIRE environment variable must be set!";
 
   private String gemfireVersion = null;
@@ -100,8 +100,8 @@ public class AgentUtil {
     String gemfireHome = getGemFireHome();
     assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
 
-    String toolsPulseWar = gemfireHome + TOOLS_PULSE_WAR;
-    String libPulseWar = gemfireHome + LIB_PULSE_WAR;
+    String toolsPulseWar = gemfireHome + TOOLS_PULSE_WAR + gemfireVersion + ".war";
+    String libPulseWar = gemfireHome + LIB_PULSE_WAR + gemfireVersion + ".war";
 
     if (new File(toolsPulseWar).isFile()) {
       logger.info("GemFire Pulse war: {}", toolsPulseWar);
