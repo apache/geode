@@ -54,7 +54,6 @@ allprojects {
 
   group = "org.apache.geode"
 
-  apply plugin: 'org.ajoberstar.grgit'
   apply plugin: 'idea'
   apply plugin: 'eclipse'
   
