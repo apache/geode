@@ -233,6 +233,10 @@ distributions {
       duplicatesStrategy 'exclude'
       exclude '*.asc'
       
+      exclude '*.asc'
+      exclude '*-sources.jar'
+      exclude '*-javadoc.jar'
+
       into ('config') {
         from defaultCacheConfig
         from defaultDistributionConfig
