@@ -17,14 +17,6 @@
  * under the License.
  */
 
-/*=========================================================================
- * Copyright (c) 2012-2014 Pivotal Software, Inc. All Rights Reserved.
- * This product is protected by U.S. and international copyright
- * and intellectual property laws. Pivotal products are covered by
- * one or more patents listed at http://www.pivotal.io/patents.
- *=========================================================================
- */
-
 /* Region Details javascript with pop-up with spark-lines opening from each tree-map cell showing member level region information.
  * This page opens from Data view on cluster page and links to member details page by clicking on tree map cell.
  *
