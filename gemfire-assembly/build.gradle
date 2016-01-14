@@ -20,13 +20,14 @@ configurations {
 
 dependencies {
   provided project(':gemfire-core')
-  
+
   archives project(':gemfire-json')  
   archives project(':gemfire-joptsimple')  
   archives project(':gemfire-jgroups')  
   archives project(':gemfire-core')  
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
+  archives project(':geode-jvsd')
 
   testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
   testCompile project(path: ':gemfire-core', configuration: 'testOutput')
@@ -188,6 +189,10 @@ distributions {
         // dependency jars
         from depsJar
         from gfshDepsJar
+      }
+
+      into ('tools/jvsd') {
+      	from project(":geode-jvsd").installDist
       }
 
       into ('tools/Extensions') {
