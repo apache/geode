@@ -196,10 +196,6 @@ task jcaJar (type: Jar, dependsOn: raJar) {
   from raJar.archivePath
 }
 
-artifacts {
-  archives webJar, raJar, jcaJar
-}
-
 configurations {
   classesOutput {
     extendsFrom compile

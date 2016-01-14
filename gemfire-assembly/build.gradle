@@ -16,27 +16,27 @@
  */
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'org.hibernate.build.gradle', name: 'gradle-maven-publish-auth', version: project.'gradle-maven-publish-auth.version'
-    }
-}
 
 apply plugin: 'distribution'
-apply plugin: 'maven-publish'
-apply plugin: 'maven-publish-auth'
 
 jar.enabled = false
-
-configurations {
-  archives
+extraArchive {
+  sources = false
+  javadoc = false
+  tests = false
 }
 
-// gradle doesn't automatically remove the jar artifact even though we disabled it
-// this causes the signing plugin to fail
+// We are not publishing anything from this project into maven and using two distributions seems
+// to break the nexus plugin.  So we delete the nexus tasks but we have to replace the upload task
+// with an empty task of the same name...argh.
+afterEvaluate {
+  tasks.remove(install)
+  tasks.remove(uploadArchives)
+  task uploadArchives << { }
+}
+
+// Gradle doesn't automatically remove the jar artifact even though we disabled it
+// this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.
 configurations.all {
   artifacts.removeAll artifacts.findAll { it instanceof ArchivePublishArtifact && !it.archiveTask.enabled }
 }
@@ -191,13 +191,6 @@ gradle.taskGraph.whenReady( { graph ->
     archive.doLast {
       ant.checksum file:"${archive.archivePath}", algorithm:"md5"
       ant.checksum file:"${archive.archivePath}", algorithm:"sha-256"
-
-      if (isReleaseVersion) {      
-        signing {
-          required { isReleaseVersion }
-          sign archive.archivePath
-        }
-      }
     }
   }
 })
@@ -263,12 +256,15 @@ distributions {
           include 'spring-data-gemfire-*'
         }
         from project(":gemfire-core").configurations.archives.allArtifacts.files
-
+        from project(":gemfire-core").webJar
+        from project(":gemfire-core").raJar
+        from project(":gemfire-core").jcaJar
+        
         from project(":gemfire-lucene").configurations.runtime
         from project(":gemfire-lucene").configurations.archives.allArtifacts.files
 
         // include this jar        
-        from project(":gemfire-web-api").jar.outputs.files.getFiles()
+        from project(":gemfire-web-api").jar
         
         // dependency jars
         from depsJar
@@ -287,79 +283,6 @@ distributions {
   }
 }
 
-
-// Repos to be added to POMs
-def springReleaseRepo = [ id:'spring-release', name:'Spring Maven RELEASE Repository', url:'https://repo.spring.io/release' ]
-def springMilestoneRepo = [ id:'spring-milestone', name:'Spring Maven MILESTONE Repository', url:'https://repo.spring.io/milestone' ]
-def springSnapshotRepo = [ id:'spring-snapshot', name:'Spring Maven SNAPSHOT Repository', url:'https://repo.spring.io/snapshot' ]
-def springLibsReleaseRepo = [ id:'libs-release', name:'Spring Maven libs-release Repository', url:'http://repo.spring.io/libs-release' ]
-def springExtReleaseLocalRepo = [ id:'ext-release-local', name:'Spring Maven ext-release-local Repository', url:'http://repo.spring.io/ext-release-local' ]
-
-def MavenRepos = [ springReleaseRepo, springSnapshotRepo, springLibsReleaseRepo, springExtReleaseLocalRepo ]
-
-// Jars to be published via Maven
-def commonJar = [publicationName:'commonJar', project:project(":gemfire-common").name]
-def coreJar = [publicationName:'coreJar', project:project(":gemfire-core").name]
-def jsonJar = [publicationName:'jsonJar', project:project(":gemfire-json").name]
-def joptsimpleJar = [publicationName:'joptsimpleJar', project:project(":gemfire-joptsimple").name]
-def luceneJar = [publicationName:'luceneJar', project:project(":gemfire-lucene").name]
-def MavenJars = [ coreJar, jsonJar, joptsimpleJar, commonJar, luceneJar ]
-
-afterEvaluate {
-  publishing {
-    publications {
-      MavenJars.each {
-        def publicationName = it.publicationName
-        def projectName = it.project
-        "$publicationName"(MavenPublication) {
-          artifactId projectName
-          artifact project(':' + projectName).jar
-          pom.withXml {
-            def repositoriesNode = asNode().appendNode('repositories')
-            MavenRepos.each {
-              def repositoryNode = repositoriesNode.appendNode('repository')
-              repositoryNode.appendNode('id', it.id)
-              repositoryNode.appendNode('name', it.name)
-              repositoryNode.appendNode('url', it.url)
-            }
-            def dependenciesNode = asNode().appendNode('dependencies')
-            //Iterate over the runtime dependencies
-            project(':' + projectName).configurations.runtime.allDependencies.each {
-              def dependencyNode = dependenciesNode.appendNode('dependency')
-              dependencyNode.appendNode('groupId', it.group)
-              dependencyNode.appendNode('artifactId', it.name)
-              dependencyNode.appendNode('version', it.version)
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // The following is typically defined in a root ASF pom: org.apache:apache
-  // If anything breaks around publishing check that we're still synchronized
-  // with whatever Maven repo definitions are there. Pay special attention to
-  // the names of the repositories -- they need to be spelled exactly like
-  // the ones defined in root ASF pom
-  publishing {
-    repositories {
-      if (!isReleaseVersion) {
-        // Apache Development Snapshot Repository
-        maven {
-          name "apache.snapshots.https"
-          url "https://repository.apache.org/content/repositories/snapshots"
-        }
-      } else {
-        // Apache Release Distribution Repository
-        maven {
-          name "apache.releases.https"
-          url "https://repository.apache.org/service/local/staging/deploy/maven2"
-        }
-      }
-    }
-  } 
-}
-
 // Create a configuration closure to configure test targets with the install directory
 def dependOnInstalledProduct = {
   dependsOn installDist
@@ -370,10 +293,6 @@ def dependOnInstalledProduct = {
 // Add the configuration closure to the test targets so they depend on the install directory
 test dependOnInstalledProduct
 distributedTest dependOnInstalledProduct
-
-artifacts {
-  archives depsJar, gfshDepsJar
-}
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
