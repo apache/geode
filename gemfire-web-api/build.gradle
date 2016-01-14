@@ -49,10 +49,6 @@ jar {
   from sourceSets.main.output
 }
 
-artifacts {
-  archives jar
-}
-
 war {
   classpath configurations.runtime
 }

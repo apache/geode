@@ -50,10 +50,6 @@ idea.module.iml {
   }
 }
 
-artifacts {
-  archives jar
-}
-
 war {
   classpath configurations.runtime 
   classpath project(':gemfire-core').webJar.archivePath
