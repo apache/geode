@@ -1,0 +1,96 @@
+// Force Java 8 usage. 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+// Override parent compiler options.
+gradle.taskGraph.whenReady( { graph ->
+	tasks.withType(JavaCompile).each { javac ->
+		javac.configure {
+			sourceCompatibility '1.8'
+			targetCompatibility '1.8'
+			options.encoding = 'UTF-8'
+		}
+	}
+})
+
+// Application plugin.
+apply plugin: 'application'
+mainClassName = 'org.apache.geode.jvsd.fx.Main'
+
+// Exclude master project dependencies.
+// FIXME: there must be a better way to do this.
+configurations{
+	all*.exclude group: 'cglib'
+	all*.exclude group: 'org.jmock'
+	all*.exclude group: 'org.assertj'
+	all*.exclude group: 'org.mockito'
+	all*.exclude group: 'org.ow2.asm'
+	all*.exclude group: 'org.hamcrest'
+	all*.exclude group: 'org.objenesis'
+	all*.exclude group: 'edu.umd.cs.mtc'
+	all*.exclude group: 'pl.pragmatists'
+	all*.exclude group: 'org.springframework'
+	all*.exclude group: 'com.github.stefanbirkner'
+}
+
+// Dependencies.
+dependencies {
+	compile 'commons-cli:commons-cli:1.2'
+	compile 'commons-collections:commons-collections:3.2.1'
+	compile 'com.pivotal.javafx:MultiAxisChart:1.0-SNAPSHOT'
+
+	testRuntime 'javax.transaction:jta:1.1'
+	testRuntime 'org.apache.logging.log4j:log4j:2.1'
+	testRuntime 'org.apache.logging.log4j:log4j-api:2.1'
+	testRuntime 'org.apache.logging.log4j:log4j-core:2.1'
+
+	testCompile project(':gemfire-core')
+	testCompile project(':gemfire-jgroups')
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// MultiAxisChartFX dependency.
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath 'org.ajoberstar:gradle-git:1.3.2'
+	}
+}
+
+// Clone repository only if the directory is not created already.
+import org.ajoberstar.grgit.*
+task MultiAxisChartFX {
+	description 'Clone project MultiAxisChartFX and install the artifact into the local Maven repository.'
+	ext.destDir = new File(buildDir, 'MultiAxisChartFX')
+
+	onlyIf { 
+		!destDir.exists()
+	}
+
+	doLast {
+		println "Cloning MultiAxisChartFX..."
+		Grgit.clone(dir: destDir, uri: 'https://github.com/gemfire/MultiAxisChartFX')
+		println "Cloning MultiAxisChartFX... Done!"
+
+		println "Installing MultiAxisChartFX into local maven repository..."
+		ant.exec(executable: 'mvn', dir: 'build/MultiAxisChartFX') {
+			arg(line: 'clean install')
+		}
+		println "Installing MultiAxisChartFX into local maven repository... Done!"
+	}
+}
+
+// We need the external artifact before compiling the source code.
+compileJava {
+	dependsOn MultiAxisChartFX
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
