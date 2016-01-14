@@ -17,13 +17,14 @@
 
 buildscript {
   repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
+    maven { url "https://plugins.gradle.org/m2/" }
   }
+
   dependencies {
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath "org.ajoberstar:gradle-git:1.3.2"
+    classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+    classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
   }
 }
 
@@ -110,17 +111,6 @@ gradle.taskGraph.whenReady({ graph ->
 
 subprojects {
   apply plugin: 'java'
-  apply plugin: 'signing'
-
-  // set these properties in ~/.gradle/gradle.properties file: 
-  // signing.keyId
-  // signing.password
-  // signing.secretKeyRingFile
-  if (isReleaseVersion) {
-    signing {
-      sign configurations.archives
-    }
-  }
 
   // apply compiler options
   gradle.taskGraph.whenReady( { graph ->
@@ -309,20 +299,8 @@ subprojects {
     classifier 'test'
   }
 
-  task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-  }
-
-  task javadocJar(type: Jar, dependsOn: javadoc) {
-    description 'Assembles a jar archive of javadocs.'
-    from javadoc.destinationDir
-    classifier = 'javadoc'
-  }
-
   artifacts {
     testOutput jarTest
-    archives sourcesJar, javadocJar
   }
 
   sourceSets {
@@ -494,6 +472,51 @@ subprojects {
       }
     }
   })
+
+  // publishing configuration
+  apply plugin: 'com.bmuschko.nexus'
+  apply plugin: 'maven-publish-auth'
+  
+  extraArchive {
+    sources = true
+    javadoc = true
+    tests = false
+  }
+
+  nexus {
+    sign = true
+    repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
+    snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
+  }
+  
+  modifyPom {
+    project {
+      name 'Apache Geode (incubating)'
+      description 'Apache Geode (incubating) provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+      url 'http://geode.incubator.apache.org'
+
+      scm {
+        url 'https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=tree'
+        connection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+      }
+
+      licenses {
+        license {
+          name 'The Apache Software License, Version 2.0'
+          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        }
+      }
+
+      repositories {
+        repository {
+          id 'libs-release'
+          name 'Spring Maven libs-release Repository'
+          url 'http://repo.spring.io/libs-release'
+        }
+      }
+    }
+  }
 
   // Make precheckin task run all validation tests for checking in code.
   task precheckin (dependsOn: [ build, integrationTest, distributedTest ]) {
