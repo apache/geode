@@ -27,7 +27,6 @@ buildscript {
 }
 
 apply plugin: 'war'
-apply plugin: 'org.ajoberstar.grgit'
 
 def resDir="$projectDir/src/main/resources"
 
