@@ -80,6 +80,7 @@ rat {
     'gemfire-spark-connector/project/plugins.sbt',
     'gemfire-spark-connector/project/build.properties',
     '**/log4j2*.xml',
+    'gemfire-pulse/src/main/resources/pulseversion.properties',
 
     // these are test files that don't expect the first element to be a comment
     'gemfire-core/src/test/resources/com/gemstone/gemfire/management/internal/configuration/domain/CacheElementJUnitTest.xml',
@@ -124,6 +125,7 @@ rat {
 
     // Public Domain http://meyerweb.com/eric/tools/css/reset/
     'gemfire-web-api/src/main/webapp/docs/css/reset.css',
+    'gemfire-pulse/src/main/webapp/scripts/lib/tooltip.js',
 
     // JSON License - permissive, used for Good, not Evil
     'gemfire-json/src/main/java/org/json/CDL.java',
@@ -194,9 +196,6 @@ rat {
     'gemfire-web-api/src/main/webapp/docs/css/screen.css',
     'gemfire-web-api/src/main/webapp/docs/swagger-ui.js',
     'gemfire-web-api/src/main/webapp/docs/swagger-ui.min.js',
-    'gemfire-pulse/src/main/webapp/scripts/multiselect/prettify.js',
-
-    // public domain
-    'gemfire-pulse/src/main/webapp/scripts/lib/tooltip.js'
+    'gemfire-pulse/src/main/webapp/scripts/multiselect/prettify.js'
   ]
 }
