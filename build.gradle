@@ -534,10 +534,8 @@ subprojects {
   // from gradle.  However, we must match the repository id which the nexus plugin is not exposing.
   apply plugin: 'maven-publish-auth'
   afterEvaluate {
-    tasks.getByName('uploadArchives').repositories.mavenDeployer() {
-      if (project.nexus.snapshotRepositoryUrl) {
-        repository(id: 'apache.snapshots.https', url: project.nexus.snapshotRepositoryUrl)
-      }
+    tasks.getByName('uploadArchives').doFirst {
+      repositories.each { it.snapshotRepository.id = 'apache.snapshots.https' }
     }
   }
 
