@@ -24,7 +24,6 @@ buildscript {
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath "org.ajoberstar:gradle-git:1.3.2"
     classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-    classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
   }
 }
 
@@ -530,12 +529,24 @@ subprojects {
     }
   }
 
-  // Jenkins stores auth information in settings.xml.  We apply the maven-publish-auth plugin to read that
-  // from gradle.  However, we must match the repository id which the nexus plugin is not exposing.
-  apply plugin: 'maven-publish-auth'
+  // The nexus plugin reads authentication from ~/.gradle/gradle.properties but the
+  // jenkins server stores publishing credentials in ~/.m2/settings.xml (maven).
+  // We match on the expected snapshot repository id.
   afterEvaluate {
-    tasks.getByName('uploadArchives').doFirst {
-      repositories.each { it.snapshotRepository.id = 'apache.snapshots.https' }
+    if (!isReleaseVersion && System.env.USER == 'jenkins') {
+      def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
+      def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
+        server.id.text() == 'apache.snapshots.https'
+      }
+
+      if (snapshotCreds != null) {
+        tasks.uploadArchives.doFirst {
+          repositories().withType(MavenDeployer).each { repo ->
+            repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
+            repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+          }
+        }
+      }
     }
   }
 
