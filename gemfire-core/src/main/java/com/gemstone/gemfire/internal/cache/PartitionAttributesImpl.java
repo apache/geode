@@ -24,9 +24,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -78,17 +76,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   private long totalMaxMemory = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
   private transient boolean hasTotalMaxMemory;
 
-  /** local settings
-   *  GLOBAL_MAX_MEMORY_PROPERTY - deprecated, use setTotalMaxMemory
-   *  GLOBAL_MAX_BUCKETS_PROPERTY - deprecated, use setTotalNumBuckets
-   */
-  private Properties localProperties = new Properties();
-
-  /** non-local settings
-   *  LOCAL_MAX_MEMORY_PROPERTY - deprecated, use setLocalMaxMemory
-   */
-  private Properties globalProperties = new Properties();
-  
   /*
    * This is used to artificially set the amount of available off-heap memory
    * when no distributed system is available. This value works the same way as
@@ -144,22 +131,16 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   
   public void setTotalNumBuckets(int maxNumberOfBuckets) {
     this.totalNumBuckets = maxNumberOfBuckets;
-    this.globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY,
-                                      String.valueOf(this.totalNumBuckets));
     this.hasTotalNumBuckets = true;
   }
     
   public void setTotalMaxMemory(long maximumMB) {
     this.totalMaxMemory = maximumMB;
-    this.globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY,
-                                      String.valueOf(maximumMB));
     this.hasTotalMaxMemory = true;
   }
     
   public void setLocalMaxMemory(int maximumMB) {
     this.localMaxMemory = maximumMB;
-    this.localProperties.setProperty(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY,
-                                     String.valueOf(this.localMaxMemory));
     this.hasLocalMaxMemory = true;
     this.localMaxMemoryExists = true;
   }
@@ -239,11 +220,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     return this.totalNumBuckets;
   }
 
-  // deprecated method
-  public long getTotalSize() {
-    return this.getTotalMaxMemory();
-  }
-    
   public long getTotalMaxMemory() {
     return this.totalMaxMemory;
   }
@@ -303,14 +279,7 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   public String getColocatedWith() {
     return this.colocatedRegionName;
   }
-  public Properties getLocalProperties() {
-    return this.localProperties;
-  }
 
-  public Properties getGlobalProperties() {
-    return this.globalProperties;
-  }
-  
   public long getStartupRecoveryDelay() {
     return startupRecoveryDelay;
   }
@@ -405,8 +374,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     out.writeInt(getLocalMaxMemory()); // call the gettor to force it to be computed in the offheap case
     out.writeInt(this.totalNumBuckets);
     DataSerializer.writeString(this.colocatedRegionName, out);
-    DataSerializer.writeObject(this.localProperties, out);
-    DataSerializer.writeObject(this.globalProperties, out);
     out.writeLong(this.recoveryDelay);
     out.writeLong(this.startupRecoveryDelay);
     DataSerializer.writeObject(this.fixedPAttrs, out);
@@ -418,8 +385,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     this.localMaxMemory = in.readInt();
     this.totalNumBuckets = in.readInt();
     this.colocatedRegionName = DataSerializer.readString(in);
-    this.localProperties = (Properties)DataSerializer.readObject(in);
-    this.globalProperties = (Properties)DataSerializer.readObject(in);
     this.recoveryDelay = in.readLong();
     this.startupRecoveryDelay = in.readLong();
     this.fixedPAttrs = DataSerializer.readObject(in);
@@ -456,8 +421,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
         || this.totalMaxMemory != other.getTotalMaxMemory()
         || this.startupRecoveryDelay != other.getStartupRecoveryDelay()
         || this.recoveryDelay != other.getRecoveryDelay()
-//          || ! this.localProperties.equals(other.getLocalProperties())
-//          || ! this.globalProperties.equals(other.getGlobalProperties())
         || ((this.partitionResolver == null) != (other.getPartitionResolver() == null))
         || (this.partitionResolver != null && !this.partitionResolver
           .equals(other.getPartitionResolver()))
@@ -509,48 +472,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
     this.hasRedundancy = true;
   }
 
-  /**
-   * Set local properties 
-   * @deprecated use {@link #setLocalMaxMemory(int)} in GemFire 5.1 and later releases
-   * @param localProps those properties for the local VM
-   */
-  @Deprecated
-  public void setLocalProperties(Properties localProps) {
-    this.localProperties = localProps;
-    if (localProps.get(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY) != null) {
-      setLocalMaxMemory(Integer.parseInt((String)localProps.get(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY)));
-    }
-  }
-
-  /**
-   * Set global properties
-   * @deprecated use {@link #setTotalMaxMemory(long)} and 
-   *  {@link #setTotalNumBuckets(int)} in GemFire 5.1 and later releases
-   * @param globalProps those properties for the entire Partitioned Region
-   */
-  @Deprecated
-  public void setGlobalProperties(Properties globalProps) {
-    this.globalProperties = globalProps;
-    String propVal = globalProps.getProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY);
-    if (propVal != null) {
-      try {
-        setTotalMaxMemory(Integer.parseInt(propVal)); 
-      }
-      catch (RuntimeException e) {
-        this.totalMaxMemory = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
-      }
-    }
-    propVal = globalProps.getProperty(PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY);
-    if (propVal != null) {
-      try {
-        this.setTotalNumBuckets(Integer.parseInt(propVal));
-      }
-      catch (RuntimeException e) {
-        this.totalNumBuckets = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
-      }
-    }
-  }
-
   public void addFixedPartitionAttributes(FixedPartitionAttributes fpa) {
     if (this.fixedPAttrs == null) {
       this.fixedPAttrs = new ArrayList<FixedPartitionAttributesImpl>(1);
@@ -591,23 +512,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
       throw new IllegalStateException(
         LocalizedStrings.PartitionAttributesImpl_REDUNDANTCOPIES_0_IS_AN_ILLEGAL_VALUE_PLEASE_CHOOSE_A_VALUE_BETWEEN_0_AND_3
           .toLocalizedString(Integer.valueOf(this.redundancy)));
-    }
-    for (Iterator it=this.getLocalProperties().keySet().iterator(); it.hasNext(); ) {
-      String propName = (String)it.next();
-      if (!PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY.equals(propName)) {
-        throw new IllegalStateException(
-          LocalizedStrings.PartitionAttributesImpl_UNKNOWN_LOCAL_PROPERTY_0
-            .toLocalizedString(propName));
-      }
-    }
-    for (Iterator it=this.getGlobalProperties().keySet().iterator(); it.hasNext(); ) {
-      String propName = (String)it.next();
-      if (!PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY.equals(propName)
-          && !PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY.equals(propName)) {
-        throw new IllegalStateException(
-          LocalizedStrings.PartitionAttributesImpl_UNKNOWN_GLOBAL_PROPERTY_0
-           .toLocalizedString(propName));
-      }
     }
     if (this.recoveryDelay < -1) {
       throw new IllegalStateException(
@@ -765,8 +669,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
   public void setAll(@SuppressWarnings("rawtypes")
   PartitionAttributes pa) {
     setRedundantCopies(pa.getRedundantCopies());
-    setLocalProperties(pa.getLocalProperties());
-    setGlobalProperties(pa.getGlobalProperties());
     setLocalMaxMemory(pa.getLocalMaxMemory());
     setTotalMaxMemory(pa.getTotalMaxMemory());
     setTotalNumBuckets(pa.getTotalNumBuckets());

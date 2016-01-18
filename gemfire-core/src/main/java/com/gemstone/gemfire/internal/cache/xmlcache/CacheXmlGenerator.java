@@ -2469,14 +2469,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.VERSION_5_1) < 0) {
-      Properties p = pa.getLocalProperties();
-      generate(p, LOCAL_PROPERTIES);
-  
-      p = pa.getGlobalProperties();
-      generate(p, GLOBAL_PROPERTIES);
-    }
-
     handler.endElement("", PARTITION_ATTRIBUTES, PARTITION_ATTRIBUTES);
   }
 

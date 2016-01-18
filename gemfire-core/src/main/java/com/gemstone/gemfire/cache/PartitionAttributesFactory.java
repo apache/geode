@@ -17,8 +17,6 @@
 
 package com.gemstone.gemfire.cache;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -54,7 +52,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * a {@link #setRedundantCopies(int) redundant copy} of any given 
  * {@link com.gemstone.gemfire.cache.Region.Entry}, configures a 
  * {@link com.gemstone.gemfire.cache.CacheLoader} implementation, and sets 
- * {@link #setGlobalProperties(Properties) global properties} as well as 
  * {@link #setLocalMaxMemory(int) local max memory to use}.
  * 
  * <pre>
@@ -78,10 +75,6 @@ public class PartitionAttributesFactory<K,V>
 
   /**
    * @deprecated - please use the {@link #setLocalMaxMemory(int)} method instead.<p>
-   * The {@link #setLocalProperties(Properties) local property} name that sets
-   * the maximum heap storage a VM contributes to a partitioned Region. When set
-   * to zero, the resulting Region reference allows access to the partitioned
-   * Region without any consuming any heap storage.
    */
   public static final String LOCAL_MAX_MEMORY_PROPERTY = "LOCAL_MAX_MEMORY";
 
@@ -117,9 +110,6 @@ public class PartitionAttributesFactory<K,V>
 
   /**
    * @deprecated - use {@link #setTotalMaxMemory(long)} instead.<p>
-   * The {@link #setGlobalProperties(Properties) global property} name that
-   * defines the total maximum size for the partitioned Region.<p>
-   * <em>This setting must be the same in all processes using the Region.</em>
    */
   public static final String GLOBAL_MAX_MEMORY_PROPERTY = "GLOBAL_MAX_MEMORY";
 
@@ -306,46 +296,6 @@ public class PartitionAttributesFactory<K,V>
     }
     return this;
   }  
-  
-  /**
-   * Sets the <code>Properties</code> for the local instance the partitioned
-   * Region. Local properties define how the local instance of the partitioned
-   * region and any storage it may provide, behaves.  There are currently no
-   * non-deprecated local properties.
-   * @deprecated use {@link #setLocalMaxMemory(int)}  in GemFire 5.1 and later releases
-   * @param localProps
-   * @return PartitionAttributeFactory.
-   * 
-   */
-  @Deprecated
-  public PartitionAttributesFactory<K,V> setLocalProperties(Properties localProps)
-  {
-    if (localProps == null) {
-      return this;
-    }
-    this.partitionAttributes.setLocalProperties(localProps);
- 
-    return this;
-  }
-
-  /**
-   * Sets the global <code>Properties</code> for the next <code>PartitionAttributes</code>
-   * created.  Global properties define how the entire partitioned Region behaves.
-   * <p>
-   * Note that global settings must be the same in all processes using the Region.
-   * 
-   * @deprecated use {@link #setTotalMaxMemory(long)} and {@link #setTotalNumBuckets(int)} in GemFire 5.1 and later releases
-   * @param globalProps
-   * @return PartitionAttributeFactory.
-   * 
-   * @see #GLOBAL_MAX_MEMORY_PROPERTY
-   */
-  @Deprecated
-  public PartitionAttributesFactory<K,V> setGlobalProperties(Properties globalProps)
-  {
-    this.partitionAttributes.setGlobalProperties(globalProps);
-    return this;
-  }
   
   /**
    * FixedPartitionAttributes defined for this partitioned region is added to

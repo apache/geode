@@ -18,13 +18,13 @@ package com.gemstone.gemfire.internal.cache;
 
 import java.util.Properties;
 
-import junit.framework.Assert;
-
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
 import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Declarable;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 
 /**
  * @author gthombar
@@ -37,17 +37,14 @@ public class PartitionedRegionCacheLoaderForSubRegion implements CacheLoader, De
 		/* checking the attributes set in xml file */
 		PartitionedRegion pr = (PartitionedRegion) helper.getRegion();
 		if (pr.getAttributes().getPartitionAttributes().getRedundantCopies() != 1)
-			Assert
-					.fail("Redundancy of the partition region is not 1");
+			fail("Redundancy of the partition region is not 1");
 		
-		Assert.assertEquals(pr.getAttributes()
-				.getPartitionAttributes().getGlobalProperties().getProperty(
-						PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY),
-				"11");
-		Assert.assertEquals(pr.getAttributes()
-				.getPartitionAttributes().getLocalMaxMemory(), 200);
+		assertEquals(pr.getAttributes()
+			.getPartitionAttributes().getTotalNumBuckets(), "113");
+		assertEquals(pr.getAttributes()
+			.getPartitionAttributes().getLocalMaxMemory(), 200);
 		/*
-		 * Returning the same key. This is to check CaccheLoader is invoked or
+		 * Returning the same key. This is to check CacheLoader is invoked or
 		 * not
 		 */
 		return helper.getKey();

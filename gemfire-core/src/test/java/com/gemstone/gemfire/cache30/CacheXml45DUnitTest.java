@@ -19,15 +19,12 @@ package com.gemstone.gemfire.cache30;
 import com.company.app.DBLoader;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
 
 import dunit.Host;
-import dunit.DistributedTestCase;
 import dunit.VM;
 
-import java.io.*;
 import java.util.*;
 
 /**
@@ -332,10 +329,6 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
         PartitionAttributes pa = attrs.getPartitionAttributes();
         // assertNull(pa.getCacheWriter());
         assertEquals(pa.getRedundantCopies(), 1);
-        assertEquals(pa.getGlobalProperties().getProperty(
-            PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY), "96");
-        assertEquals(pa.getLocalProperties().getProperty(
-            PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY), "32");
       }
     };
     
@@ -388,7 +381,6 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
     
 //    paf.setEntryTimeToLive(
 //        new ExpirationAttributes(10, ExpirationAction.DESTROY)).setCacheLoader(
-    paf.setLocalProperties(lp).setGlobalProperties(gp);
     attrs.setCacheLoader(new DBLoader());
     attrs.setPartitionAttributes(paf.create());
     cache.createRegion("pRoot", attrs);

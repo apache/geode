@@ -17,10 +17,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
@@ -133,9 +130,7 @@ public class PartitionAttributesImplJUnitTest {
     instance.setLocalMaxMemory(this.localMaxMemory);
     
     assertEquals(this.colocatedRegionFullPath, instance.getColocatedWith());
-    assertEquals(this.globalProps, instance.getGlobalProperties());
     assertEquals(this.localMaxMemory, instance.getLocalMaxMemory());
-    assertEquals(this.localProps, instance.getLocalProperties());
     assertEquals(this.offHeap, instance.getOffHeap());
     assertEquals(this.partitionResolver, instance.getPartitionResolver());
     assertEquals(this.recoveryDelay, instance.getRecoveryDelay());
@@ -154,8 +149,6 @@ public class PartitionAttributesImplJUnitTest {
     destination.merge(instance);
     
     assertEquals(this.colocatedRegionFullPath, destination.getColocatedWith());
-    //assertEquals(this.globalProps, destination.getGlobalProperties());
-    //assertEquals(this.localProps, destination.getLocalProperties());
     assertEquals(this.partitionResolver, destination.getPartitionResolver());
     assertEquals(this.recoveryDelay, destination.getRecoveryDelay());
     assertEquals(this.redundancy, destination.getRedundancy());
@@ -211,68 +204,6 @@ public class PartitionAttributesImplJUnitTest {
     assertGetValues(clone);
     assertEquals(this.greaterLocalMaxMemory, instance.getLocalMaxMemory());
     assertEquals(this.offHeap, instance.getOffHeap());
-  }
-  
-  @Test
-  public void testLocalPropertiesWithLOCAL_MAX_MEMORY_PROPERTY() {
-    int value = 111;
-    
-    Properties props = new Properties();
-    props.setProperty(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY, String.valueOf(value));
-    
-    PartitionAttributesImpl instance = new PartitionAttributesImpl();
-    instance.setLocalProperties(props);
-
-    assertNotNull(instance.getLocalProperties());
-    assertFalse(instance.getLocalProperties().isEmpty());
-    assertEquals(props, instance.getLocalProperties());
-    assertEquals(value, instance.getLocalMaxMemory());
-  }
-
-  @Test
-  public void testLocalPropertiesWithoutLOCAL_MAX_MEMORY_PROPERTY() {
-    int value = 111;
-    
-    Properties props = new Properties();
-    
-    PartitionAttributesImpl instance = new PartitionAttributesImpl();
-    instance.setLocalProperties(props);
-
-    assertNotNull(instance.getLocalProperties());
-    assertTrue(instance.getLocalProperties().isEmpty());
-    assertEquals(props, instance.getLocalProperties());
-    assertEquals(instance.getLocalMaxMemoryDefault(), instance.getLocalMaxMemory());
-  }
-
-  @Test
-  public void testGlobalPropertiesWithGLOBAL_MAX_MEMORY_PROPERTY() {
-    int value = 777;
-    
-    Properties props = new Properties();
-    props.setProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY, String.valueOf(value));
-    
-    PartitionAttributesImpl instance = new PartitionAttributesImpl();
-    instance.setGlobalProperties(props);
-
-    assertNotNull(instance.getGlobalProperties());
-    assertFalse(instance.getGlobalProperties().isEmpty());
-    assertEquals(props, instance.getGlobalProperties());
-    assertEquals(value, instance.getTotalMaxMemory());
-  }
-
-  @Test
-  public void testGlobalPropertiesWithoutGLOBAL_MAX_MEMORY_PROPERTY() {
-    int value = 777;
-    
-    Properties props = new Properties();
-    
-    PartitionAttributesImpl instance = new PartitionAttributesImpl();
-    instance.setGlobalProperties(props);
-
-    assertNotNull(instance.getGlobalProperties());
-    assertTrue(instance.getGlobalProperties().isEmpty());
-    assertEquals(props, instance.getGlobalProperties());
-    assertEquals(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT, instance.getTotalMaxMemory());
   }
   
   @Test
@@ -492,8 +423,6 @@ public class PartitionAttributesImplJUnitTest {
 
   private void assertGetValues(final PartitionAttributesImpl instance) {
     assertEquals(this.colocatedRegionFullPath, instance.getColocatedWith());
-    assertEquals(this.globalProps, instance.getGlobalProperties());
-    assertEquals(this.localProps, instance.getLocalProperties());
     assertEquals(this.partitionResolver, instance.getPartitionResolver());
     assertEquals(this.recoveryDelay, instance.getRecoveryDelay());
     assertEquals(this.redundancy, instance.getRedundancy());
@@ -505,8 +434,6 @@ public class PartitionAttributesImplJUnitTest {
   private PartitionAttributesImpl createPartitionAttributesImpl() {
     PartitionAttributesImpl instance = new PartitionAttributesImpl();
     instance.setColocatedWith(this.colocatedRegionFullPath);
-    instance.setGlobalProperties(this.globalProps);
-    instance.setLocalProperties(this.localProps);
     instance.setOffHeap(this.offHeap);
     instance.setPartitionResolver(this.partitionResolver);
     instance.setRecoveryDelay(this.recoveryDelay);
@@ -519,9 +446,6 @@ public class PartitionAttributesImplJUnitTest {
 
   private void fillInForSetAllWithPropertiesTest(PartitionAttributesImpl instance) {
     instance.setColocatedWith(this.colocatedRegionFullPath);
-    
-    instance.setLocalProperties(this.localProps);
-    instance.setGlobalProperties(this.globalProps);
     
     this.fixedPartitionAttributes = new FixedPartitionAttributesImpl();
     this.fixedPartitionAttributes.setPartitionName("setPartitionName");
