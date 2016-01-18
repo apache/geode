@@ -425,7 +425,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            locatorState = (ProcessUtils.isAvailable() ? locatorStatus(locatorPidFile, oldPid, memberName)
+            locatorState = (ProcessUtils.isAttachApiAvailable() ? locatorStatus(locatorPidFile, oldPid, memberName)
                 : locatorStatus(workingDirectory, memberName));
 
             String currentLocatorStatusMessage = locatorState.getStatusMessage();
@@ -1735,7 +1735,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            serverState = (ProcessUtils.isAvailable() ? serverStatus(serverPidFile, oldPid, memberName)
+            serverState = (ProcessUtils.isAttachApiAvailable() ? serverStatus(serverPidFile, oldPid, memberName)
               : serverStatus(workingDirectory, memberName));
 
             String currentServerStatusMessage = serverState.getStatusMessage();

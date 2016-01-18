@@ -117,11 +117,18 @@ public final class ProcessUtils {
   }
   
   /**
-   * Returns true if a fully functional implementation is available. If the
-   * Attach API or JNA NativeCalls are available then this returns true.
+   * Returns true if Attach API or JNA NativeCalls is available for killing 
+   * process or checking if it is alive.
    */
   public static boolean isAvailable() {
     return internal.isAvailable();
+  }
+  
+  /**
+   * Returns true if Attach API is available for checking status.
+   */
+  public static boolean isAttachApiAvailable() {
+    return internal.isAttachApiAvailable();
   }
   
   private static InternalProcessUtils initializeInternalProcessUtils() {
@@ -169,6 +176,10 @@ public final class ProcessUtils {
       public boolean isAvailable() {
         return false;
       }
+      @Override
+      public boolean isAttachApiAvailable() {
+        return false;
+      }
     };
   }
   
@@ -179,5 +190,6 @@ public final class ProcessUtils {
     public boolean isProcessAlive(int pid);
     public boolean killProcess(int pid);
     public boolean isAvailable();
+    public boolean isAttachApiAvailable();
   }
 }

@@ -49,4 +49,9 @@ final class AttachProcessUtils implements InternalProcessUtils {
   public boolean isAvailable() {
     return true;
   }
+
+  @Override
+  public boolean isAttachApiAvailable() {
+    return true;
+  }
 }

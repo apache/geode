@@ -45,4 +45,9 @@ final class NativeProcessUtils implements InternalProcessUtils {
   public boolean isAvailable() {
     return true;
   }
+
+  @Override
+  public boolean isAttachApiAvailable() {
+    return false;
+  }
 }
