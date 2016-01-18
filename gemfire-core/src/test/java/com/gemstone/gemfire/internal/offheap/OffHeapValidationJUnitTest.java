@@ -115,7 +115,7 @@ public class OffHeapValidationJUnitTest {
     assertNotNull(allocator);
     MemoryInspector inspector = allocator.getMemoryInspector();
     assertNotNull(inspector);
-    inspector.createInspectionSnapshot();
+    inspector.createSnapshot();
     try {
       MemoryBlock firstBlock = inspector.getFirstBlock();
       assertNotNull(firstBlock);
@@ -130,7 +130,7 @@ public class OffHeapValidationJUnitTest {
       assertFalse(firstBlock.isCompressed());
       assertFalse(firstBlock.isSerialized());
     } finally {
-      inspector.clearInspectionSnapshot();
+      inspector.clearSnapshot();
     }
     
     // create off-heap region
@@ -179,12 +179,12 @@ public class OffHeapValidationJUnitTest {
     // TODO: PDX_INLINE_ENUM
     
     // validate inspection
-    inspector.createInspectionSnapshot();
+    inspector.createSnapshot();
     try {
     MemoryBlock firstBlock = inspector.getFirstBlock();
     assertEquals(MemoryBlock.State.UNUSED, firstBlock.getState());
     
-    //System.out.println(((SimpleMemoryAllocatorImpl)inspector).getInspectionSnapshot());
+    //System.out.println(((SimpleMemoryAllocatorImpl)inspector).getSnapshot());
     
     // sort the ExpectedValues into the same order as the MemberBlocks from inspector
     Collections.sort(expected, 
@@ -235,7 +235,7 @@ public class OffHeapValidationJUnitTest {
     }
     assertEquals("All blocks: "+inspector.getAllBlocks(), expected.size(), i);
     } finally {
-      inspector.clearInspectionSnapshot();
+      inspector.clearSnapshot();
     }
     
     // perform more ops
