@@ -1862,6 +1862,26 @@ public class CacheClientProxy implements ClientSession {
       .append("]");
     return buffer.toString();
   }
+  
+  public String getState(){
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("CacheClientProxy[")
+      // .append("client proxy id=")
+      .append(this.proxyID)
+      // .append("; client host name=")
+      // .append(this._socket.getInetAddress().getCanonicalHostName())
+      // .append("; client host address=")
+      // .append(this._remoteHostAddress)
+      .append("; port=").append(this._socket.getPort())
+      .append("; primary=").append(isPrimary)
+      .append("; version=").append(clientVersion)
+      .append("; paused=").append(isPaused())
+      .append("; alive=").append(isAlive())
+      .append("; connected=").append(isConnected())
+      .append("; isMarkedForRemoval=").append(isMarkedForRemoval)
+      .append("]");
+    return buffer.toString();
+  }
 
   public boolean isPrimary()
   {
