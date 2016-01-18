@@ -413,14 +413,14 @@ public class SimpleMemoryAllocatorJUnitTest {
       MemoryInspector inspector = ma.getMemoryInspector();
       assertNotNull(inspector);
       assertEquals(null, inspector.getFirstBlock());
-      assertEquals(Collections.emptyList(), ma.getInspectionSnapshot());
-      assertEquals(Collections.emptyList(), ma.getAllocatedBlocks());
-      assertEquals(null, ma.getBlockAfter(null));
-      inspector.createInspectionSnapshot();
+      assertEquals(Collections.emptyList(), inspector.getSnapshot());
+      assertEquals(Collections.emptyList(), inspector.getAllocatedBlocks());
+      assertEquals(null, inspector.getBlockAfter(null));
+      inspector.createSnapshot();
       // call this twice for code coverage
-      inspector.createInspectionSnapshot();
+      inspector.createSnapshot();
       try {
-        assertEquals(ma.getAllBlocks(), ma.getInspectionSnapshot());
+        assertEquals(inspector.getAllBlocks(), inspector.getSnapshot());
         MemoryBlock firstBlock = inspector.getFirstBlock();
         assertNotNull(firstBlock);
         assertEquals(1024*1024, firstBlock.getBlockSize());
@@ -433,9 +433,9 @@ public class SimpleMemoryAllocatorJUnitTest {
         assertEquals(MemoryBlock.State.UNUSED, firstBlock.getState());
         assertFalse(firstBlock.isCompressed());
         assertFalse(firstBlock.isSerialized());
-        assertEquals(null, ma.getBlockAfter(firstBlock));
+        assertEquals(null, inspector.getBlockAfter(firstBlock));
       } finally {
-        inspector.clearInspectionSnapshot();
+        inspector.clearSnapshot();
       }
     } finally {
       SimpleMemoryAllocatorImpl.freeOffHeapMemory();

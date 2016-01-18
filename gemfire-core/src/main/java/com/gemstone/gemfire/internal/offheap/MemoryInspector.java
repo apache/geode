@@ -26,9 +26,11 @@ import java.util.List;
  */
 public interface MemoryInspector {
 
-  public void clearInspectionSnapshot();
+  public void clearSnapshot();
   
-  public void createInspectionSnapshot();
+  public void createSnapshot();
+
+  public List<MemoryBlock> getSnapshot();
 
   public MemoryBlock getFirstBlock();
   
@@ -37,6 +39,5 @@ public interface MemoryInspector {
   public List<MemoryBlock> getAllocatedBlocks();
   
   public MemoryBlock getBlockAfter(MemoryBlock block);
-  
-  public List<MemoryBlock> getOrphans();
+
 }
