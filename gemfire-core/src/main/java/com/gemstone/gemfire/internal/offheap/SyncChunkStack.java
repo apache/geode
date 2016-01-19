@@ -87,6 +87,7 @@ public class SyncChunkStack {
       while (addr != 0L) {
         int curSize = Chunk.getSize(addr);
         addr = Chunk.getNext(addr);
+        testHookDoConcurrentModification();
         long curHead = this.topAddr;
         if (curHead != headAddr) {
           headAddr = curHead;
@@ -97,7 +98,7 @@ public class SyncChunkStack {
           break;
         }
         // TODO construct a single log msg
-        // that gets reset on the concurrent mad.
+        // that gets reset when concurrentModDetected.
         lw.info(msg + curSize);
       }
     } while (concurrentModDetected);
@@ -114,6 +115,7 @@ public class SyncChunkStack {
       while (addr != 0L) {
         result += Chunk.getSize(addr);
         addr = Chunk.getNext(addr);
+        testHookDoConcurrentModification();
         long curHead = this.topAddr;
         if (curHead != headAddr) {
           headAddr = curHead;
@@ -126,5 +128,14 @@ public class SyncChunkStack {
       }
     } while (concurrentModDetected);
     return result;
+  }
+  
+  /**
+   * This method allows tests to override it
+   * and do a concurrent modification to the stack.
+   * For production code it will be a noop.
+   */
+  protected void testHookDoConcurrentModification() {
+    // nothing needed in production code
   }
 }
