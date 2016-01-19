@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -66,6 +67,7 @@ public class MemoryIndexStore implements IndexStore {
 
   private InternalIndexStatistics internalIndexStats;
 
+  private Cache cache;
   private Region region;
   private boolean indexOnRegionKeys;
   private boolean indexOnValues;
@@ -80,16 +82,22 @@ public class MemoryIndexStore implements IndexStore {
   
   public MemoryIndexStore(Region region,
       InternalIndexStatistics internalIndexStats) {
-    this.region = region;
-    RegionAttributes ra = region.getAttributes();
-    // Initialize the reverse-map if in-place modification is set by the
-    // application.
-    if (IndexManager.isObjectModificationInplace()) {
-      this.entryToValuesMap = new ConcurrentHashMap(ra.getInitialCapacity(),
-          ra.getLoadFactor(), ra.getConcurrencyLevel());
-    }
-    this.internalIndexStats = internalIndexStats;
+    this(region, internalIndexStats, GemFireCacheImpl.getInstance());
   }
+  
+  public MemoryIndexStore(Region region,
+	      InternalIndexStatistics internalIndexStats, Cache cache) {
+	    this.region = region;
+	    RegionAttributes ra = region.getAttributes();
+	    // Initialize the reverse-map if in-place modification is set by the
+	    // application.
+	    if (IndexManager.isObjectModificationInplace()) {
+	      this.entryToValuesMap = new ConcurrentHashMap(ra.getInitialCapacity(),
+	          ra.getLoadFactor(), ra.getConcurrencyLevel());
+	    }
+	    this.internalIndexStats = internalIndexStats;
+	    this.cache = cache;
+	  }
 
   @Override
   public void updateMapping(Object newKey, Object oldKey, RegionEntry entry, Object oldValue)
@@ -285,20 +293,13 @@ public class MemoryIndexStore implements IndexStore {
     }
   }
 
-  public boolean basicRemoveMapping(Object key, RegionEntry entry, boolean findOldKey)
+  protected boolean basicRemoveMapping(Object key, RegionEntry entry, boolean findOldKey)
       throws IMQException {
     boolean found = false;
     boolean possiblyAlreadyRemoved = false;
     try {
       boolean retry = false;
-      Object newKey;
-      if (IndexManager.isObjectModificationInplace()
-          && this.entryToValuesMap.containsKey(entry)) {
-        newKey = this.entryToValuesMap.get(entry);
-      }
-      else {
-        newKey = TypeUtils.indexKeyFor(key);
-      }
+      Object newKey = convertToIndexKey(key, entry);
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook("ATTEMPT_REMOVE");
       }
@@ -391,6 +392,19 @@ public class MemoryIndexStore implements IndexStore {
     }
     return found;
   }
+
+private Object convertToIndexKey(Object key, RegionEntry entry)
+		throws TypeMismatchException {
+	Object newKey;
+	if (IndexManager.isObjectModificationInplace()
+          && this.entryToValuesMap.containsKey(entry)) {
+        newKey = this.entryToValuesMap.get(entry);
+      }
+      else {
+        newKey = TypeUtils.indexKeyFor(key);
+      }
+	return newKey;
+}
 
   /**
    * Convert a RegionEntry or THashSet<RegionEntry> to be consistently a
@@ -589,15 +603,22 @@ public class MemoryIndexStore implements IndexStore {
     protected Iterator valuesIterator;
     protected Object currKey;
     protected Object currValue; //RegionEntry
-    final long iteratorStartTime = GemFireCacheImpl.getInstance().cacheTimeMillis();
-    protected MemoryIndexStoreEntry currentEntry = new MemoryIndexStoreEntry(iteratorStartTime);
+    final long iteratorStartTime;
+    protected MemoryIndexStoreEntry currentEntry;
     
     private MemoryIndexStoreIterator(Map submap,
                                      Object indexKey, Collection keysToRemove) {
-      this.map = submap;
-      this.indexKey = indexKey;
-      this.keysToRemove = keysToRemove;
+      this (submap, indexKey, keysToRemove, GemFireCacheImpl.getInstance().cacheTimeMillis());
     }
+    
+    private MemoryIndexStoreIterator(Map submap,
+            Object indexKey, Collection keysToRemove, long iteratorStartTime) {
+		this.map = submap;
+		this.indexKey = indexKey;
+		this.keysToRemove = keysToRemove;
+		this.iteratorStartTime = iteratorStartTime;
+		currentEntry = new MemoryIndexStoreEntry(iteratorStartTime);
+	}
 
     /**
      * This iterator iterates over the CSL map as well as on the collection of
