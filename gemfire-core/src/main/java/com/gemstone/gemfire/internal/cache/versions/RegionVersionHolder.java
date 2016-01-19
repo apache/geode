@@ -335,7 +335,9 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       this.version = version;
       return;
     }
-    this.addOlderVersion(version);
+    if (this.version > version) {
+      this.addOlderVersion(version);
+    }
     this.version = Math.max(this.version, version);
   }
 
