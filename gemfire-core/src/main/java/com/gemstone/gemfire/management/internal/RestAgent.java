@@ -114,7 +114,7 @@ public class RestAgent {
         this.config.getHttpServicePort(), this.config.getHttpServiceBindAddress());
 
     // Find the developer REST WAR file
-    final String gemfireAPIWar = agentUtil.getGemFireWebApiWarLocation();
+    final String gemfireAPIWar = agentUtil.findWarLocation("gemfire-web-api");
     if (gemfireAPIWar == null) {
       logger.info("Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");
     }
