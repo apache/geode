@@ -57,6 +57,7 @@ import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
@@ -72,6 +73,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
  * FilterProfile represents a distributed system member and is used for
@@ -117,61 +119,39 @@ public class FilterProfile implements DataSerializableFixedID {
   }
   
   /**
-   * this variable is used to ensure that the state of all of the interest
-   * variables is consistent with other threads.  See
-   * http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#volatile
-   */
-  @SuppressWarnings("unused")
-  private volatile Object volatileBarrier = null;
-  
-  /**
    * The keys in which clients are interested. This is a map keyed on client id,
    * with a HashSet of the interested keys as the values.
-   * 
-   * This map is never modified in place. Updaters must synchronize via
-   * {@link #interestListLock}.
    */
-  private  Map<Object, Set> keysOfInterest;
+  private final Map<Object, Set> keysOfInterest = new CopyOnWriteHashMap<>();
   
-  private  Map<Object, Set> keysOfInterestInv;
+  private final Map<Object, Set> keysOfInterestInv = new CopyOnWriteHashMap<>();
 
   /**
    * The patterns in which clients are interested. This is a map keyed on
    * client id, with a HashMap (key name to compiled pattern) as the values.
-   *
-   * This map is never modified in place. Updaters must synchronize via
-   * {@link #interestListLock}.
    */
-  private  Map<Object, Map<Object, Pattern>> patternsOfInterest;
+  private final Map<Object, Map<Object, Pattern>> patternsOfInterest = new CopyOnWriteHashMap<>();
 
-  private  Map<Object, Map<Object, Pattern>> patternsOfInterestInv;
+  private final Map<Object, Map<Object, Pattern>> patternsOfInterestInv = new CopyOnWriteHashMap<>();
   
  /**
    * The filtering classes in which clients are interested. This is a map
    * keyed on client id, with a HashMap (key name to {@link InterestFilter})
    * as the values.
-   *
-   * This map is never modified in place. Updaters must synchronize via
-   * {@link #interestListLock}.
    */
-  private  Map<Object, Map> filtersOfInterest;
+  private final Map<Object, Map> filtersOfInterest = new CopyOnWriteHashMap<>();
 
-  private  Map<Object, Map> filtersOfInterestInv;
+  private final Map<Object, Map> filtersOfInterestInv = new CopyOnWriteHashMap<>();
 
   /**
    * Set of clients that we have ALL_KEYS interest for and who want updates
    */
-  private Set<Long> allKeyClients = null;
+  private final Set<Long> allKeyClients = new CopyOnWriteHashSet<>();
   
   /**
    * Set of clients that we have ALL_KEYS interest for and who want invalidations
    */
-  private  Set<Long> allKeyClientsInv = null;
-  
-  /**
-   * An object used for synchronizing the interest lists
-   */
-  private transient final Object interestListLock = new Object();
+  private final Set<Long> allKeyClientsInv = new CopyOnWriteHashSet<>();
   
   /**
    * The region associated with this profile
@@ -187,7 +167,7 @@ public class FilterProfile implements DataSerializableFixedID {
   AtomicInteger cqCount;
 
   /** CQs that are registered on the remote node **/
-  private volatile Map cqs = Collections.EMPTY_MAP;
+  private final Map cqs = new CopyOnWriteHashMap();
 
   /* the ID of the member that this profile describes */
   private DistributedMember memberID;
@@ -203,11 +183,13 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   IDMap cqMap;
   
+  private final Object interestListLock = new Object();
+  
   /**
    * Queues the Filter Profile messages that are received during profile 
    * exchange. 
    */
-  private volatile Map<InternalDistributedMember, LinkedList<OperationMessage>> filterProfileMsgQueue = new HashMap();
+  private volatile Map<InternalDistributedMember, LinkedList<OperationMessage>> filterProfileMsgQueue = new HashMap<>();
   
   public FilterProfile() {
     cqCount = new AtomicInteger();
@@ -266,108 +248,39 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   public Set registerClientInterest(Object inputClientID,
       Object interest, int typeOfInterest, boolean updatesAsInvalidates) {
-    Set keysRegistered = null;
+    Set keysRegistered = new HashSet();
     operationType opType = null;
     
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
+    Long clientID = getClientIDForMaps(inputClientID);
     synchronized(this.interestListLock) {
       switch (typeOfInterest) {
-      case InterestType.KEY: {
+      case InterestType.KEY:
         opType = operationType.REGISTER_KEY;
-        Set oldInterestList;
         Map<Object, Set> koi = updatesAsInvalidates?
-            this.getKeysOfInterestInv() : this.getKeysOfInterest();
-        oldInterestList = koi.get(clientID);
-        Set newInterestList = (oldInterestList == null)?
-          new HashSet() : new HashSet(oldInterestList);
-        newInterestList.add(interest);
-        Map<Object,Set> newMap = new HashMap(koi);
-        newMap.put(clientID, newInterestList);
-        if (updatesAsInvalidates) {
-          this.setKeysOfInterestInv(newMap);
-        } else {
-          this.setKeysOfInterest(newMap);
-        }
-        // Create a set of keys to pass to any listeners. 
-        // There currently is no check to see if the key already exists. 
-        keysRegistered = new HashSet(); 
-        keysRegistered.add(interest);
+            getKeysOfInterestInv() : getKeysOfInterest();
+        registerKeyInMap(interest, keysRegistered, clientID, koi);
         break;
-      }
-
-      case InterestType.REGULAR_EXPRESSION: {
-        keysRegistered = new HashSet(); 
+      case InterestType.REGULAR_EXPRESSION:
         opType = operationType.REGISTER_PATTERN;
         if (((String)interest).equals(".*")) {
-          // ALL_KEYS
-          Set akc = updatesAsInvalidates? this.getAllKeyClientsInv() : this.getAllKeyClients();
-          akc = new HashSet(akc);
+          Set akc = updatesAsInvalidates? getAllKeyClientsInv() : getAllKeyClients();
           if (akc.add(clientID)) {
             keysRegistered.add(interest);
-            if (updatesAsInvalidates) {
-              this.setAllKeyClientsInv(akc);
-            } else {
-              this.setAllKeyClients(akc);
-            }
           }
         } else {
-          Pattern pattern = Pattern.compile((String) interest);
           Map<Object, Map<Object, Pattern>> pats = updatesAsInvalidates?
-              this.getPatternsOfInterestInv() : this.getPatternsOfInterest();
-          Map<Object, Pattern> oldInterestMap = pats.get(clientID);
-          Map<Object, Pattern> newInterestMap =(oldInterestMap == null)?
-            new HashMap() : new HashMap(oldInterestMap);
-          Pattern oldPattern = newInterestMap.put(interest, pattern);
-          if (oldPattern == null) {
-            // If the pattern didn't exist, add it to the set of keys to pass to any listeners. 
-            keysRegistered.add(interest);
-          }
-          Map<Object, Map<Object, Pattern>> newMap = new HashMap(pats);
-          newMap.put(clientID, newInterestMap);
-          if(updatesAsInvalidates) {
-            this.setPatternsOfInterestInv(newMap);
-          } else {
-            this.setPatternsOfInterest(newMap);
-          }
+              getPatternsOfInterestInv() : getPatternsOfInterest();
+          registerPatternInMap(interest, keysRegistered, clientID, pats);
         }
+        break;
+      case InterestType.FILTER_CLASS: {
+        opType = operationType.REGISTER_FILTER;
+        Map<Object, Map>filts = updatesAsInvalidates?
+            getFiltersOfInterestInv() : getFiltersOfInterest();
+        registerFilterClassInMap(interest, clientID, filts);
         break;
       }
 
-      case InterestType.FILTER_CLASS: {
-        // get instance of the filter
-        Class filterClass;
-        InterestFilter filter;
-        try {
-          filterClass = ClassLoadUtil.classFromName((String)interest);
-          filter = (InterestFilter)filterClass.newInstance();
-        }
-        catch (ClassNotFoundException cnfe) {
-          throw new RuntimeException(LocalizedStrings.CacheClientProxy_CLASS_0_NOT_FOUND_IN_CLASSPATH.toLocalizedString(interest), cnfe);
-        }
-        catch (Exception e) {
-          throw new RuntimeException(LocalizedStrings.CacheClientProxy_CLASS_0_COULD_NOT_BE_INSTANTIATED.toLocalizedString(interest), e);
-        }
-        opType = operationType.REGISTER_FILTER;
-        Map<Object, Map>filts = updatesAsInvalidates?
-            this.getFiltersOfInterestInv() : this.getFiltersOfInterest();
-        Map oldInterestMap = filts.get(clientID);
-        Map newInterestMap = (oldInterestMap == null)?
-          new HashMap() : new HashMap(oldInterestMap);
-        newInterestMap.put(interest, filter);
-        HashMap newMap = new HashMap(filts);
-        newMap.put(clientID, newInterestMap);
-        if (updatesAsInvalidates) {
-          this.setFiltersOfInterestInv(newMap);
-        } else {
-          this.setFiltersOfInterest(newMap);
-        }
-        break;
-      }
       default:
         throw new InternalGemFireError(LocalizedStrings.CacheClientProxy_UNKNOWN_INTEREST_TYPE.toLocalizedString());
       } // switch
@@ -376,6 +289,55 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     } // synchronized
     return keysRegistered;
+  }
+
+  private void registerFilterClassInMap(Object interest, Long clientID,
+      Map<Object, Map> filts) {
+    // get instance of the filter
+    Class filterClass;
+    InterestFilter filter;
+    try {
+      filterClass = ClassLoadUtil.classFromName((String)interest);
+      filter = (InterestFilter)filterClass.newInstance();
+    }
+    catch (ClassNotFoundException cnfe) {
+      throw new RuntimeException(LocalizedStrings.CacheClientProxy_CLASS_0_NOT_FOUND_IN_CLASSPATH.toLocalizedString(interest), cnfe);
+    }
+    catch (Exception e) {
+      throw new RuntimeException(LocalizedStrings.CacheClientProxy_CLASS_0_COULD_NOT_BE_INSTANTIATED.toLocalizedString(interest), e);
+    }
+    Map interestMap = filts.get(clientID);
+    if (interestMap == null) {
+      interestMap = new CopyOnWriteHashMap();
+      filts.put(clientID, interestMap);
+    }
+    interestMap.put(interest, filter);
+  }
+
+  private void registerPatternInMap(Object interest, Set keysRegistered,
+      Long clientID, Map<Object, Map<Object, Pattern>> pats) {
+    Pattern pattern = Pattern.compile((String) interest);
+    Map<Object, Pattern> interestMap = pats.get(clientID);
+    if (interestMap == null) {
+      interestMap = new CopyOnWriteHashMap<Object, Pattern>();
+      pats.put(clientID, interestMap);
+    }
+    Pattern oldPattern = interestMap.put(interest, pattern);
+    if (oldPattern == null) {
+      // If the pattern didn't exist, add it to the set of keys to pass to any listeners. 
+      keysRegistered.add(interest);
+    }
+  }
+
+  private void registerKeyInMap(Object interest, Set keysRegistered,
+      Long clientID, Map<Object, Set> koi) {
+    Set interestList = koi.get(clientID);
+    if (interestList == null) {
+      interestList = new CopyOnWriteHashSet();
+      koi.put(clientID, interestList);
+    }
+    interestList.add(interest);
+    keysRegistered.add(interest);
   }
 
   /**
@@ -403,238 +365,25 @@ public class FilterProfile implements DataSerializableFixedID {
         return null;
       }
     }
-    Set keysUnregistered = null;
+    Set keysUnregistered = new HashSet();
     operationType opType = null;
     synchronized (this.interestListLock) {
       switch (interestType) {
       case InterestType.KEY: {
         opType = operationType.UNREGISTER_KEY;
-        if (interest == UnregisterAllInterest.singleton()) {
-          clearInterestFor(inputClientID);
-          // Bruce: this code removed since clearInterestFor() is more comprehensive
-//          if (this.keysOfInterest.get(clientID) != null) {
-//            Map newMap = new HashMap(this.keysOfInterest);
-//            Set removed = (Set)newMap.remove(clientID);
-//            // If something is removed, create a set of keys to pass
-//            // to any listeners
-//            if (removed != null) {
-//              keysUnregistered = new HashSet();
-//              keysUnregistered.addAll(removed);
-//            } 
-//            this.keysOfInterest = newMap;
-//          }
-//          if (this.keysOfInterestInv.get(clientID) != null) {
-//            Map newMap = new HashMap(this.keysOfInterestInv);
-//            Set removed = (Set)newMap.remove(clientID);
-//            // If something is removed, create a set of keys to pass
-//            // to any listeners
-//            if (removed != null) {
-//              if (keysUnregistered == null) keysUnregistered = new HashSet();
-//              keysUnregistered.addAll(removed);
-//            } 
-//            this.keysOfInterestInv = newMap;
-//          }
-          break;
-        }
-        Set oldInterestList = this.getKeysOfInterest().get(clientID);
-        if (oldInterestList != null) {
-          Set newInterestList = new HashSet(oldInterestList);
-          boolean removed = newInterestList.remove(interest);
-          if (removed) {
-            keysUnregistered = new HashSet();
-            keysUnregistered.add(interest);
-          } 
-          Map newMap = new HashMap(this.getKeysOfInterest());
-          if (newInterestList.size() > 0) {
-            newMap.put(clientID, newInterestList);
-          } else {
-            newMap.remove(clientID);
-          }
-          this.setKeysOfInterest(newMap);
-        }
-        oldInterestList = this.getKeysOfInterestInv().get(clientID);
-        if (oldInterestList != null) {
-          Set newInterestList = new HashSet(oldInterestList);
-          boolean removed = newInterestList.remove(interest);
-          if (removed) {
-            keysUnregistered = new HashSet();
-            keysUnregistered.add(interest);
-          } 
-          Map newMap = new HashMap(this.getKeysOfInterestInv());
-          if (newInterestList.size() > 0) {
-            newMap.put(clientID, newInterestList);
-          } else {
-            newMap.remove(clientID);
-          }
-          this.setKeysOfInterestInv(newMap);
-        }
+        unregisterClientKeys(inputClientID, interest,
+            clientID, keysUnregistered);
         break;
       }
       case InterestType.REGULAR_EXPRESSION: {
         opType = operationType.UNREGISTER_PATTERN;
-        if (interest == UnregisterAllInterest.singleton()) {
-          if (this.getPatternsOfInterest().get(clientID) != null) {
-            HashMap newMap = new HashMap(this.getPatternsOfInterest());
-            Map removed = (Map)newMap.remove(clientID);
-            if (removed != null) {
-              keysUnregistered = new HashSet();
-              keysUnregistered.addAll(removed.keySet());
-            } 
-            this.setPatternsOfInterest(newMap);
-          }
-          if (this.getPatternsOfInterestInv().get(clientID) != null) {
-            HashMap newMap = new HashMap(this.getPatternsOfInterestInv());
-            Map removed = (Map)newMap.remove(clientID);
-            if (removed != null) {
-              if (keysUnregistered == null) keysUnregistered = new HashSet();
-              keysUnregistered.addAll(removed.keySet());
-            } 
-            this.setPatternsOfInterestInv(newMap);
-          }
-          Set oldSet = this.getAllKeyClients();
-          if (!oldSet.isEmpty()) {
-            Set newSet;
-            newSet = new HashSet(oldSet);
-            if (newSet.remove(clientID)) {
-              if (newSet.isEmpty()) {
-                newSet = null;
-              }
-              this.setAllKeyClients(newSet);
-              if (keysUnregistered == null) {
-                // keysUnregistered won't be null if somebody has registered
-                // interest in a specific key, then in '.*'.
-                keysUnregistered = new HashSet();
-              }
-              keysUnregistered.add(".*"); 
-            }
-          }
-          oldSet = this.getAllKeyClientsInv();
-          if (oldSet != null) {
-            Set newSet;
-            newSet = new HashSet(oldSet);
-            if (newSet.remove(clientID)) {
-              if (newSet.isEmpty()) {
-                newSet = null;
-              }
-              this.setAllKeyClientsInv(newSet);
-              if (keysUnregistered == null) {
-                // keysUnregistered won't be null if somebody has registered
-                // interest in a specific key, then in '.*'.
-                keysUnregistered = new HashSet();
-              }
-              keysUnregistered.add(".*"); 
-            }
-          }
-        }
-        else if (((String)interest).equals(".*")) { // ALL_KEYS
-          Set oldSet = this.getAllKeyClients();
-          if (oldSet != null) {
-            Set newSet;
-            newSet = new HashSet(oldSet);
-            if (newSet.remove(clientID)) {
-              if (newSet.isEmpty()) {
-                newSet = null;
-              }
-              this.setAllKeyClients(newSet);
-              // Since something was removed, create a set of keys to pass to any
-              // listeners
-              keysUnregistered = new HashSet();
-              keysUnregistered.add(interest); 
-            }
-          }
-          oldSet = this.getAllKeyClientsInv();
-          if (oldSet != null) {
-            Set newSet;
-            newSet = new HashSet(oldSet);
-            if (newSet.remove(clientID)) {
-              if (newSet.isEmpty()) {
-                newSet = null;
-              }
-              this.setAllKeyClientsInv(newSet);
-              // Since something was removed, create a set of keys to pass to any
-              // listeners
-              keysUnregistered = new HashSet();
-              keysUnregistered.add(interest); 
-            }
-          }
-        }
-        else {
-          Map oldInterestMap = this.getPatternsOfInterest().get(clientID);
-          if (oldInterestMap != null) {
-            Map newInterestMap = new HashMap(oldInterestMap);
-            Object obj = newInterestMap.remove(interest);
-            if (obj != null) {
-              // Since something was removed, create a set of keys to pass to any
-              // listeners
-              keysUnregistered = new HashSet();
-              keysUnregistered.add(interest); 
-            }
-            Map newMap = new HashMap(this.getPatternsOfInterest());
-            if (newInterestMap.size() > 0)
-              newMap.put(clientID, newInterestMap);
-            else
-              newMap.remove(clientID);
-            this.setPatternsOfInterest(newMap);
-          }
-          oldInterestMap = this.getPatternsOfInterestInv().get(clientID);
-          if (oldInterestMap != null) {
-            Map newInterestMap = new HashMap(oldInterestMap);
-            Object obj = newInterestMap.remove(interest);
-            if (obj != null) {
-              // Since something was removed, create a set of keys to pass to any
-              // listeners
-              keysUnregistered = new HashSet();
-              keysUnregistered.add(interest); 
-            }
-            Map newMap = new HashMap(this.getPatternsOfInterestInv());
-            if (newInterestMap.size() > 0)
-              newMap.put(clientID, newInterestMap);
-            else
-              newMap.remove(clientID);
-            this.setPatternsOfInterestInv(newMap);
-          }
-        }
+        unregisterClientPattern(interest, clientID,
+            keysUnregistered);
         break;
       }
       case InterestType.FILTER_CLASS: {
         opType = operationType.UNREGISTER_FILTER;
-        if (interest == UnregisterAllInterest.singleton()) {
-          if (this.getFiltersOfInterest().get(clientID) != null) {
-            Map newMap = new HashMap(this.getFiltersOfInterest());
-            newMap.remove(clientID);
-            this.setFiltersOfInterest(newMap);
-          }
-          if (this.getFiltersOfInterestInv().get(clientID) != null) {
-            Map newMap = new HashMap(this.getFiltersOfInterestInv());
-            newMap.remove(clientID);
-            this.setFiltersOfInterestInv(newMap);
-          }
-          break;
-        }
-        Map oldInterestMap = this.getFiltersOfInterest().get(clientID);
-        if (oldInterestMap != null) {
-          Map newInterestMap = new HashMap(oldInterestMap);
-          newInterestMap.remove(interest);
-          Map newMap = new HashMap(this.getFiltersOfInterest());
-          if (newInterestMap.size() > 0) {
-            newMap.put(clientID, newInterestMap);
-          } else {
-            newMap.remove(clientID);
-          }
-          this.setFiltersOfInterest(newMap);
-        }
-        oldInterestMap = this.getFiltersOfInterestInv().get(clientID);
-        if (oldInterestMap != null) {
-          Map newInterestMap = new HashMap(oldInterestMap);
-          newInterestMap.remove(interest);
-          Map newMap = new HashMap(this.getFiltersOfInterestInv());
-          if (newInterestMap.size() > 0) {
-            newMap.put(clientID, newInterestMap);
-          } else {
-            newMap.remove(clientID);
-          }
-          this.setFiltersOfInterestInv(newMap);
-        }
+        unregisterClientFilterClass(interest, clientID);
         break;
       }
       default:
@@ -645,6 +394,112 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     } // synchronized
     return keysUnregistered;
+  }
+
+  private void unregisterClientFilterClass(Object interest, Long clientID) {
+    if (interest == UnregisterAllInterest.singleton()) {
+      if (getFiltersOfInterest().get(clientID) != null) {
+        getFiltersOfInterest().remove(clientID);
+      }
+      if (getFiltersOfInterestInv().get(clientID) != null) {
+        getFiltersOfInterestInv().remove(clientID);
+      }
+      return;
+    }
+    Map interestMap = getFiltersOfInterest().get(clientID);
+    if (interestMap != null) {
+      interestMap.remove(interest);
+      if (interestMap.isEmpty()) {
+        getFiltersOfInterest().remove(clientID);
+      }
+    }
+    interestMap = getFiltersOfInterestInv().get(clientID);
+    if (interestMap != null) {
+      interestMap.remove(interest);
+      if (interestMap.isEmpty()) {
+        this.getFiltersOfInterestInv().remove(clientID);
+      }
+    }
+  }
+
+  private void unregisterClientPattern(Object interest, Long clientID,
+      Set keysUnregistered) {
+    if (interest instanceof String && ((String)interest).equals(".*")) { // ALL_KEYS
+      unregisterAllKeys(interest, clientID, keysUnregistered);
+      return;
+    }
+    if (interest == UnregisterAllInterest.singleton()) {
+      unregisterClientIDFromMap(clientID, getPatternsOfInterest(), keysUnregistered);
+      unregisterClientIDFromMap(clientID, getPatternsOfInterestInv(), keysUnregistered);
+      if (getAllKeyClients().remove(clientID)) {
+        keysUnregistered.add(".*"); 
+      }
+      if (getAllKeyClientsInv().remove(clientID)) {
+        keysUnregistered.add(".*"); 
+      }
+    }
+    else {
+      unregisterPatternFromMap(getPatternsOfInterest(), interest, clientID, keysUnregistered);
+      unregisterPatternFromMap(getPatternsOfInterestInv(), interest, clientID, keysUnregistered);
+    }
+  }
+
+  private void unregisterPatternFromMap(Map<Object, Map<Object, Pattern>> map,
+      Object interest, Long clientID, Set keysUnregistered) {
+    Map interestMap = map.get(clientID);
+    if (interestMap != null) {
+      Object obj = interestMap.remove(interest);
+      if (obj != null) {
+        keysUnregistered.add(interest); 
+      }
+      if (interestMap.isEmpty()) {
+        map.remove(clientID);
+      }
+    }
+  }
+
+  private void unregisterClientIDFromMap(Long clientID, Map interestMap, Set keysUnregistered) {
+    if (interestMap.get(clientID) != null) {
+      Map removed = (Map)interestMap.remove(clientID);
+      if (removed != null) {
+        keysUnregistered.addAll(removed.keySet());
+      } 
+    }
+  }
+
+  private void unregisterAllKeys(Object interest, Long clientID,
+      Set keysUnregistered) {
+    if (getAllKeyClients().remove(clientID)) {
+      keysUnregistered.add(interest); 
+    }
+    if (getAllKeyClientsInv().remove(clientID)) {
+      keysUnregistered.add(interest); 
+    }
+  }
+
+  private void unregisterClientKeys(Object inputClientID, Object interest,
+      Long clientID, Set keysUnregistered) {
+    if (interest == UnregisterAllInterest.singleton()) {
+      clearInterestFor(inputClientID);
+      return;
+    }
+    unregisterKeyFromMap(getKeysOfInterest(), interest, clientID, keysUnregistered);
+    unregisterKeyFromMap(getKeysOfInterestInv(), interest, clientID, keysUnregistered);
+    return;
+  }
+
+  private void unregisterKeyFromMap(Map<Object, Set> map, Object interest, Long clientID,
+      Set keysUnregistered) {
+    Set interestList = map.get(clientID);
+    if (interestList != null) {
+      boolean removed = interestList.remove(interest);
+      if (removed) {
+        keysUnregistered.add(interest);
+      } 
+      if (interestList.isEmpty()) {
+        map.remove(clientID);
+      }
+    }
   }
 
   /**
@@ -658,31 +513,21 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   public Set registerClientInterestList(Object inputClientID,
       List keys, boolean updatesAsInvalidates) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
+    Long clientID = getClientIDForMaps(inputClientID);
     Set keysRegistered = new HashSet();
     synchronized (interestListLock) {
       Map<Object, Set> koi = updatesAsInvalidates?
-          this.getKeysOfInterestInv() : this.getKeysOfInterest();
-      Set oldInterestList = koi.get(clientID);
-      Set newInterestList = (oldInterestList == null)?
-        new HashSet() : new HashSet(oldInterestList);
+          getKeysOfInterestInv() : getKeysOfInterest();
+      Set interestList = koi.get(clientID);
+      if (interestList == null) {
+        interestList = new CopyOnWriteHashSet();
+        koi.put(clientID, interestList);
+      }
       for (Object key: keys) { 
-        if (newInterestList.add(key)) { 
+        if (interestList.add(key)) { 
           keysRegistered.add(key); 
         } 
       } 
-      Map newMap = new HashMap(koi);
-      newMap.put(clientID, newInterestList);
-      if (updatesAsInvalidates) {
-        this.setKeysOfInterestInv(newMap);
-      } else {
-        this.setKeysOfInterest(newMap);
-      }
       if (this.region != null && this.isLocalProfile) {
         sendProfileOperation(clientID, operationType.REGISTER_KEYS, keys, updatesAsInvalidates);
       }
@@ -702,45 +547,32 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   public Set unregisterClientInterestList(Object inputClientID,
       List keys) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
+    Long clientID = getClientIDForMaps(inputClientID);
     Set keysUnregistered = new HashSet(); 
     synchronized (interestListLock) {
-      Set oldInterestList = this.getKeysOfInterest().get(clientID);
-      if (oldInterestList != null) {
-        Set newInterestList = new HashSet(oldInterestList);
+      Set interestList = getKeysOfInterest().get(clientID);
+      if (interestList != null) {
         for (Iterator i = keys.iterator(); i.hasNext();) { 
           Object keyOfInterest = i.next(); 
-          if (newInterestList.remove(keyOfInterest)) { 
+          if (interestList.remove(keyOfInterest)) { 
             keysUnregistered.add(keyOfInterest); 
           } 
         }       
-        Map newMap = new HashMap(this.getKeysOfInterest());
-        if (newInterestList.size() > 0)
-          newMap.put(clientID, newInterestList);
-        else
-          newMap.remove(clientID);
-        this.setKeysOfInterest(newMap);
+        if (interestList.isEmpty()) {
+          getKeysOfInterest().remove(clientID);
+        }
       }
-      oldInterestList = this.getKeysOfInterestInv().get(clientID);
-      if (oldInterestList != null) {
-        Set newInterestList = new HashSet(oldInterestList);
+      interestList = getKeysOfInterestInv().get(clientID);
+      if (interestList != null) {
         for (Iterator i = keys.iterator(); i.hasNext();) { 
           Object keyOfInterest = i.next(); 
-          if (newInterestList.remove(keyOfInterest)) { 
+          if (interestList.remove(keyOfInterest)) { 
             keysUnregistered.add(keyOfInterest); 
           } 
         }       
-        Map newMap = new HashMap(this.getKeysOfInterestInv());
-        if (newInterestList.size() > 0)
-          newMap.put(clientID, newInterestList);
-        else
-          newMap.remove(clientID);
-        this.setKeysOfInterestInv(newMap);
+        if (interestList.isEmpty()) {
+          getKeysOfInterestInv().remove(clientID);
+        }
       }
       if (this.region != null && this.isLocalProfile) {
         sendProfileOperation(clientID, operationType.UNREGISTER_KEYS, keys, false);
@@ -750,13 +582,7 @@ public class FilterProfile implements DataSerializableFixedID {
   }
   
   public Set getKeysOfInterestFor(Object inputClientID) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
-    volatileBarrier();
+    Long clientID = getClientIDForMaps(inputClientID);
     Set keys1 = this.getKeysOfInterest().get(clientID);
     Set keys2 = this.getKeysOfInterestInv().get(clientID);
     if (keys1 == null) {
@@ -774,13 +600,7 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   public Map<String, Pattern> getPatternsOfInterestFor(Object inputClientID) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
-    volatileBarrier();
+    Long clientID = getClientIDForMaps(inputClientID);
     Map patterns1 = this.getPatternsOfInterest().get(clientID);
     Map patterns2 = this.getPatternsOfInterestInv().get(clientID);
     if (patterns1 == null) {
@@ -798,53 +618,29 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   public boolean hasKeysOfInterestFor(Object inputClientID, boolean wantInvalidations) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
-    volatileBarrier();
+    Long clientID = getClientIDForMaps(inputClientID);
     if (wantInvalidations) {
       return this.getKeysOfInterestInv().containsKey(clientID);
     }
-    return this.getKeysOfInterestInv().containsKey(clientID);
+    return this.getKeysOfInterest().containsKey(clientID);
   }
   
   public boolean hasAllKeysInterestFor(Object inputClientID) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
-    volatileBarrier();
+    Long clientID = getClientIDForMaps(inputClientID);
     return hasAllKeysInterestFor(clientID, false) ||
       hasAllKeysInterestFor(clientID, true);
   }
 
   public boolean hasAllKeysInterestFor(Object inputClientID, boolean wantInvalidations) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
+    Long clientID = getClientIDForMaps(inputClientID);
     if (wantInvalidations) {
-      volatileBarrier();
       return getAllKeyClientsInv().contains(clientID);
     }
     return getAllKeyClients().contains(clientID);
   }
 
   public boolean hasRegexInterestFor(Object inputClientID, boolean wantInvalidations) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
-    volatileBarrier();
+    Long clientID = getClientIDForMaps(inputClientID);
     if (wantInvalidations) {
       return (this.getPatternsOfInterestInv().containsKey(clientID));
     }
@@ -852,17 +648,11 @@ public class FilterProfile implements DataSerializableFixedID {
   }
   
   public boolean hasFilterInterestFor(Object inputClientID, boolean wantInvalidations) {
-    Long clientID;
-    if (inputClientID instanceof Long) {
-      clientID = (Long)inputClientID;
-    } else {
-      clientID = clientMap.getWireID(inputClientID);
-    }
-    volatileBarrier();
+    Long clientID = getClientIDForMaps(inputClientID);
     if (wantInvalidations) {
       return this.getFiltersOfInterestInv().containsKey(clientID);
     }
-    return this.getFiltersOfInterestInv().containsKey(clientID);
+    return this.getFiltersOfInterest().containsKey(clientID);
   }
   
  
@@ -924,65 +714,49 @@ public class FilterProfile implements DataSerializableFixedID {
       {
         Set akc = this.getAllKeyClients();
         if (akc.contains(clientID)) {
-          akc = new HashSet(akc);
           akc.remove(clientID);
-          this.setAllKeyClients(akc);
         }
       }
       {
         Set akci = this.getAllKeyClientsInv();
         if (akci.contains(clientID)) {
-          akci = new HashSet(akci);
           akci.remove(clientID);
-          this.setAllKeyClientsInv(akci);
         }
       }
       {
         Map<Object, Set> keys = this.getKeysOfInterest();
         if (keys.containsKey(clientID)) {
-          Map newkeys = new HashMap(keys);
-          newkeys.remove(clientID);
-          this.setKeysOfInterest(newkeys);
+          keys.remove(clientID);
         }
       }
       {
         Map<Object, Set> keys = this.getKeysOfInterestInv();
         if (keys.containsKey(clientID)) {
-          Map newkeys = new HashMap(keys);
-          newkeys.remove(clientID);
-          this.setKeysOfInterestInv(newkeys);
+          keys.remove(clientID);
         }
       }
       {
         Map<Object, Map<Object, Pattern>> pats = this.getPatternsOfInterest();
         if (pats.containsKey(clientID)) {
-          Map newpats = new HashMap(pats);
-          newpats.remove(clientID);
-          this.setPatternsOfInterest(newpats);
+          pats.remove(clientID);
         }
       }
       {
         Map<Object, Map<Object, Pattern>> pats = this.getPatternsOfInterestInv();
         if (pats.containsKey(clientID)) {
-          Map newpats = new HashMap(pats);
-          newpats.remove(clientID);
-          this.setPatternsOfInterestInv(newpats);
+          pats.remove(clientID);
         }
       }
       {
         Map<Object, Map> filters = this.getFiltersOfInterest();
         if (filters.containsKey(clientID)) {
-          Map newfilts = new HashMap(filters);
-          newfilts.remove(clientID);
-          this.setFiltersOfInterest(newfilts);
+          filters.remove(clientID);
         }
       }
       {
         Map<Object, Map> filters = this.getFiltersOfInterestInv();
         if (filters.containsKey(clientID)) {
-          Map newfilts = new HashMap(filters);
-          newfilts.remove(clientID);
-          this.setFiltersOfInterestInv(newfilts);
+          filters.remove(clientID);
         }
       }
       if (clientMap != null) {
@@ -1035,9 +809,7 @@ public class FilterProfile implements DataSerializableFixedID {
     if (logger.isDebugEnabled()) {
       logger.debug("Adding CQ {} to this members FilterProfile.", cq.getServerCqName()); 
     }
-    Map newCqs = new HashMap(this.cqs);
-    newCqs.put(cq.getServerCqName(), cq);
-    this.cqs = newCqs;
+    this.cqs.put(cq.getServerCqName(), cq);
     this.incCqCount();
     
     //cq.setFilterID(cqMap.getWireID(cq.getServerCqName()));
@@ -1087,9 +859,7 @@ public class FilterProfile implements DataSerializableFixedID {
       logger.debug("Adding CQ to remote members FilterProfile using name: {}", serverCqName);
     }
     if (addToCqMap) {
-      Map newCqs = new HashMap(this.cqs);
-      newCqs.put(serverCqName, cq);
-      this.cqs = newCqs;
+      this.cqs.put(serverCqName, cq);
     }
     
     // The region's FilterProfile is accessed through CQ reference as the
@@ -1113,9 +883,7 @@ public class FilterProfile implements DataSerializableFixedID {
               serverCqName, ex.getMessage(), ex);
         }
       }
-      Map newCqs = new HashMap(cqs);
-      newCqs.remove(serverCqName);
-      this.cqs = newCqs;
+      this.cqs.remove(serverCqName);
       cq.getCqBaseRegion().getFilterProfile().decCqCount();
     }
   }
@@ -1154,9 +922,7 @@ public class FilterProfile implements DataSerializableFixedID {
   public void closeCq(ServerCQ cq) {
     ensureCqID(cq);
     String serverCqName = cq.getServerCqName();
-    Map newCqs = new HashMap(this.cqs);
-    newCqs.remove(serverCqName);
-    this.cqs = newCqs;
+    this.cqs.remove(serverCqName);
     if (this.cqMap != null) {
       this.cqMap.removeIDMapping(cq.getFilterID());
     }
@@ -1309,8 +1075,6 @@ public class FilterProfile implements DataSerializableFixedID {
       return null;
     }
 
-    volatileBarrier();
-    
     FilterRoutingInfo frInfo = null;
 
     CqService cqService = getCqService(event.getRegion());
@@ -1342,7 +1106,6 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   public FilterRoutingInfo getFilterRoutingInfoPart2(FilterRoutingInfo part1Info,
       CacheEvent event) {
-    volatileBarrier();
     FilterRoutingInfo result = part1Info;
     if (localProfile.hasCacheServer) {
       // bug #45520 - CQ events arriving out of order causes result set
@@ -1402,7 +1165,6 @@ public class FilterProfile implements DataSerializableFixedID {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     if (this.region != null && this.localProfile.hasCacheServer) {
-      volatileBarrier();
       Set clientsInv = null;
       Set clients = null;
       int size = putAllData.length;
@@ -1461,7 +1223,6 @@ public class FilterProfile implements DataSerializableFixedID {
   */
  public void getLocalFilterRoutingForRemoveAllOp(DistributedRemoveAllOperation op, RemoveAllEntryData[] removeAllData) {
    if (this.region != null && this.localProfile.hasCacheServer) {
-     volatileBarrier();
      Set clientsInv = null;
      Set clients = null;
      int size = removeAllData.length;
@@ -1704,39 +1465,33 @@ public class FilterProfile implements DataSerializableFixedID {
   }
   
   
-  
-  
-  /* DataSerializableFixedID methods ---------------------------------------- */
-
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     InternalDistributedMember id = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(id, in);
     this.memberID = id;
     
-    this.allKeyClients = InternalDataSerializer.readSetOfLongs(in);
-    this.keysOfInterest = DataSerializer.readHashMap(in);
-    this.patternsOfInterest = DataSerializer.readHashMap(in);
-    this.filtersOfInterest = DataSerializer.readHashMap(in);
+    this.allKeyClients.addAll(InternalDataSerializer.readSetOfLongs(in));
+    this.keysOfInterest.putAll(DataSerializer.readHashMap(in));
+    this.patternsOfInterest.putAll(DataSerializer.readHashMap(in));
+    this.filtersOfInterest.putAll(DataSerializer.readHashMap(in));
 
-    this.allKeyClientsInv = InternalDataSerializer.readSetOfLongs(in);
-    this.keysOfInterestInv = DataSerializer.readHashMap(in);
-    this.patternsOfInterestInv = DataSerializer.readHashMap(in);
-    this.filtersOfInterestInv = DataSerializer.readHashMap(in);
+    this.allKeyClientsInv.addAll(InternalDataSerializer.readSetOfLongs(in));
+    this.keysOfInterestInv.putAll(DataSerializer.readHashMap(in));
+    this.patternsOfInterestInv.putAll(DataSerializer.readHashMap(in));
+    this.filtersOfInterestInv.putAll(DataSerializer.readHashMap(in));
     
     // Read CQ Info.
     int numCQs = InternalDataSerializer.readArrayLength(in);
     if (numCQs > 0) {
-      Map theCQs = new HashMap(numCQs);
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT); // do this before CacheFactory.getInstance for bug 33471
       try {
         for (int i=0; i < numCQs; i++){
           String serverCqName = DataSerializer.readString(in);
           ServerCQ cq = CqServiceProvider.readCq(in);
           processRegisterCq(serverCqName, cq, false);
-          theCQs.put(serverCqName, cq);
+          this.cqs.put(serverCqName, cq);
         } 
       } finally {
-        this.cqs = theCQs;
         LocalRegion.setThreadInitLevelRequirement(oldLevel);
       }
     }
@@ -1751,14 +1506,14 @@ public class FilterProfile implements DataSerializableFixedID {
   public void toData(DataOutput out) throws IOException {
     InternalDataSerializer.invokeToData(((InternalDistributedMember)memberID), out);
     InternalDataSerializer.writeSetOfLongs(this.allKeyClients, this.clientMap.hasLongID, out);
-    DataSerializer.writeHashMap((HashMap)this.keysOfInterest, out);
-    DataSerializer.writeHashMap((HashMap)this.patternsOfInterest, out);
-    DataSerializer.writeHashMap((HashMap)this.filtersOfInterest, out);
+    DataSerializer.writeHashMap(this.keysOfInterest, out);
+    DataSerializer.writeHashMap(this.patternsOfInterest, out);
+    DataSerializer.writeHashMap(this.filtersOfInterest, out);
 
     InternalDataSerializer.writeSetOfLongs(this.allKeyClientsInv, this.clientMap.hasLongID, out);
-    DataSerializer.writeHashMap((HashMap)this.keysOfInterestInv, out);
-    DataSerializer.writeHashMap((HashMap)this.patternsOfInterestInv, out);
-    DataSerializer.writeHashMap((HashMap)this.filtersOfInterestInv, out);
+    DataSerializer.writeHashMap(this.keysOfInterestInv, out);
+    DataSerializer.writeHashMap(this.patternsOfInterestInv, out);
+    DataSerializer.writeHashMap(this.filtersOfInterestInv, out);
     
     // Write CQ info.
     Map theCQs = this.cqs;
@@ -1777,150 +1532,76 @@ public class FilterProfile implements DataSerializableFixedID {
    * @return the keysOfInterest
    */
   private Map<Object, Set> getKeysOfInterest() {
-    Map<Object,Set> keysOfInterestRef = this.keysOfInterest;
-    return keysOfInterestRef == null? Collections.EMPTY_MAP : keysOfInterestRef;
-  }
-
-  /**
-   * @param keysOfInterest the keysOfInterest to set
-   */
-  private void setKeysOfInterest(Map keysOfInterest) {
-    this.keysOfInterest = keysOfInterest;
+    return this.keysOfInterest;
   }
 
   /**
    * @return the keysOfInterestInv
    */
   private Map<Object, Set> getKeysOfInterestInv() {
-    Map<Object, Set> keysOfInterestInvRef = this.keysOfInterestInv;
-    return keysOfInterestInvRef == null? Collections.EMPTY_MAP : keysOfInterestInvRef;
-  }
-
-  /**
-   * @param keysOfInterestInv the keysOfInterestInv to set
-   */
-  private void setKeysOfInterestInv(Map keysOfInterestInv) {
-    this.keysOfInterestInv = keysOfInterestInv;
+    return this.keysOfInterestInv;
   }
 
   /**
    * @return the patternsOfInterest
    */
   private Map<Object, Map<Object, Pattern>> getPatternsOfInterest() {
-    Map<Object, Map<Object, Pattern>> patternsOfInterestRef = this.patternsOfInterest;
-    return patternsOfInterestRef == null? Collections.EMPTY_MAP : patternsOfInterestRef;
-  }
-
-  /**
-   * @param patternsOfInterest the patternsOfInterest to set
-   */
-  private void setPatternsOfInterest(Map patternsOfInterest) {
-    this.patternsOfInterest = patternsOfInterest;
+    return this.patternsOfInterest;
   }
 
   /**
    * @return the patternsOfInterestInv
    */
   private Map<Object, Map<Object, Pattern>> getPatternsOfInterestInv() {
-    Map<Object, Map<Object, Pattern>> patternsOfInterestInvRef = this.patternsOfInterestInv;
-    return patternsOfInterestInvRef == null? Collections.EMPTY_MAP : patternsOfInterestInvRef;
-  }
-
-  /**
-   * @param patternsOfInterestInv the patternsOfInterestInv to set
-   */
-  private void setPatternsOfInterestInv(Map patternsOfInterestInv) {
-    this.patternsOfInterestInv = patternsOfInterestInv;
+    return this.patternsOfInterestInv;
   }
 
   /**
    * @return the filtersOfInterestInv
    */
   Map<Object, Map> getFiltersOfInterestInv() {
-    Map<Object, Map> filtersOfInterestInvRef = filtersOfInterestInv;
-    return filtersOfInterestInvRef == null? Collections.EMPTY_MAP : filtersOfInterestInvRef;
+    return this.filtersOfInterestInv;
   }
-
-  /**
-   * @param filtersOfInterestInv the filtersOfInterestInv to set
-   */
-  void setFiltersOfInterestInv(Map filtersOfInterestInv) {
-    this.filtersOfInterestInv = filtersOfInterestInv;
-  }
-
-
 
   /**
    * @return the filtersOfInterest
    */
   private Map<Object, Map> getFiltersOfInterest() {
-    Map<Object, Map> filtersOfInterestRef = this.filtersOfInterest;
-    return  filtersOfInterestRef == null? Collections.EMPTY_MAP : filtersOfInterestRef;
+    return this.filtersOfInterest;
   }
 
-  /**
-   * @param filtersOfInterest the filtersOfInterest to set
-   */
-  private void setFiltersOfInterest(Map filtersOfInterest) {
-    this.filtersOfInterest = filtersOfInterest;
-  }
-
-  /**
-   * So far all calls to setAllKeyClients has occurred under synchronized blocks, locking on interestListLock
-   * @param akc the allKeyClients to set
-   */
-  private void setAllKeyClients(Set akc) {
-    this.allKeyClients = akc;
-    if (logger.isDebugEnabled()) {
-      logger.debug("{}: updated allKeyClients to {}", this, akc);
-    }
-  }
-  
-  /**
-   * perform a volatile read to ensure that all state is consistent
-   */
-  private void volatileBarrier() {
-    volatileBarrier = this.cqCount; // volatile write
-  }
-
-  /**
-   * It is possible to do a get outside of a synch block, so it can change if another thread
-   * calls setAllKeyClients.  So instead we store a ref to allKeyClients and if it changes
-   * we at least have the one we expected to return.
-   * @return the allKeyClients
-   */
   private Set<Object> getAllKeyClients() {
     Set allKeysRef = this.allKeyClients;
     if (testHook != null) {
       testHook.await();
     }
-    return allKeysRef == null? Collections.EMPTY_SET : allKeysRef;
+    return allKeysRef;
   }
 
   public int getAllKeyClientsSize(){
     return this.getAllKeyClients().size();
   }
 
-  /**
-   * @param akc the allKeyClientsInv to set
-   */
-  private void setAllKeyClientsInv(Set akc) {
-    this.allKeyClientsInv = akc;
-  }
-
-  /**
-   * It is possible to do a get outside of a synch block, so it can change if another thread
-   * calls setAllKeyClients.  So instead we store a ref to allKeyClientsInv and if it changes
-   * we at least have the one we expected to return.
-   * @return the allKeyClientsInv
-   */
-  private Set<Object> getAllKeyClientsInv() {
-    Set allKeysInvRef = this.allKeyClientsInv;
-    return allKeysInvRef == null? Collections.EMPTY_SET : allKeysInvRef;
+  private Set<Long> getAllKeyClientsInv() {
+    return this.allKeyClientsInv;
   }
 
   public int getAllKeyClientsInvSize(){
     return this.getAllKeyClientsInv().size();
+  }
+  
+  /**
+   * When clients are registered they are assigned a Long identifier.
+   * This method maps between the real client ID and its Long identifier.
+   */
+  private Long getClientIDForMaps(Object inputClientID) {
+    Long clientID;
+    if (inputClientID instanceof Long) {
+      clientID = (Long)inputClientID;
+    } else {
+      clientID = clientMap.getWireID(inputClientID);
+    }
+    return clientID;
   }
 
   @Override
