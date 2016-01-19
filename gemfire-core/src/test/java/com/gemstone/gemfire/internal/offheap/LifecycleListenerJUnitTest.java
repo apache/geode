@@ -26,18 +26,22 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * Tests SimpleMemoryAllocatorImpl.LifecycleListener
+ * Tests LifecycleListener
  * 
  * @author Kirk Lund
  */
 @Category(UnitTest.class)
 public class LifecycleListenerJUnitTest {
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private final List<LifecycleListenerCallback> afterCreateCallbacks = new ArrayList<LifecycleListenerCallback>();
   private final List<LifecycleListenerCallback> afterReuseCallbacks = new ArrayList<LifecycleListenerCallback>();
@@ -100,7 +104,7 @@ public class LifecycleListenerJUnitTest {
 
     LifecycleListener.addLifecycleListener(this.listener);
 
-    assertEquals(false, Boolean.getBoolean(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY));
+    System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "false");
 
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024); // 1k
     SimpleMemoryAllocatorImpl ma = createAllocator(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[] { slab });
@@ -144,7 +148,6 @@ public class LifecycleListenerJUnitTest {
   }
   
   private void closeAndFree(SimpleMemoryAllocatorImpl ma) {
-    assertEquals(false, Boolean.getBoolean(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY));
     System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
     try {
       ma.close();
