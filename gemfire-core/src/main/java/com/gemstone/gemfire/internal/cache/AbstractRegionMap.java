@@ -1276,574 +1276,514 @@ abstract class AbstractRegionMap implements RegionMap {
           + " is null for event " + event);
     }
     
-    //mbid: this has been added to maintain consistency between the disk region
-    // and
-    //and the region map after clear() has been called. This will set the
-    // reference of
-    //the diskSegmentRegion as a ThreadLocal so that if the diskRegionSegment
-    // is later changed
-    //by another thread, we can do the necessary.
-
     boolean retry = true;
-//    int retries = -1;
     
-RETRY_LOOP:
-  while (retry) {
-    retry = false;
-    /* this is useful for debugging if you get a hot thread
-    retries++;
-    if (retries > 0) {
-      owner.getCachePerfStats().incRetries();
-      if (retries == 1000000) {
-        logger.warn(LocalizedMessage.create(
-          LocalizedStrings.AbstractRegionMap_RETRIED_1_MILLION_TIMES_FOR_ENTRY_TO_GO_AWAY_0, new Object[] { retryEntry, retryEntry.removeTrace }));
-      }
-    }
-    */
-    
-//    boolean lruUpdateCallback = false;
-    
-    boolean sqlfIndexLocked = false;
-    if (indexUpdater != null) {
-    // take read lock for SQLF index initializations if required
-      sqlfIndexLocked = indexUpdater.lockForIndexGII();
-    }
-    boolean opCompleted = false;
-    boolean doPart3 = false;
-    
-    // We need to acquire the region entry while holding the lock to avoid #45620.
-    // However, we also want to release the lock before distribution to prevent
-    // potential deadlocks.  The outer try/finally ensures that the lock will be
-    // released without fail.  I'm avoiding indenting just to preserve the ability
-    // to track diffs since the code is fairly complex.
-    boolean doUnlock = true;
-    lockForCacheModification(owner, event);
-    try {
+    while (retry) {
+      retry = false;
 
-      
-    RegionEntry re = getOrCreateRegionEntry(owner, event, Token.REMOVED_PHASE1, null, true, true); 
-    RegionEntry tombstone = null;
-    boolean haveTombstone = false;
-    /*
-     * Execute the test hook runnable inline (not threaded) if it is not null. 
-     */
-    if(null != testHookRunnableFor48182) {
-      testHookRunnableFor48182.run();
-    }    
-    
-    try {
-      if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT) && !(owner instanceof HARegion)) {
-        logger.trace(LogMarker.LRU_TOMBSTONE_COUNT,
-            "ARM.destroy() inTokenMode={}; duringRI={}; riLocalDestroy={}; withRepl={}; fromServer={}; concurrencyEnabled={}; isOriginRemote={}; isEviction={}; operation={}; re={}",
-            inTokenMode, duringRI, event.isFromRILocalDestroy(), owner.dataPolicy.withReplication(), event.isFromServer(),
-            owner.concurrencyChecksEnabled, event.isOriginRemote(), isEviction, event.getOperation(), re);
-      }
-      if (event.isFromRILocalDestroy()) {
-        // for RI local-destroy we don't want to keep tombstones.
-        // In order to simplify things we just set this recovery
-        // flag to true to force the entry to be removed
-        removeRecoveredEntry = true;
-      }
-      // the logic in this method is already very involved, and adding tombstone
-      // permutations to (re != null) greatly complicates it.  So, we check
-      // for a tombstone here and, if found, pretend for a bit that the entry is null
-      if (re != null && re.isTombstone() && !removeRecoveredEntry) {
-        tombstone = re;
-        haveTombstone = true;
-        re = null;
-      }
-      IndexManager oqlIndexManager = owner.getIndexManager() ; 
-      if (re == null) {
-        // we need to create an entry if in token mode or if we've received
-        // a destroy from a peer or WAN gateway and we need to retain version
-        // information for concurrency checks
-        boolean retainForConcurrency = (!haveTombstone
-            && (owner.dataPolicy.withReplication() || event.isFromServer())
-            && owner.concurrencyChecksEnabled
-            && (event.isOriginRemote() /* destroy received from other must create tombstone */
-                || event.isFromWANAndVersioned() /* wan event must create a tombstone */
-                || event.isBridgeEvent())); /* event from client must create a tombstone so client has a version # */ 
-        if (inTokenMode
-            || retainForConcurrency) { 
-          // removeRecoveredEntry should be false in this case
-          RegionEntry newRe = getEntryFactory().createEntry(owner,
-                                                            event.getKey(),
-                                                            Token.REMOVED_PHASE1);
-          // Fix for Bug #44431. We do NOT want to update the region and wait
-          // later for index INIT as region.clear() can cause inconsistency if
-          // happened in parallel as it also does index INIT.
-          if (oqlIndexManager != null) {
-            oqlIndexManager.waitForIndexInit();
+      boolean opCompleted = false;
+      boolean doPart3 = false;
+
+      // We need to acquire the region entry while holding the lock to avoid #45620.
+      // However, we also want to release the lock before distribution to prevent
+      // potential deadlocks.  The outer try/finally ensures that the lock will be
+      // released without fail.  I'm avoiding indenting just to preserve the ability
+      // to track diffs since the code is fairly complex.
+      boolean doUnlock = true;
+      lockForCacheModification(owner, event);
+      try {
+
+
+        RegionEntry re = getOrCreateRegionEntry(owner, event, Token.REMOVED_PHASE1, null, true, true); 
+        RegionEntry tombstone = null;
+        boolean haveTombstone = false;
+        /*
+         * Execute the test hook runnable inline (not threaded) if it is not null. 
+         */
+        if(null != testHookRunnableFor48182) {
+          testHookRunnableFor48182.run();
+        }    
+
+        try {
+          if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT) && !(owner instanceof HARegion)) {
+            logger.trace(LogMarker.LRU_TOMBSTONE_COUNT,
+                "ARM.destroy() inTokenMode={}; duringRI={}; riLocalDestroy={}; withRepl={}; fromServer={}; concurrencyEnabled={}; isOriginRemote={}; isEviction={}; operation={}; re={}",
+                inTokenMode, duringRI, event.isFromRILocalDestroy(), owner.dataPolicy.withReplication(), event.isFromServer(),
+                owner.concurrencyChecksEnabled, event.isOriginRemote(), isEviction, event.getOperation(), re);
           }
-          try {
-            synchronized (newRe) {
-              RegionEntry oldRe = putEntryIfAbsent(event.getKey(), newRe);
-              while (!opCompleted && oldRe != null) {
-                synchronized (oldRe) {
-                  if (oldRe.isRemovedPhase2()) {
-                    oldRe = putEntryIfAbsent(event.getKey(), newRe);
-                    if (oldRe != null) {
-                      owner.getCachePerfStats().incRetries();
-                    }
-                  } else {
-                    event.setRegionEntry(oldRe);
-                  
-                    // Last transaction related eviction check. This should
-                    // prevent
-                    // transaction conflict (caused by eviction) when the entry
-                    // is being added to transaction state.
-                    if (isEviction) {
-                      if (!confirmEvictionDestroy(oldRe) || (owner.getEvictionCriteria() != null && !owner.getEvictionCriteria().doEvict(event))) {
-                        opCompleted = false;
-                        return opCompleted;
-                      }
-                    }
-                    try {
-                      //if concurrency checks are enabled, destroy will
-                      //set the version tag
-                      boolean destroyed = destroyEntry(oldRe, event, inTokenMode, cacheWrite, expectedOldValue, false, removeRecoveredEntry);
-                      if (destroyed) {
-                        if (retainForConcurrency) {
-                          owner.basicDestroyBeforeRemoval(oldRe, event);
+          if (event.isFromRILocalDestroy()) {
+            // for RI local-destroy we don't want to keep tombstones.
+            // In order to simplify things we just set this recovery
+            // flag to true to force the entry to be removed
+            removeRecoveredEntry = true;
+          }
+          // the logic in this method is already very involved, and adding tombstone
+          // permutations to (re != null) greatly complicates it.  So, we check
+          // for a tombstone here and, if found, pretend for a bit that the entry is null
+          if (re != null && re.isTombstone() && !removeRecoveredEntry) {
+            tombstone = re;
+            haveTombstone = true;
+            re = null;
+          }
+          IndexManager oqlIndexManager = owner.getIndexManager() ; 
+          if (re == null) {
+            // we need to create an entry if in token mode or if we've received
+            // a destroy from a peer or WAN gateway and we need to retain version
+            // information for concurrency checks
+            boolean retainForConcurrency = (!haveTombstone
+                && (owner.dataPolicy.withReplication() || event.isFromServer())
+                && owner.concurrencyChecksEnabled
+                && (event.isOriginRemote() /* destroy received from other must create tombstone */
+                    || event.isFromWANAndVersioned() /* wan event must create a tombstone */
+                    || event.isBridgeEvent())); /* event from client must create a tombstone so client has a version # */ 
+            if (inTokenMode
+                || retainForConcurrency) { 
+              // removeRecoveredEntry should be false in this case
+              RegionEntry newRe = getEntryFactory().createEntry(owner,
+                  event.getKey(),
+                  Token.REMOVED_PHASE1);
+              // Fix for Bug #44431. We do NOT want to update the region and wait
+              // later for index INIT as region.clear() can cause inconsistency if
+              // happened in parallel as it also does index INIT.
+              if (oqlIndexManager != null) {
+                oqlIndexManager.waitForIndexInit();
+              }
+              try {
+                synchronized (newRe) {
+                  RegionEntry oldRe = putEntryIfAbsent(event.getKey(), newRe);
+                  while (!opCompleted && oldRe != null) {
+                    synchronized (oldRe) {
+                      if (oldRe.isRemovedPhase2()) {
+                        oldRe = putEntryIfAbsent(event.getKey(), newRe);
+                        if (oldRe != null) {
+                          owner.getCachePerfStats().incRetries();
                         }
-                        owner.basicDestroyPart2(oldRe, event, inTokenMode,
-                            false /* conflict with clear */, duringRI, true);
-//                        if (!oldRe.isTombstone() || isEviction) {
-                          lruEntryDestroy(oldRe);
-//                        } else {  // tombstone 
-//                          lruEntryUpdate(oldRe);
-//                          lruUpdateCallback = true;
-//                        }
+                      } else {
+                        event.setRegionEntry(oldRe);
+
+                        // Last transaction related eviction check. This should
+                        // prevent
+                        // transaction conflict (caused by eviction) when the entry
+                        // is being added to transaction state.
+                        if (isEviction) {
+                          if (!confirmEvictionDestroy(oldRe) || (owner.getEvictionCriteria() != null && !owner.getEvictionCriteria().doEvict(event))) {
+                            opCompleted = false;
+                            return opCompleted;
+                          }
+                        }
+                        try {
+                          //if concurrency checks are enabled, destroy will
+                          //set the version tag
+                          boolean destroyed = destroyEntry(oldRe, event, inTokenMode, cacheWrite, expectedOldValue, false, removeRecoveredEntry);
+                          if (destroyed) {
+                            if (retainForConcurrency) {
+                              owner.basicDestroyBeforeRemoval(oldRe, event);
+                            }
+                            owner.basicDestroyPart2(oldRe, event, inTokenMode,
+                                false /* conflict with clear */, duringRI, true);
+                            lruEntryDestroy(oldRe);
+                            doPart3 = true;
+                          }
+                        }
+                        catch (RegionClearedException rce) {
+                          // Ignore. The exception will ensure that we do not update
+                          // the LRU List
+                          owner.basicDestroyPart2(oldRe, event, inTokenMode,
+                              true/* conflict with clear */, duringRI, true);
+                          doPart3 = true;
+                        } catch (ConcurrentCacheModificationException ccme) {
+                          VersionTag tag = event.getVersionTag();
+                          if (tag != null && tag.isTimeStampUpdated()) {
+                            // Notify gateways of new time-stamp.
+                            owner.notifyTimestampsToGateways(event);
+                          }
+                          throw ccme;
+                        }
+                        re = oldRe;
+                        opCompleted = true;
+                      }
+                    } // synchronized oldRe
+                  } // while
+                  if (!opCompleted) {
+                    // The following try has a finally that cleans up the newRe.
+                    // This is only needed if newRe was added to the map which only
+                    // happens if we didn't get completed with oldRe in the above while loop.
+                    try {
+                      re = newRe;
+                      event.setRegionEntry(newRe);
+
+                      try {
+                        //if concurrency checks are enabled, destroy will
+                        //set the version tag
+                        if (isEviction) {
+                          opCompleted = false;
+                          return opCompleted; 
+                        }
+                        opCompleted = destroyEntry(newRe, event, inTokenMode, cacheWrite, expectedOldValue, true, removeRecoveredEntry);
+                        if (opCompleted) {
+                          // This is a new entry that was created because we are in
+                          // token mode or are accepting a destroy operation by adding
+                          // a tombstone.  There is no oldValue, so we don't need to
+                          // call updateSizeOnRemove
+                          //                    owner.recordEvent(event);
+                          event.setIsRedestroyedEntry(true);  // native clients need to know if the entry didn't exist
+                          if (retainForConcurrency) {
+                            owner.basicDestroyBeforeRemoval(oldRe, event);
+                          }
+                          owner.basicDestroyPart2(newRe, event, inTokenMode,
+                              false /* conflict with clear */, duringRI, true);
+                          doPart3 = true;
+                        }
+                      }
+                      catch (RegionClearedException rce) {
+                        // Ignore. The exception will ensure that we do not update
+                        // the LRU List
+                        opCompleted = true;
+                        EntryLogger.logDestroy(event);
+                        owner.basicDestroyPart2(newRe, event, inTokenMode, true /* conflict with clear*/, duringRI, true);
                         doPart3 = true;
+                      } catch (ConcurrentCacheModificationException ccme) {
+                        VersionTag tag = event.getVersionTag();
+                        if (tag != null && tag.isTimeStampUpdated()) {
+                          // Notify gateways of new time-stamp.
+                          owner.notifyTimestampsToGateways(event);
+                        }
+                        throw ccme;
+                      }
+                      // Note no need for LRU work since the entry is destroyed
+                      // and will be removed when gii completes
+                    } finally {
+                      if (!opCompleted && !haveTombstone  /* to fix bug 51583 do this for all operations */ ) {
+                        removeEntry(event.getKey(), newRe, false);
+                      }
+                      if (!opCompleted && isEviction) {
+                        removeEntry(event.getKey(), newRe, false);
                       }
                     }
-                    catch (RegionClearedException rce) {
-                      // region cleared implies entry is no longer there
-                      // so must throw exception if expecting a particular
-                      // old value
-  //                    if (expectedOldValue != null) {
-  //                      throw new EntryNotFoundException("entry not found with expected value");
-  //                    }
-                      
-                      // Ignore. The exception will ensure that we do not update
-                      // the LRU List
-                      owner.basicDestroyPart2(oldRe, event, inTokenMode,
-                          true/* conflict with clear */, duringRI, true);
+                  } // !opCompleted
+                } // synchronized newRe
+              } finally {
+                if (oqlIndexManager != null) {
+                  oqlIndexManager.countDownIndexUpdaters();
+                }
+              }
+            } // inTokenMode or tombstone creation
+            else {
+              if (!isEviction || owner.concurrencyChecksEnabled) {                                 
+                // The following ensures that there is not a concurrent operation
+                // on the entry and leaves behind a tombstone if concurrencyChecksEnabled.
+                // It fixes bug #32467 by propagating the destroy to the server even though
+                // the entry isn't in the client
+                RegionEntry newRe = haveTombstone? tombstone : getEntryFactory().createEntry(owner, event.getKey(),
+                    Token.REMOVED_PHASE1);
+                synchronized(newRe) {
+                  if (haveTombstone && !tombstone.isTombstone()) {
+                    // we have to check this again under synchronization since it may have changed
+                    retry = true;
+                    //retryEntry = tombstone; // leave this in place for debugging
+                    continue;
+                  }
+                  re = (RegionEntry)_getMap().putIfAbsent(event.getKey(), newRe);
+                  if (re != null && re != tombstone) {
+                    // concurrent change - try again
+                    retry = true;
+                    //retryEntry = tombstone; // leave this in place for debugging
+                    continue;
+                  }
+                  else if (!isEviction) {
+                    boolean throwex = false;
+                    EntryNotFoundException ex =  null;
+                    try {
+                      if (!cacheWrite) {
+                        throwex = true;
+                      } else {
+                        try {
+                          if (!removeRecoveredEntry) {
+                            throwex = !owner.bridgeWriteBeforeDestroy(event, expectedOldValue);
+                          }
+                        } catch (EntryNotFoundException e) {
+                          throwex = true;
+                          ex = e; 
+                        }
+                      }
+                      if (throwex) {
+                        if (!event.isOriginRemote() && !event.getOperation().isLocal() &&
+                            (event.isFromBridgeAndVersioned() ||  // if this is a replayed client event that already has a version
+                                event.isFromWANAndVersioned())) { // or if this is a WAN event that has been applied in another system
+                          // we must distribute these since they will update the version information in peers
+                          if (logger.isDebugEnabled()) {
+                            logger.debug("ARM.destroy is allowing wan/client destroy of {} to continue", event.getKey());
+                          }
+                          throwex = false;
+                          event.setIsRedestroyedEntry(true);
+                          // Distribution of this op happens on re and re might me null here before
+                          // distributing this destroy op.
+                          if (re == null) {
+                            re = newRe;
+                          }
+                          doPart3 = true;
+                        }
+                      }
+                      if (throwex) {                    
+                        if (ex == null) {
+                          // Fix for 48182, check cache state and/or region state before sending entry not found.
+                          // this is from the server and any exceptions will propogate to the client
+                          owner.checkEntryNotFound(event.getKey());
+                        } else {
+                          throw ex;
+                        }
+                      }
+                    } finally {
+                      // either remove the entry or leave a tombstone
+                      try {
+                        if (!event.isOriginRemote() && event.getVersionTag() != null && owner.concurrencyChecksEnabled) {
+                          // this shouldn't fail since we just created the entry.
+                          // it will either generate a tag or apply a server's version tag
+                          processVersionTag(newRe, event);
+                          if (doPart3) {
+                            owner.generateAndSetVersionTag(event, newRe);
+                          }
+                          try {
+                            owner.recordEvent(event);
+                            newRe.makeTombstone(owner, event.getVersionTag());
+                          } catch (RegionClearedException e) {
+                            // that's okay - when writing a tombstone into a disk, the
+                            // region has been cleared (including this tombstone)
+                          }
+                          opCompleted = true;
+                          //                    lruEntryCreate(newRe);
+                        } else if (!haveTombstone) {
+                          try {
+                            assert newRe != tombstone;
+                            newRe.setValue(owner, Token.REMOVED_PHASE2);
+                            removeEntry(event.getKey(), newRe, false);
+                          } catch (RegionClearedException e) {
+                            // that's okay - we just need to remove the new entry
+                          }
+                        } else if (event.getVersionTag() != null ) { // haveTombstone - update the tombstone version info
+                          processVersionTag(tombstone, event);
+                          if (doPart3) {
+                            owner.generateAndSetVersionTag(event, newRe);
+                          }
+                          // This is not conflict, we need to persist the tombstone again with new version tag 
+                          try {
+                            tombstone.setValue(owner, Token.TOMBSTONE);
+                          } catch (RegionClearedException e) {
+                            // that's okay - when writing a tombstone into a disk, the
+                            // region has been cleared (including this tombstone)
+                          }
+                          owner.recordEvent(event);
+                          owner.rescheduleTombstone(tombstone, event.getVersionTag());
+                          owner.basicDestroyPart2(tombstone, event, inTokenMode, true /* conflict with clear*/, duringRI, true);
+                          opCompleted = true;
+                        }
+                      } catch (ConcurrentCacheModificationException ccme) {
+                        VersionTag tag = event.getVersionTag();
+                        if (tag != null && tag.isTimeStampUpdated()) {
+                          // Notify gateways of new time-stamp.
+                          owner.notifyTimestampsToGateways(event);
+                        }
+                        throw ccme;
+                      }
+                    }
+                  }
+                } // synchronized(newRe)
+              }
+            }
+          } // no current entry
+          else { // current entry exists
+            if (oqlIndexManager != null) {
+              oqlIndexManager.waitForIndexInit();
+            }
+            try {
+              synchronized (re) {
+                // if the entry is a tombstone and the event is from a peer or a client
+                // then we allow the operation to be performed so that we can update the
+                // version stamp.  Otherwise we would retain an old version stamp and may allow
+                // an operation that is older than the destroy() to be applied to the cache
+                // Bug 45170: If removeRecoveredEntry, we treat tombstone as regular entry to be deleted
+                boolean createTombstoneForConflictChecks = (owner.concurrencyChecksEnabled
+                    && (event.isOriginRemote() || event.getContext() != null || removeRecoveredEntry));
+                if (!re.isRemoved() || createTombstoneForConflictChecks) {
+                  if (re.isRemovedPhase2()) {
+                    retry = true;
+                    continue;
+                  }
+                  if (!event.isOriginRemote() && event.getOperation().isExpiration()) {
+                    // If this expiration started locally then only do it if the RE is not being used by a tx.
+                    if (re.isInUseByTransaction()) {
+                      opCompleted = false;
+                      return opCompleted;
+                    }
+                  }
+                  event.setRegionEntry(re);
+
+                  // See comment above about eviction checks
+                  if (isEviction) {
+                    assert expectedOldValue == null;
+                    if (!confirmEvictionDestroy(re) || (owner.getEvictionCriteria() != null && !owner.getEvictionCriteria().doEvict(event))) {
+                      opCompleted = false;
+                      return opCompleted;
+                    }
+                  }
+
+                  boolean removed = false;
+                  try {
+                    opCompleted = destroyEntry(re, event, inTokenMode, cacheWrite, expectedOldValue, false, removeRecoveredEntry);
+                    if (opCompleted) {
+                      // It is very, very important for Partitioned Regions to keep
+                      // the entry in the map until after distribution occurs so that other
+                      // threads performing a create on this entry wait until the destroy
+                      // distribution is finished.
+                      // keeping backup copies consistent. Fix for bug 35906.
+                      // -- mthomas 07/02/2007 <-- how about that date, kinda cool eh?
+                      owner.basicDestroyBeforeRemoval(re, event);
+
+                      // do this before basicDestroyPart2 to fix bug 31786
+                      if (!inTokenMode) {
+                        if ( re.getVersionStamp() == null) {
+                          re.removePhase2();
+                          removeEntry(event.getKey(), re, true, event, owner,
+                              indexUpdater);
+                          removed = true;
+                        }
+                      }
+                      if (inTokenMode && !duringRI) {
+                        event.inhibitCacheListenerNotification(true);
+                      }
                       doPart3 = true;
-                    } catch (ConcurrentCacheModificationException ccme) {
-                      VersionTag tag = event.getVersionTag();
-                      if (tag != null && tag.isTimeStampUpdated()) {
-                        // Notify gateways of new time-stamp.
-                        owner.notifyTimestampsToGateways(event);
+                      owner.basicDestroyPart2(re, event, inTokenMode, false /* conflict with clear*/, duringRI, true);
+                      //                  if (!re.isTombstone() || isEviction) {
+                      lruEntryDestroy(re);
+                      //                  } else {
+                      //                    lruEntryUpdate(re);
+                      //                    lruUpdateCallback = true;
+                      //                  }
+                    } else {
+                      if (!inTokenMode) {
+                        EntryLogger.logDestroy(event);
+                        owner.recordEvent(event);
+                        if (re.getVersionStamp() == null) {
+                          re.removePhase2();
+                          removeEntry(event.getKey(), re, true, event, owner,
+                              indexUpdater);
+                          lruEntryDestroy(re);
+                        } else {
+                          if (re.isTombstone()) {
+                            // the entry is already a tombstone, but we're destroying it
+                            // again, so we need to reschedule the tombstone's expiration
+                            if (event.isOriginRemote()) {
+                              owner.rescheduleTombstone(re, re.getVersionStamp().asVersionTag());
+                            }
+                          }
+                        }
+                        lruEntryDestroy(re);
+                        opCompleted = true;
                       }
-                      throw ccme;
                     }
-                    re = oldRe;
+                  }
+                  catch (RegionClearedException rce) {
+                    // Ignore. The exception will ensure that we do not update
+                    // the LRU List
                     opCompleted = true;
-                  }
-                } // synchronized oldRe
-              } // while
-              if (!opCompleted) {
-                // The following try has a finally that cleans up the newRe.
-                // This is only needed if newRe was added to the map which only
-                // happens if we didn't get completed with oldRe in the above while loop.
-                try { // bug #42228 - leaving "removed" entries in the cache
-                re = newRe;
-                event.setRegionEntry(newRe);
-               
-                try {
-                  //if concurrency checks are enabled, destroy will
-                  //set the version tag
-				  if (isEviction) {
-                    opCompleted = false;
-                    return opCompleted; 
-                  }
-                  opCompleted = destroyEntry(newRe, event, inTokenMode, cacheWrite, expectedOldValue, true, removeRecoveredEntry);
-                  if (opCompleted) {
-                    // This is a new entry that was created because we are in
-                    // token mode or are accepting a destroy operation by adding
-                    // a tombstone.  There is no oldValue, so we don't need to
-                    // call updateSizeOnRemove
-//                    owner.recordEvent(event);
-                    event.setIsRedestroyedEntry(true);  // native clients need to know if the entry didn't exist
-                    if (retainForConcurrency) {
-                      owner.basicDestroyBeforeRemoval(oldRe, event);
+                    owner.recordEvent(event);
+                    if (inTokenMode && !duringRI) {
+                      event.inhibitCacheListenerNotification(true);
                     }
-                    owner.basicDestroyPart2(newRe, event, inTokenMode,
-                        false /* conflict with clear */, duringRI, true);
+                    owner.basicDestroyPart2(re, event, inTokenMode, true /*conflict with clear*/, duringRI, true);
                     doPart3 = true;
                   }
-                }
-                catch (RegionClearedException rce) {
-                  // region cleared implies entry is no longer there
-                  // so must throw exception if expecting a particular
-                  // old value
-  //                if (expectedOldValue != null) {
-  //                  throw new EntryNotFoundException("entry not found with expected value");
-  //                }
-                  
-                  // Ignore. The exception will ensure that we do not update
-                  // the LRU List
-                  opCompleted = true;
-                  EntryLogger.logDestroy(event);
-//                  owner.recordEvent(event, newRe);
-                  owner.basicDestroyPart2(newRe, event, inTokenMode, true /* conflict with clear*/, duringRI, true);
-                  doPart3 = true;
-                } catch (ConcurrentCacheModificationException ccme) {
-                  VersionTag tag = event.getVersionTag();
-                  if (tag != null && tag.isTimeStampUpdated()) {
-                    // Notify gateways of new time-stamp.
-                    owner.notifyTimestampsToGateways(event);
+                  finally {
+                    if (re.isRemoved() && !re.isTombstone()) {
+                      if (!removed) {
+                        removeEntry(event.getKey(), re, true, event, owner,
+                            indexUpdater);
+                      }
+                    }
                   }
-                  throw ccme;
-                }
-                // Note no need for LRU work since the entry is destroyed
-                // and will be removed when gii completes
-                } finally { // bug #42228
-                  if (!opCompleted && !haveTombstone  /* to fix bug 51583 do this for all operations */ ) {
-                    
-//                    owner.getLogWriterI18n().warning(LocalizedStrings.DEBUG, "BRUCE: removing incomplete entry");
-                    removeEntry(event.getKey(), newRe, false);
+                } // !isRemoved
+                else { // already removed
+                  if (owner.isHDFSReadWriteRegion() && re.isRemovedPhase2()) {
+                    // For HDFS region there may be a race with eviction
+                    // so retry the operation. fixes bug 49150
+                    retry = true;
+                    continue;
                   }
-				  if (!opCompleted && isEviction) {
-                  	removeEntry(event.getKey(), newRe, false);
-                  }
-                }
-              } // !opCompleted
-            } // synchronized newRe
-          } finally {
-            if (oqlIndexManager != null) {
-              oqlIndexManager.countDownIndexUpdaters();
-            }
-          }
-        } // inTokenMode or tombstone creation
-        else {
-          if (!isEviction || owner.concurrencyChecksEnabled) {                                 
-            // The following ensures that there is not a concurrent operation
-            // on the entry and leaves behind a tombstone if concurrencyChecksEnabled.
-            // It fixes bug #32467 by propagating the destroy to the server even though
-            // the entry isn't in the client
-            RegionEntry newRe = haveTombstone? tombstone : getEntryFactory().createEntry(owner, event.getKey(),
-                  Token.REMOVED_PHASE1);
-            synchronized(newRe) {
-              if (haveTombstone && !tombstone.isTombstone()) {
-                // we have to check this again under synchronization since it may have changed
-                retry = true;
-                //retryEntry = tombstone; // leave this in place for debugging
-                continue RETRY_LOOP;
-              }
-              re = (RegionEntry)_getMap().putIfAbsent(event.getKey(), newRe);
-              if (re != null && re != tombstone) {
-                // concurrent change - try again
-                retry = true;
-                //retryEntry = tombstone; // leave this in place for debugging
-                continue RETRY_LOOP;
-              }
-              else if (!isEviction) {
-                boolean throwex = false;
-                EntryNotFoundException ex =  null;
-                try {
-                  if (!cacheWrite) {
-                    throwex = true;
-                  } else {
+                  if (re.isTombstone() && event.getVersionTag() != null) {
+                    // if we're dealing with a tombstone and this is a remote event
+                    // (e.g., from cache client update thread) we need to update
+                    // the tombstone's version information
+                    // TODO use destroyEntry() here
+                    processVersionTag(re, event);
                     try {
-                      if (!removeRecoveredEntry) {
-                        throwex = !owner.bridgeWriteBeforeDestroy(event, expectedOldValue);
-                      }
-                    } catch (EntryNotFoundException e) {
-                      throwex = true;
-                      ex = e; 
+                      re.makeTombstone(owner, event.getVersionTag());
+                    } catch (RegionClearedException e) {
+                      // that's okay - when writing a tombstone into a disk, the
+                      // region has been cleared (including this tombstone)
                     }
                   }
-                  if (throwex) {
-                    if (!event.isOriginRemote() && !event.getOperation().isLocal() &&
-                        (event.isFromBridgeAndVersioned() ||  // if this is a replayed client event that already has a version
-                            event.isFromWANAndVersioned())) { // or if this is a WAN event that has been applied in another system
-                      // we must distribute these since they will update the version information in peers
-                      if (logger.isDebugEnabled()) {
-                        logger.debug("ARM.destroy is allowing wan/client destroy of {} to continue", event.getKey());
-                      }
-                      throwex = false;
-                      event.setIsRedestroyedEntry(true);
-                      // Distribution of this op happens on re and re might me null here before
-                      // distributing this destroy op.
-                      if (re == null) {
-                        re = newRe;
-                      }
-                      doPart3 = true;
-                    }
+                  if (expectedOldValue != null) {
+                    // if re is removed then there is no old value, so return false
+                    return false;
                   }
-                  if (throwex) {                    
-                    if (ex == null) {
-                      // Fix for 48182, check cache state and/or region state before sending entry not found.
-                      // this is from the server and any exceptions will propogate to the client
-                      owner.checkEntryNotFound(event.getKey());
-                    } else {
-                      throw ex;
-                    }
-                  }
-                } finally {
-                  // either remove the entry or leave a tombstone
-                  try {
-                    if (!event.isOriginRemote() && event.getVersionTag() != null && owner.concurrencyChecksEnabled) {
-                      // this shouldn't fail since we just created the entry.
-                      // it will either generate a tag or apply a server's version tag
-                      processVersionTag(newRe, event);
-                      if (doPart3) {
-                        owner.generateAndSetVersionTag(event, newRe);
-                      }
-                      try {
-                        owner.recordEvent(event);
-                        newRe.makeTombstone(owner, event.getVersionTag());
-                      } catch (RegionClearedException e) {
-                        // that's okay - when writing a tombstone into a disk, the
-                        // region has been cleared (including this tombstone)
-                      }
-                      opCompleted = true;
-  //                    lruEntryCreate(newRe);
-                    } else if (!haveTombstone) {
-                      try {
-                        assert newRe != tombstone;
-                        newRe.setValue(owner, Token.REMOVED_PHASE2);
-                        removeEntry(event.getKey(), newRe, false);
-                      } catch (RegionClearedException e) {
-                        // that's okay - we just need to remove the new entry
-                      }
-                    } else if (event.getVersionTag() != null ) { // haveTombstone - update the tombstone version info
-                      processVersionTag(tombstone, event);
-                      if (doPart3) {
-                        owner.generateAndSetVersionTag(event, newRe);
-                      }
-                      // This is not conflict, we need to persist the tombstone again with new version tag 
-                      try {
-                        tombstone.setValue(owner, Token.TOMBSTONE);
-                      } catch (RegionClearedException e) {
-                        // that's okay - when writing a tombstone into a disk, the
-                        // region has been cleared (including this tombstone)
-                      }
-                      owner.recordEvent(event);
-                      owner.rescheduleTombstone(tombstone, event.getVersionTag());
-                      owner.basicDestroyPart2(tombstone, event, inTokenMode, true /* conflict with clear*/, duringRI, true);
-                      opCompleted = true;
-                    }
-                  } catch (ConcurrentCacheModificationException ccme) {
-                    VersionTag tag = event.getVersionTag();
-                    if (tag != null && tag.isTimeStampUpdated()) {
-                      // Notify gateways of new time-stamp.
-                      owner.notifyTimestampsToGateways(event);
-                    }
-                    throw ccme;
-                  }
-                }
-              }
-            } // synchronized(newRe)
-          }
-        }
-      } // no current entry
-      else { // current entry exists
-        if (oqlIndexManager != null) {
-          oqlIndexManager.waitForIndexInit();
-        }
-        try {
-          synchronized (re) {
-            // if the entry is a tombstone and the event is from a peer or a client
-            // then we allow the operation to be performed so that we can update the
-            // version stamp.  Otherwise we would retain an old version stamp and may allow
-            // an operation that is older than the destroy() to be applied to the cache
-            // Bug 45170: If removeRecoveredEntry, we treat tombstone as regular entry to be deleted
-            boolean createTombstoneForConflictChecks = (owner.concurrencyChecksEnabled
-                && (event.isOriginRemote() || event.getContext() != null || removeRecoveredEntry));
-            if (!re.isRemoved() || createTombstoneForConflictChecks) {
-              if (re.isRemovedPhase2()) {
-                retry = true;
-                continue RETRY_LOOP;
-              }
-              if (!event.isOriginRemote() && event.getOperation().isExpiration()) {
-                // If this expiration started locally then only do it if the RE is not being used by a tx.
-                if (re.isInUseByTransaction()) {
-                  opCompleted = false;
-                  return opCompleted;
-                }
-              }
-              event.setRegionEntry(re);
-              
-              // See comment above about eviction checks
-              if (isEviction) {
-                assert expectedOldValue == null;
-                if (!confirmEvictionDestroy(re) || (owner.getEvictionCriteria() != null && !owner.getEvictionCriteria().doEvict(event))) {
-                  opCompleted = false;
-                  return opCompleted;
-                }
-              }
 
-              boolean removed = false;
-              try {
-                opCompleted = destroyEntry(re, event, inTokenMode, cacheWrite, expectedOldValue, false, removeRecoveredEntry);
-                if (opCompleted) {
-                  // It is very, very important for Partitioned Regions to keep
-                  // the entry in the map until after distribution occurs so that other
-                  // threads performing a create on this entry wait until the destroy
-                  // distribution is finished.
-                  // keeping backup copies consistent. Fix for bug 35906.
-                  // -- mthomas 07/02/2007 <-- how about that date, kinda cool eh?
-                  owner.basicDestroyBeforeRemoval(re, event);
-
-                  // do this before basicDestroyPart2 to fix bug 31786
-                  if (!inTokenMode) {
-                    if ( re.getVersionStamp() == null) {
-                      re.removePhase2();
-                      removeEntry(event.getKey(), re, true, event, owner,
-                          indexUpdater);
-                      removed = true;
-                    }
-                  }
-                  if (inTokenMode && !duringRI) {
-                    event.inhibitCacheListenerNotification(true);
-                  }
-                  doPart3 = true;
-                  owner.basicDestroyPart2(re, event, inTokenMode, false /* conflict with clear*/, duringRI, true);
-//                  if (!re.isTombstone() || isEviction) {
-                    lruEntryDestroy(re);
-//                  } else {
-//                    lruEntryUpdate(re);
-//                    lruUpdateCallback = true;
-//                  }
-                } else {
-                  if (!inTokenMode) {
-                    EntryLogger.logDestroy(event);
-                    owner.recordEvent(event);
-                    if (re.getVersionStamp() == null) {
-                      re.removePhase2();
-                      removeEntry(event.getKey(), re, true, event, owner,
-                          indexUpdater);
-                      lruEntryDestroy(re);
-                    } else {
-                      if (re.isTombstone()) {
-                        // the entry is already a tombstone, but we're destroying it
-                        // again, so we need to reschedule the tombstone's expiration
-                        if (event.isOriginRemote()) {
-                          owner.rescheduleTombstone(re, re.getVersionStamp().asVersionTag());
-                        }
-                      }
-                    }
-                    lruEntryDestroy(re);
-                    opCompleted = true;
+                  if (!inTokenMode && !isEviction) {
+                    owner.checkEntryNotFound(event.getKey());
                   }
                 }
+              } // synchronized re
+            }  catch (ConcurrentCacheModificationException ccme) {
+              VersionTag tag = event.getVersionTag();
+              if (tag != null && tag.isTimeStampUpdated()) {
+                // Notify gateways of new time-stamp.
+                owner.notifyTimestampsToGateways(event);
               }
-              catch (RegionClearedException rce) {
-                // Ignore. The exception will ensure that we do not update
-                // the LRU List
-                opCompleted = true;
-                owner.recordEvent(event);
-                if (inTokenMode && !duringRI) {
-                  event.inhibitCacheListenerNotification(true);
-                }
-                owner.basicDestroyPart2(re, event, inTokenMode, true /*conflict with clear*/, duringRI, true);
-                doPart3 = true;
+              throw ccme;
+            } finally {
+              if (oqlIndexManager != null) {
+                oqlIndexManager.countDownIndexUpdaters();
               }
-              finally {
-                if (re.isRemoved() && !re.isTombstone()) {
-                  if (!removed) {
-                    removeEntry(event.getKey(), re, true, event, owner,
-                        indexUpdater);
-                  }
-                }
-              }
-            } // !isRemoved
-            else { // already removed
-              if (owner.isHDFSReadWriteRegion() && re.isRemovedPhase2()) {
-                // For HDFS region there may be a race with eviction
-                // so retry the operation. fixes bug 49150
-                retry = true;
-                continue RETRY_LOOP;
-              }
-              if (re.isTombstone() && event.getVersionTag() != null) {
-                // if we're dealing with a tombstone and this is a remote event
-                // (e.g., from cache client update thread) we need to update
-                // the tombstone's version information
-                // TODO use destroyEntry() here
-                processVersionTag(re, event);
-                try {
-                  re.makeTombstone(owner, event.getVersionTag());
-                } catch (RegionClearedException e) {
-                  // that's okay - when writing a tombstone into a disk, the
-                  // region has been cleared (including this tombstone)
-                }
-              }
-              if (expectedOldValue != null) {
-                // if re is removed then there is no old value, so return false
-                return false;
-              }
-
-              if (!inTokenMode && !isEviction) {
-                owner.checkEntryNotFound(event.getKey());
-              }
-//              if (isEviction && re.isTombstone()) {
-//                owner.unscheduleTombstone(re);
-//                removeTombstone(re, re.getVersionStamp().getEntryVersion(), true);
-//              }
             }
-          } // synchronized re
-        }  catch (ConcurrentCacheModificationException ccme) {
-          VersionTag tag = event.getVersionTag();
-          if (tag != null && tag.isTimeStampUpdated()) {
-            // Notify gateways of new time-stamp.
-            owner.notifyTimestampsToGateways(event);
-          }
-          throw ccme;
-        } finally {
-          if (oqlIndexManager != null) {
-            oqlIndexManager.countDownIndexUpdaters();
-          }
-        }
-        // No need to call lruUpdateCallback since the only lru action
-        // we may have taken was lruEntryDestroy. This fixes bug 31759.
+            // No need to call lruUpdateCallback since the only lru action
+            // we may have taken was lruEntryDestroy. This fixes bug 31759.
 
-      } // current entry exists
-      if(opCompleted) {
-        EntryLogger.logDestroy(event);
-      }
-      return opCompleted;
-    }
-    finally {
-      releaseCacheModificationLock(owner, event);
-      doUnlock = false;
-      
-      try {
-        // release the SQLF index lock, if acquired
-        if (sqlfIndexLocked) {
-          indexUpdater.unlockForIndexGII();
+          } // current entry exists
+          if(opCompleted) {
+            EntryLogger.logDestroy(event);
+          }
+          return opCompleted;
         }
-        // If concurrency conflict is there and event contains gateway version tag then
-        // do NOT distribute.
-        if (event.isConcurrencyConflict() &&
-            (event.getVersionTag() != null && event.getVersionTag().isGatewayTag())) {
-          doPart3 = false;
-        }
-        // distribution and listener notification
-        if (doPart3) {
-          owner.basicDestroyPart3(re, event, inTokenMode, duringRI, true, expectedOldValue);
-        }
-//        if (lruUpdateCallback) {
-//          lruUpdateCallback();
-//        }
-      } finally {
-        if (opCompleted) {
-          if (re != null) {
-            owner.cancelExpiryTask(re);
-          } else if (tombstone != null) {
-            owner.cancelExpiryTask(tombstone);
+        finally {
+          releaseCacheModificationLock(owner, event);
+          doUnlock = false;
+
+          try {
+            // If concurrency conflict is there and event contains gateway version tag then
+            // do NOT distribute.
+            if (event.isConcurrencyConflict() &&
+                (event.getVersionTag() != null && event.getVersionTag().isGatewayTag())) {
+              doPart3 = false;
+            }
+            // distribution and listener notification
+            if (doPart3) {
+              owner.basicDestroyPart3(re, event, inTokenMode, duringRI, true, expectedOldValue);
+            }
+          } finally {
+            if (opCompleted) {
+              if (re != null) {
+                owner.cancelExpiryTask(re);
+              } else if (tombstone != null) {
+                owner.cancelExpiryTask(tombstone);
+              }
+            }
           }
         }
+
+      } finally { // failsafe on the read lock...see comment above
+        if (doUnlock) {
+          releaseCacheModificationLock(owner, event);
+        }
       }
-    }
-    
-    } finally { // failsafe on the read lock...see comment above
-      if (doUnlock) {
-        releaseCacheModificationLock(owner, event);
-      }
-    }
     } // retry loop
     return false;
   }
@@ -2339,38 +2279,12 @@ RETRY_LOOP:
         // RegionEntry retryEntry = null;
         // int retries = -1;
         
-      RETRY_LOOP:
         while (retry) {
           retry = false;
-          /* this is useful for debugging if you get a hot thread
-          retries++;
-          if (retries > 0) {
-            owner.getCachePerfStats().incRetries();
-            if (retries == 1000000) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.AbstractRegionMap_RETRIED_1_MILLION_TIMES_FOR_ENTRY_TO_GO_AWAY_0, new Object[] { retryEntry, retryEntry.removeTrace }));
-            }
-          }
-          */
           boolean entryExisted = false;
           RegionEntry re = getEntry(event.getKey());
           RegionEntry tombstone = null;
           boolean haveTombstone = false;
-          /* this test fails when an invalidate(k,v) doesn't leave an entry in the cache:
-                  parReg/bridge/serialParRegHABridge.conf
-                  bridgeHosts=5
-                  bridgeThreadsPerVM=1
-                  bridgeVMsPerHost=1
-                  edgeHosts=4
-                  edgeThreadsPerVM=1
-                  edgeVMsPerHost=1
-                  numAccessors=1
-                  numEmptyClients=1
-                  numThinClients=1
-                  numVMsToStop=2
-                  redundantCopies=3
-                  hydra.Prms-randomSeed=1328320674613;
-           */
           if (re != null && re.isTombstone()) {
             tombstone = re;
             haveTombstone = true;
@@ -2387,7 +2301,7 @@ RETRY_LOOP:
                   // state of the tombstone has changed so we need to retry
                   retry = true;
                   //retryEntry = tombstone; // leave this in place for debugging
-                  continue RETRY_LOOP;
+                  continue;
                 }
                 re = putEntryIfAbsent(event.getKey(), newRe);
                 if (re == tombstone) {
@@ -2401,7 +2315,7 @@ RETRY_LOOP:
                   // bug 45295: state of the tombstone has changed so we need to retry
                   retry = true;
                   //retryEntry = tombstone; // leave this in place for debugging
-                  continue RETRY_LOOP;
+                  continue;
                 }
        
                 // bug #43287 - send event to server even if it's not in the client (LRU may have evicted it)
