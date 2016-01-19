@@ -11338,7 +11338,7 @@ public class LocalRegion extends AbstractRegion
    * @return this region's GemFireCache instance
    */
   @Override
-  public final GemFireCacheImpl getGemFireCache() {
+  public GemFireCacheImpl getGemFireCache() {
     return this.cache;
   }
 
