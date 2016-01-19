@@ -21,8 +21,12 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ClearSystemProperties;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestRule;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,15 +51,15 @@ public class AgentUtilJUnitTest {
 
   @Test
   public void testRESTApiExists() {
-    String gemFireWarLocation = agentUtil.getGemFireWebApiWarLocation();
-    assertNotNull(gemFireWarLocation, "GemFire REST API WAR File was not found");
+    String gemFireWarLocation = agentUtil.findWarLocation("gemfire-web-api");
+    assertNotNull("GemFire REST API WAR File was not found", gemFireWarLocation);
   }
 
   @Ignore("This test should be activated when pulse gets added to Geode")
   @Test
   public void testPulseWarExists() {
-    String gemFireWarLocation = agentUtil.getPulseWarLocation();
-    assertNotNull(gemFireWarLocation, "Pulse WAR File was not found");
+    String gemFireWarLocation = agentUtil.findWarLocation("gemfire-pulse");
+    assertNotNull("Pulse WAR File was not found", gemFireWarLocation);
   }
 
   private String getGemfireVersion() {
@@ -78,7 +82,7 @@ public class AgentUtilJUnitTest {
     if (inputStream != null) {
       try {
         prop.load(inputStream);
-        version = prop.getProperty("version");
+        version = prop.getProperty("versionNumber")+"-"+prop.getProperty("releaseType");
       } catch (FileNotFoundException e) {
       } catch (IOException e) {
       }
@@ -95,12 +99,8 @@ public class AgentUtilJUnitTest {
       return pathPrefix;
     }
 
-    String pathFromRoot = currentDirectoryPath.substring(gemfireCoreLocationIx);
-    int segmentsCount = pathFromRoot.split("/").length - 1;
-
-    for (int i = 0; i < segmentsCount; i++) {
-      pathPrefix = pathPrefix + "../";
-    }
-    return pathPrefix;
+    return currentDirectoryPath.substring(0, gemfireCoreLocationIx);
   }
+
+
 }
