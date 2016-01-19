@@ -24,7 +24,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
@@ -35,6 +37,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class SimpleMemoryAllocatorJUnitTest {
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private static int round(int multiple, int v) {
     return ((v+multiple-1)/multiple)*multiple;
@@ -130,6 +134,7 @@ public class SimpleMemoryAllocatorJUnitTest {
   }
   @Test
   public void testCreate() {
+    System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "false");
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
@@ -439,7 +444,7 @@ public class SimpleMemoryAllocatorJUnitTest {
 
   @Test
   public void testClose() {
-    assertEquals(false, Boolean.getBoolean(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY));
+    System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "false");
     UnsafeMemoryChunk slab = new UnsafeMemoryChunk(1024*1024);
     boolean freeSlab = true;
     UnsafeMemoryChunk[] slabs = new UnsafeMemoryChunk[]{slab};

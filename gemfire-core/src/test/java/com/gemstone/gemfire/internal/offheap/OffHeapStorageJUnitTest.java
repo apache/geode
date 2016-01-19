@@ -29,7 +29,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
@@ -43,6 +45,8 @@ import com.jayway.awaitility.Awaitility;
 
 @Category(UnitTest.class)
 public class OffHeapStorageJUnitTest {
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private final static long MEGABYTE = 1024 * 1024;
   private final static long GIGABYTE = 1024 * 1024 * 1024;
