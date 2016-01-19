@@ -21,7 +21,11 @@ import static org.junit.Assert.*;
 import java.util.Iterator;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
 public class RegionVersionHolder2JUnitTest {
 
   @Test
