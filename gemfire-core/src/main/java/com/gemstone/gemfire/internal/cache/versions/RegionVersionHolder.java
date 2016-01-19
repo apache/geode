@@ -225,8 +225,13 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   }
   
   void flushBitSetDuringRecording(long version) {
+    if (this.bitSetVersion + BIT_SET_WIDTH - 1 >= version) {
+      return; // it fits in this bitset
+    }
+    
     int length = BIT_SET_WIDTH;
     int bitCountToFlush = length * 3 / 4;
+    
     if (logger.isTraceEnabled(LogMarker.RVV)) {
       logger.trace(LogMarker.RVV, "flushing RVV bitset bitSetVersion={}; bits={}", this.bitSetVersion, this.bitSet);
     }
@@ -316,42 +321,58 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   }
   
   synchronized void recordVersion(long version) {
-
-    if (this.version != version) {
-      if (this.bitSet == null) {
-        if (this.version < version-1) {
-          this.addException(this.version, version);
-          if (logger.isTraceEnabled(LogMarker.RVV)) {
-            logger.trace(LogMarker.RVV, "Added rvv exception e<rv{} - rv{}>", this.version, version);
-          }
-        } else if (this.version > version) {
-          this.addOlderVersion(version);
-        }
-      } else { // have a bitSet
-        if (this.bitSetVersion + BIT_SET_WIDTH - 1 < version) {
-          this.flushBitSetDuringRecording(version);
-        }
-        if (version < this.bitSetVersion) {
-          this.addOlderVersion(version);
-        } else {
-          // If there's special exception, version maybe >= this.bitSetVersion. We need to fill the hole
-          // in the special exception. For example, holder=R5(3,6), bitSetVersion=3, bs=[0]. Adding version=4
-          // will become: holder=R5(4,6), bitsetVersion=3, bs[0,1]
-          if (this.getSpecialException() != null) {
-            this.addOlderVersion(version);
-          }
-          this.bitSet.set((int)(version-this.bitSetVersion));
-        }
-      }
-      this.version = Math.max(this.version, version);
+    if (this.bitSet != null) {
+      recordVersionWithBitSet(version);
     } else {
-      if (this.bitSet != null && version>=this.bitSetVersion) {
-        this.bitSet.set((int)(version-this.bitSetVersion));
+      recordVersionWithoutBitSet(version);
+    }
+  }
+
+  private void recordVersionWithoutBitSet(long version) {
+    if ( (version - this.version) > 1) {
+      this.addException(this.version, version);
+      logRecordVersion(version);
+      this.version = version;
+      return;
+    }
+    this.addOlderVersion(version);
+    this.version = Math.max(this.version, version);
+  }
+
+  private void recordVersionWithBitSet(long version) {
+    if (this.version == version) {
+      if (version >= this.bitSetVersion) {
+        setVersionInBitSet(version);
       }
       this.addOlderVersion(version);
+      return;
+    }
+    
+    flushBitSetDuringRecording(version);
+
+    if (version >= this.bitSetVersion) {
+      if (this.getSpecialException() != null) {
+        this.addOlderVersion(version);
+      }
+      setVersionInBitSet(version);
+      this.version = Math.max(this.version, version);
+      return;
+    }
+    this.addOlderVersion(version);
+    this.version = Math.max(this.version, version);
+  }
+
+  private void setVersionInBitSet(long version) {
+    this.bitSet.set((int)(version-this.bitSetVersion));
+  }
+  
+  private void logRecordVersion(long version) {
+    if (logger.isTraceEnabled(LogMarker.RVV)) {
+      logger.trace(LogMarker.RVV, "Added rvv exception e<rv{} - rv{}>", this.version, version);
     }
   }
   
+
   /**
    * Add an exception that is older than this.bitSetVersion.
    */
