@@ -176,19 +176,8 @@ public class ManagementAgent {
             this.config.getHttpServicePort(), this.config.getHttpServiceBindAddress());
       }
 
-      // Check for empty variable. if empty, then log message and exit HTTP
-      // server startup
-      if (!agentUtil.isGemfireHomeDefined()) {
-        final String message = "GEMFIRE environment variable not set; HTTP service will not start.";
-        setStatusMessage(managerBean, message);
-        if (logger.isDebugEnabled()) {
-          logger.debug(message);
-        }
-        return;
-      }
-
       // Find the Management WAR file
-      final String gemfireWar = agentUtil.getGemFireWebWarLocation();
+      final String gemfireWar = agentUtil.findWarLocation("gemfire-web");
       if (gemfireWar == null) {
         if (logger.isDebugEnabled()) {
           logger.debug("Unable to find GemFire Management REST API WAR file; the Management REST Interface for GemFire will not be accessible.");
@@ -196,7 +185,7 @@ public class ManagementAgent {
       }
 
       // Find the Pulse WAR file
-      final String pulseWar = agentUtil.getPulseWarLocation();
+      final String pulseWar = agentUtil.findWarLocation("gemfire-pulse");
 
       if (pulseWar == null) {
         final String message = "Unable to find Pulse web application WAR file; Pulse for GemFire will not be accessible";
@@ -207,7 +196,7 @@ public class ManagementAgent {
       }
 
       // Find developer REST WAR file
-      final String gemfireAPIWar = agentUtil.getGemFireWebApiWarLocation();
+      final String gemfireAPIWar = agentUtil.findWarLocation("gemfire-web-api");
       if (gemfireAPIWar == null) {
         final String message = "Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.";
         setStatusMessage(managerBean, message);
