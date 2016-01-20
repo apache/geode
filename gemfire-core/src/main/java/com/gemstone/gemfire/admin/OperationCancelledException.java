@@ -25,7 +25,7 @@ package com.gemstone.gemfire.admin;
  * because the system member has left the distributed system.
  *
  * @since 3.5
- * @deprecated as of 7.0 use the {@link com.gemstone.gemfire.management} package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class OperationCancelledException extends RuntimeAdminException {
    private static final long serialVersionUID = 5474068770227602546L;

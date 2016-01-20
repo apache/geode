@@ -21,7 +21,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 /**
- * This interface is similar to {@link mx4j.tools.naming.NamingServiceMBean}.
+ * This interface is similar to mx4j.tools.naming.NamingServiceMBean.
  * Features that differ are:
  * 1. This MBean interface additionally provides a way to specify the host that 
  * the RMI Registry should get bound to.
