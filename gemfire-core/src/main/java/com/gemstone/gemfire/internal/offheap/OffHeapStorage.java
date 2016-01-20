@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.offheap;
 import java.lang.reflect.Method;
 
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
@@ -391,56 +390,5 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
   private void setFreeMemory(long value) {
     this.stats.setLong(freeMemoryId, value);
-  }
-  
-  static class DisconnectingOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListener {
-    private final Object lock = new Object();
-    private InternalDistributedSystem ids;
-    
-    DisconnectingOutOfOffHeapMemoryListener(InternalDistributedSystem ids) {
-      this.ids = ids;
-    }
-    
-    public void close() {
-      synchronized (lock) {
-        this.ids = null; // set null to prevent memory leak after closure!
-      }
-    }
-    
-    @Override
-    public void outOfOffHeapMemory(final OutOfOffHeapMemoryException cause) {
-      synchronized (lock) {
-        if (this.ids == null) {
-          return;
-        }
-        if (Boolean.getBoolean(STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY)) {
-          return;
-        }
-        
-        final InternalDistributedSystem dsToDisconnect = this.ids;
-        this.ids = null; // set null to prevent memory leak after closure!
-        
-        if (dsToDisconnect.getDistributionManager().getRootCause() == null) {
-          dsToDisconnect.getDistributionManager().setRootCause(cause);
-        }
-          
-        Runnable runnable = new Runnable() {
-          @Override
-          public void run() {
-            dsToDisconnect.getLogWriter().info("OffHeapStorage about to invoke disconnect on " + dsToDisconnect);
-            dsToDisconnect.disconnect(cause.getMessage(), cause, false);
-          }
-        };
-        
-        // invoking disconnect is async because caller may be a DM pool thread which will block until DM shutdown times out
-
-        //LogWriterImpl.LoggingThreadGroup group = LogWriterImpl.createThreadGroup("MemScale Threads", ids.getLogWriterI18n());
-        String name = this.getClass().getSimpleName()+"@"+this.hashCode()+" Handle OutOfOffHeapMemoryException Thread";
-        //Thread thread = new Thread(group, runnable, name);
-        Thread thread = new Thread(runnable, name);
-        thread.setDaemon(true);
-        thread.start();
-      }
-    }
   }
 }

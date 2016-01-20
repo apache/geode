@@ -115,7 +115,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * @since 3.0
  *
  */
-public final class InternalDistributedSystem
+public class InternalDistributedSystem
   extends DistributedSystem
   implements OsStatisticsFactory, StatisticsManager
 {
