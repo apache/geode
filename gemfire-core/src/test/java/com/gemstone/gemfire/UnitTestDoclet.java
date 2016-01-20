@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire;
 
-import com.sun.javadoc.*;
 import java.io.*;
 import java.text.BreakIterator;
 import java.util.*;
+
+import com.sun.javadoc.ClassDoc;
+import com.sun.javadoc.DocErrorReporter;
+import com.sun.javadoc.MethodDoc;
+import com.sun.javadoc.RootDoc;
+
 import junit.framework.TestCase;
 import perffmwk.Formatter;
 
