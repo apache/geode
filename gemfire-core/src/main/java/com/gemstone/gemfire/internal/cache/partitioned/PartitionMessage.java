@@ -35,6 +35,7 @@ import com.gemstone.gemfire.cache.LowMemoryException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
@@ -341,7 +342,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
         logger.debug("shutdown caught, abandoning message: {}", se.getMessage(), se);
       }
     }
-    catch (RegionDestroyedException rde) {
+    catch (RegionDestroyedException | RegionNotFoundException rde ) {
       // [bruce] RDE does not always mean that the sender's region is also
       //         destroyed, so we must send back an exception.  If the sender's
       //         region is also destroyed, who cares if we send it an exception
