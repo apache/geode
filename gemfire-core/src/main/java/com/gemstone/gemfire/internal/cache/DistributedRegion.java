@@ -4147,7 +4147,7 @@ public class DistributedRegion extends LocalRegion implements
     final DM dm = getDistributionManager();
     ResultSender resultSender = new DistributedRegionFunctionResultSender(dm, msg, function);
     final RegionFunctionContextImpl context = new RegionFunctionContextImpl(
-        function.getId(), this, args, filter, null, null, resultSender,
+        cache, function.getId(), this, args, filter, null, null, resultSender,
         isReExecute);
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), dm.getSystem());    
     try {
@@ -4189,7 +4189,7 @@ public class DistributedRegion extends LocalRegion implements
     final DistributedRegionFunctionResultSender resultSender = new DistributedRegionFunctionResultSender(
         dm, localRC, function, sender);
     final RegionFunctionContextImpl context = new RegionFunctionContextImpl(
-        function.getId(), DistributedRegion.this, args, filter, null, null,
+        cache, function.getId(), DistributedRegion.this, args, filter, null, null,
         resultSender, execution.isReExecute());
     execution.executeFunctionOnLocalNode(function, context, resultSender, dm, isTX());
     return localRC;

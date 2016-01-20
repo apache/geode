@@ -18,6 +18,7 @@ package com.gemstone.gemfire.internal.cache.execute;
 
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 
@@ -37,10 +38,10 @@ public class MultiRegionFunctionContextImpl extends FunctionContextImpl
   
   private final boolean isPossibleDuplicate;
 
-  public MultiRegionFunctionContextImpl(final String functionId,
+  public MultiRegionFunctionContextImpl(final Cache cache, final String functionId,
       final Object args, ResultSender resultSender, Set<Region> regions,
       boolean isPossibleDuplicate) {
-    super(functionId, args, resultSender);
+    super(cache, functionId, args, resultSender);
     this.regions = regions;
     this.isPossibleDuplicate = isPossibleDuplicate;
   }

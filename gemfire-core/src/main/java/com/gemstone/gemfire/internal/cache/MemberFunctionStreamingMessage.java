@@ -172,8 +172,8 @@ public class MemberFunctionStreamingMessage extends DistributionMessage implemen
       ResultSender resultSender = new MemberFunctionResultSender(dm, this,
           this.functionObject);
       Set<Region> regions = new HashSet<Region>();
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
       if (this.regionPathSet != null) {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         for (String regionPath : this.regionPathSet) {
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
             thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString(dm.getId()));
@@ -183,7 +183,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage implemen
         }
       }
       FunctionContextImpl context = new MultiRegionFunctionContextImpl(
-          this.functionObject.getId(), this.args, resultSender, regions,
+          cache, this.functionObject.getId(), this.args, resultSender, regions,
           isReExecute);
 
       

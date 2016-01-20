@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -46,20 +47,20 @@ public class FunctionContextImpl implements FunctionContext {
   
   private final boolean isPossDup;
   
-  public FunctionContextImpl(final String functionId, final Object args,
+  private final Cache cache;
+
+  public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
       ResultSender resultSender) {
-    this.functionId = functionId;
-    this.args = args;
-    this.resultSender = resultSender;
-    this.isPossDup = false;
+    this(cache, functionId, args, resultSender, false);
   }
   
-  public FunctionContextImpl(final String functionId, final Object args,
+  public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
       ResultSender resultSender, boolean isPossibleDuplicate) {
     this.functionId = functionId;
     this.args = args;
     this.resultSender = resultSender;
     this.isPossDup = isPossibleDuplicate;
+    this.cache = cache;
   }
 
   /**
@@ -102,6 +103,11 @@ public class FunctionContextImpl implements FunctionContext {
 
   public boolean isPossibleDuplicate() {
     return this.isPossDup;
+  }
+
+  @Override
+  public Cache getCache() {
+    return cache;
   }
   
 }

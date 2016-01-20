@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -55,13 +56,14 @@ public class RegionFunctionContextImpl extends FunctionContextImpl implements
 
   private final boolean isPossibleDuplicate;
 
-  public RegionFunctionContextImpl(final String functionId,
+  public RegionFunctionContextImpl(final Cache cache,
+      final String functionId,
       final Region dataSet, final Object args,
       final Set<?> routingObjects,
       final Map<String, LocalDataSet> colocatedLocalDataMap,
       Set<Integer> localBucketSet, ResultSender<?> resultSender,
       boolean isPossibleDuplicate) {
-    super(functionId, args, resultSender);
+    super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
     this.filter = routingObjects;
     this.colocatedLocalDataMap = colocatedLocalDataMap;

@@ -200,7 +200,7 @@ public class JarClassLoaderJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertNotNull(function);
     TestResultSender resultSender = new TestResultSender();
-    FunctionContext functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
+    FunctionContext functionContext = new FunctionContextImpl(null, function.getId(), null, resultSender);
     function.execute(functionContext);
     assertEquals("GOODv1", (String) resultSender.getResults());
 
@@ -215,7 +215,7 @@ public class JarClassLoaderJUnitTest {
     function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertNotNull(function);
     resultSender = new TestResultSender();
-    functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
+    functionContext = new FunctionContextImpl(null, function.getId(), null, resultSender);
     function.execute(functionContext);
     assertEquals("GOODv2", (String) resultSender.getResults());
 
@@ -303,7 +303,7 @@ public class JarClassLoaderJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunctionNoXml");
     assertNotNull(function);
     TestResultSender resultSender = new TestResultSender();
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("NOPARMSv1", (String) resultSender.getResults());
   }
   
@@ -364,7 +364,7 @@ public class JarClassLoaderJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertNotNull(function);
     TestResultSender resultSender = new TestResultSender();
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("NOPARMSv1", (String) resultSender.getResults());
 
     // Update the second function (change the value returned from execute) by deploying a JAR file
@@ -379,7 +379,7 @@ public class JarClassLoaderJUnitTest {
     // Check to see if the updated function without parameters executes correctly
     function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertNotNull(function);
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("NOPARMSv2", (String) resultSender.getResults());
   }
 
@@ -449,12 +449,12 @@ public class JarClassLoaderJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunctionA");
     assertNotNull(function);
     TestResultSender resultSender = new TestResultSender();
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("DOGv1", (String) resultSender.getResults());
 
     function = FunctionService.getFunction("JarClassLoaderJUnitFunctionB");
     assertNotNull(function);
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("CATv1", (String) resultSender.getResults());
 
     // Update the first function (change the value returned from execute)
@@ -468,12 +468,12 @@ public class JarClassLoaderJUnitTest {
     // Check to see if the updated functions with parameters execute correctly
     function = FunctionService.getFunction("JarClassLoaderJUnitFunctionA");
     assertNotNull(function);
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("DOGv2", (String) resultSender.getResults());
 
     function = FunctionService.getFunction("JarClassLoaderJUnitFunctionB");
     assertNotNull(function);
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("CATv2", (String) resultSender.getResults());
 
     // Update cache xml to add a new function and replace an existing one
@@ -491,17 +491,17 @@ public class JarClassLoaderJUnitTest {
     // Check to see if the updated functions with parameters execute correctly
     function = FunctionService.getFunction("JarClassLoaderJUnitFunctionA");
     assertNotNull(function);
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("DOGv3", (String) resultSender.getResults());
 
     function = FunctionService.getFunction("JarClassLoaderJUnitFunctionC");
     assertNotNull(function);
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("DOGv3", (String) resultSender.getResults());
 
     function = FunctionService.getFunction("JarClassLoaderJUnitFunctionB");
     assertNotNull(function);
-    function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertEquals("BIRDv3", (String) resultSender.getResults());
   }
 
@@ -563,7 +563,7 @@ public class JarClassLoaderJUnitTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
     assertNotNull(function);
     TestResultSender resultSender = new TestResultSender();
-    FunctionContext functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
+    FunctionContext functionContext = new FunctionContextImpl(null, function.getId(), null, resultSender);
     function.execute(functionContext);
     assertEquals("PARENT:USES", (String) resultSender.getResults());
   }

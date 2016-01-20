@@ -212,13 +212,14 @@ public class ExecuteFunction66 extends BaseCommand {
             .getAnyInstance().getDistributedMember();
         FunctionContext context = null;
 
+        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         if (memberMappedArg != null) {
-          context = new FunctionContextImpl(functionObject.getId(),
+          context = new FunctionContextImpl(cache, functionObject.getId(),
               memberMappedArg.getArgumentsForMember(localVM.getId()),
               resultSender, isReexecute);
         }
         else {
-          context = new FunctionContextImpl(functionObject.getId(), args,
+          context = new FunctionContextImpl(cache, functionObject.getId(), args,
               resultSender, isReexecute);
         }
         HandShake handShake = (HandShake)servConn.getHandshake();
@@ -228,7 +229,6 @@ public class ExecuteFunction66 extends BaseCommand {
           if (logger.isDebugEnabled()) {
             logger.debug("Executing Function on Server: {} with context: {}", servConn, context);
           }
-          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
           HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
           if (functionObject.optimizeForWrite() && cache != null
               && hmm.getState().isCritical()

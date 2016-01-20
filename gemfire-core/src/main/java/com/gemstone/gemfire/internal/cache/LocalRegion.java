@@ -11515,7 +11515,7 @@ public class LocalRegion extends AbstractRegion
     final DistributedRegionFunctionResultSender resultSender = new DistributedRegionFunctionResultSender(
         dm, localRC, function, sender);
     final RegionFunctionContextImpl context = new RegionFunctionContextImpl(
-        function.getId(), LocalRegion.this, args, filter, null, null,
+        cache, function.getId(), LocalRegion.this, args, filter, null, null,
         resultSender, execution.isReExecute());
     execution.executeFunctionOnLocalNode(function, context, resultSender, dm, isTX());
     return localRC;
