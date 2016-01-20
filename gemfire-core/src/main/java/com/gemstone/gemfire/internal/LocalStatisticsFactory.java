@@ -52,9 +52,11 @@ public class LocalStatisticsFactory extends AbstractStatisticsFactory
     if (statsDisabled) {
       this.sampler = null;
       logger.info(LogMarker.STATISTICS, LocalizedMessage.create(LocalizedStrings.LocalStatisticsFactory_STATISTIC_COLLECTION_IS_DISABLED_USE_DSTATSDISABLEFALSE_TO_TURN_ON_STATISTICS));
-    } else {
+    } else if (stopper != null) {
       this.sampler = new SimpleStatSampler(stopper, this);
       this.sampler.start();
+    } else {
+      this.sampler = null;
     }
   }
   

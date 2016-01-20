@@ -173,33 +173,35 @@ public class OffHeapStorage implements OffHeapMemoryStats {
    * @return MemoryAllocator for off-heap storage
    */
   public static MemoryAllocator createOffHeapStorage(LogWriter lw, StatisticsFactory sf, long offHeapMemorySize, DistributedSystem system) {
-    MemoryAllocator result;
     if (offHeapMemorySize == 0 || Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
       // Checking the FORCE_LOCATOR_DM_TYPE is a quick hack to keep our locator from allocating off heap memory.
-      result = null;
-    } else {
-      // Ensure that using off-heap will work with this JVM.
-      validateVmCompatibility();
-      
-      final OffHeapMemoryStats stats = new OffHeapStorage(sf);
-      
-      if (offHeapMemorySize < MIN_SLAB_SIZE) {
-        throw new IllegalArgumentException("The amount of off heap memory must be at least " + MIN_SLAB_SIZE + " but it was set to " + offHeapMemorySize);
-      }
-      
-      // determine off-heap and slab sizes
-      final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
-      
-      final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
-
-      if (system == null) {
-        throw new IllegalArgumentException("InternalDistributedSystem is null");
-      }
-      // ooohml provides the hook for disconnecting and closing cache on OutOfOffHeapMemoryException
-      OutOfOffHeapMemoryListener ooohml = new DisconnectingOutOfOffHeapMemoryListener((InternalDistributedSystem) system);
-      result = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize);
+      return null;
     }
-    return result;
+
+    if (offHeapMemorySize < MIN_SLAB_SIZE) {
+      throw new IllegalArgumentException("The amount of off heap memory must be at least " + MIN_SLAB_SIZE + " but it was set to " + offHeapMemorySize);
+    }
+
+    // Ensure that using off-heap will work with this JVM.
+    validateVmCompatibility();
+
+    if (system == null) {
+      throw new IllegalArgumentException("InternalDistributedSystem is null");
+    }
+    // ooohml provides the hook for disconnecting and closing cache on OutOfOffHeapMemoryException
+    OutOfOffHeapMemoryListener ooohml = new DisconnectingOutOfOffHeapMemoryListener((InternalDistributedSystem) system);
+    return basicCreateOffHeapStorage(lw, sf, offHeapMemorySize, ooohml);
+  }
+  
+  static MemoryAllocator basicCreateOffHeapStorage(LogWriter lw, StatisticsFactory sf, long offHeapMemorySize, OutOfOffHeapMemoryListener ooohml) {
+    final OffHeapMemoryStats stats = new OffHeapStorage(sf);
+
+   // determine off-heap and slab sizes
+    final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
+
+    final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
+
+    return SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize);
   }
   
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;
