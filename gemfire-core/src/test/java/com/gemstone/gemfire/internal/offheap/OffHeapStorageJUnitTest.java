@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.offheap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
@@ -32,6 +33,7 @@ import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.LocalStatisticsFactory;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -118,30 +120,50 @@ public class OffHeapStorageJUnitTest {
     }
   }
   @Test
-  public void testCreateOffHeapStorage() {
+  public void createOffHeapStorageReturnsNullIfForceLocator() {
     System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
-    try {
-      assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 0, null));
-    } finally {
-      System.clearProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE);
-    }
+    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 1, null));
+  }
+  @Test
+  public void createOffHeapStorageReturnsNullIfMemorySizeIsZero() {
+    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 0, null));
+  }
+  @Test
+  public void exceptionIfSlabCountTooSmall() {
     StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
       OffHeapStorage.createOffHeapStorage(null, statsFactory, OffHeapStorage.MIN_SLAB_SIZE-1, null);
     } catch (IllegalArgumentException expected) {
       expected.getMessage().equals("The amount of off heap memory must be at least " + OffHeapStorage.MIN_SLAB_SIZE + " but it was set to " + (OffHeapStorage.MIN_SLAB_SIZE-1));
     }
+  }
+  @Test
+  public void exceptionIfDistributedSystemNull() {
+    StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
       OffHeapStorage.createOffHeapStorage(null, statsFactory, OffHeapStorage.MIN_SLAB_SIZE, (DistributedSystem)null);
     } catch (IllegalArgumentException expected) {
       expected.getMessage().equals("InternalDistributedSystem is null");
     }
+  }
+  
+  @Test
+  public void createOffHeapStorageWorks() {
+    StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator ma = OffHeapStorage.createOffHeapStorage(null, localStatsFactory, OffHeapStorage.MIN_SLAB_SIZE, ids);
+    System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
+    ma.close();
+  }
 
+  @Test
+  public void testCreateOffHeapStorage() {
     StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     MemoryAllocator ma = OffHeapStorage.basicCreateOffHeapStorage(null, localStatsFactory, 1024*1024, ooohml);
     try {
       OffHeapMemoryStats stats = ma.getStats();
+      assertNotNull(stats.getStats());
       assertEquals(1024*1024, stats.getFreeMemory());
       assertEquals(1024*1024, stats.getMaxMemory());
       assertEquals(0, stats.getUsedMemory());
