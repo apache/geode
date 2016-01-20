@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.util.List;
 
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.UITest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import com.vmware.gemfire.tools.pulse.tests.PulseTest;
 import junit.framework.Assert;
@@ -51,7 +52,7 @@ import com.vmware.gemfire.tools.pulse.testbed.TestBed;
  *
  */
 @Ignore
-@Category(IntegrationTest.class)
+@Category(UITest.class)
 public class PulseUITest {
 
   private static WebDriver driver;
