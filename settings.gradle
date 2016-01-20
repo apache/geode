@@ -27,6 +27,8 @@ include 'gemfire-pulse'
 include 'gemfire-assembly'
 include 'gemfire-rebalancer'
 include 'gemfire-lucene'
+include 'gemfire-wan'
+include 'gemfire-cq'
 
 def minimumGradleVersion = '2.3'
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {

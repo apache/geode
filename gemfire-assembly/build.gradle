@@ -53,6 +53,8 @@ dependencies {
   archives project(':gemfire-web')
   archives project(':gemfire-web-api')
   archives project(':gemfire-pulse')
+  archives project(':gemfire-wan')
+  archives project(':gemfire-cq')
 
   testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
   testCompile project(path: ':gemfire-core', configuration: 'testOutput')
@@ -145,6 +147,8 @@ def cp = {
       it.contains('hbase') ||
       it.contains('jgroups') ||
       it.contains('netty') ||
+      it.contains('gemfire-wan') ||
+      it.contains('gemfire-cq') ||
       
       // dependencies from gemfire-lucene
       it.contains('lucene-analyzers-common') ||
@@ -248,6 +252,12 @@ distributions {
 
         from project(":gemfire-joptsimple").configurations.runtime
         from project(":gemfire-joptsimple").configurations.archives.allArtifacts.files
+
+        from project(":gemfire-wan").configurations.runtime
+        from project(":gemfire-wan").configurations.archives.allArtifacts.files
+
+        from project(":gemfire-cq").configurations.runtime
+        from project(":gemfire-cq").configurations.archives.allArtifacts.files
 
         from project(":gemfire-core").configurations.runtime
         // Copying from provided configuration is only for supporting Spring Data GemFire.
