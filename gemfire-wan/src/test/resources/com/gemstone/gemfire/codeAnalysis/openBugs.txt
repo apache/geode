@@ -1,0 +1,21 @@
+# This is a list of classes excluded due to open bugs about their having
+# incompatible changes.  There should be no entries in this file at the
+# time of a product release.
+
+# Each entry should be a bug number followed by a comma and the
+# full class name.  The package components can be delimited with a period
+# or a comma.  Don't include ".class" or ".java" at the end of the name.
+
+# example:  50174,com/gemstone/gemfire/distributed/internal/StartupResponseWithVersionMessage
+# example:  50175,com.gemstone.org.jgroups.Message$Header
+
+
+# ~~~~~~~~~~~~~~~~~~~ DataSerializables ~~~~~~~~~~~~~~~~~~~~~~~~~
+# these are failures from testDataSerializables
+
+
+# ~~~~~~~~~~~~~~~~~~~ Serializables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# these are failures from testSerializables
+
+
+

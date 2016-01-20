@@ -1,0 +1,1 @@
+com/gemstone/gemfire/cache/query/internal/cq/CqConflatable,true,-7215022132135862557,conflate:boolean,id:com/gemstone/gemfire/internal/cache/EventID,key:java/lang/Object,regionname:java/lang/String,value:java/lang/Object

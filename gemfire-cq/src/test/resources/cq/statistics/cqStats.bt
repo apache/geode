@@ -1,0 +1,3 @@
+cq/statistics/cqStatsHCT.conf
+edgeHosts =1 edgeVMsPerHost = 1 edgeThreadsPerVM = 1
+bridgeHosts =1 bridgeVMsPerHost = 1 bridgeThreadsPerVM = 1
