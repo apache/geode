@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.UITest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.Assert;
 
@@ -46,7 +47,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-@Category(IntegrationTest.class)
+@Category(UITest.class)
 @FixMethodOrder(MethodSorters.JVM)
 public class PulseTest {
   private static String jmxPropertiesFile;

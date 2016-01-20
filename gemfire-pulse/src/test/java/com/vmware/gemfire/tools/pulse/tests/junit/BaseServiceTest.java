@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.UITest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -55,7 +56,7 @@ import org.junit.experimental.categories.Category;
  *
  */
 @Ignore
-@Category(IntegrationTest.class)
+@Category(UITest.class)
 public abstract class BaseServiceTest {
 
   protected static Properties propsForJUnit = new Properties();

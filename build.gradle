@@ -346,26 +346,6 @@ subprojects {
     testRuntime 'org.ow2.asm:asm:' + project.'asm.version'
   }
 
-  test {
-    include '**/*Test.class'
-    useJUnit {
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
-    }    
-    
-    // run each test in its own vm to avoid interference issues if a test doesn't clean up
-    // state
-    //forkEvery 1
-    
-    doFirst {
-      writeTestProperties(buildDir, name)
-    }
-  }
-
   //This target does not run any tests. Rather, it validates that there are no
   //tests that are missing a category annotation
   task checkMissedTests(type: Test) {
@@ -377,12 +357,34 @@ subprojects {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
-    }    
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+    }
 
     beforeTest { descriptor ->
       throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
     }
+  }
+
+
+  test {
+    include '**/*Test.class'
+    useJUnit {
+      includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+    }    
     
+    // run each test in its own vm to avoid interference issues if a test doesn't clean up
+    // state
+    //forkEvery 1
+    
+    doFirst {
+      writeTestProperties(buildDir, name)
+    }
   }
 
   task integrationTest(type:Test) {
@@ -394,9 +396,27 @@ subprojects {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
     }    
 
     forkEvery 1
+
+    doFirst {
+      writeTestProperties(buildDir, name)
+    }
+  }
+
+  task uiTest(type:Test) {
+    include '**/*Test.class'
+    useJUnit {
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
+      includeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+    }
 
     doFirst {
       writeTestProperties(buildDir, name)
@@ -416,6 +436,7 @@ subprojects {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
     }    
     
     //I'm hoping this might deal with SOME OOMEs I've seen
