@@ -2114,7 +2114,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * @throws PrimaryBucketException if the locally managed bucket is not primary
    * @see #getLocally(int, Object, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
    */
-  public RawValue getSerializedLocally(KeyInfo keyInfo, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws PrimaryBucketException,
+  public RawValue getSerializedLocally(KeyInfo keyInfo, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws PrimaryBucketException,
       ForceReattemptException {
     final BucketRegion bucketRegion = getInitializedBucketForId(keyInfo.getKey(), keyInfo.getBucketId());
     //  check for primary (when loader is present) done deeper in the BucketRegion
@@ -2125,7 +2125,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     invokeBucketReadHook();
 
     try {
-      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, clientEvent, returnTombstones, allowReadFromHDFS);
+      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
       checkIfBucketMoved(bucketRegion);
       return result;
     } catch (RegionDestroyedException rde) {
