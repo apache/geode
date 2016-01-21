@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 public class ServiceConfig {
 
   /** stall time to wait for concurrent join/leave/remove requests to be received */
-  public static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("gemfire.member-request-collection-interval", 500);
+  public static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("gemfire.member-request-collection-interval", 300);
 
   /** various settings from Geode configuration */
   private long joinTimeout;
