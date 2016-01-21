@@ -107,17 +107,21 @@ public class AvailablePort {
     }
     
     else if (protocol == MULTICAST) {
-      DatagramSocket socket = null;
+      MulticastSocket socket = null;
       try {
         socket = new MulticastSocket();
+        InetAddress localHost = SocketCreator.getLocalHost();
+        socket.setInterface(localHost);
         socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000).intValue());
         byte[] buffer = new byte[4];
         buffer[0] = (byte)'p';
         buffer[1] = (byte)'i';
         buffer[2] = (byte)'n';
         buffer[3] = (byte)'g';
+        InetAddress mcid = addr==null? DistributionConfig.DEFAULT_MCAST_ADDRESS : addr;
         SocketAddress mcaddr = new InetSocketAddress(
-          addr==null? DistributionConfig.DEFAULT_MCAST_ADDRESS : addr, port);
+          mcid, port);
+        socket.joinGroup(mcid);
         DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
         socket.send(packet);
         try {
