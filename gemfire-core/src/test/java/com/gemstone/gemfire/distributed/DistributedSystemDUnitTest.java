@@ -42,6 +42,7 @@ import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 
 import dunit.DistributedTestCase;
@@ -72,11 +73,12 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
    * ensure that waitForMemberDeparture correctly flushes the serial message queue for
    * the given member
    */
-  // TODO this needs to use a locator
-  public void _testWaitForDeparture() throws Exception {
+  public void testWaitForDeparture() throws Exception {
     disconnectAllFromDS();
+    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     Properties p = getDistributedSystemProperties();
     p.put(DistributionConfig.LOCATORS_NAME, "");
+    p.put(DistributionConfig.START_LOCATOR_NAME, "localhost["+locatorPort+"]");
     p.put(DistributionConfig.DISABLE_TCP_NAME, "true");
     InternalDistributedSystem ds = (InternalDistributedSystem)DistributedSystem.connect(p);
     try {
@@ -314,32 +316,9 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     assertTrue(unicastPort <= idm.getPort() && idm.getDirectChannelPort() <= unicastPort+2);
   }
 
-  // TODO this needs to use a locator
-  public void _testMembershipPortRange() throws Exception {
+  public void testMembershipPortRangeWithExactThreeValues() throws Exception {
     Properties config = new Properties();
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
-    int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    config.setProperty("mcast-port", String.valueOf(mcastPort));
-    config.setProperty("locators", "");
-    config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
-        ""+unicastPort+"-"+(unicastPort+1));
-    try {
-      system = (InternalDistributedSystem)DistributedSystem.connect(config);
-    } catch (Exception e) {
-      assertTrue("The exception must be IllegalArgumentException", e instanceof IllegalArgumentException);
-      return;
-    }
-    fail("IllegalArgumentException must have been thrown by DistributedSystem.connect() as port-range: "
-        + config.getProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME)
-        + " must have at least 3 values in range");
-  }
-
-  // TODO this needs to use a locator
-  public void _testMembershipPortRangeWithExactThreeValues() throws Exception {
-    Properties config = new Properties();
-    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
-    config.setProperty("mcast-port", String.valueOf(mcastPort));
-    config.setProperty("locators", "");
+    config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, ""
         + (DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1] - 2) + "-"
         + (DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]));
@@ -355,31 +334,36 @@ public class DistributedSystemDUnitTest extends DistributedTestCase {
     assertTrue(idm.getDirectChannelPort() >= DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
   }
 
-  // TODO this needs to use a locator
-  public void _testConflictingUDPPort() throws Exception {
+  public void testConflictingUDPPort() throws Exception {
     final Properties config = new Properties();
     final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
-    final int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int[] socketPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int unicastPort = socketPorts[0];
     config.setProperty("mcast-port", String.valueOf(mcastPort));
-    config.setProperty("locators", "");
+    config.setProperty("start-locator", "localhost["+socketPorts[1]+"]");
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
         ""+unicastPort+"-"+(unicastPort+2));
     system = (InternalDistributedSystem)DistributedSystem.connect(config);
-    DistributionManager dm = (DistributionManager)system.getDistributionManager();
-    InternalDistributedMember idm = dm.getDistributionManagerId();
-    VM vm = Host.getHost(0).getVM(1);
-    vm.invoke(new CacheSerializableRunnable("start conflicting system") {
-      public void run2() {
-        try {
-          DistributedSystem system = DistributedSystem.connect(config);
-          system.disconnect();
-        } catch (SystemConnectException e) {
-          return; // 
+    try {
+      DistributionManager dm = (DistributionManager)system.getDistributionManager();
+      InternalDistributedMember idm = dm.getDistributionManagerId();
+      VM vm = Host.getHost(0).getVM(1);
+      vm.invoke(new CacheSerializableRunnable("start conflicting system") {
+        public void run2() {
+          try {
+            String locators = (String)config.remove("start-locator");
+            config.put("locators", locators);
+            DistributedSystem system = DistributedSystem.connect(config);
+            system.disconnect();
+          } catch (GemFireConfigException e) {
+            return; // 
+          }
+          fail("expected a GemFireConfigException but didn't get one");
         }
-        fail("expected a SystemConnectException but didn't get one");
-      }
-    });
-    system.disconnect();
+      });
+    } finally {
+      system.disconnect();
+    }
   }
 
   /**
