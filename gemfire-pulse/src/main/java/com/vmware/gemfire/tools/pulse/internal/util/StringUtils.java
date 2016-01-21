@@ -75,7 +75,7 @@ public class StringUtils {
   /**
    * Function to get region name/full path derived from table name
    * 
-   * @param regionName
+   * @param tableName
    *          String to be made compliant.
    * @return string compliant string.
    */

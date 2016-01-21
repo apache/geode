@@ -938,8 +938,8 @@ public class Cluster extends Thread {
     }
 
     /**
-     * @param numTimesCompiled
-     *          the numTimesCompiled to set
+     * @param queryDefn
+     *          the query to set
      */
     public void setQueryDefinition(String queryDefn) {
       this.queryDefn = queryDefn;
@@ -1342,7 +1342,7 @@ public class Cluster extends Thread {
     }
 
     /**
-     * @return
+     * @return the local maximum memory
      */
     public int getLocalMaxMemory() {
       return this.localMaxMemory;
@@ -3702,7 +3702,7 @@ public class Cluster extends Thread {
    *
    *
    * @param memberKey
-   * @return
+   * @return the Member for a given key
    */
   public Cluster.Member getMember(String memberKey) {
     Cluster.Member member = null;
