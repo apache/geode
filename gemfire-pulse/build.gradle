@@ -93,6 +93,8 @@ task createPulsePropFile {
     } catch (Exception e) {
       logger.warn('***** Unable to find Git workspace. Using default version information *****')
       ext.branch = 'UNKNOWN'
+      ext.commitId = 'UNKNOWN'
+      ext.sourceDate = 'UNKNOWN'
     }
     // Build machine & java information - for screen output only
     ext.osArch = System.getProperty('os.arch')
