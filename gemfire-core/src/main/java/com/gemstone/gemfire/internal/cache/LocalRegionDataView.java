@@ -139,7 +139,7 @@ public class LocalRegionDataView implements InternalDataView {
    */
   public Object findObject(KeyInfo keyInfo, LocalRegion r, boolean isCreate,
       boolean generateCallbacks, Object value, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) {
-   return r.nonTxnFindObject(keyInfo, isCreate, generateCallbacks, value, disableCopyOnRead, preferCD, clientEvent, returnTombstones, allowReadFromHDFS);
+   return r.nonTxnFindObject(keyInfo, isCreate, generateCallbacks, value, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
   }
 
   /* (non-Javadoc)

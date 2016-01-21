@@ -1552,7 +1552,7 @@ public class LocalRegion extends AbstractRegion
   @Retained
   Object nonTxnFindObject(KeyInfo keyInfo, boolean p_isCreate,
       boolean generateCallbacks, Object p_localValue, boolean disableCopyOnRead, boolean preferCD,
-      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) 
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) 
       throws TimeoutException, CacheLoaderException
   {
     final Object key = keyInfo.getKey();
@@ -1627,7 +1627,7 @@ public class LocalRegion extends AbstractRegion
         }
         isCreate = localValue == null;
         result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks,
-            localValue, disableCopyOnRead, preferCD, null, clientEvent, returnTombstones, false/*allowReadFromHDFS*/);
+            localValue, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, false/*allowReadFromHDFS*/);
 
       } else {
         

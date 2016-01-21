@@ -20,21 +20,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.AssertionFailedError;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
 import com.gemstone.gemfire.cache.ClientSession;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.InterestRegistrationEvent;
 import com.gemstone.gemfire.cache.InterestRegistrationListener;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -500,6 +507,51 @@ public class InterestListDUnitTest extends DistributedTestCase
         new Object[] { key2 });
   }
 
+  public void testRegisterInterestOnReplicatedRegionWithCacheLoader() {
+    runRegisterInterestWithCacheLoaderTest(true);
+  }
+
+  public void testRegisterInterestOnPartitionedRegionWithCacheLoader() {
+    runRegisterInterestWithCacheLoaderTest(false);
+  }
+
+  private void runRegisterInterestWithCacheLoaderTest(boolean addReplicatedRegion) {
+    // Stop the server (since it was already started with a replicated region)
+    vm0.invoke(InterestListDUnitTest.class, "closeCache");
+
+    // Start two servers with the appropriate region
+    int port1 = ((Integer) vm0.invoke(InterestListDUnitTest.class, "createServerCache", new Object[] { addReplicatedRegion })).intValue();
+    VM server2VM = Host.getHost(0).getVM(3);
+    int port2 =  ((Integer) server2VM.invoke(InterestListDUnitTest.class, "createServerCache", new Object[] { addReplicatedRegion })).intValue();
+
+    // Add a cache loader to the region in both cache servers
+    vm0.invoke(InterestListDUnitTest.class, "addCacheLoader");
+    server2VM.invoke(InterestListDUnitTest.class, "addCacheLoader");
+
+    // Create client cache
+    vm1.invoke(InterestListDUnitTest.class, "createClientCache",new Object[] {
+      getServerHostName(vm0.getHost()), port1, port2});
+    
+    // Register interest in all keys
+    vm1.invoke(InterestListDUnitTest.class, "registerALL_KEYS");
+    
+    // Add CacheListener
+    int numEvents = 100;
+    vm1.invoke(InterestListDUnitTest.class, "addCacheListener", new Object[] {numEvents});
+    
+    // Do gets on the client
+    vm1.invoke(InterestListDUnitTest.class, "doGets", new Object[] {numEvents});
+    
+    // Wait for cache listener create events
+    vm1.invoke(InterestListDUnitTest.class, "waitForCacheListenerCreates");
+    
+    // Confirm there are no cache listener update events
+    vm1.invoke(InterestListDUnitTest.class, "confirmNoCacheListenerUpdates");
+
+    // Confirm there are no cache listener invalidate events
+    vm1.invoke(InterestListDUnitTest.class, "confirmNoCacheListenerInvalidates");
+  }
+  
   private  void createCache(Properties props) throws Exception
   {
     DistributedSystem ds = getSystem(props);
@@ -545,15 +597,31 @@ public class InterestListDUnitTest extends DistributedTestCase
   }
 
   private static void createCache() throws Exception {
+    createCache(true);
+  }
+
+  private static void createCache(boolean addReplicatedRegion) throws Exception {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
     new InterestListDUnitTest("temp").createCache(props);
+    if (addReplicatedRegion) {
+      addReplicatedRegion();
+    } else {
+      addPartitionedRegion();
+    }
+  }
+
+  private static void addReplicatedRegion() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableSubscriptionConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
+  }
+
+  private static void addPartitionedRegion() {
+    cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT).create(REGION_NAME);
   }
 
   private static CacheServer addCacheServer() throws Exception {
@@ -568,7 +636,11 @@ public class InterestListDUnitTest extends DistributedTestCase
   // most of these tests resides.  This server is held in the
   // static variable 'server1'
   public static Integer createServerCache() throws Exception {
-    createCache();
+    return createServerCache(true);
+  }
+
+  public static Integer createServerCache(boolean addReplicatedRegion) throws Exception {
+    createCache(addReplicatedRegion);
     server = addCacheServer();
     return new Integer(server.getPort());
   }
@@ -596,6 +668,59 @@ public class InterestListDUnitTest extends DistributedTestCase
     for (CacheServer s: servers) {
       s.registerInterestRegistrationListener(interestListener);
     }
+  }
+
+  private static void addCacheLoader() {
+    // Add a cache loader
+    Region region = cache.getRegion(REGION_NAME);
+    region.getAttributesMutator().setCacheLoader(new ReturnKeyCacheLoader());
+  }
+
+  private static void addCacheListener(int expectedCreates) {
+    // Add a cache listener to count the number of create and update events
+    Region region = cache.getRegion(REGION_NAME);
+    region.getAttributesMutator().setCacheListener(new EventCountingCacheListener(expectedCreates));
+  }
+
+  private static void doGets(int numGets) {
+    // Do gets.
+    // These gets cause the CacheLoader to be invoked on the server
+    Region region = cache.getRegion(REGION_NAME);
+    for (int i=0; i<numGets; i++) {
+      region.get(i);
+    }
+  }
+  
+  private static void waitForCacheListenerCreates() throws Exception {
+    // Wait for the EventCountingCacheListener to receive all of its create events
+    Region region = cache.getRegion(REGION_NAME);
+    final EventCountingCacheListener fCacheListener = (EventCountingCacheListener) region.getAttributes().getCacheListener();
+  
+    WaitCriterion ev = new WaitCriterion() {
+      public boolean done() {
+        return fCacheListener.hasReceivedAllCreateEvents();
+      }
+      public String description() {
+        return "waiting for " + fCacheListener.getExpectedCreates() + " create events";
+      }
+    };
+    DistributedTestCase.waitForCriterion(ev, 5 * 10 * 1000, 200, true);
+  }
+  
+  private static void confirmNoCacheListenerUpdates() throws Exception {
+    // Confirm there are no EventCountingCacheListener update events.
+    // These would be coming from the subscription channel.
+    Region region = cache.getRegion(REGION_NAME);
+    EventCountingCacheListener cacheListener = (EventCountingCacheListener) region.getAttributes().getCacheListener();
+    assertEquals(0/*expected*/, cacheListener.getUpdates()/*actual*/);
+  }
+  
+  private static void confirmNoCacheListenerInvalidates() throws Exception {
+    // Confirm there are no EventCountingCacheListener invalidate events.
+    // These would be coming from the subscription channel.
+    Region region = cache.getRegion(REGION_NAME);
+    EventCountingCacheListener cacheListener = (EventCountingCacheListener) region.getAttributes().getCacheListener();
+    assertEquals(0/*expected*/, cacheListener.getInvalidates()/*actual*/);
   }
 
   public static void verifyCountsAndClear(int count1, int count2) {
@@ -1006,6 +1131,80 @@ public class InterestListDUnitTest extends DistributedTestCase
     }
 
     public InterestListener() {
+    }
+  }
+  
+  private static class EventCountingCacheListener extends CacheListenerAdapter {
+
+    private AtomicInteger creates = new AtomicInteger();
+
+    private AtomicInteger updates = new AtomicInteger();
+
+    private AtomicInteger invalidates = new AtomicInteger();
+
+    private int expectedCreates;
+    
+    public EventCountingCacheListener(int expectedCreates) {
+      this.expectedCreates = expectedCreates;
+    }
+
+    public int getExpectedCreates() {
+      return this.expectedCreates;
+    }
+
+    public void afterCreate(EntryEvent event) {
+      incrementCreates();
+    }
+
+    public void afterUpdate(EntryEvent event) {
+      incrementUpdates();
+      event.getRegion().getCache().getLogger().warning("Received update event " + getUpdates() + " for " + event.getKey());
+    }
+
+    public void afterInvalidate(EntryEvent event) {
+      incrementInvalidates();
+      event.getRegion().getCache().getLogger().warning("Received invalidate event " + getInvalidates() + " for " + event.getKey());
+    }
+
+    private void incrementCreates() {
+      this.creates.incrementAndGet();
+    }
+    
+    private int getCreates() {
+      return this.creates.get();
+    }
+
+    private void incrementUpdates() {
+      this.updates.incrementAndGet();
+    }
+    
+    private int getUpdates() {
+      return this.updates.get();
+    }
+
+    private void incrementInvalidates() {
+      this.invalidates.incrementAndGet();
+    }
+
+    private int getInvalidates() {
+      return this.invalidates.get();
+    }
+
+    public boolean hasReceivedAllCreateEvents() {
+      return this.expectedCreates == getCreates();
+    }
+  }
+  
+  private static class ReturnKeyCacheLoader implements CacheLoader {
+
+    @Override
+    public void close() {
+      // Do nothing
+    }
+  
+    @Override
+    public Object load(LoaderHelper helper) throws CacheLoaderException {
+      return helper.getKey();
     }
   }
 }
