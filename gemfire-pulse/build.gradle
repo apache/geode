@@ -101,8 +101,6 @@ task createPulsePropFile {
     ext.osName = System.getProperty('os.name')
     ext.osVersion = System.getProperty('os.version')
     ext.jdkVersion = System.getProperty('java.version')
-    println ':pulse: Build Platform: ' + ext.osName + ' ' + ext.osVersion + ' ' + ext.osArch
-    println ':pulse: ...Using Java: ' + ext.jdkVersion
 
     ext.buildDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
     ext.buildNumber = new Date().format('MMddyy')
