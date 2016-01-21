@@ -369,16 +369,8 @@ public class CacheServerTestUtil extends DistributedTestCase
     return new Integer[] {port, 0};
   }
 
-  public static Integer createCacheServer(String regionName,
-      Boolean notifyBySubscription, Integer mcastPort)
-      throws Exception {
-    Integer serverPort = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
-    createCacheServer(regionName, notifyBySubscription, mcastPort, serverPort);
-    return serverPort;
-  }
-
   public static void createCacheServer(String regionName,
-      Boolean notifyBySubscription, Integer mcastPort, Integer serverPort)
+      Boolean notifyBySubscription, Integer serverPort)
       throws Exception {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -524,6 +516,7 @@ public class CacheServerTestUtil extends DistributedTestCase
    */
   public static void disableShufflingOfEndpoints()
   {
+    // TODO DISABLE_RANDOM doesn't seem to be used anywhere
     System.setProperty("gemfire.PoolImpl.DISABLE_RANDOM", "true");
     System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
   }
@@ -533,6 +526,7 @@ public class CacheServerTestUtil extends DistributedTestCase
    */
   public static void enableShufflingOfEndpoints()
   {
+    // TODO DISABLE_RANDOM doesn't seem to be used anywhere
     System.setProperty("gemfire.PoolImpl.DISABLE_RANDOM", "false");
     System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "false");
   }

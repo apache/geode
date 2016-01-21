@@ -34,20 +34,17 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
-import com.gemstone.gemfire.internal.sequencelog.SequenceLoggerImpl;
 
 import dunit.RemoteDUnitVMIF;
+import dunit.standalone.ChildVM;
 
 /**
  * @author dsmith
  *
  */
 public class ProcessManager {
-  
   private int namingPort;
   private Map<Integer, ProcessHolder> processes = new HashMap<Integer, ProcessHolder>();
   private File log4jConfig;
@@ -102,10 +99,18 @@ public class ProcessManager {
   public synchronized void killVMs() {
     for(ProcessHolder process : processes.values()) {
       if(process != null) {
-        //TODO - stop it gracefully? Why bother
         process.kill();
       }
     }
+  }
+  
+  public synchronized boolean hasLiveVMs() {
+    for(ProcessHolder process : processes.values()) {
+      if(process != null && process.isAlive()) {
+        return true;
+      }
+    }
+    return false;
   }
   
   public synchronized void bounce(int vmNum) {
@@ -130,8 +135,12 @@ public class ProcessManager {
         try {
           String line = reader.readLine();
           while(line != null) {
-            out.print(vmName);
-            out.println(line);
+            if (line.length() == 0) {
+              out.println();
+            } else {
+              out.print(vmName);
+              out.println(line);
+            }
             line = reader.readLine();
           }
         } catch(Exception e) {
@@ -175,7 +184,7 @@ public class ProcessManager {
       "-Dgemfire.disallowMcastDefaults=true",
       "-ea",
       agent,
-      "dunit.standalone.ChildVM"
+      ChildVM.class.getName()
     };
   }
   
@@ -239,6 +248,10 @@ public class ProcessManager {
 
     public boolean isKilled() {
       return killed;
+    }
+    
+    public boolean isAlive() {
+      return !killed && process.isAlive();
     }
   }
 

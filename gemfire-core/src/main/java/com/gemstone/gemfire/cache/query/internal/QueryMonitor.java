@@ -130,27 +130,17 @@ public class QueryMonitor implements Runnable {
         long maxTimeSet = GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME;
         QueryThreadTask queryTask = (QueryThreadTask)queryThreads.peek();
 
+        long currentTime = System.currentTimeMillis();
+        
         // This is to check if the QueryMonitoring thread slept longer than the expected time.
         // Its seen that in some cases based on OS thread scheduling the thread can sleep much
         // longer than the specified time.
         if (queryTask != null) {
-          if ((System.currentTimeMillis() - queryTask.StartTime) > maxTimeSet){
+          if ((currentTime - queryTask.StartTime) > maxTimeSet){
             // The sleep() is unpredictable.
             testException = new QueryExecutionTimeoutException("The QueryMonitor thread may be sleeping longer than" +
                 " the set sleep time. This will happen as the sleep is based on OS thread scheduling," +
             " verify the time spent by the executor thread.");
-          }
-        }
-
-        // This is to see if query finished before it could get canceled, this could happen because
-        // of a faster machine.
-        // Check if the query finished before the max_query_execution time.
-        queryTask = (QueryThreadTask)this.queryMonitorTasks.get(queryThread);
-        if (queryTask != null){
-          this.queryMonitorTasks.remove(queryThread);
-          if (!GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME_OVERRIDE_EXCEPTION && testException == null && ((System.currentTimeMillis() - queryTask.StartTime) < 
-              (maxTimeSet + 10 /* 10ms buffer */))){    
-            testException = new QueryExecutionTimeoutException("The Query completed sucessfully before it got canceled.");          
           }
         }
       }
@@ -162,7 +152,7 @@ public class QueryMonitor implements Runnable {
     }
     
     if (logger.isDebugEnabled()) {
-      logger.debug("Removed thread from QueryMonitor. QueryMonitor size is:{}, Thread (id): thread is : {}", 
+      logger.debug("Removed thread from QueryMonitor. QueryMonitor size is:{}, Thread ID is: {}  thread is : {}", 
           queryThreads.size(), queryThread.getId(), queryThread);
     }
     
@@ -227,9 +217,7 @@ public class QueryMonitor implements Runnable {
           }
           continue;
         }
-        if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook(6);
-        }
+
         long currentTime = System.currentTimeMillis();
 
         // Check if the sleepTime is greater than the remaining query execution time. 

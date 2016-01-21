@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.operations.DestroyOperationContext;
@@ -36,6 +37,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
@@ -54,7 +56,7 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.pdx.PdxConfigurationException;
 import com.gemstone.gemfire.pdx.PdxRegistryMismatchException;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 public class GatewayReceiverCommand extends BaseCommand {
 
@@ -67,6 +69,16 @@ public class GatewayReceiverCommand extends BaseCommand {
   private GatewayReceiverCommand() {
   }
 
+  private void handleRegionNull(ServerConnection servConn, String regionName, int batchId) {
+    GemFireCacheImpl gfc = (GemFireCacheImpl)servConn.getCachedRegionHelper().getCache();
+    if (gfc != null && gfc.isCacheAtShutdownAll()) {
+      throw new CacheClosedException("Shutdown occurred during message processing");
+    } else {
+      String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_CREATE_REQUEST_0.toLocalizedString(new Object[] {regionName, Integer.valueOf(batchId)});
+      throw new RegionDestroyedException(reason, regionName);
+    }
+  }
+  
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
       throws IOException, InterruptedException {
@@ -292,8 +304,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           }
           region = (LocalRegion)crHelper.getRegion(regionName);
           if (region == null) {
-            String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_CREATE_REQUEST_0.toLocalizedString(new Object[] {regionName, Integer.valueOf(batchId)});
-            throw new RegionDestroyedException(reason, regionName);
+            handleRegionNull(servConn, regionName, batchId);
           } else {
             clientEvent = new EntryEventImpl(eventId);
             if (versionTimeStamp > 0) {
@@ -402,8 +413,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           }
           region = (LocalRegion)crHelper.getRegion(regionName);
           if (region == null) {
-            String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_CREATE_REQUEST_0.toLocalizedString(new Object[] {regionName, Integer.valueOf(batchId)});
-            throw new RegionDestroyedException(reason, regionName);
+            handleRegionNull(servConn, regionName, batchId);
           } else {
             clientEvent = new EntryEventImpl(eventId);
             if (versionTimeStamp > 0) {
@@ -502,8 +512,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           }
           region = (LocalRegion)crHelper.getRegion(regionName);
           if (region == null) {
-            String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_CREATE_REQUEST_0.toLocalizedString(new Object[] {regionName, Integer.valueOf(batchId)});
-            throw new RegionDestroyedException(reason, regionName);
+            handleRegionNull(servConn, regionName, batchId);
           } else {
             clientEvent = new EntryEventImpl(eventId);
             if (versionTimeStamp > 0) {
@@ -584,8 +593,7 @@ public class GatewayReceiverCommand extends BaseCommand {
             region = (LocalRegion)crHelper.getRegion(regionName);
             
             if (region == null) {
-              String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_UPDATE_VERSION_REQUEST_0.toLocalizedString(new Object[] {regionName});
-              throw new RegionDestroyedException(reason, regionName);
+              handleRegionNull(servConn, regionName, batchId);
             } else {
 
               clientEvent = new EntryEventImpl(eventId);

@@ -16,10 +16,14 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
+import java.io.File;
 import java.net.InetAddress;
 
+import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.LocatorStats;
+import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 
 /**
@@ -31,12 +35,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 public interface MemberServices {
 
   /**
-   * Return a blank NetMember (used by externalization)
-   * @return the new NetMember
-   */
-  public abstract NetMember newNetMember();
-  
-  /**
    * Return a new NetMember, possibly for a different host
    * 
    * @param i the name of the host for the specified NetMember, the current host (hopefully)
@@ -45,10 +43,11 @@ public interface MemberServices {
    * @param splitBrainEnabled whether the member has this feature enabled
    * @param canBeCoordinator whether the member can be membership coordinator
    * @param payload the payload to be associated with the resulting object
+   * @param version TODO
    * @return the new NetMember
    */
   public abstract NetMember newNetMember(InetAddress i, int port, 
-      boolean splitBrainEnabled, boolean canBeCoordinator, MemberAttributes payload);
+      boolean splitBrainEnabled, boolean canBeCoordinator, MemberAttributes payload, short version);
 
   /**
    * Return a new NetMember representing current host
@@ -70,14 +69,23 @@ public interface MemberServices {
   
    /**
    * Create a new MembershipManager
-   * 
+   * @param stopper TODO
    * @param listener the listener to notify for callbacks
    * @param transport holds configuration information that can be used by the manager to configure itself
    * @param stats a gemfire statistics collection object for communications stats
+   * 
    * @return a MembershipManager
    */
   public abstract MembershipManager newMembershipManager(DistributedMembershipListener listener,
           DistributionConfig config,
-          RemoteTransportConfig transport,
-          DMStats stats);
+          RemoteTransportConfig transport, DMStats stats);
+
+
+  /**
+   * currently this is a test method but it ought to be used by InternalLocator
+   * to create the peer location TcpHandler
+   */
+  public abstract NetLocator newLocatorHandler(InetAddress bindAddress,
+      File stateFile, String locatorString, boolean usePreferredCoordinators,
+      boolean networkPartitionDetectionEnabled, LocatorStats stats);
 }

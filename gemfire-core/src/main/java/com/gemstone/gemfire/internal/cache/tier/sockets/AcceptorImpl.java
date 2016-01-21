@@ -92,8 +92,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from
  * the edge and starts up threads to process requests from these.
@@ -1610,7 +1608,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
   }
 
   @Override
-  @SuppressFBWarnings(value="REC_CATCH_EXCEPTION", justification="Allow this thread to die")
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="REC_CATCH_EXCEPTION", justification="Allow this thread to die")
   public void close() {
     if (!isRunning()) {
       return;

@@ -21,7 +21,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -132,7 +131,7 @@ public class StateFlushOperation  {
       gr.setRecipient(target);
       ReplyProcessor21 processor = new ReplyProcessor21(dm, target);
       gr.processorId = processor.getProcessorId();
-      gr.channelState = dm.getMembershipManager().getChannelStates(target, false);
+      gr.channelState = dm.getMembershipManager().getMessageState(target, false);
       if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP) && ((gr.channelState != null) && (gr.channelState.size() > 0)) ) {
         logger.trace(LogMarker.STATE_FLUSH_OP, "channel states: {}", gr.channelStateDescription(gr.channelState));
       }
@@ -411,7 +410,7 @@ public class StateFlushOperation  {
               boolean useMulticast = r.getMulticastEnabled()
                                     && r.getSystem().getConfig().getMcastPort() != 0;
               if (initialized) {
-                HashMap channelStates = dm.getMembershipManager().getChannelStates(relayRecipient, useMulticast);
+                Map channelStates = dm.getMembershipManager().getMessageState(relayRecipient, useMulticast);
                 if (gr.channelState != null) {
                   gr.channelState.putAll(channelStates);
                 } else {
@@ -521,7 +520,7 @@ public class StateFlushOperation  {
     protected int processorId;
     /** a map of the communication channel state between the sending process
      *  and the receiving process */
-    protected HashMap channelState;
+    protected Map channelState;
     /** whether this is a simple request/response two-party flush or (false) a proxied flush */
     protected boolean isSingleFlushTo;
     
@@ -566,7 +565,7 @@ public class StateFlushOperation  {
                 dm.getCancelCriterion().checkCancelInProgress(null);
                 boolean interrupted = Thread.interrupted();
                 try {
-                  dm.getMembershipManager().waitForChannelState(getSender(), channelState);
+                  dm.getMembershipManager().waitForMessageState(getSender(), channelState);
                   break;
                 }
                 catch (InterruptedException e) {

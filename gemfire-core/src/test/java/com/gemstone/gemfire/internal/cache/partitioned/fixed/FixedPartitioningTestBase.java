@@ -42,7 +42,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.partition.PartitionManager;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -1275,89 +1274,7 @@ public class FixedPartitioningTestBase extends DistributedTestCase {
     assertEquals(
         region_FPR.getDataStore().getAllLocalPrimaryBucketIds().size() % 3, 0);
   }
-  
-  public static void createPrimaryBucketsBelongingToThisPartition(
-      String regionName, Boolean destroyExistingRemote,
-      Boolean destroyExistingLocal) {
-    region_FPR = (PartitionedRegion)cache.getRegion(regionName);
-    assertNotNull(region_FPR);
-    int startingBucketId=0;
-    List<FixedPartitionAttributesImpl> fpas = region_FPR
-        .getFixedPartitionAttributesImpl();
-    for (FixedPartitionAttributesImpl fpa : fpas) {
-      if (fpa.isPrimary()) {
-        startingBucketId = fpa.getStartingBucketID();
-        break;
-      }else{
-        startingBucketId = 0;
-      }
-    }
-    final int bucketId = startingBucketId;
-    try {
-      PartitionManager.createPrimaryBucket(region_FPR, startingBucketId,
-          destroyExistingRemote, destroyExistingLocal);
-      waitForCriterion(new WaitCriterion() {
-        
-        public boolean done() {
-          return region_FPR.getBucketPrimary(bucketId) != null;
-        }
-        
-        public String description() {
-          return null;
-        }
-      }, 10000, 100, false);
-    } catch (Exception e) {
-      fail(
-          "Caught exception while creating primary bucket using PartitionManager for FPR",
-          e);
-    }
-  }
-  
-  public static void createPrimaryBucketsBelongingToOtherPartition(
-      String regionName, Boolean destroyExistingRemote,
-      Boolean destroyExistingLocal) {
-    region_FPR = (PartitionedRegion)cache.getRegion(regionName);
-    assertNotNull(region_FPR);
-    int bucketId = 13;
-    List<FixedPartitionAttributesImpl> fpas = region_FPR.getRegionAdvisor()
-        .adviseRemotePrimaryFPAs();
-    for (FixedPartitionAttributesImpl fpa : fpas) {
-      if (fpa.isPrimary()) {
-        bucketId = fpa.getStartingBucketID();
-      }
-    }
 
-    try {
-      PartitionManager.createPrimaryBucket(region_FPR, bucketId,
-          destroyExistingRemote, destroyExistingLocal);
-      fail("PartitionManager created primary bucket not belonging to the node.");
-    } catch (Exception expected) {
-      if (!((expected instanceof IllegalArgumentException) && (expected
-          .getMessage()
-          .contains(
-              "not part of any primary partition on this node for the FixedPartitionRegion")))) {
-        fail("Expected IllegalArgumentException ", expected);
-      }
-    }
-  }
-  
-  public static void createOutOfRangePrimaryBucketUsingPartitionManager(
-      String regionName, Integer bucketId, Boolean destroyExistingRemote,
-      Boolean destroyExistingLocal) {
-    region_FPR = (PartitionedRegion)cache.getRegion(regionName);
-    assertNotNull(region_FPR);
-
-    try {
-      PartitionManager.createPrimaryBucket(region_FPR, bucketId,
-          destroyExistingRemote, destroyExistingLocal);
-      fail("PartitionManager created out of range primary bucket .");
-    } catch (Exception expected) {
-      if (!((expected instanceof IllegalArgumentException) && (expected
-          .getMessage().contains("must be in the range")))) {
-        fail("Expected IllegalArgumentException ", expected);
-      }
-    }
-  }
   
   public static void setPRObserverBeforeCalculateStartingBucketId() {
     PartitionedRegion.BEFORE_CALCULATE_STARTING_BUCKET_FLAG = true;

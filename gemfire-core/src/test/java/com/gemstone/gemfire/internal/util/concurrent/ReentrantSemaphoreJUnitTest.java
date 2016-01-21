@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.org.jgroups.oswego.concurrent.CountDown;
 
 import junit.framework.TestCase;
 

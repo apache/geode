@@ -2007,10 +2007,17 @@ public class SystemAdmin {
   }
 
   public static void main(String[] args) {
-    final SystemAdmin admin = new SystemAdmin();
-    admin.initHelpMap();
-    admin.initUsageMap();
-    admin.invoke(args);
+    try {
+      final SystemAdmin admin = new SystemAdmin();
+      admin.initHelpMap();
+      admin.initUsageMap();
+      admin.invoke(args);
+    } finally {
+      InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
+      if (sys != null) {
+        sys.disconnect();
+      }
+    }
   }
 
   public void invoke(String[] args) {

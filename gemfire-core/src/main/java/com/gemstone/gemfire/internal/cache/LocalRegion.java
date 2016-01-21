@@ -17,7 +17,7 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -123,8 +123,8 @@ import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector.HdfsRegionManager;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
@@ -203,19 +203,17 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.Chunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReadWriteLock;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different
@@ -950,6 +948,7 @@ public class LocalRegion extends AbstractRegion
     checkReadiness();
     LocalRegion newRegion = null;
     RegionAttributes regionAttributes = attrs;
+    attrs = cache.invokeRegionBefore(this, subregionName, attrs, internalRegionArgs);
     final InputStream snapshotInputStream = internalRegionArgs
         .getSnapshotInputStream();
     final boolean getDestroyLock = internalRegionArgs.getDestroyLockFlag();
@@ -1116,6 +1115,7 @@ public class LocalRegion extends AbstractRegion
       }
     }
 
+    cache.invokeRegionAfter(newRegion);
     return newRegion;
   }
 
@@ -1261,7 +1261,7 @@ public class LocalRegion extends AbstractRegion
    * @param disableCopyOnRead if true then disable copy on read
    * @param preferCD true if the preferred result form is CachedDeserializable
    * @param clientEvent client's event, if any (for version tag retrieval)
-   * @param returnTombstones TODO
+   * @param returnTombstones whether destroyed entries should be returned
    * @param retainResult if true then the result may be a retained off-heap reference
    * @return the value for the given key
    */
@@ -1613,21 +1613,32 @@ public class LocalRegion extends AbstractRegion
         throw err;
       }
     }
-    // didn't find a future, do one more getDeserialized to catch race
-    // condition where the future was just removed by another get thread
+    // didn't find a future, do one more probe for the entry to catch a race
+    // condition where the future was just removed by another thread
     try {
-      localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD, clientEvent, false, false/*allowReadFromHDFS*/, false);
-      // TODO verify that this method is not used for PR or BR and hence allowReadFromHDFS does not matter
-      // stats have now been updated
-      if (localValue != null && !Token.isInvalid(localValue)) {
-        result = localValue;
-        return result;
-      }
-      isCreate = localValue == null;
+      boolean partitioned = this.getDataPolicy().withPartitioning();
+      if (!partitioned) {
+        localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD, clientEvent, false, false/*allowReadFromHDFS*/, false);
 
-      result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks,
-          localValue, disableCopyOnRead, preferCD, null, clientEvent, returnTombstones, false/*allowReadFromHDFS*/);
-      
+        // stats have now been updated
+        if (localValue != null && !Token.isInvalid(localValue)) {
+          result = localValue;
+          return result;
+        }
+        isCreate = localValue == null;
+        result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks,
+            localValue, disableCopyOnRead, preferCD, null, clientEvent, returnTombstones, false/*allowReadFromHDFS*/);
+
+      } else {
+        
+        // This code was moved from PartitionedRegion.nonTxnFindObject().  That method has been removed.
+        // For PRs we don't want to deserialize the value and we can't use findObjectInSystem because
+        // it can invoke code that is transactional.
+        result = getSharedDataView().findObject(keyInfo, this, true/*isCreate*/, generateCallbacks,
+            localValue, disableCopyOnRead, preferCD, null, null, false, allowReadFromHDFS);
+        // TODO why are we not passing the client event or returnTombstones in the above invokation?
+      }
+
       if (result == null && localValue != null) {
         if (localValue != Token.TOMBSTONE || returnTombstones) {
           result = localValue;
@@ -1636,8 +1647,12 @@ public class LocalRegion extends AbstractRegion
       // findObjectInSystem does not call conditionalCopy
     }
     finally {
-      VersionTag tag = (clientEvent==null)? null : clientEvent.getVersionTag();
-      thisFuture.set(new Object[]{result, tag});
+      if (result != null) {
+        VersionTag tag = (clientEvent==null)? null : clientEvent.getVersionTag();
+        thisFuture.set(new Object[]{result, tag});
+      } else {
+        thisFuture.set(null);
+      }
       this.getFutures.remove(keyInfo.getKey());
     }
     if (!disableCopyOnRead) {
@@ -2178,14 +2193,14 @@ public class LocalRegion extends AbstractRegion
       RegionEntry entry = this.entries.getEntry(keyInfo.getKey());
       boolean result = entry != null;
       if (result) {
-        SimpleMemoryAllocatorImpl.skipRefCountTracking();
+        ReferenceCountHelper.skipRefCountTracking();
         Object val = entry.getTransformedValue(); // no need to decompress since we only want to know if we have an existing value 
         if (val instanceof StoredObject) {
           OffHeapHelper.release(val);
-          SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+          ReferenceCountHelper.unskipRefCountTracking();
           return true;
         }
-        SimpleMemoryAllocatorImpl.unskipRefCountTracking();
+        ReferenceCountHelper.unskipRefCountTracking();
         // No need to to check CachedDeserializable because of Bruce's fix in r30960 for bug 42162. See bug 42732.
         // this works because INVALID and LOCAL_INVALID will never be faulted out of mem
         // If val is NOT_AVAILABLE that means we have a valid value on disk.
@@ -4664,7 +4679,7 @@ public class LocalRegion extends AbstractRegion
               continue;
             } else {
               if(logger.isDebugEnabled()) {
-                logger.debug("refreshEntries key={} value={}", currentKey, entry);
+                logger.debug("refreshEntries key={} value={} version={}", currentKey, entry, tag);
               }
               if (tag == null) { // no version checks
                 localDestroyNoCallbacks(currentKey);
@@ -9210,6 +9225,11 @@ public class LocalRegion extends AbstractRegion
   {
     
     CacheListener[] listeners = region.fetchCacheListenersField();
+    if (event.getOperation().isCreate()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("invoking listeners: " + Arrays.toString(listeners));
+      }
+    }
     if (listeners == null || listeners.length == 0) {
       return;
     }

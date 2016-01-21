@@ -19,6 +19,8 @@ package com.gemstone.gemfire.internal.stats50;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
@@ -31,8 +33,6 @@ import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.org.jgroups.oswego.concurrent.BrokenBarrierException;
-import com.gemstone.org.jgroups.oswego.concurrent.CyclicBarrier;
 
 /**
  * @author dsmith
@@ -80,9 +80,9 @@ public class AtomicStatsJUnitTest {
         public void run() {
           try {
             while(true) {
-              beforeIncrement.barrier();
+              beforeIncrement.await();
               statsRef.get().incInt(statId, 1);
-              afterIncrement.barrier();
+              afterIncrement.await();
             }
           } catch (InterruptedException e) {
             // TODO Auto-generated catch block
@@ -97,8 +97,8 @@ public class AtomicStatsJUnitTest {
         public void run() {
           try {
             while(true) {
-              beforeIncrement.barrier();
-              afterIncrement.barrier();
+              beforeIncrement.await();
+              afterIncrement.await();
               statsRef.get().getInt(statId);
             }
           } catch (InterruptedException e) {
@@ -115,8 +115,8 @@ public class AtomicStatsJUnitTest {
       for(int i =0; i < 5000; i++) {
         Statistics stats = ds.createAtomicStatistics(type, "stats");
         statsRef.set(stats);
-        beforeIncrement.barrier();
-        afterIncrement.barrier();
+        beforeIncrement.await();
+        afterIncrement.await();
         assertEquals("On loop " + i, 1, stats.getInt(statId));
         stats.close();
       }

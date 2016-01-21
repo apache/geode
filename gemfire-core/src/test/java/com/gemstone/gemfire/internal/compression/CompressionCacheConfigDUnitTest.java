@@ -27,10 +27,7 @@ import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import dunit.*;
 
 /**
  * Tests configured and badly configured cache.xml files with regards to compression.
@@ -96,9 +93,15 @@ public class CompressionCacheConfigDUnitTest extends CacheTestCase {
    * @throws Exception
    */
   public void testCreateCacheWithBadCompressor() throws Exception {
+    addExpectedException("Unable to load class BAD_COMPRESSOR");
     File cacheXml = createCacheXml(BAD_COMPRESSOR);
-    assertFalse(createCacheOnVM(getVM(0),cacheXml.getCanonicalPath()));
-    cacheXml.delete();
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
+    try {
+      assertFalse(createCacheOnVM(getVM(0), cacheXml.getCanonicalPath()));
+    } finally {
+      expectedException.remove();
+      cacheXml.delete();
+    }
   }
   
   /**

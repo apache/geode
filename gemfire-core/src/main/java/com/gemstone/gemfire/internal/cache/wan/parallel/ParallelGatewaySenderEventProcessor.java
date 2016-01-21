@@ -149,7 +149,7 @@ public class ParallelGatewaySenderEventProcessor extends
       gatewayQueueEvent = new HDFSGatewayEventImpl(operation,
           event, substituteValue, true, eventID.getBucketID());
 
-      if (getSender().beforeEnque(gatewayQueueEvent)) {
+      if (getSender().beforeEnqueue(gatewayQueueEvent)) {
         long start = getSender().getStatistics().startTime();
         try {
           this.queue.put(gatewayQueueEvent);

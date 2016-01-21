@@ -23,8 +23,9 @@ import junit.framework.Assert;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.internal.offheap.MemoryBlock;
+import com.gemstone.gemfire.internal.offheap.RefCountChangeInfo;
+import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.RefCountChangeInfo;
 
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {
@@ -51,7 +52,7 @@ public class OffHeapTestUtil {
     }
     
     if(orphans != null && ! orphans.isEmpty()) {
-      List<RefCountChangeInfo> info = SimpleMemoryAllocatorImpl.getRefCountInfo(orphans.get(0).getMemoryAddress());
+      List<RefCountChangeInfo> info = ReferenceCountHelper.getRefCountInfo(orphans.get(0).getMemoryAddress());
       System.out.println("FOUND ORPHAN!!");
       System.out.println("Sample orphan: " + orphans.get(0));
       System.out.println("Orphan info: " + info);

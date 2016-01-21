@@ -31,6 +31,7 @@ public class GatewaySenderAttributes {
 
   public static final boolean DEFAULT_IS_BUCKETSORTED = true;
   public static final boolean DEFAULT_IS_HDFSQUEUE = false;
+  public static final boolean DEFAULT_IS_META_QUEUE = false;
 
 
   public int socketBufferSize = GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
@@ -82,6 +83,7 @@ public class GatewaySenderAttributes {
   public boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
   
   public boolean isHDFSQueue = GatewaySenderAttributes.DEFAULT_IS_HDFSQUEUE;
+  public boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
   
   public int getSocketBufferSize() {
     return this.socketBufferSize;
@@ -191,5 +193,8 @@ public class GatewaySenderAttributes {
   }
   public boolean isHDFSQueue() {
     return this.isHDFSQueue;
+  }
+  public boolean isMetaQueue() {
+    return this.isMetaQueue;
   }
 }

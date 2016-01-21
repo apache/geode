@@ -166,7 +166,7 @@ public final class Launcher {
           System.err.println(CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, CliUtil.arrayToString(args)));
           exitRequest = ExitShellRequest.FATAL_EXIT;
         } else {
-          if (!gfsh.executeCommand(commandLineCommand)) {
+          if (!gfsh.executeScriptLine(commandLineCommand)) {
               if (gfsh.getLastExecutionStatus() != 0) 
                 exitRequest = ExitShellRequest.FATAL_EXIT;
           } else if (gfsh.getLastExecutionStatus() != 0) {
@@ -224,7 +224,7 @@ public final class Launcher {
             String command = commandsToExecute.get(i);
             System.out.println(GfshParser.LINE_SEPARATOR + "(" + (i + 1) + ") Executing - " + command
                 + GfshParser.LINE_SEPARATOR);
-            if (!gfsh.executeCommand(command) || gfsh.getLastExecutionStatus() != 0) {
+            if (!gfsh.executeScriptLine(command) || gfsh.getLastExecutionStatus() != 0) {
               exitRequest = ExitShellRequest.FATAL_EXIT;
             }
           }

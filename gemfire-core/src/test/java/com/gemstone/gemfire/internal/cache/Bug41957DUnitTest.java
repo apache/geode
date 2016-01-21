@@ -55,11 +55,10 @@ import java.util.*;
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = getServerHostName(server.getHost());
 
-    createBridgeServer(server, mcastPort, regionName, serverPort, false);
+    createBridgeServer(server, regionName, serverPort, false);
 
     createBridgeClient(client, regionName, serverHost, new int[] {serverPort});
 
@@ -77,13 +76,12 @@ import java.util.*;
     stopBridgeServer(server);
   }
 
-  private void createBridgeServer(VM server, final int mcastPort, final String regionName, final int serverPort, final boolean createPR) {
+  private void createBridgeServer(VM server, final String regionName, final int serverPort, final boolean createPR) {
     server.invoke(new CacheSerializableRunnable("Create server") {
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(mcastPort));
-        config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+        config.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
         getSystem(config);
 
         // Create Region

@@ -45,8 +45,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private final boolean allServers;
   
-  private boolean onBehalfOfTXFunctionService;
-
   private String[] groups;
 
   public ServerFunctionExecutor(Pool p, boolean allServers, String... groups) {
@@ -68,7 +66,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
       this.pool = sfe.pool;
     }
     this.allServers = sfe.allServers;
-    this.onBehalfOfTXFunctionService = sfe.onBehalfOfTXFunctionService;
     this.groups = sfe.groups;
   }
   
@@ -114,9 +111,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
     }
     } finally {
       UserAttributes.userAttributes.set(null);
-      if (isOnBehalfOfTXFunctionService()) {
-        pool.releaseServerAffinity();
-      }
     }
   }
 
@@ -148,9 +142,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
     }
     finally {
       UserAttributes.userAttributes.set(null);
-      if (isOnBehalfOfTXFunctionService()) {
-        pool.releaseServerAffinity();
-      }
     }
 
   }
@@ -434,13 +425,4 @@ public class ServerFunctionExecutor extends AbstractExecution {
       return executeFunction(functionObject);      
     }
   }
-
-  public void setOnBehalfOfTXFunctionService(boolean onBehalfOfTXFunctionService) {
-    this.onBehalfOfTXFunctionService = onBehalfOfTXFunctionService;
-  }
-
-  public boolean isOnBehalfOfTXFunctionService() {
-    return onBehalfOfTXFunctionService;
-  }
-  
 }

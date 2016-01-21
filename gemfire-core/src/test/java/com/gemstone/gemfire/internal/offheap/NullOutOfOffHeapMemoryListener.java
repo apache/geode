@@ -24,10 +24,16 @@ import com.gemstone.gemfire.OutOfOffHeapMemoryException;
  * @author Kirk Lund
  */
 public class NullOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListener {
+  private boolean isClosed;
   @Override
   public void outOfOffHeapMemory(OutOfOffHeapMemoryException cause) {
   }
   @Override
   public void close() {
+    this.isClosed = true;
+  }
+  
+  public boolean isClosed() {
+    return this.isClosed;
   }
 }

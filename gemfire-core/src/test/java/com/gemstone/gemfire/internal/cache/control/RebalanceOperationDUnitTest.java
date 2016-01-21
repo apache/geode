@@ -43,6 +43,7 @@ import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
@@ -66,9 +67,12 @@ import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.ColocationHelper;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
+import com.gemstone.gemfire.internal.cache.partitioned.BucketCountLoadProbe;
+import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
 
 import dunit.AsyncInvocation;
 import dunit.Host;
@@ -2810,12 +2814,143 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     moveBucketsWithUnrecoveredValuesRedundancy(false);
   }
   
+  public void testBalanceBucketsByCountSimulation() {
+    balanceBucketsByCount(true);
+  }
+  
+  public void testBalanceBucketsByCount() {
+    balanceBucketsByCount(false);
+  }
+  
   /**
    * Check to make sure that we balance
-   * buckets between two hosts with no redundancy,
-   * 
-   * even if the values have not yet been faulted in from disk.
+   * buckets between two hosts with no redundancy.
    * @param simulate
+   */
+  public void balanceBucketsByCount(final boolean simulate) {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    LoadProbe oldProbe = setLoadProbe(vm0, new BucketCountLoadProbe());
+    try {
+      SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+        public void run()
+        {
+          Cache cache = getCache();
+          AttributesFactory attr = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setRedundantCopies(0);
+          paf.setRecoveryDelay(-1);
+          paf.setStartupRecoveryDelay(-1);
+          PartitionAttributes prAttr = paf.create();
+          attr.setPartitionAttributes(prAttr);
+          attr.setCacheLoader(new Bug40228Loader());
+          cache.createRegion("region1", attr.create());
+        }
+      };
+
+      //Create the region in only 1 VM
+      vm0.invoke(createPrRegion);
+
+      //Create some buckets with very uneven sizes
+      vm0.invoke(new SerializableRunnable("createSomeBuckets") {
+
+        public void run() {
+          Cache cache = getCache();
+          Region region = cache.getRegion("region1");
+          region.put(Integer.valueOf(1), new byte[1024 * 1024]);
+          region.put(Integer.valueOf(2), "A");
+          region.put(Integer.valueOf(3), "A");
+          region.put(Integer.valueOf(4), "A");
+          region.put(Integer.valueOf(5), "A");
+          region.put(Integer.valueOf(6), "A");
+        }
+      });
+
+      //Create the region in the other VM (should have no effect)
+      vm1.invoke(createPrRegion);
+
+      //Now simulate a rebalance
+      vm0.invoke(new SerializableRunnable("simulateRebalance") {
+
+        public void run() {
+          Cache cache = getCache();
+          ResourceManager manager = cache.getResourceManager();
+          RebalanceResults results = doRebalance(simulate, manager);
+          assertEquals(0, results.getTotalBucketCreatesCompleted());
+          assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+          assertEquals(3, results.getTotalBucketTransfersCompleted());
+          assertTrue(0 < results.getTotalBucketTransferBytes());
+          Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
+          assertEquals(1, detailSet.size());
+          PartitionRebalanceInfo details = detailSet.iterator().next();
+          assertEquals(0, details.getBucketCreatesCompleted());
+          assertEquals(0, details.getPrimaryTransfersCompleted());
+          assertTrue(0 < details.getBucketTransferBytes());
+          assertEquals(3, details.getBucketTransfersCompleted());
+
+          Set<PartitionMemberInfo> afterDetails = details.getPartitionMemberDetailsAfter();
+          assertEquals(2, afterDetails.size());
+          for(PartitionMemberInfo memberDetails: afterDetails) {
+            assertEquals(3, memberDetails.getBucketCount());
+            assertEquals(3, memberDetails.getPrimaryCount());
+          }
+          if(!simulate) {
+            verifyStats(manager, results);
+          }
+        }
+      });
+
+      if(!simulate) {
+        SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkRedundancyFixed") {
+
+          public void run() {
+            Cache cache = getCache();
+            Region region = cache.getRegion("region1");
+            PartitionRegionInfo details = PartitionRegionHelper.getPartitionRegionInfo(region);
+            assertEquals(6, details.getCreatedBucketCount());
+            assertEquals(0,details.getActualRedundantCopies());
+            assertEquals(0,details.getLowRedundancyBucketCount());
+            assertEquals(2, details.getPartitionMemberInfo().size());
+            for(PartitionMemberInfo memberDetails: details.getPartitionMemberInfo()) {
+              assertEquals(3, memberDetails.getBucketCount());
+              assertEquals(3, memberDetails.getPrimaryCount());
+            }
+
+            //check to make sure that moving buckets didn't close the cache loader
+            Bug40228Loader loader = (Bug40228Loader) cache.getRegion("region1").getAttributes().getCacheLoader();
+            assertFalse(loader.isClosed());
+          }
+        };
+
+        vm0.invoke(checkRedundancyFixed);
+        vm1.invoke(checkRedundancyFixed);
+      }
+    } finally {
+      setLoadProbe(vm0, oldProbe);
+    }
+  }
+  
+  private LoadProbe setLoadProbe(VM vm, final LoadProbe probe) {
+    LoadProbe oldProbe = (LoadProbe) vm.invoke(new SerializableCallable("set load probe") {
+      
+      public Object call() {
+        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
+        InternalResourceManager mgr = cache.getResourceManager();
+        return mgr.setLoadProbe(probe);
+      }
+    });
+    
+    return oldProbe;
+  }
+
+  /** 
+   * Test to ensure that we wait for
+   * in progress write operations before moving a primary.
+   * @throws InterruptedException 
+   * @throws CancellationException 
+   * @throws TimeoutException 
    */
   public void moveBucketsWithUnrecoveredValuesRedundancy(final boolean simulate) {
     Host host = Host.getHost(0);

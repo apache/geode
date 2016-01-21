@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -811,7 +811,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         getPoolStats().incPrefillConnect();
       }
       catch (ServerConnectivityException ex) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.ConnectionManagerImpl_UNABLE_TO_PREFILL_POOL_TO_MINIMUM_BECAUSE_0, ex), null);
+        logger.info(LocalizedStrings.ConnectionManagerImpl_UNABLE_TO_PREFILL_POOL_TO_MINIMUM_BECAUSE_0.toLocalizedString(ex.getMessage()));
         return false;
       }
       finally {

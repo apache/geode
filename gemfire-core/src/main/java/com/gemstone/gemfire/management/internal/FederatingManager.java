@@ -276,9 +276,10 @@ public class FederatingManager extends Manager {
    * block the membership listener
    * 
    * @param member
+   * @param reason TODO
    */
-  public void suspectMember(DistributedMember member, InternalDistributedMember whoSuspected) {
-    service.memberSuspect((InternalDistributedMember) member, whoSuspected);
+  public void suspectMember(DistributedMember member, InternalDistributedMember whoSuspected, String reason) {
+    service.memberSuspect((InternalDistributedMember) member, whoSuspected, reason);
 
   }
 

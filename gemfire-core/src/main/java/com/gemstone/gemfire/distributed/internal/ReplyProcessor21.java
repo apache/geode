@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +42,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * This class processes responses to {@link DistributionMessage}s. It
@@ -444,7 +443,7 @@ public class ReplyProcessor21
       final DM dm = getDistributionManager(); // fix for bug 33253
       Set ids = getDistributionManagerIds();
       if (ids == null || ids.contains(sender)) {
-        Vector viewMembers = dm.getViewMembers();
+        List viewMembers = dm.getViewMembers();
         if (system.getConfig().getMcastPort() == 0  // could be using multicast & will get responses from everyone
              && (viewMembers == null || viewMembers.contains(sender))) {
           logger.warn(LocalizedMessage.create(
@@ -509,7 +508,7 @@ public class ReplyProcessor21
   }
 
   public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
     if (isSevereAlertProcessingEnabled()) {
       // if we're waiting for the member that initiated suspicion, we don't
       // want to be hasty about kicking it out of the distributed system
@@ -758,7 +757,7 @@ public class ReplyProcessor21
       else {
         if (msecs > timeout) {
           if (!latch.await(timeout)) {
-            timeout(false, false);
+            timeout(isSevereAlertProcessingEnabled() && (severeAlertTimeout > 0), false);
             // after timeout alert, wait remaining time
             if (!latch.await(msecs-timeout)) {
               logger.info(LocalizedMessage.create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_TIMING_OUT_AFTER_0_SEC, Long.valueOf(msecs / 1000)));

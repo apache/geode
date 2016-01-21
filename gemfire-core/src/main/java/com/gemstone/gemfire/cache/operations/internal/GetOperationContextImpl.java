@@ -18,8 +18,8 @@ package com.gemstone.gemfire.cache.operations.internal;
 
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
+import com.gemstone.gemfire.internal.offheap.Chunk;
 import com.gemstone.gemfire.internal.offheap.Releasable;
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.Chunk;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 

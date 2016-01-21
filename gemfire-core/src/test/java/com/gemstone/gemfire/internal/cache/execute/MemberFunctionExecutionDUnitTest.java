@@ -25,12 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -46,6 +50,8 @@ import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import dunit.Host;
+import dunit.SerializableCallable;
+import dunit.SerializableRunnable;
 import dunit.VM;
 
 public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
@@ -298,6 +304,49 @@ public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   public void testBug41118()
       throws Exception {
     member1.invoke(MemberFunctionExecutionDUnitTest.class, "bug41118");
+  }
+  
+  public void testOnMembersWithoutCache()
+      throws Exception {
+    DistributedMember member1Id = (DistributedMember) member1.invoke(new SerializableCallable() {
+      
+      @Override
+      public Object call() {
+        disconnectFromDS();
+        return getSystem().getDistributedMember();
+      }
+    });
+    
+    member2.invoke(new SerializableRunnable() {
+      
+      @Override
+      public void run() {
+        getSystem();
+        ResultCollector<?, ?> rc = FunctionService.onMember(member1Id).execute(new FunctionAdapter() {
+          
+          @Override
+          public String getId() {
+            return getClass().getName();
+          }
+          
+          @Override
+          public void execute(FunctionContext context) {
+            //This will throw an exception because the cache is not yet created.
+            CacheFactory.getAnyInstance();
+          }
+        });
+        
+        try {
+          rc.getResult(30, TimeUnit.SECONDS);
+          fail("Should have seen an exception");
+        } catch (Exception e) {
+          if(!(e.getCause() instanceof FunctionInvocationTargetException)) {
+            fail("failed", e);
+          }
+        }
+        
+      }
+    });
   }
   
   public static void bug41118(){

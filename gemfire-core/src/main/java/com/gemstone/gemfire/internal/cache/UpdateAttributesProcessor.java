@@ -277,7 +277,7 @@ public class UpdateAttributesProcessor {
     }
     
     @Override
-    public boolean sendViaJGroups() {
+    public boolean sendViaUDP() {
       return true;
     }
 

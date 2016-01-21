@@ -197,7 +197,7 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
   }
   
   
-  public void testDurableReconnect_DiffernetPrimary() throws Exception
+  public void testDurableReconnect_DifferentPrimary() throws Exception
   {
    //create client cache and Send clientReady message
     createCacheClient();

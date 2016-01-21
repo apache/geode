@@ -36,12 +36,6 @@ public interface MemoryInspector {
   
   public List<MemoryBlock> getAllocatedBlocks();
   
-  public List<MemoryBlock> getDeallocatedBlocks();
-  
-  public List<MemoryBlock> getUnusedBlocks();
-  
-  public MemoryBlock getBlockContaining(long memoryAddress);
-  
   public MemoryBlock getBlockAfter(MemoryBlock block);
   
   public List<MemoryBlock> getOrphans();

@@ -204,6 +204,10 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
    * @param destroyedVersion the version that was destroyed
    */
   public void scheduleTombstone(LocalRegion r, RegionEntry entry, VersionTag destroyedVersion) {
+    if (entry.getVersionStamp() == null) {
+      logger.warn("Detected an attempt to schedule a tombstone for an entry that is not versioned in region " + r.getFullPath(), new Exception("stack trace"));
+      return;
+    }
     boolean useReplicated = useReplicatedQueue(r);
     Tombstone ts = new Tombstone(entry, r, destroyedVersion);
     if (useReplicated) {
@@ -871,6 +875,12 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
               return;
             } catch (Exception e) {
               logger.warn(LocalizedMessage.create(LocalizedStrings.GemFireCacheImpl_TOMBSTONE_ERROR), e);
+              currentTombstoneLock.lock();
+              try {
+                currentTombstone = null;
+              } finally {
+                currentTombstoneLock.unlock();
+              }
             }
           }
           if (sleepTime > 0) {

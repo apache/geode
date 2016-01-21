@@ -15,6 +15,7 @@
       <MarkerFilter marker="GEMFIRE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
     </filters>
     </Logger>
+    <Logger name="org.jgroups" level="FATAL" additivity="true"/>
     <Root level="INFO">
       <AppenderRef ref="STDOUT"/>
     </Root>

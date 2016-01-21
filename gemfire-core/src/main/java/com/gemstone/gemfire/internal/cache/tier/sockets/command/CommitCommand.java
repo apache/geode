@@ -119,7 +119,9 @@ public class CommitCommand extends BaseCommand {
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setTransactionId(origMsg.getTransactionId());
     responseMsg.setNumberOfParts(1);
-    response.setClientVersion(servConn.getClientVersion());
+    if( response != null ) {
+    	response.setClientVersion(servConn.getClientVersion());
+    }
     responseMsg.addObjPart(response, zipValues);
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     if (logger.isDebugEnabled()) {

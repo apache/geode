@@ -64,12 +64,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   
   private MyBucketOperator bucketOperator;
   
-  @BeforeClass
-  public static void beforeClass() {
-    //bogus initialization to be able to create InternalDistributedMembers
-    MemberAttributes.setDefaults(1, 1, 1, -1, null, null, null);
-  }
-  
   @Before
   public void setUp() {
     this.bucketOperator = new MyBucketOperator();
@@ -1291,7 +1285,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     return new AddressComparor() {
       public boolean areSameZone(InternalDistributedMember member1,
           InternalDistributedMember member2) {
-        return member1.getIpAddress().equals(member2.getIpAddress());
+        return member1.getInetAddress().equals(member2.getInetAddress());
       }
 
       public boolean enforceUniqueZones() {

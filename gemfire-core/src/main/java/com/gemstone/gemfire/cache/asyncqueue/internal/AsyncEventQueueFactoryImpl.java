@@ -193,8 +193,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
           //  AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
       addAsyncEventListener(listener);
       GatewaySender sender = create(AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
-      asyncEventQueue = new AsyncEventQueueImpl(sender, listener);
-      ((GemFireCacheImpl) cache).addAsyncEventQueue(asyncEventQueue);
+      AsyncEventQueueImpl queue = new AsyncEventQueueImpl(sender, listener);
+      asyncEventQueue = queue;
+      ((GemFireCacheImpl) cache).addAsyncEventQueue(queue);
     } else if (this.cache instanceof CacheCreation) {
       asyncEventQueue = new AsyncEventQueueCreation(asyncQueueId, attrs, listener);
       ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
@@ -289,6 +290,10 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
   public AsyncEventQueueFactory setIsHDFSQueue(boolean isHDFSQueue) {
     this.attrs.isHDFSQueue = isHDFSQueue;
+    return this;
+  }
+  public AsyncEventQueueFactory setIsMetaQueue(boolean isMetaQueue) {
+    this.attrs.isMetaQueue = isMetaQueue;
     return this;
   }
 }

@@ -18,9 +18,8 @@ package com.gemstone.gemfire.rest.internal.web.swagger.config;
 
 import javax.servlet.ServletContext;
 
-import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.mangofactory.swagger.core.SwaggerPathProvider;
 
@@ -42,12 +41,10 @@ public class RestApiPathProvider implements SwaggerPathProvider {
     Assert.isTrue(!StringUtils.isBlank(docsLocation),
         "The docs location must be specified!");
 
-    this.docsLocation = "http://"
-        + InternalDistributedSystem.getAnyInstance().getConfig()
-            .getHttpServiceBindAddress()
-        + ":"
-        + InternalDistributedSystem.getAnyInstance().getConfig()
-            .getHttpServicePort();
+    DistributionConfig config = InternalDistributedSystem.getAnyInstance().getConfig();
+    String scheme = config.getHttpServiceSSLEnabled() ? "https" : "http";
+
+    this.docsLocation = scheme + "://" + config.getHttpServiceBindAddress() + ":" + config.getHttpServicePort();
   }
 
   @Override

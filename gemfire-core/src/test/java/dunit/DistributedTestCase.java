@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.experimental.categories.Category;
 import org.springframework.data.gemfire.support.GemfireCache;
 
 import junit.framework.TestCase;
@@ -49,17 +50,18 @@ import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogConfig;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.GlobalLockingDUnitTest;
 import com.gemstone.gemfire.cache30.MultiVMRegionTestCase;
 import com.gemstone.gemfire.cache30.RegionTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.CreationStackGenerator;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.jgroup.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
@@ -76,6 +78,7 @@ import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -84,11 +87,7 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.org.jgroups.Event;
-import com.gemstone.org.jgroups.JChannel;
-import com.gemstone.org.jgroups.stack.IpAddress;
-import com.gemstone.org.jgroups.stack.Protocol;
-import com.gemstone.org.jgroups.util.GemFireTracer;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import dunit.standalone.DUnitLauncher;
 
@@ -104,6 +103,7 @@ import dunit.standalone.DUnitLauncher;
  *
  * @author David Whitlock
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
 public abstract class DistributedTestCase extends TestCase implements java.io.Serializable {
   private static final Logger logger = LogService.getLogger();
@@ -449,7 +449,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     if (!p.contains(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME)) {
       p.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
     }
-        
+
     for (Iterator iter = props.entrySet().iterator();
     iter.hasNext(); ) {
       Map.Entry entry = (Map.Entry) iter.next();
@@ -563,19 +563,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * test with disconnectFromDS() or disconnectAllFromDS().
    */
   public void crashDistributedSystem(final DistributedSystem msys) {
-    MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-    MembershipManagerHelper.playDead(msys);
-    JChannel c = MembershipManagerHelper.getJChannel(msys);
-    Protocol udp = c.getProtocolStack().findProtocol("UDP");
-    udp.stop();
-    udp.passUp(new Event(Event.EXIT, new RuntimeException("killing member's ds")));
-    try {
-      MembershipManagerHelper.getJChannel(msys).waitForClose();
-    }
-    catch (InterruptedException ie) {
-      Thread.currentThread().interrupt();
-      // attempt rest of work with interrupt bit set
-    }
+    MembershipManagerHelper.crashDistributedSystem(msys);
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
@@ -635,31 +623,6 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     props.put(DistributionConfig.LOCATORS_NAME, "");
     props.put(DistributionConfig.ENFORCE_UNIQUE_HOST_NAME, "true");
     props.put(DistributionConfig.REDUNDANCY_ZONE_NAME, "zone1");
-    return getSystem(props);
-  }
-
-  /**
-   * Returns an mcast distributed system that is connected to other
-   * vms using a random mcast port.
-   */
-  public final InternalDistributedSystem getMcastSystem() {
-    Properties props = this.getDistributedSystemProperties();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    props.put(DistributionConfig.MCAST_PORT_NAME, ""+port);
-    props.put(DistributionConfig.MCAST_TTL_NAME, "0");
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    return getSystem(props);
-  }
-
-  /**
-   * Returns an mcast distributed system that is connected to other
-   * vms using the given mcast port.
-   */
-  public final InternalDistributedSystem getMcastSystem(int jgroupsPort) {
-    Properties props = this.getDistributedSystemProperties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, ""+jgroupsPort);
-    props.put(DistributionConfig.MCAST_TTL_NAME, "0");
-    props.put(DistributionConfig.LOCATORS_NAME, "");
     return getSystem(props);
   }
 
@@ -797,8 +760,10 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
   private static void cleanupThisVM() {
     closeCache();
     
-    IpAddress.resolve_dns = true;
     SocketCreator.resolve_dns = true;
+    CacheCreation.clearThreadLocals();
+    System.getProperties().remove("gemfire.log-level");
+    System.getProperties().remove("jgroups.resolve_dns");
     InitialImageOperation.slowImageProcessing = 0;
     DistributionMessageObserver.setInstance(null);
     QueryTestUtils.setCache(null);
@@ -810,12 +775,14 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     MultiVMRegionTestCase.CCRegion = null;
     InternalClientMembership.unregisterAllListeners();
     ClientStatsManager.cleanupForTests();
+    ClientServerTestCase.AUTO_LOAD_BALANCE = false;
     unregisterInstantiatorsInThisVM();
-    GemFireTracer.DEBUG = Boolean.getBoolean("DistributionManager.DEBUG_JAVAGROUPS");
-    Protocol.trace = GemFireTracer.DEBUG;
     DistributionMessageObserver.setInstance(null);
     QueryObserverHolder.reset();
     DiskStoreObserver.setInstance(null);
+    System.getProperties().remove("gemfire.log-level");
+    System.getProperties().remove("jgroups.resolve_dns");
+    
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {
       InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
     }
@@ -1068,7 +1035,8 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * returning.
    */
   public static final void pause(int ms) {
-    if (ms > 50) {
+    LogWriter log = getLogWriter();
+    if (ms >= 1000 || log.fineEnabled()) { // check for fine but log at info
       getLogWriter().info("Pausing for " + ms + " ms..."/*, new Exception()*/);
     }
     final long target = System.currentTimeMillis() + ms;
@@ -1461,7 +1429,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    */
   public void deleteLocatorStateFile(int... ports) {
     for (int i=0; i<ports.length; i++) {
-      File stateFile = new File("locator"+ports[i]+"state.dat");
+      File stateFile = new File("locator"+ports[i]+"view.dat");
       if (stateFile.exists()) {
         stateFile.delete();
       }

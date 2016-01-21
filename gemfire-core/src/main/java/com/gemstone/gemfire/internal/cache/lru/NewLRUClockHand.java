@@ -55,7 +55,7 @@ public class NewLRUClockHand  {
   /**  Description of the Field */
   final private LRUStatistics stats;
   /** Counter for the size of the LRU list */
-  private int size = 0;
+  protected int size = 0;
   
 public static final boolean debug = Boolean.getBoolean("gemfire.verbose-lru-clock");
 
@@ -185,7 +185,7 @@ public NewLRUClockHand(Object region, EnableLRU ccHelper,
       
       aNode.setNextLRUNode(null);
       aNode.setPrevLRUNode(null);
-      this.size++;
+      this.size--;
       return aNode;
     }
   }
@@ -334,6 +334,7 @@ public NewLRUClockHand(Object region, EnableLRU ccHelper,
       prev.setNextLRUNode(next);
       entry.setNextLRUNode(null);
       entry.setPrevLRUNode(null);
+      this.size--;
     }
     return true;
   }
@@ -386,6 +387,15 @@ public NewLRUClockHand(Object region, EnableLRU ccHelper,
     this.size = 0;
   }
   
+    /**
+     * Get size of LRU queue
+     *
+     * @return size
+     */
+    public int size() {
+        return size;
+    }
+
   /** perform work of clear(), after subclass has properly synchronized */
 //  private void internalClear() {
 //    stats().resetCounter();

@@ -121,9 +121,6 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
 
   public static long parseOffHeapMemorySize(String value) {
-    if (value == null || value.equals("")) {
-      return 0;
-    }
     final long parsed = parseLongWithUnits(value, 0L, 1024*1024);
     if (parsed < 0) {
       return 0;
@@ -147,6 +144,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
         result = MAX_SLAB_SIZE;
       }
     }
+    assert result > 0 && result <= MAX_SLAB_SIZE && result <= offHeapMemorySize;
     return result;
   }
   
@@ -175,15 +173,6 @@ public class OffHeapStorage implements OffHeapMemoryStats {
    * @return MemoryAllocator for off-heap storage
    */
   public static MemoryAllocator createOffHeapStorage(LogWriter lw, StatisticsFactory sf, long offHeapMemorySize, DistributedSystem system) {
-    // TODO: delete this block of code after tests are changed to use new config
-    if (offHeapMemorySize == 0 && !Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
-      String offHeapConfig = System.getProperty("gemfire.OFF_HEAP_TOTAL_SIZE");
-      if (offHeapConfig != null && !offHeapConfig.equals("")) {
-        offHeapMemorySize = parseLongWithUnits(offHeapConfig, 0L, 1024*1024);
-      }
-    }
-    
-    //TODO:Asif: Fix it
     MemoryAllocator result;
     if (offHeapMemorySize == 0 || Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
       // Checking the FORCE_LOCATOR_DM_TYPE is a quick hack to keep our locator from allocating off heap memory.
@@ -200,15 +189,6 @@ public class OffHeapStorage implements OffHeapMemoryStats {
       
       // determine off-heap and slab sizes
       final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
-      assert maxSlabSize > 0;
-      
-      // validate sizes
-      if (maxSlabSize > MAX_SLAB_SIZE) {
-        throw new IllegalArgumentException("gemfire.OFF_HEAP_SLAB_SIZE of value " + offHeapMemorySize + " exceeds maximum value of " + MAX_SLAB_SIZE);
-      }
-      if (maxSlabSize > offHeapMemorySize) {
-        throw new IllegalArgumentException("The off heap slab size (which is " + maxSlabSize + "; set it with gemfire.OFF_HEAP_SLAB_SIZE) must be less than or equal to the total size (which is " + offHeapMemorySize + "; set it with gemfire.OFF_HEAP_SLAB_SIZE).");
-      }
       
       final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
 
@@ -223,9 +203,10 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
   
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;
-  private static final long MIN_SLAB_SIZE = 1024;
+  static final long MIN_SLAB_SIZE = 1024;
 
-  private static int calcSlabCount(long maxSlabSize, long offHeapMemorySize) {
+  // non-private for unit test access
+  static int calcSlabCount(long maxSlabSize, long offHeapMemorySize) {
     long result = offHeapMemorySize / maxSlabSize;
     if ((offHeapMemorySize % maxSlabSize) >= MIN_SLAB_SIZE) {
       result++;
@@ -411,7 +392,6 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
   
   static class DisconnectingOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListener {
-    private final boolean stayConnectedOnOutOfOffHeapMemory = Boolean.getBoolean(STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY);
     private final Object lock = new Object();
     private InternalDistributedSystem ids;
     
@@ -431,12 +411,12 @@ public class OffHeapStorage implements OffHeapMemoryStats {
         if (this.ids == null) {
           return;
         }
-        final InternalDistributedSystem dsToDisconnect = this.ids;
-        this.ids = null; // set null to prevent memory leak after closure!
-        
-        if (stayConnectedOnOutOfOffHeapMemory) {
+        if (Boolean.getBoolean(STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY)) {
           return;
         }
+        
+        final InternalDistributedSystem dsToDisconnect = this.ids;
+        this.ids = null; // set null to prevent memory leak after closure!
         
         if (dsToDisconnect.getDistributionManager().getRootCause() == null) {
           dsToDisconnect.getDistributionManager().setRootCause(cause);

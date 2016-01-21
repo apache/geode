@@ -244,7 +244,7 @@ public class DistributionAdvisor  {
       }
 
       public void memberSuspect(InternalDistributedMember id,
-          InternalDistributedMember whoSuspected) {
+          InternalDistributedMember whoSuspected, String reason) {
       }
       
    };

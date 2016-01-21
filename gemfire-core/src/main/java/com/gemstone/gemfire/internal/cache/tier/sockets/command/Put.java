@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.ResourceException;
 import com.gemstone.gemfire.cache.operations.PutOperationContext;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.org.jgroups.util.StringId;
+import com.gemstone.gemfire.i18n.StringId;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

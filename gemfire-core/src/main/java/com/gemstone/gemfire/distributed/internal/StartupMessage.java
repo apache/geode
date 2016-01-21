@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributes
 import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.Stub;
 
 /**
  * A message that is sent to all other distribution manager when
@@ -46,11 +45,8 @@ import com.gemstone.gemfire.internal.tcp.Stub;
 public final class StartupMessage extends HighPriorityDistributionMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
-  /** A stub for the direct channel for this manager */
-  private Stub directChannel;
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
   private int replyProcessorId;
-  private boolean isMcastDiscovery;
   private boolean isMcastEnabled;
   private boolean isTcpDisabled;
   private Set interfaces;
@@ -103,13 +99,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   ///////////////////////  Instance Methods  ///////////////////////
   
   /**
-   * Sets the id of the distribution manager that is starting up
-   */
-  void setDirectChannel(Stub directChannel) {
-    this.directChannel = directChannel;
-  }
-
-  /**
    * Sets the reply processor for this message
    */
   void setReplyProcessorId(int proc) {
@@ -143,21 +132,13 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
   
 //  void setHostedLocatorsWithSharedConfiguration(Collection<String> hostedLocatorsWithSharedConfiguration) {
 //    this.hostedLocatorsWithSharedConfiguration = hostedLocatorsWithSharedConfiguration;
 //  }
-  
-  /**
-   * Sets the mcastDiscovery flag for this message
-   * @since 5.0
-   */
-  void setMcastDiscovery(boolean flag) {
-    isMcastDiscovery = flag;
-  }
   
   /**
    * Sets the tcpDisabled flag for this message
@@ -258,7 +239,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
 
     if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
       if (this.interfaces == null || this.interfaces.size() == 0) {
-        final com.gemstone.org.jgroups.util.StringId msg = 
+        final com.gemstone.gemfire.i18n.StringId msg = 
           LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_PEER_HAS_NO_NETWORK_INTERFACES;
         rejectionMessage = msg.toLocalizedString(getSender());
       }
@@ -328,10 +309,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeBoolean(this.directChannel != null);
-    if (this.directChannel != null) {
-      InternalDataSerializer.invokeToData(this.directChannel, out);
-    }
 
     boolean pre9_0_0_0 = InternalDataSerializer.
         getVersionForDataStream(out).compareTo(Version.GFE_90) < 0;
@@ -342,7 +319,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     DataSerializer.writeString(this.version, out);
     out.writeInt(this.replyProcessorId);
     out.writeBoolean(this.isMcastEnabled);
-    out.writeBoolean(this.isMcastDiscovery);
     out.writeBoolean(this.isTcpDisabled);
 
     // Send a description of all of the DataSerializers and
@@ -401,12 +377,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   public void fromData(DataInput in)
     throws IOException, ClassNotFoundException {
     super.fromData(in);
-    boolean hasDirectChannel = in.readBoolean();
-    if (hasDirectChannel) {
-      this.directChannel = Stub.createFromData(in);
-    } else {
-      this.directChannel = null;
-    }
 
     boolean pre9_0_0_0 = InternalDataSerializer.
         getVersionForDataStream(in).compareTo(Version.GFE_90) < 0;
@@ -417,7 +387,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     this.version = DataSerializer.readString(in);
     this.replyProcessorId = in.readInt();
     this.isMcastEnabled = in.readBoolean();
-    this.isMcastDiscovery = in.readBoolean();
     this.isTcpDisabled = in.readBoolean();
 
     int serializerCount = in.readInt();

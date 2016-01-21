@@ -853,8 +853,8 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
       int historySizeWordLength = historySizeString.length();
 
       GfshHistory gfshHistory = gfsh.getGfshHistory();
-      List<?> gfshHistoryList = gfshHistory.getHistoryList();
-      Iterator<?> it = gfshHistoryList.iterator();
+      //List<?> gfshHistoryList = gfshHistory.getHistoryList();
+      Iterator<?> it = gfshHistory.entries();
       boolean flagForLineNumbers = (saveHistoryTo != null && saveHistoryTo
           .length() > 0) ? false : true;
       long lineNumber = 0;

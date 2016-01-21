@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.util;
 
-import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
+import org.springframework.util.Assert;
 
 /**
  * Utility based on code extracted from

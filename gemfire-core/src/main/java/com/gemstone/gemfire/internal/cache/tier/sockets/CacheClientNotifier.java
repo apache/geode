@@ -86,6 +86,8 @@ import com.gemstone.gemfire.internal.SocketCloser;
 import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.VersionedDataInputStream;
+import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.cache.ClientServerObserver;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
@@ -336,7 +338,11 @@ public class CacheClientNotifier {
     dis.readByte(); // replyCode
 
     if (Version.GFE_57.compareTo(clientVersion) <= 0) {
-        registerGFEClient(dis, dos, socket, isPrimary, startTime, clientVersion,
+      if (Version.CURRENT.compareTo(clientVersion) > 0) {
+        dis = new VersionedDataInputStream(dis, clientVersion);
+        dos = new VersionedDataOutputStream(dos, clientVersion);
+      }
+      registerGFEClient(dis, dos, socket, isPrimary, startTime, clientVersion,
             acceptorId, notifyBySubscription);
     } else {
         Exception e = new UnsupportedVersionException(clientVersionOrdinal);

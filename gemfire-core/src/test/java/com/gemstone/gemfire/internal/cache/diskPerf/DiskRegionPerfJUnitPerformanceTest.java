@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -31,14 +32,15 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
 import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
 import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
 /**
  * Consolidated Disk Region Perftest. Overflow, Persist, OverflowWithPersist
  * modes are tested for Sync, AsyncWithBuffer and AsyncWithoutBufer writes.
  *  
  */
-@Category(IntegrationTest.class)
+@Category(PerformanceTest.class)
+@Ignore("Tests have no assertions")
 public class DiskRegionPerfJUnitPerformanceTest extends DiskRegionTestingBase
 {
   LogWriter log = null;

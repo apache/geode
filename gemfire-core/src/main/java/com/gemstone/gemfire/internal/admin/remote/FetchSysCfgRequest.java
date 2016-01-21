@@ -41,7 +41,7 @@ public final class FetchSysCfgRequest extends AdminRequest {
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

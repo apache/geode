@@ -18,8 +18,6 @@ package com.gemstone.gemfire.internal.memcached.commands;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,15 +26,12 @@ import java.util.Set;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.memcached.Command;
 import com.gemstone.gemfire.internal.memcached.KeyWrapper;
 import com.gemstone.gemfire.internal.memcached.Reply;
 import com.gemstone.gemfire.internal.memcached.RequestReader;
 import com.gemstone.gemfire.internal.memcached.ResponseStatus;
 import com.gemstone.gemfire.internal.memcached.ValueWrapper;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * 
@@ -167,7 +162,7 @@ public class GetCommand extends AbstractCommand {
     return composeReply(results, isGets);
   }
 
-  @SuppressFBWarnings(value = "NP_NULL_PARAM_DEREF",
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF",
       justification = "findbugs complains that v is null while putting into buffer, but it is not")
   private ByteBuffer composeReply(Map<Object, ValueWrapper> results, boolean isGets) {
     Iterator<Entry<Object, ValueWrapper>> it = results.entrySet().iterator();

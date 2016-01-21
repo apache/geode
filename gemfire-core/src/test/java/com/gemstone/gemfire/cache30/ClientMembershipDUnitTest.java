@@ -1301,6 +1301,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   public void testGetConnectedClients() throws Exception {
     final String name = this.getUniqueName();
     final int[] ports = new int[1];
+    
+    addExpectedException("ConnectException");
 
     // create BridgeServer in controller vm...
     getLogWriter().info("[testGetConnectedClients] Create BridgeServer");
@@ -1326,12 +1328,16 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         Properties config = new Properties();
         config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
         config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+        // 11/30/2015 this test is periodically failing during distributedTest runs
+        // so we are setting the log-level to fine to figure out what's going on
+        config.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
-        ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
+        Pool p = ClientServerTestCase.configureConnectionPool(factory, getServerHostName(host), ports, true, -1, -1, null);
         createRegion(name, factory.create());
         assertNotNull(getRootRegion().getSubregion(name));
+        assertTrue(p.getServers().size() > 0);
       }
     };
 
@@ -1340,6 +1346,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     
     for (int i = 0; i < host.getVMCount(); i++) { 
       final VM vm = Host.getHost(0).getVM(i);
+      System.out.println("creating pool in vm_"+i);
       vm.invoke(createPool);
       clientMemberIdArray[i] =  String.valueOf(vm.invoke(
         ClientMembershipDUnitTest.class, "getMemberId"));
@@ -1363,7 +1370,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           return true;
         }
       };
-      waitForCriterion(wc, 10000, 100, false);
+      waitForCriterion(wc, 30000, 100, false);
     }
     
     Map connectedClients = InternalClientMembership.getConnectedClients(false);
@@ -1373,8 +1380,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       String connectedClient = (String)iter.next();
       getLogWriter().info("[testGetConnectedClients] checking for client " + connectedClient);
       assertTrue(clientMemberIds.contains(connectedClient));
-      getLogWriter().info("[testGetConnectedClients] count for connectedClient: " + 
-                          connectedClients.get(connectedClient));
+      Object[] result = (Object[])connectedClients.get(connectedClient);
+      getLogWriter().info("[testGetConnectedClients] result: " + 
+                          (result==null? "none"
+                              : String.valueOf(result[0])+"; connections="+result[1]));
     }
   }
 
@@ -1463,7 +1472,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           return true;
         }
       };
-      waitForCriterion(wc, 10000, 100, false);
+      waitForCriterion(wc, 60000, 100, false);
     }
 
     {

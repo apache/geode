@@ -25,17 +25,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DMStats;
@@ -47,6 +50,7 @@ import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -61,11 +65,9 @@ import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.internal.tcp.ConnectionException;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 import com.gemstone.gemfire.internal.tcp.MsgStreamer;
-import com.gemstone.gemfire.internal.tcp.Stub;
 import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
-import com.gemstone.org.jgroups.util.StringId;
 
 /**
  * @author Bruce Schuchardt
@@ -89,7 +91,7 @@ public class DirectChannel {
     private volatile boolean disconnectCompleted = true;
 
     /** this is the DistributionManager, most of the time */
-    private final DistributedMembershipListener receiver;
+    private final DirectChannelListener receiver;
 
     private final InetAddress address;
     
@@ -121,20 +123,29 @@ public class DirectChannel {
     public void setMembershipSize(int numberOfMembers) {
       conduit.setMaximumHandshakePoolSize(numberOfMembers);
     }
+    
+    /**
+     * Returns the cancel criterion for the channel,
+     * which will note if the channel is abnormally
+     * closing
+     */
+    public CancelCriterion getCancelCriterion() {
+      return conduit.getCancelCriterion();
+    }
 
     /**
      * @param mgr
-     * @param dm
+     * @param listener
      * @param dc
      * @param unused
      * @throws ConnectionException
      */
-    public DirectChannel(MembershipManager mgr, DistributedMembershipListener dm,
-        DistributionConfig dc, Properties unused) 
+    public DirectChannel(MembershipManager mgr, DirectChannelListener listener,
+        DistributionConfig dc) 
         throws ConnectionException {
-      this.receiver = dm;
+      this.receiver = listener;
 
-      this.address = initAddress(dm);
+      this.address = initAddress(dc);
       boolean isBindAddress = dc.getBindAddress() != null;
       try {
         int port = Integer.getInteger("tcpServerPort", 0).intValue();
@@ -163,7 +174,7 @@ public class DirectChannel {
         this.groupOrderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
         this.groupUnorderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
         logger.info(LocalizedMessage.create(
-            LocalizedStrings.DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0, conduit.getId()));
+            LocalizedStrings.DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0, conduit.getLocalAddr()));
 
       }
       catch (ConnectionException ce) {
@@ -174,48 +185,6 @@ public class DirectChannel {
     }
 
  
-//   /**
-//    * 
-//    * @param addr destination for the message
-//    * @param stubMap map containing all the stubs
-//    * @param msg the original message
-//    * @param msgBuf the serialized message
-//    * @param directAck true if we need an ack
-//    * @param processorType the type (serialized, etc.)
-//    * @return if directAck, the Connection that needs the acknowledgment
-//    * @throws MissingStubException if we do not have a Stub for the recipient
-//    * @throws IOException if the message could not be sent
-//    */
-//   private Connection attemptSingleSend(MembershipManager mgr,
-//       InternalDistributedMember addr,
-//       DistributionMessage msg, ByteBuffer msgBuf,
-//       boolean directAck, int processorType)
-//       throws MissingStubException, IOException
-//   {
-//     if (!msg.deliverToSender() && localAddr.equals(addr))
-//       return null;
-
-//     if (addr == null)
-//       return null;
-//     Stub dest = mgr.getStubForMember(addr);
-//     if (dest == null) {
-//       // This should only happen if the member is no longer in the view.
-//       Assert.assertTrue(!mgr.memberExists(addr));
-//       throw new MissingStubException("No stub");
-//     }
-//     try {
-//       msgBuf.position(0); // fix for bug#30680
-//       Connection con = conduit.sendSync(dest, msgBuf, processorType, msg);
-//       if (directAck)
-//         return con;
-//       else
-//         return null;
-//     }
-//     catch(IOException t) {
-//       throw t;
-//       }
-//   }
-
   /**
    * Return how many concurrent operations should be allowed by default.
    * since 6.6, this has been raised to Integer.MAX value from the number
@@ -448,8 +417,8 @@ public class DirectChannel {
       }
 
       try {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "{}{}) to {} peers ({}) via tcp/ip",
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}{}) to {} peers ({}) via tcp/ip",
               (retry ? "Retrying send (" : "Sending ("),  msg, cons.size(), cons);
         }
         DMStats stats = getDMStats();
@@ -621,22 +590,13 @@ public class DirectChannel {
         continue;
       }
 
-      Stub stub = mgr.getStubForMember(destination);
-      if (stub == null) {
+      if (!mgr.memberExists(destination) || mgr.shutdownInProgress() || mgr.isShunned(destination)) {
         // This should only happen if the member is no longer in the view.
         if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "No Stub for {}", destination);
+          logger.trace(LogMarker.DM, "Not a member: {}", destination);
         }
-        // The only time getStubForMember returns null is if we are
-        // shunning that member or we are shutting down.
-        // So the following assertion is wrong:
-        //Assert.assertTrue(!mgr.memberExists(destination));
-        // instead we should:
-        // Assert.assertTrue(mgr.shutdownInProgress() || mgr.isShunned(destination));
-        //but this is not worth doing and isShunned is not public.
-        // SO the assert has been deadcoded.
         if (ce == null) ce = new ConnectExceptions();
-        ce.addFailure(destination, new MissingStubException(LocalizedStrings.DirectChannel_NO_STUB_0.toLocalizedString()));
+        ce.addFailure(destination, new ShunnedMemberException(LocalizedStrings.DirectChannel_SHUNNING_0.toLocalizedString(destination)));
       }
       else {
         try {
@@ -644,8 +604,8 @@ public class DirectChannel {
           if (ackTimeout > 0) {
             startTime = System.currentTimeMillis();
           }
-          Connection con = conduit.getConnection(destination, stub,
-              preserveOrder, retry, startTime, ackTimeout, ackSDTimeout);
+          Connection con = conduit.getConnection(destination, preserveOrder,
+              retry, startTime, ackTimeout, ackSDTimeout);
           
           con.setInUse(true, startTime, 0, 0, null); // fix for bug#37657
           cons.add(con);
@@ -805,7 +765,7 @@ public class DirectChannel {
   }
 
   
-  public void receive(DistributionMessage msg, int bytesRead, Stub connId) {
+  public void receive(DistributionMessage msg, int bytesRead) {
     if (disconnected) {
       return;
     }
@@ -825,10 +785,6 @@ public class DirectChannel {
       }
     }
   }
-
-//  public void newMemberConnected(InternalDistributedMember member, Stub id) {
-//    receiver.newMemberConnected(member, id);
-//  }
 
   public InternalDistributedMember getLocalAddress() {
     return this.localAddr;
@@ -871,7 +827,7 @@ public class DirectChannel {
   }
 
   /** returns the receiver to which this DirectChannel is delivering messages */
-  protected DistributedMembershipListener getReceiver() {
+  protected DirectChannelListener getReceiver() {
     return receiver;
   }
 
@@ -891,9 +847,9 @@ public class DirectChannel {
     return this.conduit;
   }
 
-  private InetAddress initAddress(DistributedMembershipListener dm) {
+  private InetAddress initAddress(DistributionConfig dc) {
 
-    String bindAddress = System.getProperty("gemfire.jg-bind-address");
+    String bindAddress = dc.getBindAddress();
 
     try {
       /* note: had to change the following to make sure the prop wasn't empty 
@@ -912,13 +868,6 @@ public class DirectChannel {
     }
   }
   
-  /** Create a TCPConduit stub from a JGroups InternalDistributedMember */
-  public Stub createConduitStub(InternalDistributedMember addr) {
-    int port = addr.getDirectChannelPort();
-    Stub stub = new Stub(addr.getIpAddress(), port, addr.getVmViewId());
-    return stub;
-  }
-  
   public void closeEndpoint(InternalDistributedMember member, String reason) {
     closeEndpoint(member, reason, true);
   }
@@ -930,7 +879,7 @@ public class DirectChannel {
   public void closeEndpoint(InternalDistributedMember member, String reason, boolean notifyDisconnect) {
     TCPConduit tc = this.conduit;
     if (tc != null) {
-      tc.removeEndpoint(createConduitStub(member), reason, notifyDisconnect);
+      tc.removeEndpoint(member, reason, notifyDisconnect);
     }
   }
 
@@ -944,7 +893,7 @@ public class DirectChannel {
    *    the map to add the state to
    * @since 5.1
    */
-  public void getChannelStates(Stub member, HashMap result)
+  public void getChannelStates(DistributedMember member, Map result)
   {
     TCPConduit tc = this.conduit;
     if (tc != null) {
@@ -956,7 +905,7 @@ public class DirectChannel {
    * wait for the given connections to process the number of messages
    * associated with the connection in the given map
    */
-  public void waitForChannelState(Stub member, HashMap channelState)
+  public void waitForChannelState(DistributedMember member, Map channelState)
     throws InterruptedException
   {
     if (Thread.interrupted()) throw new InterruptedException();
@@ -969,7 +918,7 @@ public class DirectChannel {
   /**
    * returns true if there are still receiver threads for the given member
    */
-  public boolean hasReceiversFor(Stub mbr) {
+  public boolean hasReceiversFor(DistributedMember mbr) {
     return this.conduit.hasReceiversFor(mbr);
   }
   

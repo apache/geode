@@ -25,14 +25,11 @@ import java.util.Map;
  * number of entries the <code>BoundedLinkedHashMap</code>
  * can contain.
  *
- * @author Barry Oglesby
- *
  * @since 4.2
  * @deprecated as of 5.7 create your own class that extends {@link LinkedHashMap}
  * and implement {@link LinkedHashMap#removeEldestEntry}
  * to enforce a maximum number of entries.
  */
-@Deprecated
 public class BoundedLinkedHashMap extends LinkedHashMap
 {
   private static final long serialVersionUID = -3419897166186852692L;

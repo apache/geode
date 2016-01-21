@@ -45,8 +45,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.DelayedAction;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Common code for both UpdateOperation and DistributedPutAllOperation.
  *
@@ -57,7 +55,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
   
   public static volatile boolean test_InvalidVersion;
   
-  @SuppressFBWarnings(value="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
       justification="test hook that is unset normally")
   public static volatile DelayedAction test_InvalidVersionAction;
   

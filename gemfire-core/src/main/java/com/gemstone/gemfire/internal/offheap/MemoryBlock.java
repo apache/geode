@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl.ChunkType;
 
 /**
  * Basic size and usage information about an off-heap memory block under

@@ -83,15 +83,14 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
   public void createServersAndClients(int redundancyLevel) {
     final Host host = Host.getHost(0);
     // start servers first
-    final Integer mcastPort = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS));
     PORT1 = ((Integer)vm0.invoke(CacheServerTestUtil.class,
                                  "createCacheServer",
-                                 new Object[] {REGION_NAME, new Boolean(true), mcastPort}))
+                                 new Object[] {REGION_NAME, new Boolean(true)}))
         .intValue();
 
     PORT2 = ((Integer)vm3.invoke(CacheServerTestUtil.class,
                                  "createCacheServer",
-                                 new Object[] {REGION_NAME, new Boolean(true), mcastPort}))
+                                 new Object[] {REGION_NAME, new Boolean(true)}))
         .intValue();
 
     vm1.invoke(CacheServerTestUtil.class, "disableShufflingOfEndpoints");

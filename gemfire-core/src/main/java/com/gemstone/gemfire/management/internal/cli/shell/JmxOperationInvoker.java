@@ -114,12 +114,14 @@ public class JmxOperationInvoker implements OperationInvoker {
       Set<Entry<String, String>> entrySet = sslConfigProps.entrySet();
       for (Iterator<Entry<String, String>> it = entrySet.iterator(); it.hasNext();) {
         Entry<String, String> entry = it.next();
-        String key = entry.getKey();        
+        String key = entry.getKey();
+        String value = entry.getValue();
         if (key.startsWith("javax.") || key.startsWith("cluster-ssl") || key.startsWith("jmx-manager-ssl") ) {
           key =  checkforSystemPropertyPrefix(entry.getKey());
-          //TODO : If protocol is any lookup and set one of the following : Copied from SocketCreator 
-          // String[] knownAlgorithms = {"SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1"};
-          System.setProperty(key, entry.getValue());
+          if((key.equals(Gfsh.SSL_ENABLED_CIPHERS) || key.equals(Gfsh.SSL_ENABLED_PROTOCOLS)) && "any".equals(value)){
+            continue;
+          }
+          System.setProperty(key, value);
           propsToClear.add(key);
         }
       }

@@ -20,6 +20,8 @@ package com.gemstone.gemfire.cache.client;
 import static org.junit.Assert.*;
 import static org.junit.runners.MethodSorters.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -28,20 +30,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.internal.ProxyCache;
 import com.gemstone.gemfire.cache.client.internal.UserAttributes;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
@@ -289,5 +299,45 @@ public class ClientCacheFactoryJUnitTest {
     new ClientCacheFactory()
     .setPdxSerializer(new ReflectionBasedAutoSerializer())
     .create();
+  }
+  
+  @Test
+  public void testOldClientIDDeserialization() throws Exception {
+    // during a HandShake a clientID is read w/o knowing the client's
+    // version
+    cc = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl)cc;
+    InternalDistributedMember memberID = (InternalDistributedMember)cc.getDistributedSystem().getDistributedMember();
+    GMSMember gmsID = (GMSMember)memberID.getNetMember();
+    memberID.setVersionObjectForTest(Version.GFE_82);
+    assertEquals(Version.GFE_82, memberID.getVersionObject());
+    ClientProxyMembershipID clientID = ClientProxyMembershipID.getClientId(memberID);
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.GFE_82);
+    DataSerializer.writeObject(clientID, out);
+
+    DataInputStream in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()), Version.CURRENT); 
+    ClientProxyMembershipID newID = DataSerializer.readObject(in);
+    InternalDistributedMember newMemberID = (InternalDistributedMember)newID.getDistributedMember();
+    assertEquals(Version.GFE_82, newMemberID.getVersionObject());
+    assertEquals(Version.GFE_82, newID.getClientVersion());
+    GMSMember newGmsID = (GMSMember)newMemberID.getNetMember();
+    assertEquals(0, newGmsID.getUuidLSBs());
+    assertEquals(0, newGmsID.getUuidMSBs());
+    
+    gmsID.setUUID(new UUID(1234l, 5678l));
+    memberID.setVersionObjectForTest(Version.CURRENT);
+    clientID = ClientProxyMembershipID.getClientId(memberID);
+    out = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(clientID, out);
+
+    in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()), Version.CURRENT);
+    newID = DataSerializer.readObject(in);
+    newMemberID = (InternalDistributedMember)newID.getDistributedMember();
+    assertEquals(Version.CURRENT, newMemberID.getVersionObject());
+    assertEquals(Version.CURRENT, newID.getClientVersion());
+    newGmsID = (GMSMember)newMemberID.getNetMember();
+    assertEquals(gmsID.getUuidLSBs(), newGmsID.getUuidLSBs());
+    assertEquals(gmsID.getUuidMSBs(), newGmsID.getUuidMSBs());
+
   }
 }

@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,28 +38,44 @@ import com.gemstone.gemfire.lang.AttachAPINotFoundException;
  * @author Kirk Lund
  * @since 8.0
  */
-public final class FileProcessController implements ProcessController {
+public class FileProcessController implements ProcessController {
   private static final Logger logger = LogService.getLogger();
 
   public static final String STATUS_TIMEOUT_PROPERTY = "gemfire.FileProcessController.STATUS_TIMEOUT";
-  private final long statusTimeout = Long.getLong(STATUS_TIMEOUT_PROPERTY, 60*1000);
   
+  private final long statusTimeoutMillis;
   private final FileControllerParameters arguments;
   private final int pid;
 
   /**
    * Constructs an instance for controlling a local process.
    * 
-   * @param pid process id identifying the process to attach to
+   * @param arguments details about the controllable process
+   * @param pid process id identifying the process to control
    * 
    * @throws IllegalArgumentException if pid is not a positive integer
    */
   public FileProcessController(final FileControllerParameters arguments, final int pid) {
+    this(arguments, pid, Long.getLong(STATUS_TIMEOUT_PROPERTY, 60*1000), TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Constructs an instance for controlling a local process.
+   * 
+   * @param arguments details about the controllable process
+   * @param pid process id identifying the process to control
+   * @param timeout the timeout that operations must complete within
+   * @param units the units of the timeout
+   * 
+   * @throws IllegalArgumentException if pid is not a positive integer
+   */
+  public FileProcessController(final FileControllerParameters arguments, final int pid, final long timeout, final TimeUnit units) {
     if (pid < 1) {
       throw new IllegalArgumentException("Invalid pid '" + pid + "' specified");
     }
     this.pid = pid;
     this.arguments = arguments;
+    this.statusTimeoutMillis = units.toMillis(timeout);
   }
 
   @Override
@@ -98,14 +115,14 @@ public final class FileProcessController implements ProcessController {
       public void handleRequest() throws IOException {
         // read the statusFile
         final BufferedReader reader = new BufferedReader(new FileReader(statusFile));
+        final StringBuilder lines = new StringBuilder();
         try {
-          final StringBuilder lines = new StringBuilder();
           String line = null;
           while ((line = reader.readLine()) != null) {
             lines.append(line);
           }
-          statusRef.set(lines.toString());
         } finally {
+          statusRef.set(lines.toString());
           reader.close();
         }
       }
@@ -122,8 +139,8 @@ public final class FileProcessController implements ProcessController {
     // if timeout invoke stop and then throw TimeoutException
     final long start = System.currentTimeMillis();
     while (statusFileWatchdog.isAlive()) {
-      Thread.sleep(100);
-      if (System.currentTimeMillis() >= start + this.statusTimeout) {
+      Thread.sleep(10);
+      if (System.currentTimeMillis() >= start + this.statusTimeoutMillis) {
         final TimeoutException te = new TimeoutException("Timed out waiting for process to create " + statusFile);
         try {
           statusFileWatchdog.stop();
@@ -135,7 +152,11 @@ public final class FileProcessController implements ProcessController {
         throw te;
       }
     }
-    assert statusRef.get() != null;
-    return statusRef.get();
+    
+    final String lines = statusRef.get();
+    if (null == lines || lines.trim().isEmpty()) {
+      throw new IllegalStateException("Failed to read status file");
+    }
+    return lines;
   }
 }

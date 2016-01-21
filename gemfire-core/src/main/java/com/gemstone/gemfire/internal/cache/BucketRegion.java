@@ -2001,7 +2001,7 @@ implements Bucket
     }
   }
 
-  public final int getId() {
+  public int getId() {
     return getBucketAdvisor().getProxyBucketRegion().getId();
   }
 

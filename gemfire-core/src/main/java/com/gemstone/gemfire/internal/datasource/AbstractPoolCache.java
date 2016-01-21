@@ -36,8 +36,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * AbstractPoolCache implements the ConnectionPoolCache interface. This is base
  * class for the all connection pools. The class also implements the
@@ -88,7 +86,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache,
    *          configuration for the pool.
    * @throws PoolException
    */
-  @SuppressFBWarnings(value="SC_START_IN_CTOR",
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="SC_START_IN_CTOR",
       justification="the thread started is a cleanup thread and is not active until there is a timeout tx")
   public AbstractPoolCache(EventListener eventListner,
       ConfiguredDataSourceProperties configs) throws PoolException {

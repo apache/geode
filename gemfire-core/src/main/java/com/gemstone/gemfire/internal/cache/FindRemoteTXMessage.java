@@ -230,7 +230,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage impleme
   }
   
   @Override
-  public boolean sendViaJGroups() {
+  public boolean sendViaUDP() {
     return true;
   }
 

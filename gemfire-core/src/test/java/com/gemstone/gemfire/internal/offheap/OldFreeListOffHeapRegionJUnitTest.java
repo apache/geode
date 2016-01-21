@@ -41,7 +41,7 @@ public class OldFreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
 
   @Override
   public int perObjectOverhead() {
-    return SimpleMemoryAllocatorImpl.Chunk.OFF_HEAP_HEADER_SIZE;
+    return Chunk.OFF_HEAP_HEADER_SIZE;
   }
 
 }

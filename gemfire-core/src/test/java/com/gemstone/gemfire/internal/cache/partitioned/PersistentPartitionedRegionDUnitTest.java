@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -1439,7 +1441,11 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
           public void beforeSendMessage(DistributionManager dm,
               DistributionMessage msg) {
             if(msg instanceof ManageBucketReplyMessage) {
+              Cache cache = getCache();
               DistributedTestCase.disconnectFromDS();
+              
+              await().atMost(30, SECONDS).until(() -> {return (cache == null || cache.isClosed());});
+              getLogWriter().info("Cache is confirmed closed");
             }
           }
         });

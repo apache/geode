@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -63,17 +62,15 @@ import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.admin.GemFireHealthConfig;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.locks.ElderState;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.OSProcess;
@@ -85,7 +82,6 @@ import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
@@ -95,9 +91,7 @@ import com.gemstone.gemfire.internal.sequencelog.MembershipLogger;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
-import com.gemstone.gemfire.internal.tcp.Stub;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
-import com.gemstone.org.jgroups.util.StringId;
 
 /**
  * The <code>DistributionManager</code> uses a {@link
@@ -355,8 +349,6 @@ public class DistributionManager
   protected boolean exceptionInThreads;
 
   static ThreadLocal isStartupThread = new ThreadLocal();
-  private static InheritableThreadLocal distributionManagerType =
-    new InheritableThreadLocal();
     
   protected volatile boolean shutdownMsgSent = false;
 
@@ -532,45 +524,6 @@ public class DistributionManager
   //////////////////////  Static Methods  //////////////////////
 
   /**
-   * Sets the distribution manager's type (using an InheritableThreadLocal).
-   *
-   * @since 3.5
-   */
-  protected static void setDistributionManagerType(int vmType) {
-    switch (vmType) {
-    case NORMAL_DM_TYPE:
-    case LONER_DM_TYPE:
-    case ADMIN_ONLY_DM_TYPE:
-    case LOCATOR_DM_TYPE:
-       distributionManagerType.set(Integer.valueOf(vmType));
-        break;
-    default:
-      throw new IllegalArgumentException(LocalizedStrings.DistributionManager_UNKNOWN_DISTRIBUTIONMANAGERTYPE_0.toLocalizedString(Integer.valueOf(vmType)));
-    }
-  }
-
-  /**
-   * Returns the DistributionManager type which should match {@link
-   * #NORMAL_DM_TYPE}, {@link #ADMIN_ONLY_DM_TYPE}, {@link #LOCATOR_DM_TYPE}
-   * or {@link #LONER_DM_TYPE}.
-   *
-   * <p>
-   * If the value is null, an Assertion error will occur.
-   * <p>
-   * This method is called from {@link 
-   * InternalDistributedMember} and {@link 
-   * com.gemstone.org.jgroups.protocols.TCPGOSSIP}, and the value is stored
-   * in an InheritableThreadLocal.
-   *
-   * @since 3.5
-   */
-  public static int getDistributionManagerType() {
-    Integer vmType = (Integer) distributionManagerType.get();
-    if (vmType == null) return 0;
-    return vmType.intValue();
-  }
-
-  /**
    * Given two DistributionManager ids, check to see if they are
    * from the same host address.
    * @param id1 a DistributionManager id
@@ -578,7 +531,7 @@ public class DistributionManager
    * @return true if id1 and id2 are from the same host, false otherwise
    */
   public static boolean isSameHost(InternalDistributedMember id1, InternalDistributedMember id2) {
-    return (id1.getIpAddress().equals(id2.getIpAddress()));
+    return (id1.getInetAddress().equals(id2.getInetAddress()));
   }
 
   // @todo davidw Modify JGroups so that we do not have to send out a
@@ -599,18 +552,20 @@ public class DistributionManager
     
     try {
 
+      int vmKind;
+      
       if (Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
         // if this DM is starting for a locator, set it to be a locator DM
-        setDistributionManagerType(LOCATOR_DM_TYPE);
+        vmKind = LOCATOR_DM_TYPE;
 
       } else if (isDedicatedAdminVM) {
-        setDistributionManagerType(ADMIN_ONLY_DM_TYPE);
+        vmKind = ADMIN_ONLY_DM_TYPE;
 
       } else {
-        setDistributionManagerType(NORMAL_DM_TYPE);
+        vmKind = NORMAL_DM_TYPE;
       }
     
-      RemoteTransportConfig transport = new RemoteTransportConfig(system.getConfig());
+      RemoteTransportConfig transport = new RemoteTransportConfig(system.getConfig(), vmKind);
       transport.setIsReconnectingDS(system.isReconnectingDS());
       transport.setOldDSMembershipInfo(system.oldDSMembershipInfo());
       
@@ -622,7 +577,7 @@ public class DistributionManager
       {
         InternalDistributedMember id = dm.getDistributionManagerId();
         if (!"".equals(id.getName())) {
-          for (InternalDistributedMember m: (Vector<InternalDistributedMember>)dm.getViewMembers()) {
+          for (InternalDistributedMember m: (List<InternalDistributedMember>)dm.getViewMembers()) {
             if (m.equals(id)) {
               // I'm counting on the members returned by getViewMembers being ordered such that
               // members that joined before us will precede us AND members that join after us
@@ -637,7 +592,7 @@ public class DistributionManager
             }
           }
         }
-        dm.addNewMember(id, null); // add ourselves
+        dm.addNewMember(id); // add ourselves
         dm.selectElder(); // ShutdownException could be thrown here
       }
 
@@ -681,6 +636,7 @@ public class DistributionManager
         };
         logger.info(LogMarker.DM, LocalizedMessage.create(
             LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGER_0_STARTED_ON_1_THERE_WERE_2_OTHER_DMS_3_4_5, logArgs));
+
         MembershipLogger.logStartup(dm.getDistributionManagerId());
       }
       return dm;
@@ -844,7 +800,7 @@ public class DistributionManager
   private DistributionManager(RemoteTransportConfig transport,
                               InternalDistributedSystem system) {
 
-    this.dmType = getDistributionManagerType();
+    this.dmType = transport.getVmKind();
     this.system = system;
     this.elderLock = new StoppableReentrantLock(stopper);
     this.transport = transport;
@@ -885,7 +841,10 @@ public class DistributionManager
             " SERIAL_QUEUE_SIZE_THROTTLE :" + SERIAL_QUEUE_SIZE_THROTTLE
         ); 
       }
-      this.serialQueuedExecutorPool = new SerialQueuedExecutorPool(this.threadGroup, this.stats);
+      //  when TCP/IP is disabled we can't throttle the serial queue or we run the risk of 
+      // distributed deadlock when we block the UDP reader thread
+      boolean throttlingDisabled = system.getConfig().getDisableTcp();
+      this.serialQueuedExecutorPool = new SerialQueuedExecutorPool(this.threadGroup, this.stats, throttlingDisabled);
     }
       
     {
@@ -1189,16 +1148,6 @@ public class DistributionManager
     StringBuffer sb = new StringBuffer(" (took ");
 
    long start = System.currentTimeMillis();
-    {
-      DistributionConfig config = system.getConfig();
-      String bindAddress = config.getBindAddress();
-      if (bindAddress != null && !bindAddress.equals(DistributionConfig.DEFAULT_BIND_ADDRESS)) {
-        System.setProperty("gemfire.jg-bind-address", bindAddress);
-      }
-      else {
-        System.getProperties().remove("gemfire.jg-bind-address");
-      }
-    }
     
     // Create direct channel first
 //    DirectChannel dc = new DirectChannel(new MyListener(this), system.getConfig(), logger, null);
@@ -1206,24 +1155,12 @@ public class DistributionManager
 
     // connect to JGroups
     start = System.currentTimeMillis();
-    DistributionConfig config = system.getConfig();
-    DurableClientAttributes dac = null;
-    if (config.getDurableClientId() != null) {
-      dac = new DurableClientAttributes(config.getDurableClientId(), config
-          .getDurableClientTimeout());
-    }
-    MemberAttributes.setDefaults(-1, 
-        OSProcess.getId(), 
-        getDistributionManagerType(), -1, 
-        config.getName(),
-        MemberAttributes.parseGroups(config.getRoles(), config.getGroups()),
-        dac);
     
     MyListener l = new MyListener(this);
     membershipManager = MemberFactory.newMembershipManager(l, system.getConfig(), transport, stats);
 
     sb.append(System.currentTimeMillis() - start);
-    sb.append("/");
+
     this.myid = membershipManager.getLocalMember();
 
 //    dc.patchUpAddress(this.myid);
@@ -1338,8 +1275,8 @@ public class DistributionManager
    */
   public boolean areOnEquivalentHost(InternalDistributedMember member1,
                                      InternalDistributedMember member2) {
-    Set<InetAddress> equivalents1 = getEquivalents(member1.getIpAddress());
-    return equivalents1.contains(member2.getIpAddress());
+    Set<InetAddress> equivalents1 = getEquivalents(member1.getInetAddress());
+    return equivalents1.contains(member2.getInetAddress());
   }
   
   /**
@@ -1441,8 +1378,8 @@ public class DistributionManager
     return this.dmType;
   }
   
-  public Vector getViewMembers() {
-    Vector result = null;
+  public List<InternalDistributedMember> getViewMembers() {
+    NetView result = null;
     DistributionChannel ch = this.channel;
     if (ch != null) {
       MembershipManager mgr = ch.getMembershipManager();
@@ -1451,13 +1388,13 @@ public class DistributionManager
         }
     }
     if (result == null) {
-      result = new Vector();
+      result = new NetView();
     }
-    return result;
+    return result.getMembers();
   }
   /* implementation of DM.getOldestMember */
   public DistributedMember getOldestMember(Collection c) throws NoSuchElementException {
-    Vector view = getViewMembers();
+    List<InternalDistributedMember> view = getViewMembers();
     for (int i=0; i<view.size(); i++) {
       Object viewMbr = view.get(i);
       Iterator it = c.iterator();
@@ -1485,23 +1422,7 @@ public class DistributionManager
     if (v == null)
       return "null";
     
-    StringBuffer sb = new StringBuffer();
-    Object leadObj = v.getLeadMember();
-    InternalDistributedMember lead = leadObj==null? null
-                            : new InternalDistributedMember(v.getLeadMember());
-    sb.append("[");
-    Iterator it = v.iterator();
-    while (it.hasNext()) {
-      InternalDistributedMember m = (InternalDistributedMember)it.next();
-      sb.append(m.toString());
-      if (lead != null && lead.equals(m)) {
-        sb.append("{lead}");
-      }
-      if (it.hasNext())
-        sb.append(", ");
-    }
-    sb.append("]");
-    return sb.toString();
+    return v.toString();
   }
 
   /**
@@ -1519,10 +1440,10 @@ public class DistributionManager
       logger.info(LocalizedMessage.create(LocalizedStrings.DistributionManager_INITIAL_MEMBERSHIPMANAGER_VIEW___0, printView(v)));
       
       // Add them all to our view
-      Iterator it = v.iterator();
+      Iterator<InternalDistributedMember> it = v.getMembers().iterator();
       while (it.hasNext()) {
-        addNewMember((InternalDistributedMember)it.next(), null);
-	}
+        addNewMember(it.next());
+      }
       
       // Figure out who the elder is...
       selectElder(); // ShutdownException could be thrown here
@@ -1642,10 +1563,6 @@ public class DistributionManager
     } // synchronized
   }
   
-  public void restartCommunications() {
-    membershipManager.reset();
-  }
-
   // DM method
   @Override
   public void forceUDPMessagingForCurrentThread() {
@@ -1692,15 +1609,6 @@ public class DistributionManager
    */
   public InternalDistributedMember getDistributionManagerId() {
     return this.myid;
-  }
-
-  /**
-   * Returns a remote reference to the channel used for point-to-point
-   * communications, or null if the normal channel is being used for
-   * this.
-   */
-  protected Stub getDirectChannel() {
-    return membershipManager.getDirectChannel();
   }
 
   /**
@@ -1905,16 +1813,16 @@ public class DistributionManager
     }
   }
 
-  public void addNewMember(InternalDistributedMember member, Stub stub) {
+  public void addNewMember(InternalDistributedMember member) {
     // This is the place to cleanup the zombieMembers
     int vmType = member.getVmKind();
     switch (vmType) {
       case ADMIN_ONLY_DM_TYPE:
-        handleConsoleStartup(member, stub);
+        handleConsoleStartup(member);
         break;
       case LOCATOR_DM_TYPE:
       case NORMAL_DM_TYPE:
-        handleManagerStartup(member, stub);
+        handleManagerStartup(member);
         break;        
       default:
         throw new InternalGemFireError(LocalizedStrings.DistributionManager_UNKNOWN_MEMBER_TYPE_0.toLocalizedString(Integer.valueOf(vmType)));
@@ -2478,43 +2386,6 @@ public class DistributionManager
     }
   }
 
-  private void handleJoinEvent(MemberJoinedEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberJoined(id);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try  {
-        listener.memberJoined(id);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-  }
   /**
    * Returns true if this DM or the DistributedSystem owned by
    * it is closing or is closed.
@@ -2529,162 +2400,11 @@ public class DistributionManager
     }
     return false;
   }
-  private void handleCrashEvent(MemberCrashedEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, true/*crashed*/);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, true/*crashed*/);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    
-    MembershipLogger.logCrash(id);
-  }
-  private void handleDepartEvent(MemberDepartedEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, false);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberDeparted(id, false);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-  }
-  private void handleSuspectEvent(MemberSuspectEvent ev) {
-    InternalDistributedMember id = ev.getId();
-    InternalDistributedMember whoSuspected = ev.whoSuspected();
-    for (Iterator iter = membershipListeners.keySet().iterator();
-         iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberSuspect(id, whoSuspected);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-    iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.memberSuspect(id, whoSuspected);
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-  }
   
   private void handleViewInstalledEvent(ViewInstalledEvent ev) {
     synchronized(this.membershipViewIdGuard) {
       this.membershipViewIdAcknowledged = ev.getViewId();
       this.membershipViewIdGuard.notifyAll();
-    }
-  }
-  
-  private void handleQuorumLostEvent(QuorumLostEvent ev) {
-    for (Iterator iter = membershipListeners.keySet().iterator();
-    iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.quorumLost(ev.getFailures(), ev.getRemaining());
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
-    }
-    for (Iterator iter = allMembershipListeners.iterator();
-    iter.hasNext(); ) {
-      MembershipListener listener = (MembershipListener) iter.next();
-      try {
-        listener.quorumLost(ev.getFailures(), ev.getRemaining());
-      } catch (CancelException e) {
-        if (isCloseInProgress()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("MemberEventInvoker: cancelled");
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
-        }
-        break;
-      }
     }
   }
   
@@ -2707,44 +2427,8 @@ public class DistributionManager
   }
 
   protected void handleMemberEvent(MemberEvent ev) {
-    try {
-      switch (ev.eventType()) {
-      case MemberEvent.MEMBER_JOINED:
-        handleJoinEvent((MemberJoinedEvent)ev);
-        break;
-      case MemberEvent.MEMBER_DEPARTED:
-        handleDepartEvent((MemberDepartedEvent)ev);
-        break;
-      case MemberEvent.MEMBER_CRASHED:
-        handleCrashEvent((MemberCrashedEvent)ev);
-        break;
-      case MemberEvent.MEMBER_SUSPECT:
-        handleSuspectEvent((MemberSuspectEvent)ev);
-        break;
-      case MemberEvent.VIEW_INSTALLED:
-        // we're done processing events for a view
-        handleViewInstalledEvent((ViewInstalledEvent)ev);
-        break;
-      case MemberEvent.QUORUM_LOST:
-        handleQuorumLostEvent((QuorumLostEvent)ev);
-        break;
-      default:
-        logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNKNOWN_TYPE_OF_MEMBERSHIP_EVENT_RECEIVED_0, ev));
-        break;
-      }
-    }
-    catch (CancelException ex) {
-      // bug 37198...don't print a stack trace
-      logger.debug("Cancellation while calling membership listener for event <{}>: {}", ev, ex.getMessage(), ex);
-      
-      // ...and kill the caller...
-      throw ex;
-    }
-    catch (RuntimeException ex) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_EXCEPTION_WHILE_CALLING_MEMBERSHIP_LISTENER_FOR_EVENT__0, ev), ex);
-    }
+    ev.handleEvent(this);
   }
-  
 
   /**
    * This thread processes member events as they occur.
@@ -2952,7 +2636,8 @@ public class DistributionManager
     if (ch != null) {
       MembershipManager mgr = ch.getMembershipManager();
       if (mgr != null) {
-        synchronized (mgr.getViewLock()) {
+        mgr.getViewLock().writeLock().lock();
+        try {
           synchronized (this.membersLock) {
             // Don't let the members come and go while we are adding this
             // listener.  This ensures that the listener (probably a
@@ -2960,6 +2645,8 @@ public class DistributionManager
             addAllMembershipListener(l);
             return getDistributionManagerIdsIncludingAdmin();
           }
+        } finally {
+          mgr.getViewLock().writeLock().unlock();
         }
       }
     }
@@ -3025,13 +2712,6 @@ public class DistributionManager
 
     if (allOthers.isEmpty()) {
       return false; // no peers, we are alone.
-    }
-
-    // ensure we have stubs for everyone else
-    Iterator it = allOthers.iterator();
-    while (it.hasNext()) {
-      InternalDistributedMember member = (InternalDistributedMember)it.next();
-      membershipManager.getStubForMember(member);
     }
 
     try {
@@ -3101,7 +2781,7 @@ public class DistributionManager
         if (unresponsiveElder) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.DistributionManager_FORCING_AN_ELDER_JOIN_EVENT_SINCE_A_STARTUP_RESPONSE_WAS_NOT_RECEIVED_FROM_ELDER__0_, e));
-          handleManagerStartup(e, null/*stub already registered*/);
+          handleManagerStartup(e);
         }
       } // an elder exists
     } // someone didn't reply
@@ -3214,19 +2894,19 @@ public class DistributionManager
    * @return the elder candidate, possibly this VM.
    */
   private InternalDistributedMember getElderCandidate() {
-    Vector theMembers = getViewMembers();
+    List<InternalDistributedMember> theMembers = getViewMembers();
     
 //    Assert.assertTrue(!closeInProgress 
 //        && theMembers.contains(this.myid)); // bug36202?
     
     int elderCandidates = 0;
-    Iterator it;
+    Iterator<InternalDistributedMember> it;
     
     // for bug #50510 we need to know if there are any members older than v8.0
     it = theMembers.iterator();
     boolean anyPre80Members = false;
     while (it.hasNext()) {
-      InternalDistributedMember member = (InternalDistributedMember)it.next();
+      InternalDistributedMember member = it.next();
       if (member.getVersionObject().compareTo(Version.GFE_80) < 0) {
         anyPre80Members = true;
       }
@@ -3236,7 +2916,7 @@ public class DistributionManager
     if (!this.adam) {
       it = theMembers.iterator();
       while (it.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) it.next();
+        InternalDistributedMember member = it.next();
         int managerType = member.getVmKind();
         if (managerType == ADMIN_ONLY_DM_TYPE)
           continue;
@@ -3266,7 +2946,7 @@ public class DistributionManager
     // Second pass over members...
     it = theMembers.iterator();
     while (it.hasNext()) {
-      InternalDistributedMember member = (InternalDistributedMember) it.next(); 
+      InternalDistributedMember member = it.next(); 
       int managerType = member.getVmKind();
       if (managerType == ADMIN_ONLY_DM_TYPE)
         continue;
@@ -3410,7 +3090,7 @@ public class DistributionManager
    *        The id of the distribution manager starting up
    *
    */
-  private void handleManagerStartup(InternalDistributedMember theId, Stub directChannel) {
+  private void handleManagerStartup(InternalDistributedMember theId) {
     HashMap<InternalDistributedMember,InternalDistributedMember> tmp = null;
     synchronized (this.membersLock) {
       // Note test is under membersLock
@@ -3456,7 +3136,7 @@ public class DistributionManager
    * the distributed cache.
    *
    */
-  private void handleConsoleStartup(InternalDistributedMember theId, Serializable directChannel) {
+  private void handleConsoleStartup(InternalDistributedMember theId) {
     // if we have an all listener then notify it NOW.
     HashSet tmp = null;
     synchronized (this.membersLock) {
@@ -3503,8 +3183,8 @@ public class DistributionManager
 
  //   message.setRecipient(DistributionManager.this.getId());
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "Received message '{}' from <{}>", message, message.getSender());
+    if (logger.isDebugEnabled()) {
+      logger.debug("Received message '{}' from <{}>", message, message.getSender());
     }
     scheduleIncomingMessage(message);
   }
@@ -3645,9 +3325,10 @@ public class DistributionManager
   }
 
   /**
+   * @param reason TODO
    */
   public void handleManagerSuspect(InternalDistributedMember suspect, 
-      InternalDistributedMember whoSuspected) {
+      InternalDistributedMember whoSuspected, String reason) {
     if (!isCurrentMember(suspect)) {
       return; // fault tolerance
     }
@@ -3657,7 +3338,7 @@ public class DistributionManager
       return;
     }
 
-    addMemberEvent(new MemberSuspectEvent(suspect, whoSuspected));
+    addMemberEvent(new MemberSuspectEvent(suspect, whoSuspected, reason));
   }
   
   public void handleViewInstalled(NetView view) {
@@ -3689,12 +3370,12 @@ public class DistributionManager
     allOthers.remove(getDistributionManagerId());
 //    ReplyProcessor21 rp = new ReplyProcessor21(this, allOthers);
 //    m.setProcessorId(rp.getProcessorId());
-    m.setMulticast(system.getConfig().getMcastPort() != 0);
+//    m.setMulticast(system.getConfig().getMcastPort() != 0);
     m.setRecipients(allOthers);
 
     //Address recipient = (Address) m.getRecipient();
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "{} Sending {} to {}", this.getDistributionManagerId(), m, m.getRecipientsDescription());
+    if (logger.isTraceEnabled()) {
+      logger.trace("{} Sending {} to {}", this.getDistributionManagerId(), m, m.getRecipientsDescription());
     }
 
     try {
@@ -4068,7 +3749,7 @@ public class DistributionManager
                   }
                 }
                 public void memberSuspect(InternalDistributedMember id,
-                    InternalDistributedMember whoSuspected) {
+                    InternalDistributedMember whoSuspected, String reason) {
                 }
                 public void viewInstalled(NetView view) {
                 }
@@ -4434,14 +4115,17 @@ public class DistributionManager
     DistributionStats stats;
     ThreadGroup threadGroup;
     
+    final boolean throttlingDisabled;
+    
     /**
      * Constructor.
      * @param group thread group to which the threads will belog to.
      * @param stats 
      */
-    SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats) {
+    SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats, boolean throttlingDisabled) {
       this.threadGroup = group;
       this.stats = stats;
+      this.throttlingDisabled = throttlingDisabled;
     }
 
     /*
@@ -4565,7 +4249,7 @@ public class DistributionManager
       
       BlockingQueue poolQueue;
       
-      if (SERIAL_QUEUE_BYTE_LIMIT == 0) {
+      if (SERIAL_QUEUE_BYTE_LIMIT == 0 || this.throttlingDisabled) {
         poolQueue = new OverflowQueueWithDMStats(stats.getSerialQueueHelper());
       } else {
         poolQueue = new ThrottlingMemLinkedQueueWithDMStats(SERIAL_QUEUE_BYTE_LIMIT, SERIAL_QUEUE_THROTTLE, SERIAL_QUEUE_SIZE_LIMIT, SERIAL_QUEUE_SIZE_THROTTLE, this.stats.getSerialQueueHelper());
@@ -4706,12 +4390,12 @@ public class DistributionManager
       handleIncomingDMsg(message);
     }
 
-    public void newMemberConnected(InternalDistributedMember member, Stub stub) {
+    public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock.  That can cause a race condition and
       // subsequent deadlock (#45566).  Elder selection is now done when a view
       // is installed.
-      dm.addNewMember(member, stub);
+      dm.addNewMember(member);
     }
 
     public void memberDeparted(InternalDistributedMember theId, boolean crashed, String reason) {
@@ -4733,8 +4417,8 @@ public class DistributionManager
       dm.handleManagerDeparture(theId, crashed, reason);
     }
     
-    public void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected) {
-      dm.handleManagerSuspect(suspect, whoSuspected);
+    public void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected, String reason) {
+      dm.handleManagerSuspect(suspect, whoSuspected, reason);
     }
     
     public void viewInstalled(NetView view) {
@@ -4766,12 +4450,6 @@ public class DistributionManager
   
  
   private static abstract class MemberEvent  {
-    static final int MEMBER_JOINED = 0;
-    static final int MEMBER_DEPARTED = 1;
-    static final int MEMBER_CRASHED = 2;
-    static final int MEMBER_SUSPECT = 3;
-    static final int VIEW_INSTALLED = 4;
-    static final int QUORUM_LOST = 5;
     
     private InternalDistributedMember id;
     MemberEvent(InternalDistributedMember id) {
@@ -4780,9 +4458,45 @@ public class DistributionManager
     public InternalDistributedMember getId() {
       return this.id;
     }
-    /** return the type of event: MEMBER_JOINED, MEMBER_DEPARTED, etc */
-    public abstract int eventType();
-  }
+
+    public void handleEvent(DistributionManager manager) {
+      handleEvent(manager, manager.membershipListeners.keySet());
+      handleEvent(manager, manager.allMembershipListeners);
+    }
+
+    protected abstract void handleEvent(MembershipListener listener);
+
+    protected void handleEvent(DistributionManager manager, Set<MembershipListener> membershipListeners) {
+      for (MembershipListener listener : membershipListeners) {
+        try {
+          handleEvent(listener);
+        } catch (CancelException e) {
+          if (manager.isCloseInProgress()) {
+            if (logger.isTraceEnabled()) {
+              logger.trace("MemberEventInvoker: cancelled");
+            }
+          }
+          else {
+            logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
+          }
+          break;
+        } catch (VirtualMachineError err) {
+          SystemFailure.initiateFailure(err);
+          // If this ever returns, rethrow the error.  We're poisoned
+          // now, so don't let this thread continue.
+          throw err;
+        } catch (Throwable t) {
+          // Whenever you catch Error or Throwable, you must also
+          // catch VirtualMachineError (see above).  However, there is
+          // _still_ a possibility that you are dealing with a cascading
+          // error condition, so you also need to check to see if the JVM
+          // is still usable:
+          SystemFailure.checkFailure();
+          logger.warn(LocalizedMessage.create(LocalizedStrings.DistributionManager_EXCEPTION_WHILE_CALLING_MEMBERSHIP_LISTENER_FOR_EVENT__0, this), t);
+        }
+      }
+    }
+}
   
   /**
    * This is an event reflecting that a InternalDistributedMember has joined
@@ -4800,8 +4514,8 @@ public class DistributionManager
       return "member " + getId() + " joined";
     }
     @Override
-    public int eventType() {
-      return MEMBER_JOINED;
+    protected void handleEvent(MembershipListener listener) {
+      listener.memberJoined(getId());	
     }
   }
   
@@ -4818,12 +4532,12 @@ public class DistributionManager
       reason = r;
     }
     @Override
-    public int eventType() {
-      return MEMBER_DEPARTED;
-    }
-    @Override
     public String toString() {
       return "member " + getId() + " departed (" + reason + ")";
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+     listener.memberDeparted(getId(), false);	
     }
   }
   
@@ -4842,12 +4556,12 @@ public class DistributionManager
       reason = r;
     }
     @Override
-    public int eventType() {
-      return MEMBER_CRASHED;
-    }
-    @Override
     public String toString() {
       return "member " + getId() + " crashed: " + reason;
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      listener.memberDeparted(getId(), true/*crashed*/);	
     }
   }
 
@@ -4858,20 +4572,27 @@ public class DistributionManager
    */
   private static final class MemberSuspectEvent extends MemberEvent {
     InternalDistributedMember whoSuspected;
-    MemberSuspectEvent(InternalDistributedMember suspect, InternalDistributedMember whoSuspected) {
+    String reason;
+    MemberSuspectEvent(InternalDistributedMember suspect, InternalDistributedMember whoSuspected, String reason) {
       super(suspect);
       this.whoSuspected = whoSuspected;
+      this.reason = reason;
     }
     public InternalDistributedMember whoSuspected() {
       return this.whoSuspected;
     }
-    @Override
-    public int eventType() {
-      return MEMBER_SUSPECT;
+    
+    public String getReason() {
+      return this.reason;
     }
+    
     @Override
     public String toString() {
-      return "member " + getId() + " suspected by: " + this.whoSuspected;
+      return "member " + getId() + " suspected by: " + this.whoSuspected + " reason: " + reason;
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      listener.memberSuspect(getId(), whoSuspected(), reason);	
     }
   }
   
@@ -4882,15 +4603,19 @@ public class DistributionManager
       this.view = view;
     }
     public long getViewId() {
-      return view.getViewNumber();
-    }
-    @Override
-    public int eventType() {
-      return VIEW_INSTALLED;
+      return view.getViewId();
     }
     @Override
     public String toString() {
       return "view installed: " + this.view;
+    }
+    @Override
+    public void handleEvent(DistributionManager manager) {
+      manager.handleViewInstalledEvent(this);
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      throw new UnsupportedOperationException();
     }
   }
 
@@ -4910,12 +4635,12 @@ public class DistributionManager
       return this.remaining;
     }
     @Override
-    public int eventType() {
-      return QUORUM_LOST;
-    }
-    @Override
     public String toString() {
       return "quorum lost.  failures=" + failures + "; remaining=" + remaining;
+    }
+    @Override
+    protected void handleEvent(MembershipListener listener) {
+      listener.quorumLost(getFailures(), getRemaining());	
     }
   }
 
@@ -4955,10 +4680,10 @@ public class DistributionManager
       }
     } else {
       buddyMembers.add(targetMember);
-      Set targetAddrs = getEquivalents(targetMember.getIpAddress());
+      Set targetAddrs = getEquivalents(targetMember.getInetAddress());
       for (Iterator i = getDistributionManagerIds().iterator(); i.hasNext();) {
         InternalDistributedMember o = (InternalDistributedMember)i.next();
-        if (SetUtils.intersectsWith(targetAddrs, getEquivalents(o.getIpAddress()))) {
+        if (SetUtils.intersectsWith(targetAddrs, getEquivalents(o.getInetAddress()))) {
           buddyMembers.add(o);
         }
       }
@@ -5023,7 +4748,7 @@ public class DistributionManager
     } else {
       for (Iterator it=ids.iterator(); it.hasNext(); ) {
         InternalDistributedMember mbr = (InternalDistributedMember)it.next();
-        if (mbr.getProcessId() > 0 && mbr.getIpAddress().equals(this.myid.getIpAddress())) {
+        if (mbr.getProcessId() > 0 && mbr.getInetAddress().equals(this.myid.getInetAddress())) {
           if (!mbr.equals(myid)) {
             if (!OSProcess.printStacks(mbr.getProcessId(), false)) {
               requiresMessage.add(mbr);

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 sourceSets {
   jca {
     compileClasspath += configurations.compile
@@ -14,14 +31,14 @@ dependencies {
    // Source Dependencies
   // External 
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compile 'org.jgroups:jgroups:3.6.6.Final'
   compile 'antlr:antlr:' + project.'antlr.version'
   compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  compile 'com.google.code.findbugs:annotations:' + project.'annotations.version'
   provided 'com.google.guava:guava:' + project.'guava.version'
   compile 'commons-io:commons-io:' + project.'commons-io.version'
-  provided 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile 'commons-logging:commons-logging:' + project.'commons-logging.version'
   compile 'commons-modeler:commons-modeler:' + project.'commons-modeler.version'
   compile 'io.netty:netty-all:' + project.'netty-all.version'
@@ -35,7 +52,7 @@ dependencies {
   compile 'mx4j:mx4j-remote:' + project.'mx4j.version'
   compile 'mx4j:mx4j-tools:' + project.'mx4j.version'
   compile 'net.java.dev.jna:jna:' + project.'jna.version'
-  compile 'net.sourceforge.jline:jline:' + project.'jline.version'
+  compile 'jline:jline:' + project.'jline.version'
   provided 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
   provided 'org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version'
   provided 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
@@ -46,10 +63,6 @@ dependencies {
   runtime 'org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version'
   runtime 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
   runtime 'org.apache.logging.log4j:log4j-jul:' + project.'log4j.version'
-  compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
-  compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
-  compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
-  compile 'org.apache.lucene:lucene-queryparser:' + project.'lucene.version'
   compile 'org.eclipse.jetty:jetty-http:' + project.'jetty.version'
   compile 'org.eclipse.jetty:jetty-io:' + project.'jetty.version'
   compile 'org.eclipse.jetty:jetty-security:' + project.'jetty.version'
@@ -68,7 +81,6 @@ dependencies {
   compile 'org.apache.hbase:hbase:' + project.'hbase.version'
  
   compile project(':gemfire-common')
-  compile project(':gemfire-jgroups')
   compile project(':gemfire-joptsimple')
   compile project(':gemfire-json')
   
@@ -81,11 +93,20 @@ dependencies {
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testRuntime 'org.apache.derby:derby:' + project.'derby.version'
   testRuntime 'org.apache.hadoop:hadoop-auth:' + project.'hadoop.version'
+  testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
   testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
   testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
   testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
   testCompile 'redis.clients:jedis:' + project.'jedis.version'
+
+  testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-module-junit4-common:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-api-support:' + project.'powermock.version'
+  testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+  testRuntime 'org.powermock:powermock-reflect:' + project.'powermock.version'
+  testRuntime 'org.javassist:javassist:' + project.'javassist.version'
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -103,55 +124,16 @@ task createVersionPropertiesFile {
   inputs.dir compileJava.destinationDir
 
   doLast {
-    new ByteArrayOutputStream().withStream { gitWorkspaceStream ->
-      def result = exec {
-        workingDir = "${projectDir}"
-        standardOutput = gitWorkspaceStream
-        ignoreExitValue = true
-        executable = "git"
-        args = ['rev-parse', '--is-inside-work-tree']
-      }
-      ext.isGitWorkspace = gitWorkspaceStream.toString()
-      ext.isGitWorkspace = ext.isGitWorkspace.trim()
-    }
 
-    if ( isGitWorkspace.equalsIgnoreCase('true') ) {
-      new ByteArrayOutputStream().withStream { gitBranchStream ->
-        def result = exec {
-          workingDir = "${projectDir}"
-          standardOutput = gitBranchStream
-          executable = "git"
-          args = ['rev-parse', '--abbrev-ref', 'HEAD']
-        }
-        ext.gitBranchString = gitBranchStream.toString()
-        ext.gitBranch = ext.gitBranchString.trim()
-      }
-
-      new ByteArrayOutputStream().withStream { commitStream ->
-        def result = exec {
-          workingDir = "${projectDir}"
-          standardOutput = commitStream
-          executable = "git"
-          args = ['rev-parse', 'HEAD']
-        }
-        ext.commitIdString = commitStream.toString()
-        ext.commitId = ext.commitIdString.trim()
-      }
-
-      new ByteArrayOutputStream().withStream { sourceDateStream ->
-        def result = exec {
-          workingDir = "${projectDir}"
-          standardOutput = sourceDateStream
-          executable = "git"
-          args = ['show', '-s', '--format=%ci', "${ext.commitId}"]
-        }
-        ext.sourceDateString = sourceDateStream.toString()
-        ext.sourceDate = ext.sourceDateString.trim()
-      }
-    }
-    else {
-      // Not in SCM workspace, use default values
-      ext.gitBranch = 'UNKNOWN'
+    try {
+      def grgit = org.ajoberstar.grgit.Grgit.open()
+      ext.branch = grgit.branch.getCurrent().name
+      ext.commitId = grgit.head().id
+      ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+      grgit.close()
+    } catch (Exception e) {
+      logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
+      ext.branch = 'UNKNOWN'
       ext.commitId = 'UNKNOWN'
       ext.sourceDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
     }
@@ -172,7 +154,7 @@ task createVersionPropertiesFile {
       "Build-Java-Version": ext.jdkVersion,
       "Source-Date"       : ext.sourceDate,
       "Source-Revision"   : ext.commitId,
-      "Source-Repository" : ext.gitBranch
+      "Source-Repository" : ext.branch
     ] as Properties
 
     propertiesFile.getParentFile().mkdirs();

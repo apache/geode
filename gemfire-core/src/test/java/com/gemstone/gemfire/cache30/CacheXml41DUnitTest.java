@@ -22,6 +22,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.*;
 
 import java.io.*;
 
+import dunit.DistributedTestCase;
 import org.xml.sax.SAXException;
 
 /**
@@ -175,6 +176,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
 
     setXmlFile(findFile("sameRootRegion.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -188,6 +190,8 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
         fail("Expected a RegionExistsException, not a "
             + cause.getClass().getName(), cause);
       }
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -216,6 +220,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
 
     setXmlFile(findFile("sameSubregion.xml"));
 
+    ExpectedException expectedException = DistributedTestCase.addExpectedException("While reading Cache XML file");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -229,6 +234,8 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
         fail("Expected a RegionExistsException, not a "
             + cause.getClass().getName(), cause);
       }
+    } finally {
+      expectedException.remove();
     }
   }
 
