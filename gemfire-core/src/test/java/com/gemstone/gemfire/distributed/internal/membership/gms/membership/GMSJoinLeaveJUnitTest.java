@@ -16,17 +16,9 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -65,8 +57,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messe
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.SearchState;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewCreator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.TcpClientWrapper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewCreator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewReplyProcessor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
@@ -77,9 +69,9 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveM
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class GMSJoinLeaveJUnitTest {
   private Services services;
   private ServiceConfig mockConfig;
