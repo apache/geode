@@ -16,15 +16,9 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.fd;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,9 +65,9 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Suspect
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class GMSHealthMonitorJUnitTest {
 
   private Services services;

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
+import static org.junit.Assert.*;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,16 +30,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-import junit.framework.TestCase;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import junit.framework.TestCase;
 
 /**
  * Tests fill pattern validation for the {@link SimpleMemoryAllocatorImpl}.
  * @author rholmes
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class SimpleMemoryAllocatorFillPatternJUnitTest {
   /**
    * Chunk operation types.
