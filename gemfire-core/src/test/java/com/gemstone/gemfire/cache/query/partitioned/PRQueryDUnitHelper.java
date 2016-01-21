@@ -31,9 +31,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import parReg.query.unittest.NewPortfolio;
-import util.TestException;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -87,7 +84,11 @@ import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.util.test.TestUtil;
+
+import parReg.query.unittest.NewPortfolio;
+import util.TestException;
 
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases
@@ -2502,7 +2503,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
     return prRemoveIndex;
   }
 
-  public Runnable getCacheSerializableRunnableForPRColocatedDataSetQueryAndCompareResults(
+  public SerializableRunnableIF getCacheSerializableRunnableForPRColocatedDataSetQueryAndCompareResults(
       final String name, final String coloName, final String localName,
       final String coloLocalName) {
 
@@ -2631,7 +2632,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
 
   }
 
-  public Runnable getCacheSerializableRunnableForPRAndRRQueryAndCompareResults(
+  public SerializableRunnableIF getCacheSerializableRunnableForPRAndRRQueryAndCompareResults(
       final String name, final String coloName, final String localName,
       final String coloLocalName) {
 
@@ -2761,7 +2762,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   }
 
 
-  public Runnable getCacheSerializableRunnableForPRAndRRQueryWithCompactAndRangeIndexAndCompareResults(
+  public SerializableRunnableIF getCacheSerializableRunnableForPRAndRRQueryWithCompactAndRangeIndexAndCompareResults(
       final String name, final String coloName, final String localName,
       final String coloLocalName) {
 
@@ -2891,7 +2892,7 @@ public class PRQueryDUnitHelper extends PartitionedRegionDUnitTestCase
   }
 
 
-  public Runnable getCacheSerializableRunnableForRRAndPRQueryAndCompareResults(
+  public SerializableRunnableIF getCacheSerializableRunnableForRRAndPRQueryAndCompareResults(
       final String name, final String coloName, final String localName,
       final String coloLocalName) {
 

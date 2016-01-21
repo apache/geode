@@ -45,7 +45,7 @@ import java.util.concurrent.Callable;
  * 
  * @author Mitch Thomas
  */
-public abstract class SerializableCallable<T> implements Callable<T>, Serializable {
+public abstract class SerializableCallable<T> implements SerializableCallableIF<T> {
   
   private static final long serialVersionUID = -5914706166172952484L;
   

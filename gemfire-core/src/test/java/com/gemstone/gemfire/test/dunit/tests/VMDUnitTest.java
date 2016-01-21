@@ -23,6 +23,7 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -149,7 +150,7 @@ public class VMDUnitTest extends DistributedTestCase {
   }
 
   protected static class InvokeRunnable
-    implements Serializable, Runnable {
+    implements SerializableRunnableIF {
 
     public void run() {
       throw new BasicDUnitTest.BasicTestException();

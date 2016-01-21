@@ -236,7 +236,7 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableRunnable
    */
-  public AsyncInvocation invokeAsync(Runnable r) {
+  public AsyncInvocation invokeAsync(SerializableRunnableIF r) {
     return invokeAsync(r, "run", new Object[0]);
   }
   
@@ -249,7 +249,7 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableCallable
    */
-  public AsyncInvocation invokeAsync(Callable c) {
+  public <T> AsyncInvocation<T> invokeAsync(SerializableCallableIF<T> c) {
     return invokeAsync(c, "call", new Object[0]);
   }
 
@@ -263,7 +263,7 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableRunnable
    */
-  public void invoke(Runnable r) {
+  public void invoke(SerializableRunnableIF r) {
     invoke(r, "run");
   }
   
@@ -277,8 +277,8 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableCallable
    */
-  public Object invoke(Callable c) {
-    return invoke(c, "call");
+  public <T>  T invoke(SerializableCallableIF<T> c) {
+    return (T) invoke(c, "call");
   }
   
   /**

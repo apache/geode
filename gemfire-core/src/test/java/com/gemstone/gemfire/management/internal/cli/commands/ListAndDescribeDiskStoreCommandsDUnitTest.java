@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.io.Serializable;
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
@@ -27,10 +30,8 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import java.io.Serializable;
-import java.util.Properties;
 
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper
@@ -186,7 +187,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
       return vm;
     }
 
-    public void run(final Runnable runnable) {
+    public void run(final SerializableRunnableIF runnable) {
       if (getVm() == null) {
         runnable.run();
       } else {

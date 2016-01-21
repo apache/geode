@@ -47,7 +47,7 @@ import java.io.Serializable;
  * </PRE>
  */
 public abstract class SerializableRunnable
-  implements Serializable, Runnable {
+  implements SerializableRunnableIF {
 
   private static final long serialVersionUID = 7584289978241650456L;
   
