@@ -2034,6 +2034,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
               Thread.currentThread().interrupt();
               // Keep going, try to close the endpoint.
             }
+            if (!dc.isOpen()) {
+              return;
+            }
             if (logger.isDebugEnabled())
               logger.debug("Membership: closing connections for departed member {}", member);
             // close connections, but don't do membership notification since it's already been done

@@ -97,8 +97,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /** amount of time to sleep before trying to join after a failed attempt */
   private static final int JOIN_RETRY_SLEEP = Integer.getInteger("gemfire.join-retry-sleep", 1000);
 
-  /** time to wait for a leave request to be transmitted by jgroups */
-  private static final long LEAVE_MESSAGE_SLEEP_TIME = Long.getLong("gemfire.leave-message-sleep-time", 1000);
+  /** time to wait for a broadcast message to be transmitted by jgroups */
+  private static final long BROADCAST_MESSAGE_SLEEP_TIME = Long.getLong("gemfire.broadcast-message-sleep-time", 1000);
 
   /** if the locators don't know who the coordinator is we send find-coord requests to this many nodes */
   private static final int MAX_DISCOVERY_NODES = Integer.getInteger("gemfire.max-discovery-nodes", 30);
@@ -329,59 +329,67 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     JoinResponseMessage response = null;
-    synchronized (joinResponse) {
-      if (joinResponse[0] == null) {
-        try {
-          // Note that if we give up waiting but a response is on
-          // the way we will get the new view and join that way.
-          // See installView()
-          long timeout = Math.max(services.getConfig().getMemberTimeout(), services.getConfig().getJoinTimeout() / 5);
-          joinResponse.wait(timeout);
-        } catch (InterruptedException e) {
-          logger.debug("join attempt was interrupted");
-          Thread.currentThread().interrupt();
-          return false;
-        }
-      }
-      response = joinResponse[0];
+    try {
+      response = waitForJoinResponse();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
     }
-    if (response != null) {
-      logger.debug("received join response {}", response);
-      joinResponse[0] = null;
-      String failReason = response.getRejectionMessage();
-      if (failReason != null) {
-        if (failReason.contains("Rejecting the attempt of a member using an older version") 
-            || failReason.contains("15806")) {
-          throw new SystemConnectException(failReason);
-        }
-        throw new AuthenticationFailedException(failReason);
-      }
-      if (response.getCurrentView() != null) {
-        if (response.getBecomeCoordinator()) {
-          logger.info("I am being told to become the membership coordinator by {}", coord);
-          synchronized(viewInstallationLock) {
-            this.currentView = response.getCurrentView();
-            becomeCoordinator(null);
-          }
-        } else {
-          this.birthViewId = response.getMemberID().getVmViewId();
-          this.localAddress.setVmViewId(this.birthViewId);
-          GMSMember me = (GMSMember) this.localAddress.getNetMember();
-          me.setBirthViewId(birthViewId);
-          installView(response.getCurrentView());
-        }
-
-        return true;
-
-      } else {
-        logger.info("received join response with no membership view: {}", response);
-      }
-    } else {
+    
+    if (response == null) {
       if (!isJoined) {
         logger.debug("received no join response");
       }
+      return isJoined;
     }
-    return isJoined;
+
+    logger.debug("received join response {}", response);
+    joinResponse[0] = null;
+    String failReason = response.getRejectionMessage();
+    if (failReason != null) {
+      if (failReason.contains("Rejecting the attempt of a member using an older version") 
+          || failReason.contains("15806")) {
+        throw new SystemConnectException(failReason);
+      }
+      throw new AuthenticationFailedException(failReason);
+    }
+    
+    if (response.getCurrentView() == null) {
+      logger.info("received join response with no membership view: {}", response);
+      return isJoined;
+    }
+
+    if (response.getBecomeCoordinator()) {
+      logger.info("I am being told to become the membership coordinator by {}", coord);
+      synchronized(viewInstallationLock) {
+        this.currentView = response.getCurrentView();
+        becomeCoordinator(null);
+      }
+      return true;
+    }
+    
+    this.birthViewId = response.getMemberID().getVmViewId();
+    this.localAddress.setVmViewId(this.birthViewId);
+    GMSMember me = (GMSMember) this.localAddress.getNetMember();
+    me.setBirthViewId(birthViewId);
+    installView(response.getCurrentView());
+
+    return true;
+  }
+
+  private JoinResponseMessage waitForJoinResponse() throws InterruptedException {
+    JoinResponseMessage response;
+    synchronized (joinResponse) {
+      if (joinResponse[0] == null && !isJoined) {
+        // Note that if we give up waiting but a response is on
+        // the way we will get the new view and join that way.
+        // See installView()
+        long timeout = Math.max(services.getConfig().getMemberTimeout(), services.getConfig().getJoinTimeout() / 5);
+        joinResponse.wait(timeout);
+      }
+      response = joinResponse[0];
+    }
+    return response;
   }
 
   /**
@@ -789,7 +797,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         this.preparedView = view;
         ackView(m);
         if (viewContainsMyUnjoinedAddress) {
-          installView(view);
+          installView(view); // this will notifyAll the joinResponse
         }
       }
     } else { // !preparing
@@ -1155,9 +1163,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       lastConflictingView = null;
       services.installView(newView);
 
-      isJoined = true;
-      synchronized(joinResponse) {
-        joinResponse.notifyAll();
+      if (!isJoined) {
+        logger.debug("notifying join thread");
+        isJoined = true;
+        synchronized(joinResponse) {
+          joinResponse.notifyAll();
+        }
       }
 
       if (!newView.getCreator().equals(this.localAddress)) {
@@ -1331,7 +1342,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   @Override
   public void leave() {
-    boolean waitForProcessing = false;
     synchronized (viewInstallationLock) {
       NetView view = currentView;
       isStopping = true;
@@ -1339,20 +1349,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (view != null) {
         if (view.size() > 1) {
           List<InternalDistributedMember> coords = view.getPreferredCoordinators(Collections.<InternalDistributedMember> emptySet(), localAddress, 5);
-
           logger.debug("JoinLeave sending a leave request to {}", coords);
           LeaveRequestMessage m = new LeaveRequestMessage(coords, this.localAddress, "this member is shutting down");
           services.getMessenger().send(m);
-          waitForProcessing = true;
         } // view.size
       } // view != null
-    }
-    if (waitForProcessing) {
-      try {
-        Thread.sleep(LEAVE_MESSAGE_SLEEP_TIME);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
     }
   }
 
@@ -2028,7 +2029,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         if (quorumRequired && isNetworkPartition(newView, true)) {
           sendNetworkPartitionMessage(newView);
           try {
-            Thread.sleep(LEAVE_MESSAGE_SLEEP_TIME);
+            Thread.sleep(BROADCAST_MESSAGE_SLEEP_TIME);
           } catch (InterruptedException e) {
             // signal the run() method to exit
             shutdown = true;
