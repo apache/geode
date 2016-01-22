@@ -64,7 +64,6 @@ public interface MemoryBlock {
   
   public int getRefCount();
   public String getDataType();
-  public ChunkType getChunkType();
   public boolean isSerialized();
   public boolean isCompressed();
   public Object getDataValue();

@@ -20,7 +20,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
 import com.gemstone.gemfire.internal.offheap.SimpleMemoryAllocatorImpl;
@@ -36,7 +36,7 @@ public class OffHeapByteSourceJUnitTest extends ByteSourceJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
+    SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{new UnsafeMemoryChunk(1024*1024)});
   }
 
   @After
@@ -51,10 +51,10 @@ public class OffHeapByteSourceJUnitTest extends ByteSourceJUnitTest {
   
   @Override
   protected ByteSource createByteSource(byte[] bytes) {
-    StoredObject so = SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, false, false, null);
-    if (so instanceof Chunk) {
+    StoredObject so = SimpleMemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, false, false);
+    if (so instanceof ObjectChunk) {
       // bypass the factory to make sure that OffHeapByteSource is tested
-      return new OffHeapByteSource((Chunk)so);
+      return new OffHeapByteSource((ObjectChunk)so);
     } else {
       // bytes are so small they can be encoded in a long (see DataAsAddress).
       // So for this test just wrap the original bytes.

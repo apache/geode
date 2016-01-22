@@ -75,7 +75,7 @@ import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.pdx.PdxInstance;
@@ -1477,9 +1477,9 @@ public abstract class AbstractIndex implements IndexProtocol
         valueInIndex = verifyAndGetPdxDomainObject(value);
       } else{
         @Released Object val = re.getValueInVM(context.getPartitionedRegion());
-        Chunk valToFree = null;
-        if (val instanceof Chunk) {
-          valToFree = (Chunk)val;
+        ObjectChunk valToFree = null;
+        if (val instanceof ObjectChunk) {
+          valToFree = (ObjectChunk)val;
         }
         try {
         if (val instanceof CachedDeserializable) {

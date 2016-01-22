@@ -25,7 +25,7 @@ import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
  * 
  * @since 9.0
  */
-public class UnsafeMemoryChunk implements MemoryChunk {
+public class UnsafeMemoryChunk implements AddressableMemoryChunk {
   private static final UnsafeWrapper unsafe;
   private static final int ARRAY_BYTE_BASE_OFFSET;
   private static String reason;
@@ -70,6 +70,10 @@ public class UnsafeMemoryChunk implements MemoryChunk {
     return (int)this.size;
   }
   
+  /* (non-Javadoc)
+   * @see com.gemstone.gemfire.internal.offheap.AddressableMemoryChunk#getMemoryAddress()
+   */
+  @Override
   public long getMemoryAddress() {
     return this.data;
   }
@@ -209,15 +213,5 @@ public class UnsafeMemoryChunk implements MemoryChunk {
     sb.append(", Size=").append(getSize());
     sb.append("}");
     return sb.toString();
-  }
-  
-  /**
-   * Used to create UnsafeMemoryChunk instances.
-   */
-  public interface Factory {
-    /** Create and return an UnsafeMemoryChunk.
-     * @throws OutOfMemoryError if the create fails
-     */
-    public UnsafeMemoryChunk create(int size);
   }
 }

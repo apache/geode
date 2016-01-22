@@ -49,17 +49,6 @@ public class OffHeapRegionEntryHelper {
   protected static final long NOT_AVAILABLE_ADDRESS = 7L<<1;
   protected static final long TOMBSTONE_ADDRESS = 8L<<1;
   public static final int MAX_LENGTH_FOR_DATA_AS_ADDRESS = 8;
- /* private static final ChunkFactory chunkFactory ;
-  static {
-    ChunkFactory factory;
-    try {
-       factory= SimpleMemoryAllocatorImpl.getAllocator().getChunkFactory();
-         
-    }catch(CacheClosedException ce) {
-      factory = null;
-    }
-    chunkFactory = factory;
-  }*/
   
   private static final Token[] addrToObj = new Token[]{
     null,
@@ -74,7 +63,7 @@ public class OffHeapRegionEntryHelper {
   };
   
   private static long objectToAddress(@Unretained Object v) {
-    if (v instanceof Chunk) return ((Chunk) v).getMemoryAddress();
+    if (v instanceof ObjectChunk) return ((ObjectChunk) v).getMemoryAddress();
     if (v instanceof DataAsAddress) return ((DataAsAddress) v).getEncodedAddress();
     if (v == null) return NULL_ADDRESS;
     if (v == Token.TOMBSTONE) return TOMBSTONE_ADDRESS;
@@ -101,8 +90,7 @@ public class OffHeapRegionEntryHelper {
   @Unretained @Retained
   public static Object addressToObject(@Released @Retained long ohAddress, boolean decompress, RegionEntryContext context) {
     if (isOffHeap(ohAddress)) {
-      //Chunk chunk = chunkFactory.newChunk(ohAddress);
-      @Unretained Chunk chunk =  SimpleMemoryAllocatorImpl.getAllocator().getChunkFactory().newChunk(ohAddress);
+      @Unretained ObjectChunk chunk =  new ObjectChunk(ohAddress);
       @Unretained Object result = chunk;
       if (decompress && chunk.isCompressed()) {
         try {
@@ -172,7 +160,7 @@ public class OffHeapRegionEntryHelper {
 
   private static void releaseAddress(@Released long ohAddress) {
     if (isOffHeap(ohAddress)) {
-      Chunk.release(ohAddress, true);
+      ObjectChunk.release(ohAddress);
     }
   }
   
@@ -366,11 +354,11 @@ public class OffHeapRegionEntryHelper {
     int retryCount = 0;
     @Retained long addr = re.getAddress();
     while (isOffHeap(addr)) {
-      if (Chunk.retain(addr)) {
+      if (ObjectChunk.retain(addr)) {
         @Unretained long addr2 = re.getAddress();
         if (addr != addr2) {
           retryCount = 0;
-          Chunk.release(addr, true);
+          ObjectChunk.release(addr);
           // spin around and try again.
           addr = addr2;
         } else {

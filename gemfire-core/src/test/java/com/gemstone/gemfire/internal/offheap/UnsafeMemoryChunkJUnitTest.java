@@ -35,7 +35,7 @@ public class UnsafeMemoryChunkJUnitTest extends MemoryChunkJUnitTestBase {
   public void testGetAddress() {
     MemoryChunk mc = createChunk(1024);
     try {
-      UnsafeMemoryChunk umc = (UnsafeMemoryChunk) mc;
+      AddressableMemoryChunk umc = (AddressableMemoryChunk) mc;
       assertNotEquals(0, umc.getMemoryAddress());
     } finally {
       mc.release();

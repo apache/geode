@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
+public class ObjectChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   private MemoryAllocator ma;
 
@@ -98,7 +98,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Override
-  public GemFireChunk createValueAsUnserializedStoredObject(Object value) {
+  public ObjectChunk createValueAsUnserializedStoredObject(Object value) {
     byte[] valueInByteArray;
     if (value instanceof Long) {
       valueInByteArray = convertValueToByteArray(value);
@@ -113,7 +113,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Override
-  public GemFireChunk createValueAsSerializedStoredObject(Object value) {
+  public ObjectChunk createValueAsSerializedStoredObject(Object value) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
 
     boolean isSerialized = true;
@@ -122,16 +122,16 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     return createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
   }
 
-  private GemFireChunk createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
+  private ObjectChunk createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed);
     return chunk;
   }
 
   @Test
   public void chunkCanBeCreatedFromAnotherChunk() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
-    GemFireChunk newChunk = new GemFireChunk(chunk);
+    ObjectChunk newChunk = new ObjectChunk(chunk);
 
     assertNotNull(newChunk);
     assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
@@ -141,9 +141,9 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void chunkCanBeCreatedWithOnlyMemoryAddress() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
-    GemFireChunk newChunk = new GemFireChunk(chunk.getMemoryAddress());
+    ObjectChunk newChunk = new ObjectChunk(chunk.getMemoryAddress());
 
     assertNotNull(newChunk);
     assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
@@ -153,15 +153,15 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void chunkSliceCanBeCreatedFromAnotherChunk() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
     int position = 1;
     int end = 2;
 
-    GemFireChunk newChunk = (GemFireChunk) chunk.slice(position, end);
+    ObjectChunk newChunk = (ObjectChunk) chunk.slice(position, end);
 
     assertNotNull(newChunk);
-    assertThat(newChunk.getClass()).isEqualTo(GemFireChunkSlice.class);
+    assertThat(newChunk.getClass()).isEqualTo(ObjectChunkSlice.class);
     assertThat(newChunk.getMemoryAddress()).isEqualTo(chunk.getMemoryAddress());
 
     chunk.release();
@@ -169,7 +169,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void fillSerializedValueShouldFillWrapperWithSerializedValueIfValueIsSerialized() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     // mock the things
     BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
@@ -185,7 +185,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void fillSerializedValueShouldFillWrapperWithDeserializedValueIfValueIsNotSerialized() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
     // mock the things
     BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
@@ -200,20 +200,20 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getShortClassNameShouldReturnShortClassName() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-    assertThat(chunk.getShortClassName()).isEqualTo("GemFireChunk");
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    assertThat(chunk.getShortClassName()).isEqualTo("ObjectChunk");
 
     chunk.release();
   }
 
   @Test
   public void chunksAreEqualsOnlyByAddress() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
-    GemFireChunk newChunk = new GemFireChunk(chunk.getMemoryAddress());
+    ObjectChunk newChunk = new ObjectChunk(chunk.getMemoryAddress());
     assertThat(chunk.equals(newChunk)).isTrue();
 
-    GemFireChunk chunkWithSameValue = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunkWithSameValue = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.equals(chunkWithSameValue)).isFalse();
 
     Object someObject = getValue();
@@ -225,16 +225,16 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void chunksShouldBeComparedBySize() {
-    GemFireChunk chunk1 = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk1 = createValueAsSerializedStoredObject(getValue());
 
-    GemFireChunk chunk2 = chunk1;
+    ObjectChunk chunk2 = chunk1;
     assertThat(chunk1.compareTo(chunk2)).isEqualTo(0);
 
-    GemFireChunk chunkWithSameValue = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunkWithSameValue = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk1.compareTo(chunkWithSameValue)).isEqualTo(Long.signum(chunk1.getMemoryAddress() - chunkWithSameValue.getMemoryAddress()));
 
-    GemFireChunk chunk3 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
-    GemFireChunk chunk4 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
+    ObjectChunk chunk3 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
+    ObjectChunk chunk4 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
 
     int newSizeForChunk3 = 2;
     int newSizeForChunk4 = 3;
@@ -253,9 +253,9 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
-    int headerBeforeSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
+    int headerBeforeSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
 
     assertThat(chunk.isSerialized()).isFalse();
 
@@ -263,16 +263,16 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isSerialized()).isTrue();
 
-    int headerAfterSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
+    int headerAfterSerializedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterSerializedBitSet).isEqualTo(headerBeforeSerializedBitSet | Chunk.IS_SERIALIZED_BIT);
+    assertThat(headerAfterSerializedBitSet).isEqualTo(headerBeforeSerializedBitSet | ObjectChunk.IS_SERIALIZED_BIT);
 
     chunk.release();
   }
 
   @Test(expected = IllegalStateException.class)
   public void setSerialziedShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.setSerialized(true);
 
@@ -287,9 +287,9 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
-    int headerBeforeCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
+    int headerBeforeCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
 
     assertThat(chunk.isCompressed()).isFalse();
 
@@ -297,16 +297,16 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isCompressed()).isTrue();
 
-    int headerAfterCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
+    int headerAfterCompressedBitSet = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + ObjectChunk.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterCompressedBitSet).isEqualTo(headerBeforeCompressedBitSet | Chunk.IS_COMPRESSED_BIT);
+    assertThat(headerAfterCompressedBitSet).isEqualTo(headerBeforeCompressedBitSet | ObjectChunk.IS_COMPRESSED_BIT);
 
     chunk.release();
   }
 
   @Test(expected = IllegalStateException.class)
   public void setCompressedShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.setCompressed(true);
 
@@ -315,7 +315,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void setDataSizeShouldSetTheDataSizeBits() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
     int beforeSize = chunk.getDataSize();
 
@@ -331,7 +331,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void setDataSizeShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.setDataSize(1);
 
@@ -340,7 +340,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void initializeUseCountShouldThrowIllegalStateExceptionIfChunkIsAlreadyRetained() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.retain();
     chunk.initializeUseCount();
 
@@ -349,7 +349,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void initializeUseCountShouldThrowIllegalStateExceptionIfChunkIsAlreadyReleased() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.initializeUseCount();
 
@@ -358,7 +358,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void isSerializedPdxInstanceShouldReturnTrueIfItsPDXInstance() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     byte[] serailizedValue = chunk.getSerializedValue();
     serailizedValue[0] = DSCODE.PDX;
@@ -383,7 +383,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void isSerializedPdxInstanceShouldReturnFalseIfItsNotPDXInstance() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.isSerializedPdxInstance()).isFalse();
 
     chunk.release();
@@ -391,22 +391,22 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void checkDataEqualsByChunk() {
-    GemFireChunk chunk1 = createValueAsSerializedStoredObject(getValue());
-    GemFireChunk sameAsChunk1 = chunk1;
+    ObjectChunk chunk1 = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk sameAsChunk1 = chunk1;
 
     assertThat(chunk1.checkDataEquals(sameAsChunk1)).isTrue();
 
-    GemFireChunk unserializedChunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk unserializedChunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk1.checkDataEquals(unserializedChunk)).isFalse();
 
-    GemFireChunk chunkDifferBySize = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunkDifferBySize = createValueAsSerializedStoredObject(getValue());
     chunkDifferBySize.setSize(0);
     assertThat(chunk1.checkDataEquals(chunkDifferBySize)).isFalse();
 
-    GemFireChunk chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
+    ObjectChunk chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
     assertThat(chunk1.checkDataEquals(chunkDifferByValue)).isFalse();
 
-    GemFireChunk newChunk1 = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk newChunk1 = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk1.checkDataEquals(newChunk1)).isTrue();
 
     chunk1.release();
@@ -418,13 +418,13 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void checkDataEqualsBySerializedValue() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.checkDataEquals(new byte[1])).isFalse();
 
-    GemFireChunk chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
+    ObjectChunk chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
     assertThat(chunk.checkDataEquals(chunkDifferByValue.getSerializedValue())).isFalse();
 
-    GemFireChunk newChunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk newChunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.checkDataEquals(newChunk.getSerializedValue())).isTrue();
 
     chunk.release();
@@ -440,7 +440,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
     CachePerfStats cacheStats = mock(CachePerfStats.class);
@@ -469,7 +469,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void incSizeShouldIncrementSize() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     int beforeSize = chunk.getSize();
 
@@ -484,7 +484,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void readyForFreeShouldResetTheRefCount() {
-    Chunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     int refCountBeforeFreeing = chunk.getRefCount();
     assertThat(refCountBeforeFreeing).isEqualTo(1);
@@ -497,17 +497,17 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void readyForAllocationShouldThrowExceptionIfAlreadyAllocated() {
-    Chunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     // chunk is already allocated when we created it, so calling readyForAllocation should throw exception.
-    chunk.readyForAllocation(GemFireChunk.TYPE);
+    chunk.readyForAllocation();
 
     chunk.release();
   }
 
   @Test
   public void checkIsAllocatedShouldReturnIfAllocated() {
-    Chunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     chunk.checkIsAllocated();
 
     chunk.release();
@@ -515,7 +515,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void checkIsAllocatedShouldThrowExceptionIfNotAllocated() {
-    Chunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     chunk.release();
     chunk.checkIsAllocated();
 
@@ -524,8 +524,8 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void sendToShouldWriteSerializedValueToDataOutputIfValueIsSerialized() throws IOException {
-    Chunk chunk = createValueAsSerializedStoredObject(getValue());
-    Chunk spyChunk = spy(chunk);
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk spyChunk = spy(chunk);
 
     HeapDataOutputStream dataOutput = mock(HeapDataOutputStream.class);
     ByteBuffer directByteBuffer = ByteBuffer.allocate(1024);
@@ -543,7 +543,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   @Test
   public void sendToShouldWriteUnserializedValueToDataOutputIfValueIsUnserialized() throws IOException {
     byte[] regionEntryValue = getValueAsByteArray();
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     // writeByte is a final method and cannot be mocked, so creating a real one
     HeapDataOutputStream dataOutput = new HeapDataOutputStream(Version.CURRENT);
@@ -566,7 +566,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   @Test
   public void sendAsByteArrayShouldWriteValueToDataOutput() throws IOException {
     byte[] regionEntryValue = getValueAsByteArray();
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     // writeByte is a final method and cannot be mocked, so creating a real one
     HeapDataOutputStream dataOutput = new HeapDataOutputStream(Version.CURRENT);
@@ -589,7 +589,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   public void createDirectByteBufferShouldCreateAByteBuffer() {
     byte[] regionEntryValue = getValueAsByteArray();
 
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     ByteBuffer buffer = chunk.createDirectByteBuffer();
 
@@ -604,20 +604,20 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   @Test
   public void getDirectByteBufferShouldCreateAByteBuffer() {
     byte[] regionEntryValue = getValueAsByteArray();
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     ByteBuffer buffer = chunk.createDirectByteBuffer();
-    long bufferAddress = Chunk.getDirectByteBufferAddress(buffer);
+    long bufferAddress = ObjectChunk.getDirectByteBufferAddress(buffer);
 
     // returned address should be starting of the value (after skipping HEADER_SIZE bytes)
-    assertEquals(chunk.getMemoryAddress() + Chunk.OFF_HEAP_HEADER_SIZE, bufferAddress);
+    assertEquals(chunk.getMemoryAddress() + ObjectChunk.OFF_HEAP_HEADER_SIZE, bufferAddress);
 
     chunk.release();
   }
 
   @Test(expected = AssertionError.class)
   public void getAddressForReadingShouldFailIfItsOutsideOfChunk() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     chunk.getAddressForReading(0, chunk.getDataSize() + 1);
 
     chunk.release();
@@ -625,7 +625,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getAddressForReadingShouldReturnDataAddressFromGivenOffset() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     int offset = 1;
     long requestedAddress = chunk.getAddressForReading(offset, 1);
@@ -637,7 +637,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getSizeInBytesShouldReturnSize() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.getSizeInBytes()).isEqualTo(chunk.getSize());
 
     chunk.release();
@@ -645,7 +645,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = AssertionError.class)
   public void getUnsafeAddressShouldFailIfOffsetIsNegative() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     chunk.getUnsafeAddress(-1, 1);
 
     chunk.release();
@@ -653,7 +653,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = AssertionError.class)
   public void getUnsafeAddressShouldFailIfSizeIsNegative() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     chunk.getUnsafeAddress(1, -1);
 
     chunk.release();
@@ -661,7 +661,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = AssertionError.class)
   public void getUnsafeAddressShouldFailIfItsOutsideOfChunk() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
     chunk.getUnsafeAddress(0, chunk.getDataSize() + 1);
 
     chunk.release();
@@ -669,7 +669,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getUnsafeAddressShouldReturnUnsafeAddress() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     int offset = 1;
     long unsafeAddress = chunk.getUnsafeAddress(offset, 1);
@@ -681,7 +681,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = AssertionError.class)
   public void readByteAndWriteByteShouldFailIfOffsetIsOutside() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     chunk.readByte(chunk.getDataSize() + 1);
 
@@ -692,7 +692,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void writeByteShouldWriteAtCorrectLocation() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     byte valueBeforeWrite = chunk.readByte(2);
 
@@ -709,7 +709,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void retainShouldIncrementRefCount() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getRefCount()).isEqualTo(1);
 
     chunk.retain();
@@ -728,10 +728,10 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void retainShouldThrowExceptionAfterMaxNumberOfTimesRetained() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
     // loop though and invoke retain for MAX_REF_COUNT-1 times, as create chunk above counted as one reference
-    for (int i = 0; i < Chunk.MAX_REF_COUNT - 1; i++)
+    for (int i = 0; i < ObjectChunk.MAX_REF_COUNT - 1; i++)
       chunk.retain();
 
     // invoke for the one more time should throw exception
@@ -740,7 +740,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void releaseShouldDecrementRefCount() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getRefCount()).isEqualTo(1);
 
     chunk.retain();
@@ -763,20 +763,20 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = IllegalStateException.class)
   public void releaseShouldThrowExceptionIfChunkIsAlreadyReleased() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     chunk.release();
   }
 
   @Test
   public void testToStringForOffHeapByteSource() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
     String expected = ":<dataSize=" + chunk.getDataSize() + " refCount=" + chunk.getRefCount() + " addr=" + Long.toHexString(chunk.getMemoryAddress()) + ">";
     assertThat(chunk.toStringForOffHeapByteSource()).endsWith(expected);
 
     // test toString
-    Chunk spy = spy(chunk);
+    ObjectChunk spy = spy(chunk);
     spy.toString();
     verify(spy, times(1)).toStringForOffHeapByteSource();
 
@@ -785,7 +785,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getStateShouldReturnAllocatedIfRefCountIsGreaterThanZero() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     assertEquals(State.ALLOCATED, chunk.getState());
 
     chunk.release();
@@ -793,14 +793,14 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getStateShouldReturnDeallocatedIfRefCountIsZero() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.release();
     assertEquals(State.DEALLOCATED, chunk.getState());
   }
 
   @Test(expected = UnsupportedOperationException.class)
   public void getNextBlockShouldThrowUnSupportedOperationException() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.getNextBlock();
 
     chunk.release();
@@ -808,7 +808,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getBlockSizeShouldBeSameSameGetSize() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     assertEquals(chunk.getSize(), chunk.getBlockSize());
 
     chunk.release();
@@ -816,7 +816,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = UnsupportedOperationException.class)
   public void copyBytesShouldThrowUnSupportedOperationException() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.copyBytes(1, 2, 1);
 
     chunk.release();
@@ -824,7 +824,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getSlabIdShouldThrowUnSupportedOperationException() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     chunk.getSlabId();
 
     chunk.release();
@@ -832,7 +832,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getFreeListIdShouldReturnMinusOne() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getFreeListId()).isEqualTo(-1);
 
     chunk.release();
@@ -840,7 +840,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getDataTypeShouldReturnNull() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getDataType()).isNull();
 
     chunk.release();
@@ -848,7 +848,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
 
   @Test
   public void getDataDataShouldReturnNull() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
     assertThat(chunk.getDataValue()).isNull();
   }
 
@@ -860,7 +860,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     chunk.getRawBytes();
 
@@ -875,7 +875,7 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     byte[] serializedValue = chunk.getSerializedValue();
 
@@ -885,33 +885,14 @@ public class GemFireChunkJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Test
-  public void getSrcTypeOrdinalFromAddressShouldReturnOrdinal() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-
-    assertThat(Chunk.getSrcTypeOrdinal(chunk.getMemoryAddress())).isEqualTo(Chunk.SRC_TYPE_GFE >> Chunk.SRC_TYPE_SHIFT);
-
-    chunk.release();
-  }
-
-  @Test
-  public void getSrcTypeOrdinalFromRawBitsShouldReturnOrdinal() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
-
-    int rawBits = UnsafeMemoryChunk.readAbsoluteIntVolatile(chunk.getMemoryAddress() + Chunk.REF_COUNT_OFFSET);
-    assertThat(Chunk.getSrcTypeOrdinalFromRawBits(rawBits)).isEqualTo(Chunk.SRC_TYPE_GFE >> Chunk.SRC_TYPE_SHIFT);
-
-    chunk.release();
-  }
-
-  @Test
   public void fillShouldFillTheChunk() {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed);
 
     // first fill the unused part with FILL_PATTERN
-    Chunk.fill(chunk.getMemoryAddress());
+    ObjectChunk.fill(chunk.getMemoryAddress());
 
     // Validate that it is filled
     chunk.validateFill();

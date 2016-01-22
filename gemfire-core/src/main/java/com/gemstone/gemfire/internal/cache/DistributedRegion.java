@@ -121,7 +121,7 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewa
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -2549,8 +2549,8 @@ public class DistributedRegion extends LocalRegion implements
     }
     //For SQLFire , we need to increment the use count so that returned
     //object has use count 2
-    if( incrementUseCountForSqlf && result instanceof Chunk) {
-      ((Chunk)result).retain();
+    if( incrementUseCountForSqlf && result instanceof ObjectChunk) {
+      ((ObjectChunk)result).retain();
     }
     return result;
     } finally {

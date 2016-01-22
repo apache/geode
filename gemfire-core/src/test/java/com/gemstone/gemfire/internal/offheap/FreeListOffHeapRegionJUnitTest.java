@@ -40,7 +40,7 @@ public class FreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
 
   @Override
   public int perObjectOverhead() {
-    return Chunk.OFF_HEAP_HEADER_SIZE;
+    return ObjectChunk.OFF_HEAP_HEADER_SIZE;
   }
 
 }

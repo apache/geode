@@ -18,7 +18,6 @@
 package com.gemstone.gemfire.internal.offheap;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
 import static org.hamcrest.CoreMatchers.*;
 
 import java.util.Arrays;
@@ -33,19 +32,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class FragmentJUnitTest {
 
-  private SimpleMemoryAllocatorImpl ma;
-  private OutOfOffHeapMemoryListener ooohml;
-  private OffHeapMemoryStats stats;
-  private LogWriter lw;
-  private UnsafeMemoryChunk.Factory umcFactory;
   private UnsafeMemoryChunk[] slabs;
-  private int numSlabs;
 
   static {
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
@@ -68,30 +60,18 @@ public class FragmentJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    ooohml = mock(OutOfOffHeapMemoryListener.class);
-    stats = mock(OffHeapMemoryStats.class);
-    lw = mock(LogWriter.class);
-    
-    numSlabs = 2;
-    umcFactory = new UnsafeMemoryChunk.Factory(){
-      @Override
-      public UnsafeMemoryChunk create(int size) {
-        return new UnsafeMemoryChunk(size);
-      }
-    };
-    slabs = allocateMemorySlabs();
+    UnsafeMemoryChunk slab1 = new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE);
+    UnsafeMemoryChunk slab2 = new UnsafeMemoryChunk((int)OffHeapStorage.MIN_SLAB_SIZE);
+    slabs = new UnsafeMemoryChunk[]{slab1, slab2};
   }
 
   @After
   public void tearDown() throws Exception {
-    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+    for (int i=0; i < slabs.length; i++) {
+      slabs[i].release();
+    }
   }
   
-  private UnsafeMemoryChunk[] allocateMemorySlabs() {
-    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
-    return ma.getSlabs();
-  }
-
   
   @Test
   public void fragmentConstructorThrowsExceptionForNon8ByteAlignedAddress() {
@@ -147,7 +127,6 @@ public class FragmentJUnitTest {
   
   @Test
   public void getStateIsAlwaysStateUNUSED() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.getState()).isEqualTo(MemoryBlock.State.UNUSED);
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
@@ -156,7 +135,6 @@ public class FragmentJUnitTest {
 
   @Test
   public void getFreeListIdIsAlwaysMinus1() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.getFreeListId()).isEqualTo(-1);
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
@@ -165,7 +143,6 @@ public class FragmentJUnitTest {
 
   @Test
   public void getRefCountIsAlwaysZero() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.getRefCount()).isEqualTo(0);
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
@@ -174,7 +151,6 @@ public class FragmentJUnitTest {
 
   @Test
   public void getDataTypeIsAlwaysNA() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.getDataType()).isEqualTo("N/A");
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
@@ -183,7 +159,6 @@ public class FragmentJUnitTest {
 
   @Test
   public void isSerializedIsAlwaysFalse() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.isSerialized()).isEqualTo(false);
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
@@ -192,7 +167,6 @@ public class FragmentJUnitTest {
 
   @Test
   public void isCompressedIsAlwaysFalse() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.isCompressed()).isEqualTo(false);
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
@@ -201,25 +175,14 @@ public class FragmentJUnitTest {
 
   @Test
   public void getDataValueIsAlwaysNull() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     softly.assertThat(fragment.getDataValue()).isNull();
     fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
     softly.assertThat(fragment.getDataValue()).isNull();
-  }
-
-  @Test
-  public void getChunkTypeIsAlwaysNull() {
-    slabs = allocateMemorySlabs();
-    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
-    softly.assertThat(fragment.getChunkType()).isNull();
-    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
-    softly.assertThat(fragment.getChunkType()).isNull();
   }
 
   @Test
   public void fragmentEqualsComparesMemoryBlockAddresses() {
-    slabs = allocateMemorySlabs();
     Fragment fragment0 = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     Fragment sameFragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     Fragment fragment1 = new Fragment(slabs[1].getMemoryAddress(), slabs[1].getSize());
@@ -229,14 +192,12 @@ public class FragmentJUnitTest {
 
   @Test
   public void fragmentEqualsIsFalseForNonFragmentObjects() {
-    slabs = allocateMemorySlabs();
     Fragment fragment0 = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     assertThat(fragment0.equals(slabs[0]), is(false));
   }
 
   @Test
   public void fragmentHashCodeIsHashCodeOfItsMemoryAddress() {
-    slabs = allocateMemorySlabs();
     Fragment fragment0 = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     Fragment fragment1 = new Fragment(slabs[1].getMemoryAddress(), slabs[1].getSize());
     Long fragmentAddress = fragment0.getMemoryAddress();
@@ -246,12 +207,11 @@ public class FragmentJUnitTest {
 
   @Test
   public void fragmentFillSetsAllBytesToTheSameConstantValue() {
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     Long fragmentAddress = fragment.getMemoryAddress();
     byte[] bytes = new byte[(int)OffHeapStorage.MIN_SLAB_SIZE];
     byte[] expectedBytes = new byte[(int)OffHeapStorage.MIN_SLAB_SIZE];
-    Arrays.fill(expectedBytes, Chunk.FILL_BYTE);;
+    Arrays.fill(expectedBytes, ObjectChunk.FILL_BYTE);;
     fragment.fill();
     UnsafeMemoryChunk.readAbsoluteBytes(fragmentAddress, bytes, 0, (int)OffHeapStorage.MIN_SLAB_SIZE);
     assertThat(bytes, is(equalTo(expectedBytes)));
@@ -261,7 +221,6 @@ public class FragmentJUnitTest {
   public void getNextBlockThrowsExceptionForFragment() {
     expectedException.expect(UnsupportedOperationException.class);
 
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     fragment.getNextBlock();
     fail("getNextBlock failed to throw UnsupportedOperationException");
@@ -271,7 +230,6 @@ public class FragmentJUnitTest {
   public void getSlabIdThrowsExceptionForFragment() {
     expectedException.expect(UnsupportedOperationException.class);
 
-    slabs = allocateMemorySlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
     fragment.getSlabId();
     fail("getSlabId failed to throw UnsupportedOperationException");

@@ -92,7 +92,7 @@ public abstract class OffHeapRegionBase {
       assertNotNull(ma);
       final long offHeapSize = ma.getFreeMemory();
       assertEquals(0, ma.getUsedMemory());
-      MemoryChunk mc1 = ma.allocate(64, null);
+      MemoryChunk mc1 = ma.allocate(64);
       assertEquals(64+perObjectOverhead(), ma.getUsedMemory());
       assertEquals(offHeapSize-(64+perObjectOverhead()), ma.getFreeMemory());
       mc1.release();
@@ -103,7 +103,7 @@ public abstract class OffHeapRegionBase {
       // (see the todo comment on compact() in SimpleMemoryAllocator).
       // So we request 20m here since that it the total size.
       try {
-        ma.allocate(1024*1024*20, null);
+        ma.allocate(1024*1024*20);
         fail("Expected an out of heap exception");
       } catch (OutOfOffHeapMemoryException expected) {
       }
@@ -123,7 +123,7 @@ public abstract class OffHeapRegionBase {
       assertNotNull(ma);
       final long offHeapSize = ma.getFreeMemory();
       assertEquals(0, ma.getUsedMemory());
-      MemoryChunk mc1 = ma.allocate(64, null);
+      MemoryChunk mc1 = ma.allocate(64);
       assertEquals(64+perObjectOverhead(), ma.getUsedMemory());
       assertEquals(offHeapSize-(64+perObjectOverhead()), ma.getFreeMemory());
       mc1.release();
@@ -131,7 +131,7 @@ public abstract class OffHeapRegionBase {
       assertEquals(0, ma.getUsedMemory());
       // do an allocation larger than the slab size
       try {
-        ma.allocate(1024*1024*10, null);
+        ma.allocate(1024*1024*10);
         fail("Expected an out of heap exception");
       } catch (OutOfOffHeapMemoryException expected) {
         // passed
@@ -163,7 +163,7 @@ public abstract class OffHeapRegionBase {
       final long offHeapSize = ma.getFreeMemory();
       assertEquals(0, ma.getUsedMemory());
       byte[] data = new byte[] {1,2,3,4,5,6,7,8};
-      MemoryChunk mc1 = (MemoryChunk)ma.allocateAndInitialize(data, false, false, null);
+      MemoryChunk mc1 = (MemoryChunk)ma.allocateAndInitialize(data, false, false);
       assertEquals(data.length+perObjectOverhead(), ma.getUsedMemory());
       assertEquals(offHeapSize-(data.length+perObjectOverhead()), ma.getFreeMemory());
       byte[] data2 = new byte[data.length];
@@ -174,7 +174,7 @@ public abstract class OffHeapRegionBase {
       assertEquals(0, ma.getUsedMemory());
       // try some small byte[] that don't need to be stored off heap.
       data = new byte[] {1,2,3,4,5,6,7};
-      StoredObject so1 = ma.allocateAndInitialize(data, false, false, null);
+      StoredObject so1 = ma.allocateAndInitialize(data, false, false);
       assertEquals(0, ma.getUsedMemory());
       assertEquals(offHeapSize, ma.getFreeMemory());
       data2 = new byte[data.length];
@@ -540,11 +540,11 @@ public abstract class OffHeapRegionBase {
     @Released(OffHeapIdentifier.TEST_OFF_HEAP_REGION_BASE_LISTENER)
     @Override
     public void close() {
-      if (this.ohOldValue instanceof Chunk) {
-        ((Chunk)this.ohOldValue).release();
+      if (this.ohOldValue instanceof ObjectChunk) {
+        ((ObjectChunk)this.ohOldValue).release();
       }
-      if (this.ohNewValue instanceof Chunk) {
-        ((Chunk)this.ohNewValue).release();
+      if (this.ohNewValue instanceof ObjectChunk) {
+        ((ObjectChunk)this.ohNewValue).release();
       }
     }
   }

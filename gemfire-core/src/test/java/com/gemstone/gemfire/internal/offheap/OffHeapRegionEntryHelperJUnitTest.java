@@ -54,7 +54,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
-@PrepareForTest({ Chunk.class, OffHeapRegionEntryHelper.class })
+@PrepareForTest({ ObjectChunk.class, OffHeapRegionEntryHelper.class })
 public class OffHeapRegionEntryHelperJUnitTest {
 
   private static final Long VALUE_IS_NOT_ENCODABLE = 0L;
@@ -75,13 +75,13 @@ public class OffHeapRegionEntryHelperJUnitTest {
     SimpleMemoryAllocatorImpl.freeOffHeapMemory();
   }
 
-  private GemFireChunk createChunk(Object value) {
+  private ObjectChunk createChunk(Object value) {
     byte[] v = EntryEventImpl.serialize(value);
 
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed);
 
     return chunk;
   }
@@ -294,7 +294,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
   @Test
   public void isOffHeapShouldReturnTrueIfAddressIsOnOffHeap() {
-    Chunk value = createChunk(Long.MAX_VALUE);
+    ObjectChunk value = createChunk(Long.MAX_VALUE);
     assertThat(OffHeapRegionEntryHelper.isOffHeap(value.getMemoryAddress())).isTrue();
   }
 
@@ -327,7 +327,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     long oldAddress = 1L;
 
     // testing when the newValue is a chunk
-    Chunk newValue = createChunk(Long.MAX_VALUE);
+    ObjectChunk newValue = createChunk(Long.MAX_VALUE);
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
     when(re.setAddress(oldAddress, newValue.getMemoryAddress())).thenReturn(Boolean.TRUE);
@@ -440,13 +440,13 @@ public class OffHeapRegionEntryHelperJUnitTest {
     // mock region entry
     OffHeapRegionEntry re = mock(OffHeapRegionEntry.class);
 
-    Chunk oldValue = createChunk(Long.MAX_VALUE);
-    Chunk newValue = createChunk(Long.MAX_VALUE - 1);
+    ObjectChunk oldValue = createChunk(Long.MAX_VALUE);
+    ObjectChunk newValue = createChunk(Long.MAX_VALUE - 1);
 
     // mock Chunk static methods - in-order to verify that release is called
-    PowerMockito.spy(Chunk.class);
-    PowerMockito.doNothing().when(Chunk.class);
-    Chunk.release(oldValue.getMemoryAddress(), true);
+    PowerMockito.spy(ObjectChunk.class);
+    PowerMockito.doNothing().when(ObjectChunk.class);
+    ObjectChunk.release(oldValue.getMemoryAddress());
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldValue.getMemoryAddress());
@@ -460,7 +460,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // verify oldAddress is released
     PowerMockito.verifyStatic();
-    Chunk.release(oldValue.getMemoryAddress(), true);
+    ObjectChunk.release(oldValue.getMemoryAddress());
   }
 
   @Test
@@ -475,9 +475,9 @@ public class OffHeapRegionEntryHelperJUnitTest {
     DataAsAddress newAddress = new DataAsAddress(OffHeapRegionEntryHelper.encodeDataAsAddress(newData, false, false));
 
     // mock Chunk static methods - in-order to verify that release is never called
-    PowerMockito.spy(Chunk.class);
-    PowerMockito.doNothing().when(Chunk.class);
-    Chunk.release(oldAddress, true);
+    PowerMockito.spy(ObjectChunk.class);
+    PowerMockito.doNothing().when(ObjectChunk.class);
+    ObjectChunk.release(oldAddress);
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
@@ -491,7 +491,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // verify that release is never called as the old address is not on offheap
     PowerMockito.verifyStatic(never());
-    Chunk.release(oldAddress, true);
+    ObjectChunk.release(oldAddress);
   }
 
   @Test
@@ -505,9 +505,9 @@ public class OffHeapRegionEntryHelperJUnitTest {
     long newAddress = OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS;
 
     // mock Chunk static methods - in-order to verify that release is never called
-    PowerMockito.spy(Chunk.class);
-    PowerMockito.doNothing().when(Chunk.class);
-    Chunk.release(oldAddress, true);
+    PowerMockito.spy(ObjectChunk.class);
+    PowerMockito.doNothing().when(ObjectChunk.class);
+    ObjectChunk.release(oldAddress);
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
@@ -521,7 +521,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // verify that release is never called as the old address is not on offheap
     PowerMockito.verifyStatic(never());
-    Chunk.release(oldAddress, true);
+    ObjectChunk.release(oldAddress);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -541,7 +541,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     // mock region entry
     OffHeapRegionEntry re = mock(OffHeapRegionEntry.class);
 
-    Chunk chunk = createChunk(Long.MAX_VALUE);
+    ObjectChunk chunk = createChunk(Long.MAX_VALUE);
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(chunk.getMemoryAddress());
@@ -627,10 +627,10 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
   @Test
   public void addressToObjectShouldReturnValueFromChunk() {
-    Chunk expected = createChunk(Long.MAX_VALUE);
+    ObjectChunk expected = createChunk(Long.MAX_VALUE);
     Object actual = OffHeapRegionEntryHelper.addressToObject(expected.getMemoryAddress(), false, null);
 
-    assertThat(actual).isInstanceOf(Chunk.class);
+    assertThat(actual).isInstanceOf(ObjectChunk.class);
     assertThat(actual).isEqualTo(expected);
   }
 
@@ -640,7 +640,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(data, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(data, isSerialized, isCompressed);
 
     // create the mock context
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
@@ -669,7 +669,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = false;
     boolean isCompressed = true;
 
-    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(data, isSerialized, isCompressed, GemFireChunk.TYPE);
+    ObjectChunk chunk = (ObjectChunk) ma.allocateAndInitialize(data, isSerialized, isCompressed);
 
     // create the mock context
     RegionEntryContext regionContext = mock(RegionEntryContext.class);

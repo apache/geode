@@ -29,14 +29,14 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ChunkWithHeapFormJUnitTest extends GemFireChunkJUnitTest {
+public class ObjectChunkWithHeapFormJUnitTest extends ObjectChunkJUnitTest {
 
   @Test
   public void getRawBytesShouldReturnCachedHeapForm() {
-    GemFireChunk chunk = createValueAsUnserializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsUnserializedStoredObject(getValue());
 
     byte[] valueInBytes = getValueAsByteArray();
-    ChunkWithHeapForm heapForm = new ChunkWithHeapForm(chunk, valueInBytes);
+    ObjectChunkWithHeapForm heapForm = new ObjectChunkWithHeapForm(chunk, valueInBytes);
 
     assertNotNull(heapForm);
 
@@ -45,15 +45,15 @@ public class ChunkWithHeapFormJUnitTest extends GemFireChunkJUnitTest {
 
   @Test
   public void getChunkWithoutHeapFormShouldReturnGemFireChunk() {
-    GemFireChunk chunk = createValueAsSerializedStoredObject(getValue());
+    ObjectChunk chunk = createValueAsSerializedStoredObject(getValue());
 
     byte[] valueInBytes = getValueAsByteArray();
-    ChunkWithHeapForm heapForm = new ChunkWithHeapForm(chunk, valueInBytes);
+    ObjectChunkWithHeapForm heapForm = new ObjectChunkWithHeapForm(chunk, valueInBytes);
 
-    Chunk chunkWithOutHeapForm = heapForm.getChunkWithoutHeapForm();
+    ObjectChunk chunkWithOutHeapForm = heapForm.getChunkWithoutHeapForm();
 
     assertNotNull(chunkWithOutHeapForm);
-    assertEquals(GemFireChunk.class, chunkWithOutHeapForm.getClass());
+    assertEquals(ObjectChunk.class, chunkWithOutHeapForm.getClass());
 
     assertEquals(chunk, heapForm.getChunkWithoutHeapForm());
 

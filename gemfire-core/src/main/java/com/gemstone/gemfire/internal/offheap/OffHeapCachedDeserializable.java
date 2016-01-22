@@ -46,7 +46,7 @@ public abstract class OffHeapCachedDeserializable extends AbstractStoredObject i
     if (isSerialized()) {
       userBits = EntryBits.setSerialized(userBits, true);
     }
-    wrapper.setChunkData((Chunk) this, userBits);
+    wrapper.setChunkData((ObjectChunk) this, userBits);
   }
   
   String getShortClassName() {

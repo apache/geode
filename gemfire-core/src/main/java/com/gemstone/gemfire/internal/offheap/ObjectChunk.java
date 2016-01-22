@@ -33,12 +33,15 @@ import com.gemstone.gemfire.internal.cache.RegionEntryContext;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
+   * A chunk that stores a Java object.
+   * Currently the object stored in this chunk
+   * is always an entry value of a Region.
    * Note: this class has a natural ordering that is inconsistent with equals.
    * Instances of this class should have a short lifetime. We do not store references
    * to it in the cache. Instead the memoryAddress is stored in a primitive field in
    * the cache and if used it will then, if needed, create an instance of this class.
    */
-  public abstract class Chunk extends OffHeapCachedDeserializable implements Comparable<Chunk>, MemoryBlock {
+  public class ObjectChunk extends OffHeapCachedDeserializable implements Comparable<ObjectChunk>, MemoryBlock {
     /**
      * The unsafe memory address of the first byte of this chunk
      */
@@ -64,7 +67,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      * Volatile int field
      * The upper two bits are used for the isSerialized
      * and isCompressed flags.
-     * The next three bits are used to encode the SRC_TYPE enum.
+     * The next three bits are unused.
      * The lower 3 bits of the most significant byte contains a magic number to help us detect
      * if we are changing the ref count of an object that has been released.
      * The next byte contains the dataSizeDelta.
@@ -81,8 +84,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      */
     final static int IS_SERIALIZED_BIT =    0x80000000;
     final static int IS_COMPRESSED_BIT =    0x40000000;
-    final static int SRC_TYPE_MASK = 0x38000000;
-    final static int SRC_TYPE_SHIFT = 16/*refCount*/+8/*dataSize*/+3/*magicSize*/;
+    // UNUSED 0x38000000
     final static int MAGIC_MASK = 0x07000000;
     final static int MAGIC_NUMBER = 0x05000000;
     final static int DATA_SIZE_DELTA_MASK = 0x00ff0000;
@@ -92,46 +94,24 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     final static long FILL_PATTERN = 0x3c3c3c3c3c3c3c3cL;
     final static byte FILL_BYTE = 0x3c;
     
-    // The 8 bits reserved for SRC_TYPE are basically no longer used.
-    // So we could free up these 8 bits for some other use or we could
-    // keep them for future extensions.
-    // If we ever want to allocate other "types" into a chunk of off-heap
-    // memory then the SRC_TYPE would be the way to go.
-    // For example we may want to allocate the memory for the off-heap
-    // RegionEntry in off-heap memory without it being of type GFE.
-    // When it is of type GFE then it either needs to be the bytes
-    // of a byte array or it needs to be a serialized java object.
-    // For the RegionEntry we may want all the primitive fields of
-    // the entry at certain offsets in the off-heap memory so we could
-    // access them directly in native byte format (i.e. no serialization).
-    // Note that for every SRC_TYPE we should have a ChunkType subclass.
-    public final static int SRC_TYPE_UNUSED0 = 0 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED1 = 1 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED2 = 2 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED3 = 3 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_GFE = 4 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED5 = 5 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED6 = 6 << SRC_TYPE_SHIFT;
-    public final static int SRC_TYPE_UNUSED7 = 7 << SRC_TYPE_SHIFT;
-    
-    protected Chunk(long memoryAddress, int chunkSize, ChunkType chunkType) {
+    protected ObjectChunk(long memoryAddress, int chunkSize) {
       SimpleMemoryAllocatorImpl.validateAddressAndSize(memoryAddress, chunkSize);
       this.memoryAddress = memoryAddress;
       setSize(chunkSize);
-      UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, MAGIC_NUMBER|chunkType.getSrcType());
+      UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, MAGIC_NUMBER);
     }
     public void readyForFree() {
       UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, 0);
     }
-    public void readyForAllocation(ChunkType chunkType) {
-      if (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, 0, MAGIC_NUMBER|chunkType.getSrcType())) {
+    public void readyForAllocation() {
+      if (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET, 0, MAGIC_NUMBER)) {
         throw new IllegalStateException("Expected 0 but found " + Integer.toHexString(UnsafeMemoryChunk.readAbsoluteIntVolatile(getMemoryAddress()+REF_COUNT_OFFSET)));
       }
     }
     /**
      * Should only be used by FakeChunk subclass
      */
-    protected Chunk() {
+    protected ObjectChunk() {
       this.memoryAddress = 0L;
     }
     
@@ -139,12 +119,12 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      * Used to create a Chunk given an existing, already allocated,
      * memoryAddress. The off heap header has already been initialized.
      */
-    protected Chunk(long memoryAddress) {
+    protected ObjectChunk(long memoryAddress) {
       SimpleMemoryAllocatorImpl.validateAddress(memoryAddress);
       this.memoryAddress = memoryAddress;
     }
     
-    protected Chunk(Chunk chunk) {
+    protected ObjectChunk(ObjectChunk chunk) {
       this.memoryAddress = chunk.memoryAddress;
     }
     
@@ -394,11 +374,11 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     
     @Override
     public void release() {
-      release(this.memoryAddress, true);
+      release(this.memoryAddress);
      }
 
     @Override
-    public int compareTo(Chunk o) {
+    public int compareTo(ObjectChunk o) {
       int result = Integer.signum(getSize() - o.getSize());
       if (result == 0) {
         // For the same sized chunks we really don't care about their order
@@ -410,8 +390,8 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     
     @Override
     public boolean equals(Object o) {
-      if (o instanceof Chunk) {
-        return getMemoryAddress() == ((Chunk) o).getMemoryAddress();
+      if (o instanceof ObjectChunk) {
+        return getMemoryAddress() == ((ObjectChunk) o).getMemoryAddress();
       }
       return false;
     }
@@ -538,26 +518,10 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       SimpleMemoryAllocatorImpl.validateAddress(memAddr);
       UnsafeMemoryChunk.writeAbsoluteLong(memAddr+OFF_HEAP_HEADER_SIZE, next);
     }
-    @Override
-    public ChunkType getChunkType() {
-      return SimpleMemoryAllocatorImpl.getAllocator().getChunkFactory().getChunkTypeForAddress(getMemoryAddress());
-    }
-    public static int getSrcTypeOrdinal(long memAddr) {
-      return getSrcType(memAddr) >> SRC_TYPE_SHIFT;
-    }
-    public static int getSrcType(long memAddr) {
-      return getSrcTypeFromRawBits(UnsafeMemoryChunk.readAbsoluteInt(memAddr+REF_COUNT_OFFSET));
-    }
-    public static int getSrcTypeFromRawBits(int rawBits) {
-      return rawBits & SRC_TYPE_MASK;
-    }
-    public static int getSrcTypeOrdinalFromRawBits(int rawBits) {
-      return getSrcTypeFromRawBits(rawBits) >> SRC_TYPE_SHIFT;
-    }
     
     /**
      * Fills the chunk with a repeated byte fill pattern.
-     * @param baseAddress the starting address for a {@link Chunk}.
+     * @param baseAddress the starting address for a {@link ObjectChunk}.
      */
     public static void fill(long baseAddress) {
       long startAddress = baseAddress + MIN_CHUNK_SIZE;
@@ -572,12 +536,12 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      * @throws IllegalStateException when the pattern has been violated.
      */
     public void validateFill() {
-      assert SimpleMemoryAllocatorImpl.TINY_MULTIPLE == 8;
+      assert FreeListManager.TINY_MULTIPLE == 8;
       
       long startAddress = getMemoryAddress() + MIN_CHUNK_SIZE;
       int size = getSize() - MIN_CHUNK_SIZE;
       
-      for(int i = 0;i < size;i += SimpleMemoryAllocatorImpl.TINY_MULTIPLE) {
+      for(int i = 0;i < size;i += FreeListManager.TINY_MULTIPLE) {
         if(UnsafeMemoryChunk.readAbsoluteLong(startAddress + i) != FILL_PATTERN) {
           throw new IllegalStateException("Fill pattern violated for chunk " + getMemoryAddress() + " with size " + getSize());
         }        
@@ -676,7 +640,10 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
       return true;
     }
-    public static void release(final long memAddr, boolean issueOnReturnCallback) {
+    public static void release(final long memAddr) {
+      release(memAddr, null);
+    }
+    static void release(final long memAddr, FreeListManager freeListManager) {
       SimpleMemoryAllocatorImpl.validateAddress(memAddr);
       int newCount;
       int rawBits;
@@ -703,43 +670,21 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       } while (!UnsafeMemoryChunk.writeAbsoluteIntVolatile(memAddr+REF_COUNT_OFFSET, rawBits, newCount));
       //debugLog("free deced ref count " + (newCount&USE_COUNT_MASK) + " @" + Long.toHexString(memAddr), true);
       if (returnToAllocator ) {
-        /*
-        if(issueOnReturnCallback) {
-         final GemFireCacheImpl.StaticSystemCallbacks sysCb =
-              GemFireCacheImpl.FactoryStatics.systemCallbacks;
-          if(sysCb != null ) {
-            ChunkType ct = SimpleMemoryAllocatorImpl.getAllocator().getChunkFactory().getChunkTypeForRawBits(rawBits);
-            int dataSizeDelta = computeDataSizeDelta(rawBits);
-            sysCb.beforeReturningOffHeapMemoryToAllocator(memAddr, ct, dataSizeDelta);
-          }
-        }
-        */
-       
-        if (ReferenceCountHelper.trackReferenceCounts()) {
+       if (ReferenceCountHelper.trackReferenceCounts()) {
           if (ReferenceCountHelper.trackFreedReferenceCounts()) {
             ReferenceCountHelper.refCountChanged(memAddr, true, newCount&REF_COUNT_MASK);
           }
           ReferenceCountHelper.freeRefCountInfo(memAddr);
         }
-        
-        // Use fill pattern for free list data integrity check.
-        if(SimpleMemoryAllocatorImpl.getAllocator().validateMemoryWithFill) {
-          fill(memAddr);
+        if (freeListManager == null) {
+          freeListManager = SimpleMemoryAllocatorImpl.getAllocator().getFreeListManager();
         }
-        
-        SimpleMemoryAllocatorImpl.getAllocator().freeChunk(memAddr);
+        freeListManager.free(memAddr);
       } else {
         if (ReferenceCountHelper.trackReferenceCounts()) {
           ReferenceCountHelper.refCountChanged(memAddr, true, newCount&REF_COUNT_MASK);
         }
       }
-    }
-    
-    private static int computeDataSizeDelta(int rawBits) {
-      int dataSizeDelta = rawBits;
-      dataSizeDelta &= DATA_SIZE_DELTA_MASK;
-      dataSizeDelta >>= DATA_SIZE_SHIFT;
-      return dataSizeDelta;
     }
     
     @Override
@@ -786,7 +731,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     public Object getDataValue() {
       return null;
     }
-    public Chunk slice(int position, int limit) {
-      throw new UnsupportedOperationException();
+    public ObjectChunk slice(int position, int limit) {
+      return new ObjectChunkSlice(this, position, limit);
     }
   }

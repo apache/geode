@@ -18,7 +18,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.DataAsAddress;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.UnsafeMemoryChunk;
@@ -131,7 +131,7 @@ public class Part {
     if (so instanceof DataAsAddress) {
       this.part = ((DataAsAddress)so).getRawBytes();
     } else {
-      this.part = (Chunk)so;
+      this.part = (ObjectChunk)so;
     }
   }
   public byte getTypeCode() {
@@ -146,8 +146,8 @@ public class Part {
       return 0;
     } else if (this.part instanceof byte[]) {
       return ((byte[])this.part).length;
-    } else if (this.part instanceof Chunk) {
-      return ((Chunk) this.part).getValueSizeInBytes();
+    } else if (this.part instanceof ObjectChunk) {
+      return ((ObjectChunk) this.part).getValueSizeInBytes();
     } else {
       return ((HeapDataOutputStream)this.part).size();
     }
@@ -289,8 +289,8 @@ public class Part {
       if (this.part instanceof byte[]) {
         byte[] bytes = (byte[])this.part;
         out.write(bytes, 0, bytes.length);
-      } else if (this.part instanceof Chunk) {
-        Chunk c = (Chunk) this.part;
+      } else if (this.part instanceof ObjectChunk) {
+        ObjectChunk c = (ObjectChunk) this.part;
         ByteBuffer cbb = c.createDirectByteBuffer();
         if (cbb != null) {
           HeapDataOutputStream.writeByteBufferToStream(out,  buf, cbb);
@@ -322,8 +322,8 @@ public class Part {
     if (getLength() > 0) {
       if (this.part instanceof byte[]) {
         buf.put((byte[])this.part);
-      } else if (this.part instanceof Chunk) {
-        Chunk c = (Chunk) this.part;
+      } else if (this.part instanceof ObjectChunk) {
+        ObjectChunk c = (ObjectChunk) this.part;
         ByteBuffer bb = c.createDirectByteBuffer();
         if (bb != null) {
           buf.put(bb);
@@ -372,10 +372,10 @@ public class Part {
           }
           buf.clear();
         }
-      } else if (this.part instanceof Chunk) {
+      } else if (this.part instanceof ObjectChunk) {
         // instead of copying the Chunk to buf try to create a direct ByteBuffer and
         // just write it directly to the socket channel.
-        Chunk c = (Chunk) this.part;
+        ObjectChunk c = (ObjectChunk) this.part;
         ByteBuffer bb = c.createDirectByteBuffer();
         if (bb != null) {
           while (bb.remaining() > 0) {

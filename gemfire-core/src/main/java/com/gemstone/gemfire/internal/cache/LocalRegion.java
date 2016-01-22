@@ -203,7 +203,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
@@ -1587,8 +1587,8 @@ public class LocalRegion extends AbstractRegion
           }
           //For sqlf since the deserialized value is nothing but chunk
           // before returning the found value increase its use count
-          if(GemFireCacheImpl.sqlfSystem() && result instanceof Chunk) {
-            if(!((Chunk)result).retain()) {
+          if(GemFireCacheImpl.sqlfSystem() && result instanceof ObjectChunk) {
+            if(!((ObjectChunk)result).retain()) {
               return null;
             }
           }

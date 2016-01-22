@@ -26,11 +26,10 @@ package com.gemstone.gemfire.internal.offheap;
 public interface MemoryAllocator {
   /**
    * @param size the size in bytes of the chunk of memory to allocate
-   * @param chunkType TODO
    * @return the allocated chunk of memory.
    * @throws IllegalStateException if the heap does not have enough memory to grant the request
    */
-  public MemoryChunk allocate(int size, ChunkType chunkType);
+  public MemoryChunk allocate(int size);
   
   /**
    * Allocates off heap memory for the given data and returns a MemoryChunk
@@ -38,10 +37,9 @@ public interface MemoryAllocator {
    * @param data the bytes of the data to put in the allocated CachedDeserializable
    * @param isSerialized true if data contains a serialized object; false if it is an actual byte array.
    * @param isCompressed true if data is compressed; false if it is uncompressed.
-   * @param chunkType TODO
    * @throws IllegalStateException if the heap does not have enough memory to grant the request
    */
-  public StoredObject allocateAndInitialize(byte[] data, boolean isSerialized, boolean isCompressed, ChunkType chunkType);
+  public StoredObject allocateAndInitialize(byte[] data, boolean isSerialized, boolean isCompressed);
   
   public long getFreeMemory();
   

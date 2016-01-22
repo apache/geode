@@ -55,47 +55,20 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * @author Kirk Lund
  * @since 9.0
  */
-public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
+public class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   static final Logger logger = LogService.getLogger();
   
   public static final String FREE_OFF_HEAP_MEMORY_PROPERTY = "gemfire.free-off-heap-memory";
   
-  /**
-   * How many extra allocations to do for each actual slab allocation.
-   * Is this really a good idea?
-   */
-  public static final int BATCH_SIZE = Integer.getInteger("gemfire.OFF_HEAP_BATCH_ALLOCATION_SIZE", 1);
-  /**
-   * Every allocated chunk smaller than TINY_MULTIPLE*TINY_FREE_LIST_COUNT will allocate a chunk of memory that is a multiple of this value.
-   * Sizes are always rounded up to the next multiple of this constant
-   * so internal fragmentation will be limited to TINY_MULTIPLE-1 bytes per allocation
-   * and on average will be TINY_MULTIPLE/2 given a random distribution of size requests.
-   * This does not account for the additional internal fragmentation caused by the off-heap header
-   * which currently is always 8 bytes.
-   */
-  public final static int TINY_MULTIPLE = Integer.getInteger("gemfire.OFF_HEAP_ALIGNMENT", 8);
-  /**
-   * Number of free lists to keep for tiny allocations.
-   */
-  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger("gemfire.OFF_HEAP_FREE_LIST_COUNT", 16384);
-  public final static int MAX_TINY = TINY_MULTIPLE*TINY_FREE_LIST_COUNT;
-  /**
-   * How many unused bytes are allowed in a huge memory allocation.
-   */
-  public final static int HUGE_MULTIPLE = 256;
+  private volatile OffHeapMemoryStats stats;
   
-  volatile OffHeapMemoryStats stats;
+  private volatile OutOfOffHeapMemoryListener ooohml;
   
-  volatile OutOfOffHeapMemoryListener ooohml;
-  
-  /** The MemoryChunks that this allocator is managing by allocating smaller chunks of them.
-   * The contents of this array never change.
-   */
-  private final UnsafeMemoryChunk[] slabs;
-  private final long totalSlabSize;
-  private final int largestSlab;
-  
+  OutOfOffHeapMemoryListener getOutOfOffHeapMemoryListener() {
+    return this.ooohml;
+  }
+
   public final FreeListManager freeList;
 
   private MemoryInspector memoryInspector;
@@ -103,7 +76,6 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   private volatile MemoryUsageListener[] memoryUsageListeners = new MemoryUsageListener[0];
   
   private static SimpleMemoryAllocatorImpl singleton = null;
-  final ChunkFactory chunkFactory;
   
   public static SimpleMemoryAllocatorImpl getAllocator() {
     SimpleMemoryAllocatorImpl result = singleton;
@@ -118,10 +90,9 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
     return create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize,
-        null, TINY_MULTIPLE, BATCH_SIZE, TINY_FREE_LIST_COUNT, HUGE_MULTIPLE, 
-        new UnsafeMemoryChunk.Factory() {
+        null, new AddressableMemoryChunkFactory() {
       @Override
-      public UnsafeMemoryChunk create(int size) {
+      public AddressableMemoryChunk create(int size) {
         return new UnsafeMemoryChunk(size);
       }
     });
@@ -129,15 +100,14 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   private static SimpleMemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
       int slabCount, long offHeapMemorySize, long maxSlabSize, 
-      UnsafeMemoryChunk[] slabs, int tinyMultiple, int batchSize, int tinyFreeListCount, int hugeMultiple,
-      UnsafeMemoryChunk.Factory memChunkFactory) {
+      AddressableMemoryChunk[] slabs, AddressableMemoryChunkFactory memChunkFactory) {
     SimpleMemoryAllocatorImpl result = singleton;
     boolean created = false;
     try {
     if (result != null) {
       result.reuse(ooohml, lw, stats, offHeapMemorySize, slabs);
       if (lw != null) {
-        lw.config("Reusing " + result.getTotalMemory() + " bytes of off-heap memory. The maximum size of a single off-heap object is " + result.largestSlab + " bytes.");
+        lw.config("Reusing " + result.getTotalMemory() + " bytes of off-heap memory. The maximum size of a single off-heap object is " + result.freeList.getLargestSlabSize() + " bytes.");
       }
       created = true;
       LifecycleListener.invokeAfterReuse(result);
@@ -175,7 +145,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
         }
       }
 
-      result = new SimpleMemoryAllocatorImpl(ooohml, stats, slabs, tinyMultiple, batchSize, tinyFreeListCount, hugeMultiple);
+      result = new SimpleMemoryAllocatorImpl(ooohml, stats, slabs);
       singleton = result;
       LifecycleListener.invokeAfterCreate(result);
       created = true;
@@ -192,19 +162,12 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     }
     return result;
   }
-  // for unit tests
-  static SimpleMemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
-      int slabCount, long offHeapMemorySize, long maxSlabSize, UnsafeMemoryChunk.Factory memChunkFactory) {
+  static SimpleMemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, LogWriter lw, 
+      int slabCount, long offHeapMemorySize, long maxSlabSize, AddressableMemoryChunkFactory memChunkFactory) {
     return create(ooohml, stats, lw, slabCount, offHeapMemorySize, maxSlabSize, 
-        null, TINY_MULTIPLE, BATCH_SIZE, TINY_FREE_LIST_COUNT, HUGE_MULTIPLE, memChunkFactory);
+        null, memChunkFactory);
   }
-  // for unit tests
-  public static SimpleMemoryAllocatorImpl create(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats stats, UnsafeMemoryChunk[] slabs) {
-    return create(oooml, stats, slabs, TINY_MULTIPLE, BATCH_SIZE, TINY_FREE_LIST_COUNT, HUGE_MULTIPLE);
-  }
-  // for unit tests
-  static SimpleMemoryAllocatorImpl create(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats stats, UnsafeMemoryChunk[] slabs,
-      int tinyMultiple, int batchSize, int tinyFreeListCount, int hugeMultiple) {
+  public static SimpleMemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats stats, AddressableMemoryChunk[] slabs) {
     int slabCount = 0;
     long offHeapMemorySize = 0;
     long maxSlabSize = 0;
@@ -218,11 +181,11 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
         }
       }
     }
-    return create(oooml, stats, null, slabCount, offHeapMemorySize, maxSlabSize, slabs, tinyMultiple, batchSize, tinyFreeListCount, hugeMultiple, null);
+    return create(oooml, stats, null, slabCount, offHeapMemorySize, maxSlabSize, slabs, null);
   }
   
   
-  private void reuse(OutOfOffHeapMemoryListener oooml, LogWriter lw, OffHeapMemoryStats newStats, long offHeapMemorySize, UnsafeMemoryChunk[] slabs) {
+  private void reuse(OutOfOffHeapMemoryListener oooml, LogWriter lw, OffHeapMemoryStats newStats, long offHeapMemorySize, AddressableMemoryChunk[] slabs) {
     if (isClosed()) {
       throw new IllegalStateException("Can not reuse a closed off-heap memory manager.");
     }
@@ -234,83 +197,47 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
         lw.warning("Using " + getTotalMemory() + " bytes of existing off-heap memory instead of the requested " + offHeapMemorySize);
       }
     }
-    if (slabs != null) {
-      // this will only happen in unit tests
-      if (slabs != this.slabs) {
-        // If the unit test gave us a different array
-        // of slabs then something is wrong because we
-        // are trying to reuse the old already allocated
-        // array which means that the new one will never
-        // be used. Note that this code does not bother
-        // comparing the contents of the arrays.
-        throw new IllegalStateException("attempted to reuse existing off-heap memory even though new off-heap memory was allocated");
-      }
+    if (!this.freeList.okToReuse(slabs)) {
+      throw new IllegalStateException("attempted to reuse existing off-heap memory even though new off-heap memory was allocated");
     }
     this.ooohml = oooml;
     newStats.initialize(this.stats);
     this.stats = newStats;
   }
 
-  private SimpleMemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml, final OffHeapMemoryStats stats, final UnsafeMemoryChunk[] slabs,
-      int tinyMultiple, int batchSize, int tinyFreeListCount, int hugeMultiple) {
+  private SimpleMemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml, final OffHeapMemoryStats stats, final AddressableMemoryChunk[] slabs) {
     if (oooml == null) {
       throw new IllegalArgumentException("OutOfOffHeapMemoryListener is null");
-    }
-    if (tinyMultiple <= 0 || (tinyMultiple & 3) != 0) {
-      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8.");
-    }
-    if (tinyMultiple > 256) {
-      // this restriction exists because of the dataSize field in the object header.
-      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be <= 256 and a multiple of 8.");
-    }
-    if (batchSize <= 0) {
-      throw new IllegalStateException("gemfire.OFF_HEAP_BATCH_ALLOCATION_SIZE must be >= 1.");
-    }
-    if (tinyFreeListCount <= 0) {
-      throw new IllegalStateException("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
-    }
-    if (hugeMultiple > 256 || hugeMultiple < 0) {
-      // this restriction exists because of the dataSize field in the object header.
-      throw new IllegalStateException("HUGE_MULTIPLE must be >= 0 and <= 256 but it was " + hugeMultiple);
     }
     
     this.ooohml = oooml;
     this.stats = stats;
-    this.slabs = slabs;
-    this.chunkFactory = new GemFireChunkFactory();
-    
+
     //OSProcess.printStacks(0, InternalDistributedSystem.getAnyInstance().getLogWriter(), false);
     this.stats.setFragments(slabs.length);
-    largestSlab = slabs[0].getSize();
-    this.stats.setLargestFragment(largestSlab);
-    long total = 0;
-    for (int i=0; i < slabs.length; i++) {
-      //debugLog("slab"+i + " @" + Long.toHexString(slabs[i].getMemoryAddress()), false);
-      //UnsafeMemoryChunk.clearAbsolute(slabs[i].getMemoryAddress(), slabs[i].getSize()); // HACK to see what this does to bug 47883
-      total += slabs[i].getSize();
-    }
-    totalSlabSize = total;
-    this.stats.incMaxMemory(this.totalSlabSize);
-    this.stats.incFreeMemory(this.totalSlabSize);
+    this.stats.setLargestFragment(slabs[0].getSize());
     
-    this.freeList = new FreeListManager(this);
+    this.freeList = new FreeListManager(this, slabs);
     this.memoryInspector = new MemoryInspectorImpl(this.freeList);
+
+    this.stats.incMaxMemory(this.freeList.getTotalMemory());
+    this.stats.incFreeMemory(this.freeList.getTotalMemory());
   }
   
-  public List<Chunk> getLostChunks() {
-    List<Chunk> liveChunks = this.freeList.getLiveChunks();
-    List<Chunk> regionChunks = getRegionLiveChunks();
-    Set<Chunk> liveChunksSet = new HashSet<>(liveChunks);
-    Set<Chunk> regionChunksSet = new HashSet<>(regionChunks);
+  public List<ObjectChunk> getLostChunks() {
+    List<ObjectChunk> liveChunks = this.freeList.getLiveChunks();
+    List<ObjectChunk> regionChunks = getRegionLiveChunks();
+    Set<ObjectChunk> liveChunksSet = new HashSet<>(liveChunks);
+    Set<ObjectChunk> regionChunksSet = new HashSet<>(regionChunks);
     liveChunksSet.removeAll(regionChunksSet);
-    return new ArrayList<Chunk>(liveChunksSet);
+    return new ArrayList<ObjectChunk>(liveChunksSet);
   }
   
   /**
    * Returns a possibly empty list that contains all the Chunks used by regions.
    */
-  private List<Chunk> getRegionLiveChunks() {
-    ArrayList<Chunk> result = new ArrayList<Chunk>();
+  private List<ObjectChunk> getRegionLiveChunks() {
+    ArrayList<ObjectChunk> result = new ArrayList<ObjectChunk>();
     RegionService gfc = GemFireCacheImpl.getInstance();
     if (gfc != null) {
       Iterator<Region<?,?>> rootIt = gfc.rootRegions().iterator();
@@ -326,7 +253,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     return result;
   }
 
-  private void getRegionLiveChunks(Region<?,?> r, List<Chunk> result) {
+  private void getRegionLiveChunks(Region<?,?> r, List<ObjectChunk> result) {
     if (r.getAttributes().getOffHeap()) {
 
       if (r instanceof PartitionedRegion) {
@@ -350,7 +277,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   }
   
-  private void basicGetRegionLiveChunks(LocalRegion r, List<Chunk> result) {
+  private void basicGetRegionLiveChunks(LocalRegion r, List<ObjectChunk> result) {
     for (Object key : r.keySet()) {
       RegionEntry re = ((LocalRegion) r).getRegionEntry(key);
       if (re != null) {
@@ -359,21 +286,31 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
          */
         @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
         Object value = re._getValue();
-        if (value instanceof Chunk) {
-          result.add((Chunk) value);
+        if (value instanceof ObjectChunk) {
+          result.add((ObjectChunk) value);
         }
       }
     }
   }
 
-  @Override
-  public MemoryChunk allocate(int size, ChunkType chunkType) {
-    //System.out.println("allocating " + size);
-    Chunk result = this.freeList.allocate(size, chunkType);
-    //("allocated off heap object of size " + size + " @" + Long.toHexString(result.getMemoryAddress()), true);
+  private ObjectChunk allocateChunk(int size) {
+    ObjectChunk result = this.freeList.allocate(size);
+    int resultSize = result.getSize();
+    stats.incObjects(1);
+    stats.incUsedMemory(resultSize);
+    stats.incFreeMemory(-resultSize);
+    notifyListeners();
     if (ReferenceCountHelper.trackReferenceCounts()) {
       ReferenceCountHelper.refCountChanged(result.getMemoryAddress(), false, 1);
     }
+    return result;
+  }
+  
+  @Override
+  public MemoryChunk allocate(int size) {
+    //System.out.println("allocating " + size);
+    ObjectChunk result = allocateChunk(size);
+    //("allocated off heap object of size " + size + " @" + Long.toHexString(result.getMemoryAddress()), true);
     return result;
   }
   
@@ -386,22 +323,14 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   }
   
   @Override
-  public StoredObject allocateAndInitialize(byte[] v, boolean isSerialized, boolean isCompressed, ChunkType chunkType) {
+  public StoredObject allocateAndInitialize(byte[] v, boolean isSerialized, boolean isCompressed) {
     long addr = OffHeapRegionEntryHelper.encodeDataAsAddress(v, isSerialized, isCompressed);
     if (addr != 0L) {
       return new DataAsAddress(addr);
     }
-    if (chunkType == null) {
-      chunkType = GemFireChunk.TYPE;
-    }
-
-    Chunk result = this.freeList.allocate(v.length, chunkType);
+    ObjectChunk result = allocateChunk(v.length);
     //debugLog("allocated off heap object of size " + v.length + " @" + Long.toHexString(result.getMemoryAddress()), true);
     //debugLog("allocated off heap object of size " + v.length + " @" + Long.toHexString(result.getMemoryAddress()) +  "chunkSize=" + result.getSize() + " isSerialized=" + isSerialized + " v=" + Arrays.toString(v), true);
-    if (ReferenceCountHelper.trackReferenceCounts()) {
-      ReferenceCountHelper.refCountChanged(result.getMemoryAddress(), false, 1);
-    }
-    assert result.getChunkType() == chunkType: "chunkType=" + chunkType + " getChunkType()=" + result.getChunkType();
     result.setSerializedValue(v);
     result.setSerialized(isSerialized);
     result.setCompressed(isCompressed);
@@ -420,7 +349,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
 
   @Override
   public long getTotalMemory() {
-    return totalSlabSize;
+    return this.freeList.getTotalMemory();
   }
   
   @Override
@@ -445,7 +374,7 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   private void realClose() {
     // Removing this memory immediately can lead to a SEGV. See 47885.
     if (setClosed()) {
-      freeSlabs(this.slabs);
+      this.freeList.freeSlabs();
       this.stats.close();
       singleton = null;
     }
@@ -464,45 +393,21 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   }
   
 
-  private static void freeSlabs(final UnsafeMemoryChunk[] slabs) {
-    //debugLog("called freeSlabs", false);
-    for (int i=0; i < slabs.length; i++) {
-      slabs[i].release();
-    }
-  }
-  
-  void freeChunk(long addr) {
-    this.freeList.free(addr);
-  }
-  
-  protected UnsafeMemoryChunk[] getSlabs() {
-    return this.slabs;
+  FreeListManager getFreeListManager() {
+    return this.freeList;
   }
   
   /**
    * Return the slabId of the slab that contains the given addr.
    */
   int findSlab(long addr) {
-    for (int i=0; i < this.slabs.length; i++) {
-      UnsafeMemoryChunk slab = this.slabs[i];
-      long slabAddr = slab.getMemoryAddress();
-      if (addr >= slabAddr) {
-        if (addr < slabAddr + slab.getSize()) {
-          return i;
-        }
-      }
-    }
-    throw new IllegalStateException("could not find a slab for addr " + addr);
+    return this.freeList.findSlab(addr);
   }
   
   public OffHeapMemoryStats getStats() {
     return this.stats;
   }
   
-  public ChunkFactory getChunkFactory() {
-    return this.chunkFactory;
-  }
-
   @Override
   public void addMemoryUsageListener(final MemoryUsageListener listener) {
     synchronized (this.memoryUsageListeners) {
@@ -558,12 +463,8 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
       SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.singleton;
       if (ma != null) {
         sb.append(". Valid addresses must be in one of the following ranges: ");
-        for (int i=0; i < ma.slabs.length; i++) {
-          long startAddr = ma.slabs[i].getMemoryAddress();
-          long endAddr = startAddr + ma.slabs[i].getSize();
-          sb.append("[").append(Long.toString(startAddr, 16)).append("..").append(Long.toString(endAddr, 16)).append("] ");
-        }
-      }
+        ma.freeList.getSlabDescriptions(sb);
+     }
       throw new IllegalStateException(sb.toString());
     }
     if (addr >= 0 && addr < 1024) {
@@ -576,28 +477,19 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
     if (doExpensiveValidation) {
       SimpleMemoryAllocatorImpl ma = SimpleMemoryAllocatorImpl.singleton;
       if (ma != null) {
-        for (int i=0; i < ma.slabs.length; i++) {
-          if (ma.slabs[i].getMemoryAddress() <= addr && addr < (ma.slabs[i].getMemoryAddress() + ma.slabs[i].getSize())) {
-            // validate addr + size is within the same slab
-            if (size != -1) { // skip this check if size is -1
-              if (!(ma.slabs[i].getMemoryAddress() <= (addr+size-1) && (addr+size-1) < (ma.slabs[i].getMemoryAddress() + ma.slabs[i].getSize()))) {
-                throw new IllegalStateException(" address 0x" + Long.toString(addr+size-1, 16) + " does not address the original slab memory");
-              }
-            }
-            return;
-          }
+        if (!ma.freeList.validateAddressAndSizeWithinSlab(addr, size)) {
+          throw new IllegalStateException(" address 0x" + Long.toString(addr, 16) + " does not address the original slab memory");
         }
-        throw new IllegalStateException(" address 0x" + Long.toString(addr, 16) + " does not address the original slab memory");
       }
     }
   }
 
   public synchronized List<MemoryBlock> getOrphans() {
-    List<Chunk> liveChunks = this.freeList.getLiveChunks();
-    List<Chunk> regionChunks = getRegionLiveChunks();
+    List<ObjectChunk> liveChunks = this.freeList.getLiveChunks();
+    List<ObjectChunk> regionChunks = getRegionLiveChunks();
     liveChunks.removeAll(regionChunks);
     List<MemoryBlock> orphans = new ArrayList<MemoryBlock>();
-    for (Chunk chunk: liveChunks) {
+    for (ObjectChunk chunk: liveChunks) {
       orphans.add(new MemoryBlockNode(this, chunk));
     }
     Collections.sort(orphans,
@@ -615,11 +507,5 @@ public final class SimpleMemoryAllocatorImpl implements MemoryAllocator {
   public MemoryInspector getMemoryInspector() {
     return this.memoryInspector;
   }
-
-  /*
-   * Set this to "true" to perform data integrity checks on allocated and reused Chunks.  This may clobber 
-   * performance so turn on only when necessary.
-   */
-  final boolean validateMemoryWithFill = Boolean.getBoolean("gemfire.validateOffHeapWithFill");
   
 }

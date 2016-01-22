@@ -18,7 +18,7 @@ package com.gemstone.gemfire.cache.operations.internal;
 
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.Releasable;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -70,7 +70,7 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
 
   private void checkForReleasedOffHeapValue(Object v) {
     // Note that we only care about Chunk (instead of all StoredObject) because it is the only one using a refcount
-    if (this.released && v instanceof Chunk) {
+    if (this.released && v instanceof ObjectChunk) {
       throw new IllegalStateException("Attempt to access off-heap value after the OperationContext callback returned.");
     }
   }
@@ -116,7 +116,7 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
     // our value (since this context did not retain it)
     // but we do make sure that any future attempt to access
     // the off-heap value fails.
-    if (super.getValue() instanceof Chunk) {
+    if (super.getValue() instanceof ObjectChunk) {
       this.released = true;
     }
   }

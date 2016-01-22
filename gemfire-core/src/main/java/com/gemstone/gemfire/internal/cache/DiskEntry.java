@@ -40,7 +40,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.Releasable;
@@ -208,8 +208,8 @@ public interface DiskEntry extends RegionEntry {
     static Object getValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr, RegionEntryContext context) {
       @Released Object v = getOffHeapValueOnDiskOrBuffer(entry, dr, context);
       if (v instanceof CachedDeserializable) {
-        if (v instanceof Chunk) {
-          @Released Chunk ohv = (Chunk) v;
+        if (v instanceof ObjectChunk) {
+          @Released ObjectChunk ohv = (ObjectChunk) v;
           try {
             v = ohv.getDeserializedValue(null, null);
             if (v == ohv) {
@@ -688,8 +688,8 @@ public interface DiskEntry extends RegionEntry {
      * Note that this class is only used with uncompressed chunks.
      */
     public static class ChunkValueWrapper implements ValueWrapper {
-      private final @Unretained Chunk chunk;
-      public ChunkValueWrapper(Chunk c) {
+      private final @Unretained ObjectChunk chunk;
+      public ChunkValueWrapper(ObjectChunk c) {
         assert !c.isCompressed();
         this.chunk = c;
       }
@@ -722,7 +722,7 @@ public interface DiskEntry extends RegionEntry {
             return;
           }
         }
-        final long bbAddress = Chunk.getDirectByteBufferAddress(bb);
+        final long bbAddress = ObjectChunk.getDirectByteBufferAddress(bb);
         if (bbAddress != 0L) {
           int bytesRemaining = maxOffset;
           int availableSpace = bb.remaining();
@@ -782,8 +782,8 @@ public interface DiskEntry extends RegionEntry {
         byte[] bytes;
         if (value instanceof CachedDeserializable) {
           CachedDeserializable proxy = (CachedDeserializable)value;
-          if (proxy instanceof Chunk) {
-            return new ChunkValueWrapper((Chunk) proxy);
+          if (proxy instanceof ObjectChunk) {
+            return new ChunkValueWrapper((ObjectChunk) proxy);
           }
           if (proxy instanceof StoredObject) {
             StoredObject ohproxy = (StoredObject) proxy;
@@ -833,8 +833,8 @@ public interface DiskEntry extends RegionEntry {
           // We don't do this for the delta case because getRawNewValue returns delta
           // and we want to write the entire new value to disk.
           rawValue = event.getRawNewValue();
-          if (rawValue instanceof Chunk) {
-            return new ChunkValueWrapper((Chunk) rawValue);
+          if (rawValue instanceof ObjectChunk) {
+            return new ChunkValueWrapper((ObjectChunk) rawValue);
           }
         }
         if (event.getCachedSerializedNewValue() != null) {

@@ -32,39 +32,43 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
 
 /**
  * Manages the free lists for a SimpleMemoryAllocatorImpl
  */
 public class FreeListManager {
-  final private AtomicReferenceArray<SyncChunkStack> tinyFreeLists = new AtomicReferenceArray<SyncChunkStack>(SimpleMemoryAllocatorImpl.TINY_FREE_LIST_COUNT);
+  /** The MemoryChunks that this allocator is managing by allocating smaller chunks of them.
+   * The contents of this array never change.
+   */
+  private final AddressableMemoryChunk[] slabs;
+  private final long totalSlabSize;
+  
+  final private AtomicReferenceArray<SyncChunkStack> tinyFreeLists = new AtomicReferenceArray<SyncChunkStack>(TINY_FREE_LIST_COUNT);
   // hugeChunkSet is sorted by chunk size in ascending order. It will only contain chunks larger than MAX_TINY.
-  private final ConcurrentSkipListSet<Chunk> hugeChunkSet = new ConcurrentSkipListSet<Chunk>();
+  private final ConcurrentSkipListSet<ObjectChunk> hugeChunkSet = new ConcurrentSkipListSet<ObjectChunk>();
   private final AtomicLong allocatedSize = new AtomicLong(0L);
 
   private int getNearestTinyMultiple(int size) {
-    return (size-1)/SimpleMemoryAllocatorImpl.TINY_MULTIPLE;
+    return (size-1)/TINY_MULTIPLE;
   }
-  List<Chunk> getLiveChunks() {
-    ArrayList<Chunk> result = new ArrayList<Chunk>();
-    UnsafeMemoryChunk[] slabs = this.ma.getSlabs();
+  List<ObjectChunk> getLiveChunks() {
+    ArrayList<ObjectChunk> result = new ArrayList<ObjectChunk>();
     for (int i=0; i < slabs.length; i++) {
       getLiveChunks(slabs[i], result);
     }
     return result;
   }
-  private void getLiveChunks(UnsafeMemoryChunk slab, List<Chunk> result) {
+  private void getLiveChunks(AddressableMemoryChunk slab, List<ObjectChunk> result) {
     long addr = slab.getMemoryAddress();
-    while (addr <= (slab.getMemoryAddress() + slab.getSize() - Chunk.MIN_CHUNK_SIZE)) {
+    while (addr <= (slab.getMemoryAddress() + slab.getSize() - ObjectChunk.MIN_CHUNK_SIZE)) {
       Fragment f = isAddrInFragmentFreeSpace(addr);
       if (f != null) {
         addr = f.getMemoryAddress() + f.getSize();
       } else {
-        int curChunkSize = Chunk.getSize(addr);
-        int refCount = Chunk.getRefCount(addr);
+        int curChunkSize = ObjectChunk.getSize(addr);
+        int refCount = ObjectChunk.getRefCount(addr);
         if (refCount > 0) {
-          result.add(this.ma.chunkFactory.newChunk(addr));
+          result.add(new ObjectChunk(addr));
         }
         addr += curChunkSize;
       }
@@ -85,13 +89,13 @@ public class FreeListManager {
     return this.allocatedSize.get();
   }
   public long getFreeMemory() {
-    return this.ma.getTotalMemory() - getUsedMemory();
+    return getTotalMemory() - getUsedMemory();
   }
   long getFreeFragmentMemory() {
     long result = 0;
     for (Fragment f: this.fragmentList) {
       int freeSpace = f.freeSpace();
-      if (freeSpace >= Chunk.MIN_CHUNK_SIZE) {
+      if (freeSpace >= ObjectChunk.MIN_CHUNK_SIZE) {
         result += freeSpace;
       }
     }
@@ -109,7 +113,7 @@ public class FreeListManager {
   }
   long getFreeHugeMemory() {
     long hugeFree = 0;
-    for (Chunk c: this.hugeChunkSet) {
+    for (ObjectChunk c: this.hugeChunkSet) {
       hugeFree += c.getSize();
     }
     return hugeFree;
@@ -122,24 +126,37 @@ public class FreeListManager {
   private final CopyOnWriteArrayList<Fragment> fragmentList;
   private final SimpleMemoryAllocatorImpl ma;
 
-  public FreeListManager(SimpleMemoryAllocatorImpl ma) {
+  public FreeListManager(SimpleMemoryAllocatorImpl ma, final AddressableMemoryChunk[] slabs) {
     this.ma = ma;
-    UnsafeMemoryChunk[] slabs = ma.getSlabs();
+    this.slabs = slabs;
+    long total = 0;
     Fragment[] tmp = new Fragment[slabs.length];
     for (int i=0; i < slabs.length; i++) {
-      tmp[i] = new Fragment(slabs[i].getMemoryAddress(), slabs[i].getSize());
+      tmp[i] = createFragment(slabs[i].getMemoryAddress(), slabs[i].getSize());
+      total += slabs[i].getSize();
     }
     this.fragmentList = new CopyOnWriteArrayList<Fragment>(tmp);
+    this.totalSlabSize = total;
 
-    if(ma.validateMemoryWithFill) {
-      fillFragments();
-    }
+    fillFragments();
   }
 
   /**
-   * Fills all fragments with a fill used for data integrity validation.
+   * Create and return a Fragment.
+   * This method exists so that tests can override it.
+   */
+  protected Fragment createFragment(long addr, int size) {
+    return new Fragment(addr, size);
+  }
+  
+  /**
+   * Fills all fragments with a fill used for data integrity validation 
+   * if fill validation is enabled.
    */
   private void fillFragments() {
+    if (!this.validateMemoryWithFill) {
+      return;
+    }
     for(Fragment fragment : this.fragmentList) {
       fragment.fill();
     }
@@ -157,58 +174,48 @@ public class FreeListManager {
    * Maybe it would be better for 3 to look for adjacent free blocks that can be merged together.
    * For now we will just try 1 and 2 and then report out of mem.
    * @param size minimum bytes the returned chunk must have.
-   * @param chunkType TODO
    * @return the allocated chunk
    * @throws IllegalStateException if a chunk can not be allocated.
    */
   @SuppressWarnings("synthetic-access")
-  public Chunk allocate(int size, ChunkType chunkType) {
-    Chunk result = null;
-    {
-      assert size > 0;
-      if (chunkType == null) {
-        chunkType = GemFireChunk.TYPE;
-      }
-      result = basicAllocate(size, true, chunkType);
-      result.setDataSize(size);
-    }
-    this.ma.stats.incObjects(1);
-    int resultSize = result.getSize();
-    this.allocatedSize.addAndGet(resultSize);
-    this.ma.stats.incUsedMemory(resultSize);
-    this.ma.stats.incFreeMemory(-resultSize);
+  public ObjectChunk allocate(int size) {
+    assert size > 0;
+    
+    ObjectChunk result = basicAllocate(size, true);
+
+    result.setDataSize(size);
+    this.allocatedSize.addAndGet(result.getSize());
     result.initializeUseCount();
-    this.ma.notifyListeners();
 
     return result;
   }
 
-  private Chunk basicAllocate(int size, boolean useSlabs, ChunkType chunkType) {
+  private ObjectChunk basicAllocate(int size, boolean useSlabs) {
     if (useSlabs) {
       // Every object stored off heap has a header so we need
       // to adjust the size so that the header gets allocated.
       // If useSlabs is false then the incoming size has already
       // been adjusted.
-      size += Chunk.OFF_HEAP_HEADER_SIZE;
+      size += ObjectChunk.OFF_HEAP_HEADER_SIZE;
     }
-    if (size <= SimpleMemoryAllocatorImpl.MAX_TINY) {
-      return allocateTiny(size, useSlabs, chunkType);
+    if (size <= MAX_TINY) {
+      return allocateTiny(size, useSlabs);
     } else {
-      return allocateHuge(size, useSlabs, chunkType);
+      return allocateHuge(size, useSlabs);
     }
   }
 
-  private Chunk allocateFromFragments(int chunkSize, ChunkType chunkType) {
+  private ObjectChunk allocateFromFragments(int chunkSize) {
     do {
       final int lastAllocationId = this.lastFragmentAllocation.get();
       for (int i=lastAllocationId; i < this.fragmentList.size(); i++) {
-        Chunk result = allocateFromFragment(i, chunkSize, chunkType);
+        ObjectChunk result = allocateFromFragment(i, chunkSize);
         if (result != null) {
           return result;
         }
       }
       for (int i=0; i < lastAllocationId; i++) {
-        Chunk result = allocateFromFragment(i, chunkSize, chunkType);
+        ObjectChunk result = allocateFromFragment(i, chunkSize);
         if (result != null) {
           return result;
         }
@@ -220,22 +227,27 @@ public class FreeListManager {
     try {
       throw failure;
     } finally {
-      this.ma.ooohml.outOfOffHeapMemory(failure);
+      this.ma.getOutOfOffHeapMemoryListener().outOfOffHeapMemory(failure);
     }
   }
 
   private void logOffHeapState(int chunkSize) {
     if (InternalDistributedSystem.getAnyInstance() != null) {
       LogWriter lw = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      lw.info("OutOfOffHeapMemory allocating size of " + chunkSize + ". allocated=" + this.allocatedSize.get() + " compactions=" + this.compactCount.get() + " objects=" + this.ma.stats.getObjects() + " free=" + this.ma.stats.getFreeMemory() + " fragments=" + this.ma.stats.getFragments() + " largestFragment=" + this.ma.stats.getLargestFragment() + " fragmentation=" + this.ma.stats.getFragmentation());
-      logFragmentState(lw);
-      logTinyState(lw);
-      logHugeState(lw);
+      logOffHeapState(lw, chunkSize);
     }
   }
 
+  void logOffHeapState(LogWriter lw, int chunkSize) {
+    OffHeapMemoryStats stats = this.ma.getStats();
+    lw.info("OutOfOffHeapMemory allocating size of " + chunkSize + ". allocated=" + this.allocatedSize.get() + " compactions=" + this.compactCount.get() + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory() + " fragments=" + stats.getFragments() + " largestFragment=" + stats.getLargestFragment() + " fragmentation=" + stats.getFragmentation());
+    logFragmentState(lw);
+    logTinyState(lw);
+    logHugeState(lw);
+  }
+
   private void logHugeState(LogWriter lw) {
-    for (Chunk c: this.hugeChunkSet) {
+    for (ObjectChunk c: this.hugeChunkSet) {
       lw.info("Free huge of size " + c.getSize());
     }
   }
@@ -256,7 +268,39 @@ public class FreeListManager {
     }
   }
 
-  private final AtomicInteger compactCount = new AtomicInteger();
+  protected final AtomicInteger compactCount = new AtomicInteger();
+  /*
+   * Set this to "true" to perform data integrity checks on allocated and reused Chunks.  This may clobber 
+   * performance so turn on only when necessary.
+   */
+  final boolean validateMemoryWithFill = Boolean.getBoolean("gemfire.validateOffHeapWithFill");
+  /**
+   * Every allocated chunk smaller than TINY_MULTIPLE*TINY_FREE_LIST_COUNT will allocate a chunk of memory that is a multiple of this value.
+   * Sizes are always rounded up to the next multiple of this constant
+   * so internal fragmentation will be limited to TINY_MULTIPLE-1 bytes per allocation
+   * and on average will be TINY_MULTIPLE/2 given a random distribution of size requests.
+   * This does not account for the additional internal fragmentation caused by the off-heap header
+   * which currently is always 8 bytes.
+   */
+  public final static int TINY_MULTIPLE = Integer.getInteger("gemfire.OFF_HEAP_ALIGNMENT", 8);
+  static {
+    verifyOffHeapAlignment(TINY_MULTIPLE);
+  }
+  /**
+   * Number of free lists to keep for tiny allocations.
+   */
+  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger("gemfire.OFF_HEAP_FREE_LIST_COUNT", 16384);
+  static {
+    verifyOffHeapFreeListCount(TINY_FREE_LIST_COUNT);
+  }
+  /**
+   * How many unused bytes are allowed in a huge memory allocation.
+   */
+  public final static int HUGE_MULTIPLE = 256;
+  static {
+    verifyHugeMultiple(HUGE_MULTIPLE);
+  }
+  public final static int MAX_TINY = TINY_MULTIPLE*TINY_FREE_LIST_COUNT;
   /**
    * Compacts memory and returns true if enough memory to allocate chunkSize
    * is freed. Otherwise returns false;
@@ -268,9 +312,10 @@ public class FreeListManager {
    * Or to prevent it from happening we could just check the incoming slabs and throw away a few bytes
    * to keep them from being contiguous.
    */
-  private boolean compact(int chunkSize) {
+  boolean compact(int chunkSize) {
     final long startCompactionTime = this.ma.getStats().startCompaction();
     final int countPreSync = this.compactCount.get();
+    afterCompactCountFetched();
     try {
       synchronized (this) {
         if (this.compactCount.get() != countPreSync) {
@@ -289,10 +334,6 @@ public class FreeListManager {
           long addr = l.poll();
           while (addr != 0) {
             int idx = Arrays.binarySearch(sorted, 0, sortedSize, addr);
-            //System.out.println("DEBUG addr=" + addr + " size=" + Chunk.getSize(addr) + " idx="+idx + " sortedSize=" + sortedSize);
-            if (idx >= 0) {
-              throw new IllegalStateException("duplicate memory address found during compaction!");
-            }
             idx = -idx;
             idx--;
             if (idx == sortedSize) {
@@ -304,10 +345,10 @@ public class FreeListManager {
               } else {
                 // see if we can conflate into sorted[idx]
                 long lowAddr = sorted[idx-1];
-                int lowSize = Chunk.getSize(lowAddr);
+                int lowSize = ObjectChunk.getSize(lowAddr);
                 if (lowAddr + lowSize == addr) {
                   // append the addr chunk to lowAddr
-                  Chunk.setSize(lowAddr, lowSize + Chunk.getSize(addr));
+                  ObjectChunk.setSize(lowAddr, lowSize + ObjectChunk.getSize(addr));
                 } else {
                   if (sortedSize >= sorted.length) {
                     long[] newSorted = new long[sorted.length+SORT_ARRAY_BLOCK_SIZE];
@@ -319,11 +360,11 @@ public class FreeListManager {
                 }
               }
             } else {
-              int addrSize = Chunk.getSize(addr);
+              int addrSize = ObjectChunk.getSize(addr);
               long highAddr = sorted[idx];
               if (addr + addrSize == highAddr) {
                 // append highAddr chunk to addr
-                Chunk.setSize(addr, addrSize + Chunk.getSize(highAddr));
+                ObjectChunk.setSize(addr, addrSize + ObjectChunk.getSize(highAddr));
                 sorted[idx] = addr;
               } else {
                 boolean insert = idx==0;
@@ -333,10 +374,10 @@ public class FreeListManager {
                   //                    long[] tmp = Arrays.copyOf(sorted, sortedSize);
                   //                    throw new IllegalStateException("addr was zero at idx=" + (idx-1) + " sorted="+ Arrays.toString(tmp));
                   //                  }
-                  int lowSize = Chunk.getSize(lowAddr);
+                  int lowSize = ObjectChunk.getSize(lowAddr);
                   if (lowAddr + lowSize == addr) {
                     // append the addr chunk to lowAddr
-                    Chunk.setSize(lowAddr, lowSize + addrSize);
+                    ObjectChunk.setSize(lowAddr, lowSize + addrSize);
                   } else {
                     insert = true;
                   }
@@ -362,10 +403,10 @@ public class FreeListManager {
         for (int i=sortedSize-1; i > 0; i--) {
           long addr = sorted[i];
           long lowAddr = sorted[i-1];
-          int lowSize = Chunk.getSize(lowAddr);
+          int lowSize = ObjectChunk.getSize(lowAddr);
           if (lowAddr + lowSize == addr) {
             // append addr chunk to lowAddr
-            Chunk.setSize(lowAddr, lowSize + Chunk.getSize(addr));
+            ObjectChunk.setSize(lowAddr, lowSize + ObjectChunk.getSize(addr));
             sorted[i] = 0L;
           }
         }
@@ -374,8 +415,8 @@ public class FreeListManager {
         for (int i=sortedSize-1; i >= 0; i--) {
           long addr = sorted[i];
           if (addr == 0L) continue;
-          int addrSize = Chunk.getSize(addr);
-          Fragment f = new Fragment(addr, addrSize);
+          int addrSize = ObjectChunk.getSize(addr);
+          Fragment f = createFragment(addr, addrSize);
           if (addrSize >= chunkSize) {
             result = true;
           }
@@ -389,17 +430,14 @@ public class FreeListManager {
         }
         this.fragmentList.addAll(tmp);
 
-        // Reinitialize fragments with fill pattern data
-        if(this.ma.validateMemoryWithFill) {
-          fillFragments();
-        }
+        fillFragments();
 
         // Signal any waiters that a compaction happened.
         this.compactCount.incrementAndGet();
 
         this.ma.getStats().setLargestFragment(largestFragment);
         this.ma.getStats().setFragments(tmp.size());        
-        updateFragmentation();
+        updateFragmentation(largestFragment);
 
         return result;
       } // sync
@@ -408,12 +446,38 @@ public class FreeListManager {
     }
   }
 
-  private void updateFragmentation() {      
-    long freeSize = this.ma.getStats().getFreeMemory();
+  /**
+   * Unit tests override this method to get better test coverage
+   */
+  protected void afterCompactCountFetched() {
+  }
+  
+  static void verifyOffHeapAlignment(int tinyMultiple) {
+    if (tinyMultiple <= 0 || (tinyMultiple & 3) != 0) {
+      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8.");
+    }
+    if (tinyMultiple > 256) {
+      // this restriction exists because of the dataSize field in the object header.
+      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be <= 256 and a multiple of 8.");
+    }
+  }
+  static void verifyOffHeapFreeListCount(int tinyFreeListCount) {
+    if (tinyFreeListCount <= 0) {
+      throw new IllegalStateException("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+    }
+  }
+  static void verifyHugeMultiple(int hugeMultiple) {
+    if (hugeMultiple > 256 || hugeMultiple < 0) {
+      // this restriction exists because of the dataSize field in the object header.
+      throw new IllegalStateException("HUGE_MULTIPLE must be >= 0 and <= 256 but it was " + hugeMultiple);
+    }
+  }
+  
+  private void updateFragmentation(long largestFragment) {      
+    long freeSize = getFreeMemory();
 
     // Calculate free space fragmentation only if there is free space available.
     if(freeSize > 0) {
-      long largestFragment = this.ma.getStats().getLargestFragment();
       long numerator = freeSize - largestFragment;
 
       double percentage = (double) numerator / (double) freeSize;
@@ -432,6 +496,9 @@ public class FreeListManager {
     collectFreeHugeChunks(l);
     collectFreeTinyChunks(l);
   }
+  List<Fragment> getFragmentList() {
+    return this.fragmentList;
+  }
   private void collectFreeFragmentChunks(List<SyncChunkStack> l) {
     if (this.fragmentList.size() == 0) return;
     SyncChunkStack result = new SyncChunkStack();
@@ -441,20 +508,17 @@ public class FreeListManager {
       do {
         offset = f.getFreeIndex();
         diff = f.getSize() - offset;
-      } while (diff >= Chunk.MIN_CHUNK_SIZE && !f.allocate(offset, offset+diff));
-      if (diff < Chunk.MIN_CHUNK_SIZE) {
-        if (diff > 0) {
-          SimpleMemoryAllocatorImpl.logger.debug("Lost memory of size {}", diff);
-        }
-        // fragment is too small to turn into a chunk
-        // TODO we need to make sure this never happens
-        // by keeping sizes rounded. I think I did this
-        // by introducing MIN_CHUNK_SIZE and by rounding
-        // the size of huge allocations.
+      } while (diff >= ObjectChunk.MIN_CHUNK_SIZE && !f.allocate(offset, offset+diff));
+      if (diff < ObjectChunk.MIN_CHUNK_SIZE) {
+        // If diff > 0 then that memory will be lost during compaction.
+        // This should never happen since we keep the sizes rounded
+        // based on MIN_CHUNK_SIZE.
+        assert diff == 0;
+        // The current fragment is completely allocated so just skip it.
         continue;
       }
       long chunkAddr = f.getMemoryAddress()+offset;
-      Chunk.setSize(chunkAddr, diff);
+      ObjectChunk.setSize(chunkAddr, diff);
       result.offer(chunkAddr);
     }
     // All the fragments have been turned in to chunks so now clear them
@@ -476,7 +540,7 @@ public class FreeListManager {
     }
   }
   private void collectFreeHugeChunks(List<SyncChunkStack> l) {
-    Chunk c = this.hugeChunkSet.pollFirst();
+    ObjectChunk c = this.hugeChunkSet.pollFirst();
     SyncChunkStack result = null;
     while (c != null) {
       if (result == null) {
@@ -488,7 +552,7 @@ public class FreeListManager {
     }
   }
 
-  private Chunk allocateFromFragment(final int fragIdx, final int chunkSize, ChunkType chunkType) {
+  ObjectChunk allocateFromFragment(final int fragIdx, final int chunkSize) {
     if (fragIdx >= this.fragmentList.size()) return null;
     final Fragment fragment;
     try {
@@ -505,14 +569,9 @@ public class FreeListManager {
       int fragmentFreeSize = fragmentSize - oldOffset;
       if (fragmentFreeSize >= chunkSize) {
         // this fragment has room
-        // Try to allocate up to BATCH_SIZE more chunks from it
-        int allocSize = chunkSize * SimpleMemoryAllocatorImpl.BATCH_SIZE;
-        if (allocSize > fragmentFreeSize) {
-          allocSize = (fragmentFreeSize / chunkSize) * chunkSize;
-        }
-        int newOffset = oldOffset + allocSize;
+        int newOffset = oldOffset + chunkSize;
         int extraSize = fragmentSize - newOffset;
-        if (extraSize < Chunk.MIN_CHUNK_SIZE) {
+        if (extraSize < ObjectChunk.MIN_CHUNK_SIZE) {
           // include these last few bytes of the fragment in the allocation.
           // If we don't then they will be lost forever.
           // The extraSize bytes only apply to the first chunk we allocate (not the batch ones).
@@ -523,28 +582,11 @@ public class FreeListManager {
         if (fragment.allocate(oldOffset, newOffset)) {
           // We did the allocate!
           this.lastFragmentAllocation.set(fragIdx);
-          Chunk result = this.ma.chunkFactory.newChunk(fragment.getMemoryAddress()+oldOffset, chunkSize+extraSize, chunkType);
-          allocSize -= chunkSize+extraSize;
-          oldOffset += extraSize;
-          while (allocSize > 0) {
-            oldOffset += chunkSize;
-            // we add the batch ones immediately to the freelist
-            result.readyForFree();
-            free(result.getMemoryAddress(), false);
-            result = this.ma.chunkFactory.newChunk(fragment.getMemoryAddress()+oldOffset, chunkSize, chunkType);
-            allocSize -= chunkSize;
-          }
-
-          if(this.ma.validateMemoryWithFill) {
-            result.validateFill();
-          }
-
+          ObjectChunk result = new ObjectChunk(fragment.getMemoryAddress()+oldOffset, chunkSize+extraSize);
+          checkDataIntegrity(result);
           return result;
         } else {
-          // TODO OFFHEAP: if batch allocations are disabled should we not call basicAllocate here?
-          // Since we know another thread did a concurrent alloc
-          // that possibly did a batch check the free list again.
-          Chunk result = basicAllocate(chunkSize, false, chunkType);
+          ObjectChunk result = basicAllocate(chunkSize, false);
           if (result != null) {
             return result;
           }
@@ -558,50 +600,36 @@ public class FreeListManager {
   private int round(int multiple, int value) {
     return (int) ((((long)value + (multiple-1)) / multiple) * multiple);
   }
-  private Chunk allocateTiny(int size, boolean useFragments, ChunkType chunkType) {
-    return basicAllocate(getNearestTinyMultiple(size), SimpleMemoryAllocatorImpl.TINY_MULTIPLE, 0, this.tinyFreeLists, useFragments, chunkType);
+  private ObjectChunk allocateTiny(int size, boolean useFragments) {
+    return basicAllocate(getNearestTinyMultiple(size), TINY_MULTIPLE, 0, this.tinyFreeLists, useFragments);
   }
-  private Chunk basicAllocate(int idx, int multiple, int offset, AtomicReferenceArray<SyncChunkStack> freeLists, boolean useFragments, ChunkType chunkType) {
+  private ObjectChunk basicAllocate(int idx, int multiple, int offset, AtomicReferenceArray<SyncChunkStack> freeLists, boolean useFragments) {
     SyncChunkStack clq = freeLists.get(idx);
     if (clq != null) {
       long memAddr = clq.poll();
       if (memAddr != 0) {
-        Chunk result = this.ma.chunkFactory.newChunk(memAddr, chunkType);
-
-        // Data integrity check.
-        if(this.ma.validateMemoryWithFill) {          
-          result.validateFill();
-        }
-
-        result.readyForAllocation(chunkType);
+        ObjectChunk result = new ObjectChunk(memAddr);
+        checkDataIntegrity(result);
+        result.readyForAllocation();
         return result;
       }
     }
     if (useFragments) {
-      return allocateFromFragments(((idx+1)*multiple)+offset, chunkType);
+      return allocateFromFragments(((idx+1)*multiple)+offset);
     } else {
       return null;
     }
   }
-  private Chunk allocateHuge(int size, boolean useFragments, ChunkType chunkType) {
+  private ObjectChunk allocateHuge(int size, boolean useFragments) {
     // sizeHolder is a fake Chunk used to search our sorted hugeChunkSet.
-    Chunk sizeHolder = new FakeChunk(size);
-    NavigableSet<Chunk> ts = this.hugeChunkSet.tailSet(sizeHolder);
-    Chunk result = ts.pollFirst();
+    ObjectChunk sizeHolder = new FakeChunk(size);
+    NavigableSet<ObjectChunk> ts = this.hugeChunkSet.tailSet(sizeHolder);
+    ObjectChunk result = ts.pollFirst();
     if (result != null) {
-      if (result.getSize() - (SimpleMemoryAllocatorImpl.HUGE_MULTIPLE - Chunk.OFF_HEAP_HEADER_SIZE) < size) {
+      if (result.getSize() - (HUGE_MULTIPLE - ObjectChunk.OFF_HEAP_HEADER_SIZE) < size) {
         // close enough to the requested size; just return it.
-
-        // Data integrity check.
-        if(this.ma.validateMemoryWithFill) {          
-          result.validateFill();
-        }
-        if (chunkType.getSrcType() != Chunk.getSrcType(result.getMemoryAddress())) {
-          // The java wrapper class that was cached in the huge chunk list is the wrong type.
-          // So allocate a new one and garbage collect the old one.
-          result = this.ma.chunkFactory.newChunk(result.getMemoryAddress(), chunkType);
-        }
-        result.readyForAllocation(chunkType);
+        checkDataIntegrity(result);
+        result.readyForAllocation();
         return result;
       } else {
         this.hugeChunkSet.add(result);
@@ -610,18 +638,23 @@ public class FreeListManager {
     if (useFragments) {
       // We round it up to the next multiple of TINY_MULTIPLE to make
       // sure we always have chunks allocated on an 8 byte boundary.
-      return allocateFromFragments(round(SimpleMemoryAllocatorImpl.TINY_MULTIPLE, size), chunkType);
+      return allocateFromFragments(round(TINY_MULTIPLE, size));
     } else {
       return null;
     }
   }
   
+  private void checkDataIntegrity(ObjectChunk data) {
+    if (this.validateMemoryWithFill) {
+      data.validateFill();
+    }
+  }
   /**
    * Used by the FreeListManager to easily search its
    * ConcurrentSkipListSet. This is not a real chunk
    * but only used for searching.
    */
-  private static class FakeChunk extends Chunk {
+  private static class FakeChunk extends ObjectChunk {
     private final int size;
     public FakeChunk(int size) {
       super();
@@ -635,19 +668,24 @@ public class FreeListManager {
 
   @SuppressWarnings("synthetic-access")
   public void free(long addr) {
+    if (this.validateMemoryWithFill) {
+      ObjectChunk.fill(addr);
+    }
+    
     free(addr, true);
   }
 
   private void free(long addr, boolean updateStats) {
-    int cSize = Chunk.getSize(addr);
+    int cSize = ObjectChunk.getSize(addr);
     if (updateStats) {
-      this.ma.stats.incObjects(-1);
+      OffHeapMemoryStats stats = this.ma.getStats();
+      stats.incObjects(-1);
       this.allocatedSize.addAndGet(-cSize);
-      this.ma.stats.incUsedMemory(-cSize);
-      this.ma.stats.incFreeMemory(cSize);
+      stats.incUsedMemory(-cSize);
+      stats.incFreeMemory(cSize);
       this.ma.notifyListeners();
     }
-    if (cSize <= SimpleMemoryAllocatorImpl.MAX_TINY) {
+    if (cSize <= MAX_TINY) {
       freeTiny(addr, cSize);
     } else {
       freeHuge(addr, cSize);
@@ -661,17 +699,23 @@ public class FreeListManager {
     if (clq != null) {
       clq.offer(addr);
     } else {
-      clq = new SyncChunkStack();
+      clq = createFreeListForEmptySlot(freeLists, idx);
       clq.offer(addr);
       if (!freeLists.compareAndSet(idx, null, clq)) {
         clq = freeLists.get(idx);
         clq.offer(addr);
       }
     }
-
   }
+  /**
+   * Tests override this method to simulate concurrent modification
+   */
+  protected SyncChunkStack createFreeListForEmptySlot(AtomicReferenceArray<SyncChunkStack> freeLists, int idx) {
+    return new SyncChunkStack();
+  }
+  
   private void freeHuge(long addr, int cSize) {
-    this.hugeChunkSet.add(this.ma.chunkFactory.newChunk(addr)); // TODO make this a collection of longs
+    this.hugeChunkSet.add(new ObjectChunk(addr)); // TODO make this a collection of longs
   }
 
   List<MemoryBlock> getOrderedBlocks() {
@@ -695,8 +739,8 @@ public class FreeListManager {
     }
   }
   
-  private void addBlocksFromChunks(Collection<Chunk> src, List<MemoryBlock> dest) {
-    for (Chunk chunk : src) {
+  private void addBlocksFromChunks(Collection<ObjectChunk> src, List<MemoryBlock> dest) {
+    for (ObjectChunk chunk : src) {
       dest.add(new MemoryBlockNode(this.ma, chunk));
     }
   }
@@ -715,7 +759,7 @@ public class FreeListManager {
       long addr = this.tinyFreeLists.get(i).getTopAddress();
       while (addr != 0L) {
         value.add(new MemoryBlockNode(sma, new TinyMemoryBlock(addr, i)));
-        addr = Chunk.getNext(addr);
+        addr = ObjectChunk.getNext(addr);
       }
     }
     return value;
@@ -756,7 +800,7 @@ public class FreeListManager {
 
     @Override
     public int getBlockSize() {
-      return Chunk.getSize(address);
+      return ObjectChunk.getSize(address);
     }
 
     @Override
@@ -800,11 +844,6 @@ public class FreeListManager {
     }
 
     @Override
-    public ChunkType getChunkType() {
-      return null;
-    }
-    
-    @Override
     public boolean equals(Object o) {
       if (o instanceof TinyMemoryBlock) {
         return getMemoryAddress() == ((TinyMemoryBlock) o).getMemoryAddress();
@@ -818,4 +857,64 @@ public class FreeListManager {
       return (int)(value ^ (value >>> 32));
     }
   }
+
+  long getTotalMemory() {
+    return this.totalSlabSize;
+  }
+  
+  void freeSlabs() {
+    for (int i=0; i < slabs.length; i++) {
+      slabs[i].release();
+    }
+  }
+  /**
+   * newSlabs will be non-null in unit tests.
+   * If the unit test gave us a different array
+   * of slabs then something is wrong because we
+   * are trying to reuse the old already allocated
+   * array which means that the new one will never
+   * be used. Note that this code does not bother
+   * comparing the contents of the arrays.
+   */
+  boolean okToReuse(AddressableMemoryChunk[] newSlabs) {
+    return newSlabs == null || newSlabs == this.slabs;
+  }
+  
+  int getLargestSlabSize() {
+    return this.slabs[0].getSize();
+  }
+  int findSlab(long addr) {
+    for (int i=0; i < this.slabs.length; i++) {
+      AddressableMemoryChunk slab = this.slabs[i];
+      long slabAddr = slab.getMemoryAddress();
+      if (addr >= slabAddr) {
+        if (addr < slabAddr + slab.getSize()) {
+          return i;
+        }
+      }
+    }
+    throw new IllegalStateException("could not find a slab for addr " + addr);
+  }
+  void getSlabDescriptions(StringBuilder sb) {
+    for (int i=0; i < slabs.length; i++) {
+      long startAddr = slabs[i].getMemoryAddress();
+      long endAddr = startAddr + slabs[i].getSize();
+      sb.append("[").append(Long.toString(startAddr, 16)).append("..").append(Long.toString(endAddr, 16)).append("] ");
+    }
+  }
+  boolean validateAddressAndSizeWithinSlab(long addr, int size) {
+    for (int i=0; i < slabs.length; i++) {
+      if (slabs[i].getMemoryAddress() <= addr && addr < (slabs[i].getMemoryAddress() + slabs[i].getSize())) {
+        // validate addr + size is within the same slab
+        if (size != -1) { // skip this check if size is -1
+          if (!(slabs[i].getMemoryAddress() <= (addr+size-1) && (addr+size-1) < (slabs[i].getMemoryAddress() + slabs[i].getSize()))) {
+            throw new IllegalStateException(" address 0x" + Long.toString(addr+size-1, 16) + " does not address the original slab memory");
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+  
 }

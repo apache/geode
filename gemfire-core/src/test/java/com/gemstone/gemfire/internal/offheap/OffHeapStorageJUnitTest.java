@@ -245,14 +245,14 @@ public class OffHeapStorageJUnitTest {
 
       OutOfOffHeapMemoryException ex = null;
       try {
-        ma.allocate(1024*1024+1, null);
+        ma.allocate(1024*1024+1);
         fail("expected OutOfOffHeapMemoryException");
       } catch (OutOfOffHeapMemoryException expected) {
         ex = expected;
       }
       verify(ooohml).outOfOffHeapMemory(ex);
       try {
-        ma.allocate(1024*1024+1, null);
+        ma.allocate(1024*1024+1);
         fail("expected OutOfOffHeapMemoryException");
       } catch (OutOfOffHeapMemoryException expected) {
         ex = expected;

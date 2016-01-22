@@ -75,7 +75,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
@@ -955,7 +955,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                   ((ListOfDeltas)oldValue).apply(event);
                   Object preparedNewValue =oldRe.prepareValueForCache(owner,
                       event.getNewValueAsOffHeapDeserializedOrRaw(), true);
-                  if(preparedNewValue instanceof Chunk) {
+                  if(preparedNewValue instanceof ObjectChunk) {
                     event.setNewValue(preparedNewValue);
                   }
                   oldRe.setValue(owner, preparedNewValue, event);

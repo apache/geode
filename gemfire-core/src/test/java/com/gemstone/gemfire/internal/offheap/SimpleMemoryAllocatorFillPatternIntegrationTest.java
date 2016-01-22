@@ -93,7 +93,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
   public void setUp() throws Exception {
     System.setProperty("gemfire.validateOffHeapWithFill", "true");
     this.slab = new UnsafeMemoryChunk(SLAB_SIZE);
-    this.allocator = SimpleMemoryAllocatorImpl.create(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{this.slab});
+    this.allocator = SimpleMemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new UnsafeMemoryChunk[]{this.slab});
   }
 
   /**
@@ -163,7 +163,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
         private int totalAllocation = 0;
         
         // List of Chunks allocated by this thread
-        private List<Chunk> chunks = new LinkedList<Chunk>();
+        private List<ObjectChunk> chunks = new LinkedList<ObjectChunk>();
         
         // Time to end thread execution
         private long endTime = System.currentTimeMillis() + RUN_TIME_IN_MILLIS;
@@ -173,7 +173,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
          */
         private void allocate() {          
           int allocation = chunkSizer.allocationSize();
-          Chunk chunk = (Chunk) allocator.allocate(allocation, null);
+          ObjectChunk chunk = (ObjectChunk) allocator.allocate(allocation);
           
           // This should always work just after allocation
           chunk.validateFill();
@@ -186,7 +186,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
          * Frees a random chunk from the Chunk list.
          */
         private void free() {
-          Chunk chunk = chunks.remove(random.nextInt(chunks.size()));
+          ObjectChunk chunk = chunks.remove(random.nextInt(chunks.size()));
           totalAllocation -= chunk.getSize();
           
           /*
@@ -200,7 +200,7 @@ public class SimpleMemoryAllocatorFillPatternIntegrationTest {
          * Writes canned data to a random Chunk from the Chunk list.
          */
         private void write() {
-          Chunk chunk = chunks.get(random.nextInt(chunks.size()));
+          ObjectChunk chunk = chunks.get(random.nextInt(chunks.size()));
           chunk.writeBytes(0, WRITE_BYTES);
         }
         

@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.Chunk;
+import com.gemstone.gemfire.internal.offheap.ObjectChunk;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
@@ -134,8 +134,8 @@ public class DummyQRegion extends QRegion {
     }
     valueInList.clear();
     Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof Chunk) {
-      @Retained @Released Chunk ohval = (Chunk) val;
+    if (val instanceof ObjectChunk) {
+      @Retained @Released ObjectChunk ohval = (ObjectChunk) val;
       try {
         // TODO OFFHEAP: val may be off-heap PdxInstance
         val = ohval.getDeserializedValue(getRegion(), this.entry);
@@ -155,8 +155,8 @@ public class DummyQRegion extends QRegion {
       valueInArray = new  Object[1];      
     }   
     Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof Chunk) {      
-      @Retained @Released Chunk ohval = (Chunk) val;
+    if (val instanceof ObjectChunk) {      
+      @Retained @Released ObjectChunk ohval = (ObjectChunk) val;
       try {
         // TODO OFFHEAP: val may be off-heap PdxInstance
         val = ohval.getDeserializedValue(getRegion(), this.entry);
@@ -178,8 +178,8 @@ public class DummyQRegion extends QRegion {
     }
     values.clear();
     Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
-    if (val instanceof Chunk) {
-      @Retained @Released Chunk ohval = (Chunk) val;
+    if (val instanceof ObjectChunk) {
+      @Retained @Released ObjectChunk ohval = (ObjectChunk) val;
       try {
         // TODO OFFHEAP: val may be off-heap PdxInstance
         val = ohval.getDeserializedValue(getRegion(), this.entry);
