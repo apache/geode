@@ -79,6 +79,7 @@ import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 import com.gemstone.gemfire.internal.util.Callable;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
+import com.jayway.awaitility.Awaitility;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
@@ -1097,7 +1098,9 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    * @param ms total time to wait, in milliseconds
    * @param interval pause interval between waits
    * @param throwOnTimeout if false, don't generate an error
+   * @deprecated Use {@link Awaitility} instead.
    */
+  @Deprecated
   static public void waitForCriterion(WaitCriterion ev, long ms, 
       long interval, boolean throwOnTimeout) {
     long waitThisTime;
