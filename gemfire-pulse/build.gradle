@@ -140,7 +140,7 @@ idea.module.iml {
 
 
 artifacts {
-  archives jar
+  archives war
 }
 
 def pulseWarFile = "gemfire-pulse-"+version+".war"
