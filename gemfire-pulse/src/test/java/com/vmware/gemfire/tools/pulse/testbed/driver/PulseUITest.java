@@ -16,16 +16,11 @@
  */
 package com.vmware.gemfire.tools.pulse.testbed.driver;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.UITest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import com.vmware.gemfire.tools.pulse.tests.PulseTest;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import junit.framework.Assert;
 
 import org.apache.catalina.LifecycleException;
