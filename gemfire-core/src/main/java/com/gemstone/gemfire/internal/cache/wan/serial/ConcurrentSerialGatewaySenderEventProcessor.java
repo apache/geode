@@ -100,6 +100,15 @@ public class ConcurrentSerialGatewaySenderEventProcessor extends
       }
     }
   }
+  
+  @Override
+  public int eventQueueSize() {
+    int size = 0;
+    for (RegionQueue queue : queues) {
+      size += queue.size();
+    }
+    return size;
+  }
 
   //based on the fix for old wan Bug#46992 .revision is 39437  
   @Override

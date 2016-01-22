@@ -83,6 +83,7 @@ import com.gemstone.gemfire.internal.cache.partitioned.PutAllPRMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PutMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientTombstoneMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessage;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
@@ -1490,7 +1491,7 @@ implements Bucket
    * @throws IOException if the result is not serializable
    * @see LocalRegion#get(Object, Object, boolean, EntryEventImpl)
    */
-  public RawValue getSerialized(KeyInfo keyInfo, boolean generateCallbacks, boolean doNotLockEntry, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws IOException {
+  public RawValue getSerialized(KeyInfo keyInfo, boolean generateCallbacks, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws IOException {
     checkReadiness();
     checkForNoAccess();
     CachePerfStats stats = getCachePerfStats();
@@ -1513,7 +1514,7 @@ implements Bucket
           }
           // TODO OFFHEAP: optimze
           Object value = nonTxnFindObject(keyInfo, isCreate,
-              generateCallbacks, result.getRawValue(), true, true, clientEvent, false, allowReadFromHDFS);
+              generateCallbacks, result.getRawValue(), true, true, requestingClient, clientEvent, false, allowReadFromHDFS);
           if (value != null) {
             result = new RawValue(value);
           }

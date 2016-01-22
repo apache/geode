@@ -18,6 +18,8 @@ package dunit;
 
 import java.util.*;
 
+import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
+
 /**
  * <P>This class represents a host on which a remote method may be
  * invoked.  It provides access to the VMs and GemFire systems that

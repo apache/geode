@@ -431,7 +431,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     this.lockObtainingThread = new Thread(threadGroup, new Runnable() {
       @SuppressWarnings("synthetic-access")
       public void run() {
-        GatewaySenderAdvisor.this.sender.lifeCycleLock
+        GatewaySenderAdvisor.this.sender.getLifeCycleLock()
                     .readLock().lock(); 
           try {
             // Attempt to obtain the lock
@@ -466,7 +466,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
             }
           }
           finally{
-            GatewaySenderAdvisor.this.sender.lifeCycleLock
+            GatewaySenderAdvisor.this.sender.getLifeCycleLock()
                           .readLock().unlock();
         }
       }

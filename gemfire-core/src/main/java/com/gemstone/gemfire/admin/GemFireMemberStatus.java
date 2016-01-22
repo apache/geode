@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
  * Class <code>GemFireMemberStatus</code> provides the status of a specific
  * GemFire member VM. This VM can be a peer, a client, a server and/or a
  * gateway.
- * @deprecated as of 7.0 use the {@link com.gemstone.gemfire.management} package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class GemFireMemberStatus implements Serializable {
   private static final long serialVersionUID = 3389997790525991310L;

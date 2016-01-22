@@ -61,9 +61,9 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
 import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
 import com.gemstone.gemfire.distributed.internal.StartupMessage;
-import com.gemstone.gemfire.distributed.internal.ThrottlingMemLinkedQueueWithDMStats;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannelListener;
 import com.gemstone.gemfire.distributed.internal.direct.ShunnedMemberException;
@@ -74,7 +74,6 @@ import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.SuspectMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
@@ -2034,6 +2033,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
               Thread.currentThread().interrupt();
               // Keep going, try to close the endpoint.
             }
+            if (!dc.isOpen()) {
+              return;
+            }
             if (logger.isDebugEnabled())
               logger.debug("Membership: closing connections for departed member {}", member);
             // close connections, but don't do membership notification since it's already been done
@@ -2289,7 +2291,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       if (!wait) {
         // run a message through the member's serial execution queue to ensure that all of its
         // current messages have been processed
-        ThrottlingMemLinkedQueueWithDMStats serialQueue = listener.getDM().getSerialQueue(idm);
+        OverflowQueueWithDMStats serialQueue = listener.getDM().getSerialQueue(idm);
         if (serialQueue != null) {
           final boolean done[] = new boolean[1];
           final FlushingMessage msg = new FlushingMessage(done);

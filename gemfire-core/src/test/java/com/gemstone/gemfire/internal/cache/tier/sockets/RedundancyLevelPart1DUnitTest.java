@@ -510,6 +510,10 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
       server1.invoke(RedundancyLevelTestBase.class, "stopServer");
       // pause(5000);
       doPuts();
+      System.out.println("server1="+SERVER1);
+      System.out.println("server2="+SERVER2);
+      System.out.println("server3="+SERVER3);
+      System.out.println("server4="+SERVER4);
       verifyDeadServers(1);
       verifyRedundantServersContain(SERVER3);
       verifyLiveAndRedundantServers(3, 1);

@@ -46,7 +46,7 @@ public class MemoryBlockNode implements MemoryBlock {
   }
   @Override
   public MemoryBlock getNextBlock() {
-    return this.ma.getBlockAfter(this);
+    return this.ma.getMemoryInspector().getBlockAfter(this);
   }
   public int getSlabId() {
     return this.ma.findSlab(getMemoryAddress());

@@ -65,27 +65,27 @@ public class StatAlertsManager {
   /**
    * Instance for current DM
    * 
-   * @guarded.By StatAlertsManager.class
+   * Guarded by StatAlertsManager.class
    */
   private static StatAlertsManager alertManager;
 
   /**
-   * @guarded.By this
+   * Guarded by this
    */
   private long refreshInterval;
 
   /**
-   * @guarded.By this.alertDefinitionsMap
+   * Guarded by this.alertDefinitionsMap
    */
   protected final HashMap alertDefinitionsMap = new HashMap();
 
   /**
-   * @guarded.By this
+   * Guarded by this
    */
   private SystemTimer timer;
 
   /**
-   * @guarded.By this
+   * Guarded by this
    */
   private boolean refreshAtFixedRate;
 

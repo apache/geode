@@ -43,8 +43,6 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogFileParser.LogEntry;
-
 
 /**
  * This program merges entries from multiple GemFire log files (those
@@ -123,8 +121,6 @@ public class MergeLogFiles {
    * @throws IllegalArgumentException
    *         If the length of <code>logFiles</code> is not the same
    *         as the length of <code>logFileNames</code>
-   *
-   * @see Sorter#mergeLogFiles
    */
   public static boolean mergeLogFiles(InputStream[] logFiles,
       String[] logFileNames, PrintWriter mergedFile) {
@@ -153,8 +149,6 @@ public class MergeLogFiles {
    * @throws IllegalArgumentException
    *         If the length of <code>logFiles</code> is not the same
    *         as the length of <code>logFileNames</code>
-   *
-   * @see Sorter#mergeLogFiles
    */
   public static boolean mergeLogFiles(InputStream[] logFiles,
       String[] logFileNames, PrintWriter mergedFile,

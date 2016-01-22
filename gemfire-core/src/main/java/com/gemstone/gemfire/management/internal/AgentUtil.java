@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.management.internal;
 
 import java.io.File;
+import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
 
@@ -34,12 +35,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 public class AgentUtil {
 
   private static final Logger logger = LogService.getLogger();
-  private static final String TOOLS_WEB_API_WAR = "/tools/Extensions/gemfire-web-api-";
-  private static final String LIB_WEB_API_WAR = "/lib/gemfire-web-api-";
-  private static final String TOOLS_WEB_WAR = "/tools/Extensions/gemfire-web-";
-  private static final String LIB_WEB_WAR = "/lib/gemfire-web-";
-  private static final String TOOLS_PULSE_WAR = "/tools/Pulse/pulse.war";
-  private static final String LIB_PULSE_WAR = "/lib/pulse.war";
+
   public static final String ERROR_VARIABLE_NOT_SET = "The GEMFIRE environment variable must be set!";
 
   private String gemfireVersion = null;
@@ -48,71 +44,53 @@ public class AgentUtil {
     this.gemfireVersion = gemfireVersion;
   }
 
-  public String getGemFireWebApiWarLocation() {
+  /**
+   * this method will try to find the named war files in the following order:
+   * 1. if GEMFIRE is defined, it will look under tools/Extensions, tools/Pulse and lib folder (in this order) to find
+   *    either the name-version.war or the name.war file
+   * 2. If GEMFIRE is not defined, it will try to find either the name-version.war/name.war (in that order) on the
+   *    classpath
+   *
+   * @param warFilePrefix : the prefix of the war file, e.g. gemfire-web, gemfire-pulse, or gemfire-web-api
+   * @return
+     */
+  public String findWarLocation(String warFilePrefix) {
     String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
-
-    String toolsWebApiWar = gemfireHome + TOOLS_WEB_API_WAR + gemfireVersion + ".war";
-    String libWebApiWar = gemfireHome + LIB_WEB_API_WAR + gemfireVersion + ".war";
-
-    if (new File(toolsWebApiWar).isFile()) {
-      logger.info("GemFire Dev REST API war: {}", toolsWebApiWar);
-      return toolsWebApiWar;
-    } else if (new File(libWebApiWar).isFile()) {
-      logger.info("GemFire Dev REST API war: {}", libWebApiWar);
-      return libWebApiWar;
-    } else {
-      logger.warn("GemFire Dev REST API war not found - neither {} or {} exist", toolsWebApiWar, libWebApiWar);
-      return null;
+    if(!StringUtils.isBlank(gemfireHome)) {
+      String[] possibleFiles = {
+              gemfireHome + "/tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
+              gemfireHome + "/tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
+              gemfireHome + "/lib/" + warFilePrefix + "-" + gemfireVersion + ".war",
+              gemfireHome + "/tools/Extensions/" + warFilePrefix + ".war",
+              gemfireHome + "/tools/Pulse/" + warFilePrefix + ".war",
+              gemfireHome + "/lib/" + warFilePrefix + ".war"
+      };
+      for (String possibleFile : possibleFiles) {
+        if (new File(possibleFile).isFile()) {
+          logger.info(warFilePrefix + " war found: {}", possibleFile);
+          return possibleFile;
+        }
+      }
     }
-  }
 
-  /*
-   * Use the GEMFIRE environment variable to find the GemFire product tree.
-   * First, look in the $GEMFIRE/tools/Management directory Second, look in the
-   * $GEMFIRE/lib directory Finally, if we cannot find Management WAR file then
-   * return null...
-   */
-  public String getGemFireWebWarLocation() {
-    String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
-
-    String toolsWebWar = gemfireHome + TOOLS_WEB_WAR + gemfireVersion + ".war";
-    String libWebWar = gemfireHome + LIB_WEB_WAR + gemfireVersion + ".war";
-
-    if (new File(toolsWebWar).isFile()) {
-      logger.info("GemFire Admin REST war: {}", toolsWebWar);
-      return toolsWebWar;
-    } else if (new File(libWebWar).isFile()) {
-      logger.info("GemFire Admin REST war: {}", libWebWar);
-      return libWebWar;
-    } else {
-      logger.warn("GemFire Admin REST war not found - neither {} or {} exist", toolsWebWar, libWebWar);
-      return null;
+    // if $GEMFIRE is not set or we are not able to find it in all the possible locations under $GEMFIRE, try to
+    // find in the classpath
+    String[] possibleFiles = {
+            warFilePrefix + "-" + gemfireVersion + ".war",
+            warFilePrefix + ".war"
+    };
+    for(String possibleFile:possibleFiles){
+      URL url = this.getClass().getClassLoader().getResource(possibleFile);
+      if(url!=null){
+        // found the war file
+        logger.info(warFilePrefix + " war found: {}", possibleFile);
+        return url.getPath();
+      }
     }
-  }
 
-  // Use the GEMFIRE environment variable to find the GemFire product tree.
-  // First, look in the $GEMFIRE/tools/Pulse directory
-  // Second, look in the $GEMFIRE/lib directory
-  // Finally, if we cannot find the Management WAR file then return null...
-  public String getPulseWarLocation() {
-    String gemfireHome = getGemFireHome();
-    assert !StringUtils.isBlank(gemfireHome) : ERROR_VARIABLE_NOT_SET;
-
-    String toolsPulseWar = gemfireHome + TOOLS_PULSE_WAR;
-    String libPulseWar = gemfireHome + LIB_PULSE_WAR;
-
-    if (new File(toolsPulseWar).isFile()) {
-      logger.info("GemFire Pulse war: {}", toolsPulseWar);
-      return toolsPulseWar;
-    } else if (new File(libPulseWar).isFile()) {
-      logger.info("GemFire Pulse war: {}", libPulseWar);
-      return libPulseWar;
-    } else {
-      logger.warn("GemFire Pulse war not found - neither {} or {} exist", toolsPulseWar, libPulseWar);
-      return null;
-    }
+    // we still couldn't find the war file
+    logger.warn(warFilePrefix+" war file was not found");
+    return null;
   }
 
   public boolean isWebApplicationAvailable(final String warFileLocation) {

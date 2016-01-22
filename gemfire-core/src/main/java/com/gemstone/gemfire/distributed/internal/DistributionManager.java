@@ -3888,7 +3888,7 @@ public class DistributionManager
   }
     
   /** returns the serialThread's queue if throttling is being used, null if not */
-  public ThrottlingMemLinkedQueueWithDMStats getSerialQueue(InternalDistributedMember sender) {
+  public OverflowQueueWithDMStats getSerialQueue(InternalDistributedMember sender) {
     if (MULTI_SERIAL_EXECUTORS) {  
       return this.serialQueuedExecutorPool.getSerialQueue(sender);
     } else {
@@ -4167,13 +4167,12 @@ public class DistributionManager
      * Returns the queue associated with this sender.
      * Used in FlowControl for throttling (based on queue size).
      */
-    public ThrottlingMemLinkedQueueWithDMStats getSerialQueue(InternalDistributedMember sender) {
+    public OverflowQueueWithDMStats getSerialQueue(InternalDistributedMember sender) {
       Integer queueId = getQueueId(sender, false);
       if (queueId == null){
         return null;
       }
-      
-      return (ThrottlingMemLinkedQueueWithDMStats)serialQueuedMap.get(queueId); 
+      return (OverflowQueueWithDMStats)serialQueuedMap.get(queueId);
     }
 
     /*

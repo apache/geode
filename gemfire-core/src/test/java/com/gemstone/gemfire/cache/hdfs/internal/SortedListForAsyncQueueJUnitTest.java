@@ -268,7 +268,9 @@ public class SortedListForAsyncQueueJUnitTest extends TestCase {
     ParallelAsyncEventQueueImpl gatewaySender = new ParallelAsyncEventQueueImpl(c, gattrs);
     HashSet<Region> set = new HashSet<Region>();
     set.add(region);
-    return new HDFSParallelGatewaySenderQueue(gatewaySender, set, 0, 1);
+    HDFSParallelGatewaySenderQueue queue = new HDFSParallelGatewaySenderQueue(gatewaySender, set, 0, 1);
+    queue.start();
+    return queue;
   }
   
  // A test for testing whether the KeyToSeqNumObject compare function is in order.

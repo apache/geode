@@ -86,7 +86,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   public Object getSerializedValue(LocalRegion localRegion, KeyInfo keyInfo, boolean doNotLockEntry, ClientProxyMembershipID requestingClient,
   EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws DataLocationException {
     PartitionedRegion pr = (PartitionedRegion)localRegion;
-    return pr.getDataStore().getSerializedLocally(keyInfo, doNotLockEntry, clientEvent, returnTombstones, allowReadFromHDFS);
+    return pr.getDataStore().getSerializedLocally(keyInfo, doNotLockEntry, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
   }
   @Override
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew,

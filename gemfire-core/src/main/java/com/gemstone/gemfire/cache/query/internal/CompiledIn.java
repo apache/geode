@@ -17,6 +17,7 @@
 
 package com.gemstone.gemfire.cache.query.internal;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,7 +94,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   private Object evaluateColln(ExecutionContext context) 
       throws QueryInvocationTargetException, NameResolutionException, 
       TypeMismatchException, FunctionDomainException {
- Object evalColln = null;
+    Object evalColln = null;
     if (this.colln.isDependentOnCurrentScope(context)) {
       evalColln = this.colln.evaluate(context);
     }
@@ -143,107 +144,20 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     if (!evalColln.getClass().isArray()) {
       throw new TypeMismatchException(LocalizedStrings.CompiledIn_OPERAND_OF_IN_CANNOT_BE_INTERPRETED_AS_A_COLLECTION_IS_INSTANCE_OF_0.toLocalizedString(evalColln.getClass().getName()));
     }
-    if (evalColln instanceof Object[]) {
-      Object[] a = (Object[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        if (TypeUtils.compare(evalElm, a[i], TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
+    if (evalColln.getClass().getComponentType().isPrimitive()) {
+      if (evalElm == null) {
+        throw new TypeMismatchException(LocalizedStrings.CompiledIn_IN_OPERATOR_CHECK_FOR_NULL_IN_PRIMITIVE_ARRAY.toLocalizedString());
       }
-      return Boolean.FALSE;
-    }
-
-    // at this point if evalElm is NULL, then it's a type mismatch
-    if (evalElm == null) {
-      throw new TypeMismatchException(LocalizedStrings.CompiledIn_IN_OPERATOR_CHECK_FOR_NULL_IN_PRIMITIVE_ARRAY.toLocalizedString());
-    }
-
-    // handle each type of primitive array
-    if (evalColln instanceof long[]) {
-      long[] a = (long[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        Object e = Long.valueOf(a[i]);
-        if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
-      }
-      return Boolean.FALSE;
     }
     
-    if (evalColln instanceof double[]) {
-      double[] a = (double[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        Object e = Double.valueOf(a[i]);
-        if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
-      }
-      return Boolean.FALSE;
-    }
-    
-    if (evalColln instanceof float[]) {
-      float[] a = (float[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        Object e = new Float(a[i]);
-        if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
-      }
-      return Boolean.FALSE;
-    }
-    
-    if (evalColln instanceof int[]) {
-      int[] a = (int[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        Object e = Integer.valueOf(a[i]);
-        if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
-      }
-      return Boolean.FALSE;
-    }
-    
-    if (evalColln instanceof short[]) {
-      short[] a = (short[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        Object e = new Short(a[i]);
-        if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
-      }
-      return Boolean.FALSE;
-    }
-    
-    if (evalColln instanceof char[]) {
-      char[] a = (char[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        Object e = new Character(a[i]);
-        if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
-      }
-      return Boolean.FALSE;
-    }
-    
-    if (evalColln instanceof byte[]) {
-      byte[] a = (byte[])evalColln;
-      for (int i = 0; i < a.length; i++) {
-        Object e = Byte.valueOf(a[i]);
-        if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
-          return Boolean.TRUE;
-        }
-      }
-      return Boolean.FALSE;
-    }
-
-    // must be a boolean[]
-    boolean[] a = (boolean[]) evalColln;
-    for (int i = 0; i < a.length; i++) {
-      Object e = Boolean.valueOf(a[i]);
-      if (TypeUtils.compare(evalElm, e, TOK_EQ).equals(Boolean.TRUE)) {
+    int numElements = Array.getLength(evalColln);
+    for (int i = 0; i < numElements; i++) {
+      Object o = Array.get(evalColln, i);
+      if (TypeUtils.compare(evalElm, o, TOK_EQ).equals(Boolean.TRUE)) {
         return Boolean.TRUE;
       }
     }
+   
     return Boolean.FALSE;
   }
   

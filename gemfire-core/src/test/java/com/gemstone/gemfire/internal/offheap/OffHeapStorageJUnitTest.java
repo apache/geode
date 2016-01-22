@@ -17,32 +17,31 @@
 package com.gemstone.gemfire.internal.offheap;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import static org.mockito.Mockito.*;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.internal.LocalStatisticsFactory;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.jayway.awaitility.Awaitility;
 
 @Category(UnitTest.class)
 public class OffHeapStorageJUnitTest {
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private final static long MEGABYTE = 1024 * 1024;
   private final static long GIGABYTE = 1024 * 1024 * 1024;
@@ -121,148 +120,152 @@ public class OffHeapStorageJUnitTest {
     }
   }
   @Test
-  public void testCreateOffHeapStorage() {
+  public void createOffHeapStorageReturnsNullIfForceLocator() {
     System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
+    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 1, null));
+  }
+  @Test
+  public void createOffHeapStorageReturnsNullIfMemorySizeIsZero() {
+    assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 0, null));
+  }
+  @Test
+  public void exceptionIfSlabCountTooSmall() {
+    StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
-      assertEquals(null, OffHeapStorage.createOffHeapStorage(null, null, 0, null));
-    } finally {
-      System.clearProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE);
+      OffHeapStorage.createOffHeapStorage(null, statsFactory, OffHeapStorage.MIN_SLAB_SIZE-1, null);
+    } catch (IllegalArgumentException expected) {
+      expected.getMessage().equals("The amount of off heap memory must be at least " + OffHeapStorage.MIN_SLAB_SIZE + " but it was set to " + (OffHeapStorage.MIN_SLAB_SIZE-1));
     }
-    // TODO: mock the StatiticsFactory and InternalDistributedSystem that createOffHeapStorage require
-    Cache c = new CacheFactory().set("mcast-port", "0").create();
+  }
+  @Test
+  public void exceptionIfDistributedSystemNull() {
+    StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
+      OffHeapStorage.createOffHeapStorage(null, statsFactory, OffHeapStorage.MIN_SLAB_SIZE, (DistributedSystem)null);
+    } catch (IllegalArgumentException expected) {
+      expected.getMessage().equals("InternalDistributedSystem is null");
+    }
+  }
+  
+  @Test
+  public void createOffHeapStorageWorks() {
+    StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator ma = OffHeapStorage.createOffHeapStorage(null, localStatsFactory, OffHeapStorage.MIN_SLAB_SIZE, ids);
+    System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
+    ma.close();
+  }
+
+  @Test
+  public void testCreateOffHeapStorage() {
+    StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
+    OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
+    MemoryAllocator ma = OffHeapStorage.basicCreateOffHeapStorage(null, localStatsFactory, 1024*1024, ooohml);
+    try {
+      OffHeapMemoryStats stats = ma.getStats();
+      assertNotNull(stats.getStats());
+      assertEquals(1024*1024, stats.getFreeMemory());
+      assertEquals(1024*1024, stats.getMaxMemory());
+      assertEquals(0, stats.getUsedMemory());
+      assertEquals(0, stats.getCompactions());
+      assertEquals(0, stats.getCompactionTime());
+      assertEquals(0, stats.getFragmentation());
+      assertEquals(1, stats.getFragments());
+      assertEquals(1024*1024, stats.getLargestFragment());
+      assertEquals(0, stats.getObjects());
+      assertEquals(0, stats.getReads());
+
+      stats.incFreeMemory(100);
+      assertEquals(1024*1024+100, stats.getFreeMemory());
+      stats.incFreeMemory(-100);
+      assertEquals(1024*1024, stats.getFreeMemory());
+
+      stats.incMaxMemory(100);
+      assertEquals(1024*1024+100, stats.getMaxMemory());
+      stats.incMaxMemory(-100);
+      assertEquals(1024*1024, stats.getMaxMemory());
+
+      stats.incUsedMemory(100);
+      assertEquals(100, stats.getUsedMemory());
+      stats.incUsedMemory(-100);
+      assertEquals(0, stats.getUsedMemory());
+
+      stats.incObjects(100);
+      assertEquals(100, stats.getObjects());
+      stats.incObjects(-100);
+      assertEquals(0, stats.getObjects());
+
+      stats.incReads();
+      assertEquals(1, stats.getReads());
+
+      stats.setFragmentation(100);
+      assertEquals(100, stats.getFragmentation());
+      stats.setFragmentation(0);
+      assertEquals(0, stats.getFragmentation());
+
+      stats.setFragments(2);
+      assertEquals(2, stats.getFragments());
+      stats.setFragments(1);
+      assertEquals(1, stats.getFragments());
+
+      stats.setLargestFragment(100);
+      assertEquals(100, stats.getLargestFragment());
+      stats.setLargestFragment(1024*1024);
+      assertEquals(1024*1024, stats.getLargestFragment());
+
+      boolean originalEnableClockStats = DistributionStats.enableClockStats;
+      DistributionStats.enableClockStats = true;
       try {
-        OffHeapStorage.createOffHeapStorage(null, c.getDistributedSystem(), OffHeapStorage.MIN_SLAB_SIZE-1, c.getDistributedSystem());
-      } catch (IllegalArgumentException expected) {
-        expected.getMessage().equals("The amount of off heap memory must be at least " + OffHeapStorage.MIN_SLAB_SIZE + " but it was set to " + (OffHeapStorage.MIN_SLAB_SIZE-1));
-      }
-      try {
-        OffHeapStorage.createOffHeapStorage(null, c.getDistributedSystem(), OffHeapStorage.MIN_SLAB_SIZE, null);
-      } catch (IllegalArgumentException expected) {
-        expected.getMessage().equals("InternalDistributedSystem is null");
-      }
-      MemoryAllocator ma = OffHeapStorage.createOffHeapStorage(null, c.getDistributedSystem(), 1024*1024, c.getDistributedSystem());
-      try {
-        OffHeapMemoryStats stats = ma.getStats();
-        assertEquals(1024*1024, stats.getFreeMemory());
-        assertEquals(1024*1024, stats.getMaxMemory());
-        assertEquals(0, stats.getUsedMemory());
-        assertEquals(0, stats.getCompactions());
-        assertEquals(0, stats.getCompactionTime());
-        assertEquals(0, stats.getFragmentation());
-        assertEquals(1, stats.getFragments());
-        assertEquals(1024*1024, stats.getLargestFragment());
-        assertEquals(0, stats.getObjects());
-        assertEquals(0, stats.getReads());
-
-        stats.incFreeMemory(100);
-        assertEquals(1024*1024+100, stats.getFreeMemory());
-        stats.incFreeMemory(-100);
-        assertEquals(1024*1024, stats.getFreeMemory());
-
-        stats.incMaxMemory(100);
-        assertEquals(1024*1024+100, stats.getMaxMemory());
-        stats.incMaxMemory(-100);
-        assertEquals(1024*1024, stats.getMaxMemory());
-
-        stats.incUsedMemory(100);
-        assertEquals(100, stats.getUsedMemory());
-        stats.incUsedMemory(-100);
-        assertEquals(0, stats.getUsedMemory());
-
-        stats.incObjects(100);
-        assertEquals(100, stats.getObjects());
-        stats.incObjects(-100);
-        assertEquals(0, stats.getObjects());
-
-        stats.incReads();
-        assertEquals(1, stats.getReads());
-
-        stats.setFragmentation(100);
-        assertEquals(100, stats.getFragmentation());
-        stats.setFragmentation(0);
-        assertEquals(0, stats.getFragmentation());
-
-        stats.setFragments(2);
-        assertEquals(2, stats.getFragments());
-        stats.setFragments(1);
-        assertEquals(1, stats.getFragments());
-
-        stats.setLargestFragment(100);
-        assertEquals(100, stats.getLargestFragment());
-        stats.setLargestFragment(1024*1024);
-        assertEquals(1024*1024, stats.getLargestFragment());
-
-        boolean originalEnableClockStats = DistributionStats.enableClockStats;
-        DistributionStats.enableClockStats = true;
-        try {
-          long start = stats.startCompaction();
-          while (stats.startCompaction() == start) {
-            Thread.yield();
-          }
-          stats.endCompaction(start);
-          assertEquals(1, stats.getCompactions());
-          assertTrue(stats.getCompactionTime() > 0);
-        } finally {
-          DistributionStats.enableClockStats = originalEnableClockStats;
+        long start = stats.startCompaction();
+        while (stats.startCompaction() == start) {
+          Thread.yield();
         }
-
-        stats.incObjects(100);
-        stats.incUsedMemory(100);
-        stats.setFragmentation(100);
-        OffHeapStorage ohs = (OffHeapStorage) stats;
-        ohs.initialize(new NullOffHeapMemoryStats());
-        assertEquals(0, stats.getFreeMemory());
-        assertEquals(0, stats.getMaxMemory());
-        assertEquals(0, stats.getUsedMemory());
-        assertEquals(0, stats.getCompactions());
-        assertEquals(0, stats.getCompactionTime());
-        assertEquals(0, stats.getFragmentation());
-        assertEquals(0, stats.getFragments());
-        assertEquals(0, stats.getLargestFragment());
-        assertEquals(0, stats.getObjects());
-        assertEquals(0, stats.getReads());
-        System.setProperty(OffHeapStorage.STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY, "true");
-        try {
-          try {
-            ma.allocate(1024*1024+1, null);
-            fail("expected OutOfOffHeapMemoryException");
-          } catch (OutOfOffHeapMemoryException expected) {
-          }
-          assertTrue(c.getDistributedSystem().isConnected());
-          try {
-            ma.allocate(1024*1024+1, null);
-            fail("expected OutOfOffHeapMemoryException");
-          } catch (OutOfOffHeapMemoryException expected) {
-          }
-          assertTrue(c.getDistributedSystem().isConnected());
-        } finally {
-          System.clearProperty(OffHeapStorage.STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY);
-        }
-        try {
-          ma.allocate(1024*1024+1, null);
-          fail("expected OutOfOffHeapMemoryException");
-        } catch (OutOfOffHeapMemoryException expected) {
-        }
-        try {
-          ma.allocate(1024*1024+1, null);
-          fail("expected OutOfOffHeapMemoryException");
-        } catch (OutOfOffHeapMemoryException expected) {
-        }
-        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
-          return !c.getDistributedSystem().isConnected();
-        });
-
+        stats.endCompaction(start);
+        assertEquals(1, stats.getCompactions());
+        assertTrue(stats.getCompactionTime() > 0);
       } finally {
-        System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
-        try {
-          ma.close();
-        } finally {
-          System.clearProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY);
-        }
+        DistributionStats.enableClockStats = originalEnableClockStats;
       }
-   } finally {
-      c.close();
+
+      stats.incObjects(100);
+      stats.incUsedMemory(100);
+      stats.setFragmentation(100);
+      OffHeapStorage ohs = (OffHeapStorage) stats;
+      ohs.initialize(new NullOffHeapMemoryStats());
+      assertEquals(0, stats.getFreeMemory());
+      assertEquals(0, stats.getMaxMemory());
+      assertEquals(0, stats.getUsedMemory());
+      assertEquals(0, stats.getCompactions());
+      assertEquals(0, stats.getCompactionTime());
+      assertEquals(0, stats.getFragmentation());
+      assertEquals(0, stats.getFragments());
+      assertEquals(0, stats.getLargestFragment());
+      assertEquals(0, stats.getObjects());
+      assertEquals(0, stats.getReads());
+
+      OutOfOffHeapMemoryException ex = null;
+      try {
+        ma.allocate(1024*1024+1, null);
+        fail("expected OutOfOffHeapMemoryException");
+      } catch (OutOfOffHeapMemoryException expected) {
+        ex = expected;
+      }
+      verify(ooohml).outOfOffHeapMemory(ex);
+      try {
+        ma.allocate(1024*1024+1, null);
+        fail("expected OutOfOffHeapMemoryException");
+      } catch (OutOfOffHeapMemoryException expected) {
+        ex = expected;
+      }
+      verify(ooohml).outOfOffHeapMemory(ex);
+
+    } finally {
+      System.setProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
+      try {
+        ma.close();
+      } finally {
+        System.clearProperty(SimpleMemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY);
+      }
     }
   }
   @Test

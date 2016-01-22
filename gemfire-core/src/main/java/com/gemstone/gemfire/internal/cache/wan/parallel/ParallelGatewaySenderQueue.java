@@ -212,19 +212,29 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   
   final protected int index; 
   final protected int nDispatcher;
+
+  private MetaRegionFactory metaRegionFactory;
   
   /**
    * A transient queue to maintain the eventSeqNum of the events that are to be
    * sent to remote site. It is cleared when the queue is cleared.
    */
-  //private final BlockingQueue<Long> eventSeqNumQueue;  
+  //private final BlockingQueue<Long> eventSeqNumQueue;
   
   public ParallelGatewaySenderQueue(AbstractGatewaySender sender,
       Set<Region> userRegions, int idx, int nDispatcher) {
+    this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory());
+  }
+  
+  ParallelGatewaySenderQueue(AbstractGatewaySender sender,
+      Set<Region> userRegions, int idx, int nDispatcher, MetaRegionFactory metaRegionFactory) {
+  
+    this.metaRegionFactory = metaRegionFactory;
+    
     this.index = idx;
     this.nDispatcher = nDispatcher;
     this.stats = sender.getStatistics();
-    this.sender = (AbstractGatewaySender)sender;
+    this.sender = sender;
     
     List<Region> listOfRegions = new ArrayList<Region>(userRegions);
     //eventSeqNumQueue = new LinkedBlockingQueue<Long>();
@@ -266,15 +276,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     
     queueEmptyLock = new StoppableReentrantLock(sender.getCancelCriterion());
     queueEmptyCondition = queueEmptyLock.newCondition();
-    //at present, this won't be accessed by multiple threads, 
-    //still, it is safer approach to synchronize it
-    synchronized (ParallelGatewaySenderQueue.class) {
-      if (removalThread == null) {
-        removalThread = new BatchRemovalThread(
-          (GemFireCacheImpl)sender.getCache(), this);
-        removalThread.start();
-      }
-    }
     
     //initialize the conflation thread pool if conflation is enabled
     if (sender.isBatchConflationEnabled()) {
@@ -282,9 +283,22 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
+  /**Start the background batch removal thread. */
+  public void start() {
+    //at present, this won't be accessed by multiple threads, 
+    //still, it is safer approach to synchronize it
+    synchronized (ParallelGatewaySenderQueue.class) {
+      if (removalThread == null) {
+        removalThread = new BatchRemovalThread(
+          (GemFireCacheImpl)this.sender.getCache(), this);
+        removalThread.start();
+      }
+    }
+  }
+
   public void addShadowPartitionedRegionForUserRR(
       DistributedRegion userRegion) {
-    this.sender.lifeCycleLock.writeLock().lock();
+    this.sender.getLifeCycleLock().writeLock().lock();
     PartitionedRegion prQ = null;
 
     if (logger.isDebugEnabled()) {
@@ -434,7 +448,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (prQ != null) {
 	      this.userRegionNameToshadowPRMap.put(userRegion.getFullPath(), prQ);
       }
-      this.sender.lifeCycleLock.writeLock().unlock();
+      this.sender.getLifeCycleLock().writeLock().unlock();
     }
   }
   
@@ -447,7 +461,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     if (logger.isDebugEnabled()) {
       logger.debug("{} addShadowPartitionedRegionForUserPR: Attempting to create queue region: {}", this, userPR.getDisplayName());
     }
-    this.sender.lifeCycleLock.writeLock().lock();
+    this.sender.getLifeCycleLock().writeLock().lock();
     
     PartitionedRegion prQ = null;
     try {
@@ -527,8 +541,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           logger.debug("{}: Attempting to create queue region: {}", this, prQName);
         }
 
-        ParallelGatewaySenderQueueMetaRegion meta = new ParallelGatewaySenderQueueMetaRegion(
-            prQName, ra, null, cache, sender, isUsedForHDFS());
+        ParallelGatewaySenderQueueMetaRegion meta = metaRegionFactory.newMetataRegion(cache,
+            prQName, ra, sender, isUsedForHDFS());
 
         try {
           prQ = (PartitionedRegion)cache
@@ -586,7 +600,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         ((AbstractGatewaySender)sender).enqueueTempEvents();
       }
       afterRegionAdd(userPR);
-      this.sender.lifeCycleLock.writeLock().unlock();
+      this.sender.getLifeCycleLock().writeLock().unlock();
     }
   }
 
@@ -908,12 +922,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public PartitionedRegion removeShadowPR(String fullpath) {
     try {
-      this.sender.lifeCycleLock.writeLock().lock();
+      this.sender.getLifeCycleLock().writeLock().lock();
       this.sender.setEnqueuedAllTempQueueEvents(false);
       return this.userRegionNameToshadowPRMap.remove(fullpath);
     }
     finally {
-      sender.lifeCycleLock.writeLock().unlock();
+      sender.getLifeCycleLock().writeLock().unlock();
     }
   }
   
@@ -1414,8 +1428,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   public int localSize() {
     int size = 0;
     for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
-      if(((PartitionedRegion)prQ.getRegion()).getDataStore() != null) {
-        size += ((PartitionedRegion)prQ.getRegion()).getDataStore()
+      if(prQ != null && prQ.getDataStore() != null) {
+        size += prQ.getDataStore()
             .getSizeOfLocalPrimaryBuckets();  
       }
       if (logger.isDebugEnabled()) {
@@ -1788,7 +1802,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  protected class ParallelGatewaySenderQueueMetaRegion extends
+  protected static class ParallelGatewaySenderQueueMetaRegion extends
       PartitionedRegion {
     
     AbstractGatewaySender sender = null;
@@ -1859,5 +1873,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   
   public int size(PartitionedRegion pr, int bucketId) throws ForceReattemptException{
   	throw new RuntimeException("This method(size)is not supported by ParallelGatewaySenderQueue");
+  }
+  
+  static class MetaRegionFactory {
+    ParallelGatewaySenderQueueMetaRegion newMetataRegion(
+        GemFireCacheImpl cache, final String prQName, final RegionAttributes ra, AbstractGatewaySender sender, boolean isUsedForHDFS) {
+      ParallelGatewaySenderQueueMetaRegion meta = new ParallelGatewaySenderQueueMetaRegion(
+          prQName, ra, null, cache, sender, isUsedForHDFS);
+      return meta;
+    }
   }
 }
