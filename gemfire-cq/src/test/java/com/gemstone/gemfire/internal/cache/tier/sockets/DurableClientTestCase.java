@@ -7,8 +7,14 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +89,8 @@ public class DurableClientTestCase extends DistributedTestCase {
     this.regionName = getName() + "_region";
     //Clients see this when the servers disconnect
     addExpectedException("Could not find any server");
+    testName = getName();
+    System.out.println("\n\n[setup] START TEST " + getClass().getSimpleName()+"."+ testName+"\n\n");
   }
   
   public void tearDown2() throws Exception {
@@ -148,70 +156,67 @@ public class DurableClientTestCase extends DistributedTestCase {
    * In this test we will set gemfire.SPECIAL_DURABLE property to true and will
    * see durableID appended by poolname or not
    */
-  public void testSimpleDurableClient2() {    
-    // Start a server
-    int serverPort = ((Integer) this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[] {regionName, new Boolean(true)}))
-        .intValue();
-
-    // Start a durable client that is not kept alive on the server when it
-    // stops normally
-    final String durableClientId = getName() + "_client";
+  public void testSimpleDurableClient2() {
     final Properties jp = new Properties();
     jp.setProperty("gemfire.SPECIAL_DURABLE", "true");
-    
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient", 
-        new Object[] {getClientPool(getServerHostName(durableClientVM.getHost()), serverPort, true)
-    									, regionName
-    									, getClientDistributedSystemProperties(durableClientId)
-    									, new Boolean(false)
-    									, jp});
 
-    // Send clientReady message
-    this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
-      public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
-      }
-    });
+    try {
+      // Start a server
+      int serverPort = ((Integer) this.server1VM.invoke(CacheServerTestUtil.class, "createCacheServer", new Object[] { regionName, new Boolean(true) })).intValue();
 
-    // Verify durable client on server
-    this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
-      public void run2() throws CacheException {
-        // Find the proxy
-        checkNumberOfClientProxies(1);
-        CacheClientProxy proxy = getClientProxy();
-        assertNotNull(proxy);
-        
-        // Verify that it is durable and its properties are correct
-        assertTrue(proxy.isDurable());
-        assertNotSame(durableClientId, proxy.getDurableId());
-        
-        /* new durable id will be like this
-         * durableClientId
-         * _gem_ //separartor
-         * client pool name
-         */
-        String dId = durableClientId + "_gem_" + "CacheServerTestUtil";
-        
-        assertEquals(dId, proxy.getDurableId());
-        assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, proxy.getDurableTimeout());
-        //assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_KEEP_ALIVE, proxy.getDurableKeepAlive());
-      }
-    });
-    
-    // Stop the durable client
-    this.disconnectDurableClient();
-    
-    // Verify the durable client is present on the server for closeCache=false case.
-    this.verifySimpleDurableClient();
-    
-    // Stop the server
-    this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
+      // Start a durable client that is not kept alive on the server when it
+      // stops normally
+      final String durableClientId = getName() + "_client";
 
-    this.closeDurableClient();
-    
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "unsetJavaSystemProperties", 
+      this.durableClientVM.invoke(CacheServerTestUtil.class, "createCacheClient",
+          new Object[] { getClientPool(getServerHostName(durableClientVM.getHost()), serverPort, true), regionName, getClientDistributedSystemProperties(durableClientId), new Boolean(false), jp });
+
+      // Send clientReady message
+      this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+        public void run2() throws CacheException {
+          CacheServerTestUtil.getCache().readyForEvents();
+        }
+      });
+
+      // Verify durable client on server
+      this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
+        public void run2() throws CacheException {
+          // Find the proxy
+          checkNumberOfClientProxies(1);
+          CacheClientProxy proxy = getClientProxy();
+          assertNotNull(proxy);
+
+          // Verify that it is durable and its properties are correct
+          assertTrue(proxy.isDurable());
+          assertNotSame(durableClientId, proxy.getDurableId());
+
+          /* new durable id will be like this
+           * durableClientId
+           * _gem_ //separartor
+           * client pool name */
+          String dId = durableClientId + "_gem_" + "CacheServerTestUtil";
+
+          assertEquals(dId, proxy.getDurableId());
+          assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, proxy.getDurableTimeout());
+          // assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_KEEP_ALIVE, proxy.getDurableKeepAlive());
+        }
+      });
+
+      // Stop the durable client
+      this.disconnectDurableClient();
+
+      // Verify the durable client is present on the server for closeCache=false case.
+      this.verifySimpleDurableClient();
+
+      // Stop the server
+      this.server1VM.invoke(CacheServerTestUtil.class, "closeCache");
+
+      this.closeDurableClient();
+    } finally {
+ 
+      this.durableClientVM.invoke(CacheServerTestUtil.class, "unsetJavaSystemProperties", 
         new Object[] {jp});
+    }
     
   }
   
@@ -226,9 +231,49 @@ public class DurableClientTestCase extends DistributedTestCase {
 
   public void disconnectDurableClient(boolean keepAlive)
   {
-    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache",new Object[] {new Boolean(keepAlive)});    
+    printClientProxyState("Before");
+    this.durableClientVM.invoke(CacheServerTestUtil.class, "closeCache",new Object[] {new Boolean(keepAlive)});
+    pause(1000);
+    printClientProxyState("after");
   }
 
+  public void printClientProxyState(String st) {
+    CacheSerializableRunnable s = new CacheSerializableRunnable("Loggiog CCCP and ServerConnetcion state"){
+      @Override
+      public void run2() throws CacheException {
+        // TODO Auto-generated method stub
+        CacheServerTestUtil.getCache().getLogger().info(st + " CCP states: " + getAllClientProxyState());
+        CacheServerTestUtil.getCache().getLogger().info(st + " CHM states: " + printMap(ClientHealthMonitor._instance.getConnectedClients(null)));
+      }
+    };
+    server1VM.invoke(s);
+  }
+  
+  private String printMap(Map m) {
+    Iterator<Map.Entry> itr = m.entrySet().iterator();
+    StringBuffer sb = new StringBuffer();
+    while(itr.hasNext()){
+      sb.append("{");
+      Map.Entry entry = itr.next();
+      sb.append(entry.getKey());
+      sb.append(", ");
+      printMapValue(entry.getValue(), sb);
+      sb.append("}");
+    }
+    return sb.toString();    
+  }
+  
+  private void printMapValue(Object value, StringBuffer sb) {
+    if(value.getClass().isArray()) {
+      
+      sb.append("{");
+      sb.append(Arrays.toString((Object[])value));
+      sb.append("}");
+    } else {
+      sb.append(value);
+    }
+  }
+  
   public void verifySimpleDurableClient()
   {
     this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
@@ -1431,7 +1476,7 @@ public class DurableClientTestCase extends DistributedTestCase {
   public class RejectClientReconnectTestHook implements CacheClientProxy.TestHook {
       CountDownLatch reconnectLatch = new CountDownLatch(1);
       CountDownLatch continueDrain = new CountDownLatch(1);
-      boolean clientWasRejected = false;
+      volatile boolean clientWasRejected = false;
       CountDownLatch clientConnected = new CountDownLatch(1);
       
       public void doTestHook(String spot) {
@@ -1579,13 +1624,39 @@ public class DurableClientTestCase extends DistributedTestCase {
     return proxy;
   }
   
+  protected static String getAllClientProxyState() {
+    // Get the CacheClientNotifier
+    CacheClientNotifier notifier = getBridgeServer().getAcceptor()
+        .getCacheClientNotifier();
+    
+    // Get the CacheClientProxy or not (if proxy set is empty)
+    CacheClientProxy proxy = null;
+    Iterator<CacheClientProxy> i = notifier.getClientProxies().iterator();
+    StringBuffer sb = new StringBuffer();
+    while(i.hasNext()) {
+      sb.append(" [");
+      sb.append(i.next().getState());
+      sb.append(" ]");
+    }
+    return sb.toString();
+  }
+  
   protected static void checkNumberOfClientProxies(final int expected) {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return expected == getNumberOfClientProxies();
       }
       public String description() {
-        return null;
+        /*String result =  "";
+        if(ClientHealthMonitor._instance != null && ClientHealthMonitor._instance.getCleanupProxyIdTable() != null)
+          result = ClientHealthMonitor._instance.getCleanupProxyIdTable().toString(); 
+        
+        
+        CacheClientProxy ccp = getClientProxy();
+        
+        if(ccp != null)
+          result += " ccp: " + ccp.toString();*/
+        return getAllClientProxyState();
       }
     };
     DistributedTestCase.waitForCriterion(ev, 50 * 1000, 200, true);

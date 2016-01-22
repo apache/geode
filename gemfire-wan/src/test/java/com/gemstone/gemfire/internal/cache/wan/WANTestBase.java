@@ -2221,8 +2221,20 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
   
+  public static void stopReceivers() {
+    Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
+    for (GatewayReceiver receiver : receivers) {
+      receiver.stop();
+    }
+  }
   
-   
+  public static void startReceivers() throws IOException {
+    Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
+    for (GatewayReceiver receiver : receivers) {
+      receiver.start();
+    }
+  }
+  
   public static void createSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent,
@@ -3948,11 +3960,23 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
   
-  public static void validateQueueSizeStat(String id, int queueSize) {
-    GatewaySender sender = cache.getGatewaySender(id);
-    GatewaySenderStats stats = ((AbstractGatewaySender) sender).getStatistics();
-    assertEquals(queueSize, stats.getEventQueueSize());
-    assertEquals(0, stats.getTempEventQueueSize());
+  public static void validateQueueSizeStat(String id, final int queueSize) {
+    final AbstractGatewaySender sender = (AbstractGatewaySender)  cache.getGatewaySender(id);
+    
+    waitForCriterion(new WaitCriterion() {
+      
+      @Override
+      public boolean done() {
+        return sender.getEventQueueSize() == queueSize;
+      }
+      
+      @Override
+      public String description() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+    }, 30000, 50, false);
+    assertEquals(queueSize, sender.getEventQueueSize());
   }
   /**
    * This method is specifically written for pause and stop operations.

@@ -69,7 +69,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       logger.debug("Starting gatewaySender : {}", this);
     }
     
-    this.lifeCycleLock.writeLock().lock();
+    this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewaySender_SENDER_0_IS_ALREADY_RUNNING, this.getId()));
@@ -118,7 +118,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
   
       enqueueTempEvents();
     } finally {
-      this.lifeCycleLock.writeLock().unlock();
+      this.getLifeCycleLock().writeLock().unlock();
     }
   }
   
@@ -127,7 +127,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     if (logger.isDebugEnabled()) {
       logger.debug("Stopping Gateway Sender : {}", this);
     }
-    this.lifeCycleLock.writeLock().lock();
+    this.getLifeCycleLock().writeLock().lock();
     try {
       // Stop the dispatcher
       AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
@@ -148,7 +148,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       
       clearTempEventsAfterSenderStopped();
     } finally {
-      this.lifeCycleLock.writeLock().unlock();
+      this.getLifeCycleLock().writeLock().unlock();
     }
     if (this.isPrimary()) {
       try {

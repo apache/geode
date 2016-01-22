@@ -210,21 +210,28 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
         testName + "_RR", "ln", isOffHeap() });
 
     vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
-        1000 });
+        20 });
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
-        1000 });
+        20 });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        testName + "_RR", 20 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 1000 });
+        testName + "_RR", 20 });
+    
+    vm2.invoke(WANTestBase.class, "stopReceivers");
+    vm3.invoke(WANTestBase.class, "stopReceivers");
     
     vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
-        200 });
+        20 });
+    
+    vm4.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 20 });
+    vm5.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 20 });
+    
     vm4.invoke(WANTestBase.class, "stopSender", new Object[] { "ln" });
     vm5.invoke(WANTestBase.class, "stopSender", new Object[] { "ln" });
 
@@ -252,9 +259,17 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm4async.getResult(START_WAIT_TIME);
     vm5async.getResult(START_WAIT_TIME);
 
+    vm4.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 20 });
+    vm5.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 20 });
 
-    vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
-      10000 });
+    vm5.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+      110 });
+    
+    vm4.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 130 });
+    vm5.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 130 });
+    
+    vm2.invoke(WANTestBase.class, "startReceivers");
+    vm3.invoke(WANTestBase.class, "startReceivers");
 
     vm4.invoke(SerialGatewaySenderOperationsDUnitTest.class,
         "verifySenderResumedState", new Object[] { "ln" });
@@ -262,12 +277,15 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
         "verifySenderResumedState", new Object[] { "ln" });
     
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_RR", 10000 });
+      testName + "_RR", 110 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-      testName + "_RR", 10000 });
+      testName + "_RR", 110 });
+    
+    vm4.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
+    vm5.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
   }
 
-  public void testStopOneSerialGatewaySenderBothPrimary() {
+  public void testStopOneSerialGatewaySenderBothPrimary() throws Throwable {
     Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
         "createFirstLocatorWithDSId", new Object[] { 1 });
     Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
@@ -304,7 +322,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
     vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
-        1000 });
+        100 });
 
     vm4.invoke(WANTestBase.class, "stopSender", new Object[] { "ln" });
 
@@ -312,14 +330,32 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
         "verifySenderStoppedState", new Object[] { "ln" });
     
     vm4.invoke(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
-        10000 });
+        200 });
     
-    getLogWriter().info("Completed puts in the region");
-
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 10000 });
+        testName + "_RR", 200 });
     vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
-        testName + "_RR", 10000 });
+        testName + "_RR", 200 });
+    
+    //Do some puts while restarting a sender
+    AsyncInvocation asyncPuts = vm4.invokeAsync(WANTestBase.class, "doPuts", new Object[] { testName + "_RR",
+        2000 });
+    
+    Thread.sleep(10);
+    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    
+    asyncPuts.getResult();
+    getLogWriter().info("Completed puts in the region");
+    
+    vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
+        testName + "_RR", 2000 });
+    vm3.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
+        testName + "_RR", 2000 });
+    
+    Thread.sleep(5000);
+    vm4.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
+    
+    
   }
 
   public void testStopOneSerialGatewaySender_PrimarySecondary() {

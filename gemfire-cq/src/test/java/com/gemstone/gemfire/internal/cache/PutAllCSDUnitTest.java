@@ -32,17 +32,12 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
@@ -62,15 +57,13 @@ import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -87,6 +80,7 @@ import dunit.VM;
  * @author Gester Zhou
  * @since 5.0.23
  */
+@SuppressWarnings("serial")
 public class PutAllCSDUnitTest extends ClientServerTestCase {
 
   final int numberOfEntries = 100;
@@ -417,8 +411,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
   
     // set notifyBySubscription=false to test local-invalidates
@@ -487,8 +482,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set notifyBySubscription=false to test local-invalidates
@@ -1131,8 +1127,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
 
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -1279,8 +1276,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -1383,8 +1381,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -1811,8 +1810,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -2098,8 +2098,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -2277,8 +2278,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -2508,8 +2510,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -2666,9 +2669,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     final VM client1 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int[] serverPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     final String serverHost = getServerHostName(server1.getHost());
     
     final SharedCounter sc_server1 = new SharedCounter("server1");
@@ -2677,10 +2678,10 @@ public void testOneServer() throws CacheException, InterruptedException {
     final SharedCounter sc_client2 = new SharedCounter("client2");
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    createBridgeServer(server1, regionName, serverPort1, true, 0, null);
-    createBridgeServer(server2, regionName, serverPort2, true, 0, null);
-    createBridgeServer(server3, regionName, serverPort3, true, 0, null);
-    createClient(client1, regionName, serverHost, new int[] {serverPort1, serverPort2, serverPort3}, -1, -1, false, true, true);
+    createBridgeServer(server1, regionName, serverPorts[0], true, 0, null);
+    createBridgeServer(server2, regionName, serverPorts[1], true, 0, null);
+    createBridgeServer(server3, regionName, serverPorts[2], true, 0, null);
+    createClient(client1, regionName, serverHost, serverPorts, -1, -1, false, true, true);
 
     {
       // Create local region
@@ -2695,7 +2696,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       
       try {
         getCache();
-        ClientServerTestCase.configureConnectionPool(factory, serverHost, new int[] {serverPort1, serverPort2, serverPort3}, true, -1, -1, null);
+        ClientServerTestCase.configureConnectionPool(factory, serverHost, serverPorts, true, -1, -1, null);
         createRegion(regionName, factory.create());
         assertNotNull(getRootRegion().getSubregion(regionName));
       }
@@ -2812,8 +2813,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest
@@ -2911,8 +2913,9 @@ public void testOneServer() throws CacheException, InterruptedException {
     VM client2 = host.getVM(3);
     final String regionName = getUniqueName();
     
-    final int serverPort1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final int serverPort2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPorts[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int serverPort1 = serverPorts[0];
+    final int serverPort2 = serverPorts[1];
     final String serverHost = getServerHostName(server1.getHost());
 
     // set notifyBySubscription=true to test register interest

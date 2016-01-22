@@ -95,9 +95,15 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CLIENTS);
     csb.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, clientName);
     String commandString = csb.toString();
-    writeToLog("Command String : ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
+    long giveUpTime = System.currentTimeMillis() + 20000;
+    CommandResult commandResult = null;
+    String resultAsString = null;
+    do {
+      writeToLog("Command String : ", commandString);
+      commandResult = executeCommand(commandString);
+      resultAsString = commandResultToString(commandResult);
+    } while (resultAsString.contains("Cannot close a running durable client")
+        && giveUpTime > System.currentTimeMillis());
     writeToLog("Command Result :\n", resultAsString);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
     
@@ -140,6 +146,16 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     
   }
     
+//  public void testRepeat() throws Exception {
+//    long endTime = System.currentTimeMillis() + (75 * 60000);
+//    while (endTime > System.currentTimeMillis()) {
+//      testCountSubscriptionQueueSize();
+//      tearDown();
+//      setUp();
+//    }
+//    testCountSubscriptionQueueSize();
+//  }
+//  
   public void testCountSubscriptionQueueSize() throws Exception {
     setupSystem();
     setupCqs();
@@ -199,11 +215,17 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     csb = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CLIENTS);
     csb.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, clientName);
     commandString = csb.toString();
-    writeToLog("Command String : ", commandString);
-    commandResult = executeCommand(commandString);
-    resultAsString = commandResultToString(commandResult);
+    // since it can take the server a bit to know that the client has disconnected
+    // we loop here
+    long giveUpTime = System.currentTimeMillis() + 20000;
+    do {
+      writeToLog("Command String : ", commandString);
+      commandResult = executeCommand(commandString);
+      resultAsString = commandResultToString(commandResult);
+    } while (resultAsString.contains("Cannot close a running durable client")
+        && giveUpTime > System.currentTimeMillis());
     writeToLog("Command Result :\n", resultAsString);
-    assertTrue(Status.OK.equals(commandResult.getStatus()));
+    assertTrue("failed executing" + commandString + "; result = "+resultAsString, Status.OK.equals(commandResult.getStatus()));
     
     csb = new CommandStringBuilder(CliStrings.COUNT_DURABLE_CQ_EVENTS);
     csb.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID, clientName);
@@ -217,8 +239,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
   }
   
   private void writeToLog(String text, String resultAsString) {
-    getLogWriter().info(testName + "\n");
-    getLogWriter().info(resultAsString);
+    getLogWriter().info(getUniqueName() + ": " + text + "\n" + resultAsString);
   }
   
   private void setupSystem() throws Exception {

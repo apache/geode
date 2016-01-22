@@ -59,47 +59,48 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   private final String exampleRegionName2 = "exampleRegion2";
   private final String poolName = "serverConnectionPool";
   
+  
   /* Some of the queries are commented out as they were taking less time */
   String[]  queryStr = {
       "SELECT ID FROM /root/exampleRegion p WHERE  p.ID > 100",
-      //"SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pk != '1000'",
-      //"SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pkid != '1'",
-      //"SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pk > '1'",
-      //"SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pkid != '53'",
-      //"SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100",
-      //"SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100 and pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
-      //"SELECT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
+      "SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pk != '1000'",
+      "SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pkid != '1'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pk > '1'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pkid != '53'",
+      "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100",
+      "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100 and pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
+      "SELECT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
       "SELECT * FROM /root/exampleRegion WHERE  ID > 100 and status = 'active'",
-      //"SELECT DISTINCT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
-      //"SELECT DISTINCT ID FROM /root/exampleRegion WHERE  status = 'active'",
-      //"SELECT DISTINCT ID FROM /root/exampleRegion p WHERE  p.status = 'active'",
-      //"SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
-      //"SELECT DISTINCT proj1:p, proj2:itrX FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
-      //+ " WHERE  pos.secId = 'YHOO') as itrX",
-      //"SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
-      //+ " WHERE  pos.secId = 'YHOO') as itrX",
-      //"SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT p.ID FROM /root/exampleRegion x"
-      //+ " WHERE  x.ID = p.ID) as itrX",
+      "SELECT DISTINCT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
+      "SELECT DISTINCT ID FROM /root/exampleRegion WHERE  status = 'active'",
+      "SELECT DISTINCT ID FROM /root/exampleRegion p WHERE  p.status = 'active'",
+      "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
+      "SELECT DISTINCT proj1:p, proj2:itrX FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
+      + " WHERE  pos.secId = 'YHOO') as itrX",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
+      + " WHERE  pos.secId = 'YHOO') as itrX",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT p.ID FROM /root/exampleRegion x"
+      + " WHERE  x.ID = p.ID) as itrX",
       "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion x, x.positions.values pos"
       + " WHERE  x.ID = p.ID) as itrX",
-      //"SELECT DISTINCT x.ID FROM /root/exampleRegion x, x.positions.values v WHERE  "
-      //+ "v.secId = element(SELECT DISTINCT vals.secId FROM /root/exampleRegion p, p.positions.values vals WHERE  vals.secId = 'YHOO')",
+      "SELECT DISTINCT x.ID FROM /root/exampleRegion x, x.positions.values v WHERE  "
+      + "v.secId = element(SELECT DISTINCT vals.secId FROM /root/exampleRegion p, p.positions.values vals WHERE  vals.secId = 'YHOO')",
       "SELECT DISTINCT * FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.status = 'active'",
-      //"SELECT DISTINCT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID",
+      "SELECT DISTINCT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID",
       "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.status = 'active' and p2.status = 'active'",
-      //"SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.status = 'active' and p.status = p2.status",
+      "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.status = 'active' and p.status = p2.status",
       "SELECT DISTINCT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000",
-      //"SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000 or p.status = p2.status",
+      "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000 or p.status = p2.status",
       "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000 or p.status = 'active'",
-      //"SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId ='IBM')", 
-      //"SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId !='IBM')",
-      //"SELECT DISTINCT structset.sos, structset.key " 
-      //+ "FROM /root/exampleRegion p, p.positions.values outerPos, " 
-      //+ "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
-      //+ "FROM /root/exampleRegion.entries pf, pf.value.positions.values pos "
-      //+ "where outerPos.secId != 'IBM' AND "
-      //+ "pf.key IN (SELECT DISTINCT * FROM pf.value.collectionHolderMap['0'].arr)) structset "
-      //+ "where structset.sos > 2000",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId ='IBM')", 
+      "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId !='IBM')",
+      "SELECT DISTINCT structset.sos, structset.key " 
+      + "FROM /root/exampleRegion p, p.positions.values outerPos, " 
+      + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
+      + "FROM /root/exampleRegion.entries pf, pf.value.positions.values pos "
+      + "where outerPos.secId != 'IBM' AND "
+      + "pf.key IN (SELECT DISTINCT * FROM pf.value.collectionHolderMap['0'].arr)) structset "
+      + "where structset.sos > 2000",
       "SELECT DISTINCT * "
       + "FROM /root/exampleRegion p, p.positions.values outerPos, "
       + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
@@ -107,8 +108,8 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
       + "where outerPos.secId != 'IBM' AND " 
       + "pf.key IN (SELECT DISTINCT * FROM pf.value.collectionHolderMap['0'].arr)) structset "
       + "where structset.sos > 2000",
-      //"SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values position "
-      //+ "WHERE (true = null OR position.secId = 'SUN') AND true", 
+      "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values position "
+      + "WHERE (true = null OR position.secId = 'SUN') AND true", 
   };
 
   String[]  prQueryStr = {
@@ -220,7 +221,6 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
         } catch (Exception ex) {
           fail("While starting CacheServer", ex);
         }
-        pause(1000);
         Cache cache = getCache();
         GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
         cache.getLogger().fine("#### RUNNING TEST : " + testName);
@@ -307,10 +307,10 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM client2 = host.getVM(2);
     VM client3 = host.getVM(3);
 
-    final int numberOfEntries = 800;
+    final int numberOfEntries = 100;
 
     // Start server
-    configServer(server, 40, "testQueryMonitorClientServer"); // All the queries taking more than 40ms should be canceled by Query monitor.
+    configServer(server, 20, "testQueryMonitorClientServer"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server);
     
     // Initialize server regions.
@@ -383,13 +383,13 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM client1 = host.getVM(2);
     VM client2 = host.getVM(3);
 
-    final int numberOfEntries = 800;
+    final int numberOfEntries = 100;
 
     // Start server
-    configServer(server1, 40, "testQueryMonitorMultiClientMultiServer"); // All the queries taking more than 40ms should be canceled by Query monitor.
+    configServer(server1, 20, "testQueryMonitorMultiClientMultiServer"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server1);
 
-    configServer(server2, 40, "testQueryMonitorMultiClientMultiServer"); // All the queries taking more than 40ms should be canceled by Query monitor.
+    configServer(server2, 20, "testQueryMonitorMultiClientMultiServer"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server2);
 
     // Initialize server regions.
@@ -470,13 +470,13 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
 
-    final int numberOfEntries = 800;
+    final int numberOfEntries = 100;
 
     // Start server
-    configServer(server1, 40, "testQueryExecutionLocally"); // All the queries taking more than 40ms should be canceled by Query monitor.
+    configServer(server1, 20, "testQueryExecutionLocally"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server1);
 
-    configServer(server2, 40, "testQueryExecutionLocally"); // All the queries taking more than 40ms should be canceled by Query monitor.
+    configServer(server2, 20, "testQueryExecutionLocally"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server2);
 
     // Initialize server regions.
@@ -548,13 +548,13 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
 
-    final int numberOfEntries = 8000;
+    final int numberOfEntries = 1000;
 
     // Start server
-    configServer(server1, 40, "testQueryExecutionLocally"); // All the queries taking more than 40ms should be canceled by Query monitor.
+    configServer(server1, 20, "testQueryExecutionLocally"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server1);
 
-    configServer(server2, 40, "testQueryExecutionLocally"); // All the queries taking more than 40ms should be canceled by Query monitor.
+    configServer(server2, 20, "testQueryExecutionLocally"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server2);
 
     // Initialize server regions.
@@ -636,16 +636,14 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM client1 = host.getVM(2);
     VM client2 = host.getVM(3);
 
-    final int numberOfEntries = 800;
+    final int numberOfEntries = 100;
 
     // Start server
-    configServer(server1, 200, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 200ms should be canceled by Query monitor.
+    configServer(server1, 100, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 100ms should be canceled by Query monitor.
     createPRRegion(server1);
 
-    configServer(server2, 50, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 200ms should be canceled by Query monitor.
+    configServer(server2, 100, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 100ms should be canceled by Query monitor.
     createPRRegion(server2);
-
-    pause(1000);
     
     // Initialize server regions.
     server1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
@@ -719,16 +717,15 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
 
-    final int numberOfEntries = 800;
+    final int numberOfEntries = 100;
 
     // Start server
-    configServer(server1, 200, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 200ms should be canceled by Query monitor.
+    configServer(server1, 100, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 100ms should be canceled by Query monitor.
     createPRRegion(server1);
 
-    configServer(server2, 50, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 200ms should be canceled by Query monitor.
+    configServer(server2, 100, "testQueryMonitorMultiClientMultiServerOnPR"); // All the queries taking more than 100ms should be canceled by Query monitor.
     createPRRegion(server2);
 
-    pause(1000);
     
     // Initialize server regions.
     server1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
@@ -793,16 +790,15 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM client1 = host.getVM(2);
     VM client2 = host.getVM(3);
 
-    final int numberOfEntries = 800;
+    final int numberOfEntries = 100;
 
     // Start server
-    configServer(server1, 5000, "testQueryMonitorRegionWithEviction"); // All the queries taking more than 120ms should be canceled by Query monitor.
+    configServer(server1, 20, "testQueryMonitorRegionWithEviction"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server1, true, "server1_testQueryMonitorRegionWithEviction");
 
-    configServer(server2, 5000, "testQueryMonitorRegionWithEviction"); // All the queries taking more than 120ms should be canceled by Query monitor.
+    configServer(server2, 20, "testQueryMonitorRegionWithEviction"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server2, true, "server2_testQueryMonitorRegionWithEviction");
 
-    pause(1000);
     
     // Initialize server regions.
     server1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
@@ -878,16 +874,16 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM client1 = host.getVM(2);
     VM client2 = host.getVM(3);
 
-    final int numberOfEntries = 800;
+    final int numberOfEntries = 100;
 
     // Start server
-    configServer(server1, 40, "testQueryMonitorRegionWithIndex"); // All the queries taking more than 80ms should be canceled by Query monitor.
+    configServer(server1, 20, "testQueryMonitorRegionWithIndex"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server1);
 
-    configServer(server2, 40, "testQueryMonitorRegionWithIndex"); // All the queries taking more than 80ms should be canceled by Query monitor.
+    configServer(server2, 20, "testQueryMonitorRegionWithIndex"); // All the queries taking more than 20ms should be canceled by Query monitor.
     createRegion(server2);
 
-    pause(1000);
+//    pause(1000);
     
 
     // Initialize server regions.
@@ -1089,7 +1085,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     VM server3 = host.getVM(2);
     VM server4 = host.getVM(3);
     
-    final int numberOfEntries = 8000;
+    final int numberOfEntries = 1000;
 
     // Start server
     configServer(server1, 5, "testQueryExecutionLocally"); 
@@ -1274,7 +1270,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
     public void doTestHook(String description) {
       if (description.equals("6")) {
         try {
-          Thread.sleep(timeout);
+          Thread.sleep(timeout * 2);
         }
         catch (InterruptedException ie) {
           Thread.currentThread().interrupt();

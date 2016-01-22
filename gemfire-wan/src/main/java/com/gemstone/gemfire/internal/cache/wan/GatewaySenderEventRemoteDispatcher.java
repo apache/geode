@@ -630,12 +630,12 @@ public class GatewaySenderEventRemoteDispatcher implements
           logger.fatal(LocalizedMessage.create(
               LocalizedStrings.GatewayEventRemoteDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH) ,e);
         }
-        sender.lifeCycleLock.writeLock().lock();
+        sender.getLifeCycleLock().writeLock().lock();
         try {
           processor.stopProcessing();
           sender.clearTempEventsAfterSenderStopped();
         } finally {
-          sender.lifeCycleLock.writeLock().unlock();
+          sender.getLifeCycleLock().writeLock().unlock();
         }
         // destroyConnection();
       } finally {

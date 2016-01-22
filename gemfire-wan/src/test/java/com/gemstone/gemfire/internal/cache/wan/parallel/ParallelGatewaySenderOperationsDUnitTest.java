@@ -490,11 +490,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm6.invoke(WANTestBase.class, "stopSender", new Object[] { "ln" });
     vm7.invoke(WANTestBase.class, "stopSender", new Object[] { "ln" });
     
-    vm4.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
-    vm5.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
-    vm6.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
-    vm7.invoke(WANTestBase.class, "validateQueueSizeStat", new Object[] { "ln", 0 });
-    
     pause(2000);
     
     //SECOND RUN: do some of the puts after the senders are stopped

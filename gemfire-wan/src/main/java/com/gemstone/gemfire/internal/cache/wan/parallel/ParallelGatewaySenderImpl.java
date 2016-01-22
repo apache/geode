@@ -65,7 +65,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   
   @Override
   public void start() {
-    this.lifeCycleLock.writeLock().lock(); 
+    this.getLifeCycleLock().writeLock().lock(); 
     try {
       if (isRunning()) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewaySender_SENDER_0_IS_ALREADY_RUNNING, this.getId()));
@@ -112,7 +112,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       }
     }
     finally {
-      this.lifeCycleLock.writeLock().unlock();
+      this.getLifeCycleLock().writeLock().unlock();
     }
   }
   
@@ -127,7 +127,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void stop() {
-    this.lifeCycleLock.writeLock().lock(); 
+    this.getLifeCycleLock().writeLock().lock(); 
     try {
       if (!this.isRunning()) {
         return;
@@ -164,7 +164,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 //      }
     }
     finally {
-      this.lifeCycleLock.writeLock().unlock();
+      this.getLifeCycleLock().writeLock().unlock();
     }
   }
   
