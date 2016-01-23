@@ -25,10 +25,12 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang.SerializationException;
 import org.jgroups.Address;
@@ -151,6 +153,39 @@ public class JGroupsMessengerJUnitTest {
     if (messenger != null && messenger.myChannel != null) {
       messenger.stop();
     }
+  }
+  
+  @Test
+  public void ioExceptionInitiatesSuspectProcessing() throws Exception {
+    // see GEODE-634
+    initMocks(false);
+    NetView v = createView();
+    when(joinLeave.getView()).thenReturn(v);
+    messenger.installView(v);
+    messenger.handleJGroupsIOException(new IOException("je m'en fiche"), new JGAddress(v.getMembers().get(1)));
+    verify(healthMonitor).checkIfAvailable(isA(InternalDistributedMember.class), isA(String.class), isA(Boolean.class));
+  }
+  
+  @Test
+  public void ioExceptionDuringShutdownAvoidsSuspectProcessing() throws Exception {
+    // see GEODE-634
+    initMocks(false);
+    NetView v = createView();
+    when(joinLeave.getView()).thenReturn(v);
+    when(manager.shutdownInProgress()).thenReturn(true);
+    messenger.installView(v);
+    messenger.handleJGroupsIOException(new IOException("fichez-moi le camp"), new JGAddress(v.getMembers().get(1)));
+    verify(healthMonitor, never()).checkIfAvailable(isA(InternalDistributedMember.class), isA(String.class), isA(Boolean.class));
+  }
+  
+  private NetView createView() {
+    InternalDistributedMember sender = messenger.getMemberID();
+    List<InternalDistributedMember> mbrs = new ArrayList<>();
+    mbrs.add(sender);
+    mbrs.add(createAddress(100));
+    mbrs.add(createAddress(101));
+    NetView v = new NetView(sender, 1, mbrs);
+    return v;
   }
   
   @Test

@@ -379,6 +379,9 @@ public class JGroupsMessenger implements Messenger {
    * see Transport._send()
    */
   public void handleJGroupsIOException(IOException e, Address dest) {
+    if (services.getManager().shutdownInProgress()) { // GEODE-634 - don't log IOExceptions during shutdown
+      return;
+    }
     if (addressesWithioExceptionsProcessed.contains(dest)) {
       return;
     }
