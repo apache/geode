@@ -85,7 +85,7 @@ public class NetViewJUnitTest {
   @Test
   public void testCreateView() throws Exception {
     int numMembers = members.size();
-    NetView view = new NetView(members.get(0), 2, members, Collections.emptySet(), Collections.emptySet());
+    NetView view = new NetView(members.get(0), 2, members);
     setFailureDetectionPorts(view);
     
     assertTrue(view.getCreator().equals(members.get(0)));
@@ -118,8 +118,7 @@ public class NetViewJUnitTest {
   @Test
   public void testRemoveMembers() throws Exception {
     int numMembers = members.size();
-    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members), Collections.emptySet(),
-        Collections.emptySet());
+    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
 
     for (int i=1; i<numMembers; i+=2) {
@@ -138,8 +137,7 @@ public class NetViewJUnitTest {
   @Test
   public void testRemoveAll() throws Exception {
     int numMembers = members.size();
-    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members), Collections.emptySet(),
-        Collections.emptySet());
+    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
 
     Collection<InternalDistributedMember> removals = new ArrayList<>(numMembers/2);
@@ -163,8 +161,7 @@ public class NetViewJUnitTest {
   
   @Test
   public void testCopyView() throws Exception {
-    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members), Collections.emptySet(),
-        Collections.emptySet());
+    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
 
     NetView newView = new NetView(view, 3);
@@ -184,8 +181,7 @@ public class NetViewJUnitTest {
   
   @Test
   public void testAddLotsOfMembers() throws Exception {
-    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members), Collections.emptySet(),
-        Collections.emptySet());
+    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
     
     NetView copy = new NetView(view, 2);
@@ -243,8 +239,7 @@ public class NetViewJUnitTest {
     for (i=0; i<members.length; i++) {
       vmbrs.add(members[i]);
     }
-    Set<InternalDistributedMember> empty = Collections.emptySet();
-    NetView lastView = new NetView(members[0], 4, vmbrs, empty, empty);
+    NetView lastView = new NetView(members[0], 4, vmbrs);
     InternalDistributedMember leader = members[2];
     assertTrue(!leader.getNetMember().preferredForCoordinator());
     
@@ -261,7 +256,7 @@ public class NetViewJUnitTest {
     failedMembers.add(members[members.length-2]); // admin
     List<InternalDistributedMember> newMbrs = new ArrayList<InternalDistributedMember>(lastView.getMembers());
     newMbrs.removeAll(failedMembers);
-    NetView newView = new NetView(members[0], 5, newMbrs, empty, failedMembers);
+    NetView newView = new NetView(members[0], 5, newMbrs, Collections.emptySet(), failedMembers);
     
     int failedWeight = newView.getCrashedMemberWeight(lastView);
 //    System.out.println("last view = " + lastView);
