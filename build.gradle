@@ -389,6 +389,7 @@ subprojects {
 
   task integrationTest(type:Test) {
     include '**/*Test.class'
+    exclude '**/*DUnitTest.class'
     useJUnit {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
       includeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
