@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-
-
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.hamcrest.CoreMatchers.*;
@@ -34,286 +32,283 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-
-
 /**
  * @author khowe
  */
 @Category(UnitTest.class)
 public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
-	
-	private MemoryChunkWithRefCount storedObject = null;
-	private Object deserializedRegionEntryValue = null;
-	private byte[] serializedRegionEntryValue = null;
-	private MemoryAllocator ma;
 
+  private MemoryChunkWithRefCount storedObject                 = null;
+  private Object                  deserializedRegionEntryValue = null;
+  private byte[]                  serializedRegionEntryValue   = null;
+  private MemoryAllocator         ma;
 
-    @Before
-    public void setUp() {
-        OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
-        OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
-        LogWriter lw = mock(LogWriter.class);
+  @Before
+  public void setUp() {
+    OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
+    OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
+    LogWriter lw = mock(LogWriter.class);
 
-        ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
+        OffHeapStorage.MIN_SLAB_SIZE);
 
+  }
+
+  /**
+   * Extracted from JUnit setUp() to reduce test overhead for cases where
+   * offheap memory isn't needed.
+   */
+  private void allocateOffHeapSerialized() {
+    Object regionEntryValue = getValue();
+    storedObject = createValueAsSerializedStoredObject(regionEntryValue);
+    deserializedRegionEntryValue = storedObject.getValueAsDeserializedHeapObject();
+    serializedRegionEntryValue = storedObject.getSerializedValue();
+  }
+
+  private void allocateOffHeapDeserialized() {
+    Object regionEntryValue = getValue();
+    storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
+    deserializedRegionEntryValue = storedObject.getValueAsDeserializedHeapObject();
+    serializedRegionEntryValue = storedObject.getSerializedValue();
+  }
+
+  @After
+  public void tearDown() {
+    SimpleMemoryAllocatorImpl.freeOffHeapMemory();
+  }
+
+  @Override
+  public Object getValue() {
+    return Long.valueOf(Long.MAX_VALUE);
+  }
+
+  @Override
+  public byte[] getValueAsByteArray() {
+    return convertValueToByteArray(getValue());
+  }
+
+  private byte[] convertValueToByteArray(Object value) {
+    return ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong((Long) value).array();
+  }
+
+  @Override
+  public Object convertByteArrayToObject(byte[] valueInByteArray) {
+    return ByteBuffer.wrap(valueInByteArray).getLong();
+  }
+
+  @Override
+  public Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
+    return EntryEventImpl.deserialize(valueInSerializedByteArray);
+  }
+
+  @Override
+  protected MemoryChunkWithRefCount createValueAsUnserializedStoredObject(Object value) {
+    byte[] valueInByteArray;
+    if (value instanceof Long) {
+      valueInByteArray = convertValueToByteArray(value);
+    } else {
+      valueInByteArray = (byte[]) value;
     }
 
-	/**
-	 * Extracted from JUnit setUp() to reduce test overhead for cases where offheap memory
-	 * isn't needed.
-	 */
-	private void allocateOffHeapSerialized() {
-		Object regionEntryValue = getValue();
-        storedObject = createValueAsSerializedStoredObject(regionEntryValue);
-        deserializedRegionEntryValue = storedObject.getValueAsDeserializedHeapObject();
-        serializedRegionEntryValue = storedObject.getSerializedValue();
-	}
+    boolean isSerialized = false;
+    boolean isCompressed = false;
 
-	private void allocateOffHeapDeserialized() {
-		Object regionEntryValue = getValue();
-        storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
-        deserializedRegionEntryValue = storedObject.getValueAsDeserializedHeapObject();
-        serializedRegionEntryValue = storedObject.getSerializedValue();
-	}
+    MemoryChunkWithRefCount createdObject = createChunk(valueInByteArray, isSerialized, isCompressed);
+    return createdObject;
+  }
 
-    @After
-    public void tearDown() {
-    	SimpleMemoryAllocatorImpl.freeOffHeapMemory();
-    }
+  @Override
+  protected MemoryChunkWithRefCount createValueAsSerializedStoredObject(Object value) {
+    byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
 
-    @Override
-    public Object getValue() {
-    	return Long.valueOf(Long.MAX_VALUE);
-    }
+    boolean isSerialized = true;
+    boolean isCompressed = false;
 
-    @Override
-    public byte[] getValueAsByteArray() {
-    	return convertValueToByteArray(getValue());
-    }
+    MemoryChunkWithRefCount createdObject = createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
+    return createdObject;
+  }
 
-    private byte[] convertValueToByteArray(Object value) {
-    	return ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong((Long) value).array();
-    }
+  private GemFireChunk createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
+    GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
+    return chunk;
+  }
 
-    @Override
-    public Object convertByteArrayToObject(byte[] valueInByteArray) {
-    	return ByteBuffer.wrap(valueInByteArray).getLong();
-    }
+  @Test
+  public void getHeapFormOfSerializedStoredObjectReturnsDeserializedObject() {
+    allocateOffHeapSerialized();
+    Object heapObject = OffHeapHelper.getHeapForm(storedObject);
+    assertThat("getHeapForm returns non-null object", heapObject, notNullValue());
+    assertThat("Heap and off heap objects are different objects", heapObject, is(not(storedObject)));
+    assertThat("Deserialzed values of offHeap object and returned object are equal", heapObject,
+        is(equalTo(deserializedRegionEntryValue)));
+  }
 
-    @Override
-    public Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
-    	return EntryEventImpl.deserialize(valueInSerializedByteArray);
-    }
+  @Test
+  public void getHeapFormOfNonOffHeapObjectReturnsOriginal() {
+    Object testObject = getValue();
+    Object heapObject = OffHeapHelper.getHeapForm(testObject);
+    assertNotNull(heapObject);
+    assertSame(testObject, heapObject);
+  }
 
-	@Override
-	protected MemoryChunkWithRefCount createValueAsUnserializedStoredObject(Object value) {
-		byte[] valueInByteArray;
-		if (value instanceof Long) {
-			valueInByteArray = convertValueToByteArray(value);
-		} else {
-			valueInByteArray = (byte[]) value;
-		}
+  @Test
+  public void getHeapFormWithNullReturnsNull() {
+    Object testObject = null;
+    Object returnObject = OffHeapHelper.getHeapForm(testObject);
+    assertThat(returnObject, is(equalTo(null)));
+  }
 
-		boolean isSerialized = false;
-		boolean isCompressed = false;
+  @Test
+  public void copyAndReleaseWithNullReturnsNull() {
+    Object testObject = null;
+    Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(testObject);
+    assertThat(returnObject, is(equalTo(null)));
+  }
 
-		MemoryChunkWithRefCount createdObject = createChunk(valueInByteArray, isSerialized, isCompressed);
-		return createdObject;
-	}
+  @Test
+  public void copyAndReleaseWithRetainedDeserializedObjectDecreasesRefCnt() {
+    allocateOffHeapDeserialized();
+    assertTrue(storedObject.retain());
+    assertThat("Retained chunk ref count", storedObject.getRefCount(), is(2));
+    OffHeapHelper.copyAndReleaseIfNeeded(storedObject);
+    assertThat("Chunk ref count decreases", storedObject.getRefCount(), is(1));
+  }
 
-	@Override
-	protected MemoryChunkWithRefCount createValueAsSerializedStoredObject(Object value) {
-	    byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
+  @Test
+  public void copyAndReleaseWithNonRetainedObjectDecreasesRefCnt() {
+    allocateOffHeapDeserialized();
+    // assertTrue(storedObject.retain());
+    assertThat("Retained chunk ref count", storedObject.getRefCount(), is(1));
+    OffHeapHelper.copyAndReleaseIfNeeded(storedObject);
+    assertThat("Chunk ref count decreases", storedObject.getRefCount(), is(0));
+  }
 
-	    boolean isSerialized = true;
-	    boolean isCompressed = false;
+  @Test
+  public void copyAndReleaseWithDeserializedReturnsValueOfOriginal() {
+    allocateOffHeapDeserialized();
+    assertTrue(storedObject.retain());
+    Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(storedObject);
+    assertThat(returnObject, is(equalTo(deserializedRegionEntryValue)));
+  }
 
-	    MemoryChunkWithRefCount createdObject = createChunk(valueInSerializedByteArray, isSerialized, isCompressed);
-	    return createdObject;
-	}
+  @Test
+  public void copyAndReleaseWithSerializedReturnsValueOfOriginal() {
+    allocateOffHeapSerialized();
+    assertTrue(storedObject.retain());
+    Object returnObject = ((VMCachedDeserializable) OffHeapHelper.copyAndReleaseIfNeeded(storedObject))
+        .getSerializedValue();
+    assertThat(returnObject, is(equalTo(serializedRegionEntryValue)));
+  }
 
-	private GemFireChunk createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-		GemFireChunk chunk = (GemFireChunk) ma.allocateAndInitialize(v, isSerialized, isCompressed, GemFireChunk.TYPE);
-		return chunk;
-	}
+  @Test
+  public void copyAndReleaseNonStoredObjectReturnsOriginal() {
+    Object testObject = getValue();
+    Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(testObject);
+    assertThat(returnObject, is(testObject));
+  }
 
-	@Test
-    public void getHeapFormOfSerializedStoredObjectReturnsDeserializedObject() {
-        allocateOffHeapSerialized();
-    	Object heapObject = OffHeapHelper.getHeapForm(storedObject);
-    	assertThat("getHeapForm returns non-null object", heapObject, notNullValue());
-    	assertThat("Heap and off heap objects are different objects", heapObject, is(not(storedObject)));
-    	assertThat("Deserialzed values of offHeap object and returned object are equal",
-    			heapObject, is(equalTo(deserializedRegionEntryValue)));
-    }
+  @Test
+  public void copyIfNeededWithNullReturnsNull() {
+    Object testObject = null;
+    Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(testObject);
+    assertThat(returnObject, is(equalTo(null)));
+  }
 
-	@Test
-    public void getHeapFormOfNonOffHeapObjectReturnsOriginal() {
-    	Object testObject = getValue();
-    	Object heapObject = OffHeapHelper.getHeapForm(testObject);
-    	assertNotNull(heapObject);
-    	assertSame(testObject, heapObject);
-    }
+  @Test
+  public void copyIfNeededNonOffHeapReturnsOriginal() {
+    Object testObject = getValue();
+    Object returnObject = OffHeapHelper.copyIfNeeded(testObject);
+    assertThat(returnObject, is(testObject));
+  }
 
-    @Test
-    public void getHeapFormWithNullReturnsNull() {
-    	Object testObject = null;
-    	Object returnObject = OffHeapHelper.getHeapForm(testObject);
-    	assertThat(returnObject, is(equalTo(null)));
-    }
+  @Test
+  public void copyIfNeededOffHeapSerializedReturnsValueOfOriginal() {
+    allocateOffHeapSerialized();
+    Object returnObject = ((VMCachedDeserializable) OffHeapHelper.copyIfNeeded(storedObject)).getSerializedValue();
+    assertThat(returnObject, is(equalTo(serializedRegionEntryValue)));
+  }
 
-    @Test
-    public void copyAndReleaseWithNullReturnsNull() {
-    	Object testObject = null;
-    	Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(testObject);
-    	assertThat(returnObject, is(equalTo(null)));
-    }
+  @Test
+  public void copyIfNeededOffHeapDeserializedReturnsOriginal() {
+    allocateOffHeapDeserialized();
+    Object returnObject = OffHeapHelper.copyIfNeeded(storedObject);
+    assertThat(returnObject, is(equalTo(deserializedRegionEntryValue)));
+  }
 
-    @Test
-    public void copyAndReleaseWithRetainedDeserializedObjectDecreasesRefCnt() {
-    	allocateOffHeapDeserialized();
-    	assertTrue(storedObject.retain());
-    	assertThat("Retained chunk ref count", storedObject.getRefCount(), is(2));    	
-    	OffHeapHelper.copyAndReleaseIfNeeded(storedObject);
-    	assertThat("Chunk ref count decreases", storedObject.getRefCount(), is(1));
-    }
+  @Test
+  public void copyIfNeededWithOffHeapDeserializedObjDoesNotRelease() {
+    allocateOffHeapDeserialized();
+    int initialRefCountOfObject = storedObject.getRefCount();
+    OffHeapHelper.copyIfNeeded(storedObject);
+    assertThat("Ref count after copy", storedObject.getRefCount(), is(initialRefCountOfObject));
+  }
 
-    @Test
-    public void copyAndReleaseWithNonRetainedObjectDecreasesRefCnt() {
-    	allocateOffHeapDeserialized();
-    	//assertTrue(storedObject.retain());
-    	assertThat("Retained chunk ref count", storedObject.getRefCount(), is(1));    	
-    	OffHeapHelper.copyAndReleaseIfNeeded(storedObject);
-    	assertThat("Chunk ref count decreases", storedObject.getRefCount(), is(0));
-    }
+  @Test
+  public void copyIfNeededWithOffHeapSerializedObjDoesNotRelease() {
+    allocateOffHeapSerialized();
+    int initialRefCountOfObject = storedObject.getRefCount();
+    OffHeapHelper.copyIfNeeded(storedObject);
+    assertThat("Ref count after copy", storedObject.getRefCount(), is(initialRefCountOfObject));
+  }
 
-    @Test
-    public void copyAndReleaseWithDeserializedReturnsValueOfOriginal() {
-    	allocateOffHeapDeserialized();
-    	assertTrue(storedObject.retain());
-    	Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(storedObject);
-    	assertThat(returnObject, is(equalTo(deserializedRegionEntryValue)));
-    }
+  @Test
+  public void releaseOfOffHeapDecrementsRefCount() {
+    allocateOffHeapSerialized();
+    assertThat("Initial Ref Count", storedObject.getRefCount(), is(1));
+    OffHeapHelper.release(storedObject);
+    assertThat("Ref Count Decremented", storedObject.getRefCount(), is(0));
+  }
 
-    @Test
-    public void copyAndReleaseWithSerializedReturnsValueOfOriginal() {
-    	allocateOffHeapSerialized();
-    	assertTrue(storedObject.retain());
-    	Object returnObject = 
-    			((VMCachedDeserializable)OffHeapHelper.copyAndReleaseIfNeeded(storedObject)).getSerializedValue();
-    	assertThat(returnObject, is(equalTo(serializedRegionEntryValue)));
-	}
+  @Test
+  public void releaseOfOffHeapReturnsTrue() {
+    allocateOffHeapSerialized();
+    assertThat("Releasing OFfHeap object is true", OffHeapHelper.release(storedObject), is(true));
+  }
 
-    @Test
-    public void copyAndReleaseNonStoredObjectReturnsOriginal() {
-    	Object testObject = getValue();
-    	Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(testObject);
-    	assertThat(returnObject, is(testObject));
-	}
+  @Test
+  public void releaseOfNonOffHeapReturnsFalse() {
+    Object testObject = getValue();
+    assertThat("Releasing OFfHeap object is true", OffHeapHelper.release(testObject), is(false));
+  }
 
-    @Test
-    public void copyIfNeededWithNullReturnsNull() {
-    	Object testObject = null;
-    	Object returnObject = OffHeapHelper.copyAndReleaseIfNeeded(testObject);
-    	assertThat(returnObject, is(equalTo(null)));
-    }
+  @Test
+  public void releaseWithOutTrackingOfOffHeapDecrementsRefCount() {
+    allocateOffHeapSerialized();
+    assertThat("Initial Ref Count", storedObject.getRefCount(), is(1));
+    OffHeapHelper.releaseWithNoTracking(storedObject);
+    assertThat("Ref Count Decremented", storedObject.getRefCount(), is(0));
+  }
 
-    @Test
-    public void copyIfNeededNonOffHeapReturnsOriginal() {
-    	Object testObject = getValue();
-    	Object returnObject = OffHeapHelper.copyIfNeeded(testObject);
-    	assertThat(returnObject,is(testObject));
-    }
+  @Test
+  public void releaseWithoutTrackingOfOffHeapReturnsTrue() {
+    allocateOffHeapSerialized();
+    assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseWithNoTracking(storedObject), is(true));
+  }
 
-    @Test
-    public void copyIfNeededOffHeapSerializedReturnsValueOfOriginal() {
-    	allocateOffHeapSerialized();
-    	Object returnObject = 
-    			((VMCachedDeserializable)OffHeapHelper.copyIfNeeded(storedObject)).getSerializedValue();
-    	assertThat(returnObject, is(equalTo(serializedRegionEntryValue)));
-    }
+  @Test
+  public void releaseWithoutTrackingOfNonOffHeapReturnsFalse() {
+    Object testObject = getValue();
+    assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseWithNoTracking(testObject), is(false));
+  }
 
-    @Test
-    public void copyIfNeededOffHeapDeserializedReturnsOriginal()   {
-    	allocateOffHeapDeserialized();
-    	Object returnObject = OffHeapHelper.copyIfNeeded(storedObject);
-    	assertThat(returnObject, is(equalTo(deserializedRegionEntryValue)));
-    }
+  @Test
+  public void releaseAndTrackOwnerOfOffHeapDecrementsRefCount() {
+    allocateOffHeapSerialized();
+    assertThat("Initial Ref Count", storedObject.getRefCount(), is(1));
+    OffHeapHelper.releaseAndTrackOwner(storedObject, "owner");
+    assertThat("Ref Count Decremented", storedObject.getRefCount(), is(0));
+  }
 
-    @Test
-    public void copyIfNeededWithOffHeapDeserializedObjDoesNotRelease()   {
-    	allocateOffHeapDeserialized();
-    	int initialRefCountOfObject = storedObject.getRefCount();
-    	OffHeapHelper.copyIfNeeded(storedObject);
-    	assertThat("Ref count after copy", storedObject.getRefCount(), is(initialRefCountOfObject));    	
-    }
+  @Test
+  public void releaseAndTrackOwnerOfOffHeapReturnsTrue() {
+    allocateOffHeapSerialized();
+    assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseAndTrackOwner(storedObject, "owner"), is(true));
+  }
 
-    @Test
-    public void copyIfNeededWithOffHeapSerializedObjDoesNotRelease() {
-    	allocateOffHeapSerialized();
-    	int initialRefCountOfObject = storedObject.getRefCount();
-    	OffHeapHelper.copyIfNeeded(storedObject);
-    	assertThat("Ref count after copy", storedObject.getRefCount(), is(initialRefCountOfObject));    	
-    }
-
-    @Test
-    public void releaseOfOffHeapDecrementsRefCount() {
-        allocateOffHeapSerialized();
-        assertThat("Initial Ref Count", storedObject.getRefCount(), is(1));
-        OffHeapHelper.release(storedObject);
-        assertThat("Ref Count Decremented", storedObject.getRefCount(), is(0));
-    }
-
-    @Test
-    public void releaseOfOffHeapReturnsTrue() {
-        allocateOffHeapSerialized();
-        assertThat("Releasing OFfHeap object is true", OffHeapHelper.release(storedObject), is(true));
-    }
-
-    @Test
-    public void releaseOfNonOffHeapReturnsFalse() {
-    	Object testObject = getValue();
-        assertThat("Releasing OFfHeap object is true", OffHeapHelper.release(testObject), is(false));
-    }
-
-    @Test
-    public void releaseWithOutTrackingOfOffHeapDecrementsRefCount() {
-        allocateOffHeapSerialized();
-        assertThat("Initial Ref Count", storedObject.getRefCount(), is(1));
-        OffHeapHelper.releaseWithNoTracking(storedObject);
-        assertThat("Ref Count Decremented", storedObject.getRefCount(), is(0));
-    }
-
-    @Test
-    public void releaseWithoutTrackingOfOffHeapReturnsTrue() {
-        allocateOffHeapSerialized();
-        assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseWithNoTracking(storedObject), is(true));
-    }
-
-    @Test
-    public void releaseWithoutTrackingOfNonOffHeapReturnsFalse() {
-    	Object testObject = getValue();
-        assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseWithNoTracking(testObject), is(false));
-    }
-
-    @Test
-    public void releaseAndTrackOwnerOfOffHeapDecrementsRefCount() {
-        allocateOffHeapSerialized();
-        assertThat("Initial Ref Count", storedObject.getRefCount(), is(1));
-        OffHeapHelper.releaseAndTrackOwner(storedObject, "owner");
-        assertThat("Ref Count Decremented", storedObject.getRefCount(), is(0));
-    }
-
-    @Test
-    public void releaseAndTrackOwnerOfOffHeapReturnsTrue() {
-        allocateOffHeapSerialized();
-        assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseAndTrackOwner(storedObject, "owner"), is(true));
-    }
-
-    @Test
-    public void releaseAndTrackOwnerOfNonOffHeapReturnsFalse() {
-    	Object testObject = getValue();
-        assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseAndTrackOwner(testObject, "owner"), is(false));
-    }
+  @Test
+  public void releaseAndTrackOwnerOfNonOffHeapReturnsFalse() {
+    Object testObject = getValue();
+    assertThat("Releasing OFfHeap object is true", OffHeapHelper.releaseAndTrackOwner(testObject, "owner"), is(false));
+  }
 
 }
