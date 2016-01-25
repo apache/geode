@@ -16,6 +16,11 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Cache;
@@ -31,18 +36,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerializerCreation;
-<<<<<<< HEAD
-
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import dunit.DistributedTestCase;
-=======
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
->>>>>>> f764f8d... GEODE-819: Move dunit to com.gemstone.gemfire.test.dunit
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * Tests 6.0 cache.xml features.

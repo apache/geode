@@ -33,9 +33,9 @@ import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.MirrorType;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -52,19 +52,12 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
-<<<<<<< HEAD
-
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
-=======
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
->>>>>>> f764f8d... GEODE-819: Move dunit to com.gemstone.gemfire.test.dunit
 
-import junit.framework.*;
+import junit.framework.Assert;
 
 /**
  * Tests 5.7 cache.xml features.
