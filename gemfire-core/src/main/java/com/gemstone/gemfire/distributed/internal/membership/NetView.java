@@ -78,9 +78,9 @@ public class NetView implements DataSerializableFixedID {
   }
 
   public NetView(InternalDistributedMember creator, int viewId, List<InternalDistributedMember> members) {
-    this.viewId = 0;
+    this.viewId = viewId;
     this.members = new ArrayList<InternalDistributedMember>(members);
-    hashedMembers = new HashSet<>(members);
+    hashedMembers = new HashSet<>(this.members);
     shutdownMembers = new HashSet<>();
     crashedMembers = Collections.emptySet();
     this.creator = creator;
