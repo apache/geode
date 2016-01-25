@@ -33,28 +33,50 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
+/**
+ * Tests <code>JSONAuthorization.authorizeOperation(...)</code> for Region commands.
+ */
 @Category(IntegrationTest.class)
-public class JSONAuthCodeTest {
+@SuppressWarnings("deprecation")
+public class AuthorizeOperationForRegionCommandsIntegrationTest {
   
   private GemFireCacheImpl cache;
   private DistributedSystem ds;
+  private int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
+  @Rule
+  public TestName testName = new TestName();
+  
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   
   @Before
   public void setUp() {
-    System.setProperty(DistributedSystem.PROPERTIES_FILE_PROPERTY, getClass().getSimpleName() + ".properties");
+    System.setProperty("resource.secDescriptor", TestUtil.getResourcePath(getClass(), "auth3.json"));
+    System.setProperty("resource-auth-accessor", JSONAuthorization.class.getCanonicalName());
+    System.setProperty("resource-authenticator", JSONAuthorization.class.getCanonicalName());
+
+    Properties properties = new Properties();
+    properties.put("name", testName.getMethodName());
+    properties.put(DistributionConfig.LOCATORS_NAME, "");
+    properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    properties.put(DistributionConfig.JMX_MANAGER_NAME, "true");
+    properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+    properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(this.jmxManagerPort));
+    properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
+    
+    this.ds = DistributedSystem.connect(properties);
+    this.cache = (GemFireCacheImpl) CacheFactory.create(ds);
   }
 
   @After
@@ -69,21 +91,6 @@ public class JSONAuthCodeTest {
     }
   }
   
-  @Test
-  public void testSimpleUserAndRole() throws Exception {    
-    System.setProperty("resource.secDescriptor", TestUtil.getResourcePath(getClass(), "auth1.json")); 
-    JSONAuthorization authorization = JSONAuthorization.create();        
-    authorization.init(new JMXPrincipal("tushark"), null, null);
-    
-    JMXOperationContext context = new JMXOperationContext(MBeanJMXAdapter.getDistributedSystemName(), "queryData");
-    boolean result = authorization.authorizeOperation(null, context);
-    //assertTrue(result);
-    
-    context = new JMXOperationContext(MBeanJMXAdapter.getDistributedSystemName(), "changeAlertLevel");
-    result = authorization.authorizeOperation(null,context);
-    assertFalse(result);
-  }
-
   @Ignore("Test was never implemented")
   @Test
   public void testInheritRole() {
@@ -95,32 +102,19 @@ public class JSONAuthCodeTest {
   }
   
   @Test
-  public void testCLIAuthForRegion() throws Exception {
-    System.setProperty("resource.secDescriptor", TestUtil.getResourcePath(getClass(), "auth3.json")); 
+  public void testAuthorizeOperationWithRegionOperations() throws Exception {
     JSONAuthorization authorization = JSONAuthorization.create();       
     authorization.init(new JMXPrincipal("tushark"), null, null);
     
-    System.setProperty("resource-auth-accessor", JSONAuthorization.class.getCanonicalName());
-    System.setProperty("resource-authenticator", JSONAuthorization.class.getCanonicalName());
-    Properties pr = new Properties();
-    pr.put("name", "testJMXOperationContext");
-    pr.put(DistributionConfig.JMX_MANAGER_NAME, "true");
-    pr.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    pr.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(port));
-    pr.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    ds = DistributedSystem.connect(pr);
-    cache = (GemFireCacheImpl) CacheFactory.create(ds);
-    
     checkAccessControlMBean();
+    
     CLIOperationContext cliContext = new CLIOperationContext("locate entry --key=k1 --region=region1");
     boolean result = authorization.authorizeOperation(null, cliContext);
     assertTrue(result);
 
     cliContext = new CLIOperationContext("locate entry --key=k1 --region=secureRegion");
     result = authorization.authorizeOperation(null, cliContext);
-    System.out.println("Result for secureRegion=" + result);
-    //assertFalse(result); //this is failing due to logic issue
+    //assertFalse(result); //this is failing due to logic issue TODO: why is this commented out?
 
     authorization.init(new JMXPrincipal("avinash"), null, null);
     result = authorization.authorizeOperation(null, cliContext);
@@ -139,5 +133,4 @@ public class JSONAuthCodeTest {
     assertEquals(1, names.size());
     assertEquals(name,names.iterator().next());
   }
-
 }
