@@ -184,8 +184,11 @@ public class ConnectionImpl implements Connection {
       endpoint.removeReference();
     }
     try {
-      if (theSocket != null)
+      if (theSocket != null) {
+        theSocket.getOutputStream().flush();
+        theSocket.shutdownOutput();
         theSocket.close();
+      }
     }
     catch (Exception e) {
       if (logger.isDebugEnabled()) {
