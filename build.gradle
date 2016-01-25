@@ -557,15 +557,17 @@ subprojects {
   afterEvaluate {
     if (!isReleaseVersion && System.env.USER == 'jenkins') {
       def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
-      def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
-        server.id.text() == 'apache.snapshots.https'
-      }
-
-      if (snapshotCreds != null) {
-        tasks.uploadArchives.doFirst {
-          repositories().withType(MavenDeployer).each { repo ->
-            repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
-            repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+      if (settingsXml.exists()) {
+        def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
+          server.id.text() == 'apache.snapshots.https'
+        }
+  
+        if (snapshotCreds != null) {
+          tasks.uploadArchives.doFirst {
+            repositories().withType(MavenDeployer).each { repo ->
+              repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
+              repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+            }
           }
         }
       }
