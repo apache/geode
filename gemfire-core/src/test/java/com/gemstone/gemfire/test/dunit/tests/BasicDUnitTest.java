@@ -18,11 +18,11 @@ package com.gemstone.gemfire.test.dunit.tests;
 
 import java.util.Properties;
 
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.RMIException;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This class tests the basic functionality of the distributed unit

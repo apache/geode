@@ -36,11 +36,10 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.membership.ClientMembership;
 import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
 import com.gemstone.gemfire.management.membership.ClientMembershipListenerAdapter;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests cases that are particular for the auto connection source
@@ -394,7 +393,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         System.err.println("Attempt: " + (i++));
         putInVM(vm, regionName, key, value);
         break;
-      } catch (NoAvailableLocatorsException | dunit.RMIException e) {
+      } catch (NoAvailableLocatorsException | com.gemstone.gemfire.test.dunit.RMIException e) {
         if( !(e instanceof NoAvailableLocatorsException)
             && !(e.getCause() instanceof NoAvailableServersException)) {
           throw e;

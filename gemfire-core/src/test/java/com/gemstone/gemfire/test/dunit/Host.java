@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit;
+package com.gemstone.gemfire.test.dunit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
 

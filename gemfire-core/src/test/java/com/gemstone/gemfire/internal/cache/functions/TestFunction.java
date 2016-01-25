@@ -41,9 +41,8 @@ import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTar
 import com.gemstone.gemfire.internal.cache.execute.MyFunctionExecutionException;
 import com.gemstone.gemfire.internal.cache.execute.RegionFunctionContextImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 import java.io.Serializable;
 import java.util.ArrayList;

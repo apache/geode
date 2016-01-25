@@ -44,8 +44,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
-
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * Basic test of regions that use off heap storage.
@@ -147,7 +146,7 @@ public abstract class OffHeapRegionBase {
           return "Waiting for disconnect to complete";
         }
       };
-      dunit.DistributedTestCase.waitForCriterion(waitForDisconnect, 10*1000, 100, true);
+      com.gemstone.gemfire.test.dunit.DistributedTestCase.waitForCriterion(waitForDisconnect, 10*1000, 100, true);
 
       assertTrue(gfc.isClosed());
     } finally {

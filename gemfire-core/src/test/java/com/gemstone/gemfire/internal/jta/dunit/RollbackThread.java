@@ -14,30 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-                                                                                                                             
 package com.gemstone.gemfire.internal.jta.dunit;
                                                                                                                              
-//import dunit.*;
-//import java.io.*;
-//import java.util.*;
-//import java.net.*;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.distributed.*;
-//import java.util.Hashtable;
-//import javax.naming.InitialContext;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import javax.naming.Context;
-import javax.sql.*;
-import javax.transaction.*;
-import java.sql.*;
-//import java.lang.Exception.*;
-//import java.lang.RuntimeException;
-//import java.sql.SQLException.*;
 import javax.naming.NamingException;
-//import javax.naming.NoInitialContextException;
-//import javax.transaction.SystemException;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
-//import com.gemstone.gemfire.internal.jta.JTAUtils;
                                                                                                                              
 /**
 *This is thread class

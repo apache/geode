@@ -86,9 +86,8 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.util.test.TestUtil;
-
-import dunit.SerializableRunnable;
 
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases

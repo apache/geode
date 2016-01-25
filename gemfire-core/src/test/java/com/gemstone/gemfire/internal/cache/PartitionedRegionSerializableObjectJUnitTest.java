@@ -35,9 +35,9 @@ import static org.junit.Assert.*;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import dunit.DistributedTestCase;
 import junit.framework.TestCase;
 
 @Category(IntegrationTest.class)

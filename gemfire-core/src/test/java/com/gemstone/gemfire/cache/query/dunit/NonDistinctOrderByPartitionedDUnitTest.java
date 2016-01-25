@@ -30,11 +30,10 @@ import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.functional.NonDistinctOrderByTestImplementation;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
 
 /**
  * 

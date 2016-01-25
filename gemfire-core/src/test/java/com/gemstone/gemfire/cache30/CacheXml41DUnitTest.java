@@ -19,11 +19,15 @@ package com.gemstone.gemfire.cache30;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 import java.io.*;
 
+<<<<<<< HEAD
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import dunit.DistributedTestCase;
+=======
+>>>>>>> f764f8d... GEODE-819: Move dunit to com.gemstone.gemfire.test.dunit
 import org.xml.sax.SAXException;
 
 /**

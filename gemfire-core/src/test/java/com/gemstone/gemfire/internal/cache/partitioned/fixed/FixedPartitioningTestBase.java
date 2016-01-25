@@ -71,11 +71,10 @@ import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * This is the base class to do operations

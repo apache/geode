@@ -40,9 +40,8 @@ import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.util.Callable;
-
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * @since 6.1

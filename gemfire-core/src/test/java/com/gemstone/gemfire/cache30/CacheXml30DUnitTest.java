@@ -61,9 +61,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.ClientCacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.util.test.TestUtil;
-
-import dunit.DistributedTestCase;
 
 /**
  * Tests the functionality of loading a declarative caching file when

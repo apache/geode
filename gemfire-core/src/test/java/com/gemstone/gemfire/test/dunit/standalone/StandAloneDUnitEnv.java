@@ -20,9 +20,8 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
+import com.gemstone.gemfire.test.dunit.DUnitEnv;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher.MasterRemote;
-
-import dunit.DUnitEnv;
 
 public class StandAloneDUnitEnv extends DUnitEnv {
 

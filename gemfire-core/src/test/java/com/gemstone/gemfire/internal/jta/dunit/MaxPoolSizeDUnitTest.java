@@ -16,33 +16,32 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
-import dunit.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
 
-import java.io.*;
-import java.util.*;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
-//import java.net.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.*;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
-
-
-//import java.util.Hashtable;
-//import javax.naming.InitialContext;
-import javax.naming.Context;
-import javax.sql.*;
-
-//import javax.transaction.*;
-import java.sql.*;
-
-//import java.lang.Exception.*;
-//import java.lang.RuntimeException;
-//import java.sql.SQLException.*;
-import javax.naming.NamingException;
-//import javax.naming.NoInitialContextException;
-//import javax.transaction.SystemException;
 
 public class MaxPoolSizeDUnitTest extends DistributedTestCase {
 

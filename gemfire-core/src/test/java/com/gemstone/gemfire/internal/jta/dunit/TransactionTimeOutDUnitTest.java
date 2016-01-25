@@ -16,17 +16,23 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
-import dunit.*;
-
-import javax.naming.Context;
-import javax.transaction.*;
-import javax.naming.NamingException;
-
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -35,11 +41,11 @@ import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
-
-import javax.sql.DataSource;
-
-import java.io.*;
 
 /**
 *@author Mitul D Bid

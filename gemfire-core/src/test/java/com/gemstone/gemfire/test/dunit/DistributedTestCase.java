@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit;
+package com.gemstone.gemfire.test.dunit;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -22,11 +22,9 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -35,18 +33,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;
-import org.springframework.data.gemfire.support.GemfireCache;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogConfig;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
@@ -55,14 +48,12 @@ import com.gemstone.gemfire.cache30.GlobalLockingDUnitTest;
 import com.gemstone.gemfire.cache30.MultiVMRegionTestCase;
 import com.gemstone.gemfire.cache30.RegionTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.CreationStackGenerator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.OSProcess;
@@ -86,9 +77,12 @@ import com.gemstone.gemfire.internal.logging.LogWriterFactory;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
+import com.gemstone.gemfire.internal.util.Callable;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import junit.framework.TestCase;
 
 /**
  * This class is the superclass of all distributed unit tests.
@@ -295,7 +289,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
       @since 5.0
    */
   public static void dumpStack(VM vm) {
-    vm.invoke(dunit.DistributedTestCase.class, "dumpStack");
+    vm.invoke(com.gemstone.gemfire.test.dunit.DistributedTestCase.class, "dumpStack");
   }
   
   /** print stack dumps for all vms on the given host
@@ -304,7 +298,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
    */
   public static void dumpStack(Host host) {
     for (int v=0; v < host.getVMCount(); v++) {
-      host.getVM(v).invoke(dunit.DistributedTestCase.class, "dumpStack");
+      host.getVM(v).invoke(com.gemstone.gemfire.test.dunit.DistributedTestCase.class, "dumpStack");
     }
   }
   

@@ -46,10 +46,9 @@ import com.gemstone.gemfire.cache30.TestCacheLoader;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
 
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class PartitionedRegionAPIDUnitTest extends
 		PartitionedRegionDUnitTestCase {

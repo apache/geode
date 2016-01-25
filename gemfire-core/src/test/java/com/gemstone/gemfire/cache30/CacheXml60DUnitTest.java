@@ -31,9 +31,13 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerializerCreation;
+<<<<<<< HEAD
 
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import dunit.DistributedTestCase;
+=======
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+>>>>>>> f764f8d... GEODE-819: Move dunit to com.gemstone.gemfire.test.dunit
 
 import java.io.DataInput;
 import java.io.DataOutput;

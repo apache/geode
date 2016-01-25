@@ -45,13 +45,13 @@ import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.NotificationHub.NotificationHubListener;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 import static com.jayway.awaitility.Awaitility.*;
 import static org.hamcrest.Matchers.*;
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase;
-import dunit.SerializableRunnable;
-import dunit.VM;
 
 /**
  * This class checks and verifies various data and operations exposed through

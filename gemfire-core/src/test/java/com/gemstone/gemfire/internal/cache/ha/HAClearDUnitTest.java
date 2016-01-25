@@ -37,11 +37,10 @@ import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.cache.Region;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
 
 /**
  * This is the Dunit test to verify clear and destroyRegion operation in

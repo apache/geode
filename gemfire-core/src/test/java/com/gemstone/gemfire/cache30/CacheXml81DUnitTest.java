@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import dunit.DistributedTestCase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.xml.sax.Locator;
@@ -32,6 +31,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases

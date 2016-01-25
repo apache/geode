@@ -16,10 +16,12 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheRuntimeException;
+import com.gemstone.gemfire.test.dunit.RepeatableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
-import util.TestException;
-import dunit.*;
 import junit.framework.AssertionFailedError;
 
 /**
@@ -81,7 +83,7 @@ public abstract class CacheSerializableRunnable
         try {
           Thread.sleep(50);
         } catch (InterruptedException ex) {
-          throw new TestException("interrupted", ex);
+          throw new RuntimeException("interrupted", ex);
         }
       }
     } while (lastErr != null && System.currentTimeMillis() - start < repeatTimeoutMs);

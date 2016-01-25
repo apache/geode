@@ -23,8 +23,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
-
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Tests the basic functionality of the lru eviction 

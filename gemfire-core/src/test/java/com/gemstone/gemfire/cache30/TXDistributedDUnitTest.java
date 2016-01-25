@@ -79,12 +79,11 @@ import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
 import com.gemstone.gemfire.internal.cache.locks.TXLockBatch;
 import com.gemstone.gemfire.internal.cache.locks.TXLockService;
 import com.gemstone.gemfire.internal.cache.locks.TXLockServiceImpl;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class TXDistributedDUnitTest extends CacheTestCase {
   public TXDistributedDUnitTest(String name) {

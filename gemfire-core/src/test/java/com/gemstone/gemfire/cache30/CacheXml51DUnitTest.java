@@ -23,9 +23,8 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.*;
-
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests the declarative caching functionality introduced in the GemFire

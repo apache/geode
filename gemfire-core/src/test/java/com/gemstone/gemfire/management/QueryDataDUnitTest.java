@@ -53,13 +53,13 @@ import com.gemstone.gemfire.management.internal.cli.json.TypedJson;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import dunit.DistributedTestCase;
-import dunit.SerializableRunnable;
-import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * 

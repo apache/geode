@@ -18,10 +18,9 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
 
 /**
  * Tests Redundancy Level Functionality

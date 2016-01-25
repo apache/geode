@@ -50,8 +50,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl.PoolAttributes;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 /**
  *
  * @author Yogesh Mahajan

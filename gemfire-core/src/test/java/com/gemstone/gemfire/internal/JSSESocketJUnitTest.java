@@ -48,9 +48,8 @@ import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.util.test.TestUtil;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import dunit.DistributedTestCase;
 
 /**
  * Test creation of server sockets and client sockets with various JSSE

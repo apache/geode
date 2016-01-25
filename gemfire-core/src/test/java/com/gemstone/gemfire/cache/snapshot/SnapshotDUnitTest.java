@@ -36,9 +36,8 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-
-import dunit.Host;
-import dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 public class SnapshotDUnitTest extends CacheTestCase {
   public SnapshotDUnitTest(String name) {

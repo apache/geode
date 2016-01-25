@@ -78,8 +78,7 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.PureLogWriter;
 import com.gemstone.gemfire.internal.util.Callable;
-
-import dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 /**
  * Contains utility methods for setting up servers/clients for authentication

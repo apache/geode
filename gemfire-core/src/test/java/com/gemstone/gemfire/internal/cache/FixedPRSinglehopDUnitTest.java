@@ -40,11 +40,10 @@ import com.gemstone.gemfire.internal.cache.partitioned.fixed.QuarterPartitionRes
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.FixedPartitioningTestBase.Q1_Months;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 import java.io.DataInput;
 import java.io.DataOutput;

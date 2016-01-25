@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
-import dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
 

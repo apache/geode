@@ -35,9 +35,8 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import dunit.DistributedTestCase;
 
 @Category(UnitTest.class)
 public class RegionVersionVectorJUnitTest extends TestCase {

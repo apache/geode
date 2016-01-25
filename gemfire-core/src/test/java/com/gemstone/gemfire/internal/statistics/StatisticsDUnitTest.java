@@ -60,11 +60,10 @@ import com.gemstone.gemfire.internal.StatArchiveReader.StatSpec;
 import com.gemstone.gemfire.internal.StatSamplerStats;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
-
-import dunit.AsyncInvocation;
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Integration tests for Statistics. VM0 performs puts and VM1 receives

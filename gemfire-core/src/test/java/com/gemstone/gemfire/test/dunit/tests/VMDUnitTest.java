@@ -16,11 +16,14 @@
  */
 package com.gemstone.gemfire.test.dunit.tests;
 
-import dunit.*;
-
 import java.io.Serializable;
-
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This class tests the functionality of the {@link VM} class.

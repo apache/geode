@@ -26,10 +26,9 @@ import com.gemstone.gemfire.cache.query.functional.GroupByTestImpl;
 import com.gemstone.gemfire.cache.query.functional.GroupByTestInterface;
 import com.gemstone.gemfire.cache.query.functional.NonDistinctOrderByTestImplementation;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * 

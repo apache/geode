@@ -38,10 +38,9 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests the size of clientUpdateMessageImpl with the size calculated by

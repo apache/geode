@@ -34,8 +34,7 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.execute.PRClientServerTestBase;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
-
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.Host;
 
 public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestBase {
 

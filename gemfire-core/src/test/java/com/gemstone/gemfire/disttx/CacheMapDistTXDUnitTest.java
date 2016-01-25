@@ -18,9 +18,8 @@ package com.gemstone.gemfire.disttx;
 
 import com.gemstone.gemfire.cache30.CacheMapTxnDUnitTest;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 
 /**

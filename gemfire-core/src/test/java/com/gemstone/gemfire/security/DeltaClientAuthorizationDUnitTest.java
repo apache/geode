@@ -32,8 +32,7 @@ import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
-
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.Host;
 
 /**
  * @since 6.1

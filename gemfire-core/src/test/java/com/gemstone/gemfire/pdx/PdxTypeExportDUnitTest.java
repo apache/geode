@@ -35,9 +35,8 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxType;
 import com.gemstone.gemfire.pdx.internal.TypeRegistry;
-
-import dunit.Host;
-import dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 public class PdxTypeExportDUnitTest extends CacheTestCase {
   public PdxTypeExportDUnitTest(String name) {

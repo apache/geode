@@ -33,10 +33,10 @@ import security.XmlAuthzCredentialGenerator;
 
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.AvailablePort;
-import templates.security.UserPasswordAuthInit;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
-import dunit.Host;
-import dunit.VM;
+import templates.security.UserPasswordAuthInit;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
