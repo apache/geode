@@ -80,7 +80,6 @@ rat {
     'gemfire-spark-connector/project/plugins.sbt',
     'gemfire-spark-connector/project/build.properties',
     '**/log4j2*.xml',
-    'gemfire-pulse/src/main/resources/pulseversion.properties',
 
     // these are test files that don't expect the first element to be a comment
     'gemfire-core/src/test/resources/com/gemstone/gemfire/management/internal/configuration/domain/CacheElementJUnitTest.xml',

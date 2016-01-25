@@ -28,8 +28,6 @@ buildscript {
 
 apply plugin: 'war'
 
-def resDir="$projectDir/src/main/resources"
-
 sourceSets {
   main {
     resources {
@@ -76,12 +74,20 @@ dependencies {
   testRuntime 'org.apache.commons:commons-exec:1.3'
 }
 
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'createPulsePropFile')
+  }
+}
+
 // Creates the version properties file and writes it to the resources dir
 task createPulsePropFile {
   description 'Creates a new Pule properties file with build/ version information'
-  def propertiesFile = file(resDir + "/pulseversion.properties");
+  def propertiesFile = file(generatedResources + "/pulseversion.properties");
   outputs.file propertiesFile
-  inputs.dir resDir
+  inputs.dir compileJava.destinationDir
 
   doLast {
     try {
@@ -114,6 +120,7 @@ task createPulsePropFile {
             "Source-Repository" : ext.branch
     ] as Properties
 
+    propertiesFile.getParentFile().mkdirs();
     new FileOutputStream(propertiesFile).withStream { fos ->
       props.store(fos, '')
     }
@@ -146,7 +153,6 @@ artifacts {
 def pulseWarFile = "gemfire-pulse-"+version+".war"
 
 war {
-  dependsOn createPulsePropFile
   classpath configurations.runtime
   classpath project(':gemfire-core').webJar.archivePath
 }
