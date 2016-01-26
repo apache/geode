@@ -621,15 +621,6 @@ public class InternalLocator extends Locator implements ConnectListener {
   private void startTcpServer() throws IOException {
     logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_0, this));
     server.start();
-    
-    try { 
-      Thread.sleep(1000); 
-    } 
-    catch (InterruptedException ie) {
-      // always safe to exit this thread...
-      Thread.currentThread().interrupt();
-      logger.warn(LocalizedMessage.create(LocalizedStrings.ONE_ARG, "Interrupted"), ie);
-    }
   }
   
   public SharedConfiguration getSharedConfiguration() {
