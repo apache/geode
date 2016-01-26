@@ -15,20 +15,7 @@
  * limitations under the License.
  */
 
-buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-  dependencies {
-    classpath "org.ajoberstar:gradle-git:1.3.2"
-  }
-}
-
 apply plugin: 'war'
-
-def resDir="$projectDir/src/main/resources"
 
 sourceSets {
   main {
@@ -63,6 +50,7 @@ dependencies {
   provided 'org.mortbay.jetty:servlet-api:2.5-20081211'
   provided 'com.google.guava:guava:15.0'
   provided project(path: ':gemfire-junit', configuration: 'testOutput')
+  provided project(':gemfire-core')
 
   testCompile 'org.apache.tomcat.embed:tomcat-embed-core:7.0.30'
   testCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.30'
@@ -76,55 +64,9 @@ dependencies {
   testRuntime 'org.apache.commons:commons-exec:1.3'
 }
 
-// Creates the version properties file and writes it to the resources dir
-task createPulsePropFile {
-  description 'Creates a new Pule properties file with build/ version information'
-  def propertiesFile = file(resDir + "/pulseversion.properties");
-  outputs.file propertiesFile
-  inputs.dir resDir
-
-  doLast {
-    try {
-      def grgit = org.ajoberstar.grgit.Grgit.open()
-      ext.branch = grgit.branch.getCurrent().name
-      ext.commitId = grgit.head().id
-      ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
-      grgit.close()
-    } catch (Exception e) {
-      logger.warn('***** Unable to find Git workspace. Using default version information *****')
-      ext.branch = 'UNKNOWN'
-      ext.commitId = 'UNKNOWN'
-      ext.sourceDate = 'UNKNOWN'
-    }
-    // Build machine & java information - for screen output only
-    ext.osArch = System.getProperty('os.arch')
-    ext.osName = System.getProperty('os.name')
-    ext.osVersion = System.getProperty('os.version')
-    ext.jdkVersion = System.getProperty('java.version')
-
-    ext.buildDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
-    ext.buildNumber = new Date().format('MMddyy')
-
-    def props = [
-            "pulse.version"     : version,
-            "Build-Id"          : ext.buildNumber,
-            "Build-Date"        : ext.buildDate,
-            "Source-Date"       : ext.sourceDate,
-            "Source-Revision"   : ext.commitId,
-            "Source-Repository" : ext.branch
-    ] as Properties
-
-    new FileOutputStream(propertiesFile).withStream { fos ->
-      props.store(fos, '')
-    }
-  }
-}
 
 jar {
   from sourceSets.main.output
-  doFirst {
-    project.createPulsePropFile
-  }
 }
 
 eclipse.classpath.file {
@@ -143,10 +85,7 @@ artifacts {
   archives war
 }
 
-def pulseWarFile = "gemfire-pulse-"+version+".war"
-
 war {
-  dependsOn createPulsePropFile
   classpath configurations.runtime
   classpath project(':gemfire-core').webJar.archivePath
 }
