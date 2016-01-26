@@ -19,6 +19,16 @@
 
 package com.vmware.gemfire.tools.pulse.internal;
 
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -27,24 +37,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
-import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
-import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 
 /**
  * This class is used for checking the application running mode i.e. Embedded or
@@ -210,43 +205,13 @@ public class PulseAppListener implements ServletContextListener {
 
   // Function to load pulse version details from properties file
   private void loadPulseVersionDetails() {
-
-    // Read version details from version property file
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    InputStream inputStream = classLoader
-        .getResourceAsStream(PulseConstants.PULSE_VERSION_PROPERTIES_FILE);
-
-    if (inputStream != null) {
-      Properties properties = new Properties();
-      try {
-        properties.load(inputStream);
-      } catch (IOException e) {
-        messagesToBeLogged = messagesToBeLogged
-            .concat(formatLogString(resourceBundle
-                .getString("LOG_MSG_EXCEPTION_LOADING_PROPERTIES_FILE")));
-      } finally {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          messagesToBeLogged = messagesToBeLogged
-              .concat(formatLogString(resourceBundle
-                  .getString("LOG_MSG_EXCEPTION_CLOSING_INPUT_STREAM")));
-        }
-      }
-      // Set pulse version details in common object
-      PulseController.pulseVersion.setPulseVersion(properties.getProperty(
-          PulseConstants.PROPERTY_PULSE_VERSION, ""));
-      PulseController.pulseVersion.setPulseBuildId(properties.getProperty(
-          PulseConstants.PROPERTY_BUILD_ID, ""));
-      PulseController.pulseVersion.setPulseBuildDate(properties.getProperty(
-          PulseConstants.PROPERTY_BUILD_DATE, ""));
-      PulseController.pulseVersion.setPulseSourceDate(properties.getProperty(
-          PulseConstants.PROPERTY_SOURCE_DATE, ""));
-      PulseController.pulseVersion.setPulseSourceRevision(properties
-          .getProperty(PulseConstants.PROPERTY_SOURCE_REVISION, ""));
-      PulseController.pulseVersion.setPulseSourceRepository(properties
-          .getProperty(PulseConstants.PROPERTY_SOURCE_REPOSITORY, ""));
-    }
+    // Set pulse version details in common object
+    PulseController.pulseVersion.setPulseVersion(GemFireVersion.getGemFireVersion());
+    PulseController.pulseVersion.setPulseBuildId(GemFireVersion.getBuildId());
+    PulseController.pulseVersion.setPulseBuildDate(GemFireVersion.getBuildDate());
+    PulseController.pulseVersion.setPulseSourceDate(GemFireVersion.getSourceDate());
+    PulseController.pulseVersion.setPulseSourceRevision(GemFireVersion.getSourceRevision());
+    PulseController.pulseVersion.setPulseSourceRepository(GemFireVersion.getSourceRepository());
 
     // Log Pulse Version details into log file
     messagesToBeLogged = messagesToBeLogged
