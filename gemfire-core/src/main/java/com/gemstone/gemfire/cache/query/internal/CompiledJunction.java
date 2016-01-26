@@ -16,11 +16,28 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.AmbiguousNameException;
+import com.gemstone.gemfire.cache.query.FunctionDomainException;
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
+import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
@@ -116,7 +133,12 @@ public class CompiledJunction extends AbstractCompiledValue implements
   private int _operator = 0;
   private List unevaluatedFilterOperands = null; 
   
-
+  //A token to place into the samesort map.  This is to let the engine know there is more than one index
+  //being used for this junction but allows actual operands to form range junctions if enough exist. 
+  //The mechanism checks to see if the mapped object is an integer, if so, it increments, if it's not it sets as 1
+  //Because we are a string place holder, the next actual operand would just start at one.  If the join is added
+  //after a valid operand has already set the counter to an integer, we instead just ignore and do not set the place holder
+  private final static String PLACEHOLDER_FOR_JOIN = "join";  
   CompiledJunction(CompiledValue[] operands, int operator) {
     // invariant: operator must be LITERAL_and or LITERAL_or
     // invariant: at least two operands
@@ -502,6 +524,7 @@ public class CompiledJunction extends AbstractCompiledValue implements
     Map iterToOperands = new HashMap();
     CompiledValue operand = null;
     boolean isJunctionNeeded = false;
+    boolean indexExistsOnNonJoinOp = false;
 
     for (int i = 0; i < _operands.length; i++) {
       // Asif : If we are inside this function this itself indicates
@@ -554,8 +577,9 @@ public class CompiledJunction extends AbstractCompiledValue implements
         }
         
         for (CompiledValue expndOperand : expandedOperands) {
+          boolean operandEvalAsFilter = expndOperand.getPlanInfo(context).evalAsFilter;
           isJunctionNeeded = isJunctionNeeded
-              || expndOperand.getPlanInfo(context).evalAsFilter;
+              || operandEvalAsFilter;
           Set set = QueryUtils.getCurrentScopeUltimateRuntimeIteratorsIfAny(
               expndOperand, context);
           if (set.size() != 1) {
@@ -563,7 +587,7 @@ public class CompiledJunction extends AbstractCompiledValue implements
             // than 1, will mean a composite condition. For a Composite
             // Condition which is filter evaluable that means necessarily that
             // RHS is dependent on one independent iterator & LHS on the other.
-            if ((expndOperand.getPlanInfo(context).evalAsFilter)) {
+            if (operandEvalAsFilter) {
               Support.Assert(set.size() == 2,
                   " The no of independent iterators should be equal to 2");
               compositeFilterOpsMap.put(expndOperand, set);
@@ -581,6 +605,9 @@ public class CompiledJunction extends AbstractCompiledValue implements
             if (operandsList == null) {
               operandsList = new ArrayList();
               iterToOperands.put(rIter, operandsList);
+            }
+            if (operandEvalAsFilter && _operator == LITERAL_and) {
+              indexExistsOnNonJoinOp = true;
             }
             operandsList.add(expndOperand);
           }
@@ -606,7 +633,7 @@ public class CompiledJunction extends AbstractCompiledValue implements
       // There exists at least one condition which must have an index available.
       Filter junction = createJunction(compositeIterOperands,
           compositeFilterOpsMap, iterToOperands, context, indexCount,
-          evalOperands);
+          evalOperands, indexExistsOnNonJoinOp);
       // Asif Ensure that independent operands are always at the start
       evalOperands.add(indexCount++, junction);
     }
@@ -774,11 +801,15 @@ public class CompiledJunction extends AbstractCompiledValue implements
       //TODO:Do not club Like predicate in an existing range
       if (evalAsFilter ) {
         indx = ((Indexable)tempOp).getIndexInfo(context);
-        Assert.assertTrue(indx.length == 1,
-            "There should have been just one index for the condition");
-        listOrPosition = sameIndexOperands.get(indx[0]._index);
+        //We are now sorting these for joins, therefore we need to weed out the join indexes
+        if (!IndexManager.JOIN_OPTIMIZATION || indx.length == 1) {
+          Assert.assertTrue(indx.length == 1,
+              "There should have been just one index for the condition");
+          listOrPosition = sameIndexOperands.get(indx[0]._index);
+        }
       }
-      if (listOrPosition != null) {
+    
+     if (listOrPosition != null) {
         if (listOrPosition instanceof Integer) {
           int position = ((Integer)listOrPosition).intValue();
           List operands = new ArrayList(size);
@@ -788,16 +819,31 @@ public class CompiledJunction extends AbstractCompiledValue implements
           sameIndexOperands.put(indx[0]._index, operands);
           needsCompacting = true;
         }
-        else {
+        else if (listOrPosition instanceof List){
           List operands = (List)listOrPosition;
           operands.add(tempOp);
         }
-      }
-      else {
+        else {
+          //a join was present here, let's now occupy that spot and remove the placeholder
+          listOrPosition = null;
+        }
+     }
+      if (listOrPosition == null) {
         cv[i] = tempOp;
-        // TODO: Enable only for AND junction for now
-        if (evalAsFilter && this._operator == OQLLexerTokenTypes.LITERAL_and) {
-          sameIndexOperands.put(indx[0]._index, Integer.valueOf(i));
+        if (indx != null && indx.length == 1) {
+          // TODO: Enable only for AND junction for now
+          if (evalAsFilter && this._operator == OQLLexerTokenTypes.LITERAL_and) {
+            sameIndexOperands.put(indx[0]._index, Integer.valueOf(i));
+          }
+        } else if (indx != null && indx.length == 2) {
+          if (evalAsFilter && this._operator == OQLLexerTokenTypes.LITERAL_and) {
+            if (!sameIndexOperands.containsKey(indx[0]._index)) {
+              sameIndexOperands.put(indx[0]._index, PLACEHOLDER_FOR_JOIN);
+            }
+            if (!sameIndexOperands.containsKey(indx[1]._index)) {
+              sameIndexOperands.put(indx[1]._index, PLACEHOLDER_FOR_JOIN);
+            }
+          }
         }
       }
     }
@@ -805,10 +851,10 @@ public class CompiledJunction extends AbstractCompiledValue implements
   }
   //This is called only if the CompiledJunction was either independent or filter evaluable.
   public int getSizeEstimate(ExecutionContext context)throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException  {
-    if( this.isDependentOnCurrentScope(context)) {	  
-	return Integer.MAX_VALUE;
+    if( this.isDependentOnCurrentScope(context)) {    
+  return Integer.MAX_VALUE;
     }else {
-    	return 0;
+      return 0;
     }
   }
 
@@ -816,7 +862,7 @@ public class CompiledJunction extends AbstractCompiledValue implements
   // Lists
   private Filter createJunction(List compositeIterOperands,
       Map compositeFilterOpsMap, Map iterToOperands, ExecutionContext context,
-      int indexCount, List evalOperands) throws FunctionDomainException,
+      int indexCount, List evalOperands, boolean indexExistsOnNonJoinOp) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     Support.Assert(!(iterToOperands.isEmpty() && compositeFilterOpsMap
@@ -825,7 +871,13 @@ public class CompiledJunction extends AbstractCompiledValue implements
     CompiledValue junction = null;
     int size;
     /*---------- Create only a  GroupJunction */
-    if (iterToOperands.size() == 1 && compositeFilterOpsMap.isEmpty()) {
+    if (iterToOperands.size() == 1 && (compositeFilterOpsMap.isEmpty()
+        || (indexExistsOnNonJoinOp && IndexManager.JOIN_OPTIMIZATION))) {
+      if ((indexExistsOnNonJoinOp && IndexManager.JOIN_OPTIMIZATION)) {
+        // For the optimization we will want to add the compositeFilterOpsMap 848
+        // without the optimization we only fall into here if it's empty anyways, but have not tested the removal of this if clause
+        evalOperands.addAll(compositeFilterOpsMap.keySet());
+      }
       // Asif :Create only a GroupJunction. The composite conditions can be
       // evaluated as iter operands inside GroupJunction.
       Map.Entry entry = (Map.Entry) iterToOperands.entrySet().iterator().next();

@@ -132,7 +132,10 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
           // either tru or false for an AND junction but always false for an
           // OR Junction.
           PlanInfo pi = _operands[i].getPlanInfo(context);
-          if (pi.evalAsFilter) {
+          //we check for size == 1 now because of the join optimization can 
+          //leave an operand with two indexes, but the key element is not set
+          //this will throw an npe
+          if (pi.evalAsFilter && pi.indexes.size() == 1) {       
             if(pi.isPreferred) {
               if(currentBestFilter != null) {
                 evalOperands.add(currentBestFilter);

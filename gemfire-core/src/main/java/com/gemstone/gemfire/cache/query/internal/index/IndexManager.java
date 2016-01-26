@@ -113,6 +113,8 @@ public class IndexManager  {
   // Threshold for Queue.
   private final int INDEX_MAINTENANCE_BUFFER = Integer.getInteger("gemfire.AsynchIndexMaintenanceThreshold", -1).intValue();
 
+  public static boolean JOIN_OPTIMIZATION = !Boolean.getBoolean("gemfire.index.DisableJoinOptimization");
+  
   // Added for test purposes only.
   public static boolean INPLACE_OBJECT_MODIFICATION_FOR_TEST = false;    
 
@@ -120,6 +122,8 @@ public class IndexManager  {
   public static boolean IS_TEST_LDM = false; 
 
   public static boolean IS_TEST_EXPANSION = false;
+  
+  
 
   /**
    * System property to maintain the ReverseMap to take care in-place modification of the 

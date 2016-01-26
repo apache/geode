@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,7 @@ import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.index.AbstractIndex;
 import com.gemstone.gemfire.cache.query.internal.index.IndexData;
+import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
 import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
 import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
@@ -52,7 +54,6 @@ import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
@@ -556,7 +557,7 @@ public class QueryUtils {
           indexFieldToItrsMapping[level], icdeh[level])) {
         if (level == (values.length - 1)) {
           doNestedIterationsForIndex(expansionListIterator.hasNext(), result,
-              finalItrs, expansionListIterator, context, iterOps, limit);
+              finalItrs, expansionListIterator, context, iterOps, limit, null);
           if (limit != -1 && result.size() >= limit) {
             break;
           }     
@@ -633,7 +634,7 @@ public class QueryUtils {
   private static SelectResults cutDownAndExpandIndexResults(
       SelectResults result, RuntimeIterator[] indexFieldToItrsMapping,
       List expansionList, List finalItrs, ExecutionContext context,
-      List checkList, CompiledValue iterOps) throws FunctionDomainException,
+      List checkList, CompiledValue iterOps, IndexInfo theFilteringIndex) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     SelectResults returnSet = null;
@@ -666,7 +667,7 @@ public class QueryUtils {
       
     }
     cutDownAndExpandIndexResults(returnSet, result, indexFieldToItrsMapping,
-        expansionList, finalItrs, context, checkList, iterOps);
+        expansionList, finalItrs, context, checkList, iterOps, theFilteringIndex);
     return returnSet;
   }
 
@@ -674,7 +675,7 @@ public class QueryUtils {
   private static void cutDownAndExpandIndexResults(SelectResults returnSet,
       SelectResults result, RuntimeIterator[] indexFieldToItrsMapping,
       List expansionList, List finalItrs, ExecutionContext context,
-      List checkList, CompiledValue iterOps) throws FunctionDomainException,
+      List checkList, CompiledValue iterOps, IndexInfo theFilteringIndex) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
 //    Object[] checkFields = null;
@@ -692,13 +693,20 @@ public class QueryUtils {
     int limit = getLimitValue(context);
     
     while (itr.hasNext()) {
+      DerivedInfo derivedInfo = null;
+      if (IndexManager.JOIN_OPTIMIZATION) {
+        derivedInfo = new DerivedInfo();
+        derivedInfo.setExpansionList(expansionList);
+      }
       Object value = itr.next();
       if (setIndexFieldValuesInRespectiveIterators(value,  
           indexFieldToItrsMapping, icdeh)) {  //does that mean we don't get dupes even if they exist in the index?
         //         DO NESTED LOOPING
-       
+        if (IndexManager.JOIN_OPTIMIZATION) {
+          derivedInfo.computeDerivedJoinResults(theFilteringIndex, context, iterOps);
+        }  
         doNestedIterationsForIndex(expansionListIterator.hasNext(), returnSet,
-            finalItrs, expansionListIterator, context, iterOps, limit);
+            finalItrs, expansionListIterator, context, iterOps, limit, derivedInfo.derivedResults);
         if (limit != -1 && returnSet.size() >= limit) {
           break;
         }     
@@ -718,11 +726,19 @@ public class QueryUtils {
     }   
     return limit;
   }
+  
+  public static CompiledID getCompiledIdFromPath(CompiledValue path) {
+    int type = path.getType();
+    if (type == OQLLexerTokenTypes.Identifier) {
+      return (CompiledID) path;
+    } 
+    return getCompiledIdFromPath(path.getReceiver());
+  }
 
   //Add comments
   private static void doNestedIterationsForIndex(boolean continueRecursion,
       SelectResults resultSet, List finalItrs, ListIterator expansionItrs,
-      ExecutionContext context, CompiledValue iterOps, int limit)
+      ExecutionContext context, CompiledValue iterOps, int limit, Map<String, SelectResults> derivedResults)
       throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     
@@ -768,7 +784,24 @@ public class QueryUtils {
     }
     else {
       RuntimeIterator currentLevel = (RuntimeIterator) expansionItrs.next();
-      SelectResults c = currentLevel.evaluateCollection(context);
+      SelectResults c = null;
+      // Calculate the key to find the derived join results. If we are a non nested lookup it will be a Compiled Region otherwise it will be a CompiledPath that
+      // we can extract the id from. In the end the result will be the alias which is used as a prefix
+      CompiledValue collectionExpression = currentLevel.getCmpIteratorDefn().getCollectionExpr();
+      String key = null;
+      boolean useDerivedResults = true;
+      if (currentLevel.getCmpIteratorDefn().getCollectionExpr().getType() == OQLLexerTokenTypes.RegionPath) {
+        key = currentLevel.getCmpIteratorDefn().getName() + ":" + currentLevel.getDefinition();
+      } else if (currentLevel.getCmpIteratorDefn().getCollectionExpr().getType() == OQLLexerTokenTypes.LITERAL_select) {
+        useDerivedResults = false;
+      } else {
+        key = getCompiledIdFromPath(currentLevel.getCmpIteratorDefn().getCollectionExpr()).getId() + ":" + currentLevel.getDefinition();
+      }
+      if (useDerivedResults && derivedResults != null && derivedResults.containsKey(key)) {
+        c = derivedResults.get(key);
+      } else {
+        c = currentLevel.evaluateCollection(context);
+      }
       //  RuntimeIterator next = expansionItrs.hasNext() ?
       // (RuntimeIterator)expansionItrs.next() : null;
       if (c == null) {
@@ -783,7 +816,7 @@ public class QueryUtils {
 
         currentLevel.setCurrent(cIter.next());
         doNestedIterationsForIndex(expansionItrs.hasNext(), resultSet,
-            finalItrs, expansionItrs, context, iterOps, limit);
+            finalItrs, expansionItrs, context, iterOps, limit, derivedResults);
         if (limit != -1 && resultSet.size() >= limit) {
           break;
         }     
@@ -1091,7 +1124,7 @@ public class QueryUtils {
             indexResults);
         indexResults = QueryUtils.cutDownAndExpandIndexResults(indexResults,
             ich.indexFieldToItrsMapping, ich.expansionList, ich.finalList,
-            context, ich.checkList, iterOperands);
+            context, ich.checkList, iterOperands, indexInfo);
       }
       finally {
         observer.afterCutDownAndExpansionOfSingleIndexResult(indexResults);
@@ -1108,7 +1141,7 @@ public class QueryUtils {
               indexInfo._index, indexResults);
           indexResults = QueryUtils.cutDownAndExpandIndexResults(indexResults,
               ich.indexFieldToItrsMapping, ich.expansionList, ich.finalList,
-              context, ich.checkList, iterOperands);
+              context, ich.checkList, iterOperands, indexInfo);
         }
         finally {
           observer.afterCutDownAndExpansionOfSingleIndexResult(indexResults);
@@ -1475,7 +1508,7 @@ public class QueryUtils {
               singlUsblIndxRes, context);
           cutDownAndExpandIndexResults(returnSet, singlUsblIndxRes,
               singleUsableICH.indexFieldToItrsMapping, totalExpList, finalList,
-              context, singleUsableICH.checkList, iterOperands);
+              context, singleUsableICH.checkList, iterOperands, singleUsableICH.indxInfo);
           singlUsblIndxRes.clear();
         }
       }
@@ -1700,7 +1733,7 @@ public class QueryUtils {
     return cutDownAndExpandIndexResults((SelectResults) dataList.get(0),
         (RuntimeIterator[]) dataList.get(1), (List) dataList.get(2),
         (List) dataList.get(3), (ExecutionContext) dataList.get(4),
-        (List) dataList.get(5), null);
+        (List) dataList.get(5), null, null);
   } 
   
   static List queryEquijoinConditionBucketIndexes(IndexInfo[] indxInfo,

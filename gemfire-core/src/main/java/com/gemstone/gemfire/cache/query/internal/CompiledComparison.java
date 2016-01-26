@@ -52,8 +52,8 @@ public class CompiledComparison extends AbstractCompiledValue implements
     Negatable, OQLLexerTokenTypes, Indexable {
 
   // persistent inst vars
-  private final CompiledValue _left;
-  private final CompiledValue _right;
+  public final CompiledValue _left;
+  public final CompiledValue _right;
   private int _operator;
 
   // List groupRuntimeItrs = null;

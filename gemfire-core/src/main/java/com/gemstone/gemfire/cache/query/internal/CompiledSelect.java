@@ -82,6 +82,19 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   //used as a key in a context to identify the scope of this CompiledSelect 
   private Object scopeID = new Object(); 
+  
+  /*
+   * Set in context for the where clause to signify that it has been evaluated at least one time
+   * for any other CompiledValue that may use precalculated indexes
+   * we want to mark this as Evaluated so that we don't unlock locks
+   * that don't belong to this iteration of evaluate.
+   * This is similar to how CompiledComparisons store their IndexInfo in the context
+   * but for example a CompiledJunction that uses 2 Comparisons
+   * would have unlocked the readlocks because we check to see if the clause has a mapped value
+   * in the context. Because CompiledJunctions did not, we unlocked the read locks.
+   * Now we set a value so that it will not do this. See where we use this value to see how unlock is determined
+   */
+  private final static String CLAUSE_EVALUATED = "Evaluated";
 
   public CompiledSelect(boolean distinct, boolean count, CompiledValue whereClause,
                         List iterators, List projAttrs,List<CompiledSortCriterion> orderByAttrs, CompiledValue limit,
@@ -464,7 +477,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           }
           boolean unlock = true;
           Object obj = context.cacheGet(this.whereClause);
-          if(obj != null && obj instanceof IndexInfo[]) {
+          if(obj != null && (obj instanceof IndexInfo[] || obj.equals(CLAUSE_EVALUATED))) {
             // if indexinfo is cached means the read lock 
             // is not being taken this time, so releasing 
             // the lock is not required
@@ -473,6 +486,9 @@ public class CompiledSelect extends AbstractCompiledValue {
           // see if we should evaluate as filters,
           // and count how many actual index lookups will be performed
           PlanInfo planInfo = this.whereClause.getPlanInfo(context);
+          if (context.cacheGet(this.whereClause) == null) {
+            context.cachePut(this.whereClause, CLAUSE_EVALUATED);
+          }
           try {
             evalAsFilters = planInfo.evalAsFilter;
             // let context know if there is exactly one index lookup
@@ -1089,10 +1105,10 @@ public class CompiledSelect extends AbstractCompiledValue {
     if (elementType.isStructType()) {
       if (isSorted) { // sorted struct
         return prepareEmptySortedStructSet((StructTypeImpl)elementType);
-	}
+  }
       else { // unsorted struct
         return new StructBag((StructType)elementType,  context.getCachePerfStats());
-	}
+  }
     }
     else { // non-struct
       if (isSorted) { // sorted non-struct
