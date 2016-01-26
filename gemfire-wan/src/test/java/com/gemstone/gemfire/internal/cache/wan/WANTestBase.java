@@ -2395,7 +2395,7 @@ public class WANTestBase extends DistributedTestCase{
   public static void createConcurrentSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory, Integer batchSize,
       boolean isConflation, boolean isPersistent, GatewayEventFilter filter,
-      boolean isManulaStart, int concurrencyLevel, OrderPolicy policy) {
+      boolean isManualStart, int concurrencyLevel, OrderPolicy policy) {
 
     File persistentDirectory = new File(dsName + "_disk_"
         + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
@@ -2408,7 +2408,7 @@ public class WANTestBase extends DistributedTestCase{
       gateway.setParallel(true);
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManulaStart);
+      gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory) gateway)
           .setLocatorDiscoveryCallback(new MyLocatorCallback());
       if (filter != null) {
@@ -2430,7 +2430,7 @@ public class WANTestBase extends DistributedTestCase{
       GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManulaStart);
+      gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory) gateway)
           .setLocatorDiscoveryCallback(new MyLocatorCallback());
       if (filter != null) {
@@ -4825,7 +4825,13 @@ public class WANTestBase extends DistributedTestCase{
       }
     }
   }
-  
+
+  protected Integer[] createLNAndNYLocators() {
+    Integer lnPort = (Integer) vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    return new Integer[] { lnPort, nyPort };
+  }
+
   public static class MyLocatorCallback extends
       LocatorDiscoveryCallbackAdapter {
 
