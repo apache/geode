@@ -147,7 +147,7 @@ public class ConvertUtilsJUnitTest {
       ConvertUtils.convert(createResource(null, "test".getBytes()));
     }
     catch (IllegalArgumentException expected) {
-      assertEquals("The filename of Resource (Content of file (null).) must be specified!", expected.getMessage());
+      assertEquals("The filename of Resource (Byte array resource [Content of file (null).]) must be specified!", expected.getMessage());
       throw expected;
     }
   }
