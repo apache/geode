@@ -537,7 +537,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
-    vm4.invoke(WANTestBase.class, "pauseSenderAndWaitForDispatcherToPause", new Object[] { "ln" });
+    vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
         testName, null,1, 100, isOffHeap()  });

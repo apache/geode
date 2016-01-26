@@ -39,6 +39,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -117,6 +118,7 @@ import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
+import com.jayway.awaitility.Awaitility;
 
 import junit.framework.Assert;
 
@@ -2160,6 +2162,8 @@ public class WANTestBase extends DistributedTestCase{
         }
       }
       sender.pause();
+      ((AbstractGatewaySender) sender).getEventProcessor().waitForDispatcherToPause();
+      
     }
     finally {
       exp.remove();
@@ -2167,27 +2171,6 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
   
-  public static void pauseSenderAndWaitForDispatcherToPause(String senderId) {
-    final ExpectedException exln = addExpectedException("Could not connect");
-    ExpectedException exp = addExpectedException(ForceReattemptException.class
-        .getName());
-    try {
-      Set<GatewaySender> senders = cache.getGatewaySenders();
-      GatewaySender sender = null;
-      for (GatewaySender s : senders) {
-        if (s.getId().equals(senderId)) {
-          sender = s;
-          break;
-        }
-      }
-      sender.pause();
-      ((AbstractGatewaySender)sender).getEventProcessor().waitForDispatcherToPause();
-    } finally {
-      exp.remove();
-      exln.remove();
-    }    
-  }
-
   public static void resumeSender(String senderId) {
     final ExpectedException exln = addExpectedException("Could not connect");
     ExpectedException exp = addExpectedException(ForceReattemptException.class
@@ -3189,35 +3172,23 @@ public class WANTestBase extends DistributedTestCase{
   
   
   public static Map putCustomerPartitionedRegion(int numPuts) {
+    String valueSuffix = "";
+    return putCustomerPartitionedRegion(numPuts, valueSuffix);
+  }
+  
+  public static Map updateCustomerPartitionedRegion(int numPuts) {
+    String valueSuffix = "_update";
+    return putCustomerPartitionedRegion(numPuts, valueSuffix);
+  }
+
+  protected static Map putCustomerPartitionedRegion(int numPuts,
+      String valueSuffix) {
     assertNotNull(cache);
     assertNotNull(customerRegion);
     Map custKeyValues = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
-      Customer customer = new Customer("name" + i, "Address" + i);
-      try {
-        customerRegion.put(custid, customer);
-        custKeyValues.put(custid, customer);
-        assertTrue(customerRegion.containsKey(custid));
-        assertEquals(customer,customerRegion.get(custid));
-      }
-      catch (Exception e) {
-        fail(
-            "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
-            e);
-      }
-      getLogWriter().info("Customer :- { " + custid + " : " + customer + " }");
-    }
-    return custKeyValues;
-  }
-  
-  public static Map updateCustomerPartitionedRegion(int numPuts) {
-    assertNotNull(cache);
-    assertNotNull(customerRegion);
-    Map custKeyValues = new HashMap();    
-    for (int i = 1; i <= numPuts; i++) {
-      CustId custid = new CustId(i);
-      Customer customer = new Customer("name" + i, "Address" + i + "_update");
+      Customer customer = new Customer("name" + i, "Address" + i + valueSuffix);
       try {
         customerRegion.put(custid, customer);
         assertTrue(customerRegion.containsKey(custid));
@@ -3240,24 +3211,22 @@ public class WANTestBase extends DistributedTestCase{
     Map orderKeyValues = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
-      for (int j = 1; j <= 1; j++) {
-        int oid = (i * 1) + j;
-        OrderId orderId = new OrderId(oid, custid);
-        Order order = new Order("OREDR" + oid);
-        try {
-          orderRegion.put(orderId, order);
-          orderKeyValues.put(orderId, order);
-          assertTrue(orderRegion.containsKey(orderId));
-          assertEquals(order,orderRegion.get(orderId));
+      int oid = i + 1;
+      OrderId orderId = new OrderId(oid, custid);
+      Order order = new Order("OREDR" + oid);
+      try {
+        orderRegion.put(orderId, order);
+        orderKeyValues.put(orderId, order);
+        assertTrue(orderRegion.containsKey(orderId));
+        assertEquals(order,orderRegion.get(orderId));
 
-        }
-        catch (Exception e) {
-          fail(
-              "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
-              e);
-        }
-        getLogWriter().info("Order :- { " + orderId + " : " + order + " }");
       }
+      catch (Exception e) {
+        fail(
+            "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
+            e);
+      }
+      getLogWriter().info("Order :- { " + orderId + " : " + order + " }");
     }
     return orderKeyValues;
   }
@@ -3412,36 +3381,7 @@ public class WANTestBase extends DistributedTestCase{
     }
     return shipmentKeyValue;
   }
-
-  public static void doPutsPDXSerializable(String regionName, int numPuts) {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
-    assertNotNull(r);
-    for (int i = 0; i < numPuts; i++) {
-      r.put("Key_" + i, new SimpleClass(i, (byte)i));
-    }
-  }
   
-  public static void doPutsPDXSerializable2(String regionName, int numPuts) {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
-    assertNotNull(r);
-    for (int i = 0; i < numPuts; i++) {
-      r.put("Key_" + i, new SimpleClass1(false, (short) i, "" + i, i,"" +i ,""+ i,i, i));
-    }
-  }
-  
-  
-  public static void doTxPuts(String regionName, int numPuts) {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
-    assertNotNull(r);
-    CacheTransactionManager mgr = cache.getCacheTransactionManager();
-
-    mgr.begin();
-    r.put(0, 0);
-    r.put(100, 100);
-    r.put(200, 200);
-    mgr.commit();
-  }
-    
   public static Map updateShipmentPartitionedRegion(int numPuts) {
     assertNotNull(cache);
     assertNotNull(shipmentRegion);
@@ -3495,7 +3435,36 @@ public class WANTestBase extends DistributedTestCase{
     }
     return shipmentKeyValue;
   }
+
+  public static void doPutsPDXSerializable(String regionName, int numPuts) {
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
+    for (int i = 0; i < numPuts; i++) {
+      r.put("Key_" + i, new SimpleClass(i, (byte)i));
+    }
+  }
   
+  public static void doPutsPDXSerializable2(String regionName, int numPuts) {
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
+    for (int i = 0; i < numPuts; i++) {
+      r.put("Key_" + i, new SimpleClass1(false, (short) i, "" + i, i,"" +i ,""+ i,i, i));
+    }
+  }
+  
+  
+  public static void doTxPuts(String regionName, int numPuts) {
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
+    CacheTransactionManager mgr = cache.getCacheTransactionManager();
+
+    mgr.begin();
+    r.put(0, 0);
+    r.put(100, 100);
+    r.put(200, 200);
+    mgr.commit();
+  }
+    
   public static void doNextPuts(String regionName, int start, int numPuts) {
     //waitForSitesToUpdate();
     ExpectedException exp = addExpectedException(CacheClosedException.class
@@ -3512,6 +3481,10 @@ public class WANTestBase extends DistributedTestCase{
   }
   
   public static void checkQueueSize(String senderId, int numQueueEntries) {
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> testQueueSize(senderId, numQueueEntries));
+  }
+  
+  public static void testQueueSize(String senderId, int numQueueEntries) {
     GatewaySender sender = null;
     for (GatewaySender s : cache.getGatewaySenders()) {
       if (s.getId().equals(senderId)) {
