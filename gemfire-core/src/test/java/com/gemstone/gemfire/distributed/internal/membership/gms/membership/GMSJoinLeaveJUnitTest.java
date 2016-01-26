@@ -630,7 +630,7 @@ public class GMSJoinLeaveJUnitTest {
     installViewMessage = new InstallViewMessage(partitionView, credentials, false);
     gmsJoinLeave.processMessage(installViewMessage);
     
-    verify(manager).forceDisconnect(any(String.class));
+    verify(manager).forceDisconnect(isA(String.class));
     verify(manager).quorumLost(crashes, newView);
   }
   
