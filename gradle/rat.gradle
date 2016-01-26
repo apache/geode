@@ -198,3 +198,7 @@ rat {
     'gemfire-pulse/src/main/webapp/scripts/multiselect/prettify.js'
   ]
 }
+
+subprojects {
+  check.dependsOn rat
+}

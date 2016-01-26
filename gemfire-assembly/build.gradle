@@ -16,9 +16,9 @@
  */
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
 
-
 apply plugin: 'distribution'
 
+// disable artifact generation for this project
 jar.enabled = false
 extraArchive {
   sources = false
@@ -41,6 +41,12 @@ configurations.all {
   artifacts.removeAll artifacts.findAll { it instanceof ArchivePublishArtifact && !it.archiveTask.enabled }
 }
 
+gradle.taskGraph.whenReady( { graph ->
+  tasks.withType(Tar).each { tar ->
+    tar.compression = Compression.GZIP
+    tar.extension = 'tar.gz'
+  }
+})
 
 dependencies {
   provided project(':gemfire-core')

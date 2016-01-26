@@ -1,0 +1,83 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+subprojects {
+  apply plugin: 'com.bmuschko.nexus'
+  
+  extraArchive {
+    sources = true
+    javadoc = true
+    tests = false
+  }
+  
+  nexus {
+    sign = true
+    repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
+    snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
+  }
+  
+  modifyPom {
+    project {
+      name 'Apache Geode (incubating)'
+      description 'Apache Geode (incubating) provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+      url 'http://geode.incubator.apache.org'
+  
+      scm {
+        url 'https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=tree'
+        connection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+      }
+  
+      licenses {
+        license {
+          name 'The Apache Software License, Version 2.0'
+          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        }
+      }
+  
+      repositories {
+        repository {
+          id 'libs-release'
+          name 'Spring Maven libs-release Repository'
+          url 'http://repo.spring.io/libs-release'
+        }
+      }
+    }
+  }
+  
+  // The nexus plugin reads authentication from ~/.gradle/gradle.properties but the
+  // jenkins server stores publishing credentials in ~/.m2/settings.xml (maven).
+  // We match on the expected snapshot repository id.
+  afterEvaluate {
+    if (!isReleaseVersion && System.env.USER == 'jenkins') {
+      def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
+      if (settingsXml.exists()) {
+        def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
+          server.id.text() == 'apache.snapshots.https'
+        }
+  
+        if (snapshotCreds != null) {
+          tasks.uploadArchives.doFirst {
+            repositories().withType(MavenDeployer).each { repo ->
+              repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
+              repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+            }
+          }
+        }
+      }
+    }
+  }
+}
