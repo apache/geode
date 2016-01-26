@@ -77,6 +77,16 @@ public class NetView implements DataSerializableFixedID {
     Arrays.fill(failureDetectionPorts, -1);
   }
 
+  public NetView(InternalDistributedMember creator, int viewId, List<InternalDistributedMember> members) {
+    this.viewId = viewId;
+    this.members = new ArrayList<InternalDistributedMember>(members);
+    hashedMembers = new HashSet<>(this.members);
+    shutdownMembers = new HashSet<>();
+    crashedMembers = Collections.emptySet();
+    this.creator = creator;
+    Arrays.fill(failureDetectionPorts, -1);
+  }
+
   // legacy method for JGMM
   public NetView(int size, long viewId) {
     this.viewId = (int) viewId;

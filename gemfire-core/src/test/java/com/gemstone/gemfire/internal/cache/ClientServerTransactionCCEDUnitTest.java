@@ -24,9 +24,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-
-import dunit.SerializableCallable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * test client initiated transactions with concurrency checks enabled.

@@ -17,9 +17,8 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * An abstract superclass of implementation of GemFire cache callbacks

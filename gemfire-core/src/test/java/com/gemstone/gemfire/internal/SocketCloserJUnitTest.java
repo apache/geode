@@ -30,10 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * Tests the default SocketCloser.

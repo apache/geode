@@ -34,9 +34,8 @@ import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 
 import com.gemstone.gemfire.StatisticsFactory;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import dunit.DistributedTestCase;
 
 /**
  * Testing methods for SimpleDiskRegion.java api's

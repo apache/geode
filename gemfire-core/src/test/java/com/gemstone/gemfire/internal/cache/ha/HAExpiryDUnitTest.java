@@ -34,11 +34,10 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This test checks Expiration of events in the regionqueue.

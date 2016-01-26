@@ -28,10 +28,9 @@ import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This tests invalidateRegion functionality on partitioned regions

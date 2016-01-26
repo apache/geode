@@ -33,11 +33,10 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.util.StopWatch;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Extracted from LocatorLauncherLocalJUnitTest.

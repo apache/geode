@@ -91,7 +91,6 @@ public class GMSMembershipManagerJUnitTest {
   DistributedMembershipListener listener;
   private GMSMembershipManager manager;
   private List<InternalDistributedMember> members;
-  private Set<InternalDistributedMember> emptyMembersSet = new HashSet<>();
   private DirectChannel dc;
 
   @Before
@@ -172,7 +171,7 @@ public class GMSMembershipManagerJUnitTest {
     m.setRecipient(mockMembers[0]);
     manager.start();
     manager.started();
-    manager.installView(new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet));
+    manager.installView(new NetView(myMemberId, 1, members));
     Set<InternalDistributedMember> failures = manager.send(m);
     verify(messenger).send(m);
     if (failures != null) {
@@ -186,7 +185,7 @@ public class GMSMembershipManagerJUnitTest {
        new Date(System.currentTimeMillis()), "thread", "", 1L, "", "");
     manager.start();
     manager.started();
-    manager.installView(new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet));
+    manager.installView(new NetView(myMemberId, 1, members));
     manager.setShutdown();
     Set<InternalDistributedMember> failures = manager.send(m);
     verify(messenger, never()).send(m);
@@ -201,7 +200,7 @@ public class GMSMembershipManagerJUnitTest {
     m.setRecipient(mockMembers[0]);
     manager.start();
     manager.started();
-    manager.installView(new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet));
+    manager.installView(new NetView(myMemberId, 1, members));
     Set<InternalDistributedMember> failures = manager.send(null, m, null);
     verify(messenger, never()).send(m);
     reset(messenger);
@@ -216,7 +215,7 @@ public class GMSMembershipManagerJUnitTest {
     manager.isJoining = true;
 
     List<InternalDistributedMember> viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], myMemberId});
-    manager.installView(new NetView(myMemberId, 2, viewmembers, emptyMembersSet, emptyMembersSet));
+    manager.installView(new NetView(myMemberId, 2, viewmembers));
 
     // add a surprise member that will be shunned due to it's having
     // an old view ID
@@ -248,7 +247,7 @@ public class GMSMembershipManagerJUnitTest {
     // this view officially adds surpriseMember2
     viewmembers = Arrays.asList(
         new InternalDistributedMember[] {mockMembers[0], myMemberId, surpriseMember2});
-    manager.handleOrDeferViewEvent(new NetView(myMemberId, 3, viewmembers, emptyMembersSet, emptyMembersSet));
+    manager.handleOrDeferViewEvent(new NetView(myMemberId, 3, viewmembers));
     assertEquals(4, manager.getStartupEvents().size());
     
     // add a surprise member that will be shunned due to it's having
@@ -263,7 +262,7 @@ public class GMSMembershipManagerJUnitTest {
     manager.isJoining = false;
     mockMembers[4].setVmViewId(4);
     viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], myMemberId, surpriseMember2, mockMembers[4]});
-    manager.handleOrDeferViewEvent(new NetView(myMemberId, 4, viewmembers, emptyMembersSet, emptyMembersSet));
+    manager.handleOrDeferViewEvent(new NetView(myMemberId, 4, viewmembers));
     assertEquals(6, manager.getStartupEvents().size());
     
     // exercise the toString methods for code coverage
@@ -286,7 +285,7 @@ public class GMSMembershipManagerJUnitTest {
     // event processing has started.  This should notify the distribution manager
     // with a LocalViewMessage to process the view
     reset(listener);
-    manager.handleOrDeferViewEvent(new NetView(myMemberId, 5, viewmembers, emptyMembersSet, emptyMembersSet));
+    manager.handleOrDeferViewEvent(new NetView(myMemberId, 5, viewmembers));
     assertEquals(0, manager.getStartupEvents().size());
     verify(listener).messageReceived(isA(LocalViewMessage.class));
 
@@ -310,7 +309,7 @@ public class GMSMembershipManagerJUnitTest {
     
     manager.setDirectChannel(dc);
 
-    NetView view = new NetView(myMemberId, 1, members, emptyMembersSet, emptyMembersSet);
+    NetView view = new NetView(myMemberId, 1, members);
     manager.installView(view);
     when(joinLeave.getView()).thenReturn(view);
     
@@ -387,7 +386,7 @@ public class GMSMembershipManagerJUnitTest {
     manager.isJoining = true;
 
     List<InternalDistributedMember> viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], mockMembers[1], myMemberId});
-    manager.installView(new NetView(myMemberId, 2, viewmembers, emptyMembersSet, emptyMembersSet));
+    manager.installView(new NetView(myMemberId, 2, viewmembers));
     
     InternalDistributedMember[] destinations = new InternalDistributedMember[viewmembers.size()];
     for (int i=0; i<destinations.length; i++) {
@@ -422,7 +421,7 @@ public class GMSMembershipManagerJUnitTest {
     manager.isJoining = true;
 
     List<InternalDistributedMember> viewmembers = Arrays.asList(new InternalDistributedMember[] {mockMembers[0], mockMembers[1], myMemberId});
-    manager.installView(new NetView(myMemberId, 2, viewmembers, emptyMembersSet, emptyMembersSet));
+    manager.installView(new NetView(myMemberId, 2, viewmembers));
 
     List<InternalDistributedMember> mbrs = new ArrayList<>(1);
     mbrs.add(mockMembers[0]);

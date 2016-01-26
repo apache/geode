@@ -19,8 +19,7 @@ package com.gemstone.gemfire.internal.cache.wan.concurrent;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
-
-import dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 /**
  * @author skumar

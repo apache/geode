@@ -29,8 +29,7 @@ import java.util.Properties;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SystemAdmin;
-
-import dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 public class SystemAdminDUnitTest extends DistributedTestCase {
 

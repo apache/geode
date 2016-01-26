@@ -25,10 +25,12 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang.SerializationException;
 import org.jgroups.Address;
@@ -102,6 +104,7 @@ public class JGroupsMessengerJUnitTest {
     nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
     nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
     nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
+    nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);
@@ -151,6 +154,39 @@ public class JGroupsMessengerJUnitTest {
     if (messenger != null && messenger.myChannel != null) {
       messenger.stop();
     }
+  }
+  
+  @Test
+  public void ioExceptionInitiatesSuspectProcessing() throws Exception {
+    // see GEODE-634
+    initMocks(false);
+    NetView v = createView();
+    when(joinLeave.getView()).thenReturn(v);
+    messenger.installView(v);
+    messenger.handleJGroupsIOException(new IOException("je m'en fiche"), new JGAddress(v.getMembers().get(1)));
+    verify(healthMonitor).checkIfAvailable(isA(InternalDistributedMember.class), isA(String.class), isA(Boolean.class));
+  }
+  
+  @Test
+  public void ioExceptionDuringShutdownAvoidsSuspectProcessing() throws Exception {
+    // see GEODE-634
+    initMocks(false);
+    NetView v = createView();
+    when(joinLeave.getView()).thenReturn(v);
+    when(manager.shutdownInProgress()).thenReturn(true);
+    messenger.installView(v);
+    messenger.handleJGroupsIOException(new IOException("fichez-moi le camp"), new JGAddress(v.getMembers().get(1)));
+    verify(healthMonitor, never()).checkIfAvailable(isA(InternalDistributedMember.class), isA(String.class), isA(Boolean.class));
+  }
+  
+  private NetView createView() {
+    InternalDistributedMember sender = messenger.getMemberID();
+    List<InternalDistributedMember> mbrs = new ArrayList<>();
+    mbrs.add(sender);
+    mbrs.add(createAddress(100));
+    mbrs.add(createAddress(101));
+    NetView v = new NetView(sender, 1, mbrs);
+    return v;
   }
   
   @Test
@@ -784,7 +820,7 @@ public class JGroupsMessengerJUnitTest {
   }
   
   @Test
-  public void testWaitForMessageState() throws Exception {
+  public void testWaitForMessageStateSucceeds() throws Exception {
     initMocks(true/*multicast*/);
     NAKACK2 nakack = mock(NAKACK2.class);
     Digest digest = mock(Digest.class);
@@ -799,14 +835,25 @@ public class JGroupsMessengerJUnitTest {
         new long[] {0,0}, new long[] {2, 50}, null);
     messenger.waitForMessageState(nakack, createAddress(1234), Long.valueOf(50));
     verify(digest, times(3)).get(isA(Address.class));
-    
-    // for code coverage let's invoke the other waitForMessageState method
-    Map state = new HashMap();
-    state.put("JGroups.mcastState", Long.valueOf(10L));
-    messenger.waitForMessageState(createAddress(1234), state);
   }
   
-
+  @Test
+  public void testWaitForMessageStateThrowsExceptionIfMessagesMissing() throws Exception {
+    initMocks(true/*multicast*/);
+    NAKACK2 nakack = mock(NAKACK2.class);
+    Digest digest = mock(Digest.class);
+    when(nakack.getDigest(any(Address.class))).thenReturn(digest);
+    when(digest.get(any(Address.class))).thenReturn(
+        new long[] {0,0}, new long[] {2, 50}, new long[] {49, 50});
+    try {
+      // message 50 will never arrive
+      messenger.waitForMessageState(nakack, createAddress(1234), Long.valueOf(50));
+      fail("expected a GemFireIOException to be thrown");
+    } catch (GemFireIOException e) {
+      // pass
+    }
+  }
+  
   @Test
   public void testMulticastTest() throws Exception {
     initMocks(true);

@@ -38,10 +38,9 @@ import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.pdx.internal.PdxType;
 import com.gemstone.gemfire.pdx.internal.PdxUnreadData;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class PdxDeleteFieldDUnitTest  extends CacheTestCase{
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();

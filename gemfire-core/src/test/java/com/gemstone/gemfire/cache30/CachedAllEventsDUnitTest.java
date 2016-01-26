@@ -16,10 +16,18 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.*;
-import com.gemstone.gemfire.distributed.internal.*;
-import dunit.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.SubscriptionAttributes;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+
 /**
  * Make sure that create are distributed and done in
  * remote regions that are CACHED_ALL_EVENTS*.

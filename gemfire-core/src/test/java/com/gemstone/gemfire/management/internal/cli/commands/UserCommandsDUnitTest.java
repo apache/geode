@@ -23,8 +23,9 @@ import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import dunit.Host;
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+
 import org.junit.Test;
 
 import java.io.File;

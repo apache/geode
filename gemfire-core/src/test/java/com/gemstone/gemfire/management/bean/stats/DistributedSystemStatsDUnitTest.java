@@ -29,9 +29,8 @@ import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.beans.MemberMBean;
 import com.gemstone.gemfire.management.internal.beans.MemberMBeanBridge;
-
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * @author rishim

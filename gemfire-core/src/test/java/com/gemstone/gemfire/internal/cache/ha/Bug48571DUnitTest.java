@@ -38,10 +38,9 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class Bug48571DUnitTest extends DistributedTestCase {
 

@@ -35,10 +35,9 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * TODO This doesn't really test the optimised RI behaviour but only that RI

@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.VM;
 
 @SuppressWarnings("serial")
 public class HAInterestPart1DUnitTest extends HAInterestTestCase {

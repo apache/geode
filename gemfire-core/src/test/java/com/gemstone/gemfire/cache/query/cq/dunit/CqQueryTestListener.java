@@ -30,9 +30,8 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.query.CqEvent;
 import com.gemstone.gemfire.cache.query.CqStatusListener;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * @author rmadduri

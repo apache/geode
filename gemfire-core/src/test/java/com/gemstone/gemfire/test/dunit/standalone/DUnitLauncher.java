@@ -56,11 +56,10 @@ import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.LogService;
-
-import dunit.DUnitEnv;
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DUnitEnv;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.

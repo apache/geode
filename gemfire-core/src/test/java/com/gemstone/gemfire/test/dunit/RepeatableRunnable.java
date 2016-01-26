@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit;
+package com.gemstone.gemfire.test.dunit;
 
 /**
  * A RepeatableRunnable is an object that implements a method that

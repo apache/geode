@@ -25,11 +25,10 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
 
 /**
  * Tests the client register interest

@@ -40,10 +40,9 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.cache.EventTracker.BulkOpHolder;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests <code>EventTracker</code> management.

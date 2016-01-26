@@ -45,11 +45,10 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
 
 @Category(DistributedTest.class)
 public class LuceneFunctionReadPathDUnitTest extends CacheTestCase {

@@ -43,36 +43,6 @@ public class Transport extends UDP {
   
   /*
    * (non-Javadoc)
-   * Copied from JGroups 3.6.6 UDP and modified to suppress
-   * stack traces when unable to set the ttl due to the TCP implementation
-   * not supporting the setting, and to only set ttl when multicast is
-   * going to be used.
-   * 
-   * @see org.jgroups.protocols.UDP#setTimeToLive(int)
-   */
-  @Override
-  protected void setTimeToLive(int ttl) {
-    if (ip_mcast) {
-      if(getImpl != null && setTimeToLive != null) {
-        try {
-            Object impl=getImpl.invoke(sock);
-            setTimeToLive.invoke(impl, ttl);
-        }
-        catch(InvocationTargetException e) {
-          log.info("Unable to set ip_ttl - TCP/IP implementation does not support this setting");
-        }
-        catch(Exception e) {
-            log.error("failed setting ip_ttl", e);
-        }
-      } else {
-        log.warn("ip_ttl %d could not be set in the datagram socket; ttl will default to 1 (getImpl=%s, " +
-                   "setTimeToLive=%s)", ttl, getImpl, setTimeToLive);
-      }
-    }
-  }
-
-  /*
-   * (non-Javadoc)
    * copied from JGroups to perform Geode-specific error handling when there
    * is a network partition
    * @see org.jgroups.protocols.TP#_send(org.jgroups.Message, org.jgroups.Address)
@@ -140,7 +110,7 @@ public class Transport extends UDP {
 
   // overridden to implement AvailablePort response
   @Override
-  public void receive(Address sender, byte[] data, int offset, int length, boolean copy_buffer) {
+  public void receive(Address sender, byte[] data, int offset, int length) {
     if(data == null) return;
 
     // drop message from self; it has already been looped back up (https://issues.jboss.org/browse/JGRP-1765)
@@ -162,7 +132,7 @@ public class Transport extends UDP {
       return;
     }
 
-    super.receive(sender,  data,  offset,  length, copy_buffer);
+    super.receive(sender,  data,  offset,  length);
   }
 
 }

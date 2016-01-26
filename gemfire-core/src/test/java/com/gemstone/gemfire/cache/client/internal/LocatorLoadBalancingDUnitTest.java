@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -33,10 +33,10 @@ import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionReques
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ServerLoad;
 import com.gemstone.gemfire.cache.server.ServerLoadProbeAdapter;
 import com.gemstone.gemfire.cache.server.ServerMetrics;
-import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -47,11 +47,11 @@ import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * @author dsmith
@@ -247,7 +247,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   }
 
   private void checkConnectionCount(VM vm, final int count) {
-    Runnable checkConnectionCount = new SerializableRunnable("checkConnectionCount") {
+    SerializableRunnableIF checkConnectionCount = new SerializableRunnable("checkConnectionCount") {
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
         final CacheServerImpl server = (CacheServerImpl)

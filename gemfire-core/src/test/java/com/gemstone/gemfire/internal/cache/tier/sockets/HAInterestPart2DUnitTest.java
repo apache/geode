@@ -19,9 +19,8 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-
-import dunit.DistributedTestCase;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.VM;
 
 @SuppressWarnings({"rawtypes", "serial"})
 public class HAInterestPart2DUnitTest extends HAInterestTestCase {

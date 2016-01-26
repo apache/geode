@@ -16,10 +16,17 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.*;
-import dunit.*;
-import java.util.*;
+import java.util.Properties;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Tests the performance of Regions when Roles are assigned.

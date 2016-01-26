@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit;
+package com.gemstone.gemfire.test.dunit;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
 import java.util.concurrent.Callable;
-//import java.util.Iterator;
-//import java.util.Vector;
-
-import hydra.MethExecutorResult;
 
 import com.gemstone.gemfire.test.dunit.standalone.BounceResult;
 import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
+
+import hydra.MethExecutorResult;
 
 /**
  * This class represents a Java Virtual Machine that runs on a host.
@@ -238,7 +236,7 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableRunnable
    */
-  public AsyncInvocation invokeAsync(Runnable r) {
+  public AsyncInvocation invokeAsync(SerializableRunnableIF r) {
     return invokeAsync(r, "run", new Object[0]);
   }
   
@@ -251,7 +249,7 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableCallable
    */
-  public AsyncInvocation invokeAsync(Callable c) {
+  public <T> AsyncInvocation<T> invokeAsync(SerializableCallableIF<T> c) {
     return invokeAsync(c, "call", new Object[0]);
   }
 
@@ -265,7 +263,7 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableRunnable
    */
-  public void invoke(Runnable r) {
+  public void invoke(SerializableRunnableIF r) {
     invoke(r, "run");
   }
   
@@ -279,8 +277,8 @@ public class VM implements java.io.Serializable {
    *
    * @see SerializableCallable
    */
-  public Object invoke(Callable c) {
-    return invoke(c, "call");
+  public <T>  T invoke(SerializableCallableIF<T> c) {
+    return (T) invoke(c, "call");
   }
   
   /**

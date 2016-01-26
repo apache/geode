@@ -20,9 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-
-import dunit.AsyncInvocation;
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
 
 public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     FixedPartitioningTestBase {

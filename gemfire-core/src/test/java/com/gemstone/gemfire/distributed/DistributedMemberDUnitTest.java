@@ -16,18 +16,26 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import com.gemstone.gemfire.IncompatibleSystemException;
-import com.gemstone.gemfire.distributed.internal.*;
-import dunit.*;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.distributed.internal.membership.*;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.IncompatibleSystemException;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 import junit.framework.AssertionFailedError;
 

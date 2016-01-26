@@ -40,11 +40,10 @@ import com.gemstone.gemfire.internal.offheap.OffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.beans.MemberMBean;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.

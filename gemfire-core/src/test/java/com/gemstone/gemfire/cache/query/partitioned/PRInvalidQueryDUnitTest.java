@@ -24,9 +24,8 @@ package com.gemstone.gemfire.cache.query.partitioned;
 
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
-
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
 

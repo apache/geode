@@ -25,15 +25,19 @@
  * @see MultiVMRegionTestCase
  *
  */
-
 package com.gemstone.gemfire.cache30;
 
-
-import com.gemstone.gemfire.cache.*;
-
 import java.io.File;
-import dunit.*;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 public class TXRestrictionsDUnitTest extends CacheTestCase {
   public TXRestrictionsDUnitTest(String name) {

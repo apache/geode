@@ -149,8 +149,8 @@ public class PoolManagerImpl {
       //debugStack("register pool=" + name);
       Object old = copy.put(name, pool);
       if (old != null) {
-        throw new IllegalStateException("A pool named \"" + name
-                                        + "\" already exists.");
+        throw new IllegalStateException(LocalizedStrings.
+            PoolManagerImpl_POOL_NAMED_0_ALREADY_EXISTS.toLocalizedString(name));
       }
 //      Boolean specialCase=Boolean.getBoolean("gemfire.SPECIAL_DURABLE");
 //      if(specialCase && copy.size()>1){

@@ -31,9 +31,8 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import dunit.DistributedTestCase;
 
 /**
  * Test runs all tests of HARQAddOperationJUnitTest using BlockingHARegionQueue

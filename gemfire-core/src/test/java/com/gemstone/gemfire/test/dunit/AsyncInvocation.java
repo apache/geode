@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit;
+package com.gemstone.gemfire.test.dunit;
 
 import java.util.concurrent.TimeoutException;
-
-import junit.framework.AssertionFailedError;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
@@ -51,7 +49,7 @@ import com.gemstone.gemfire.SystemFailure;
  *
  * @see VM#invokeAsync(Class, String)
  */
-public class AsyncInvocation extends Thread {
+public class AsyncInvocation<T> extends Thread {
   
   private static final ThreadLocal returnValue = new ThreadLocal();
 
@@ -71,7 +69,7 @@ public class AsyncInvocation extends Thread {
   private String methodName;
   
   /** The returned object if any */
-  public volatile Object returnedObj = null;
+  public volatile T returnedObj = null;
 
   //////////////////////  Constructors  //////////////////////
 
@@ -178,7 +176,7 @@ public class AsyncInvocation extends Thread {
     }
   }
   
-  public Object getResult() throws Throwable {
+  public T getResult() throws Throwable {
     join();
     if(this.exceptionOccurred()) {
       throw new Exception("An exception occured during async invocation", this.exception);
@@ -186,7 +184,7 @@ public class AsyncInvocation extends Thread {
     return this.returnedObj;
   }
   
-  public Object getResult(long waitTime) throws Throwable {
+  public T getResult(long waitTime) throws Throwable {
     join(waitTime);
     if(this.isAlive()) {
       throw new TimeoutException();
@@ -197,7 +195,7 @@ public class AsyncInvocation extends Thread {
     return this.returnedObj;
   }
 
-  public Object getReturnValue() {
+  public T getReturnValue() {
     if (this.isAlive()) {
       throw new InternalGemFireError("Return value not available while thread is alive.");
     }
@@ -207,7 +205,7 @@ public class AsyncInvocation extends Thread {
   public void run()
   {
     super.run();
-    this.returnedObj = returnValue.get();
+    this.returnedObj = (T) returnValue.get();
     returnValue.set(null);
   }
 

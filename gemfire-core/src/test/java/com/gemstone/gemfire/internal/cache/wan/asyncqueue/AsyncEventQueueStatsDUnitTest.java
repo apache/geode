@@ -20,8 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
-
-import dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
 

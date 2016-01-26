@@ -24,10 +24,9 @@ import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.*;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-
-import dunit.Host;
-import dunit.RMIException;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.VM;
 
 import java.io.Serializable;
 import java.util.ArrayList;

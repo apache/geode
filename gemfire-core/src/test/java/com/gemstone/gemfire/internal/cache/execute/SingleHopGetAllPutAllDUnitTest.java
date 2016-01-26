@@ -31,8 +31,7 @@ import com.gemstone.gemfire.cache.client.internal.ClientPartitionAdvisor;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-
-import dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
 

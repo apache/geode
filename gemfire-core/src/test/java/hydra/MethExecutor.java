@@ -240,7 +240,7 @@ public class MethExecutor {
                                            Object[] args) {
     try {
       // get the class
-      Class receiverClass = Class.forName(target.getClass().getName());
+      Class receiverClass = target.getClass();
 
       // invoke the method
       Object res = null;

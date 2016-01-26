@@ -18,9 +18,8 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 
 /**
  * @author dsmith

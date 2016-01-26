@@ -16,10 +16,16 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-//import com.gemstone.gemfire.internal.cache.LocalRegion;
-import dunit.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Test Region expiration - both time-to-live and idle timeout.

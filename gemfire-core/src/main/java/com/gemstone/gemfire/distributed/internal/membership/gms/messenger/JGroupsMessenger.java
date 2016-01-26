@@ -379,6 +379,9 @@ public class JGroupsMessenger implements Messenger {
    * see Transport._send()
    */
   public void handleJGroupsIOException(IOException e, Address dest) {
+    if (services.getManager().shutdownInProgress()) { // GEODE-634 - don't log IOExceptions during shutdown
+      return;
+    }
     if (addressesWithioExceptionsProcessed.contains(dest)) {
       return;
     }
@@ -530,16 +533,37 @@ public class JGroupsMessenger implements Messenger {
    */
   protected void waitForMessageState(NAKACK2 nakack, InternalDistributedMember sender, Long seqno)
     throws InterruptedException {
+    long timeout = services.getConfig().getDistributionConfig().getAckWaitThreshold() * 1000L;
+    long startTime = System.currentTimeMillis();
+    long warnTime = startTime + timeout;
+    long quitTime = warnTime + timeout - 1000L;
+    boolean warned = false;
+    
     JGAddress jgSender = new JGAddress(sender);
-    Digest digest = nakack.getDigest(jgSender);
-    if (digest != null) {
-      for (;;) {
-        long[] senderSeqnos = digest.get(jgSender);
-        if (senderSeqnos == null || senderSeqnos[0] >= seqno.longValue()) {
-          break;
-        }
-        Thread.sleep(50);
+    
+    for (;;) {
+      Digest digest = nakack.getDigest(jgSender);
+      if (digest == null) {
+        return;
       }
+      String received = "none";
+      long[] senderSeqnos = digest.get(jgSender);
+      if (senderSeqnos == null || senderSeqnos[0] >= seqno.longValue()) {
+        break;
+      }
+      long now = System.currentTimeMillis();
+      if (!warned && now >= warnTime) {
+        warned = true;
+        if (senderSeqnos != null) {
+          received = String.valueOf(senderSeqnos[0]);
+        }
+        logger.warn("{} seconds have elapsed while waiting for multicast messages from {}.  Received {} but expecting at least {}.",
+            Long.toString((warnTime-startTime)/1000L), sender, received, seqno);
+      }
+      if (now >= quitTime) {
+        throw new GemFireIOException("Multicast operations from " + sender + " did not distribute within " + (now - startTime) + " milliseconds");
+      }
+      Thread.sleep(50);
     }
   }
 

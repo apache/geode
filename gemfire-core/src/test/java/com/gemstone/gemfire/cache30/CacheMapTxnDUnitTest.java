@@ -20,21 +20,25 @@
  *
  * Created on August 9, 2005, 11:18 AM
  */
-
 package com.gemstone.gemfire.cache30;
 
-/**
- *
- * @author  prafulla
- */
+import java.util.Properties;
+import java.util.Set;
 
-import dunit.*;
-
-import com.gemstone.gemfire.cache.*;
-
-import java.util.*;
-
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class CacheMapTxnDUnitTest extends DistributedTestCase{
     

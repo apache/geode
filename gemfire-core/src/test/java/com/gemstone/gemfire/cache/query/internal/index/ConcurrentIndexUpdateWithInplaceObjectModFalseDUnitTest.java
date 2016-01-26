@@ -41,11 +41,11 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 
 /**
  * This test is similar to {@link ConcurrentIndexUpdateWithoutWLDUnitTest} except
@@ -159,7 +159,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends
   }
   
 
-  private Runnable getCacheSerializableRunnableForIndexValidation(
+  private SerializableRunnableIF getCacheSerializableRunnableForIndexValidation(
       final String regionName, final String indexName) {
     return new CacheSerializableRunnable("Index Validate") {
       @Override

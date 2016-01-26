@@ -39,10 +39,9 @@ import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.PdxType;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class PdxRenameDUnitTest  extends CacheTestCase{
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();

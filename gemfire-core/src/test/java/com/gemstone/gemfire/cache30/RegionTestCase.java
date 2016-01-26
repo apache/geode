@@ -58,11 +58,10 @@ import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
 import com.gemstone.gemfire.internal.cache.EntrySnapshot;
 import com.gemstone.gemfire.internal.cache.ExpiryTask;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 //import com.gemstone.gemfire.internal.util.DebuggerSupport;
 

@@ -118,14 +118,12 @@ public class GMSQuorumCheckerJUnitTest {
   private NetView prepareView(int numMembers) throws IOException {
     int viewId = 1;
     List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
-    Set<InternalDistributedMember> shutdowns = new HashSet<InternalDistributedMember>();
-    Set<InternalDistributedMember> crashes = new HashSet<InternalDistributedMember>();
     for (int i = 0; i < numMembers; i++) {
       mbrs.add(mockMembers[i]);
     }
 
     // prepare the view
-    NetView netView = new NetView(mockMembers[0], viewId, mbrs, shutdowns, crashes);
+    NetView netView = new NetView(mockMembers[0], viewId, mbrs);
     return netView;
   }
 

@@ -30,9 +30,8 @@ import com.gemstone.gemfire.cache.snapshot.RegionGenerator.RegionType;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.SerializationType;
 import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-
-import dunit.Host;
-import dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 public class SnapshotPerformanceDUnitTest extends CacheTestCase {
   public SnapshotPerformanceDUnitTest(String name) {

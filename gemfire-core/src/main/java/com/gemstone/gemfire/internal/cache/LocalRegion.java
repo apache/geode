@@ -611,7 +611,8 @@ public class LocalRegion extends AbstractRegion
     this.offHeap = attrs.getOffHeap() || Boolean.getBoolean(myName+":OFF_HEAP");
     if (getOffHeap()) {
       if (cache.getOffHeapStore() == null) {
-        throw new IllegalStateException("The region " + myName + " was configured to use off heap memory but no off heap memory was configured.");
+        throw new IllegalStateException(LocalizedStrings.
+            LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.toLocalizedString(myName));
       }
     }
     

@@ -22,8 +22,7 @@ import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
-
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Tests Global Region with ConcurrencyChecksEnabled and OffHeap memory.

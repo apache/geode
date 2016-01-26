@@ -23,10 +23,9 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-
-import dunit.AsyncInvocation;
-import dunit.Host;
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 public class Bug45164DUnitTest extends CacheTestCase {
   private static final int count = 10000;

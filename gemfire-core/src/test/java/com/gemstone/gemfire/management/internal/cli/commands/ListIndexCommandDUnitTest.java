@@ -16,6 +16,18 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -32,21 +44,10 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the index-based GemFire shell
@@ -360,7 +361,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
       return (regionDefinitions != null && regions.removeAll(Arrays.asList(regionDefinitions)));
     }
 
-    public void run(final Runnable runnable) {
+    public void run(final SerializableRunnableIF runnable) {
       if (getVm() == null) {
         runnable.run();
       } else {

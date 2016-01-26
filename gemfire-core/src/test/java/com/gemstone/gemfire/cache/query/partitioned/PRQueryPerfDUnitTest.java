@@ -21,9 +21,8 @@ import java.io.Serializable;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
-
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  *This tests executes an array of queries to be executed over the PR ,

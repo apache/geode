@@ -32,11 +32,10 @@ Geode includes the following features:
 
 # Geode in 5 minutes
 
-With JDK 1.8 or a more recent version installed, obtain the source archive. 
-Extract and build from source:
+With both a recent version of Gradle and JDK 1.8 or a more recent version installed, obtain the source archive.
+Extract the source archive and build from the expanded directory:
 
-    $ cd geode
-    $ ./gradlew build installDist
+    $ gradle build installDist
 
 Start a locator and server:
 

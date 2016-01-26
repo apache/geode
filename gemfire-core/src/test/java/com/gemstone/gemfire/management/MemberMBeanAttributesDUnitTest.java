@@ -26,9 +26,8 @@ import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.process.PidUnavailableException;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
-
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This test class checks around 89 attributes of Member MBeans

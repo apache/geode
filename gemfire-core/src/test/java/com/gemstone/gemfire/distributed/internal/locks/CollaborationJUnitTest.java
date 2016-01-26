@@ -30,11 +30,10 @@ import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * Tests the Collaboration Lock used internally by dlock service.

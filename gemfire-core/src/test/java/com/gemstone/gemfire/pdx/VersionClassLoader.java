@@ -20,26 +20,12 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.util.test.TestUtil;
-
-import dunit.*;
-
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
 
-import junit.framework.Assert;
-import util.TestException;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 public class VersionClassLoader {
 

@@ -57,11 +57,10 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.Oplog.OPLOG_TYPE;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.Awaitility;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * Testing Oplog API's

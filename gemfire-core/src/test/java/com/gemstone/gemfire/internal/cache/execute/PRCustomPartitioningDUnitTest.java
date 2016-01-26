@@ -51,10 +51,9 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.BucketVisitor;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class PRCustomPartitioningDUnitTest extends
     PartitionedRegionDUnitTestCase {

@@ -59,10 +59,9 @@ import com.gemstone.gemfire.internal.cache.PoolStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * @author dsmith

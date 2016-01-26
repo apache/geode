@@ -31,10 +31,9 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.snapshot.SnapshotFileMapper;
 import com.gemstone.gemfire.internal.cache.snapshot.SnapshotOptionsImpl;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class ParallelSnapshotDUnitTest extends CacheTestCase {
   static byte[] ffff = new byte[] { 0xf, 0xf, 0xf, 0xf };

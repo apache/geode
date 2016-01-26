@@ -43,8 +43,7 @@ import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.execute.data.Shipment;
 import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
-
-import dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 /**
  * Test for co-located PR transactions.

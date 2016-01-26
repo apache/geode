@@ -35,8 +35,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Provides helper methods for testing clients and servers. This

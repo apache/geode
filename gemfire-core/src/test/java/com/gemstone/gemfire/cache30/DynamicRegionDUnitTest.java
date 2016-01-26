@@ -16,14 +16,23 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
-import com.gemstone.gemfire.cache.*;
+import java.io.File;
+import java.util.Properties;
 
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.OSProcess;
-import dunit.*;
-import java.io.*;
-import java.util.*;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Test to make sure dynamic regions work

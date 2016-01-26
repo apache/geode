@@ -27,9 +27,8 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
   private static final long serialVersionUID = 1L;

@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import junit.framework.AssertionFailedError;
 
 import org.xml.sax.SAXException;
@@ -60,9 +61,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.ClientCacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.util.test.TestUtil;
-
-import dunit.DistributedTestCase;
 
 /**
  * Tests the functionality of loading a declarative caching file when
@@ -96,6 +96,8 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
     setXmlFile(nonExistent);
 //    System.out.println("testNonExistentFile - set: " + System.currentTimeMillis());
 
+    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+        GemFireCache_DECLARATIVE_CACHE_XML_FILERESOURCE_0_DOES_NOT_EXIST.toLocalizedString(nonExistent.getPath()));
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -103,6 +105,8 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
     } catch (CacheXmlException ex) {
 //      System.out.println("testNonExistentFile - caught: " + System.currentTimeMillis());
       // pass...
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -115,12 +119,16 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
     dir.deleteOnExit();
     setXmlFile(dir);
 
+    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+        GemFireCache_DECLARATIVE_XML_FILE_0_IS_NOT_A_FILE.toLocalizedString(dir));
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
 
     } catch (CacheXmlException ex) {
       // pass...
+    } finally {
+      expectedException.remove();
     }
   }
 

@@ -31,8 +31,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache30.RegionMembershipListenerDUnitTest.MyRML;
 import com.gemstone.gemfire.distributed.DistributedMember;
-
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * @author Mitch Thomas

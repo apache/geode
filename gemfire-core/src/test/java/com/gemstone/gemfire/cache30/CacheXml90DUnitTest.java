@@ -28,6 +28,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 
 public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
@@ -89,12 +90,16 @@ public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
     assertNotNull(regionBefore);
     assertEquals(true, regionBefore.getAttributes().getOffHeap());
 
+    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+        LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.toLocalizedString("/"+regionName));
     try {
       testXml(cache);
     } catch (IllegalStateException e) {
       // expected
-      String msg = "The region /" + regionName + " was configured to use off heap memory but no off heap memory was configured.";
+      String msg = LocalizedStrings.LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.toLocalizedString("/"+regionName);
       assertEquals(msg, e.getMessage());
+    } finally {
+      expectedException.remove();
     }
   }
   
@@ -119,13 +124,17 @@ public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
     assertNotNull(subRegionBefore);
     assertEquals(true, subRegionBefore.getAttributes().getOffHeap());
 
+    ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.
+        LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.toLocalizedString("/"+rootRegionName+"/"+subRegionName));
     try {
       testXml(cache);
     } catch (IllegalStateException e) {
       // expected
-      final String msg = "The region /" + rootRegionName + "/" + subRegionName +
-          " was configured to use off heap memory but no off heap memory was configured.";
+      final String msg = LocalizedStrings.LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.
+          toLocalizedString("/" + rootRegionName + "/" + subRegionName);
       assertEquals(msg, e.getMessage());
+    } finally {
+      expectedException.remove();
     }
   }
 
@@ -172,11 +181,13 @@ public class CacheXml90DUnitTest extends CacheXml81DUnitTest {
       rmc.setEvictionOffHeapPercentage(high);
       rmc.setCriticalOffHeapPercentage(low);
       cache.setResourceManagerCreation(rmc);
+      ExpectedException expectedException = CacheTestCase.addExpectedException(LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE.toLocalizedString());
       try {
         testXml(cache);
         assertTrue(false);
       } catch (IllegalArgumentException expected) {
       } finally {
+        expectedException.remove();
         closeCache();
       }
   

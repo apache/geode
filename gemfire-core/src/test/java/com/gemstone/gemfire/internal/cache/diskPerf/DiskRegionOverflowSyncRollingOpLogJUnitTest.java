@@ -30,10 +30,9 @@ import static org.junit.Assert.*;
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
 
 /**
  * 1) Performance of Get Operation for Entry faulting in from current Op Log 2)

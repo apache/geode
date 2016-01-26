@@ -328,6 +328,7 @@ subprojects {
     compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
 
     testCompile 'com.github.stefanbirkner:system-rules:' + project.'system-rules.version'
+    testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
     testCompile 'com.jayway.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
     testCompile 'eu.codearte.catch-exception:catch-exception:' + project.'catch-exception.version'
@@ -389,6 +390,7 @@ subprojects {
 
   task integrationTest(type:Test) {
     include '**/*Test.class'
+    exclude '**/*DUnitTest.class'
     useJUnit {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
       includeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
@@ -555,15 +557,17 @@ subprojects {
   afterEvaluate {
     if (!isReleaseVersion && System.env.USER == 'jenkins') {
       def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
-      def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
-        server.id.text() == 'apache.snapshots.https'
-      }
-
-      if (snapshotCreds != null) {
-        tasks.uploadArchives.doFirst {
-          repositories().withType(MavenDeployer).each { repo ->
-            repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
-            repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+      if (settingsXml.exists()) {
+        def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
+          server.id.text() == 'apache.snapshots.https'
+        }
+  
+        if (snapshotCreds != null) {
+          tasks.uploadArchives.doFirst {
+            repositories().withType(MavenDeployer).each { repo ->
+              repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
+              repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+            }
           }
         }
       }

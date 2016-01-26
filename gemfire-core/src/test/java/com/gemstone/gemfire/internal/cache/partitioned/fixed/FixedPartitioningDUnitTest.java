@@ -23,10 +23,9 @@ import com.gemstone.gemfire.cache.DuplicatePrimaryPartitionException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.partition.PartitionNotAvailableException;
-
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase.ExpectedException;
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.ExpectedException;
 
 /**
  * This Dunit test class have multiple tests to tests different validations of

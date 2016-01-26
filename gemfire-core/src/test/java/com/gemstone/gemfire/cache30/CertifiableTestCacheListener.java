@@ -26,9 +26,8 @@ import java.util.*;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
   final public Set destroys = Collections.synchronizedSet(new HashSet());

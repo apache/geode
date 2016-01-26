@@ -59,9 +59,9 @@ import com.gemstone.gemfire.internal.AvailablePort.Keeper;
 import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.util.Callable;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.VM;
 
-import dunit.DistributedTestCase;
-import dunit.VM;
 import security.DummyCredentialGenerator;
 import security.XmlAuthzCredentialGenerator;
 

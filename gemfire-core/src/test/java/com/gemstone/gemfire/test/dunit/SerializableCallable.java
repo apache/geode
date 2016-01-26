@@ -14,70 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dunit;
+package com.gemstone.gemfire.test.dunit;
 
 import java.io.Serializable;
+import java.util.concurrent.Callable;
 
 /**
  * This interface provides both {@link Serializable} and {@link
- * Runnable}.  It is often used in conjunction with {@link
- * VM#invoke(Runnable)}.
+ * Callable}.  It is often used in conjunction with {@link
+ * VM#invoke(Callable)}.
  *
  * <PRE>
- * public void testRegionPutGet() {
+ * public void testRepilcatedRegionPut() {
  *   final Host host = Host.getHost(0);
  *   VM vm0 = host.getVM(0);
  *   VM vm1 = host.getVM(1);
  *   final String name = this.getUniqueName();
  *   final Object value = new Integer(42);
  *
- *   vm0.invoke(new SerializableRunnable("Put value") {
- *       public void run() {
- *         ...// get the region //...
- *         region.put(name, value);
+ *   SerializableCallable putMethod = new SerializableCallable("Replicated put") {
+ *       public Object call() throws Exception {
+ *         ...// get replicated test region //...
+ *         return region.put(name, value);
  *       }
  *      });
- *   vm1.invoke(new SerializableRunnable("Get value") {
- *       public void run() {
- *         ...// get the region //...
- *         assertEquals(value, region.get(name));
- *       }
- *     });
+ *   assertNull(vm0.invoke(putMethod));
+ *   assertEquals(value, vm1.invoke(putMethod));
  *  }
  * </PRE>
+ * 
+ * @author Mitch Thomas
  */
-public abstract class SerializableRunnable
-  implements Serializable, Runnable {
-
-  private static final long serialVersionUID = 7584289978241650456L;
+public abstract class SerializableCallable<T> implements SerializableCallableIF<T> {
+  
+  private static final long serialVersionUID = -5914706166172952484L;
   
   private String name;
 
-  public SerializableRunnable() {
+  public SerializableCallable() {
     this.name = null;
   }
 
-  /**
-   * This constructor lets you do the following:
-   *
-   * <PRE>
-   * vm.invoke(new SerializableRunnable("Do some work") {
-   *     public void run() {
-   *       // ...
-   *     }
-   *   });
-   * </PRE>
-   */
-  public SerializableRunnable(String name) {
+  public SerializableCallable(String name) {
     this.name = name;
-  }
-  
-  public void setName(String newName) {
-    this.name = newName;
-  }
-  
-  public String getName() {
-    return this.name;
   }
 
   public String toString() {
@@ -88,5 +67,4 @@ public abstract class SerializableRunnable
       return super.toString();
     }
   }
-
 }

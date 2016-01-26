@@ -707,6 +707,13 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   public static GemFireCacheImpl getInstance() {
     return instance;
   }
+  
+  /* Used for testing, retain the old instance in the test and re-set the value when test completes*/
+  public static GemFireCacheImpl setInstanceForTests(GemFireCacheImpl cache) {
+    GemFireCacheImpl oldInstance = instance;
+	  instance = cache;
+	  return oldInstance;
+  }
 
   /**
    * Returns an existing instance. If a cache does not exist
@@ -766,18 +773,40 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   // instance = null;
   // }
 
-  public static GemFireCacheImpl create(boolean isClient, PoolFactory pf, DistributedSystem system, CacheConfig cacheConfig) {
-    return new GemFireCacheImpl(true, pf, system, cacheConfig).init();
+  public static GemFireCacheImpl createClient(DistributedSystem system, PoolFactory pf, CacheConfig cacheConfig) {
+    return basicCreate(system, true, cacheConfig, pf, true);
   }
 
   public static GemFireCacheImpl create(DistributedSystem system, CacheConfig cacheConfig) {
-    return new GemFireCacheImpl(false, null, system, cacheConfig).init();
+    return basicCreate(system, true, cacheConfig, null, false);
   }
-  public static Cache create(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig)
+
+  public static Cache create(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig) {
+    return basicCreate(system, existingOk, cacheConfig, null, false);
+  }
+
+  private static GemFireCacheImpl basicCreate(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig, PoolFactory pf, boolean isClient)
   throws CacheExistsException, TimeoutException, CacheWriterException,
   GatewayException,
   RegionExistsException 
   {
+    try {
+      GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig);
+      if (instance == null) {
+        instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig);
+        instance.initialize();
+      }
+      return instance;
+    } catch (CacheXmlException | IllegalArgumentException e) {
+      logger.error(e.getLocalizedMessage());
+      throw e;
+    } catch (Error | RuntimeException e) {
+      logger.error(e);
+      throw e;
+    }
+  }
+
+  private static GemFireCacheImpl checkExistingCache(boolean existingOk, CacheConfig cacheConfig) {
     GemFireCacheImpl instance = getInstance();
 
     if (instance != null && !instance.isClosed()) {
@@ -785,15 +814,14 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         // Check if cache configuration matches.
         cacheConfig.validateCacheConfig(instance);
 
-        return instance;
       } else {
         // instance.creationStack argument is for debugging...
         throw new CacheExistsException(instance, LocalizedStrings.CacheFactory_0_AN_OPEN_CACHE_ALREADY_EXISTS.toLocalizedString(instance), instance.creationStack);
       }
     }
-    return create(system, cacheConfig);
+    return instance;
   }
-  
+
   /**
    * Creates a new instance of GemFireCache and populates it according to the <code>cache.xml</code>, if appropriate.
    */
@@ -1102,7 +1130,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    *
    * @return the initialized instance of the cache
    */
-  private GemFireCacheImpl init() {
+  private void initialize() {
     if (GemFireCacheImpl.instance != null) {
       Assert.assertTrue(GemFireCacheImpl.instance == null, "Cache instance already in place: " + instance);
     }
@@ -1172,7 +1200,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         DEFAULT_CLIENT_FUNCTION_TIMEOUT);
     clientFunctionTimeout = time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 
-    return this;
   }
 
   /**
@@ -1323,6 +1350,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
 
     try {
+      logCacheXML(url, cacheXmlDescription);
       InputStream stream = null;
       if (cacheXmlDescription != null) {
         if (logger.isTraceEnabled()) {
@@ -1337,41 +1365,40 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         stream.close();
       } catch (IOException ignore) {
       }
-      if (cacheXmlDescription == null) {
-        StringBuilder sb = new StringBuilder();
-        try {
-          final String EOLN = System.getProperty("line.separator");
-          BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-          String l = br.readLine();
-          while (l != null) {
-            if (!l.isEmpty()) {
-              sb.append(EOLN).append(l);
-            }
-            l = br.readLine();
-          }
-          br.close();
-        } catch (IOException ignore) {
-        }
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.GemFireCache_CACHE_INITIALIZED_USING__0__1, new Object[] {url.toString(), sb.toString()}));
-      } else {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.GemFireCache_CACHE_INITIALIZED_USING__0__1, new Object[] {"generated description from old cache", cacheXmlDescription}));
-      }
     } catch (IOException ex) {
-      String exceptionMsg = LocalizedStrings.GemFireCache_WHILE_OPENING_CACHE_XML_0_THE_FOLLOWING_ERROR_OCCURRED_1
-          .toLocalizedString(new Object[] { url.toString(), ex });
-      logger.error(exceptionMsg);
-      throw new CacheXmlException(exceptionMsg);
+      throw new CacheXmlException(LocalizedStrings.GemFireCache_WHILE_OPENING_CACHE_XML_0_THE_FOLLOWING_ERROR_OCCURRED_1
+          .toLocalizedString(new Object[] { url.toString(), ex }));
 
     } catch (CacheXmlException ex) {
-      String exceptionMsg = LocalizedStrings.GemFireCache_WHILE_READING_CACHE_XML_0_1
-          .toLocalizedString(new Object[] { url, ex.getMessage() });
-      logger.error(exceptionMsg);
-      CacheXmlException newEx = new CacheXmlException(exceptionMsg);
+      CacheXmlException newEx = new CacheXmlException(LocalizedStrings.GemFireCache_WHILE_READING_CACHE_XML_0_1
+          .toLocalizedString(new Object[] { url, ex.getMessage() }));
       newEx.setStackTrace(ex.getStackTrace());
       newEx.initCause(ex.getCause());
       throw newEx;
+    }
+  }
+
+  private void logCacheXML(URL url, String cacheXmlDescription) {
+    if (cacheXmlDescription == null) {
+      StringBuilder sb = new StringBuilder();
+      try {
+        final String EOLN = System.getProperty("line.separator");
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+        String l = br.readLine();
+        while (l != null) {
+          if (!l.isEmpty()) {
+            sb.append(EOLN).append(l);
+          }
+          l = br.readLine();
+        }
+        br.close();
+      } catch (IOException ignore) {
+      }
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.GemFireCache_INITIALIZING_CACHE_USING__0__1, new Object[]{url.toString(), sb.toString()}));
+    } else {
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.GemFireCache_INITIALIZING_CACHE_USING__0__1, new Object[] {"generated description from old cache", cacheXmlDescription}));
     }
   }
 

@@ -56,11 +56,10 @@ import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserver;
 import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-
-import dunit.AsyncInvocation;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * @author dsmith

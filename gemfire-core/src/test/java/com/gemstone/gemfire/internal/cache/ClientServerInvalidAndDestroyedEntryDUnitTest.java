@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
@@ -39,14 +38,12 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This tests the fix for bug #43407 under a variety of configurations and
@@ -127,7 +124,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
   }
 
   /* this method creates a server cache and is used by all of the tests in this class */
-  private Callable getCreateServerCallable(final String regionName, final boolean usePR) {
+  private SerializableCallableIF getCreateServerCallable(final String regionName, final boolean usePR) {
     return new SerializableCallable("create server and entries") {
       public Object call() {
         Cache cache = getCache();
@@ -180,7 +177,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     final String key1 = "Object10";
     final String key2 = (usePR && useTX) ? "Object12" : "Object11";
 
-    Callable createServer = getCreateServerCallable(regionName, usePR);
+    SerializableCallableIF createServer = getCreateServerCallable(regionName, usePR);
     int serverPort = (Integer)vm1.invoke(createServer);
     vm2.invoke(createServer);
     vm1.invoke(new SerializableRunnable("populate server and create invalid entry") {
@@ -298,7 +295,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     final String key1 = "Object10";
     final String key2 = (usePR && useTX) ? "Object12" : "Object11";
 
-    Callable createServer = getCreateServerCallable(regionName, usePR);
+    SerializableCallableIF createServer = getCreateServerCallable(regionName, usePR);
     int serverPort = (Integer)vm1.invoke(createServer);
     vm2.invoke(createServer);
     vm1.invoke(new SerializableRunnable("populate server and create invalid entry") {
@@ -422,7 +419,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     final String key10 = "Object10";
     final String interestPattern = "Object.*";
 
-    Callable createServer = getCreateServerCallable(regionName, usePR);
+    SerializableCallableIF createServer = getCreateServerCallable(regionName, usePR);
     int serverPort = (Integer)vm1.invoke(createServer);
     vm2.invoke(createServer);
     vm1.invoke(new SerializableRunnable("populate server") {

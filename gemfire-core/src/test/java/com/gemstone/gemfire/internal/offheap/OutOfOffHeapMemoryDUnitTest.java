@@ -37,9 +37,8 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.StopWatch;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Test behavior of region when running out of off-heap memory.

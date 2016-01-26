@@ -37,13 +37,12 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroup
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 /** A test of 46438 - missing response to an update attributes message */
 public class ConnectDisconnectDUnitTest extends CacheTestCase {

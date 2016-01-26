@@ -21,8 +21,7 @@ import java.util.Properties;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Performs eviction stat dunit tests for off-heap regions.

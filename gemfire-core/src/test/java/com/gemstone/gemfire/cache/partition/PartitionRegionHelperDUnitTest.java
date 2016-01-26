@@ -45,13 +45,12 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.FixedPartitioningTestBase;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.FixedPartitioningTestBase.Months_Accessor;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.QuarterPartitionResolver;
-
-import dunit.AsyncInvocation;
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.SerializableRunnable;
-import dunit.VM;
 
 public class PartitionRegionHelperDUnitTest extends CacheTestCase {
 

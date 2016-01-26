@@ -39,10 +39,9 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * 

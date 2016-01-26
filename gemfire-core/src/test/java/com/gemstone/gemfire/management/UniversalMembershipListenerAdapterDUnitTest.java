@@ -49,10 +49,9 @@ import com.gemstone.gemfire.management.membership.ClientMembershipListener;
 import com.gemstone.gemfire.management.membership.MembershipEvent;
 import com.gemstone.gemfire.management.membership.MembershipListener;
 import com.gemstone.gemfire.management.membership.UniversalMembershipListenerAdapter;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests the UniversalMembershipListenerAdapter.

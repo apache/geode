@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import dunit.DistributedTestCase;
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 
 public class RedundancyLevelPart2DUnitTest extends RedundancyLevelTestBase
 {

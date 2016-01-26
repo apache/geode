@@ -18,6 +18,7 @@ package com.gemstone.gemfire.test.dunit.standalone;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -50,14 +51,23 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    public MethExecutorResult executeMethodOnObject( Object obj, String methodName ) {
      String name = obj.getClass().getName() + "." + methodName + 
        " on object: " + obj;
-     logger.info("Received method: " + name);
-     long start = System.currentTimeMillis();
+     long start = start(name);
      MethExecutorResult result = MethExecutor.executeObject( obj, methodName );
-     long delta = System.currentTimeMillis() - start;
-     logger.info( "Got result: " + result.toString().trim()  + " from " +
-               name + " (took " + delta + " ms)");
+     logDelta(name, start, result);
      return result;
    }
+
+  protected long start(String name) {
+    logger.info("Received method: " + name);
+    long start = System.nanoTime();
+    return start;
+  }
+
+  protected void logDelta(String name, long start, MethExecutorResult result) {
+    long delta = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+     logger.info( "Got result: " + result.toString() + " from " + name + 
+               " (took " + delta + " ms)");
+  }
 
    /**
     * Executes a given instance method on a given object with the given
@@ -69,13 +79,10 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
      String name = obj.getClass().getName() + "." + methodName + 
               (args != null ? " with " + args.length + " args": "") +
        " on object: " + obj;
-     logger.info("Received method: " + name);
-     long start = System.currentTimeMillis();
+     long start = start(name);
      MethExecutorResult result = 
        MethExecutor.executeObject(obj, methodName, args);
-     long delta = System.currentTimeMillis() - start;
-     logger.info( "Got result: " + result.toString() + " from " + name + 
-               " (took " + delta + " ms)");
+     logDelta(name, start, result);
      return result;
    }
 
@@ -90,12 +97,9 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    */ 
    public MethExecutorResult executeMethodOnClass( String className, String methodName ) {
      String name = className + "." + methodName;
-     logger.info("Received method: " +  name);
-     long start = System.currentTimeMillis();
+     long start = start(name);
      MethExecutorResult result = MethExecutor.execute( className, methodName );
-     long delta = System.currentTimeMillis() - start;
-     logger.info( "Got result: " + result.toString() + " from " + name + 
-               " (took " + delta + " ms)");
+     logDelta(name, start, result);
      
      return result;
    }
@@ -109,13 +113,10 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
                                                   Object[] args) {
      String name = className + "." + methodName + 
        (args != null ? " with " + args.length + " args": "");
-     logger.info("Received method: " + name);
-     long start = System.currentTimeMillis();
+     long start = start(name);
      MethExecutorResult result = 
        MethExecutor.execute(className, methodName, args);
-     long delta = System.currentTimeMillis() - start;
-     logger.info( "Got result: " + result.toString() + " from " + name +
-               " (took " + delta + " ms)");
+     logDelta(name, start, result);
      return result;
    }
 

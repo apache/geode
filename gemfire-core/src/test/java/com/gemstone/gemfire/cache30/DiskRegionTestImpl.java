@@ -16,11 +16,20 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import junit.framework.Assert;
-import dunit.*;
-import java.util.*;
+import static org.junit.Assert.*;
+
 import java.io.Serializable;
-import com.gemstone.gemfire.cache.*;
+import java.util.Arrays;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryNotFoundException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * An instance of this class is delegated to by test classes that test
@@ -29,7 +38,7 @@ import com.gemstone.gemfire.cache.*;
  * @author Eric Zoerner
  *
  */
-public class DiskRegionTestImpl extends Assert  implements Serializable {
+public class DiskRegionTestImpl implements Serializable {
   
   final RegionTestCase rtc;
 

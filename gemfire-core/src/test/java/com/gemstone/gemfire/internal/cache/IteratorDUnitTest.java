@@ -22,12 +22,11 @@ package com.gemstone.gemfire.internal.cache;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 import java.util.Iterator;
-
-import dunit.Host;
-import dunit.SerializableCallable;
-import dunit.VM;
 
 /**
  * Test that keys iterator do not returned keys with removed token as its values

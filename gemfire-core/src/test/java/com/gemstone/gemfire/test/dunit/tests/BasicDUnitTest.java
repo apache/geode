@@ -18,11 +18,12 @@ package com.gemstone.gemfire.test.dunit.tests;
 
 import java.util.Properties;
 
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.RMIException;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DUnitEnv;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This class tests the basic functionality of the distributed unit
@@ -55,7 +56,31 @@ public class BasicDUnitTest extends DistributedTestCase {
     } catch (RMIException ex) {
       assertTrue(ex.getCause() instanceof BasicTestException);
     }
-  } 
+  }
+  
+  public void testInvokeWithLambda() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    
+    int vm0Num = vm0.invoke(() -> DUnitEnv.get().getVMID());
+    int vm1Num = vm1.invoke(() -> DUnitEnv.get().getVMID());
+    
+    assertEquals(0, vm0Num);
+    assertEquals(1, vm1Num);
+    
+  }
+  
+  public void testInvokeLambdaAsync() throws Throwable {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    
+    AsyncInvocation<Integer> async0 = vm0.invokeAsync(() -> DUnitEnv.get().getVMID());
+    int vm0num = async0.getResult();
+    
+    assertEquals(0, vm0num);
+    
+  }
 
   static class BasicTestException extends RuntimeException {
     BasicTestException() {

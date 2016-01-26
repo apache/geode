@@ -31,7 +31,7 @@ dependencies {
    // Source Dependencies
   // External 
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
-  compile 'org.jgroups:jgroups:3.6.6.Final'
+  compile 'org.jgroups:jgroups:3.6.7.Final'
   compile 'antlr:antlr:' + project.'antlr.version'
   compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
@@ -86,7 +86,7 @@ dependencies {
   
   jcaCompile sourceSets.main.output
 
-  provided project(path: ':gemfire-junit', configuration: 'testOutput')
+  testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
 
   // Test Dependencies
   // External

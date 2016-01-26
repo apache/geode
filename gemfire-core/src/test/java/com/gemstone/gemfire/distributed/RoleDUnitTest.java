@@ -16,10 +16,18 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import com.gemstone.gemfire.distributed.internal.*;
-import dunit.*;
-import java.util.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Tests the functionality of the {@link DistributedMember} class.

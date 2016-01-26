@@ -16,12 +16,16 @@
  */
 package com.gemstone.gemfire.cache30;
 
-//import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.cache.util.*;
-//import com.gemstone.gemfire.distributed.DistributedSystem;
-//import dunit.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheLoaderException;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * Test to make sure cache close is working.
