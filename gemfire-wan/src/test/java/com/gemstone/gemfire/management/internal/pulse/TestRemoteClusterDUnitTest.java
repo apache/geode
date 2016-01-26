@@ -35,10 +35,9 @@ import com.gemstone.gemfire.management.ManagementTestBase;
 import com.gemstone.gemfire.management.RegionMXBean;
 
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This is for testing remote Cluster

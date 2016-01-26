@@ -28,8 +28,7 @@ import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.MyGatewaySenderEventListener;
 import com.gemstone.gemfire.internal.cache.wan.MyGatewaySenderEventListener2;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 /**
  * @author skumar

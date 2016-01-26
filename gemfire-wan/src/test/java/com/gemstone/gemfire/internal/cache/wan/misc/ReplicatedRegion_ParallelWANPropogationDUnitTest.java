@@ -40,11 +40,10 @@ import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
 import com.gemstone.gemfire.internal.cache.PutAllPartialResultException;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase;
-import dunit.DistributedTestCase.ExpectedException;
-import dunit.DistributedTestCase.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.ExpectedException;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.WaitCriterion;
 
 public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBase{
 

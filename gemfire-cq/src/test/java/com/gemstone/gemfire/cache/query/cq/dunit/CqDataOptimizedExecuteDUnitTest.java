@@ -18,8 +18,7 @@ package com.gemstone.gemfire.cache.query.cq.dunit;
 
 
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl;
-
-import dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag

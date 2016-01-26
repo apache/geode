@@ -21,8 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
 

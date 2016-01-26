@@ -17,8 +17,7 @@
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 /**
  * @author skumar

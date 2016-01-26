@@ -21,8 +21,8 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import dunit.AsyncInvocation;
 
 /**
  * @author skumar

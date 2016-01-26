@@ -36,9 +36,9 @@ import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 
-import dunit.Host;
-import dunit.VM;
 import security.DummyCredentialGenerator;
 
 public class MultiuserAPIDUnitTest extends ClientAuthorizationTestBase {

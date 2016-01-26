@@ -17,8 +17,7 @@
 package com.gemstone.gemfire.security;
 
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.Host;
 
 /**
  * Tests for authorization from client to server. This tests for authorization

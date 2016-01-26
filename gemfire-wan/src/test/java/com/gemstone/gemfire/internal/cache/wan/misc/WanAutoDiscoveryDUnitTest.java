@@ -27,9 +27,8 @@ import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.IncompatibleSystemException;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.AsyncInvocation;
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
 
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 

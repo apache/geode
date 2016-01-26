@@ -20,9 +20,8 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.AsyncInvocation;
-import dunit.DistributedTestCase.ExpectedException;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase.ExpectedException;
 
 public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBase {
   

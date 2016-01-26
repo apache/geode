@@ -21,7 +21,7 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagementTestBase;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This is for testing server count details from MBean

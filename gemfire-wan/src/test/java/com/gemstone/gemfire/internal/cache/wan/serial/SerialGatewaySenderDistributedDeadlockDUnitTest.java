@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 //The tests here are to validate changes introduced because a distributed deadlock
 //was found that caused issues for a production customer. 

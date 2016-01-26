@@ -113,11 +113,11 @@ import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEve
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.pdx.SimpleClass1;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.VM;
 import junit.framework.Assert;
 
 public class WANTestBase extends DistributedTestCase{

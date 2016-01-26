@@ -24,11 +24,10 @@ import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.BatchException70;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 import java.net.SocketException;
 import java.util.Set;
-
-import dunit.AsyncInvocation;
 
 /**
  * Test the functionality of ParallelGatewaySender with multiple dispatchers.

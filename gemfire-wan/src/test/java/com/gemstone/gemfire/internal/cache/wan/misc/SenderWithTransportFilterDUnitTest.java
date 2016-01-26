@@ -41,8 +41,7 @@ import com.gemstone.gemfire.internal.cache.wan.CompressionOutputStream;
 import com.gemstone.gemfire.internal.cache.wan.InternalGatewaySenderFactory;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase.MyLocatorCallback;
-
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.VM;
 
 public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 

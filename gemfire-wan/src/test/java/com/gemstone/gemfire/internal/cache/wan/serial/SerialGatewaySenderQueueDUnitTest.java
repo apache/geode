@@ -41,8 +41,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.VM;
 
 
 public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{

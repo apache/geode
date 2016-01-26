@@ -21,8 +21,7 @@ import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase {
 

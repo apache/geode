@@ -66,11 +66,10 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
@@ -1783,7 +1782,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     try {
       createCQ(client, poolName, "testCQCreateClose_0", cqs[0]);
       fail("Trying to create CQ with same name. Should have thrown CQExistsException");
-    } catch (dunit.RMIException rmiExc) {
+    } catch (com.gemstone.gemfire.test.dunit.RMIException rmiExc) {
       Throwable cause = rmiExc.getCause();
       assertTrue("unexpected cause: " + cause.getClass().getName(), cause instanceof AssertionError);
       Throwable causeCause = cause.getCause(); // should be a CQExistsException
@@ -1798,7 +1797,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
     try {
       createCQ(server, "testCQCreateClose_1", cqs[0]);
       fail("Trying to create CQ on Cache Server. Should have thrown Exception.");
-    } catch (dunit.RMIException rmiExc) {
+    } catch (com.gemstone.gemfire.test.dunit.RMIException rmiExc) {
       Throwable cause = rmiExc.getCause();
       assertTrue("unexpected cause: " + cause.getClass().getName(), 
           cause instanceof AssertionError);

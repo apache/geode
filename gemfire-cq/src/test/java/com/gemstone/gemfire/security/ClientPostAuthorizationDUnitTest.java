@@ -26,8 +26,7 @@ import security.AuthzCredentialGenerator;
 import security.CredentialGenerator;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.internal.AvailablePort;
-
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.Host;
 
 /**
  * Tests for authorization from client to server. This tests for authorization

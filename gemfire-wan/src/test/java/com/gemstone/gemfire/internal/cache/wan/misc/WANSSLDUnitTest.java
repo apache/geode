@@ -18,8 +18,7 @@ package com.gemstone.gemfire.internal.cache.wan.misc;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 
 public class WANSSLDUnitTest extends WANTestBase{
 

@@ -35,8 +35,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-
-import dunit.Host;
+import com.gemstone.gemfire.test.dunit.Host;
 
 public class WANLocatorServerDUnitTest extends WANTestBase {
 

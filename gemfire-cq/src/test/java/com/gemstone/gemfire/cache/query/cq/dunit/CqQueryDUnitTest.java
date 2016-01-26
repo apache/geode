@@ -64,11 +64,10 @@ import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.DistributedTombstoneOperation;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import dunit.DistributedTestCase;
-import dunit.Host;
-import dunit.SerializableRunnable;
-import dunit.VM;
+import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
@@ -2066,7 +2065,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     try {
       createCQ(client, "testCQCreateClose_0", cqs[0]);
       fail("Trying to create CQ with same name. Should have thrown CQExistsException");
-    } catch (dunit.RMIException rmiExc) {
+    } catch (com.gemstone.gemfire.test.dunit.RMIException rmiExc) {
       Throwable cause = rmiExc.getCause();
       assertTrue("unexpected cause: " + cause.getClass().getName(), cause instanceof AssertionError);
       Throwable causeCause = cause.getCause(); // should be a CQExistsException
@@ -2081,7 +2080,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     try {
       createCQ(server, "testCQCreateClose_1", cqs[0]);
       fail("Trying to create CQ on Cache Server. Should have thrown Exception.");
-    } catch (dunit.RMIException rmiExc) {
+    } catch (com.gemstone.gemfire.test.dunit.RMIException rmiExc) {
       Throwable cause = rmiExc.getCause();
       assertTrue("unexpected cause: " + cause.getClass().getName(), 
           cause instanceof AssertionError);
@@ -2095,7 +2094,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
     try {
       executeCQ(client, "testCQCreateClose_2", false, "RegionNotFoundException");
       fail("Trying to create CQ on non-existing Region. Should have thrown Exception.");
-    } catch (dunit.RMIException rmiExc) {
+    } catch (com.gemstone.gemfire.test.dunit.RMIException rmiExc) {
       Throwable cause = rmiExc.getCause();
       if (!(cause instanceof AssertionError)) {
         getLogWriter().severe("Expected to see an AssertionError.", cause);
