@@ -192,6 +192,11 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 public final class SystemFailure {
 
   /**
+   * Time to wait during stopWatchdog and stopProctor. Not final
+   * for tests
+   */
+  static int SHUTDOWN_WAIT = 1000;
+  /**
    * Preallocated error messages\
    * LocalizedStrings may use memory (in the form of an iterator)
    * so we must get the translated messages in advance.
@@ -384,23 +389,26 @@ public final class SystemFailure {
   }
   
   private static void stopWatchDog() {
+    Thread watchDogSnapshot = null;
     synchronized (failureSync) {
       stopping = true;
       if (watchDog != null && watchDog.isAlive()) {
         failureSync.notifyAll();
+        watchDogSnapshot = watchDog;
+      }
+    }
+    if(watchDogSnapshot != null) {
+      try {
+        watchDogSnapshot.join(100);
+      } catch (InterruptedException ignore) {
+      }
+      if (watchDogSnapshot.isAlive()) {
+        watchDogSnapshot.interrupt();
         try {
-          watchDog.join(100);
+          watchDogSnapshot.join(SHUTDOWN_WAIT);
         } catch (InterruptedException ignore) {
         }
-        if (watchDog.isAlive()) {
-          watchDog.interrupt();
-          try {
-            watchDog.join(1000);
-          } catch (InterruptedException ignore) {
-          }
-        }
       }
-      watchDog = null;
     }
   }
   
@@ -634,16 +642,17 @@ public final class SystemFailure {
   }
   
   private static void stopProctor() {
+    Thread proctorSnapshot = null;
     synchronized (failureSync) {
       stopping = true;
-      if (proctor != null && proctor.isAlive()) {
-        proctor.interrupt();
-        try {
-          proctor.join(1000);
-        } catch (InterruptedException ignore) {
-        }
+      proctorSnapshot = proctor;
+    }
+    if (proctorSnapshot != null && proctorSnapshot.isAlive()) {
+      proctorSnapshot.interrupt();
+      try {
+        proctorSnapshot.join(SHUTDOWN_WAIT);
+      } catch (InterruptedException ignore) {
       }
-      proctor = null;
     }
   }
   
@@ -1218,5 +1227,13 @@ public final class SystemFailure {
     stopping = true;
     stopProctor();
     stopWatchDog();
+  }
+  
+  static Thread getWatchDogForTest() {
+    return watchDog;
+  }
+  
+  static Thread getProctorForTest() {
+    return proctor;
   }
 }
