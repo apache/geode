@@ -37,8 +37,8 @@ public class PulseConstants {
   public static final String APPLICATION_COUNTRY = "US";
 
   // Pulse version details properties from properties file
-  public static final String PULSE_VERSION_PROPERTIES_FILE = "pulseversion.properties";
-  public static final String PROPERTY_PULSE_VERSION = "pulse.version";
+  public static final String PULSE_VERSION_PROPERTIES_FILE = "GemFireVersion.properties";
+  public static final String PROPERTY_PULSE_VERSION = "Product-Version";
   public static final String PROPERTY_BUILD_ID = "Build-Id";
   public static final String PROPERTY_BUILD_DATE = "Build-Date";
   public static final String PROPERTY_SOURCE_DATE = "Source-Date";
