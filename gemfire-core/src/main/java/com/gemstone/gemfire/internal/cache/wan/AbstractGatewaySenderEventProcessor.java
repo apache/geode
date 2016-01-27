@@ -280,7 +280,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     }
     boolean interrupted=false;
     synchronized(this.pausedLock) {
-      while(!isDispatcherWaiting && !isStopped()) {
+      while(!isDispatcherWaiting && !isStopped()
+            && sender.getSenderAdvisor().isPrimary()) {
         try {
           this.pausedLock.wait();
         } catch(InterruptedException e) {
