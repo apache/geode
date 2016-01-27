@@ -430,10 +430,10 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   protected void pauseSenders() {
-    vm4.invoke(() ->pauseSender( "ln" ));
-    vm5.invoke(() ->pauseSender( "ln" ));
-    vm6.invoke(() ->pauseSender( "ln" ));
-    vm7.invoke(() ->pauseSender( "ln" ));
+    vm4.invoke(() ->pauseSenderAndWaitForDispatcherToPause( "ln" ));
+    vm5.invoke(() ->pauseSenderAndWaitForDispatcherToPause( "ln" ));
+    vm6.invoke(() ->pauseSenderAndWaitForDispatcherToPause( "ln" ));
+    vm7.invoke(() ->pauseSenderAndWaitForDispatcherToPause( "ln" ));
   }
 
   protected void startSenders() {

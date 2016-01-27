@@ -2162,13 +2162,32 @@ public class WANTestBase extends DistributedTestCase{
         }
       }
       sender.pause();
-      ((AbstractGatewaySender) sender).getEventProcessor().waitForDispatcherToPause();
-      
     }
     finally {
       exp.remove();
       exln.remove();
     }
+  }
+      
+  public static void pauseSenderAndWaitForDispatcherToPause(String senderId) {
+    final ExpectedException exln = addExpectedException("Could not connect");
+    ExpectedException exp = addExpectedException(ForceReattemptException.class
+        .getName());
+    try {
+      Set<GatewaySender> senders = cache.getGatewaySenders();
+      GatewaySender sender = null;
+      for (GatewaySender s : senders) {
+        if (s.getId().equals(senderId)) {
+          sender = s;
+          break;
+        }
+      }
+      sender.pause();
+      ((AbstractGatewaySender)sender).getEventProcessor().waitForDispatcherToPause();
+    } finally {
+      exp.remove();
+      exln.remove();
+    }    
   }
   
   public static void resumeSender(String senderId) {
