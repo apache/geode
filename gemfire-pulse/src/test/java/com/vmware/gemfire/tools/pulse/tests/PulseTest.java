@@ -18,23 +18,10 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
-import java.io.*;
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.UITest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.Assert;
-
 import org.apache.catalina.startup.Tomcat;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
@@ -46,6 +33,15 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Category(UITest.class)
 @FixMethodOrder(MethodSorters.JVM)
@@ -184,10 +180,10 @@ public class PulseTest {
                 .getResourceAsStream("pulseversion.properties");
         Properties properties = new Properties();
         properties.load(inputStream);
-        String version = properties.getProperty("pulse.version");
+        String version = properties.getProperty("Product-Version");
         warPath = "gemfire-pulse-"+version+".war";
         String propFilePath = classLoader.getResource("pulseversion.properties").getPath();
-        warPath = propFilePath.substring(0, propFilePath.indexOf("resources"))+"libs/"+warPath;
+        warPath = propFilePath.substring(0, propFilePath.indexOf("generated-resources"))+"libs/"+warPath;
         return warPath;
     }
 

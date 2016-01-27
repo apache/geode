@@ -78,60 +78,20 @@ def generatedResources = "$buildDir/generated-resources/main"
 
 sourceSets {
   main {
-    output.dir(generatedResources, builtBy: 'createPulsePropFile')
+    output.dir(generatedResources, builtBy: 'copyPulsePropFile')
   }
 }
 
-// Creates the version properties file and writes it to the resources dir
-task createPulsePropFile {
-  description 'Creates a new Pule properties file with build/ version information'
-  def propertiesFile = file(generatedResources + "/pulseversion.properties");
-  outputs.file propertiesFile
-  inputs.dir compileJava.destinationDir
-
-  doLast {
-    try {
-      def grgit = org.ajoberstar.grgit.Grgit.open()
-      ext.branch = grgit.branch.getCurrent().name
-      ext.commitId = grgit.head().id
-      ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
-      grgit.close()
-    } catch (Exception e) {
-      logger.warn('***** Unable to find Git workspace. Using default version information *****')
-      ext.branch = 'UNKNOWN'
-      ext.commitId = 'UNKNOWN'
-      ext.sourceDate = 'UNKNOWN'
-    }
-    // Build machine & java information - for screen output only
-    ext.osArch = System.getProperty('os.arch')
-    ext.osName = System.getProperty('os.name')
-    ext.osVersion = System.getProperty('os.version')
-    ext.jdkVersion = System.getProperty('java.version')
-
-    ext.buildDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
-    ext.buildNumber = new Date().format('MMddyy')
-
-    def props = [
-            "pulse.version"     : version,
-            "Build-Id"          : ext.buildNumber,
-            "Build-Date"        : ext.buildDate,
-            "Source-Date"       : ext.sourceDate,
-            "Source-Revision"   : ext.commitId,
-            "Source-Repository" : ext.branch
-    ] as Properties
-
-    propertiesFile.getParentFile().mkdirs();
-    new FileOutputStream(propertiesFile).withStream { fos ->
-      props.store(fos, '')
-    }
+task copyPulsePropFile(type: Copy) {
+  from project(':gemfire-core').buildDir.absolutePath + "/generated-resources/main/com/gemstone/gemfire/internal/GemFireVersion.properties"
+  into generatedResources
+  rename { String fileName ->
+    fileName.replace("GemFireVersion", "pulseversion")
   }
 }
 
 jar {
   from sourceSets.main.output
-  doFirst {
-    project.createPulsePropFile
-  }
 }
 
 eclipse.classpath.file {
@@ -150,9 +110,9 @@ artifacts {
   archives war
 }
 
-def pulseWarFile = "gemfire-pulse-"+version+".war"
-
 war {
   classpath configurations.runtime
   classpath project(':gemfire-core').webJar.archivePath
 }
+
+uiTest.dependsOn war
