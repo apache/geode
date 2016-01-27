@@ -923,6 +923,10 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   public void stop(boolean forcedDisconnect, boolean stopForReconnect, boolean waitForDisconnect) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
+    
+    this.stoppedForReconnect = stopForReconnect;
+    this.forcedDisconnect = forcedDisconnect;
+    
     if (this.server.isShuttingDown()) {
       // fix for bug 46156
       // If we are already shutting down don't do all of this again.
@@ -949,9 +953,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
       return;
     }
-    this.stoppedForReconnect = stopForReconnect;
-    this.forcedDisconnect = forcedDisconnect;
-    
+
     if (this.server.isAlive()) {
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STOPPING__0, this));
       try {
@@ -1041,15 +1043,16 @@ public class InternalLocator extends Locator implements ConnectListener {
   public void waitToStop() throws InterruptedException {
     boolean restarted;
     do {
+      DistributedSystem ds = this.myDs;
       restarted = false;
       this.server.join();
       if (this.stoppedForReconnect) {
         logger.info("waiting for distributed system to disconnect...");
-        while (this.myDs.isConnected()) {
+        while (ds.isConnected()) {
           Thread.sleep(5000);
         }
         logger.info("waiting for distributed system to reconnect...");
-        restarted = this.myDs.waitUntilReconnected(-1, TimeUnit.SECONDS);
+        restarted = ds.waitUntilReconnected(-1, TimeUnit.SECONDS);
         if (restarted) {
           logger.info("system restarted");
         } else {
@@ -1060,6 +1063,7 @@ public class InternalLocator extends Locator implements ConnectListener {
           logger.info("waiting for services to restart...");
           rs.join();
           this.restartThread = null;
+          logger.info("done waiting for services to restart");
         }
       }
     } while (restarted);

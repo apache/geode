@@ -61,12 +61,14 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@SuppressWarnings("serial")
 public class ReconnectDUnitTest extends CacheTestCase
 {
   static int locatorPort;
   static Locator locator;
   static DistributedSystem savedSystem;
   static int locatorVMNumber = 3;
+  static Thread gfshThread;
   
   Properties dsProperties;
   
@@ -506,8 +508,10 @@ public class ReconnectDUnitTest extends CacheTestCase
     try {
       
       dm = getDMID(vm0);
+      createGfshWaitingThread(vm0);
       forceDisconnect(vm0);
       newdm = waitForReconnect(vm0);
+      assertGfshWaitingThreadAlive(vm0);
 
       boolean running = (Boolean)vm0.invoke(new SerializableCallable("check for running locator") {
         public Object call() {
@@ -551,11 +555,46 @@ public class ReconnectDUnitTest extends CacheTestCase
           if (loc != null) {
             loc.stop();
           }
+          if (gfshThread != null && gfshThread.isAlive()) {
+            gfshThread.interrupt();
+          }
+          gfshThread = null;
         }
       });
       deleteLocatorStateFile(locPort);
       deleteLocatorStateFile(secondLocPort);
     }
+  }
+  
+  @SuppressWarnings("serial")
+  private void createGfshWaitingThread(VM vm) {
+    vm.invoke(new SerializableRunnable("create Gfsh-like waiting thread") {
+      public void run() {
+        final Locator loc = Locator.getLocator();
+        assertNotNull(loc);
+        gfshThread = new Thread("ReconnectDUnitTest_Gfsh_thread") {
+          public void run() {
+            try {
+              ((InternalLocator)loc).waitToStop();
+            } catch (InterruptedException e) {
+              System.out.println(Thread.currentThread().getName() + " interrupted - exiting");
+            }
+          }
+        };
+        gfshThread.setDaemon(true);
+        gfshThread.start();
+        System.out.println("created gfsh thread: " + gfshThread);
+      }
+    });
+  }
+  
+  @SuppressWarnings("serial")
+  private void assertGfshWaitingThreadAlive(VM vm) {
+    vm.invoke(new SerializableRunnable("assert gfshThread is still waiting") {
+      public void run() {
+        assertTrue(gfshThread.isAlive());
+      }
+    });
   }
   
   /**

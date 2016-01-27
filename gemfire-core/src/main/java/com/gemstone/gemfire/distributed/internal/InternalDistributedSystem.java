@@ -1326,12 +1326,14 @@ public class InternalDistributedSystem
           shutdownListeners = doDisconnects(attemptingToReconnect, reason);
         }
     
-        if (this.logWriterAppender != null) {
-          LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
-        }
-        if (this.securityLogWriterAppender != null) {
-          // LOG:SECURITY: old code did NOT invoke this
-          LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
+        if (!this.attemptingToReconnect) {
+          if (this.logWriterAppender != null) {
+            LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
+          }
+          if (this.securityLogWriterAppender != null) {
+            // LOG:SECURITY: old code did NOT invoke this
+            LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
+          }
         }
         
         AlertAppender.getInstance().shuttingDown();
@@ -1376,11 +1378,13 @@ public class InternalDistributedSystem
         this.sampler = null;
       }
 
-      if (this.logWriterAppender != null) {
-        LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
-      }
-      if (this.securityLogWriterAppender != null) {
-        LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
+      if (!this.attemptingToReconnect) {
+        if (this.logWriterAppender != null) {
+          LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
+        }
+        if (this.securityLogWriterAppender != null) {
+          LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
+        }
       }
 
       // NOTE: no logging after this point :-)

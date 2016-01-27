@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
@@ -667,6 +669,13 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @param cause the Throwable thrown during the startup or wait operation on the Locator.
    */
   private void failOnStart(final Throwable cause) {
+
+    if (cause != null) {
+      logger.log(Level.INFO, "locator is exiting due to an exception", cause);
+    } else {
+      logger.log(Level.INFO, "locator is exiting normally");
+    }
+    
     if (this.locator != null) {
       this.locator.stop();
       this.locator = null;
@@ -709,6 +718,10 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
       debug(e);
     }
     catch (RuntimeException e) {
+      t = e;
+      throw e;
+    }
+    catch (Throwable e) {
       t = e;
       throw e;
     }
