@@ -177,12 +177,12 @@ public class PulseTest {
         String warPath = null;
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = classLoader
-                .getResourceAsStream("pulseversion.properties");
+                .getResourceAsStream("GemFireVersion.properties");
         Properties properties = new Properties();
         properties.load(inputStream);
         String version = properties.getProperty("Product-Version");
         warPath = "gemfire-pulse-"+version+".war";
-        String propFilePath = classLoader.getResource("pulseversion.properties").getPath();
+        String propFilePath = classLoader.getResource("GemFireVersion.properties").getPath();
         warPath = propFilePath.substring(0, propFilePath.indexOf("generated-resources"))+"libs/"+warPath;
         return warPath;
     }

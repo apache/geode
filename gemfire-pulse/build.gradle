@@ -85,9 +85,6 @@ sourceSets {
 task copyPulsePropFile(type: Copy) {
   from project(':gemfire-core').buildDir.absolutePath + "/generated-resources/main/com/gemstone/gemfire/internal/GemFireVersion.properties"
   into generatedResources
-  rename { String fileName ->
-    fileName.replace("GemFireVersion", "pulseversion")
-  }
 }
 
 jar {
