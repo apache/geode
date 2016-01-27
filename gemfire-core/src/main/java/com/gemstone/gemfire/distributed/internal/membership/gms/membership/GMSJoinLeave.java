@@ -632,7 +632,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       installView(newView);
       isJoined = true;
       if (viewCreator == null || viewCreator.isShutdown()) {
-        viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
+        createViewCreator();
         viewCreator.setDaemon(true);
         viewCreator.start();
         startViewBroadcaster();
@@ -669,13 +669,17 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         newView.setFailureDetectionPort(this.localAddress, services.getHealthMonitor().getFailureDetectionPort());
       }
       if (viewCreator == null || viewCreator.isShutdown()) {
-        viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
+        createViewCreator();
         viewCreator.setInitialView(newView, newView.getNewMembers(), leaving, removals);
         viewCreator.setDaemon(true);
         viewCreator.start();
         startViewBroadcaster();
       }
     }
+  }
+
+  protected void createViewCreator() {
+    viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
   }
 
   private void sendRemoveMessages(List<InternalDistributedMember> removals, List<String> reasons, NetView newView) {
@@ -1686,6 +1690,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   class ViewCreator extends Thread {
     boolean shutdown = false;
     volatile boolean waiting = false;
+    volatile boolean testFlagForRemovalRequest = false;
 
     /**
      * initial view to install.  guarded by synch on ViewCreator
@@ -2146,50 +2151,29 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * 
      * @param mbrs
      */
-    private void removeHealthyMembers(Collection<InternalDistributedMember> mbrs) throws InterruptedException {
+    private void removeHealthyMembers(final Collection<InternalDistributedMember> mbrs) throws InterruptedException {
       List<Callable<InternalDistributedMember>> checkers = new ArrayList<Callable<InternalDistributedMember>>(mbrs.size());
 
       Set<InternalDistributedMember> newRemovals = new HashSet<>();
       Set<InternalDistributedMember> newLeaves = new HashSet<>();
 
-      synchronized (viewRequests) {
-        for (DistributionMessage msg : viewRequests) {
-          switch (msg.getDSFID()) {
-          case LEAVE_REQUEST_MESSAGE:
-            newLeaves.add(((LeaveRequestMessage) msg).getMemberID());
-            break;
-          case REMOVE_MEMBER_REQUEST:
-            newRemovals.add(((RemoveMemberMessage) msg).getMemberID());
-            break;
-          default:
-            break;
-          }
-        }
-      }
-
+      filterMembers(mbrs, newRemovals, REMOVE_MEMBER_REQUEST);
+      filterMembers(mbrs, newLeaves, LEAVE_REQUEST_MESSAGE);   
+      
       for (InternalDistributedMember mbr : mbrs) {
-        if (newRemovals.contains(mbr)) {
-          // no need to do a health check on a member who is already leaving
-          logger.info("member {} is already scheduled for removal", mbr);
-          continue;
-        }
-        if (newLeaves.contains(mbr)) {
-          // no need to do a health check on a member that is declared crashed
-          logger.info("member {} has already sent a leave-request", mbr);
-          continue;
-        }
         final InternalDistributedMember fmbr = mbr;
         checkers.add(new Callable<InternalDistributedMember>() {
           @Override
           public InternalDistributedMember call() throws Exception {
             // return the member id if it fails health checks
-            logger.info("checking state of member " + fmbr);
-            if (services.getHealthMonitor().checkIfAvailable(fmbr, "Member failed to acknowledge a membership view", false)) {
-              logger.info("member " + fmbr + " passed availability check");
-              return fmbr;
+            InternalDistributedMember mbr = GMSJoinLeave.this.checkIfAvailable(fmbr);
+            
+            synchronized (viewRequests) {
+              if(mbr != null)
+                mbrs.remove(mbr);
+              viewRequests.notifyAll();
             }
-            logger.info("member " + fmbr + " failed availability check");
-            return null;
+            return mbr;
           }
         });
       }
@@ -2199,7 +2183,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (mbrs.isEmpty()) {
         return;
       }
-
+      
       ExecutorService svc = Executors.newFixedThreadPool(mbrs.size(), new ThreadFactory() {
         AtomicInteger i = new AtomicInteger();
 
@@ -2211,35 +2195,78 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       });
 
       try {
-        List<Future<InternalDistributedMember>> futures;
-        futures = svc.invokeAll(checkers);
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
-        for (Future<InternalDistributedMember> future: futures) {
-          long now = System.currentTimeMillis();
-          try {
-            InternalDistributedMember mbr = null;
-            long timeToWait = giveUpTime - now;
-            if (timeToWait <= 0) {
-              // TODO if timeToWait==0 is future.get() guaranteed to return immediately?
-              // It looks like some code paths invoke Object.wait(0), which waits forever.
-              timeToWait = 1;
+        List<Future<InternalDistributedMember>> futures;
+        futures = submitAll(svc, checkers);
+        long waitTime = giveUpTime - System.currentTimeMillis();
+        synchronized (viewRequests) {
+          while(waitTime>0 ) {
+            logger.debug("removeHealthyMembers: mbrs" + mbrs.size());
+            
+            filterMembers(mbrs, newRemovals, REMOVE_MEMBER_REQUEST);
+            filterMembers(mbrs, newLeaves, LEAVE_REQUEST_MESSAGE);   
+            
+            if(mbrs.isEmpty()) {
+              break;
             }
-            mbr = future.get(timeToWait, TimeUnit.MILLISECONDS);
-            if (mbr != null) {
-              mbrs.remove(mbr);
-            }
-          } catch (java.util.concurrent.TimeoutException e) {
-            // timeout - member didn't pass the final check and will not be removed
-            // from the collection of members
-          } catch (ExecutionException e) {
-            logger.info("unexpected exception caught during member verification", e);
+            
+            viewRequests.wait(waitTime);
+            waitTime = giveUpTime - System.currentTimeMillis();
           }
         }
+        
+        //we have waited for all members, now check if we considered any removeRequest;
+        //add them back to create new view
+        if(!newRemovals.isEmpty()) {
+          newRemovals.removeAll(newLeaves);
+          mbrs.addAll(newRemovals);
+        }
+        
       } finally {
         svc.shutdownNow();
       }
     }
+
+    protected void filterMembers(Collection<InternalDistributedMember> mbrs, Set<InternalDistributedMember> removalRequestForMembers, short requestType) {
+      Set<InternalDistributedMember> gotRemovalRequests = getPendingRequestIDs(requestType);
+      
+      if(!gotRemovalRequests.isEmpty()) {
+        logger.debug("removeHealthyMembers: gotRemovalRequests " + gotRemovalRequests.size());
+        Iterator<InternalDistributedMember> itr = gotRemovalRequests.iterator();
+        while(itr.hasNext()) {
+          InternalDistributedMember removeMember = itr.next();
+          if(mbrs.contains(removeMember)) {
+            testFlagForRemovalRequest = true;
+            removalRequestForMembers.add(removeMember);
+            mbrs.remove(removeMember);
+          }
+        }
+      }
+    }
+    
+    private <T> List<Future<T>> submitAll ( ExecutorService executor, Collection<? extends Callable<T> > tasks ) {
+      List<Future<T>> result = new ArrayList<Future<T>>( tasks.size() );
+
+      for ( Callable<T> task : tasks ) {
+        result.add(executor.submit(task));
+      }
+
+      return result;
+    }
+    
+    boolean getTestFlageForRemovalRequest() {
+      return testFlagForRemovalRequest;
+    }
   }
   
-  
+  InternalDistributedMember checkIfAvailable(InternalDistributedMember fmbr) {
+ // return the member id if it fails health checks
+    logger.info("checking state of member " + fmbr);
+    if (services.getHealthMonitor().checkIfAvailable(fmbr, "Member failed to acknowledge a membership view", false)) {
+      logger.info("member " + fmbr + " passed availability check");
+      return fmbr;
+    }
+    logger.info("member " + fmbr + " failed availability check");
+    return null;
+  }
 }

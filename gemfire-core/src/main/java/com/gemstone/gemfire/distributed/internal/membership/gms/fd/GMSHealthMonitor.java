@@ -1149,7 +1149,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void doFinalCheck(final InternalDistributedMember initiator,
-      List<SuspectRequest> sMembers, NetView cv, InternalDistributedMember localAddress) {
+      List<SuspectRequest> sMembers, final NetView cv, InternalDistributedMember localAddress) {
 
 //    List<InternalDistributedMember> membersChecked = new ArrayList<>(10);
     try {
@@ -1192,12 +1192,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
               logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
               boolean pinged;
-              NetView view = currentView;
-              int port = view.getFailureDetectionPort(mbr);
+              int port = cv.getFailureDetectionPort(mbr);
               if (port <= 0) {
                 logger.info("Unable to locate failure detection port - requesting a heartbeat");
                 if (logger.isDebugEnabled()) {
-                  logger.debug("\ncurrent view: {}\nports: {}", view, Arrays.toString(view.getFailureDetectionPorts()));
+                  logger.debug("\ncurrent view: {}\nports: {}", cv, Arrays.toString(cv.getFailureDetectionPorts()));
                 }
                 pinged = GMSHealthMonitor.this.doCheckMember(mbr);
                 GMSHealthMonitor.this.stats.incFinalCheckRequestsSent();

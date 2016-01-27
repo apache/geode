@@ -86,12 +86,18 @@ public class GMSJoinLeaveJUnitTest {
   private GMSJoinLeave gmsJoinLeave;
   private Manager manager;
   private Stopper stopper;
+  private InternalDistributedMember removeMember = null;
+  private InternalDistributedMember leaveMember = null;
   
   public void initMocks() throws IOException {
     initMocks(false);
   }
   
   public void initMocks(boolean enableNetworkPartition) throws UnknownHostException {
+    initMocks(enableNetworkPartition, false);
+  }
+  
+  public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave) throws UnknownHostException {
     mockDistConfig = mock(DistributionConfig.class);
     when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
     when(mockDistConfig.getLocators()).thenReturn("localhost[8888]");
@@ -133,7 +139,10 @@ public class GMSJoinLeaveJUnitTest {
     }
     mockOldMember = new InternalDistributedMember("localhost", 8700, Version.GFE_56);
 
-    gmsJoinLeave = new GMSJoinLeave();
+    if(useTestGMSJoinLeave)
+      gmsJoinLeave = new GMSJoinLeaveTest();
+    else
+      gmsJoinLeave = new GMSJoinLeave();
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
     gmsJoinLeave.started();
@@ -1073,6 +1082,134 @@ public class GMSJoinLeaveJUnitTest {
     }finally{
       
     }   
+  }
+  
+  private void waitForViewAndFinalCheckInProgress(int viewId) throws InterruptedException {
+    // wait for the view processing thread to collect and process the requests
+    int sleeps = 0;
+    while( !gmsJoinLeave.isStopping() 
+        && ( gmsJoinLeave.getView().getViewId() == viewId) ) {
+      if (sleeps++ > 20) {
+        System.out.println("view requests: " + gmsJoinLeave.getViewRequests());
+        System.out.println("current view: " + gmsJoinLeave.getView());
+        throw new RuntimeException("timeout waiting for view #" + viewId);
+      }
+       
+      Thread.sleep(1000);
+      System.out.println("Empty sleeps " + sleeps +  " stoppping: " + gmsJoinLeave.isStopping() );
+    }
+  }
+  
+  class GMSJoinLeaveTest extends GMSJoinLeave {
+    public GMSJoinLeaveTest() {
+      super();
+    }
+    @Override
+    InternalDistributedMember checkIfAvailable(InternalDistributedMember fmbr) {
+      if(removeMember != null) {
+        try {
+          if(removeMember.equals(fmbr)) {
+            GMSJoinLeaveJUnitTest.this.processRemoveMessage(fmbr);
+            Thread.sleep(1000000);
+          }
+        } catch (InterruptedException e) {
+        }
+        return fmbr;
+      }else if(leaveMember != null) {
+        try {
+          if(leaveMember.equals(fmbr)) {
+            GMSJoinLeaveJUnitTest.this.processLeaveMessage(fmbr);
+            Thread.sleep(1000000);
+          }
+        } catch (InterruptedException e) {
+        }
+        return fmbr;
+      }else {
+        return super.checkIfAvailable(fmbr);
+      }
+    }
+  }
+  
+  @Test
+  public void testRemoveRequestWhileWaitingForFinalResponse() throws Exception {
+    String reason = "testing";
+    initMocks(true, true);
+    
+    gmsJoinLeave.becomeCoordinatorForTest();
+    
+    installView();
+    
+    int viewId = gmsJoinLeave.getView().getViewId();
+    System.out.println("Current viewid " + viewId);
+    
+    this.removeMember = mockMembers[0]; 
+    
+    processJoinMessage(gmsJoinLeave.getMemberID(), mockMembers[2], 98989);
+    
+    waitForViewAndFinalCheckInProgress(viewId);
+    
+    this.removeMember = null;
+    
+    assertTrue("testFlagForRemovalRequest should be true", gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+  }
+  
+  @Test
+  public void testLeaveRequestWhileWaitingForFinalResponse() throws Exception {
+    String reason = "testing";
+    initMocks(true, true);
+    
+    gmsJoinLeave.becomeCoordinatorForTest();
+    
+    installView();
+    
+    int viewId = gmsJoinLeave.getView().getViewId();
+    System.out.println("Current viewid " + viewId);
+    
+    this.leaveMember = mockMembers[0]; 
+    
+    processJoinMessage(gmsJoinLeave.getMemberID(), mockMembers[2], 98989);
+    
+    waitForViewAndFinalCheckInProgress(viewId);
+    
+    this.leaveMember = null;
+    
+    assertTrue("testFlagForRemovalRequest should be true", gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+  }
+  
+  private void installView() throws Exception{
+    final int viewInstallationTime = 15000;
+    
+    NetView oldView = null;
+    long giveup = System.currentTimeMillis() + viewInstallationTime;
+    while (System.currentTimeMillis() < giveup  &&  oldView == null) {
+      Thread.sleep(500);
+      oldView = gmsJoinLeave.getView();
+    }
+    assertTrue(oldView != null);  // it should have become coordinator and installed a view
+    
+    NetView newView = new NetView(oldView, oldView.getViewId()+1);
+    newView.add(mockMembers[0]);
+    newView.add(mockMembers[1]);
+    gmsJoinLeave.installView(newView);
+  }
+  
+  private void processJoinMessage(InternalDistributedMember coordinator, InternalDistributedMember newMember, int port) {
+    JoinRequestMessage reqMsg = new JoinRequestMessage(coordinator, newMember, null, port);
+    gmsJoinLeave.processMessage(reqMsg);
+  }
+  
+  private void processRemoveMessage( InternalDistributedMember rMember) {
+    RemoveMemberMessage msg = new RemoveMemberMessage(gmsJoinLeave.getMemberID(), rMember, "testing");
+    msg.setSender(gmsJoinLeave.getMemberID());
+    
+    gmsJoinLeave.processMessage(msg);
+  }
+  
+  private void processLeaveMessage( InternalDistributedMember rMember) {
+    LeaveRequestMessage msg = new LeaveRequestMessage(gmsJoinLeave.getMemberID(), rMember, "testing");
+    msg.setSender(rMember);
+    
+    gmsJoinLeave.processMessage(msg);
   }
 }
 
