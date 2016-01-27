@@ -2239,10 +2239,14 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
   
-  public static void startReceivers() throws IOException {
+  public static void startReceivers() {
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
-      receiver.start();
+      try {
+        receiver.start();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
   
