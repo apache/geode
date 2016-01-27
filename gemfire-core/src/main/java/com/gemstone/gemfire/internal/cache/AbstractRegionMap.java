@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gemstone.gemfire.internal.cache.region.entry.RegionEntryFactoryBuilder;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.GemFireIOException;
@@ -193,137 +194,7 @@ abstract class AbstractRegionMap implements RegionMap {
       }
     }
     else {
-      final RegionEntryFactory factory;
-      if (attr.statisticsEnabled) {
-        if (isLRU) {
-          if (isDisk) {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedStatsDiskLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedStatsDiskLRURegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMStatsDiskLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMStatsDiskLRURegionEntryHeap.getEntryFactory();
-              }
-            }
-          } else {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedStatsLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedStatsLRURegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMStatsLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMStatsLRURegionEntryHeap.getEntryFactory();
-              }
-            }
-          }
-        } else { // !isLRU
-          if (isDisk) {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedStatsDiskRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedStatsDiskRegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMStatsDiskRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMStatsDiskRegionEntryHeap.getEntryFactory();
-              }
-            }
-          } else {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedStatsRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedStatsRegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMStatsRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMStatsRegionEntryHeap.getEntryFactory();
-              }
-            }
-          }
-        }
-      }
-      else { // !statistics enabled
-        if (isLRU) {
-          if (isDisk) {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedThinDiskLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedThinDiskLRURegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMThinDiskLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMThinDiskLRURegionEntryHeap.getEntryFactory();
-              }
-            }
-          }
-          else {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedThinLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedThinLRURegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMThinLRURegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMThinLRURegionEntryHeap.getEntryFactory();
-              }
-            }
-          }
-        }
-        else { // !isLRU
-          if (isDisk) {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedThinDiskRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedThinDiskRegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMThinDiskRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMThinDiskRegionEntryHeap.getEntryFactory();
-              }
-            }
-          }
-          else {
-            if (withVersioning) {
-              if (offHeap) {
-                factory = VersionedThinRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VersionedThinRegionEntryHeap.getEntryFactory();
-              }
-            } else {
-              if (offHeap) {
-                factory = VMThinRegionEntryOffHeap.getEntryFactory();
-              } else {
-                factory = VMThinRegionEntryHeap.getEntryFactory();
-              }
-            }
-          }
-        }
-      }
-      setEntryFactory(factory);
+      setEntryFactory(new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(attr.statisticsEnabled,isLRU,isDisk,withVersioning,offHeap));
     }
   }
 
