@@ -75,7 +75,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         return 0;
       }
       
-      int result = o1.getAddress().getCanonicalHostName().compareTo(o1.getAddress().getCanonicalHostName());
+      int result = o1.getAddress().getCanonicalHostName().compareTo(o2.getAddress().getCanonicalHostName());
       if(result != 0) {
         return result;
       }
