@@ -14,23 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'gemfire'
+package com.gemstone.gemfire.cache.client.internal.locator.wan;
 
-include 'gemfire-common'
-include 'gemfire-joptsimple'
-include 'gemfire-json'
-include 'gemfire-junit'
-include 'gemfire-core'
-include 'gemfire-web'
-include 'gemfire-web-api'
-include 'gemfire-pulse'
-include 'gemfire-assembly'
-include 'gemfire-rebalancer'
-include 'gemfire-lucene'
-include 'gemfire-wan'
-include 'gemfire-cq'
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-def minimumGradleVersion = '2.3'
-if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
-  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
+
+/**
+ * 
+ * @author Kishor Bachhav
+ */
+public class RemoteLocatorPingResponse implements DataSerializableFixedID {
+
+
+  /** Used by DataSerializer */
+  public RemoteLocatorPingResponse() {
+    super();
+  }
+
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  }
+
+  public void toData(DataOutput out) throws IOException {
+  }
+
+
+
+  public int getDSFID() {
+    return DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE;
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
 }

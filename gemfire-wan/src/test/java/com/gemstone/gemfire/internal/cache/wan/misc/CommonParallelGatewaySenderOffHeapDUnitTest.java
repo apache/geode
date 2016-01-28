@@ -14,23 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'gemfire'
+package com.gemstone.gemfire.internal.cache.wan.misc;
 
-include 'gemfire-common'
-include 'gemfire-joptsimple'
-include 'gemfire-json'
-include 'gemfire-junit'
-include 'gemfire-core'
-include 'gemfire-web'
-include 'gemfire-web-api'
-include 'gemfire-pulse'
-include 'gemfire-assembly'
-include 'gemfire-rebalancer'
-include 'gemfire-lucene'
-include 'gemfire-wan'
-include 'gemfire-cq'
+@SuppressWarnings("serial")
+public class CommonParallelGatewaySenderOffHeapDUnitTest extends
+    CommonParallelGatewaySenderDUnitTest {
 
-def minimumGradleVersion = '2.3'
-if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
-  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+  public CommonParallelGatewaySenderOffHeapDUnitTest(String name) {
+    super(name);
+  }
+
+  @Override
+  public boolean isOffHeap() {
+    return true;
+  }
+
 }

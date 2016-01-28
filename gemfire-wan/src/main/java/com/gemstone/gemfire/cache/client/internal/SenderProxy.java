@@ -14,23 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'gemfire'
+package com.gemstone.gemfire.cache.client.internal;
 
-include 'gemfire-common'
-include 'gemfire-joptsimple'
-include 'gemfire-json'
-include 'gemfire-junit'
-include 'gemfire-core'
-include 'gemfire-web'
-include 'gemfire-web-api'
-include 'gemfire-pulse'
-include 'gemfire-assembly'
-include 'gemfire-rebalancer'
-include 'gemfire-lucene'
-include 'gemfire-wan'
-include 'gemfire-cq'
+import java.util.List;
 
-def minimumGradleVersion = '2.3'
-if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
-  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
+
+/**
+ * Used to send operations from a sender to a receiver.
+ * @author skumar
+ * @since 8.1
+ */
+public class SenderProxy extends ServerProxy{
+  public SenderProxy(InternalPool pool) {
+    super(pool);
+  }
+
+  public void dispatchBatch_NewWAN(Connection con, List events, int batchId, boolean removeFromQueueOnException, boolean isRetry)
+  {
+    GatewaySenderBatchOp.executeOn(con, this.pool, events, batchId, removeFromQueueOnException, isRetry);
+  }
+  
+  public Object receiveAckFromReceiver(Connection con)
+  {
+    return GatewaySenderBatchOp.executeOn(con, this.pool);
+  }
 }
