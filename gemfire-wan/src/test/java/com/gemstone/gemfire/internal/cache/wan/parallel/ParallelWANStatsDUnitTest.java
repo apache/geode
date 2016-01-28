@@ -306,7 +306,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     vm2.invoke(WANTestBase.class, "checkGatewayReceiverStats", new Object[] {100, 1000, 1000 });
     vm3.invoke(WANTestBase.class, "checkGatewayReceiverStats", new Object[] {100, 1000, 1000 });
   }
-
+  
   public void testParallelPropagationHA() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
         "createFirstLocatorWithDSId", new Object[] { 1 });
@@ -365,8 +365,11 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
         WANTestBase.class, "getSenderStats", new Object[] { "ln", 0});
     
     assertEquals(0, v5List.get(0) + v6List.get(0) + v7List.get(0) ); //queue size
-    assertEquals(30000, v5List.get(1) + v6List.get(1) + v7List.get(1)); //eventsReceived
-    assertEquals(30000, v5List.get(2) + v6List.get(2) + v7List.get(2)); //events queued
+    int receivedEvents = v5List.get(1) + v6List.get(1) + v7List.get(1);
+    //We may see a single retried event on all members due to the kill
+    assertTrue("Received " + receivedEvents, 30000 <= receivedEvents && 30003 >= receivedEvents); //eventsReceived
+    int queuedEvents = v5List.get(2) + v6List.get(2) + v7List.get(2);
+    assertTrue("Queued " + queuedEvents, 30000 <= queuedEvents && 30003 >= queuedEvents); //eventsQueued
     //assertTrue(10000 <= v5List.get(3) + v6List.get(3) + v7List.get(3)); //events distributed : its quite possible that vm4 has distributed some of the events
     //assertTrue(v5List.get(4) + v6List.get(4) + v7List.get(4) > 1000); //batches distributed : its quite possible that vm4 has distributed some of the batches.
     assertEquals(0, v5List.get(5) + v6List.get(5) + v7List.get(5)); //batches redistributed
