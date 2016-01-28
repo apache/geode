@@ -24,12 +24,15 @@ import static org.hamcrest.CoreMatchers.*;
 import java.nio.ByteBuffer;
 import java.util.Formatter;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
-
+import org.junit.contrib.java.lang.system.*;
+//import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
@@ -50,9 +53,14 @@ public class FragmentJUnitTest {
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
   }
   
+  @Rule public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
+
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-      System.setProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
+      //System.setProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
   }
 
   @AfterClass
@@ -143,8 +151,8 @@ public class FragmentJUnitTest {
 */
   
   @Test(expected = IllegalStateException.class)
-  public void fragmentConstructorValidatesNon8ByteAlignedAddress() {
-    int numSlabs = 1;
+  public void fragmentConstructorThrowsExceptionForNon8ByteAlignedAddress() {
+    int numSlabs = 2;
     UnsafeMemoryChunk[] slabs;
     ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
     slabs = ma.getSlabs();
@@ -154,12 +162,11 @@ public class FragmentJUnitTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void fragmentConstructorValidatesNonSlabAddress() {
+  public void fragmentConstructorThrowsExceptionForNonSlabAddress() {
     int numSlabs = 1;
     UnsafeMemoryChunk[] slabs;
     ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
     slabs = ma.getSlabs();
-//   System.out.println("slab address is: " + (new Formatter()).format("%X", slabs[0].getMemoryAddress()));
     Fragment fragment = new Fragment(1024L, 0);
     assertThat(fragment.freeSpace(), is(0));
   }
@@ -177,14 +184,209 @@ public class FragmentJUnitTest {
   @Test
   public void unallocatedFragmentHasFreeSpaceEqualToFragmentSize() {
     int numSlabs = 1;
+    SoftAssertions softly = new SoftAssertions();
     UnsafeMemoryChunk[] slabs;
     ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
     slabs = ma.getSlabs();
     Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
-    assertThat(fragment.getSize(), is((int)OffHeapStorage.MIN_SLAB_SIZE));
-    assertThat(fragment.freeSpace(), is((int)OffHeapStorage.MIN_SLAB_SIZE));
+    softly.assertThat(fragment.getSize()).isEqualTo((int)OffHeapStorage.MIN_SLAB_SIZE + 1);
+    softly.assertThat(fragment.freeSpace()).isEqualTo((int)OffHeapStorage.MIN_SLAB_SIZE + 1);
+    softly.assertAll();
   }
 
+  @Test
+  public void allocatingFromFragmentReducesFreeSpace() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256), is(true));
+    assertThat(fragment.freeSpace(), is(768));
+    assertThat(fragment.getFreeIndex(), is(256));
+  }
+
+  @Test
+  public void fragementAllocationIsUnsafeWithRespectToAllocationSize() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + (int)OffHeapStorage.MIN_SLAB_SIZE + 8), is(true));
+    assertThat(fragment.freeSpace(), is(-8));
+  }
+
+  @Test
+  public void getBlockSizeReturnsFreeSpace() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256), is(true));
+    assertThat(fragment.getBlockSize(), is(fragment.freeSpace()));
+  }
+
+  @Test
+  public void getMemoryAdressIsAlwaysFragmentBaseAddress() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.getMemoryAddress(), is(slabs[0].getMemoryAddress()));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.getMemoryAddress(), is(slabs[0].getMemoryAddress()));
+  }
+  
+  @Test
+  public void getStateIsAlwaysStateUNUSED() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.getState(), is(equalTo(MemoryBlock.State.UNUSED)));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.getState(), is(equalTo(MemoryBlock.State.UNUSED)));
+  }
+
+  @Test
+  public void getFreeListIdIsAlwaysMinus1() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.getFreeListId(), is(-1));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.getFreeListId(), is(-1));
+  }
+
+  @Test
+  public void getRefCountIsAlwaysZero() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.getRefCount(), is(0));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.getRefCount(), is(0));
+  }
+
+  @Test
+  public void getDataTypeIsAlwaysNA() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.getDataType(), is("N/A"));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.getDataType(), is("N/A"));
+  }
+
+  @Test
+  public void isSerializedIsAlwaysFalse() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.isSerialized(), is(false));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.isSerialized(), is(false));
+  }
+
+  @Test
+  public void isCompressedIsAlwaysFalse() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.isCompressed(), is(false));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.isCompressed(), is(false));
+  }
+
+  @Test
+  public void getDataValueIsAlwaysNull() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.getDataValue(), is(nullValue()));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.getDataValue(), is(nullValue()));
+  }
+
+  @Test
+  public void getChunkTypeIsAlwaysNull() {
+    int numSlabs = 1;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    assertThat(fragment.getChunkType(), is(nullValue()));
+    fragment.allocate(fragment.getFreeIndex(), fragment.getFreeIndex() + 256);
+    assertThat(fragment.getChunkType(), is(nullValue()));
+  }
+
+  @Test
+  public void fragmentEqualsComparesMemoryBlockAddresses() {
+    int numSlabs = 2;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment0 = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    Fragment sameFragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    Fragment fragment1 = new Fragment(slabs[1].getMemoryAddress(), slabs[1].getSize());
+    assertThat(fragment0.equals(sameFragment), is(true));
+    assertThat(fragment0.equals(fragment1), is(false));
+  }
+
+  @Test
+  public void fragmentEqualsIsFalseForNonFragmentObjects() {
+    int numSlabs = 2;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment0 = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    Fragment sameFragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    Fragment fragment1 = new Fragment(slabs[1].getMemoryAddress(), slabs[1].getSize());
+    assertThat(fragment0.equals(slabs[0]), is(false));
+  }
+
+  @Test
+  public void fragmentHashCodeIsHashCodeOfItsMemoryAddress() {
+    int numSlabs = 2;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment0 = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    Fragment fragment1 = new Fragment(slabs[1].getMemoryAddress(), slabs[1].getSize());
+    Long fragmentAddress = fragment0.getMemoryAddress();
+    assertThat(fragment0.hashCode(), is(equalTo(fragmentAddress.hashCode())));
+    assertThat(fragment0.hashCode(), is(not(equalTo(fragment1.hashCode()))));
+  }
+
+  @Test
+  public void test() {
+    int numSlabs = 2;
+    UnsafeMemoryChunk[] slabs;
+    ma = SimpleMemoryAllocatorImpl.create(ooohml, stats, lw, numSlabs, OffHeapStorage.MIN_SLAB_SIZE * numSlabs, OffHeapStorage.MIN_SLAB_SIZE, umcFactory);
+    slabs = ma.getSlabs();
+    Fragment fragment = new Fragment(slabs[0].getMemoryAddress(), slabs[0].getSize());
+    Long fragmentAddress = fragment.getMemoryAddress();
+    fragment.fill();
+    assertThat(fragment.hashCode(), is(equalTo(fragmentAddress.hashCode())));
+  }
+
+////
   @Test(expected = UnsupportedOperationException.class)
   public void getNextBlockThrowsExceptionForFragment() {
     int numSlabs = 1;
