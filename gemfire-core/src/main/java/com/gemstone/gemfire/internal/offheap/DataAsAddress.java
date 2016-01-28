@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.offheap;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
 import com.gemstone.gemfire.internal.cache.EntryBits;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntryContext;
 
@@ -78,7 +79,11 @@ public class DataAsAddress extends AbstractStoredObject {
   
   @Override
   public byte[] getSerializedValue() {
-    return OffHeapRegionEntryHelper.decodeAddressToBytes(this.address);
+    byte[] value = OffHeapRegionEntryHelper.decodeAddressToBytes(this.address, true, false);
+    if (!isSerialized()) {
+      value = EntryEventImpl.serialize(value);
+    }
+    return value;
   }
 
   @Override
