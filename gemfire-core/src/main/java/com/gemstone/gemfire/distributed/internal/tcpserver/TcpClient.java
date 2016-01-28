@@ -167,13 +167,14 @@ public class TcpClient {
       }
       return null;
     } finally {
-      if (out != null) {
-        out.close();
-      }
       try {
+        sock.setSoLinger(true, 0); // initiate an abort on close to shut down the locator's socket
         sock.close();
       } catch(Exception e) {
         logger.error("Error closing socket ", e);
+      }
+      if (out != null) {
+        out.close();
       }
     }
   }
@@ -223,6 +224,7 @@ public class TcpClient {
       }
     } finally {
       try {
+        sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
         sock.close();
       } catch(Exception e) {
         logger.error("Error closing socket ", e);
