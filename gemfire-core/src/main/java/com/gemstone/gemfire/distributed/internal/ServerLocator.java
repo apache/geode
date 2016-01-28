@@ -164,7 +164,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     return this.ds != null;
   }
 
-  public Object processRequest(Object request) throws IOException {
+  public Object processRequest(Object request) {
     if (!readyToProcessRequests()) {
       return null;
     }

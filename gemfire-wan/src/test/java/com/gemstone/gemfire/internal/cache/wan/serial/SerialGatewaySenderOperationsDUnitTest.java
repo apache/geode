@@ -16,17 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Ignore;
 
 import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
+import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.ServerLocator;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
@@ -545,6 +554,49 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(
         testName + "_RR", 10 ));
   }
+
+  
+  public void testGatewaySenderNotRegisteredAsCacheServer() {
+    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
+        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
+        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+
+    vm2.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+    vm3.invoke(WANTestBase.class, "createReceiver", new Object[] { nyPort });
+
+    vm4.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+    vm5.invoke(WANTestBase.class, "createCache", new Object[] { lnPort });
+
+    vm4.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
+        false, 100, 10, false, true, null, true });
+    vm5.invoke(WANTestBase.class, "createSender", new Object[] { "ln", 2,
+        false, 100, 10, false, true, null, true });
+
+    vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+    vm5.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
+
+    SerializableRunnable check = new SerializableRunnable("assert no cache servers") {
+      public void run() {
+        InternalLocator inl = (InternalLocator)Locator.getLocator();
+        ServerLocator servel = inl.getServerLocatorAdvisee();
+        getLogWriter().info("Server load map is " + servel.getLoadMap());
+        assertTrue("expected an empty map but found " + servel.getLoadMap(),
+            servel.getLoadMap().isEmpty());
+        QueueConnectionRequest request = new QueueConnectionRequest(
+            ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getConnectedInstance()),
+            1, new HashSet<>(), "", false);
+        QueueConnectionResponse response = (QueueConnectionResponse)servel.processRequest(request);
+        assertTrue("expected no servers but found " + response.getServers(),
+            response.getServers().isEmpty());
+      }
+    };
+    vm0.invoke(check);
+    vm1.invoke(check);
+    
+  }
+  
+
   
   public static void verifySenderPausedState(String senderId) {
     Set<GatewaySender> senders = cache.getGatewaySenders();
