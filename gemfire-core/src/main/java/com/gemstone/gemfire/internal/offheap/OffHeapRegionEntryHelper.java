@@ -39,15 +39,15 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  */
 public class OffHeapRegionEntryHelper {
 
-  private static final long NULL_ADDRESS = 0L<<1;
-  private static final long INVALID_ADDRESS = 1L<<1;
-  private static final long LOCAL_INVALID_ADDRESS = 2L<<1;
-  private static final long DESTROYED_ADDRESS = 3L<<1;
-  public static final long REMOVED_PHASE1_ADDRESS = 4L<<1;
-  private static final long REMOVED_PHASE2_ADDRESS = 5L<<1;
-  private static final long END_OF_STREAM_ADDRESS = 6L<<1;
-  private static final long NOT_AVAILABLE_ADDRESS = 7L<<1;
-  private static final long TOMBSTONE_ADDRESS = 8L<<1;
+  protected static final long NULL_ADDRESS = 0L<<1;
+  protected static final long INVALID_ADDRESS = 1L<<1;
+  protected static final long LOCAL_INVALID_ADDRESS = 2L<<1;
+  protected static final long DESTROYED_ADDRESS = 3L<<1;
+  protected static final long REMOVED_PHASE1_ADDRESS = 4L<<1;
+  protected static final long REMOVED_PHASE2_ADDRESS = 5L<<1;
+  protected static final long END_OF_STREAM_ADDRESS = 6L<<1;
+  protected static final long NOT_AVAILABLE_ADDRESS = 7L<<1;
+  protected static final long TOMBSTONE_ADDRESS = 8L<<1;
   public static final int MAX_LENGTH_FOR_DATA_AS_ADDRESS = 8;
  /* private static final ChunkFactory chunkFactory ;
   static {
@@ -86,12 +86,6 @@ public class OffHeapRegionEntryHelper {
     if (v == Token.END_OF_STREAM) return END_OF_STREAM_ADDRESS;
     if (v == Token.NOT_AVAILABLE) return NOT_AVAILABLE_ADDRESS;
     throw new IllegalStateException("Can not convert " + v + " to an off heap address.");
-  }
-  
-  //TODO:Asif:Check if this is a valid equality conditions
-  public static boolean isAddressInvalidOrRemoved(long address) {
-    return address == INVALID_ADDRESS || address == LOCAL_INVALID_ADDRESS 
-        || address == REMOVED_PHASE2_ADDRESS || address == NULL_ADDRESS; 
   }
   
   /**
@@ -172,12 +166,6 @@ public class OffHeapRegionEntryHelper {
       return addrToObj[(int) ohAddress>>1];
     }
   }
-
-  private static void releaseAddress(@Released long ohAddress) {
-    if (isOffHeap(ohAddress)) {
-      Chunk.release(ohAddress, true);
-    }
-  }
   
   /**
    * The address in 're' will be @Released.
@@ -203,7 +191,9 @@ public class OffHeapRegionEntryHelper {
     long oldAddress = objectToAddress(expectedValue);
     final long newAddress = objectToAddress(Token.REMOVED_PHASE2);
     if (re.setAddress(oldAddress, newAddress) || re.getAddress() != newAddress) {
-      releaseAddress(oldAddress);
+      if (isOffHeap(oldAddress)) {
+        Chunk.release(oldAddress, true);
+      }
     } /*else {
       if (!calledSetValue || re.getAddress() != newAddress) {
         expectedValue.release();
@@ -218,11 +208,11 @@ public class OffHeapRegionEntryHelper {
   /**
    * This bit is set to indicate that the encoded data is serialized.
    */
-  private static long SERIALIZED_BIT = 2L;
+  static long SERIALIZED_BIT = 2L;
   /**
    * This bit is set to indicate that the encoded data is compressed.
    */
-  private static long COMPRESSED_BIT = 4L;
+  static long COMPRESSED_BIT = 4L;
   /**
    * This bit is set to indicate that the encoded data is a long whose value fits in 7 bytes.
    */
@@ -288,15 +278,6 @@ public class OffHeapRegionEntryHelper {
       }
   }
 
-  static byte[] decodeAddressToBytes(long addr) {
-    byte[] result = decodeAddressToBytes(addr, true, false);
-    boolean isSerialized = (addr & SERIALIZED_BIT) != 0;
-    if (!isSerialized) {
-      result = EntryEventImpl.serialize(result);
-    }
-    return result;
-  }
-
   static byte[] decodeAddressToBytes(long addr, boolean decompress, boolean compressedOk) {
     assert (addr & ENCODED_BIT) != 0;
     boolean isCompressed = (addr & COMPRESSED_BIT) != 0;
@@ -342,9 +323,12 @@ public class OffHeapRegionEntryHelper {
     do {
       oldAddress = re.getAddress();
     } while (!re.setAddress(oldAddress, newAddress));
-    ReferenceCountHelper.setReferenceCountOwner(re);
-    releaseAddress(oldAddress);
-    ReferenceCountHelper.setReferenceCountOwner(null);
+    //see if oldAddress is on offheap then release it
+    if (isOffHeap(oldAddress)) {
+      ReferenceCountHelper.setReferenceCountOwner(re);
+      Chunk.release(oldAddress, true);
+      ReferenceCountHelper.setReferenceCountOwner(null);
+    }
   }
  
   public static Token getValueAsToken(@Unretained OffHeapRegionEntry re) {
