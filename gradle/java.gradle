@@ -41,6 +41,10 @@ subprojects {
             "Organization"      : "Apache Software Foundation (ASF)"
           )
         }
+
+        metaInf {
+          from("$rootDir/NOTICE")
+        }
       }
     }
   })
