@@ -24,6 +24,7 @@ import java.net.SocketException;
 import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.protocols.UDP;
+import org.jgroups.util.AsciiString;
 import org.jgroups.util.DefaultThreadFactory;
 import org.jgroups.util.LazyThreadFactory;
 import org.jgroups.util.Util;
@@ -75,7 +76,31 @@ public class Transport extends UDP {
 //        Util.getMessage("SendFailure"),
 //                  local_addr, (dest == null? "cluster" : dest), msg.size(), e.toString(), msg.printHeaders());
     }
-}
+  }
+
+  /*
+   * (non-Javadoc)
+   * copied from JGroups to perform Geode-specific error handling when there
+   * is a network partition
+   */
+  @Override
+  protected void doSend(AsciiString cluster_name, byte[] buf, int offset, int length, Address dest) throws Exception {
+    try {
+      super.doSend(cluster_name, buf, offset, length, dest);
+    } catch(SocketException sock_ex) {
+      if (!this.sock.isClosed() && !stack.getChannel().isClosed()) {
+        log.error("Exception caught while sending message", sock_ex);
+      }
+    } catch (IOException e) {
+      if (messenger != null
+          /*&& e.getMessage().contains("Operation not permitted")*/) { // this is the english Oracle JDK exception condition we really want to catch
+        messenger.handleJGroupsIOException(e, dest);
+      }
+    } catch(Throwable e) {
+        log.error("Exception caught while sending message", e);
+    }
+  }
+
     
   /*
    * (non-Javadoc)
