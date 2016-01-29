@@ -665,13 +665,6 @@ public class PartitionedRegionCreationDUnitTest extends
   /**
    * this function creates partion region with the given name and throws
    * appropriate exception
-   * @param regionName
-   * @param cnt
-   * @param redundancy
-   * @param exceptionType
-   * @param objName
-   * 
-   * @return
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRCreate(
       final String regionName, final int cnt, final int redundancy,
@@ -758,13 +751,6 @@ public class PartitionedRegionCreationDUnitTest extends
   /**
    * this function creates partition region with the specified persistence and 
    * throws appropriate exception
-   * @param regionName
-   * @param cnt
-   * @param redundancy
-   * @param exceptionType
-   * @param objName
-   * 
-   * @return
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRPersistence(
       final String regionName, final int localMaxMemory, final boolean isPersistent, final boolean expectException)

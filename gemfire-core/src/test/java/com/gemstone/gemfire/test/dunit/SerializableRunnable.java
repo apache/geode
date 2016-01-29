@@ -21,7 +21,7 @@ import java.io.Serializable;
 /**
  * This interface provides both {@link Serializable} and {@link
  * Runnable}.  It is often used in conjunction with {@link
- * VM#invoke(Runnable)}.
+ * VM#invoke(SerializableRunnableIF)}.
  *
  * <PRE>
  * public void testRegionPutGet() {

@@ -1494,9 +1494,6 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    *          <code>true</code> when the member has joined, <code>false</code>
    *          when the member has left. Additionally also used to check if system 
    *          member config is to be synchronized with the VM.
-   * 
-   * @throws AdminException
-   *           if member configuration can not be synchronized with VM
    */
    protected SystemMember findSystemMember(GemFireVM vm,
                                            boolean compareConfig) {

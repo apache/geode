@@ -48,8 +48,8 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 /**
- * This class tests the functionality of the {@linkplain internal
- * admin com.gemstone.gemfire.internal.admin} API.
+ * This class tests the functionality of the {@linkplain com.gemstone.gemfire.internal.admin internal
+ * admin} API.
  */
 public class ConsoleDistributionManagerDUnitTest 
   extends CacheTestCase implements AlertListener {

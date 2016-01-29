@@ -20,7 +20,7 @@ package com.gemstone.gemfire.security;
 import com.gemstone.gemfire.GemFireException;
 
 /**
- * The base class for all {@link com.gemstone.gemfire.security} related
+ * The base class for all com.gemstone.gemfire.security package related
  * exceptions.
  * 
  * @author Sumedh Wale

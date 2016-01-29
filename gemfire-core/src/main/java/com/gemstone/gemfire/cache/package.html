@@ -55,7 +55,7 @@ Cache Servers}, or perhaps evaluating {@link
 com.gemstone.gemfire.cache.execute.FunctionService#onRegion(Region) Region} data.  A {@linkplain
 com.gemstone.gemfire.cache.execute.ResultCollector} collects and
 possibly processes those results for consumption.  For more information look to the
-{@link com.gemstone.gemfire.cache.execute} package.
+<a href="{@docRoot}/com/gemstone/gemfire/cache/execute/package-summary.html#package_description">com.gemstone.gemfire.cache.execute</a> package.
 </p>
 
 <a name="distcache"><h2>Distributed Caching</h2><a href="#top">Back to Top</a>
@@ -79,7 +79,7 @@ the {@link com.gemstone.gemfire.distributed.DistributedSystem} to be configured.
 <p>Application data is cached in a {@linkplain
 com.gemstone.gemfire.cache.Region "region"}.  The {@link
 com.gemstone.gemfire.cache.RegionFactory} class provides the simpliest
-entry point into the {@linkplain com.gemstone.gemfire.cache.Region} 
+entry point into the {@linkplain com.gemstone.gemfire.cache.Region}
 API. A {@link com.gemstone.gemfire.cache.Region} implements {@link java.util.Map},
 however, it also provides caching behavior such as data loading,
 eviction control, and distribution.  Every region has a name and
@@ -99,7 +99,7 @@ region.</p>
 
 <a name="partition"><h2>Partitioned Regions</h2><a href="#top">Back to Top</a>
 
-<p>Region data can be partitioned across many distributed system members to create one large logical heap.  
+<p>Region data can be partitioned across many distributed system members to create one large logical heap.
 The data policy must be set to {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}
 or {@link com.gemstone.gemfire.cache.DataPolicy#PERSISTENT_PARTITION}.
 {@link com.gemstone.gemfire.cache.PartitionAttributes} are used to configure
@@ -116,7 +116,7 @@ the entire Region in the face of a full garbage collection cycle.</p>
 
 <p>Partitioned Regions support custom partitioning with the use of a
 {@link com.gemstone.gemfire.cache.PartitionResolver} and can be
-associated together or 
+associated together or
 {@linkplain com.gemstone.gemfire.cache.PartitionAttributesFactory#setColocatedWith(String)
 colocated} to allow for efficient data usage.
 </p>
@@ -246,7 +246,7 @@ The following table summarizes the different modes and their configuration.</p>
  <td>Once the amount of data stored in the region exceeds the eviction
      controller's threshold, least recently used data is written to
      disk and removed from the VM until the region's size is below the
-     threshold.</td> 
+     threshold.</td>
 </tr>
 
 <tr>
@@ -333,7 +333,7 @@ Region's specify the disk store they are in by setting the
 {@link com.gemstone.gemfire.cache.RegionAttributes#getDiskStoreName disk store name region attribute}.
 
 <P>A {@linkplain com.gemstone.gemfire.cache.Region#put put} on a region
-that is configured to have a disk "backup" (by using a 
+that is configured to have a disk "backup" (by using a
 {@linkplain com.gemstone.gemfire.cache.DataPolicy#withPersistence
 persistent data policy})
  will result in the immediate scheduling of a
@@ -412,7 +412,7 @@ is typically used to update an external database.</p>
 
 <a name="expiration"><h2>Expiration</h2></a><a href="#top">Back to Top</a>
 
-<p>Sometimes cached data has a limited lifetime.  The region attributes 
+<p>Sometimes cached data has a limited lifetime.  The region attributes
 {@linkplain com.gemstone.gemfire.cache.RegionAttributes#getRegionTimeToLive
 regionTimeToLive}, {@linkplain
 com.gemstone.gemfire.cache.RegionAttributes#getRegionIdleTimeout
@@ -450,7 +450,7 @@ setCacheListener} method.  Each callback method on the
 <code>CacheListener</code> receives a {@link
 com.gemstone.gemfire.cache.CacheEvent} describing the operation
 that caused the callback to be invoked and possibly containing information
-relevant to the operation 
+relevant to the operation
 (such as the old and new values of a region entry).</p>
 
 <a name="eviction"><h2>Eviction Attributes</h2><a href="#top">Back to Top</a>
@@ -462,7 +462,7 @@ instance, an eviction controller could keep track of the sizes of the
 entry values.  Before a new entry is added, the eviction controller
 could remove the entry with the largest value to free up space in
 the cache instance for new data.  GemFire provides {@link
-com.gemstone.gemfire.cache.EvictionAttributes} that will create an eviction controller 
+com.gemstone.gemfire.cache.EvictionAttributes} that will create an eviction controller
 that destroys the "least recently used" Region Entry once the Region
 exceeds a given number of entries.</p>
 
@@ -494,12 +494,12 @@ href="doc-files/example3-cache.xml">example3</A>.
 <a name="clientServer"><h2>Client/Server Caching</h2><a href="#top">Back to Top</a>
 
 <p>GemFire caches can be configured in a client/server hierarchy.
-In this configuration, GemFire cache regions are configured as 
+In this configuration, GemFire cache regions are configured as
 clients to regions in GemFire server caches running in a separate
 distributed system.
-The GemFire {@linkplain com.gemstone.gemfire.cache.server servers}
+The GemFire <a href="{@docRoot}/com/gemstone/gemfire/cache/server/package-summary.html#package_description">servers</a>
 are generally run as cacheserver processes.
-{@linkplain com.gemstone.gemfire.cache.client Clients}
+<a href="{@docRoot}/com/gemstone/gemfire/cache/client/package-summary.html#package_description">Clients</a>
 are configured with a
 {@linkplain com.gemstone.gemfire.cache.client.ClientCache client cache}
 which has a default
@@ -509,12 +509,11 @@ which are used by the client regions.
 When a client updates its region, the update is forwarded to the server.
 When a client get results in a local cache miss,
 the get request is forwarded to the server.
-The clients may also subscribe to server-side events. 
+The clients may also subscribe to server-side events.
 For more information on the client see the
-{@linkplain com.gemstone.gemfire.cache.client client package}.
+<a href="{@docRoot}/com/gemstone/gemfire/cache/client/package-summary.html#package_description">client</a>.
 For more information on the server see the
-{@linkplain com.gemstone.gemfire.cache.server server package}.
-</p>
+<a href="{@docRoot}/com/gemstone/gemfire/cache/server/package-summary.html#package_description">server</a>.</p>
 
 <a name="tx"><h2>Cache Transactions</h2><a href="#top">Back to Top</a>
 
@@ -560,50 +559,50 @@ one action reflecting the sum of all three.
 
 <a name="membership"><h2>Membership Attributes</h2><a href="#top">Back to Top</a>
 
-<p>The GemFire region can be configured to require the 
-presence of one or more user-defined membership roles.  Each {@link 
+<p>The GemFire region can be configured to require the
+presence of one or more user-defined membership roles.  Each {@link
 com.gemstone.gemfire.distributed.Role} is assigned to any number of
 applications when each application connects to the GemFire distributed
-system.  {@link com.gemstone.gemfire.cache.MembershipAttributes} are 
-then used to specify which {@linkplain 
-com.gemstone.gemfire.cache.MembershipAttributes#getRequiredRoles roles 
+system.  {@link com.gemstone.gemfire.cache.MembershipAttributes} are
+then used to specify which {@linkplain
+com.gemstone.gemfire.cache.MembershipAttributes#getRequiredRoles roles
 are required} to be online and present in that region's membership
 for access to the cache region being configured.</p>
 
-<p>In addition to specifying which roles are required, 
-<code>MembershipAttributes</code> are used to specify the {@link 
-com.gemstone.gemfire.cache.LossAction}. The loss action determines how 
-access to the region is affected when one or more required roles are 
-offline and no longer present in the system membership. The region can be 
-made completely {@linkplain 
-com.gemstone.gemfire.cache.LossAction#NO_ACCESS "NO_ACCESS"}, 
-which means that the application cannot read from or write to that region.  
-{@linkplain com.gemstone.gemfire.cache.LossAction#LIMITED_ACCESS 
+<p>In addition to specifying which roles are required,
+<code>MembershipAttributes</code> are used to specify the {@link
+com.gemstone.gemfire.cache.LossAction}. The loss action determines how
+access to the region is affected when one or more required roles are
+offline and no longer present in the system membership. The region can be
+made completely {@linkplain
+com.gemstone.gemfire.cache.LossAction#NO_ACCESS "NO_ACCESS"},
+which means that the application cannot read from or write to that region.
+{@linkplain com.gemstone.gemfire.cache.LossAction#LIMITED_ACCESS
 "LIMITED_ACCESS"} means that the application cannot write to that region.
-{@linkplain com.gemstone.gemfire.cache.LossAction#FULL_ACCESS 
-"FULL_ACCESS"} means that the application can read from and write to that 
-region as normal. If "FULL_ACCESS" is selected, 
+{@linkplain com.gemstone.gemfire.cache.LossAction#FULL_ACCESS
+"FULL_ACCESS"} means that the application can read from and write to that
+region as normal. If "FULL_ACCESS" is selected,
 then the application would only be aware of the missing required role if it
-registered a {@link com.gemstone.gemfire.cache.RegionRoleListener}. 
-This listener provides callbacks to notify the application when required 
+registered a {@link com.gemstone.gemfire.cache.RegionRoleListener}.
+This listener provides callbacks to notify the application when required
 roles are gained or lost, thus providing for custom integration of required
 roles with the application.</p>
 
 <p>{@link com.gemstone.gemfire.cache.ResumptionAction} defined in the
 <code>MembershipAttributes</code> specifies how the application responds
-to having a missing required role return to the distributed membership.  
+to having a missing required role return to the distributed membership.
 {@linkplain com.gemstone.gemfire.cache.ResumptionAction#NONE "None"}
-results in no special action, while {@linkplain 
-com.gemstone.gemfire.cache.ResumptionAction#REINITIALIZE "Reinitialize"} 
-causes the region to be reinitialized.  Reinitializing the region will 
-clear all entries from that region.  If it is a replicate, the 
-region will repopulate with entries available from other distributed 
+results in no special action, while {@linkplain
+com.gemstone.gemfire.cache.ResumptionAction#REINITIALIZE "Reinitialize"}
+causes the region to be reinitialized.  Reinitializing the region will
+clear all entries from that region.  If it is a replicate, the
+region will repopulate with entries available from other distributed
 members.</p>
 
 <p>{@link com.gemstone.gemfire.cache.RequiredRoles} provides methods to
 check for missing required roles for a region and to wait until all required
 roles are present. In addition, this class can be used to check if a role
-is currently present in a region's membership.</p> 
+is currently present in a region's membership.</p>
 
 </body>
 </hTML>

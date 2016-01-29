@@ -268,7 +268,6 @@ public class GatewaySenderEventRemoteDispatcher implements
    * @return the <code>Connection</code>
    *
    * @throws GatewaySenderException
-   * @throws InterruptedException 
    */
   public Connection getConnection(boolean startAckReaderThread) throws GatewaySenderException{
     // IF the connection is null 

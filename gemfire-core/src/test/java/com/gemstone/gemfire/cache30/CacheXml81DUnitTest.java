@@ -58,7 +58,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
 
   /**
    * Test extensions to
-   * <code>cache<code> element. Exercises {@link CacheCreation#fillIn}
+   * <code>cache<code> element.
    * 
    * @since 8.1
    */
@@ -87,8 +87,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   }
 
   /**
-   * Test extensions to <code>region</code> element. Exercises
-   * {@link CacheCreation#fillIn}
+   * Test extensions to <code>region</code> element.
    * 
    * @since 8.1
    */

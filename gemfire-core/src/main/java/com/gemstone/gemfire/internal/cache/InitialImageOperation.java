@@ -1566,7 +1566,7 @@ public class InitialImageOperation  {
     public String regionPath;
     
     /**
-     * Id of the {@link ImageProcessor} that will handle the replies
+     * Id of the {@link InitialImageOperation.ImageProcessor} that will handle the replies
      */
     protected int processorId;
     
@@ -2237,7 +2237,7 @@ public class InitialImageOperation  {
     protected String regionPath;
     
     /**
-     * Id of the {@link ImageProcessor} that will handle the replies
+     * Id of the {@link InitialImageOperation.ImageProcessor} that will handle the replies
      */
     protected int processorId;
             
@@ -2499,7 +2499,7 @@ public class InitialImageOperation  {
     protected String regionPath;
     
     /**
-     * Id of the {@link ImageProcessor} that will handle the replies
+     * Id of the {@link InitialImageOperation.ImageProcessor} that will handle the replies
      */
     protected int processorId;
     

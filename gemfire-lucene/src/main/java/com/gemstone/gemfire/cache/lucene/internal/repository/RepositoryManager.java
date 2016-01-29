@@ -37,7 +37,6 @@ public interface RepositoryManager {
    * Returns a collection of {@link IndexRepository} instances hosting index data of the input list of bucket ids. The
    * bucket needs to be present on this member.
    * 
-   * @param localDataSet The local data set of a function
    * @return a collection of {@link IndexRepository} instances
    * @throws BucketNotFoundException if any of the requested buckets is not found on this member
    */

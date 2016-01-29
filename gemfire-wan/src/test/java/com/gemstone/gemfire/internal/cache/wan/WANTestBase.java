@@ -3579,7 +3579,6 @@ public class WANTestBase extends DistributedTestCase{
   /**
    * To be used only for ParallelGatewaySender.
    * @param senderId    Id of the ParallelGatewaySender
-   * @param numQueueEntries     Expected number of ParallelGatewaySenderQueue entries
    */
   public static int getPRQLocalSize(String senderId) {
     GatewaySender sender = null;

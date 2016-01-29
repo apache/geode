@@ -489,8 +489,6 @@ public class P2PAuthenticationDUnitTest extends DistributedTestCase {
   /**
    * The strategy is to test credential size greater than UDP datagram size.
    * 
-   * @see Bug # 38570.
-   * 
    * Here locator will accept the credentials from peer2 and the large credential
    * from the first peer. Number of members in the DS
    * should be four

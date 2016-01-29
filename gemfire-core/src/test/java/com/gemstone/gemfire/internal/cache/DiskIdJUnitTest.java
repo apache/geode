@@ -119,8 +119,6 @@ public class DiskIdJUnitTest extends TestCase
 
   /**
    * Test the whether setting of one set of values does not affect another set of values
-   * 
-   * @throws Exception
    */
  
   public void testAllOperationsValidatingResult1()

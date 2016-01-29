@@ -102,5 +102,7 @@ subprojects {
     compile 'org.springframework:spring-web:' + project.'springframework.version'
     compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
     compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
+    compile 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
+    compile 'javax.enterprise:cdi-api:' + project.'cdi-api.version'
   }
 }

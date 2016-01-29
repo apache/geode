@@ -87,8 +87,7 @@ import com.gemstone.gemfire.management.internal.configuration.messages.SharedCon
 
 /**
  * Provides the implementation of a distribution <code>Locator</code>
- * as well as internal-only functionality.  Currently, a distribution
- * locator is implemented using a JGroups {@link GossipServer}.
+ * as well as internal-only functionality.
  * 
  * This class has APIs that perform essentially three layers of 
  * services. At the bottom layer is the JGroups location service. On
@@ -517,7 +516,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    *                (e.g., mcast addr/port, other locators)
    * @param cfg the config if being called from a distributed system; otherwise null.
    * @param startDistributedSystem if true locator will start its own distributed system
-   * @throws IOException
    */
   private InternalLocator(
     int port,
@@ -860,7 +858,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    *                The distributed system which the server location services
    *                should use. If null, the method will try to find an already
    *                connected distributed system.
-   * @throws ExecutionException 
    * @since 5.7
    */
   public void startServerLocation(InternalDistributedSystem distributedSystem)

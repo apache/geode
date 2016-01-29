@@ -83,7 +83,6 @@ public class GsRandom extends java.util.Random implements Serializable {
     * There is a hack here to prevent '}' so as to eliminate the possiblity 
     * of generating a sequence which would falsely get marked as a suspect
     * string while we are matching the pattern <code>{[0-9]+}</code>.
-    * {@link https://svn.gemstone.com/trac/gemfire/ticket/40415}
     * @return the next pseudorandom, uniformly distributed <code>char</code>
     *         value from this random number generator's sequence.
     */

@@ -256,7 +256,7 @@ public final class DistTXRollbackMessage extends TXMessage {
 
   /**
    * A processor to capture the value returned by
-   * {@link DistTXRollbackMessage.DistTXCommitReplyMessage}
+   * {@link DistTXRollbackReplyMessage}
    * 
    */
   public static class DistTXRollbackResponse extends RemoteOperationResponse {

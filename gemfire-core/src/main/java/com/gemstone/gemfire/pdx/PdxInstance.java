@@ -195,7 +195,7 @@ public boolean isIdentityField(String fieldName);
    * made to the returned value will not modify this PdxInstance.
    * 
    * @return a {@link WritablePdxInstance}
-   * @throws IllegaStateException if the PdxInstance is an enum.
+   * @throws IllegalStateException if the PdxInstance is an enum.
    */
   public WritablePdxInstance createWriter();
 

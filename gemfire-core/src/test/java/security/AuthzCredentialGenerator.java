@@ -335,7 +335,7 @@ public abstract class AuthzCredentialGenerator {
    * perform the given {@link OperationCode}s for the given regions. The
    * credentials are required to be valid for authentication.
    * 
-   * @param opCode
+   * @param opCodes
    *                the {@link OperationCode}s of the operations requiring
    *                authorization failure; should not be null
    * @param regionNames
@@ -407,9 +407,6 @@ public abstract class AuthzCredentialGenerator {
    * @param regionNames
    *                list of the region names requiring authorization; a value of
    *                null indicates all regions
-   * @param index
-   *                used to generate multiple such credentials by passing
-   *                different values for this
    * 
    * @return the number of principals allowed to perform the given operation in
    *         the given region

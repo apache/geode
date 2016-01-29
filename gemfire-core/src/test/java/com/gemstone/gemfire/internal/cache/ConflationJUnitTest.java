@@ -68,30 +68,18 @@ public class ConflationJUnitTest extends DiskRegionTestingBase
 
 
 
-  /**
-   * 
-   * @see com.gemstone.gemfire.internal.cache.DiskRegTest#createOverflowOnly()
-   */
   protected void createOverflowOnly()
   {
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
         diskProps);
   }
 
-  /**
-   * 
-   * @see com.gemstone.gemfire.internal.cache.DiskRegTest#createPersistOnly()
-   */
   protected void createPersistOnly()
   {
     region = DiskRegionHelperFactory
         .getAsyncPersistOnlyRegion(cache, diskProps);
   }
 
-  /**
-   * 
-   * @see com.gemstone.gemfire.internal.cache.DiskRegTest#createOverflowAndPersist()
-   */
   protected void createOverflowAndPersist()
   {
     region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,

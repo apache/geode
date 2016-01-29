@@ -23,7 +23,7 @@ import java.util.*;
  * given level associated with it.  There are a number of convenience
  * methods for logging events.  Events with a level above a certain
  * are written to <code>System.err</code>.  The default level is
- * {@link LEVEL#INFO LEVEL.INFO}
+ * INFO
  */
 public class Logger {
   private static boolean DEBUG = Boolean.getBoolean("Logging.DEBUG");

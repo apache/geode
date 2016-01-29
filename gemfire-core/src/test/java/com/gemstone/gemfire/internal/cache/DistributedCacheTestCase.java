@@ -361,8 +361,6 @@ public abstract class DistributedCacheTestCase
    *        Must be {@link java.io.Serializable}
    * @param value
    *        The value used to replace
-   *
-   * @see Region#put()
    */
   protected static void remoteReplace(String regionName,
                                       String entryName,
@@ -392,8 +390,6 @@ public abstract class DistributedCacheTestCase
    *        region 
    * @param entryName
    *        Must be {@link java.io.Serializable}
-   *
-   * @see Region#replace()
    */
   protected static void remoteInvalidate(String regionName,
                                          String entryName)
@@ -418,8 +414,6 @@ public abstract class DistributedCacheTestCase
    *        region 
    * @param entryName
    *        Must be {@link java.io.Serializable}
-   *
-   * @see Region#replace()
    */
   protected static void remoteDestroy(String regionName,
                                       String entryName)

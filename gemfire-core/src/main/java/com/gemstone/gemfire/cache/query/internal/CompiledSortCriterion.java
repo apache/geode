@@ -66,17 +66,6 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
    * 
    * @param context
    * @return Object
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
-   *
-   *           public Object evaluate(ExecutionContext context) throws
-   *           FunctionDomainException, TypeMismatchException,
-   *           NameResolutionException, QueryInvocationTargetException {
-   *           if(this.columnIndex >= 0) { return
-   *           context.getFieldFromProjectedRow(this.columnIndex); }else {
-   *           return this.expr.evaluate(context); } }
    */
 
   public Object evaluate(Object data, ExecutionContext context) {

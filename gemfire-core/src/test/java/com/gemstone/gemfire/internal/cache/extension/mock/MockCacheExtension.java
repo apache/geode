@@ -26,8 +26,8 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * 
  * <dl>
  * <dt>Uses</dt>
- * <dd>{@link ClusterConfigurationDUnitTest}</dd>
- * <dd>{@link CacheXml81DUnitTest}</dd>
+ * <dd>com.gemstone.gemfire.management.internal.configuration.ClusterConfigurationDUnitTest</dd>
+ * <dd>{@link com.gemstone.gemfire.cache30.CacheXml81DUnitTest}</dd>
  * </dl>
  * 
  * @author jbarrett@pivotal.io

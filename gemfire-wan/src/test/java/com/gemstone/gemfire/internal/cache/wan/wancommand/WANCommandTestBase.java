@@ -329,8 +329,6 @@ public class WANCommandTestBase extends CliCommandTestBase{
 
   /**
    * Enable system property gemfire.disableManagement false in each VM.
-   *
-   * @throws Exception
    */
   public void enableManagement() {
     invokeInEveryVM(new SerializableRunnable("Enable Management") {

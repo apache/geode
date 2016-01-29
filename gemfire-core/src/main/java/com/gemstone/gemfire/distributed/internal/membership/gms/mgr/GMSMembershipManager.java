@@ -637,7 +637,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   /**
    * the timer used to perform periodic tasks
-   * @guarded.By latestViewLock
+   * 
+   * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
    */
   private SystemTimer cleanupTimer;
 
@@ -2057,7 +2058,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * has the side effect of removing the member from the
    * list if it was shunned too far in the past.
    * 
-   * @guarded.By latestViewLock
+   * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
+   * 
    * @return true if the given member is a zombie
    */
   public boolean isShunned(DistributedMember m) {
@@ -2088,7 +2090,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * <p>
    * Like isShunned, this method holds the view lock while executing
    * 
-   * @guarded.By latestViewLock
+   * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
+   * 
    * @param m the member in question
    * @return true if the given member is a surprise member
    */

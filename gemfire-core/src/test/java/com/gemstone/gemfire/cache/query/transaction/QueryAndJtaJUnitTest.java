@@ -277,7 +277,6 @@ public class QueryAndJtaJUnitTest {
   /**
    * verify that queries on indexes work with transaction
    * 
-   * @see bug#40842
    * @throws Exception
    */
   @Test

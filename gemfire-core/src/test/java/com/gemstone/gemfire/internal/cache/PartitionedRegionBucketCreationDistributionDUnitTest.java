@@ -755,13 +755,6 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
   /**
    * This function performs validation of bucket2Node region of multiple
    * partition regions on 4 VMs.
-   * 
-   * @param vm0
-   * @param vm1
-   * @param vm2
-   * @param vm3
-   * @param startIndexForRegion
-   * @param endIndexForRegion
    */
   private void validateBucket2NodeBeforePutInMultiplePartitionedRegion(
       int startIndexForRegion, int endIndexForRegion) throws Throwable
@@ -795,13 +788,6 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
   /**
    * This function performs validation of bucket regions of multiple partition
    * regions on 4 VMs.
-   * 
-   * @param vm0
-   * @param vm1
-   * @param vm2
-   * @param vm3
-   * @param startIndexForRegion
-   * @param endIndexForRegion
    */
   private void validateBucketsAfterPutInMultiplePartitionRegion(
       final int startIndexForRegion, final int endIndexForRegion)
@@ -858,13 +844,6 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
   /**
    * This function performs validation of bucket regions of multiple partition
    * regions on 4 VMs.
-   * 
-   * @param vm0
-   * @param vm1
-   * @param vm2
-   * @param vm3
-   * @param startIndexForRegion
-   * @param endIndexForRegion
    */
   private void validateBucketsDistributionInMultiplePartitionRegion(
       final int startIndexForRegion, final int endIndexForRegion,
@@ -896,13 +875,6 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
 
   /**
    * This function is used for the validation of bucket on all the region.
-   * 
-   * @param vm0
-   * @param vm1
-   * @param vm2
-   * @param vm3
-   * @param startIndexForRegion
-   * @param endIndexForRegion
    */
   private void validateBucketsOnAllNodes(final int startIndexForRegion,
       final int endIndexForRegion)

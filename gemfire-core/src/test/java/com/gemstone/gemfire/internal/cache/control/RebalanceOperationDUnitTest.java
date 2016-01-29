@@ -2947,9 +2947,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   /** 
    * Test to ensure that we wait for
    * in progress write operations before moving a primary.
-   * @throws InterruptedException 
    * @throws CancellationException 
-   * @throws TimeoutException 
    */
   public void moveBucketsWithUnrecoveredValuesRedundancy(final boolean simulate) {
     Host host = Host.getHost(0);

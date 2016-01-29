@@ -38,7 +38,7 @@ public class CommitCommandTest {
 
 	/**
 	 * Test for GEODE-537
-	 * No NPE should be thrown from the {@link CommitCommand.writeCommitResponse()}
+	 * No NPE should be thrown from the {@link CommitCommand#writeCommitResponse(com.gemstone.gemfire.internal.cache.TXCommitMessage, Message, ServerConnection)}
 	 * if the response message is null as it is the case when JTA
 	 * transaction is rolled back with TX_SYNCHRONIZATION AFTER_COMPLETION STATUS_ROLLEDBACK 
 	 * @throws IOException 

@@ -85,7 +85,6 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
    * When the response comes from a locator via TcpClient this
    * will return the locators member ID.  If the locator hasn't
    * yet joined this may be null.
-   * @return
    */
   public InternalDistributedMember getSenderId() {
     return senderId;

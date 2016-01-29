@@ -283,7 +283,7 @@ public class GemFireRedisServer {
    * Helper method to set the number of worker threads
    * 
    * @return If the System property {@value #NUM_THREADS_SYS_PROP_NAME} is set then that number
-   * is used, otherwise {@value #DEFAULT_WORKER_THREADS_PER_CORE} * # of cores
+   * is used, otherwise 4 * # of cores
    */
   private int setNumWorkerThreads() {
     String prop = System.getProperty(NUM_THREADS_SYS_PROP_NAME);
@@ -631,7 +631,6 @@ public class GemFireRedisServer {
    * <br>-log-level=
    * 
    * @param args Command line args
-   * @throws IOException
    */
   public static void main(String[] args) {
     int port = DEFAULT_REDIS_SERVER_PORT;

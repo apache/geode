@@ -95,7 +95,6 @@ public class CompiledClassUtils {
   /**
    * Parse the files in the given jar file and return a map of name->CompiledClass.
    * Any IO exceptions are consumed by this method and written to stderr.
-   * @param jar the jar file holding classes
    */
   public static Map<String, CompiledClass> parseClassFilesInDir(File buildDir) {
     Map<String, CompiledClass> result = new HashMap<String, CompiledClass>();

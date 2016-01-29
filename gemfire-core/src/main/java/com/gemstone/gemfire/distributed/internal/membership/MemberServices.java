@@ -69,7 +69,6 @@ public interface MemberServices {
   
    /**
    * Create a new MembershipManager
-   * @param stopper TODO
    * @param listener the listener to notify for callbacks
    * @param transport holds configuration information that can be used by the manager to configure itself
    * @param stats a gemfire statistics collection object for communications stats

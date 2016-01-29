@@ -109,12 +109,6 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
     checkData(vm2, 0, numBuckets, "b");
   }
 
-  /**
-   * @param vm0
-   * @param i
-   * @param numBuckets
-   * @param string
-   */
   private void createDataWithRollback(VM vm, final int startKey, final int endKey, final String value) {
     SerializableRunnable createData = new SerializableRunnable() {
       

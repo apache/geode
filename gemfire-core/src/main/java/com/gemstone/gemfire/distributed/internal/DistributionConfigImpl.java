@@ -316,7 +316,7 @@ public class DistributionConfigImpl
 
   
   /**
-   * port on which {@link GemFireRedisServer} is started
+   * port on which {@link com.gemstone.gemfire.redis.GemFireRedisServer} is started
    */
   private int redisPort = DEFAULT_REDIS_PORT;
   

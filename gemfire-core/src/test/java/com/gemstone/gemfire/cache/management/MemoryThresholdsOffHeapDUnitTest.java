@@ -1668,9 +1668,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * 
    * @param vm
    *          the vm where verification should take place
-   * @param type
-   *          the type of event to validate, use {@link MemoryEventType#UNKNOWN}
-   *          to verify all events
    * @param value
    *          the expected value
    * @param useWaitCriterion

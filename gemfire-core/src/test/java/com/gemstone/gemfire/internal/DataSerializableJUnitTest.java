@@ -1212,7 +1212,7 @@ public class DataSerializableJUnitTest extends TestCase
   }
 
   /**
-   * Tests writing a {@link Replaceable} object
+   * Tests writing a {@link com.gemstone.gemfire.DataSerializable.Replaceable} object
    */
   public void testReplaceable()
     throws IOException, ClassNotFoundException {

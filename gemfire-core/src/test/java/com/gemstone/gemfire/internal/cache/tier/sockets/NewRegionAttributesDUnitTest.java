@@ -118,7 +118,6 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    * @throws Exception
    *           thrown if any problem occurs while creating cache or test-region
    * 
-   * @see AttributesFactory#setEnableWAN(boolean)
    * @see AttributesFactory#setPublisher(boolean)
    * @see AttributesFactory#setEnableConflation(boolean)
    * @see AttributesFactory#setEnableAsyncConflation(boolean)
@@ -180,7 +179,6 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    * 3)Perform PUTs,INVALIDATEs and DESTROYs from one VM and verify at the end
    * that all are destroyed in the other VM also<br>
    * 
-   * @see AttributesFactory#setEnableWAN(boolean)
    * @see AttributesFactory#setPublisher(boolean)
    * @see AttributesFactory#setEnableConflation(boolean)
    * @see AttributesFactory#setEnableAsyncConflation(boolean)

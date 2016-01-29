@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
 import com.gemstone.gemfire.internal.size.WellKnownClassSizer;
 
 /**
- * Tests the basic functionality of the memory lru eviction{@link controller
+ * Tests the basic functionality of the memory lru eviction controller
  * and its statistics.
  * 
  * @author David Whitlock

@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache.execute;
  * adds the ability for an execute method to send a single result back, or break
  * its result into multiple pieces and send each piece back to the calling
  * thread's {@link ResultCollector}. For each result sent using this method,
- * {@link ResultCollector#addResult(DistributedMember, Object)} is called,
+ * {@link ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)} is called,
  * making that result available to the calling thread immediately.
  * 
  * <p>
@@ -50,13 +50,13 @@ package com.gemstone.gemfire.cache.execute;
  * 
  * @since 6.0
  * 
- * @see ResultCollector#addResult(DistributedMember, Object)
+ * @see ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)
  * 
  */
 public interface ResultSender<T> {
   /**
    * Sends a result back to the FunctionService calling thread and invokes
-   * {@link ResultCollector#addResult(DistributedMember, Object)}.
+   * {@link ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)}.
    * 
    * @param oneResult
    */
@@ -64,7 +64,7 @@ public interface ResultSender<T> {
 
   /**
    * Sends a result back to the FunctionService calling thread and invokes
-   * {@link ResultCollector#addResult(DistributedMember, Object)} and then
+   * {@link ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)} and then
    * {@link ResultCollector#endResults()} if it is the last instance of the
    * Function to report results. The ResultCollector will keep waiting for
    * results until it receives last result. Therefore, it is very important to
@@ -72,7 +72,6 @@ public interface ResultSender<T> {
    * 
    * @throws IllegalStateException
    *                 if called more than once
-   * @param lastResult
    * 
    * @see ResultCollector#endResults()
    */

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.Cache;
 
 /**
  * Factory for creating instances of {@link HDFSStore}. To get an instance of
- * this factory call {@link Cache#createHDFSStoreFactory}.
+ * this factory call Cache#createHDFSStoreFactory.
  * <P>
  * Usage
  * <ol>

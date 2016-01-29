@@ -282,10 +282,6 @@ public class CacheServerTestUtil extends DistributedTestCase
 
   /**
    * Create client regions
-   * @param props
-   * @param regionName1
-   * @param regionName2
-   * @throws Exception
    */
   public static void createCacheClients(Pool poolAttr, String regionName1,
       String regionName2, Properties dsProperties) throws Exception

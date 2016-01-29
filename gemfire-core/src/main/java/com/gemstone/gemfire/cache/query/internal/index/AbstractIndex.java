@@ -1459,10 +1459,6 @@ public abstract class AbstractIndex implements IndexProtocol
    * @param value
    * @param context 
    * @return True if Region and Index entries are consistent.
-   * @throws QueryInvocationTargetException 
-   * @throws NameResolutionException 
-   * @throws TypeMismatchException 
-   * @throws FunctionDomainException 
    */
   protected boolean verifyEntryAndIndexVaue(RegionEntry re, Object value, ExecutionContext context) {
     IMQEvaluator evaluator = (IMQEvaluator)getEvaluator();

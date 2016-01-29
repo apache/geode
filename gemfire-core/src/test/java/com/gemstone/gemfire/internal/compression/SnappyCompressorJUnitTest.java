@@ -50,7 +50,7 @@ public class SnappyCompressorJUnitTest extends TestCase {
   }
   
   /**
-   * Tests {@link SnappyCompressor()} constructor.
+   * Tests {@link SnappyCompressor#SnappyCompressor()} constructor.
    * @throws SecurityException 
    * @throws NoSuchMethodException 
    * @throws InvocationTargetException 

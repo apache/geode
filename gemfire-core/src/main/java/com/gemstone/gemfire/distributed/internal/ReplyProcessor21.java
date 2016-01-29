@@ -98,9 +98,10 @@ public class ReplyProcessor21
 
   ////////////////////  Instance Methods  ////////////////////
 
-  /** The members that haven't replied yet
+  /** 
+   * The members that haven't replied yet
    *
-   *  @guarded.By {@link #members}
+   * Concurrency: protected by synchronization of itself
    */
   protected final InternalDistributedMember[] members;
 

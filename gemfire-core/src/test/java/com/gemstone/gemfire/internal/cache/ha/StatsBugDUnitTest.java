@@ -238,7 +238,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
    * 
    * @param port1 -
    *          port for the primary cache-server
-   * @param port2-port
+   * @param port2
    *          for the secondary cache-server
    * @throws Exception-thrown
    *           if any problem occurs in initializing the client
@@ -262,7 +262,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
    * 
    * @param port1 -
    *          port for the primary cache-server
-   * @param port2-port
+   * @param port2
    *          for the secondary cache-server
    * @throws Exception-thrown
    *           if any problem occurs in initializing the client

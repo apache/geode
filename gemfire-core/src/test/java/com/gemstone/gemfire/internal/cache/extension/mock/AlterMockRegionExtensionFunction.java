@@ -43,7 +43,7 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * <dt>{@link String} regionName</dt>
  * <dd>Name of region on which to create {@link MockCacheExtension}.</dd>
  * <dt>{@link String} value</dt>
- * <dd>Value to set. See {@link MockCacheExtension#setValue()}.</dd>
+ * <dd>Value to set. See {@link MockCacheExtension#setValue(String)}.</dd>
  * </dl>
  * </dt>
  * </dl>

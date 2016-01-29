@@ -1455,7 +1455,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends
    * Create three PRs on a VM, named region1, region2, and region3.
    * The colocated with attribute describes which region region3 
    * should be colocated with.
-   * @param vm0
+   * 
    * @param colocatedWith
    */
   private void createColocatedPRs(final String colocatedWith) {

@@ -428,7 +428,7 @@ public class PartitionedIndex extends AbstractIndex
    * This will create extra {@link IndexStatistics} statistics for MapType
    * PartitionedIndex.
    * @param indexName
-   * @return New {@link PartitionedIndexStatistics}
+   * @return new PartitionedIndexStatistics
    */
   protected InternalIndexStatistics createExplicitStats(String indexName) {
     return new PartitionedIndexStatistics(indexName);

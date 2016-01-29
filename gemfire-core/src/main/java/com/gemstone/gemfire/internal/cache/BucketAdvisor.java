@@ -506,7 +506,7 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
   }
   
   /**
-   * @guarded.By this
+   * Concurrency: protected by synchronizing on *this*
    */
   @Override
   protected void profileCreated(Profile profile) {
@@ -527,7 +527,7 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
   }
 
   /**
-   * @guarded.By this
+   * Concurrency: protected by synchronizing on *this*
    */
   @Override
   protected void profileUpdated(Profile profile) {
@@ -548,7 +548,7 @@ public final class BucketAdvisor extends CacheDistributionAdvisor  {
   }
 
   /**
-   * @guarded.By this
+   * Concurrency: protected by synchronizing on *this*
    */
   @Override
   protected void profileRemoved(Profile profile) {

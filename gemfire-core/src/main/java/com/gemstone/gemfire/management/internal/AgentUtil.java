@@ -52,7 +52,6 @@ public class AgentUtil {
    *    classpath
    *
    * @param warFilePrefix : the prefix of the war file, e.g. gemfire-web, gemfire-pulse, or gemfire-web-api
-   * @return
      */
   public String findWarLocation(String warFilePrefix) {
     String gemfireHome = getGemFireHome();

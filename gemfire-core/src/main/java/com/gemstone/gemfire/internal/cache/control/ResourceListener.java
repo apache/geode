@@ -18,7 +18,7 @@
 package com.gemstone.gemfire.internal.cache.control;
 
 /**
- * Provides notification of {@link com.gemstone.gemfire.cache GemFire Cache}
+ * Provides notification of {@link com.gemstone.gemfire.cache.Cache}
  * resource management events.
  * 
  * @since 6.0

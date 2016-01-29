@@ -163,11 +163,6 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
   /***
    * Creates WaitCriterion based on creation of different types of MBeans
-   *
-   * @param beanType
-   * @param regionName
-   * @param memberName
-   * @return
    */
   private WaitCriterion createMBeanWaitCriterion(final int beanType, final String regionName,
       final DistributedMember distributedMember, final int cacheServerPort) {

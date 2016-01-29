@@ -161,8 +161,6 @@ public class PartitionedRegionLoadModel {
    * Create a new model
    * @param operator the operator which performs the actual creates/moves for buckets
    * @param redundancyLevel The expected redundancy level for the region
-   * @param enforceLocalMaxMemory 
-   * @param criticalMembers 
    */
   public PartitionedRegionLoadModel(BucketOperator operator,
       int redundancyLevel, int numBuckets, AddressComparor addressComparor,

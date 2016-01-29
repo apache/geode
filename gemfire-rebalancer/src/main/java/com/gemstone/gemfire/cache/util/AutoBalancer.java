@@ -98,7 +98,7 @@ public class AutoBalancer implements Declarable {
    * will be triggered if the total number of bytes rebalance operation may move
    * is more than this threshold, in percentage of the total data size.
    * <P>
-   * Default {@value AutoBalancer#DEFAULT_SIZE_THRESHOLD_PERCENT}
+   * Default value {@link #DEFAULT_SIZE_THRESHOLD_PERCENT}
    */
   public static final String SIZE_THRESHOLD_PERCENT = "size-threshold-percent";
 
@@ -116,7 +116,7 @@ public class AutoBalancer implements Declarable {
    * the total number of bytes rebalance operation may move is more than this
    * number of bytes.
    * <P>
-   * Default {@value AutoBalancer#DEFAULT_MINIMUM_SIZE}
+   * Default value {@link #DEFAULT_MINIMUM_SIZE}
    */
   public static final String MINIMUM_SIZE = "minimum-size";
 

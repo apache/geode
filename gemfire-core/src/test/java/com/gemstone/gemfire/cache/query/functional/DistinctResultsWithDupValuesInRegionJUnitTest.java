@@ -53,9 +53,6 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
   private static String regionName = "test";
   private int numElem = 100;
 
-  /**
-   * @param name
-   */
   public DistinctResultsWithDupValuesInRegionJUnitTest() {
   }
 

@@ -1440,8 +1440,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * Verifies that the test listener value on the given vm is what is expected
    * Note that for remote events useWaitCriterion must be true
    * @param vm the vm where verification should take place
-   * @param type the type of event to validate, use {@link MemoryEventType#UNKNOWN}
-   * to verify all events
+   * @param state
    * @param value the expected value
    * @param useWaitCriterion must be true for remote events
    */

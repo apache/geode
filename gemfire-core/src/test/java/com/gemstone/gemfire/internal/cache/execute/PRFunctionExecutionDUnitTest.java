@@ -2764,9 +2764,7 @@ public class PRFunctionExecutionDUnitTest extends
   }
 
   /**
-   * Assert the {@link RegionFunctionContext} yields the proper objects and works
-   * in concert with the associated {@link PartitionedRegionUtil} methods.
-   * @throws Exception
+   * Assert the {@link RegionFunctionContext} yields the proper objects.
    */
   public void testLocalDataContext() throws Exception
   {
@@ -2841,10 +2839,7 @@ public class PRFunctionExecutionDUnitTest extends
   }
  
   /**
-   * Assert the {@link RegionFunctionContext} yields the proper objects and works
-   * in concert with the associated {@link PartitionedRegionUtil} methods when
-   * there are colocated regions.
-   * @throws Exception
+   * Assert the {@link RegionFunctionContext} yields the proper objects.
    */
   public void testLocalDataContextWithColocation() throws Exception
   {

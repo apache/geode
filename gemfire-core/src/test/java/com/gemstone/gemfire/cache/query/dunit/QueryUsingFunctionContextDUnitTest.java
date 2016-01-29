@@ -854,9 +854,6 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   /**
    * Run query on server using LocalDataSet.executeQuery() to compare results
    * received from client function execution.
-   * @param queries
-   * @param filter
-   * @return
    */
   public static ArrayList runQueryOnServerLocalDataSet(String query, Set filter) {
     return new QueryUsingFunctionContextDUnitTest("temp").runQueryOnServerLDS(query, filter);
@@ -883,9 +880,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   /**
-   * Run query on server to compare the results recieved from client function execution.
-   * @param queries
-   * @return ArrayList of results
+   * Run query on server to compare the results received from client function execution.
    */
   public static ArrayList runQueryOnServerRegion(String query) {
     return new QueryUsingFunctionContextDUnitTest("temp").runQueryOnServerReg(query);

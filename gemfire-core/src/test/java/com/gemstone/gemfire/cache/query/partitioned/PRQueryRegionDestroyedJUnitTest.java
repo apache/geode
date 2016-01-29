@@ -63,11 +63,6 @@ public class PRQueryRegionDestroyedJUnitTest
   boolean encounteredException = false;
   static final int dataSize =100; 
   static final int delayQuery = 1000;
-  /**
-   * setUp*
-   * 
-   * @param name
-   */
 
   @Before
   public void setUp() throws Exception

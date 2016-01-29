@@ -489,7 +489,7 @@ public class Coder {
    * so it is converted as a string not as a literal double
    * @param bytes Array holding double
    * @return Parsed value
-   * @throw NumberFormatException if bytes to string does not yield a convertable double
+   * @throws NumberFormatException if bytes to string does not yield a convertible double
    */
   public static Double bytesToDouble(byte[] bytes) {
     return stringToDouble(bytesToString(bytes));

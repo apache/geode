@@ -471,11 +471,6 @@ public class DestroyEntryPropagationDUnitTest extends DistributedTestCase
     return new Integer(server.getPort());
   }
 
-  /**
-   *
-   * @param key
-   *          Key in which client is interested
-   */
   public static void registerKey1()
   {
     try {

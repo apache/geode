@@ -210,8 +210,6 @@ public class DiskRegionTestingBase
 
   /**
    * cleans all the directory of all the files present in them
-   * @throws IOException 
-   *  
    */
   protected static void deleteFiles()
   {

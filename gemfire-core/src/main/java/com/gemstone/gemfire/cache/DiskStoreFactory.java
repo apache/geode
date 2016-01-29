@@ -194,8 +194,6 @@ public interface DiskStoreFactory
    * 
    * @param diskDirs directories to put the oplog files.
    * @return a reference to <code>this</code>
-   * 
-   * @throws GemfireIOException if a directory cannot be created
    */
   public DiskStoreFactory setDiskDirs(File[] diskDirs);
 
@@ -209,7 +207,6 @@ public interface DiskStoreFactory
    * 
    * @throws IllegalArgumentException if length of the size array
    * does not match to the length of the dir array
-   * @throws GemfireIOException if a directory cannot be created
    */
   public DiskStoreFactory setDiskDirsAndSizes(File[] diskDirs,int[] diskDirSizes);
 

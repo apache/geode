@@ -789,7 +789,6 @@ public class HyperLogLogPlus implements ICardinality, Serializable {
    * This operation does not imply a loss of precision.
    *
    * @param other A compatible Hyperloglog++ instance (same p and sp)
-   * @throws CardinalityMergeException if other is not compatible
    */
   public void addAll(HyperLogLogPlus other) throws HyperLogLogPlusMergeException {
     if (other.sizeof() != sizeof()) {

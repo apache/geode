@@ -47,7 +47,7 @@ public interface ProcessController {
    * is provided. Only the {@link MBeanProcessController} supports the use of
    * specifying a PID because it uses the Attach API.
    *  
-   * @throws AttachAPINotFoundException if the Attach API is not found
+   * @throws com.gemstone.gemfire.lang.AttachAPINotFoundException if the Attach API is not found
    */
   public void checkPidSupport();
   

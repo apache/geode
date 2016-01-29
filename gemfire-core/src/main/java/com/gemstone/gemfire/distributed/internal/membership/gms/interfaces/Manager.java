@@ -86,7 +86,6 @@ public interface Manager extends Service, MessageHandler {
   /**
    * returns the coordinator of the current membership view.  This is
    * who created and distributed the view.  See NetView.
-   * @return
    */
   DistributedMember getCoordinator();
   

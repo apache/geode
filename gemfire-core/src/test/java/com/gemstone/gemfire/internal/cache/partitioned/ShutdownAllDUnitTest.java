@@ -72,10 +72,6 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
   protected static HangingCacheListener listener;
 
 
-  /**
-   * @param name
-   */
-  
   final String expectedExceptions = InternalGemFireError.class.getName()+"||ShutdownAllRequest: disconnect distributed without response";
 
   public ShutdownAllDUnitTest(String name) {

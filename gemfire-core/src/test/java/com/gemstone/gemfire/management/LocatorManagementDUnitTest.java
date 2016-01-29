@@ -149,7 +149,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    * 
    * @param vm
    *          reference to VM
-   * @throws Throwable
    */
   protected String startLocator(final VM vm, final boolean isPeer,
       final int port) {
@@ -192,7 +191,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    * 
    * @param vm
    *          reference to VM
-   * @throws Throwable
    */
   protected String stopLocator(VM vm) {
 
@@ -212,7 +210,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    * 
    * @param vm
    *          reference to VM
-   * @throws Throwable
    */
   protected void locatorMBeanExist(VM vm, final int locPort,
       final boolean isPeer) {
@@ -241,7 +238,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    * 
    * @param vm
    *          reference to VM
-   * @throws Throwable
    */
   protected void remoteLocatorMBeanExist(VM vm, final DistributedMember member) {
 
@@ -268,7 +264,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    * 
    * @param vm
    *          reference to VM
-   * @throws Throwable
    */
   protected void listManagers(VM vm, final int locPort, final boolean isPeer) {
 
@@ -307,7 +302,6 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    * 
    * @param vm
    *          reference to VM
-   * @throws Throwable
    */
   protected void listWillingManagers(VM vm, final int locPort,
       final boolean isPeer) {

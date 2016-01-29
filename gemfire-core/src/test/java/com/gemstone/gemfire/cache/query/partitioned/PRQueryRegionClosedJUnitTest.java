@@ -61,12 +61,6 @@ public class PRQueryRegionClosedJUnitTest
 
   
 
-  /**
-   * setUp*
-   * 
-   * @param name
-   */
-
   @Before
   public void setUp() throws Exception
   {

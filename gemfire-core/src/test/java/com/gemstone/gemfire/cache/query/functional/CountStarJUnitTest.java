@@ -59,9 +59,6 @@ public class CountStarJUnitTest {
   private static String exampleRegionName = "employee";
   private int numElem = 100;
   
-  /**
-   * @param name
-   */
   public CountStarJUnitTest() {
   }
 

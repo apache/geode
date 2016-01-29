@@ -1299,9 +1299,9 @@ public class VM implements java.io.Serializable {
    * runner.
    *
    * @throws RMIException if an exception occurs while bouncing this VM, for
-   *  example a HydraTimeoutException if the VM fails to stop within {@link
-   *  hydra.Prms#maxClientShutdownWaitSec} or restart within {@link
-   *  hydra.Prms#maxClientStartupWaitSec}.
+   *  example a HydraTimeoutException if the VM fails to stop within 
+   *  hydra.Prms#maxClientShutdownWaitSec or restart within 
+   *  hydra.Prms#maxClientStartupWaitSec.
    */
   public synchronized void bounce() {
     if (!this.available) {

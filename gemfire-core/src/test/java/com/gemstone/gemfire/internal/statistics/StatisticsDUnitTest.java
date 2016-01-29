@@ -611,7 +611,6 @@ public class StatisticsDUnitTest extends CacheTestCase {
   /**
    * @author Kirk Lund
    * @since 7.0
-   * @see cacheperf.CachePerfStats
    */
   static class PubSubStats {
     

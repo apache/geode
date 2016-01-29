@@ -47,8 +47,7 @@ public final class SnappyCompressor implements Compressor, Serializable {
   
   /**
    * Create a new instance of the SnappyCompressor.
-   * 
-   * @throws IllegaltStateException when the Snappy native library is unavailable
+   * @throws IllegalStateException when the Snappy native library is unavailable
    */
   public SnappyCompressor() {
     synchronized (defaultInstance) {

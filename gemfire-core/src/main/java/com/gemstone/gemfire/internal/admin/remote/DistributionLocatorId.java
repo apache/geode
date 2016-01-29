@@ -378,7 +378,6 @@ public class DistributionLocatorId implements java.io.Serializable {
    * 
    * @param locatorIds collection of DistributionLocatorId instances
    * @return collection of String instances
-   * @throws UnknownHostException
    * @see #marshal()
    */
   public static Collection<String> asStrings(Collection<DistributionLocatorId> locatorIds) {

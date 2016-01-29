@@ -503,7 +503,6 @@ public class RegionProvider implements Closeable {
    * Removes an expiration from a key
    * 
    * @param key Key
-   * @param context Context
    * @return True is expiration cancelled on the key, false otherwise
    */
   public final boolean cancelKeyExpiration(ByteArrayWrapper key) {

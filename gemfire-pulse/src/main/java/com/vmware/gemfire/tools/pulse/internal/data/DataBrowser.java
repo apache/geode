@@ -149,7 +149,6 @@ public class DataBrowser {
    * 
    * @param userId
    *          Logged in User's Id
-   * @throws JSONException
    */
   public JSONArray getQueryHistoryByUserId(String userId) {
 
@@ -233,8 +232,6 @@ public class DataBrowser {
    * generateQueryKey method stores queries in query history file.
    * 
    * @return Boolean true is operation is successful, false otherwise
-   * @param properties
-   *          a collection queries in form of key and values
    */
   private boolean storeQueriesInFile(JSONObject queries) {
     boolean operationStatus = false;

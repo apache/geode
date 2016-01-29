@@ -119,12 +119,6 @@ public class PartitionedRegionDUnitTestCase extends CacheTestCase
    *          Used in the name of the Partition Region
    * 
    * These indices Represents range of the Partition Region
-   * @param startIndexForRegion :
-   * @param endIndexForRegion
-   * @param redundancy
-   * @param localmaxMemory
-   * @param evict 
-   * @return
    */
   public CacheSerializableRunnable createMultiplePartitionRegion(
       final String PRPrefix, final int startIndexForRegion,

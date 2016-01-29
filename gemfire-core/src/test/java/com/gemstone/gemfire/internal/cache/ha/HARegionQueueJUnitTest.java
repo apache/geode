@@ -520,7 +520,7 @@ public class HARegionQueueJUnitTest
      *          prefix to keys of all objects put by this thread
      * @param startingId -
      *          startingId for sequence-ids of all objects put by this thread
-     * @param totalPuts-
+     * @param totalPuts
      *          total number of puts by this thread
      * @param createConflatableEvents -
      *          boolean to indicate whether this thread should create conflation

@@ -600,8 +600,6 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
  }
   /**
    * Ensure that the execution is happening all the PR as a whole
-   * 
-   * @throws Exception
    */
 
   public static class TestResolver implements PartitionResolver, Serializable {

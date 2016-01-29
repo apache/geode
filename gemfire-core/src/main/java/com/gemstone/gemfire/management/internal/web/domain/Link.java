@@ -141,7 +141,7 @@ public class Link implements Comparable<Link>, Serializable {
    * @return a String representation of the HTTP request-line.
    * @see java.net.URI
    * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
-   * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
+   * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html</a>
    */
   public String toHttpRequestLine() {
     return getMethod().name().concat(StringUtils.SPACE).concat(UriUtils.decode(getHref().toString()));

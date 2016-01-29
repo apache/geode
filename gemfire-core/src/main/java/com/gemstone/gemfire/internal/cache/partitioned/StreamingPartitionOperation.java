@@ -211,8 +211,6 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     /**
      * Waits for the response from the {@link PartitionMessage}'s recipient
      * @throws CacheException  if the recipient threw a cache exception during message processing
-     * @throws ForceReattemptException if the recipient left the distributed system before the response
-     * was received.
      * @throws QueryException if the recipient threw a query exception
      * @throws RegionDestroyedException if the peer has closed its copy of the region
      * @return The set of members that failed.

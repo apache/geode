@@ -70,12 +70,6 @@ public class PRQueryCacheClosedJUnitTest
   static final int delayQuery = 1000;
 
 
-  /**
-   * setUp*
-   * 
-   * @param name
-   */
-
   @Before
   public void setUp() throws Exception
   {

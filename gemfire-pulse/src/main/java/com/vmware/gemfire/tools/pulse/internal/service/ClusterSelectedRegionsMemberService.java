@@ -98,9 +98,6 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
 
   /**
    * Create JSON for selected cluster region's all members
-   *
-   * @param cluster, region path
-   * @return JSONObject Array List
    */
   private JSONObject getSelectedRegionsMembersJson(Cluster cluster, String selectedRegionFullPath) throws JSONException {
     PulseLogWriter LOGGER = PulseLogWriter.getLogger();

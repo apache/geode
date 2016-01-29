@@ -1127,8 +1127,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Perform initialization, solve the early escaped reference problem by putting publishing references to this instance
    * in this method (vs. the constructor).
-   *
-   * @return the initialized instance of the cache
    */
   private void initialize() {
     if (GemFireCacheImpl.instance != null) {

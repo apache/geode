@@ -407,7 +407,7 @@ public class PartitionedRegion extends LocalRegion implements
    * the thread locally destroying this pr.  not volatile,
    * so always check isLocallyDestroyed before checking locallyDestroyingThread
    * 
-   * @guarded.By {@link #isLocallyDestroyed}
+   * Concurrency: {@link #isLocallyDestroyed} is volatile
    */
   public Thread locallyDestroyingThread;
 

@@ -198,7 +198,6 @@ public class FunctionServiceStats {
    *          <code>Statistics</code> instance
    * @param name
    *          The name of the <code>Statistics</code>
-   * @throws Exception 
    */
   public FunctionServiceStats(StatisticsFactory factory, String name) {
     this._stats = factory.createAtomicStatistics(_type, name);

@@ -177,7 +177,7 @@ public class InternalDistributedSystem
   /** Is this <code>DistributedSystem</code> connected to a
    * distributed system? 
    *
-   * @guarded.By {@link #isConnectedMutex} for writes
+   * Concurrency: volatile for reads and protected by synchronization of {@link #isConnectedMutex} for writes
    */
   protected volatile boolean isConnected;
 

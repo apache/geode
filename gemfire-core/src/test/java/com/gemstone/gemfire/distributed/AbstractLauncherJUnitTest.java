@@ -37,7 +37,6 @@ import org.junit.experimental.categories.Category;
  * @author John Blum
  * @author Kirk Lund
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
- * @see com.gemstone.gemfire.distributed.CommonLauncherTestSuite
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since 7.0

@@ -82,7 +82,7 @@ public abstract class GemFireTestCase {
   /**
    * Assert an Invariant condition on an object.
    * @param inv the Invariant to assert. If null, this method just returns
-   * @param the obj to assert the Invariant on.
+   * @param obj the Object to assert the Invariant on.
    */
   protected void assertInvariant(Invariant inv, Object obj) {
     if (inv == null) return;

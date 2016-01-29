@@ -971,16 +971,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used for getting list of Gateway Senders from mBean for giving
    * member and update the list of gateway senders for respective member object
-   *
-   * @param mbeanName
-   * @param memberName
-   * @throws InstanceNotFoundException
-   * @throws IntrospectionException
-   * @throws ReflectionException
-   * @throws IOException
-   * @throws AttributeNotFoundException
-   * @throws MBeanException
-   *
    */
   private void updateGatewaySender(ObjectName mbeanName) throws IOException {
 
@@ -1089,16 +1079,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used for getting list of Gateway Senders from mBean for giving
    * member and update the list of gateway senders for respective member object
-   *
-   * @param mbeanName
-   * @param memberName
-   * @throws InstanceNotFoundException
-   * @throws IntrospectionException
-   * @throws ReflectionException
-   * @throws IOException
-   * @throws AttributeNotFoundException
-   * @throws MBeanException
-   *
    */
   private void updateAsyncEventQueue(ObjectName mbeanName) throws IOException {
     try {
@@ -1145,16 +1125,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used for getting a Gateway Receiver from mBean for giving member
    * and update the gateway receiver for respective member object
-   *
-   * @param mbeanName
-   * @param memberName
-   * @throws InstanceNotFoundException
-   * @throws IntrospectionException
-   * @throws ReflectionException
-   * @throws IOException
-   * @throws AttributeNotFoundException
-   * @throws MBeanException
-   *
    */
   private void updateGatewayReceiver(ObjectName mbeanName) throws IOException {
 
@@ -1191,16 +1161,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used for getting member clients from mbean and update the clients
    * information in member object's client arraylist
-   *
-   * @param mbeanName
-   * @param memberName
-   * @throws InstanceNotFoundException
-   * @throws IntrospectionException
-   * @throws ReflectionException
-   * @throws IOException
-   * @throws MBeanException
-   * @throws AttributeNotFoundException
-   *
    */
   private void updateMemberClient(ObjectName mbeanName) throws IOException {
 
@@ -1452,12 +1412,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    *
    * @param mbeanName
    *          Cluster Region MBean
-   * @throws IOException
-   * @throws ReflectionException
-   * @throws IntrospectionException
-   * @throws InstanceNotFoundException
-   * @throws MBeanException
-   * @throws AttributeNotFoundException
    */
   private void updateClusterRegion(ObjectName mbeanName) throws IOException {
 
@@ -1780,14 +1734,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used to iterate through all member attributes and return the
    * updated member
-   *
-   * @param attrs
-   * @param mbeanName
-   * @param member
-   * @return
-   * @throws IOException
-   * @throws ReflectionException
-   * @throws InstanceNotFoundException
    */
   private Cluster.Member initializeMember(ObjectName mbeanName,
       Cluster.Member member) throws InstanceNotFoundException,
@@ -2004,13 +1950,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    *
    * @param mbeanName
    *          Cluster Member MBean
-   * @throws IOException
-   * @throws ReflectionException
-   * @throws IntrospectionException
-   * @throws InstanceNotFoundException
-   * @throws MBeanException
-   * @throws AttributeNotFoundException
-   *
    */
   private void updateClusterMember(ObjectName mbeanName) throws IOException {
 
@@ -2071,11 +2010,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to handle Float data type if the value for mbean for an
    * attribute is null then return 0.0 as default value else return the
    * attribute value
-   *
-   * @param name
-   * @param mbs
-   * @param mBeanName
-   * @return
    */
   private Float getFloatAttribute(Object object, String name) {
     try {
@@ -2102,11 +2036,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to handle Integer data type if the value for mbean for an
    * attribute is null then return 0 as default value else return the attribute
    * value
-   *
-   * @param name
-   * @param mbs
-   * @param mBeanName
-   * @return
    */
   private Integer getIntegerAttribute(Object object, String name) {
     try {
@@ -2133,11 +2062,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to handle Long data type if the value for mbean for an
    * attribute is null then return 0 as default value else return the attribute
    * value
-   *
-   * @param name
-   * @param mbs
-   * @param mBeanName
-   * @return
    */
   private Long getLongAttribute(Object object, String name) {
     try {
@@ -2165,11 +2089,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to handle String data type if the value for mbean for an
    * attribute is null then return the empty string as default value else return
    * the attribute value
-   *
-   * @param name
-   * @param mbs
-   * @param mBeanName
-   * @return
    */
   private String getStringAttribute(Object object, String name) {
     try {
@@ -2196,11 +2115,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to handle Boolean data type if the value for mbean for an
    * attribute is null then return false as default value else return the
    * attribute value
-   *
-   * @param name
-   * @param mbs
-   * @param mBeanName
-   * @return
    */
   private Boolean getBooleanAttribute(Object object, String name) {
     try {
@@ -2227,11 +2141,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to handle Double data type if the value for mbean for an
    * attribute is null then return 0.0 as default value else return the
    * attribute value
-   *
-   * @param name
-   * @param mbs
-   * @param mBeanName
-   * @return
    */
   private Double getDoubleAttribute(Object object, String name) {
     try {

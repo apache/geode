@@ -22,9 +22,9 @@ import java.util.Date;
 import java.util.Properties;
 
 /**
- * Places various objects that use {@link DataSerializer}s and {@link
- * Instantiator}s into a cache {@link Region}.  Among other things,
- * this is used to test bug 31573.
+ * Places various objects that use {@link com.gemstone.gemfire.DataSerializer}s 
+ * and {@link com.gemstone.gemfire.Instantiator}s into a cache {@link Region}.  
+ * Among other things, this is used to test bug 31573.
  *
  * @since 3.5
  * @author David Whitlock

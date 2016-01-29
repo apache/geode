@@ -698,7 +698,6 @@ public class RegionFactory<K,V>
    * amongst them.
    *
    * @return a reference to this RegionFactory object
-   * @throws GemfireIOException if a directory cannot be created
    *
    * @see AttributesFactory#setDiskDirs
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setDiskDirs} instead
@@ -716,7 +715,6 @@ public class RegionFactory<K,V>
    * @return a reference to this RegionFactory object
    * @throws IllegalArgumentException if length of the size array
    * does not match to the length of the dir array
-   * @throws GemfireIOException if a directory cannot be created
    *   
    * @since 5.1
    * @see AttributesFactory#setDiskDirsAndSizes

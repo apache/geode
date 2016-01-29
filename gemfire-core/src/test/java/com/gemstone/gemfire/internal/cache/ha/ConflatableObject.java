@@ -57,7 +57,7 @@ public class ConflatableObject implements Conflatable, Serializable
    *          The key for this entry
    * @param value -
    *          The value for this entry
-   * @param eventid -
+   * @param eventId -
    *          eventID object for this entry
    * @param conflate -
    *          conflate it true

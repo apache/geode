@@ -205,8 +205,6 @@ public class CacheFactory {
    * @throws RegionExistsException
    *         If the declarative caching XML file describes a region
    *         that already exists (including the root region).
-   * @throws ManagementException
-   *         If the jmx manager can not be initialized.
    * @since 6.5
    */
   public Cache create()

@@ -134,7 +134,7 @@ public abstract class CompressedCachedDeserializable implements
 
   /**
    * Returns the deserialized value.  However, unlike the specification of this method as described in
-   * @link {@link CachedDeserializable#getDeserializedForReading()} this method does not 
+   * {@link CachedDeserializable#getDeserializedForReading()} this method does not 
    * optimize for future calls leaving the value serialized and compressed.
    */
   @Override

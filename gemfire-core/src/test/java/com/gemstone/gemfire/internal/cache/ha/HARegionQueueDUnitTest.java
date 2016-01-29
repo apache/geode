@@ -109,9 +109,6 @@ public class HARegionQueueDUnitTest extends DistributedTestCase
 
   /**
    * create cache
-   *
-   * @return
-   * @throws Exception
    */
   protected Cache createCache() throws CacheException
   {

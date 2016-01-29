@@ -381,8 +381,6 @@ public abstract class NativeCalls {
   /**
    * Set given extended socket options on a Java {@link Socket}.
    * 
-   * @throws SocketException
-   *           if there was an exception setting the option on the socket
    * @throws UnsupportedOperationException
    *           if the native API to set the option could not be found or invoked
    * 

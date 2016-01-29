@@ -104,7 +104,7 @@ public class DeadlockDetector {
    * Threads may depend on locks, or on other resources that are tracked by the
    * {@link DependencyMonitor}.
    * 
-   * @arg locality a name tag to stick on entities to help associate them with
+   * @param locality a name tag to stick on entities to help associate them with
    * this JVM and distinguish them from entities from other jvms
    * 
    * @return All of the dependencies between threads and locks or other resources

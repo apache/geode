@@ -169,7 +169,6 @@ public class CacheElement {
    * @throws IOException
    * @throws ParserConfigurationException 
    * @throws XPathExpressionException 
-   * @throws ValidityException
    * @since 8.1
    */
   private static final void buildElementMapCacheType(final LinkedHashMap<String, CacheElement> elementMap, final InputSource inputSource) throws SAXException,

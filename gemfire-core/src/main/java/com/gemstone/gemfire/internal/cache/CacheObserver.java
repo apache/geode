@@ -185,7 +185,6 @@ public interface CacheObserver
   
   /**
    * Invoked just before ShutdownAll operation
-   * @param emptyOplog
    */
   void beforeShutdownAll();
 }

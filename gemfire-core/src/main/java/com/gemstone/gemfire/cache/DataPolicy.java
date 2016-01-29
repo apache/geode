@@ -248,7 +248,6 @@ public class DataPolicy implements java.io.Serializable {
   
   /** Return whether this policy does persistence on HDFS.
    * @return true if this policy does persistence on HDFS.
-   * @see #HDFS_PARTITION
    */
   public boolean withHDFS() {
 //    return this == HDFS_PARTITION || this == HDFS_PERSISTENT_PARTITION;

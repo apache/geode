@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * <code>Boolean.FALSE</code>.<br />
  * 
  * To execute this function, it is recommended to use the {@link Execution} obtained by
- * using {@link TransactionFunctionService}. <br />
+ * using TransactionFunctionService. <br />
  * 
  * To summarize, this function should be used as follows:
  * 
@@ -64,7 +64,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * it is the user's responsibility to register this function. see
  * {@link FunctionService#registerFunction(Function)}
  * 
- * @see TransactionFunctionService
  * @since 6.6.1
  * @author sbawaska
  */

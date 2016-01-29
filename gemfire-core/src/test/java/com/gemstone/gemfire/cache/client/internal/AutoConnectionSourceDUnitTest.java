@@ -427,7 +427,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
    * Assert that there is one endpoint with the given host in port
    * on the client vm.
    * @param vm - the vm the client is running in
-   * @param expectedPort - The server port we expect the client to be connected to.
+   * @param expectedPorts - The server ports we expect the client to be connected to.
    */
   protected void checkEndpoints(VM vm, final int[] expectedPorts) {
     vm.invoke(new SerializableRunnable("Check endpoint") {

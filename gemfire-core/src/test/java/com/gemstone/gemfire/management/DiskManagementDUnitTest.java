@@ -283,9 +283,6 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
   /**
    * get Distributed member for a given vm
-   * 
-   * @param vm
-   *          reference to VM
    */
   @SuppressWarnings("serial")
   protected static DistributedMember getMember() throws Exception {
@@ -429,10 +426,6 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Takes a back up of all the disk store in a given directory
-   * 
-   * @param vm1
-   *          reference to VM
-   * @throws Exception
    */
   @SuppressWarnings("serial")
   public void backupAllMembers(final VM managingVM) throws Exception {
@@ -453,10 +446,6 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Compact a disk store from Managing node
-   * 
-   * @param vm1
-   *          reference to VM
-   * @throws Exception
    */
   @SuppressWarnings("serial")
   public void compactDiskStoresRemote(VM managingVM) throws Exception {

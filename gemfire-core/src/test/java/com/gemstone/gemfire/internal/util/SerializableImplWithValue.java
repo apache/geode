@@ -22,8 +22,6 @@ package com.gemstone.gemfire.internal.util;
  * A {@link SerializableImpl} that implements an interface and has
  * some object state.
  *
- * @see DeserializerTest
- *
  * @author David Whitlock
  *
  * @since 2.0.3

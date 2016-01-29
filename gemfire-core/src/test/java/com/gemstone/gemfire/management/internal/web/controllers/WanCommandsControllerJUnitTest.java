@@ -83,7 +83,7 @@ public class WanCommandsControllerJUnitTest {
    * would only be rejected at runtime by the overall framework and is tested 
    * within an integration test.
    *
-   * @see WanCommandGatewaySenderStartDUnitTest
+   * see WanCommandGatewaySenderStartDUnitTest
    */
   @Test
   public void shouldDefineStartGatewayReceiverCommandWithNullGatewaySenderId() {
@@ -100,7 +100,7 @@ public class WanCommandsControllerJUnitTest {
    * would only be rejected at runtime by the overall framework and is tested 
    * within an integration test.
    *
-   * @see WanCommandGatewaySenderStartDUnitTest
+   * see WanCommandGatewaySenderStartDUnitTest
    */
   @Test
   public void shouldDefineStartGatewayReceiverCommandWithEmptyGatewaySenderId() {

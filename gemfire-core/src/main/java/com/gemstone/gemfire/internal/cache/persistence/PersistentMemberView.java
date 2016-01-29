@@ -81,7 +81,6 @@ public interface PersistentMemberView {
    * This is only called after this member is online.
    * 
    * @param persistentID
-   * @throws IOException
    */
   public void memberRemoved(PersistentMemberID persistentID);
   

@@ -822,7 +822,7 @@ public class InternalDistributedSystemJUnitTest
 
   /**
    * Detect LinkLocal IPv6 address where the interface is missing, ie %[0-9].
-   * @see {@link InetAddress#isLinkLocalAddress()}
+   * @see InetAddress#isLinkLocalAddress()
    */
   private static boolean isIPv6LinkLocalAddress(Inet6Address addr) {
     byte[] addrBytes = addr.getAddress();

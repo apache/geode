@@ -310,7 +310,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * send a join request and wait for a reply.  Process the reply.
    * This may throw a SystemConnectException or an AuthenticationFailedException
    * 
-   * @param coord
    * @return true if the attempt succeeded, false if it timed out
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="WA_NOT_IN_LOOP")
@@ -1070,7 +1069,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   
   /**
    * for testing, do not use in any other case as it is not thread safe
-   * @param req
    */
   JoinResponseMessage[] getJoinResponseMessage() {
     return joinResponse;

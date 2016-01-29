@@ -1969,8 +1969,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *
    * @throws IOException
    *         A problem occurs while writing to <code>out</code>
-   *
-   * @see #writeTimeUnit
    */
   public static TimeUnit readTimeUnit(DataInput in)
     throws IOException {

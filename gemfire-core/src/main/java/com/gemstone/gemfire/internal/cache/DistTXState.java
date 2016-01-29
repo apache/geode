@@ -345,10 +345,6 @@ public class DistTXState extends TXState {
     // Cleanup is called next
   }
 
-  /**
-   * @param txStateProxy
-   * @return
-   */
   protected boolean applyOpsOnRedundantCopy(DistributedMember sender,
       ArrayList<DistTxEntryEvent> secondaryTransactionalOperations) {
     boolean returnValue = true;
@@ -434,7 +430,7 @@ public class DistTXState extends TXState {
    * Apply the individual tx op on secondary
    * 
    * Calls local function such as putEntry instead of putEntryOnRemote as for
-   * this {@link DistTXStateOnCoordinator) as events will always be local. In
+   * this {@link DistTXStateOnCoordinator} as events will always be local. In
    * parent {@link DistTXState} class will call remote version of functions
    * 
    */

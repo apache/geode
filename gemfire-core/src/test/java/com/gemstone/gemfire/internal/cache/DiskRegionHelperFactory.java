@@ -30,9 +30,6 @@ import com.gemstone.gemfire.cache.*;
 public class DiskRegionHelperFactory
 {
 
-  /**
-   * @param args
-   */
   public static Region getRegion(Cache cache, DiskRegionProperties diskProps, Scope regionScope)
   {
     Region region = null;

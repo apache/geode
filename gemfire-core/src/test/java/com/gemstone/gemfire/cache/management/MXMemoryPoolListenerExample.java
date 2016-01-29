@@ -151,10 +151,6 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     private final Cache cache;
     private final AtomicBoolean criticalState;
 
-    /**
-     * @param logWriter
-     * @param criticalState
-     */
     public MemoryHog(String n, Cache c, AtomicBoolean critical) {
       this.name = n;
       this.cache = c;

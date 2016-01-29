@@ -77,9 +77,6 @@ public class ClientHealthMonitorJUnitTest
 
   /**
    * Close the cache and disconnects from the distributed system
-   * 
-   * @exception -
-   *              thrown if any exception occured in closing cache/ds
    */
   @After
   public void tearDown() throws Exception

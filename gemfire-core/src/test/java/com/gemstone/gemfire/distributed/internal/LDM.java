@@ -26,7 +26,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * A little class for testing the {@link LocalDistributionManager}
+ * A little class for testing the local DistributionManager
  */
 public class LDM {
 

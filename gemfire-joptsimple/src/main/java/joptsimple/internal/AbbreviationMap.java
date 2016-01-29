@@ -54,7 +54,6 @@ import java.util.TreeMap;
  *
  * @param <V> a constraint on the types of the values in the map
  * @author <a href="mailto:pholser@alumni.rice.edu">Paul Holser</a>
- * @see <a href="http://www.perldoc.com/perl5.8.0/lib/Text/Abbrev.html">Perl's Text::Abbrev module</a>
  */
 public class AbbreviationMap<V> {
     private String key;

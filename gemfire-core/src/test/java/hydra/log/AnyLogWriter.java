@@ -31,10 +31,10 @@ import java.io.*;
 /**
  *
  *  A {@link com.gemstone.gemfire.LogWriter} that writes to a file logger,
- *  depending on whether it is turned on via {@link LogPrms#file_logging}.
+ *  depending on whether it is turned on via LogPrms#file_logging.
  *  <p>
  *  The log level query methods answer true if a file logger is active and
- *  answer true.  See {@link LogPrms#file_logLevel}.
+ *  answer true.  See LogPrms#file_logLevel.
  */
 
 public class AnyLogWriter implements InternalLogWriter {

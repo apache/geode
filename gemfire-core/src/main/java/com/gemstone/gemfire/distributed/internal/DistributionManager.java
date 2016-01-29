@@ -126,7 +126,6 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
  * @author David Whitlock
  * @since 2.0
  *
- * @see com.gemstone.gemfire.distributed.internal
  * @see DistributionMessage#process
  * @see IgnoredByManager
  */
@@ -273,7 +272,7 @@ public class DistributionManager
   /**
    * Executor for view related messages
    * 
-   * @see com.gemstone.gemfire.distributed.internal.membership.jgroup.ViewMessage
+   * @see com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage
    * @see #STANDARD_EXECUTOR
    */
   public static final int VIEW_EXECUTOR = 79;
@@ -454,7 +453,7 @@ public class DistributionManager
   private ThreadPoolExecutor serialThread;
   
   /** Message processing executor for view messages
-   * @see com.gemstone.gemfire.distributed.internal.membership.jgroup.ViewMessage 
+   * @see com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage 
    */
   private ThreadPoolExecutor viewThread;
   

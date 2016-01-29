@@ -224,13 +224,6 @@ public class GemfireSequenceDisplay {
     return sequenceDiagram;
   }
 
-  /**
-   * @param graphId 
-   * @param lifeline 
-   * @param graphs
-   * @param dest
-   * @return
-   */
   private static LifelineState createState(Lifeline lifeline, GraphSet graphs, Vertex dest) {
     long start = dest.getTimestamp();
     long end = dest.getNextVertexOnDest() == null ? graphs.getMaxTime() : dest.getNextVertexOnDest().getTimestamp();

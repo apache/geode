@@ -12828,7 +12828,11 @@ public class LocalRegion extends AbstractRegion
    * or it may recover an index map that was previously persisted, depending
    * on whether the index previously existed.
    * 
+   * @param indexName the name of the index
+   * @param indexedExpression the index expression
+   * @param fromClause the from clause.
    * 
+   * @return The index map.
    * 
    * @throws IllegalStateException if this region is not using
    * soplog persistence
@@ -12836,12 +12840,6 @@ public class LocalRegion extends AbstractRegion
    * @throws IllegalStateException if this index was previously
    * persisted with a different expression or from clause.
    * 
-   * @param indexName the name of the index
-   * @param indexedExpression the index expression
-   * @param fromClause the from clause.
-   *  
-   * 
-   * @return The index map.
    */
   public IndexMap getIndexMap(String indexName, String indexedExpression, 
       String fromClause) {
@@ -12860,18 +12858,18 @@ public class LocalRegion extends AbstractRegion
    * or it may recover an index map that was previously persisted, depending
    * on whether the index previously existed.
    * 
+   * @param indexName the name of the index
+   * @param indexedExpression the index expression
+   * @param fromClause the from clause.
+   * 
+   * @return The index map.
+   * 
    * @throws IllegalStateException if this region is not using
    * soplog persistence
    * 
    * @throws IllegalStateException if this index was previously
    * persisted with a different expression or from clause.
    * 
-   * @param indexName the name of the index
-   * @param indexedExpression the index expression
-   * @param fromClause the from clause.
-   *  
-   * 
-   * @return The index map.
    */
   public IndexMap getUnsortedIndexMap(String indexName, String indexedExpression, 
       String fromClause) {

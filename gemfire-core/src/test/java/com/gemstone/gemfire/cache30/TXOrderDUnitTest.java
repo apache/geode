@@ -314,7 +314,6 @@ public class TXOrderDUnitTest extends CacheTestCase {
   private final int TEST_DESTROY = 2;
   /**
    * verify that queries on indexes work with transaction
-   * @see bug#40842
    * @throws Exception
    */
   public void testFarSideIndexOnPut() throws Exception {

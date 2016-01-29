@@ -392,7 +392,7 @@ public class ClientHttpRequest implements HttpRequest {
    * <p/>
    * @param headerName a String specifying the name of the HTTP header.
    * @param headerValue a String containing the value of the HTTP header.
-   * @see org.springframework.http.HttpHeaders#set(Object, Object)
+   * @see org.springframework.http.HttpHeaders#set(String, String)
    */
   public void setHeader(final String headerName, final String headerValue) {
     getHeaders().set(headerName, headerValue);

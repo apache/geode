@@ -66,7 +66,7 @@ public class AbstractRegionJUnitTest {
    * Test method for {@link AbstractRegion#getExtensionPoint()}.
    * 
    * Assert that method returns a {@link SimpleExtensionPoint} instance and
-   * assume that {@link SimpleExtensionPointJUnitTest} has covered the rest.
+   * assume that {@link com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPointJUnitTest} has covered the rest.
    * 
    */
   @Test

@@ -275,7 +275,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
    * never exported out as a user-visible Map.Entry.
    * 
    * Made this public so RegionEntries can directly implement this to reduce
-   * memory overhead of separate {@link HashEntry} objects for each entry in the
+   * memory overhead of separate {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects for each entry in the
    * map.
    */
   public static interface HashEntry<K, V> {
@@ -398,13 +398,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
   }
 
   /**
-   * Interface to enable creation of new {@link HashEntry} objects by caller.
+   * Interface to enable creation of new {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects by caller.
    * This can be used, for example, to return GemFire RegionEntries directly.
    */
   public static interface HashEntryCreator<K, V> {
 
     /**
-     * Create a new {@link HashEntry} given the key, hash, value and next
+     * Create a new {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} given the key, hash, value and next
      * element.
      */
     public HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next,
@@ -502,12 +502,12 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
 // GemStone addition
 
     /**
-     * {@link HashEntryCreator} for the map to create {@link HashEntry}s.
+     * {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntryCreator} for the map to create {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}s.
      */
     final HashEntryCreator<K, V> entryCreator;
 
     /**
-     * Lock used when updating the {@link HashEntry#getNextEntry()} link of an
+     * Lock used when updating the {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry#getNextEntry()} link of an
      * entry.
      */
     final ReentrantReadWriteLock listUpdateLock;
@@ -1129,7 +1129,7 @@ RETRYLOOP:
   }
 
   /**
-   * Extension of {@link Segment} using reference-equality comparison for key,
+   * Extension of {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.Segment} using reference-equality comparison for key,
    * value equality instead of equals method.
    * 
    * @author swale
@@ -1738,7 +1738,7 @@ RETRYLOOP:
 
   /**
    * Simple adapter class providing empty default implementations for
-   * {@link MapCallback}.
+   * {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback}.
    */
   public static class MapCallbackAdapter<K, V, C, P> implements
       MapCallback<K, V, C, P> {

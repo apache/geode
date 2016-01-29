@@ -17,8 +17,10 @@
 package com.examples;
 
 /**
- * A simple test object used by the {@link
- * com.gemstone.gemfire.internal.enhancer.serializer.SerializingStreamPerfTest} * that must be in a non-<code>com.gemstone</code> package.
+ * A simple test object used by the 
+ * com.gemstone.gemfire.internal.enhancer.serializer.SerializingStreamPerfTest 
+ * (this test no longer exists?) 
+ * that must be in a non-<code>com.gemstone</code> package.
  *
  * @author David Whitlock
  *

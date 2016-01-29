@@ -87,7 +87,7 @@ import java.util.concurrent.TimeUnit;
  * (see {@link AttributesFactory} for Scope).  For both scopes, a
  * consistent configuration (per VM) is enforced.
  * 
- * <p>Global Regions, client Regions (see {@link com.gemstone.gemfire.cache.client})
+ * <p>Global Regions, client Regions (see com.gemstone.gemfire.cache.client package)
  * and persistent Regions (see {@link DiskWriteAttributes}) do not
  * support transactions.
  * 

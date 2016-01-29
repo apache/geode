@@ -22,7 +22,7 @@ import java.util.concurrent.Callable;
 /**
  * This interface provides both {@link Serializable} and {@link
  * Callable}.  It is often used in conjunction with {@link
- * VM#invoke(Callable)}.
+ * VM#invoke(SerializableCallableIF)}.
  *
  * <PRE>
  * public void testRepilcatedRegionPut() {

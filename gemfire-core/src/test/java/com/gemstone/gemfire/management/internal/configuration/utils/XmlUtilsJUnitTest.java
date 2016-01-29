@@ -54,7 +54,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class XmlUtilsJUnitTest {
 
   /**
-   * Test method for {@link XmlUtils#buildSchemaLocationMap(Attribute)}.
+   * Test method for {@link XmlUtils#buildSchemaLocationMap(String)}.
    * @throws IOException 
    * @throws ParserConfigurationException 
    * @throws SAXException 
@@ -86,7 +86,7 @@ public class XmlUtilsJUnitTest {
   }
 
   /**
-   * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, Attribute)}.
+   * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, String)}.
    * @throws IOException 
    * @throws ParserConfigurationException 
    * @throws SAXException 
@@ -132,7 +132,7 @@ public class XmlUtilsJUnitTest {
   }
 
   /**
-   * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, Attribute)}.
+   * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, String)}.
    * Asserts map is empty if schemaLocation attribute is <code>null</code>.
    * @throws IOException 
    * @throws ParserConfigurationException 
@@ -150,7 +150,7 @@ public class XmlUtilsJUnitTest {
   }
 
   /**
-   * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, Attribute)}.
+   * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, String)}.
    * Asserts map is empty if schemaLocation attribute is empty.
    * @throws IOException 
    * @throws ParserConfigurationException 

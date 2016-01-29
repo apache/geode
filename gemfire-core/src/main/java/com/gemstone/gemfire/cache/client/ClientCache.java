@@ -128,12 +128,12 @@ public interface ClientCache extends GemFireCache {
    * The {@link RegionService#getRegion} method will throw IllegalStateException
    * if an attempt is made to get a region that has local storage.
    *
-   * @throws UnsupportedOperationException
-   *           when invoked with multiuser-authentication as false.
    * @param userSecurityProperties
    *          the security properties of a user.
    * @return the {@link RegionService} instance associated with a user and the given
    *         properties.
+   * @throws UnsupportedOperationException
+   *           when invoked with multiuser-authentication as false.
    */
   public RegionService createAuthenticatedView(Properties userSecurityProperties);
   

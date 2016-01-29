@@ -41,7 +41,6 @@ import org.junit.rules.TestName;
  *
  * @author John Blum
  * @author Kirk Lund
- * @see com.gemstone.gemfire.distributed.CommonLauncherTestSuite
  * @see com.gemstone.gemfire.distributed.LocatorLauncher
  * @see com.gemstone.gemfire.distributed.LocatorLauncher.Builder
  * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command

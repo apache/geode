@@ -951,8 +951,6 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
   /**
    * Test the function execution statistics in case of the distributed Region P2P
    * DataStore0 is with Empty datapolicy 
-   *  
-   * @throws Exception
    */
   
   public void testP2PDistributedRegionFunctionExecutionStats() {

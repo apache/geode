@@ -165,10 +165,6 @@ public class Bug41733DUnitTest extends CacheTestCase {
     putData(vm1, 3, 4, "a");
   }
 
-  /**
-   * @param vm0
-   * @param i
-   */
   private void createPR(VM vm0, final int redundancy) {
     vm0.invoke(new SerializableRunnable("Create PR") {
 

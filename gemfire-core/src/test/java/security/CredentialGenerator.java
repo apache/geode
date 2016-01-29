@@ -58,7 +58,7 @@ public abstract class CredentialGenerator {
    * overflowed. Note the methods and fields for existing schemes and add for
    * the new one in a similar manner.</li>
    * <li>Add an implementation for {@link CredentialGenerator}.</li>
-   * <li>Modify the {@link CredentialGenerator.Factory#create} method to add
+   * <li>Modify the CredentialGenerator.Factory#create [no such Factory exists] method to add
    * creation of an instance of the new implementation for the
    * <code>ClassCode</code> enumeration value.</li>
    * </ul>

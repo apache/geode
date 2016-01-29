@@ -186,7 +186,6 @@ public class ResourceAdvisor extends DistributionAdvisor {
      * @param irm The resource manager which is requesting distribution
      * @param recips The recipients of the message
      * @param profile Profile to send in this message
-     * @throws InterruptedException
      * @throws ReplyException
      */
     public static void send(final InternalResourceManager irm, Set<InternalDistributedMember> recips,

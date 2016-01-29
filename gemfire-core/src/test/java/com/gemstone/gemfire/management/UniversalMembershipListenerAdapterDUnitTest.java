@@ -1331,11 +1331,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   /**
-   * Waits for client to create {@link 
-   * com.gemstone.gemfire.internal.cache.tier.Endpoint#getNumConnections
-   * Endpoint.getNumConnections()} to {@link 
-   * com.gemstone.gemfire.internal.cache.tier.Endpoint}. Note: This probably
-   * won't work if the pool has more than one Endpoint.
+   * Waits for client to create an expected number of connections. 
+   * Note: This probably won't work if the pool has more than one Endpoint.
    */
   protected void waitForClientToFullyConnect(final PoolImpl pool) {
     getLogWriter().info("[waitForClientToFullyConnect]");

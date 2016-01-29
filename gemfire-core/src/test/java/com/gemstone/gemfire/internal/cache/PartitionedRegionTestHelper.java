@@ -79,10 +79,6 @@ public class PartitionedRegionTestHelper
   /**
    * This method creates a local region with all the default values.
    * The cache created is a loner, so this is only suitable for single VM tests.
-   * 
-   * @param regionname
-   * @return region
-   * @throws RegionExistsException
    */
 
   public static Region createLocalRegion(String regionName)throws RegionExistsException{
@@ -99,12 +95,7 @@ public class PartitionedRegionTestHelper
    * This method compares two selectResult Objects by 
    * 1. Size
    * 2. SelectResults#CollectionType#ElementType()
-   *  
-   * @param SelectResults 
-   * @return void
-   * @throws 
    */
-
   public static String compareResultSets(SelectResults sr1 , SelectResults sr2){
     
     
@@ -163,11 +154,6 @@ public class PartitionedRegionTestHelper
    * 3) redundancy and scope.
    * 
    * The cache created is a loner, so this is only suitable for single VM tests.
-   * 
-   * @param regionName
-   * @param redundancy
-   * @param localMemory
-   * @return Region
    */
 
   public static Region createPartitionedRegion(String regionName,
@@ -247,9 +233,6 @@ public class PartitionedRegionTestHelper
 
  /**
   * This method closes the cache.
-  * 
-  * 
-  * @return
   */
 public static synchronized void closeCache()
  {

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Operation for rebalancing resources used by the {@link 
- * com.gemstone.gemfire.cache GemFire Cache}.
+ * com.gemstone.gemfire.cache.Cache}.
  * 
  * @since 6.0
  */

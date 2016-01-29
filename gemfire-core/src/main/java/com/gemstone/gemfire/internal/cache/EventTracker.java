@@ -62,7 +62,7 @@ public class EventTracker
    * a mapping of originator to the last event applied to this cache 
    *
    * Keys are instances of {@link ThreadIdentifier}, values are instances
-   * of {@link EventSeqnoHolder}.
+   * of {@link com.gemstone.gemfire.internal.cache.EventTracker.EventSeqnoHolder}.
    */
   protected final ConcurrentMap<ThreadIdentifier, EventSeqnoHolder> recordedEvents 
       = new ConcurrentHashMap<ThreadIdentifier, EventSeqnoHolder>(100);

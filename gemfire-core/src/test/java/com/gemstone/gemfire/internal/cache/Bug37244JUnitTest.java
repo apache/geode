@@ -61,9 +61,6 @@ public class Bug37244JUnitTest
 
   /**
    * Method for intializing the VM
-   * 
-   * @return
-   * @throws Exception
    */
   private static void initializeVM() throws Exception
   {

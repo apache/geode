@@ -343,9 +343,6 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * 1. Creates partitoned region as parent region on all vms </br> <br>
    * 2. Creates distributed subregion of parent region </br>
    * OperationNotSupportedException is expected.
-   * 
-   * @param vmList
-   * @param firstCreationFlag
    */
   public void testWithPartitionedRegionAsParentRegionAndDistributedSubRegion()
   {
@@ -383,9 +380,6 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * 1. Creates partitoned region as parent region on all vms </br> <br>
    * 2. Creates partitioned subregion of parent region </br>
    * OperationNotSupportedException is expected
-   * 
-   * @param vmList
-   * @param firstCreationFlag
    */
 
   public void testWithPartitionedRegionAsParentRegionAndPartitionedSubRegion()

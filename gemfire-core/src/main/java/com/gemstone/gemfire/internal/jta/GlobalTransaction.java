@@ -117,7 +117,8 @@ public class GlobalTransaction  {
    * Delists the XAResources associated with the Global Transaction and
    * Completes the Global transaction associated with the current thread. If any
    * exception is encountered, rollback is called on the current transaction.
-   * @.concurrency Some paths invoke this method after taking a lock on "this" while 
+   * 
+   * Concurrency: Some paths invoke this method after taking a lock on "this" while 
    * other paths invoke this method without taking a lock on "this". Since both types of path do
    * act on the resourceMap collection, it is being protected by a lock on resourceMap too.
    * 
@@ -236,6 +237,10 @@ public class GlobalTransaction  {
    * Delists the XAResources associated with the Global Transaction and Roll
    * back the transaction associated with the current thread.
    * 
+   * Concurrency: Some paths invoke this method after taking a lock on "this" while 
+   * other paths invoke this method without taking a lock on "this". Since both types of path do
+   * act on the resourceMap collection, it is being protected by a lock on resourceMap too.
+   * 
    * @throws java.lang.SecurityException -
    *           Thrown to indicate that the thread is not allowed to roll back
    *           the transaction.
@@ -245,9 +250,6 @@ public class GlobalTransaction  {
    * @throws SystemException -
    *           Thrown if the transaction manager encounters an unexpected error
    *           condition.
-   * @.concurrency Some paths invoke this method after taking a lock on "this" while 
-   * other paths invoke this method without taking a lock on "this". Since both types of path do
-   * act on the resourceMap collection, it is being protected by a lock on resourceMap too.
    * 
    * @see javax.transaction.TransactionManager#rollback()
    */
@@ -331,7 +333,8 @@ public class GlobalTransaction  {
    * XAResource, then enlists the current XAResource. For subsequent
    * XAResources, it checks if is the same Resource Manager. If it is, then the
    * XAResources are addded, else an exception is thrown
-   * @.concurrency The order of acquiring lock will be lock on "this" followed
+   * 
+   * Concurrency: The order of acquiring lock will be lock on "this" followed
    * by lock on resourceMap. It is possible that in some functions of this
    * class both the locks are not needed , but if the two are acquired then the realitive
    * order will always be"this" followed by resourceMap. 

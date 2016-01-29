@@ -17,8 +17,8 @@ limitations under the License.
 <HTML>
 <BODY>
 
-<P>Contains the implementation of the external JMX APIs from {@link
-com.gemstone.gemfire.admin.jmx}.</P>
+<P>Contains the implementation of the external JMX APIs from
+<a href="{@docRoot}/com/gemstone/gemfire/admin/jmx/package-summary.html#package_description">com.gemstone.gemfire.admin.jmx</a>.</P>
 
 <H2>JMX Support in GemFire</H2>
 
@@ -33,7 +33,7 @@ Our goal was to provide JMX administrative support in GemFire.  The design was i
 
 From a functional stand point, the JMX support was supposed to provide most of the same administrative and operational monitoring that the console already provides.  In some cases we limited the functionality due to security concerns and in others because it was hard to express the features as JMX beans.  The JMX Agent also provides some functionality (such as Health monitoring) that is not currently in the console.
 <p>
-The Agent communicates with the distributed system using the same distribution manager {@link com.gemstone.gemfire.distributed.internal.DistributionManager} as the console uses and thus has the same requirements that determine what distributed system it can manage.  Although the Console currently supports managing multiple distributed systems, we decided that a given Agent should only be able to manage a single system.  We have not tested the use of more than one Agent for the same system, however nothing currently prohibits this. 
+The Agent communicates with the distributed system using the same distribution manager {@link com.gemstone.gemfire.distributed.internal.DistributionManager} as the console uses and thus has the same requirements that determine what distributed system it can manage.  Although the Console currently supports managing multiple distributed systems, we decided that a given Agent should only be able to manage a single system.  We have not tested the use of more than one Agent for the same system, however nothing currently prohibits this.
 <p>
 We decided to develop a simple public Admin API which in essence wraps the internal.admin API that the Console currently uses extensively.  The Admin API also contains implementations of new functionality not in internal.admin.  Our JMX support is an extension to this Admin API.  In an overly simplified view, the GemFire JMX MBeans are ModelMBeans that manage instances of the Admin API objects housed in the Agent's MBeanServer.
 <p>

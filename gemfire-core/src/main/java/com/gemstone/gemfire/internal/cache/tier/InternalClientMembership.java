@@ -73,7 +73,7 @@ public final class InternalClientMembership  {
   
   /**
    * Must be locked whenever references to the volatile field 
-   * {@link #membershipListeners} is changed.
+   * {@link #clientMembershipListeners} is changed.
    */
   private static final Object membershipLock = new Object();
 

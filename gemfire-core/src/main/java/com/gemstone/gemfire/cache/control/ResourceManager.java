@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
  * Provides support for managing resources used by the local
- * {@link com.gemstone.gemfire.cache GemFire Cache}.
+ * {@link com.gemstone.gemfire.cache.Cache}.
  * <p>
  * Re-balancing the GemFire Cache resources can be accomplished using a {@link
  * RebalanceOperation}:

@@ -161,7 +161,7 @@ public class GfshParserJUnitTest {
   
   /**
    * Tests the auto-completion capability of {@link GfshParser} with the method
-   * {@link GfshParser#complete(String, int, List<{@link String}>)}
+   * {@link GfshParser#complete(String, int, List)}
    *
    * @throws IllegalAccessException
    * @throws InstantiationException
@@ -457,7 +457,7 @@ public class GfshParserJUnitTest {
 
   /**
    * Tests the auto-completion capability of {@link GfshParser} with the method
-   * {@link GfshParser#completeAdvanced(String, int, List<{@link Completion}>)}
+   * {@link GfshParser#completeAdvanced(String, int, List)}
    *
    * @throws IllegalAccessException
    * @throws InstantiationException

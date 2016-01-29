@@ -296,7 +296,6 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
   
   /**
    * Invokes {@link Cache#close()} on a member.
-   * @param vm a member of the distributed system.
    */
   private void closeCache(final VM closeVM) {
     closeVM.invoke(new SerializableRunnable() {

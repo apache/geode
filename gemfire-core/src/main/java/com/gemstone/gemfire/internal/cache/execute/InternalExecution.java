@@ -71,8 +71,6 @@ public interface InternalExecution extends Execution {
    * @param bucketIDs
    *          Set of bucketIDs defining the buckets to be used for executing the function
    * @return an Execution with the filter
-   * @throws FunctionExecutionException
-   *           if bucketIDs is null or empty.
    * @throws UnsupportedOperationException
    *           if not called after
    *           {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)}

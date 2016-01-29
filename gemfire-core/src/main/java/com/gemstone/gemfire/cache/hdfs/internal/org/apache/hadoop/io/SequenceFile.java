@@ -317,7 +317,7 @@ public class SequenceFile {
    * @param valClass The 'value' type.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -339,7 +339,7 @@ public class SequenceFile {
    * @param compressionType The compression type.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -364,7 +364,7 @@ public class SequenceFile {
    * @param progress The Progressable object to track progress.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -391,7 +391,7 @@ public class SequenceFile {
    * @param codec The compression codec.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -419,7 +419,7 @@ public class SequenceFile {
    * @param metadata The metadata of the file.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -453,7 +453,7 @@ public class SequenceFile {
    * @param metadata The metadata of the file.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -548,7 +548,7 @@ public class SequenceFile {
    * @param progress The Progressable object to track progress.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -576,7 +576,7 @@ public class SequenceFile {
    * @param metadata The metadata of the file.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -601,7 +601,7 @@ public class SequenceFile {
    * @param codec The compression codec.
    * @return Returns the handle to the constructed SequenceFile Writer.
    * @throws IOException
-   * @deprecated Use {@link #createWriter(Configuration, Writer.Option...)}
+   * @deprecated Use {@link #createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)}
    *     instead.
    */
   @Deprecated
@@ -1126,7 +1126,7 @@ public class SequenceFile {
 
     /** Create the named file.
      * @deprecated Use 
-     *   {@link SequenceFile#createWriter(Configuration, Writer.Option...)} 
+     *   {@link SequenceFile#createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)} 
      *   instead.
      */
     @Deprecated
@@ -1139,7 +1139,7 @@ public class SequenceFile {
     
     /** Create the named file with write-progress reporter.
      * @deprecated Use 
-     *   {@link SequenceFile#createWriter(Configuration, Writer.Option...)} 
+     *   {@link SequenceFile#createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)} 
      *   instead.
      */
     @Deprecated
@@ -1153,7 +1153,7 @@ public class SequenceFile {
     
     /** Create the named file with write-progress reporter. 
      * @deprecated Use 
-     *   {@link SequenceFile#createWriter(Configuration, Writer.Option...)} 
+     *   {@link SequenceFile#createWriter(Configuration, com.gemstone.gemfire.cache.hdfs.internal.org.apache.hadoop.io.SequenceFile.Writer.Option...)} 
      *   instead.
      */
     @Deprecated

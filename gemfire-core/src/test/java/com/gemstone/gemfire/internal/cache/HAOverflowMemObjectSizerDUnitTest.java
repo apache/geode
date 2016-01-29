@@ -44,7 +44,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  * Tests the size of clientUpdateMessageImpl with the size calculated by
- * {@linkplain MemLRUCapacityController} for HA overFlow
+ * {@link com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController} for HA overFlow
  * @author aingle
  * @since 5.7
  */
@@ -155,9 +155,6 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
 
   /**
    * create client cache
-   *
-   * @param port1
-   * @param port2 - end points ports
    */
   public static void createCacheClient(Integer port1, String host)
       throws Exception {

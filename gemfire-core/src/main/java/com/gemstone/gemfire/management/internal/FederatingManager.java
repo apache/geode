@@ -584,8 +584,6 @@ public class FederatingManager extends Manager {
    * @param objectName
    *          {@link javax.management.ObjectName} of the MBean
    * @return last updated time of the proxy
-   * 
-   * @throws InstanceNotFoundException
    */
   public long getLastUpdateTime(ObjectName objectName) {
     return proxyFactory.getLastUpdateTime(objectName);

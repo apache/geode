@@ -253,10 +253,6 @@ public interface QueryService {
    *           invalid syntax
    * @throws IndexInvalidException if the arguments do not correctly specify an
    *           index
-   * @throws IndexNameConflictException if an index with this name already
-   *           exists
-   * @throws IndexExistsException if an index with these parameters already
-   *           exists with a different name
    * @throws RegionNotFoundException if the region referred to in the fromClause
    *           doesn't exist
    * @throws UnsupportedOperationException If Index is being created on a region
@@ -559,7 +555,7 @@ public interface QueryService {
   /**
    * Creates all the indexes that were defined using
    * {@link #defineIndex(String, String, String)} 
-   * @throws {@link MultiIndexCreationException}
+   * @throws MultiIndexCreationException
    *           which consists a map of failed indexNames and the Exceptions.
    */
   public List<Index> createDefinedIndexes() throws MultiIndexCreationException;

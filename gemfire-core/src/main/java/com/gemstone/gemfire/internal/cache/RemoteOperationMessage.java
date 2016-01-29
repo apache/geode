@@ -581,8 +581,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     /**
      * Waits for the response from the {@link RemoteOperationMessage}'s recipient
      * @throws CacheException  if the recipient threw a cache exception during message processing 
-     * @throws ForceReattemptException if the recipient left the distributed system before the response
-     * was received.  
      * @throws PrimaryBucketException 
      */
     final public void waitForCacheException() 

@@ -929,10 +929,10 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     /**
      * Returns a string representation of this map.  The string
      * representation consists of a list of key-value mappings (in no
-     * particular order) enclosed in braces ("{@code {}}").  Adjacent
-     * mappings are separated by the characters {@code ", "} (comma
+     * particular order) enclosed in braces (<code>{}</code>).  Adjacent
+     * mappings are separated by the characters <code>", "</code> (comma
      * and space).  Each key-value mapping is rendered as the key
-     * followed by an equals sign ("{@code =}") followed by the
+     * followed by an equals sign (<code>=</code>) followed by the
      * associated value.
      *
      * @return a string representation of this map

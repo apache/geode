@@ -89,10 +89,8 @@ public class HARegionJUnitTest
    * 
    * create the cache
    * 
-   * @return @throws
-   *         TimeoutException
+   * @throws TimeoutException
    * @throws CacheWriterException
-   * @throws CapacityControllerException
    * @throws GatewayException
    * @throws CacheExistsException
    * @throws RegionExistsException
@@ -107,10 +105,8 @@ public class HARegionJUnitTest
   /**
    * create the HARegion
    * 
-   * @return @throws
-   *         TimeoutException
+   * @throws TimeoutException
    * @throws CacheWriterException
-   * @throws CapacityControllerException
    * @throws GatewayException
    * @throws CacheExistsException
    * @throws RegionExistsException

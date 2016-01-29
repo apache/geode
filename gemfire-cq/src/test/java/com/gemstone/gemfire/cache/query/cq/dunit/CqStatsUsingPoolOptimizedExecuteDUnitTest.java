@@ -21,8 +21,7 @@ import com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
- * Test class for testing {@link CqService#EXECUTE_QUERY_DURING_INIT} flag
- *
+ * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag
  */
 public class CqStatsUsingPoolOptimizedExecuteDUnitTest extends CqStatsUsingPoolDUnitTest{
 

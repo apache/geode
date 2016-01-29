@@ -386,7 +386,7 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
   /**
    * This verifies the Bucket Regions on the basis of
    * redundantCopies set in RegionAttributes. 
-   * @see PartitionedRegionSingleNodeOperationsJUnitTest#testBucketScope()
+   * @see PartitionedRegionSingleNodeOperationsJUnitTest#test018BucketScope()
    * @throws Exception
    */
   public void testBucketsScope() throws Exception

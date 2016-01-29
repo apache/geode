@@ -72,7 +72,6 @@ public class ClassBuilder implements Serializable {
    *          Content of the created class
    * @param outputFile
    *          Where to write the JAR file
-   * @return The definition of the class
    * @throws IOException
    *           If there is a problem writing the JAR file.
    */

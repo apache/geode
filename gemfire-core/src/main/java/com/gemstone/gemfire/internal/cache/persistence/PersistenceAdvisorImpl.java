@@ -285,10 +285,6 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
     return memberManager.isRevoked(this.regionPath, id);
   }
 
-  /**
-   * @throws ReplyException 
-   * @throws IOException 
-   */
   public void setOnline(boolean didGII, boolean atomicCreation,
       PersistentMemberID newId) throws ReplyException {
     if(online) {

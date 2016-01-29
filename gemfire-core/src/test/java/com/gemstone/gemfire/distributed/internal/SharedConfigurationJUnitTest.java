@@ -40,7 +40,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class SharedConfigurationJUnitTest {
 
   /**
-   * Test {@link SharedConfiguration#createAndUpgradeDocumentFromXml()}
+   * Test {@link SharedConfiguration#createAndUpgradeDocumentFromXml(String)}
    */
   @Test
   public void testCreateAndUpgradeDocumentFromXml() throws Exception {

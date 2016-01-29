@@ -53,8 +53,8 @@ class StartupMessageData {
   /**
    * Constructs a new instance with empty Properties. After construction
    * the instance should optionally invoke one or more "write" methods such 
-   * as {@link #writeHostedLocators(Collection)} before invoking {@link 
-   * #toData(DataOutput)} to marshal the Properties into the DataOutput
+   * as {@link #writeHostedLocators(Collection)} before invoking 
+   * <code>toData(DataOutput)</code> to marshal the Properties into the DataOutput
    * (onto the wire).
    */
   StartupMessageData() {

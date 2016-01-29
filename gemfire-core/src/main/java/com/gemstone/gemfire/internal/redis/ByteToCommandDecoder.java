@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * This is the first part of the channel pipeline for Netty. Here incoming
  * bytes are read and a created {@link Command} is sent down the pipeline.
- * It is unfortunate that this class is not {@link Sharable} because no state
+ * It is unfortunate that this class is not {@link io.netty.channel.ChannelHandler.Sharable} because no state
  * is kept in this class. State is kept by {@link ByteToMessageDecoder}, it may
  * be worthwhile to look at a different decoder setup as to avoid allocating a decoder
  * for every new connection.

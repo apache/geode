@@ -1395,11 +1395,7 @@ public class PartitionedRegionLoadModelJUnitTest {
   public static class Move {
     public final InternalDistributedMember sourceMember;
     public final InternalDistributedMember targetMember;
-    /**
-     * @param sourceMember
-     * @param targetMember
-     * @param bucketId
-     */
+
     public Move(InternalDistributedMember sourceMember,
         InternalDistributedMember targetMember) {
       this.sourceMember = sourceMember;

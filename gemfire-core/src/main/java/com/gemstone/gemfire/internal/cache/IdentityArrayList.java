@@ -46,7 +46,7 @@ import it.unimi.dsi.fastutil.objects.ObjectListIterator;
  * <em>never</em> made smaller (even on a {@link #clear()}). A family of
  * {@linkplain #trim() trimming methods} lets you control the size of the
  * backing array; this is particularly useful if you reuse instances of this class.
- * Range checks are equivalent to those of {@link java.util}'s classes, but
+ * Range checks are equivalent to those of <code>java.util</code>'s classes, but
  * they are delayed as much as possible. 
  *
  * <p>The backing array is exposed by the {@link #elements()} method. If an instance

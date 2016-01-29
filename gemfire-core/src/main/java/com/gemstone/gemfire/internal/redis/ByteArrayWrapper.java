@@ -117,7 +117,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   /**
    * This equals is neither symmetric and therefore not transitive, 
    * because a String with the same underlying bytes is considered
-   * equal. Clearly calling {@link String#equals(Object)) would not 
+   * equal. Clearly calling {@link String#equals(Object)} would not 
    * yield the same result
    */
   @Override

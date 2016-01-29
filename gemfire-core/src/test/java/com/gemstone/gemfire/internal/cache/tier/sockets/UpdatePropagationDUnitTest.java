@@ -525,10 +525,6 @@ public class UpdatePropagationDUnitTest extends DistributedTestCase
     return factory.create();
   }
 
-  /**
-   *
-   * @param key Key in which client is interested
-   */
   public static void registerKeysK1andK2()
   {
     try {

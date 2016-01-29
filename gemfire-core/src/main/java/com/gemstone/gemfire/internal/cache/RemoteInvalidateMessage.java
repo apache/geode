@@ -174,7 +174,6 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
    * acknowledgement
    * 
    * @throws EntryExistsException
-   * @throws DataLocationException 
    */
   @Override
   protected boolean operateOnRegion(DistributionManager dm,

@@ -43,13 +43,6 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
 
   //////////////////////  Test Methods  //////////////////////
 
-  /**
-   * @param baseLogName
-   * @param logfile
-   * @param ds
-   * @throws FileNotFoundException
-   * @throws IOException
-   */
   private void logAndRollAndVerify(String baseLogName,
       DistributedSystem ds,String mainId) throws FileNotFoundException, IOException {
     String logfile = baseLogName+".log";
@@ -124,15 +117,6 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
     }
   }
 
-  /**
-   * @param baseLogName
-   * @param logfile
-   * @param ds
-   * @throws FileNotFoundException
-   * @throws IOException
-   * 
-   * @author xzhou
-   */
   private void SecurityLogAndRollAndVerify(String baseLogName,
       DistributedSystem ds,String mainId) throws FileNotFoundException, IOException {
     String logfile = baseLogName+".log";

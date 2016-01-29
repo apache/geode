@@ -247,7 +247,8 @@ public interface Cache extends GemFireCache {
    * that will allow clients to access this cache.
    * <p>For the default configuration see the constants in
    * {@link com.gemstone.gemfire.cache.server.CacheServer}.
-   * @see com.gemstone.gemfire.cache.server
+   * 
+   * @see com.gemstone.gemfire.cache.server.CacheServer
    *
    * @since 5.7
    */

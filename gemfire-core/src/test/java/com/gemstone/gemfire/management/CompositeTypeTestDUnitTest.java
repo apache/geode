@@ -70,9 +70,6 @@ public class CompositeTypeTestDUnitTest extends ManagementTestBase {
    *
    * @param vm
    *          reference to VM
-   * @param localRegionName
-   *          name of the local region
-   * @throws Throwable
    */
   protected void registerMBeanWithCompositeTypeGetters(VM vm,final String memberID)
       throws Exception {
@@ -108,9 +105,6 @@ public class CompositeTypeTestDUnitTest extends ManagementTestBase {
    *
    * @param vm
    *          reference to VM
-   * @param localRegionName
-   *          name of the local region
-   * @throws Throwable
    */
   protected void checkMBeanWithCompositeTypeGetters(VM vm,final String memberID)
       throws Exception {

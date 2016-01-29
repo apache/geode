@@ -46,7 +46,6 @@ public interface HealthMonitor extends Service {
    * @param mbr
    * @param reason the reason this check is being performed
    * @param initiateRemoval if the member should be removed if it is not available
-   * @return 
    */
   public boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval);
   

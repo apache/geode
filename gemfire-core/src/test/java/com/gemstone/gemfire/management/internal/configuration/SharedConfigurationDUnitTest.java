@@ -57,7 +57,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /***
  * Tests the starting up of shared configuration, installation of {@link ConfigurationRequestHandler}
- * and {@link ConfigurationChangeHandler} 
+ * 
  * @author bansods
  *
  */

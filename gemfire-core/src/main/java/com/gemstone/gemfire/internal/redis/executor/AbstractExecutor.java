@@ -90,14 +90,6 @@ public abstract class AbstractExecutor implements Executor {
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is already used by a " + currentType.toString());
   }
 
-  /**
-   * Getter method for a {@link QueryType}
-   * 
-   * @param key Key
-   * @param type The specific query
-   * @param context context
-   * @return The Query of this key and QueryType
-   */
   protected Query getQuery(ByteArrayWrapper key, Enum<?> type, ExecutionHandlerContext context) {
     return context.getRegionProvider().getQuery(key, type);
   }

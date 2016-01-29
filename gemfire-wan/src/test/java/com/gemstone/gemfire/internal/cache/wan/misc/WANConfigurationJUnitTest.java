@@ -288,8 +288,6 @@ public class WANConfigurationJUnitTest {
   
   /**
    * Test to validate that serial gateway sender attributes are correctly set
-   * 
-   * @throws IOException
    */
   @Test
   public void test_ValidateSerialGatewaySenderAttributes() {
@@ -344,8 +342,6 @@ public class WANConfigurationJUnitTest {
   
   /**
    * Test to validate that parallel gateway sender attributes are correctly set
-   * 
-   * @throws IOException
    */
   @Test
   public void test_ValidateParallelGatewaySenderAttributes() {
@@ -466,10 +462,6 @@ public class WANConfigurationJUnitTest {
    * "Cannot assign requested address" but gets
    * "Can't assign requested address". Timout after 150s to safeguard against
    * hanging on other platforms that may differ.
-   * 
-   * @see <a
-   *      href="https://svn.gemstone.com/trac/gemfire/ticket/51536">https://svn
-   *      .gemstone.com/trac/gemfire/ticket/51536<a>
    */
   @Test(timeout = 150000)
   public void test_ValidateGatwayReceiverAttributes_WrongBindAddress() {

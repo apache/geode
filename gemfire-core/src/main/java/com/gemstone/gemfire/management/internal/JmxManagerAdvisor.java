@@ -241,7 +241,6 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     /**
      * Send profile to the provided members
      * @param recips The recipients of the message
-     * @throws InterruptedException
      * @throws ReplyException
      */
     public static void send(final DM dm, Set<InternalDistributedMember> recips,

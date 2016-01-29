@@ -25,8 +25,7 @@ import com.gemstone.gemfire.annotations.Experimental;
 import com.gemstone.gemfire.cache.GemFireCache;
 
 /**
- * LuceneService instance is a singleton for each cache. It will be created in cache 
- * constructor and get its reference via {@link GemFireCache#getLuceneService()}.
+ * LuceneService instance is a singleton for each cache.
  * 
  * It provides handle for managing the {@link LuceneIndex} and create the {@link LuceneQuery}
  * via {@link LuceneQueryFactory}
@@ -73,11 +72,6 @@ public interface LuceneService {
   
   /**
    * Create a lucene index using default analyzer.
-   * 
-   * @param indexName
-   * @param regionPath
-   * @param fields
-   * @return LuceneIndex object
    */
   public void createIndex(String indexName, String regionPath, String... fields);
   
@@ -87,7 +81,6 @@ public interface LuceneService {
    * @param indexName index name
    * @param regionPath region name
    * @param analyzerPerField analyzer per field map
-   * @return LuceneIndex object
    * @deprecated TODO This feature is not yet implemented
    */
   @Deprecated

@@ -132,9 +132,6 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
 
   /**
    * Creates cache and starts the bridge-server
-   * 
-   * @throws thrown
-   *           in any problem occurs in creating and starting cache-server
    */
   public static Integer createServerCache() throws Exception
   {

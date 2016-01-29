@@ -137,7 +137,7 @@ public class CacheClientProxy implements ClientSession {
   protected String _remoteHostAddress;
 
   /**
-   * @guarded.By {@link #isMarkedForRemovalLock}
+   * Concurrency: protected by synchronization of {@link #isMarkedForRemovalLock}
    */
   protected boolean isMarkedForRemoval = false;
   

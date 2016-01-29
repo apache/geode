@@ -133,13 +133,6 @@ public class DirectChannel {
       return conduit.getCancelCriterion();
     }
 
-    /**
-     * @param mgr
-     * @param listener
-     * @param dc
-     * @param unused
-     * @throws ConnectionException
-     */
     public DirectChannel(MembershipManager mgr, DirectChannelListener listener,
         DistributionConfig dc) 
         throws ConnectionException {

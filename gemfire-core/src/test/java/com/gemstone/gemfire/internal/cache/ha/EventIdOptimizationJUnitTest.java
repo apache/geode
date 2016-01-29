@@ -33,7 +33,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * sent as long if their value is small. This is a junit test for testing the
  * methods written in <code>EventID</code> class for the above optmization.
  * For distributed testing for the same , please refer
- * {@link old_EventIdOptimizationDUnitTest}}.
+ * {@link EventIdOptimizationDUnitTest}.
  * 
  * @author Dinesh Patel
  * 
@@ -223,11 +223,11 @@ public class EventIdOptimizationJUnitTest extends TestCase
    * byte-array using <code>EventID#readEventIdPartsFromOptmizedByteArray</code>
    * api and verifies that they are decoded properly.
    * 
-   * @param threadId -
+   * @param threadId
    *          the long value of threadId
-   * @param sequenceId-
+   * @param sequenceId
    *          the long value of sequenceId
-   * @param expectedArrayLength-
+   * @param expectedArrayLength
    *          expected length of the optimized byte-array
    */
   private void writeReadAndVerifyOpmitizedByteArray(long threadId,

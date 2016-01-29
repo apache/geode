@@ -114,16 +114,13 @@ public class InternalFunctionService {
    *
    * @param regionService
    *          obtained from {@link ClientCacheFactory#create} or
-   *          {@link ClientCache#createAuthenticatedView(Properties)}.
+   *          {@link ClientCache#createAuthenticatedView(java.util.Properties)}.
    * @param groups
    *          optional list of GemFire configuration property "groups" (see
    *          <a href="../../distributed/DistributedSystem.html#groups">
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on all servers of each group
    * @return Execution
-   * @throws FunctionException
-   *           if cache is null, is not on a client, or it does not have a
-   *           default pool
    * @since 7.0
    */
   public static Execution onServers(RegionService regionService, String... groups) {
@@ -141,16 +138,13 @@ public class InternalFunctionService {
    *
    * @param regionService
    *          obtained from {@link ClientCacheFactory#create()} or
-   *          {@link ClientCache#createAuthenticatedView(Properties)}.
+   *          {@link ClientCache#createAuthenticatedView(java.util.Properties)}.
    * @param groups
    *          optional list of GemFire configuration property "groups" (see
    *          <a href="../../distributed/DistributedSystem.html#groups">
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on one server of each group
    * @return Execution
-   * @throws FunctionException
-   *           if cache is null, is not on a client, or it does not have a
-   *           default pool
    * @since 7.0
    */
   public static Execution onServer(RegionService regionService, String... groups) {
@@ -174,8 +168,6 @@ public class InternalFunctionService {
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on all servers of each group
    * @return Execution
-   * @throws FunctionException
-   *           if Pool instance passed in is null
    * @since 7.0
    */
   public static Execution onServers(Pool pool, String... groups) {
@@ -199,8 +191,6 @@ public class InternalFunctionService {
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on one server of each group
    * @return Execution
-   * @throws FunctionException
-   *           if Pool instance passed in is null
    * @since 7.0
    */
   public static Execution onServer(Pool pool, String... groups) {
