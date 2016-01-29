@@ -4836,6 +4836,12 @@ public class WANTestBase extends DistributedTestCase{
     return new Integer[] { lnPort, nyPort };
   }
 
+  protected void validateRegionSizes(String regionName, int expectedRegionSize, VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> validateRegionSize(regionName, expectedRegionSize));
+    }
+  }
+
   public static class MyLocatorCallback extends
       LocatorDiscoveryCallbackAdapter {
 

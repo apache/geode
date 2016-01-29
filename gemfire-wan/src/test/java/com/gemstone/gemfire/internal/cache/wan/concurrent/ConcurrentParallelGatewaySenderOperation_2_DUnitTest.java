@@ -106,51 +106,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
     vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
   }
-  
-  //to test that while localDestroy is in progress, put operation does not successed
-  public void testParallelGatewaySender_SingleNode_UserPR_localDestroy_SimultenuousPut_RecreateRegion() throws Exception {
-    Integer[] locatorPorts = createLNAndNYLocators();
-    Integer lnPort = locatorPorts[0];
-    Integer nyPort = locatorPorts[1];
 
-    try {
-      createAndStartSender(vm4, lnPort, 5, false, true);
-
-      createReceiverAndDoPutsInPausedSender(nyPort);
-
-      AsyncInvocation putAsync = vm4.invokeAsync(WANTestBase.class,
-          "doPutsFrom", new Object[] { testName + "_PR", 100, 2000 });
-      AsyncInvocation localDestroyAsync = vm4.invokeAsync(WANTestBase.class,
-          "localDestroyRegion", new Object[] { testName + "_PR" });
-      try {
-        putAsync.join();
-        localDestroyAsync.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        fail("Interrupted the async invocation.");
-      }
-
-      if (localDestroyAsync.getException() != null) {
-        fail("Not Expected Exception got", putAsync.getException());
-      }
-
-      if (putAsync.getException() != null
-          && !(putAsync.getException() instanceof RegionDestroyedException)) {
-        fail("Expected RegionDestroyedException but got",
-            putAsync.getException());
-      }
-
-      vm4.invoke(() -> resumeSender("ln"));
-
-      pause(500); // paused if there is any element which is received on remote
-                  // site
-
-      recreatePRDoPutsAndValidateRegionSizes(0, false);
-    } finally {
-      vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
-    }
-  }
-  
   public void testParallelGatewaySender_SingleNode_UserPR_Destroy_SimultenuousPut_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -268,31 +224,6 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
-  private void createReceiverAndDoPutsInPausedSender(int port) {
-    // Note: This is a test-specific method used by several tests to do puts from vm4 to vm2.
-    String regionName = testName + "_PR";
-    vm2.invoke(() -> createReceiver(port));
-    vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-    vm4.invoke(() -> doPuts(regionName, 10));
-    vm4.invoke(() -> validateRegionSize(regionName, 10));
-    // since sender is paused, no dispatching
-    vm2.invoke(() -> validateRegionSize(regionName, 0));
-  }
-
-  private void recreatePRDoPutsAndValidateRegionSizes(int expectedRegionSize, boolean resumeSender) {
-    // Note: This is a test-specific method used by several test to recreate a partitioned region,
-    // do puts and validate region sizes in vm2 and vm4.
-    // since shadowPR is locally destroyed, so no data to dispatch
-    String regionName = testName + "_PR";
-    vm2.invoke(() -> validateRegionSize(regionName, expectedRegionSize));
-    if (resumeSender) {
-      vm4.invoke(() -> resumeSender("ln"));
-    }
-    vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 10, isOffHeap()));
-    vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
-    validateRegionSizes(regionName, 10, vm4, vm2);
-  }
-
   public void testParallelGatewaySenders_SingleNode_UserPR_localDestroy_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -396,8 +327,8 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     vm7.invoke(() -> createReceiver(tkPort));
 
     try {
-      createAndStartTwoSenders(vm4, lnPort);
-      createAndStartTwoSenders(vm5, lnPort);
+      createAndStartTwoSenders(vm4, lnPort, 4);
+      createAndStartTwoSenders(vm5, lnPort, 4);
 
       String regionName = testName + "_PR";
       vm6.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
@@ -432,16 +363,6 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
       vm5.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
     }
-  }
-
-  private void createAndStartTwoSenders(VM vm, int port) {
-    // Note: This is a test-specific method used to create and start 2 senders.
-    vm.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(port));
-    vm.invoke(() -> createPartitionedRegion(testName + "_PR", "ln1,ln2", 1, 100, isOffHeap()));
-    vm.invoke(() -> createConcurrentSender("ln1", 2, true, 100, 10, false, false, null, true, 4, OrderPolicy.KEY));
-    vm.invoke(() -> createConcurrentSender("ln2", 3, true, 100, 10, false, false, null, true, 4, OrderPolicy.KEY));
-    vm.invoke(() -> startSender("ln1"));
-    vm.invoke(() -> startSender("ln2"));
   }
 
   public void testParallelGatewaySender_ColocatedPartitionedRegions_localDestroy() throws Exception {
@@ -482,12 +403,6 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
-  private void validateRegionSizes(String regionName, int expectedRegionSize, VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> validateRegionSize(regionName, expectedRegionSize));
-    }
-  }
-
   public void testParallelGatewaySender_ColocatedPartitionedRegions_destroy() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -523,30 +438,6 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
-  private void createAndStartSenderWithCustomerOrderShipmentRegion(VM vm, int port, int concurrencyLevel, boolean manualStart) {
-    vm.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(port));
-    vm.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, "ln", 1, 100, isOffHeap()));
-    vm.invoke(() -> createConcurrentSender("ln", 2, true, 100, 10, false, false, null, manualStart, concurrencyLevel, OrderPolicy.KEY));
-    vm.invoke(() -> startSender("ln"));
-  }
-
-  private void createAndStartSender(VM vm, int port, int concurrencyLevel, boolean manualStart, boolean pause) {
-    vm.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(port));
-    vm.invoke(() -> createConcurrentSender("ln", 2, true, 100, 10, false, false, null, manualStart, concurrencyLevel, OrderPolicy.KEY));
-    vm.invoke(() -> startSender("ln"));
-    if (pause) {
-      vm.invoke(() -> pauseSender("ln"));
-    }
-    vm.invoke(() -> createPartitionedRegion(testName + "_PR", "ln", 1, 10, isOffHeap()));
-    getLogWriter().info("Created PRs on local site");
-  }
-
-  public static void createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(
-      Integer locPort) {
-    createCache(false, locPort);
-    AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME = -1;
-  }
-
   public static void clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME() {
     AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME = 0;
   }
@@ -575,5 +466,72 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       }
     };
     DistributedTestCase.waitForCriterion(wc, 120000, 500, true);
+  }
+
+  protected static void createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(
+      Integer locPort) {
+    createCache(false, locPort);
+    AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME = -1;
+  }
+
+  protected void createAndStartSender(VM vm, int port, int concurrencyLevel, boolean manualStart, boolean pause) {
+    vm.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(port));
+    createSender(vm, concurrencyLevel, manualStart);
+    vm.invoke(() -> startSender("ln"));
+    if (pause) {
+      vm.invoke(() -> pauseSender("ln"));
+    }
+    vm.invoke(() -> createPartitionedRegion(testName + "_PR", "ln", 1, 10, isOffHeap()));
+    getLogWriter().info("Created PRs on local site");
+  }
+
+  protected void createReceiverAndDoPutsInPausedSender(int port) {
+    // Note: This is a test-specific method used by several tests to do puts from vm4 to vm2.
+    String regionName = testName + "_PR";
+    vm2.invoke(() -> createReceiver(port));
+    vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
+    vm4.invoke(() -> doPuts(regionName, 10));
+    vm4.invoke(() -> validateRegionSize(regionName, 10));
+    // since sender is paused, no dispatching
+    vm2.invoke(() -> validateRegionSize(regionName, 0));
+  }
+
+  protected void recreatePRDoPutsAndValidateRegionSizes(int expectedRegionSize, boolean resumeSender) {
+    // Note: This is a test-specific method used by several test to recreate a partitioned region,
+    // do puts and validate region sizes in vm2 and vm4.
+    // since shadowPR is locally destroyed, so no data to dispatch
+    String regionName = testName + "_PR";
+    vm2.invoke(() -> validateRegionSize(regionName, expectedRegionSize));
+    if (resumeSender) {
+      vm4.invoke(() -> resumeSender("ln"));
+    }
+    vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 10, isOffHeap()));
+    vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
+    validateRegionSizes(regionName, 10, vm4, vm2);
+  }
+
+  protected void createAndStartTwoSenders(VM vm, int port, int concurrencyLevel) {
+    // Note: This is a test-specific method used to create and start 2 senders.
+    vm.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(port));
+    vm.invoke(() -> createPartitionedRegion(testName + "_PR", "ln1,ln2", 1, 100, isOffHeap()));
+    createSenders(vm, concurrencyLevel);
+    vm.invoke(() -> startSender("ln1"));
+    vm.invoke(() -> startSender("ln2"));
+  }
+
+  protected void createAndStartSenderWithCustomerOrderShipmentRegion(VM vm, int port, int concurrencyLevel, boolean manualStart) {
+    vm.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(port));
+    vm.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, "ln", 1, 100, isOffHeap()));
+    createSender(vm, concurrencyLevel, manualStart);
+    vm.invoke(() -> startSender("ln"));
+  }
+
+  protected void createSender(VM vm, int concurrencyLevel, boolean manualStart) {
+    vm.invoke(() -> createConcurrentSender("ln", 2, true, 100, 10, false, false, null, manualStart, concurrencyLevel, OrderPolicy.KEY));
+  }
+
+  protected void createSenders(VM vm, int concurrencyLevel) {
+    vm.invoke(() -> createConcurrentSender("ln1", 2, true, 100, 10, false, false, null, true, concurrencyLevel, OrderPolicy.KEY));
+    vm.invoke(() -> createConcurrentSender("ln2", 3, true, 100, 10, false, false, null, true, concurrencyLevel, OrderPolicy.KEY));
   }
 }
