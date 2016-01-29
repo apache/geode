@@ -850,4 +850,21 @@ public class OffHeapRegionEntryHelperJUnitTest {
     PowerMockito.verifyStatic();
     OffHeapRegionEntryHelper.setValue(re, Token.REMOVED_PHASE2);
   }
+  
+  @Test
+  public void doWithOffHeapClearShouldSetTheThreadLocalToTrue() {
+    // verify that threadlocal is not set
+    assertThat(OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()).isFalse();
+
+    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+      @Override
+      public void run() {
+        // verify that threadlocal is set when offheap is cleared
+        assertThat(OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()).isTrue();
+      }
+    });
+
+    // verify that threadlocal is reset after offheap is cleared
+    assertThat(OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()).isFalse();
+  }
 }

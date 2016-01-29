@@ -158,12 +158,21 @@ public class OffHeapRegionEntryHelper {
     }
   }
   
-  
+ /*
+  * This method is optimized for cases where if the caller wants to convert address to a Token
+  * compared to addressToObject which would deserialize the value.
+  */
   private static Token addressToToken(long ohAddress) {
     if (isOffHeap(ohAddress) || (ohAddress & ENCODED_BIT) != 0) {
       return Token.NOT_A_TOKEN;
     } else {
       return addrToObj[(int) ohAddress>>1];
+    }
+  }
+
+  private static void releaseAddress(@Released long ohAddress) {
+    if (isOffHeap(ohAddress)) {
+      Chunk.release(ohAddress, true);
     }
   }
   
@@ -191,9 +200,7 @@ public class OffHeapRegionEntryHelper {
     long oldAddress = objectToAddress(expectedValue);
     final long newAddress = objectToAddress(Token.REMOVED_PHASE2);
     if (re.setAddress(oldAddress, newAddress) || re.getAddress() != newAddress) {
-      if (isOffHeap(oldAddress)) {
-        Chunk.release(oldAddress, true);
-      }
+      releaseAddress(oldAddress);
     } /*else {
       if (!calledSetValue || re.getAddress() != newAddress) {
         expectedValue.release();
@@ -323,12 +330,9 @@ public class OffHeapRegionEntryHelper {
     do {
       oldAddress = re.getAddress();
     } while (!re.setAddress(oldAddress, newAddress));
-    //see if oldAddress is on offheap then release it
-    if (isOffHeap(oldAddress)) {
-      ReferenceCountHelper.setReferenceCountOwner(re);
-      Chunk.release(oldAddress, true);
-      ReferenceCountHelper.setReferenceCountOwner(null);
-    }
+    ReferenceCountHelper.setReferenceCountOwner(re);
+    releaseAddress(oldAddress);
+    ReferenceCountHelper.setReferenceCountOwner(null);
   }
  
   public static Token getValueAsToken(@Unretained OffHeapRegionEntry re) {
@@ -343,7 +347,7 @@ public class OffHeapRegionEntryHelper {
   public static boolean isOffHeap(long addr) {
     if ((addr & ENCODED_BIT) != 0) return false;
     if (addr < 0) return true;
-    addr >>= 1; // shift left 1 to convert to array index;
+    addr >>= 1; // shift right 1 to convert to array index;
     return addr >= addrToObj.length;
   }
 
