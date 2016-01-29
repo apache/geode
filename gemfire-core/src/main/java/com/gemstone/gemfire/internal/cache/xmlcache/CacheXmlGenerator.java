@@ -1782,8 +1782,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         }
         atts.addAttribute("", "", INDEX_TYPE, "", "" + indexType);
       }
-      atts.addAttribute("", "", FROM_CLAUSE, "", index.getCanonicalizedFromClause());
-      atts.addAttribute("", "", EXPRESSION, "",index.getCanonicalizedIndexedExpression());
+      atts.addAttribute("", "", FROM_CLAUSE, "", index.getFromClause());
+      atts.addAttribute("", "", EXPRESSION, "",index.getIndexedExpression());
     }
     handler.startElement("", INDEX, INDEX, atts);
 
