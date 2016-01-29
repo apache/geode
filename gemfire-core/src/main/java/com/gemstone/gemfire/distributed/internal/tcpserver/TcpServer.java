@@ -398,6 +398,7 @@ public class TcpServer {
             DataSerializer.writeObject(response, output);
 
             output.flush();
+            output.close();
           }
 
           handler.endResponse(request,startTime);
@@ -466,10 +467,24 @@ public class TcpServer {
             t.printStackTrace();
           }
         } finally {
+          // Normal path closes input first, so let's do that here...
+          if (input != null) {
+            try {
+              input.close();
+            } catch (IOException e) {
+              log.warn(
+                "Exception closing input stream", e);
+            }
+          }
+
+          // Closing the ObjectInputStream is supposed to close
+          // the underlying InputStream, but we do it here just for
+          // good measure. Closing a closed socket is a no-op.
           try {
             sock.close();
           } catch (IOException e) {
-            // ignore
+            log.warn(
+                "Exception closing socket", e);
           }
         }
       }
