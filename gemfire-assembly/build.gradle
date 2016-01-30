@@ -62,7 +62,7 @@ dependencies {
   archives project(':gemfire-wan')
   archives project(':gemfire-cq')
 
-  testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
+  testCompile project(':gemfire-junit')
   testCompile project(path: ':gemfire-core', configuration: 'testOutput')
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")

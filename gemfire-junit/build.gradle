@@ -16,5 +16,6 @@
  */
 
 dependencies {
-  testCompile project(':gemfire-junit')
+  compile 'junit:junit:' + project.'junit.version'
+  compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
 }

@@ -86,7 +86,7 @@ dependencies {
   
   jcaCompile sourceSets.main.output
 
-  testCompile project(path: ':gemfire-junit', configuration: 'testOutput')
+  testCompile project(':gemfire-junit')
 
   // Test Dependencies
   // External

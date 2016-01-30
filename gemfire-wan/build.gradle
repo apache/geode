@@ -18,5 +18,6 @@
 dependencies {
   provided project(':gemfire-core')
   provided project(path: ':gemfire-core', configuration: 'testOutput')
-  provided project(path: ':gemfire-junit', configuration: 'testOutput')
+
+  testCompile project(':gemfire-junit')
 }

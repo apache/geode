@@ -16,15 +16,15 @@
  */
 
 dependencies {
-    provided project(':gemfire-common')
-    provided project(':gemfire-core')
-    provided project(path: ':gemfire-junit', configuration: 'testOutput')
+  provided project(':gemfire-common')
+  provided project(':gemfire-core')
 
-    compile 'org.quartz-scheduler:quartz:' + project.'quartz.version'
+  compile 'org.quartz-scheduler:quartz:' + project.'quartz.version'
+  testCompile project(':gemfire-junit')
 
-    // the following test dependencies are needed for mocking cache instance
-    testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
-    testRuntime 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
-    testRuntime 'com.google.guava:guava:' + project.'guava.version'
-    testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
+  // the following test dependencies are needed for mocking cache instance
+  testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
+  testRuntime 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
+  testRuntime 'com.google.guava:guava:' + project.'guava.version'
+  testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
 }

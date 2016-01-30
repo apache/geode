@@ -24,7 +24,7 @@ dependencies {
     compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
     compile 'org.apache.lucene:lucene-queryparser:' + project.'lucene.version'
 
-    provided project(path: ':gemfire-junit', configuration: 'testOutput')
+    testCompile project(':gemfire-junit')
 
     //Lucene test framework.
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
