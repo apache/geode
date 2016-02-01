@@ -71,6 +71,22 @@ subprojects {
       }
     }
   }
+
+  configurations.testCompile {
+    dependencies.all { dep ->
+      if (dep instanceof ModuleDependency) {
+        dep.transitive = true
+      }
+    }
+  }
+
+  configurations.testRuntime {
+    dependencies.all { dep ->
+      if (dep instanceof ModuleDependency) {
+        dep.transitive = true
+      }
+    }
+  }
  
   task jarTest (type: Jar, dependsOn: testClasses) {
     description 'Assembles a jar archive of test classes.'
