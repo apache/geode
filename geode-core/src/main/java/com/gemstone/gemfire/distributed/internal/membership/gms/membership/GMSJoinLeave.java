@@ -16,41 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.VIEW_ACK_MESSAGE;
-import static com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -68,24 +33,26 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinL
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HasMemberID;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.*;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.*;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the
  * distributed system.  It replaces the JGroups channel membership services
  * that Geode formerly used for this purpose.
- * 
  */
 public class GMSJoinLeave implements JoinLeave, MessageHandler {
   
@@ -221,7 +188,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     try {
       if (Boolean.getBoolean(BYPASS_DISCOVERY_PROPERTY)) {
-        synchronized(viewInstallationLock) {
+        synchronized (viewInstallationLock) {
           becomeCoordinator();
         }
         return true;
@@ -391,7 +358,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
     return response;
   }
-  
+
   @Override
   public boolean isMemberLeaving(DistributedMember mbr) {
     if (getPendingRequestIDs(LEAVE_REQUEST_MESSAGE).contains(mbr)
@@ -471,8 +438,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       recordViewRequest(incomingRequest);
       return;
     }
-    
-    
+
     InternalDistributedMember mbr = incomingRequest.getMemberID();
 
     if (logger.isDebugEnabled()) {
@@ -543,7 +509,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     if (!fromMe) {
       logger.info("Membership received a request to remove " + mbr
-        + " from " + incomingRequest.getSender() 
+        + " from " + incomingRequest.getSender()
         + " reason="+incomingRequest.getReason());
     }
 
@@ -630,7 +596,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   public void delayViewCreationForTest(int millis) {
     requestCollectionInterval = millis;
   }
-  
 
   /**
    * Transitions this member into the coordinator role.  This must
@@ -872,6 +837,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   void setTcpClientWrapper(TcpClientWrapper tcpClientWrapper) {
     this.tcpClientWrapper = tcpClientWrapper;
   }
+
   /**
    * This contacts the locators to find out who the current coordinator is.
    * All locators are contacted. If they don't agree then we choose the oldest
@@ -940,8 +906,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
       }
     } while (!anyResponses && System.currentTimeMillis() < giveUpTime);
-    
-    
+
     if (coordinators.isEmpty()) {
       return false;
     }
@@ -1523,6 +1488,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   /***
    * test method
+   *
    * @return ViewReplyProcessor
    */
   protected ViewReplyProcessor getPrepareViewReplyProcessor() {
@@ -1558,6 +1524,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     boolean isWaiting(){
       return waiting;
     }
+
     synchronized void processPendingRequests(Set<InternalDistributedMember> pendingLeaves, Set<InternalDistributedMember> pendingRemovals) {
       // there's no point in waiting for members who have already
       // requested to leave or who have been declared crashed.
@@ -1711,7 +1678,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         services.getMessenger().sendUnreliably(msg);
       }
     }
-    
   }
 
   class ViewCreator extends Thread {
@@ -2094,7 +2060,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
 
         logger.debug("unresponsive members that could not be reached: {}", unresponsive);
-        
+
         List<InternalDistributedMember> failures = new ArrayList<>(currentView.getCrashedMembers().size() + unresponsive.size());
 
         if (conflictingView != null && !conflictingView.getCreator().equals(localAddress) && conflictingView.getViewId() > newView.getViewId()
@@ -2188,10 +2154,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       filterMembers(suspects, newRemovals, REMOVE_MEMBER_REQUEST);
       filterMembers(suspects, newLeaves, LEAVE_REQUEST_MESSAGE);
-      newRemovals.removeAll(newLeaves);  // if we received a Leave req the member is "healthy" 
-      
+      newRemovals.removeAll(newLeaves);  // if we received a Leave req the member is "healthy"
+
       suspects.removeAll(newLeaves);
-      
+
       for (InternalDistributedMember mbr : suspects) {
         if (newRemovals.contains(mbr) || newLeaves.contains(mbr)) {
           continue; // no need to check this member - it's already been checked or is leaving
@@ -2215,7 +2181,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
         });
       }
-      
+
       if (checkers.isEmpty()) {
         logger.debug("all unresponsive members are already scheduled to be removed");
         return;
@@ -2236,19 +2202,19 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
         // submit the tasks that will remove dead members from the suspects collection
         submitAll(svc, checkers);
-        
+
         // now wait for the tasks to do their work
         long waitTime = giveUpTime - System.currentTimeMillis();
         synchronized (viewRequests) {
           while ( waitTime > 0 ) {
             logger.debug("removeHealthyMembers: mbrs" + suspects.size());
-            
+
             filterMembers(suspects, newRemovals, REMOVE_MEMBER_REQUEST);
             filterMembers(suspects, newLeaves, LEAVE_REQUEST_MESSAGE);
             newRemovals.removeAll(newLeaves);
-            
+
             suspects.removeAll(newLeaves);
-            
+
             if(suspects.isEmpty() || newRemovals.containsAll(suspects)) {
               break;
             }
@@ -2270,7 +2236,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      */
     protected void filterMembers(Collection<InternalDistributedMember> mbrs, Set<InternalDistributedMember> matchingMembers, short requestType) {
       Set<InternalDistributedMember> requests = getPendingRequestIDs(requestType);
-      
+
       if(!requests.isEmpty()) {
         logger.debug("filterMembers: processing " + requests.size() + " requests for type " + requestType);
         Iterator<InternalDistributedMember> itr = requests.iterator();

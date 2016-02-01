@@ -82,7 +82,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
     case FOO:
       return new FOO(in);
   */
-  
+  public static final short VIEW_REJECT_MESSAGE = -158;
+
   public static final short NETWORK_PARTITION_MESSAGE = -157;
   public static final short SUSPECT_MEMBERS_MESSAGE = -156;
   
