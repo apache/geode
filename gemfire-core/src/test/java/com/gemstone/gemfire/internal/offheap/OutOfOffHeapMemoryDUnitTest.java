@@ -226,7 +226,6 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
   
   public void testOtherMembersSeeOutOfOffHeapMemoryMemberDisconnects() {
     final int vmCount = Host.getHost(0).getVMCount();
-    assertEquals(4, vmCount);
 
     final String name = getRegionName();
     final RegionShortcut shortcut = getRegionShortcut();
@@ -239,7 +238,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
       }
     });
     
-    // create off-heap region in all 4 members
+    // create off-heap region in all members
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i).invoke(new SerializableRunnable() {
         public void run() {
@@ -252,7 +251,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
       });
     }
     
-    // make sure there are 5 members total
+    // make sure there are vmCount+1 members total
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i).invoke(new SerializableRunnable() {
         public void run() {
