@@ -77,8 +77,8 @@ _HelloWorld.java_
 
 Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-dependencies.jar`.
 
-    javac -cp /some/path/geode/gemfire-assembly/build/install/geode/lib/gemfire-core-dependencies.jar HelloWorld.java
-    java -cp .:/some/path/geode/gemfire-assembly/build/install/geode/lib/gemfire-core-dependencies.jar HelloWorld
+    javac -cp /some/path/geode/gemfire-assembly/build/install/apache-geode/lib/gemfire-core-dependencies.jar HelloWorld.java
+    java -cp .:/some/path/geode/gemfire-assembly/build/install/apache-geode/lib/gemfire-core-dependencies.jar HelloWorld
 
 #Application Development
 
