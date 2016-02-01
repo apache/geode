@@ -56,13 +56,11 @@ subprojects {
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
-    testCompile 'org.jmock:jmock:' + project.'jmock.version'
     testCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
     testCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
     testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
     
     testRuntime 'cglib:cglib:' + project.'cglib.version'
-    testRuntime 'org.objenesis:objenesis:' + project.'objenesis.version'
     testRuntime 'org.ow2.asm:asm:' + project.'asm.version'
   }
   
