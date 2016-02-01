@@ -312,7 +312,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             && uuidLSBs == myUUID.getLeastSignificantBits()
             && uuidMSBs == myUUID.getMostSignificantBits()
             && vmViewId == myVmViewId) {
-          socket.setSoLinger(true, (int)memberTimeout);
           out.write(OK);
           out.flush();
           socket.shutdownOutput();
@@ -323,7 +322,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }
         }
         else {
-          socket.setSoLinger(true, (int)memberTimeout);
           out.write(ERROR);
           out.flush();
           socket.shutdownOutput();
@@ -494,6 +492,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     finally {
       try {
         if (clientSocket != null) {
+          clientSocket.setSoLinger(true, 0); // abort the connection
           clientSocket.close();
         }
       } catch (IOException e) {

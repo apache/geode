@@ -167,13 +167,20 @@ public class TcpClient {
       }
       return null;
     } finally {
-      if (out != null) {
-        out.close();
-      }
       try {
+        if (replyExpected) {
+          // Since we've read a response we know that the Locator is finished
+          // with the socket and is closing it.  Aborting the connection by
+          // setting SO_LINGER to zero will clean up the TIME_WAIT socket on
+          // the locator's machine.
+          sock.setSoLinger(true, 0);
+        }
         sock.close();
       } catch(Exception e) {
         logger.error("Error closing socket ", e);
+      }
+      if (out != null) {
+        out.close();
       }
     }
   }
@@ -184,7 +191,6 @@ public class TcpClient {
     Short serverVersion = null;
 
     // Get GemFire version of TcpServer first, before sending any other request.
-    VersionResponse verRes = null;
     synchronized(serverVersions) {
       serverVersion = serverVersions.get(ipAddr);
     }
@@ -223,6 +229,7 @@ public class TcpClient {
       }
     } finally {
       try {
+        sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
         sock.close();
       } catch(Exception e) {
         logger.error("Error closing socket ", e);
