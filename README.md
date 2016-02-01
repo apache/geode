@@ -35,7 +35,7 @@ Geode includes the following features:
 With both a recent version of Gradle and JDK 1.8 or a more recent version installed, obtain the source archive.
 Extract the source archive and build from the expanded directory:
 
-    $ gradle build installDist
+    $ gradle build installDist -Dskip.tests=true
 
 Start a locator and server:
 
