@@ -49,7 +49,7 @@ import java.io.Serializable;
 public abstract class SerializableRunnable implements SerializableRunnableIF {
 
   private static final long serialVersionUID = 7584289978241650456L;
-
+  
   private String name;
   protected Object[] args;
 
@@ -80,7 +80,7 @@ public abstract class SerializableRunnable implements SerializableRunnableIF {
   public void setName(String newName) {
     this.name = newName;
   }
-
+  
   public String getName() {
     return this.name;
   }
