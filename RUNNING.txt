@@ -1,6 +1,6 @@
 Create a distribution archive using
 
-./gradlew distTar
+./gradle distTar
 
 Unpack the archive found in gemfire-assembly/build/distributions and run the gfsh shell
 
@@ -11,7 +11,7 @@ OR
 
 Unpack the archive using Gradle task
 
-./gradlew installDist
+./gradle installDist
 
 cd build/install/gemfire
 bin/gfsh
