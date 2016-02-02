@@ -17,16 +17,24 @@
 package com.gemstone.gemfire.cache.query.internal.types;
 
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.parse.*;
-import com.gemstone.gemfire.cache.query.types.*;
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.internal.Support;
+import com.gemstone.gemfire.cache.query.internal.Undefined;
+import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
+import com.gemstone.gemfire.cache.query.types.MapType;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
 
 
@@ -159,6 +167,12 @@ public class TypeUtils implements OQLLexerTokenTypes
           return QueryService.UNDEFINED;
         }
       }
+      
+    if (obj1 instanceof PdxInstanceEnumInfo && obj2 instanceof Enum) {
+      obj2 = new PdxInstanceEnum((Enum<?>) obj2);
+    } else if (obj1 instanceof Enum && obj2 instanceof PdxInstanceEnumInfo) {
+      obj1 = new PdxInstanceEnum((Enum<?>) obj1);
+    }
       
       try {
         int r;

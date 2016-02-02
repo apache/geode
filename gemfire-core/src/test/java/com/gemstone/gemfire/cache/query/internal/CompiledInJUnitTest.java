@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.pdx.internal.EnumInfo;
+import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -45,7 +47,51 @@ public class CompiledInJUnitTest {
     elm = mock(CompiledValue.class);
     colln = mock(CompiledValue.class);
   }
+  
+  @Test
+  public void testEnumsShouldCompareCorrectlyToACollectionOfOnePdxEnumInfo() throws Exception {
+    Object[] objectValues = new Object[] { createPdxInstanceEnumInfo(EnumForTest.ONE, 1)};
+    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(EnumForTest.ONE);
+    when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
 
+    CompiledIn compiledIn = new CompiledIn(elm, colln);
+    Object result = compiledIn.evaluate(context);
+    Assert.assertTrue((Boolean) result);
+  }
+  
+  @Test
+  public void testEnumsShouldNotCompareCorrectlyIfNotInCollectionOfPdxInstanceEnum() throws Exception {
+    Object[] objectValues = new Object[] { createPdxInstanceEnumInfo(EnumForTest.ONE, 1)};
+    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(EnumForTest.TWO);
+    when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
+
+    CompiledIn compiledIn = new CompiledIn(elm, colln);
+    Object result = compiledIn.evaluate(context);
+    Assert.assertFalse((Boolean) result);
+  }
+  
+  @Test
+  public void testEnumsShouldCompareCorrectlyToACollectionOfPdxEnums() throws Exception {
+    Object[] objectValues = new Object[] { createPdxInstanceEnumInfo(EnumForTest.ONE, 1), createPdxInstanceEnumInfo(EnumForTest.TWO, 1)};
+    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(EnumForTest.ONE);
+    when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
+
+    CompiledIn compiledIn = new CompiledIn(elm, colln);
+    Object result = compiledIn.evaluate(context);
+    Assert.assertTrue((Boolean) result);
+  }
+  
+  @Test
+  public void testPdxEnumsShouldCompareCorrectlyToACollectionOfOneEnum() throws Exception {
+    Object[] objectValues = new Object[] { EnumForTest.ONE};
+    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(createPdxInstanceEnumInfo(EnumForTest.ONE, 1));
+    when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
+
+    CompiledIn compiledIn = new CompiledIn(elm, colln);
+    Object result = compiledIn.evaluate(context);
+    Assert.assertTrue((Boolean) result);
+  }
+  
   @Test
   public void testShouldNotThrowTypeMismatchWithNullElementAndObjectArray() throws Exception {
     Object[] objectValues = new Object[] { true, true };
@@ -402,4 +448,13 @@ public class CompiledInJUnitTest {
     Object result = compiledIn.evaluate(context);
     Assert.assertNotNull(result);
   }
+  
+  private PdxInstanceEnumInfo createPdxInstanceEnumInfo(Enum<?> e, int enumId) {
+    EnumInfo ei = new EnumInfo(e);
+    return (PdxInstanceEnumInfo) ei.getPdxInstance(enumId);
+  }
+  
+  private enum EnumForTest {ONE, TWO, THREE};
+  
+
 }
