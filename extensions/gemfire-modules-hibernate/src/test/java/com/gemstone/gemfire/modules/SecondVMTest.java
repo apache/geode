@@ -21,9 +21,12 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import junit.framework.TestCase;
 
 import org.hibernate.Session;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +37,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
+@Ignore("Can this test be deleted?")
+@Category(IntegrationTest.class)
 public class SecondVMTest extends TestCase {
 
   private Logger log = LoggerFactory.getLogger(getClass());

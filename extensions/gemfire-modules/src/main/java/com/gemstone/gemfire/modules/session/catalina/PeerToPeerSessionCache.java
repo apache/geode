@@ -133,7 +133,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
   /**
    * For peer-to-peer the backing cache *is* what's embedded in tomcat so it's always available
    *
-   * @return
+   * @return boolean indicating whether a backing cache is available
    */
   @Override
   public boolean isBackingCacheAvailable() {

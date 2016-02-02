@@ -38,5 +38,5 @@ dependencies {
   testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
   testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
-  provided project(path: ':gemfire-junit', configuration: 'testOutput')
+  provided project(path: ':gemfire-junit')
 }

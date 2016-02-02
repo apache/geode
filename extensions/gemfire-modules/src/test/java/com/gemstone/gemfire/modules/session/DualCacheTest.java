@@ -21,15 +21,18 @@
 
 package com.gemstone.gemfire.modules.session;
 
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  */
+@Category(IntegrationTest.class)
 public class DualCacheTest extends TestCase {
 
   /**
