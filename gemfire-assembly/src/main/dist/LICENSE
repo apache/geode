@@ -220,6 +220,12 @@ This product bundles Backbone which is available under an MIT license.
 For details see http://www.opensource.org/licenses/mit-license.php.
 
 ---------------------------------------------------------------------------
+CompactConcurrentHashSet2 (http://gee.cs.oswego.edu/dl/concurrency-interest)
+---------------------------------------------------------------------------
+This product bundles CompactConcurrentHashSet2 derived from JSR-166 
+ConcurrentHashMap v1.43 which is available in the public domain.  
+
+---------------------------------------------------------------------------
 Handlebars (http://handlebarsjs.com)
 ---------------------------------------------------------------------------
 This product bundles Handlebars which is available under an MIT license.  
