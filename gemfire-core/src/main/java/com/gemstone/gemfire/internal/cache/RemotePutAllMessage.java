@@ -234,10 +234,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
       ClassNotFoundException {
     super.fromData(in);
     this.eventId = (EventID)DataSerializer.readObject(in);
-    Version sourceVersion = InternalDataSerializer.getVersionForDataStream(in);
-    if (sourceVersion.compareTo(Version.GFE_81) >= 0) {
-      this.callbackArg = DataSerializer.readObject(in);
-    }
+    this.callbackArg = DataSerializer.readObject(in);
     this.posDup = (flags & POS_DUP) != 0;
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
@@ -269,10 +266,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
   public final void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.eventId, out);
-    Version receiverVersion = InternalDataSerializer.getVersionForDataStream(out);
-    if (receiverVersion.compareTo(Version.GFE_81) >= 0) {
-      DataSerializer.writeObject(this.callbackArg, out);
-    }
+    DataSerializer.writeObject(this.callbackArg, out);
     if (this.bridgeContext != null) {
       DataSerializer.writeObject(this.bridgeContext, out);
     }

@@ -174,14 +174,7 @@ public class QueuedOperation
         cbArg);
   }
 
-  /**
-   * Post 7.1, if changes are made to this method make sure that it is backwards
-   * compatible by creating toDataPreXX methods. Also make sure that the callers
-   * to this method are backwards compatible by creating toDataPreXX methods for
-   * them even if they are not changed. <br>
-   * Callers for this method are: <br>
-   * SendQueueMessage.toData(DataOutput) <br>
-   */
+
   public void toData(DataOutput out) throws IOException
   {
     out.writeByte(this.op.ordinal);

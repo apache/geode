@@ -1596,8 +1596,7 @@ public class InitialImageOperation  {
     protected Set unfinishedKeys;
 
     /** The versions in which this message was modified */
-    private static final Version[] dsfidVersions = new Version[] {
-          Version.GFE_80 };
+    private static final Version[] dsfidVersions = null;
 
     @Override  
     public int getProcessorId() {
@@ -2083,11 +2082,6 @@ public class InitialImageOperation  {
 
     @Override  
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      fromDataPre_GFE_8_0_0_0(in);
-      this.unfinishedKeys = (Set)DataSerializer.readObject(in);
-    }
-    
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.regionPath = DataSerializer.readString(in);
       this.processorId = in.readInt();
@@ -2097,15 +2091,11 @@ public class InitialImageOperation  {
       this.lostMemberVersionID = (VersionSource)DataSerializer.readObject(in);
       this.versionVector = (RegionVersionVector)DataSerializer.readObject(in);
       this.lostMemberID = (InternalDistributedMember)DataSerializer.readObject(in);
+      this.unfinishedKeys = (Set)DataSerializer.readObject(in);
     }
     
     @Override  
     public void toData(DataOutput out) throws IOException {
-      toDataPre_GFE_8_0_0_0(out);
-      DataSerializer.writeObject(this.unfinishedKeys, out);
-    }
-
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
       super.toData(out);
       DataSerializer.writeString(this.regionPath, out);
       out.writeInt(this.processorId);
@@ -2115,6 +2105,7 @@ public class InitialImageOperation  {
       DataSerializer.writeObject(this.lostMemberVersionID, out);
       DataSerializer.writeObject(this.versionVector, out);
       DataSerializer.writeObject(this.lostMemberID, out);
+      DataSerializer.writeObject(this.unfinishedKeys, out);
     }
     
     @Override
@@ -2756,8 +2747,7 @@ public class InitialImageOperation  {
     private transient Version remoteVersion;
 
     /** The versions in which this message was modified */
-    private static final Version[] dsfidVersions = new Version[] {
-          Version.GFE_80 };
+    private static final Version[] dsfidVersions = null;
 
     @Override
     public boolean getInlineProcess() {
@@ -2838,29 +2828,7 @@ public class InitialImageOperation  {
 
     @Override  
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      fromDataPre_GFE_8_0_0_0(in);
-      this.isDeltaGII = in.readBoolean();
-      this.hasHolderToSend = in.readBoolean();
-      if (this.hasHolderToSend) {
-        this.holderToSend = new RegionVersionHolder(in);
-      }
-      
-      int gcVersionsLength = in.readShort();
-      if(gcVersionsLength >= 0) {
-        gcVersions = new HashMap<VersionSource, Long>(gcVersionsLength);
-      }
-      for(int i =0; i < gcVersionsLength; i++) {
-        VersionSource key = InternalDataSerializer.readObject(in);
-        long value = InternalDataSerializer.readUnsignedVL(in);
-        gcVersions.put(key, value);
-      }
-    }
-
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      
-      // 701 peers can get ArrayList from 700 peers so we always have to read
-      // an ArrayList. This hack will be simplified in later versions (> 7.0.1)
       ArrayList list = DataSerializer.readArrayList(in);
       Object listData = null;
       if (list != null /* fix bug 46874 */ && list.size() > 0) {
@@ -2878,11 +2846,38 @@ public class InitialImageOperation  {
       this.flowControlId = in.readInt();
       this.remoteVersion = InternalDataSerializer
                         .getVersionForDataStreamOrNull(in);
+      this.isDeltaGII = in.readBoolean();
+      this.hasHolderToSend = in.readBoolean();
+      if (this.hasHolderToSend) {
+        this.holderToSend = new RegionVersionHolder(in);
+      }
+      
+      int gcVersionsLength = in.readShort();
+      if(gcVersionsLength >= 0) {
+        gcVersions = new HashMap<VersionSource, Long>(gcVersionsLength);
+      }
+      for(int i =0; i < gcVersionsLength; i++) {
+        VersionSource key = InternalDataSerializer.readObject(in);
+        long value = InternalDataSerializer.readUnsignedVL(in);
+        gcVersions.put(key, value);
+      }
     }
-    
+
     @Override
     public void toData(DataOutput out) throws IOException {
-      toDataPre_GFE_8_0_0_0(out);
+      super.toData(out);
+      if (this.entries instanceof InitialImageVersionedEntryList) {
+        ArrayList list = new ArrayList(1);
+        list.add(this.entries);
+        DataSerializer.writeArrayList(list, out); 
+      } else {
+        DataSerializer.writeArrayList((ArrayList)this.entries, out);
+      }
+      out.writeInt(this.seriesNum);
+      out.writeInt(this.msgNum);
+      out.writeInt(this.numSeries);
+      out.writeBoolean(this.lastInSeries);
+      out.writeInt(this.flowControlId);
       out.writeBoolean(this.isDeltaGII);
       out.writeBoolean(this.hasHolderToSend);
       if (this.hasHolderToSend) {
@@ -2897,25 +2892,6 @@ public class InitialImageOperation  {
       }
     }
     
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
-      super.toData(out);
-      // We still need to send an ArrayList for backward compatibility.
-      // All 700 peers will always read an ArrayList. So we can not give
-      // them InitialImageVersionedEntryList when they are expecting ArrayList.
-      if (this.entries instanceof InitialImageVersionedEntryList) {
-        ArrayList list = new ArrayList(1);
-        list.add(this.entries);
-        DataSerializer.writeArrayList(list, out); 
-      } else {
-        DataSerializer.writeArrayList((ArrayList)this.entries, out);
-      }
-      out.writeInt(this.seriesNum);
-      out.writeInt(this.msgNum);
-      out.writeInt(this.numSeries);
-      out.writeBoolean(this.lastInSeries);
-      out.writeInt(this.flowControlId);
-    }
-
     @Override  
     public String toString() {
       StringBuffer buff = new StringBuffer();

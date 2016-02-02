@@ -383,98 +383,15 @@ public class ResourceAdvisor extends DistributionAdvisor {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       
-      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) >= 0) {
-        final long heapBytesUsed = in.readLong();
-        MemoryState heapState = MemoryState.fromData(in);
-        MemoryThresholds heapThresholds = MemoryThresholds.fromData(in);
-        setHeapData(heapBytesUsed, heapState, heapThresholds);
+      final long heapBytesUsed = in.readLong();
+      MemoryState heapState = MemoryState.fromData(in);
+      MemoryThresholds heapThresholds = MemoryThresholds.fromData(in);
+      setHeapData(heapBytesUsed, heapState, heapThresholds);
 
-        final long offHeapBytesUsed = in.readLong();
-        MemoryState offHeapState = MemoryState.fromData(in);
-        MemoryThresholds offHeapThresholds = MemoryThresholds.fromData(in);
-        setOffHeapData(offHeapBytesUsed, offHeapState, offHeapThresholds);
-      } else {
-        // pre 9.0
-        in.readInt(); // currentHeapUsagePercent
-        long currentHeapBytesUsed = in.readLong();
-        //enum MemoryEventType (the byte GEMFIRE_ENUM followed by two Strings. The enums: UNKNOWN, EVICTION_UP, EVICT_MORE, EVICTION_DOWN, EVICTION_DISABLED, CRITICAL_UP, CRITICAL_DOWN, CRITICAL_DISABLED)
-        byte b = in.readByte();
-        String enumName;
-        if (b == DSCODE.GEMFIRE_ENUM) {
-          String enumClass = DataSerializer.readString(in);
-          assert enumClass.equals("com.gemstone.gemfire.internal.cache.control.MemoryEventType");
-          enumName = DataSerializer.readString(in);
-        } else if (b == DSCODE.SERIALIZABLE) {
-          final byte TC_ENUM = 0x7e;
-          final byte TC_CLASSDESC = 0x72;
-          final byte TC_ENDBLOCK = 0x78;
-          final byte TC_NULL = 0x70;
-          final byte TC_STRING = 0x74;
-          in.readShort(); // STREAM_MAGIC
-          in.readShort(); // STREAM_VERSION
-          b = in.readByte();
-          assert b == TC_ENUM : "expected " + b + " to be TC_ENUM " + TC_ENUM;
-          b = in.readByte();
-          assert b == TC_CLASSDESC : "expected " + b + " to be TC_CLASSDESC " + TC_CLASSDESC;
-          String cn = in.readUTF();
-          //System.out.println("DEBUG enum className=" + cn);
-          assert cn.equals("com.gemstone.gemfire.internal.cache.control.MemoryEventType");
-          in.readLong();
-          in.readByte();
-          int fields = in.readShort();
-          while (fields != 0) {
-            in.readByte();
-            in.readUTF();
-            fields--;
-          }
-          b = in.readByte();
-          assert b == TC_ENDBLOCK : "expected " + b + " to be TC_ENDBLOCK " + TC_ENDBLOCK;
-          // parent classDesc
-          b = in.readByte();
-          assert b == TC_CLASSDESC : "expected " + b + " to be TC_CLASSDESC " + TC_CLASSDESC;
-          cn = in.readUTF();
-          //System.out.println("DEBUG parent className=" + cn);
-          assert cn.equals("java.lang.Enum");
-          in.readLong();
-          in.readByte();
-          fields = in.readShort();
-          while (fields != 0) {
-            in.readByte();
-            in.readUTF();
-            fields--;
-          }
-          b = in.readByte();
-          assert b == TC_ENDBLOCK : "expected " + b + " to be TC_ENDBLOCK " + TC_ENDBLOCK;
-          b = in.readByte();
-          assert b == TC_NULL : "expected " + b + " to be TC_NULL " + TC_NULL;
-          b = in.readByte();
-          assert b == TC_STRING : "expected " + b + " to be TC_STRING " + TC_STRING;
-
-          enumName = in.readUTF();
-          //System.out.println("DEBUG enumName=" + enumName);
-        } else {
-          throw new IllegalStateException("Unexpected byte " + b);
-        }
-        in.readDouble(); // tenuredGenerationMaxBytes
-        in.readBoolean(); // hasTenuredGenerationMaxBytes
-        float criticalThreshold = in.readFloat();
-        in.readBoolean(); // hasCriticalThreshold
-        float evictionThreshold = in.readFloat();
-        in.readBoolean(); // hasEvictionThreshold
-        MemoryState heapState;
-        if (enumName.equals("CRITICAL_UP")) {
-          heapState = MemoryState.CRITICAL;
-        } else if (enumName.equals("CRITICAL_DISABLED")) {
-          heapState = MemoryState.CRITICAL_DISABLED;
-        } else if (enumName.equals("CRITICAL_DOWN")) {
-          heapState = MemoryState.NORMAL;
-        } else {
-          // We really don't care about the other old states so we just call them normal
-          heapState = MemoryState.NORMAL;
-        }
-        setHeapData(currentHeapBytesUsed, heapState, new MemoryThresholds(0, criticalThreshold, evictionThreshold));
-        setOffHeapData(0, MemoryState.DISABLED, new MemoryThresholds(0));
-      }
+      final long offHeapBytesUsed = in.readLong();
+      MemoryState offHeapState = MemoryState.fromData(in);
+      MemoryThresholds offHeapThresholds = MemoryThresholds.fromData(in);
+      setOffHeapData(offHeapBytesUsed, offHeapState, offHeapThresholds);
     }
 
     @Override
@@ -492,35 +409,13 @@ public class ResourceAdvisor extends DistributionAdvisor {
       }
       super.toData(out);
       
-      if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90) >= 0) {
-        out.writeLong(heapBytesUsed);
-        heapState.toData(out);
-        heapThresholds.toData(out);
+      out.writeLong(heapBytesUsed);
+      heapState.toData(out);
+      heapThresholds.toData(out);
 
-        out.writeLong(offHeapBytesUsed);
-        offHeapState.toData(out);
-        offHeapThresholds.toData(out);
-      } else {
-        out.writeInt(0); // currentHeapUsagePercent
-        out.writeLong(heapBytesUsed); // currentHeapBytesUsed
-        String memoryEventTypeName;
-        switch (heapState) {
-        case EVICTION_CRITICAL:
-        case CRITICAL: memoryEventTypeName = "CRITICAL_UP"; break;
-        case EVICTION_CRITICAL_DISABLED:
-        case CRITICAL_DISABLED: memoryEventTypeName = "CRITICAL_DISABLED"; break;
-        default: memoryEventTypeName = "CRITICAL_DOWN";
-        }
-        out.writeByte(DSCODE.GEMFIRE_ENUM);
-        DataSerializer.writeString("com.gemstone.gemfire.internal.cache.control.MemoryEventType", out);
-        DataSerializer.writeString(memoryEventTypeName, out);
-        out.writeDouble(0.0); // tenuredGenerationMaxBytes
-        out.writeBoolean(false); // hasTenuredGenerationMaxBytes
-        out.writeFloat(heapThresholds.getCriticalThreshold());
-        out.writeBoolean(heapThresholds.isCriticalThresholdEnabled());
-        out.writeFloat(heapThresholds.getEvictionThreshold());
-        out.writeBoolean(heapThresholds.isEvictionThresholdEnabled());
-      }
+      out.writeLong(offHeapBytesUsed);
+      offHeapState.toData(out);
+      offHeapThresholds.toData(out);
     }
     
     @Override

@@ -1332,12 +1332,8 @@ public abstract class DistributedCacheOperation {
     public void fromData(DataInput in) throws IOException,
             ClassNotFoundException {
       // super.fromData(in);
-      Version senderVersion = InternalDataSerializer.getVersionForDataStream(in);
       short bits = in.readShort();
-      short extBits = 0;
-      if (senderVersion.compareTo(Version.GFE_80) >= 0){ 
-        extBits = in.readShort();
-      }
+      short extBits = in.readShort();
       this.flags = bits;
       setFlags(bits, in);
       this.regionPath = DataSerializer.readString(in);
@@ -1390,10 +1386,7 @@ public abstract class DistributedCacheOperation {
       bits = computeCompressedShort(bits);
       extendedBits = computeCompressedExtBits(extendedBits);
       out.writeShort(bits);
-      Version receiverVersion = InternalDataSerializer.getVersionForDataStream(out);
-      if (receiverVersion.compareTo(Version.GFE_80) >= 0) {
-        out.writeShort(extendedBits);
-      }
+      out.writeShort(extendedBits);
       if (this.processorId > 0) {
         out.writeInt(this.processorId);
       }

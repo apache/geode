@@ -198,7 +198,7 @@ public final class FetchKeysMessage extends PartitionMessage
   /**
    * Versions in which on-wire form has changed, requiring new toData/fromData methods
    */
-  public Version[] serializationVersions = new Version[]{Version.GFE_80};
+  public Version[] serializationVersions = null;
   
   public Version[] getSerializationVersions() {
     return serializationVersions;
@@ -206,30 +206,22 @@ public final class FetchKeysMessage extends PartitionMessage
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException  {
-    fromDataPre_GFE_8_0_0_0(in);
+    super.fromData(in);
+    this.bucketId = Integer.valueOf(in.readInt());
+    this.interestType = in.readInt();
+    this.interestArg = DataSerializer.readObject(in);
     this.allowTombstones = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException  {
-    toDataPre_GFE_8_0_0_0(out);
-    out.writeBoolean(this.allowTombstones);
-  }
-
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException  {
-    super.fromData(in);
-    this.bucketId = Integer.valueOf(in.readInt());
-    this.interestType = in.readInt();
-    this.interestArg = DataSerializer.readObject(in);
-  }
-
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException  {
     super.toData(out);
     out.writeInt(this.bucketId.intValue());
     out.writeInt(interestType);
     DataSerializer.writeObject(interestArg, out);
+    out.writeBoolean(this.allowTombstones);
   }
-  
+
   public static final class FetchKeysReplyMessage extends ReplyMessage {
     /** The number of the series */
     int seriesNum;

@@ -233,10 +233,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
     }
-    Version sourceVersion = InternalDataSerializer.getVersionForDataStream(in);
-    if (sourceVersion.compareTo(Version.GFE_81) >= 0) {
-      this.callbackArg = DataSerializer.readObject(in);
-    }
+    this.callbackArg = DataSerializer.readObject(in);
     this.putAllPRDataSize = (int)InternalDataSerializer.readUnsignedVL(in);
     this.putAllPRData = new PutAllEntryData[putAllPRDataSize];
     if (this.putAllPRDataSize > 0) {
@@ -271,10 +268,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     if (this.bridgeContext != null) {
       DataSerializer.writeObject(this.bridgeContext, out);
     }
-    Version receiverVersion = InternalDataSerializer.getVersionForDataStream(out);
-    if (receiverVersion.compareTo(Version.GFE_81) >= 0) {
-      DataSerializer.writeObject(this.callbackArg, out);
-    }
+    DataSerializer.writeObject(this.callbackArg, out);
     InternalDataSerializer.writeUnsignedVL(this.putAllPRDataSize, out);
     if (this.putAllPRDataSize > 0) {
       EntryVersionsList versionTags = new EntryVersionsList(putAllPRDataSize);

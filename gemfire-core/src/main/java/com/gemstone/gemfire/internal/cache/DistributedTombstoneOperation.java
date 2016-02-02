@@ -117,7 +117,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     protected TOperation op;
     protected EventID eventID;
     
-    private static Version[] serializationVersions = new Version[]{ Version.GFE_80 };
+    private static Version[] serializationVersions = null; // new Version[]{ };
 
     /**
      * for deserialization
@@ -168,12 +168,6 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     @Override
     public void fromData(DataInput in) throws IOException,
             ClassNotFoundException {
-      fromDataPre_GFE_8_0_0_0(in);
-      this.eventID = (EventID)DataSerializer.readObject(in);
-    }
-    
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException,
-            ClassNotFoundException {
       super.fromData(in);
       this.op = TOperation.values()[in.readByte()];
       //      this.regionVersion = in.readLong();
@@ -191,15 +185,11 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
         }
         this.regionGCVersions.put(mbr, Long.valueOf(in.readLong()));
       }
+      this.eventID = (EventID)DataSerializer.readObject(in);
     }
     
     @Override
     public void toData(DataOutput out) throws IOException {
-      toDataPre_GFE_8_0_0_0(out);
-      DataSerializer.writeObject(this.eventID, out);
-    }
-    
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
       super.toData(out);
       out.writeByte(this.op.ordinal());
       //      out.writeLong(this.regionVersion);
@@ -221,6 +211,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
         }
         out.writeLong(entry.getValue());
       }
+      DataSerializer.writeObject(this.eventID, out);
     }
 
     @Override

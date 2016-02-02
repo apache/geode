@@ -310,12 +310,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
 
-    boolean pre9_0_0_0 = InternalDataSerializer.
-        getVersionForDataStream(out).compareTo(Version.GFE_90) < 0;
-    if (pre9_0_0_0) {
-      DataSerializer.writeObject(new Properties(), out);
-    }
-
     DataSerializer.writeString(this.version, out);
     out.writeInt(this.replyProcessorId);
     out.writeBoolean(this.isMcastEnabled);
@@ -378,12 +372,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     throws IOException, ClassNotFoundException {
     super.fromData(in);
 
-    boolean pre9_0_0_0 = InternalDataSerializer.
-        getVersionForDataStream(in).compareTo(Version.GFE_90) < 0;
-    if (pre9_0_0_0) {
-      DataSerializer.readObject(in);
-    }
-    
     this.version = DataSerializer.readString(in);
     this.replyProcessorId = in.readInt();
     this.isMcastEnabled = in.readBoolean();

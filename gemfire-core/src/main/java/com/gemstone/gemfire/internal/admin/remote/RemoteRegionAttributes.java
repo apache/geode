@@ -375,7 +375,7 @@ public class RemoteRegionAttributes implements RegionAttributes,
     return this.offHeap;
   }
   
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.cacheLoaderDesc, out);
     DataSerializer.writeString(this.cacheWriterDesc, out);
     DataSerializer.writeStringArray(this.cacheListenerDescs, out);
@@ -397,58 +397,6 @@ public class RemoteRegionAttributes implements RegionAttributes,
     out.writeInt(this.initialCapacity);
     out.writeBoolean(this.earlyAck);
     out.writeBoolean(this.multicastEnabled);
-    out.writeBoolean(this.enableGateway);
-    DataSerializer.writeString(this.gatewayHubId, out);
-    out.writeBoolean(this.enableSubscriptionConflation);
-    out.writeBoolean(this.publisher);
-    out.writeBoolean(this.enableAsyncConflation);
-
-    DataSerializer.writeObject(this.diskWriteAttributes, out);
-    DataSerializer.writeObject(this.diskDirs, out);
-    DataSerializer.writeObject(this.diskSizes, out);
-    out.writeBoolean(this.indexMaintenanceSynchronous);
-    DataSerializer.writeObject(this.partitionAttributes, out);
-    DataSerializer.writeObject(this.membershipAttributes, out);
-    DataSerializer.writeObject(this.subscriptionAttributes, out);
-    DataSerializer.writeObject(this.evictionAttributes, out);
-    out.writeBoolean(this.cloningEnable);
-    DataSerializer.writeString(this.diskStoreName, out);
-    out.writeBoolean(this.isDiskSynchronous);
-    DataSerializer.writeStringArray(this.gatewaySendersDescs, out);
-    out.writeBoolean(this.isGatewaySenderEnabled);
-    
-    out.writeBoolean(this.concurrencyChecksEnabled);
-  }
-  
-  public void toDataPre_GFE_9_0_0_0(DataOutput out) throws IOException {
-
-    DataSerializer.writeString(this.cacheLoaderDesc, out);
-    DataSerializer.writeString(this.cacheWriterDesc, out);
-    DataSerializer.writeStringArray(this.cacheListenerDescs, out);
-    DataSerializer.writeString(this.capacityControllerDesc, out);
-    DataSerializer.writeObject(this.keyConstraint, out);
-    DataSerializer.writeObject(this.valueConstraint, out);
-    DataSerializer.writeObject(this.rTtl, out);
-    DataSerializer.writeObject(this.rIdleTimeout, out);
-    DataSerializer.writeObject(this.eTtl, out);
-    DataSerializer.writeString(this.customEttlDesc, out);
-    DataSerializer.writeObject(this.eIdleTimeout, out);
-    DataSerializer.writeString(this.customEIdleDesc, out);
-    DataSerializer.writeObject(this.dataPolicy, out);
-    DataSerializer.writeObject(this.scope, out);
-    out.writeBoolean(this.statsEnabled);
-    out.writeBoolean(this.ignoreJTA);
-    out.writeInt(this.concurrencyLevel);
-    out.writeFloat(this.loadFactor);
-    out.writeInt(this.initialCapacity);
-    out.writeBoolean(this.earlyAck);
-    out.writeBoolean(this.multicastEnabled);
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
-        Version.CURRENT) < 0) {
-      out.writeBoolean(this.enableGateway);
-      DataSerializer.writeString(this.gatewayHubId, out);
-    }
-    
     out.writeBoolean(this.enableSubscriptionConflation);
     out.writeBoolean(this.publisher);
     out.writeBoolean(this.enableAsyncConflation);
@@ -470,15 +418,11 @@ public class RemoteRegionAttributes implements RegionAttributes,
     out.writeBoolean(this.concurrencyChecksEnabled);
   
     DataSerializer.writeString(this.compressorDesc, out);
-  }
-  
-  public void toData(DataOutput out) throws IOException {
-    toDataPre_GFE_9_0_0_0(out);
     out.writeBoolean(this.offHeap);
     DataSerializer.writeString(this.hdfsStoreName, out);
   }
   
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.cacheLoaderDesc = DataSerializer.readString(in);
     this.cacheWriterDesc = DataSerializer.readString(in);
     this.cacheListenerDescs = DataSerializer.readStringArray(in);
@@ -500,58 +444,6 @@ public class RemoteRegionAttributes implements RegionAttributes,
     this.initialCapacity = in.readInt();
     this.earlyAck = in.readBoolean();
     this.multicastEnabled = in.readBoolean();
-    this.enableGateway = in.readBoolean();
-    this.gatewayHubId = DataSerializer.readString(in);
-    this.enableSubscriptionConflation = in.readBoolean();
-    this.publisher = in.readBoolean();
-    this.enableAsyncConflation = in.readBoolean();
-
-    this.diskWriteAttributes = (DiskWriteAttributes) DataSerializer.readObject(in);
-    this.diskDirs = (File[]) DataSerializer.readObject(in);
-    this.diskSizes = (int[] )DataSerializer.readObject(in);
-    this.indexMaintenanceSynchronous = in.readBoolean();
-    this.partitionAttributes = (PartitionAttributes) DataSerializer
-    .readObject(in);
-    this.membershipAttributes = (MembershipAttributes) DataSerializer
-        .readObject(in);
-    this.subscriptionAttributes = (SubscriptionAttributes) DataSerializer
-        .readObject(in);
-    this.evictionAttributes = (EvictionAttributesImpl) DataSerializer.readObject(in);
-    this.cloningEnable = in.readBoolean();
-    this.diskStoreName = DataSerializer.readString(in);
-    this.isDiskSynchronous = in.readBoolean();
-    this.gatewaySendersDescs = DataSerializer.readStringArray(in);
-    this.isGatewaySenderEnabled = in.readBoolean();
-    this.concurrencyChecksEnabled = in.readBoolean();
-  }
-  
-  public void fromDataPre_GFE_9_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    this.cacheLoaderDesc = DataSerializer.readString(in);
-    this.cacheWriterDesc = DataSerializer.readString(in);
-    this.cacheListenerDescs = DataSerializer.readStringArray(in);
-    this.capacityControllerDesc = DataSerializer.readString(in);
-    this.keyConstraint = (Class) DataSerializer.readObject(in);
-    this.valueConstraint = (Class) DataSerializer.readObject(in);
-    this.rTtl = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.rIdleTimeout = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.eTtl = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.customEttlDesc = DataSerializer.readString(in);
-    this.eIdleTimeout = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.customEIdleDesc = DataSerializer.readString(in);
-    this.dataPolicy = (DataPolicy) DataSerializer.readObject(in);
-    this.scope = (Scope) DataSerializer.readObject(in);
-    this.statsEnabled = in.readBoolean();
-    this.ignoreJTA = in.readBoolean();
-    this.concurrencyLevel = in.readInt();
-    this.loadFactor = in.readFloat();
-    this.initialCapacity = in.readInt();
-    this.earlyAck = in.readBoolean();
-    this.multicastEnabled = in.readBoolean();
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
-        Version.CURRENT) < 0) {
-      this.enableGateway = in.readBoolean();
-      this.gatewayHubId = DataSerializer.readString(in);
-    }
     this.enableSubscriptionConflation = in.readBoolean();
     this.publisher = in.readBoolean();
     this.enableAsyncConflation = in.readBoolean();
@@ -575,10 +467,6 @@ public class RemoteRegionAttributes implements RegionAttributes,
     this.concurrencyChecksEnabled = in.readBoolean();
   
     this.compressorDesc = DataSerializer.readString(in);
-  }
-  
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GFE_9_0_0_0(in);
     this.offHeap = in.readBoolean();
     this.hdfsStoreName = DataSerializer.readString(in);
   }

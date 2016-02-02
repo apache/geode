@@ -433,36 +433,7 @@ public class IndexCreationMsg extends PartitionMessage {
   
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[]{Version.GFE_81};
-  }
-  
-  public final void fromDataPre_GFE_8_1_0_0(DataInput in) throws IOException,
-      ClassNotFoundException {
-    super.fromData(in);
-    String name = in.readUTF();
-    String fromClause = in.readUTF();
-    String indexedExpression = in.readUTF();
-    byte indexType = in.readByte();
-    IndexType itype = null;
-    if (0 == indexType) {
-      itype = IndexType.PRIMARY_KEY;
-    } else if (1 == indexType) {
-      itype = IndexType.FUNCTIONAL;
-    } else if (2 == indexType) {
-      itype = IndexType.HASH;
-    }
-    boolean importsNeeded = in.readBoolean();
-    String importStr = null;
-    if (importsNeeded) {
-      importStr = in.readUTF();
-    }
-    IndexCreationData icd = new IndexCreationData(name);
-    icd.setIndexData(itype, fromClause, indexedExpression, importStr);
-    this.indexDefinitions = new HashSet<IndexCreationData>();
-    this.indexDefinitions.add(icd);
-  }
-  
-  public final void toDataPre_GFE_8_1_0_0(DataOutput out) throws IOException {    
+    return null;
   }
   
   @Override

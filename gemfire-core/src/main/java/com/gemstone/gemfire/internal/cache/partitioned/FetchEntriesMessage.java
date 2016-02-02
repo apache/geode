@@ -182,8 +182,7 @@ public final class FetchEntriesMessage extends PartitionMessage
     private boolean hasRVV;
     
     /** The versions in which this message was modified */
-    private static final Version[] dsfidVersions = new Version[] {
-          Version.GFE_80 };
+    private static final Version[] dsfidVersions = null;
 
     @Override
     public Version[] getSerializationVersions() {
@@ -392,11 +391,6 @@ public final class FetchEntriesMessage extends PartitionMessage
    
     @Override
     public void toData(DataOutput out) throws IOException {
-      toDataPre_GFE_8_0_0_0(out);
-      out.writeBoolean(this.hasRVV);
-    }
-    
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
       super.toData(out);
       out.writeInt(this.bucketId);
       out.writeInt(this.seriesNum);
@@ -404,8 +398,9 @@ public final class FetchEntriesMessage extends PartitionMessage
       out.writeInt(this.numSeries);
       out.writeBoolean(this.lastInSeries);
       DataSerializer.writeObjectAsByteArray(this.chunkStream, out);
+      out.writeBoolean(this.hasRVV);
     }
-
+    
     @Override
     public int getDSFID() {
       return PR_FETCH_ENTRIES_REPLY_MESSAGE;
@@ -414,11 +409,6 @@ public final class FetchEntriesMessage extends PartitionMessage
     @Override
     public void fromData(DataInput in)
       throws IOException, ClassNotFoundException {
-      fromDataPre_GFE_8_0_0_0(in);
-      hasRVV = in.readBoolean();
-    }
-    
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.bucketId = in.readInt();
       this.seriesNum = in.readInt();
@@ -426,8 +416,9 @@ public final class FetchEntriesMessage extends PartitionMessage
       this.numSeries = in.readInt();
       this.lastInSeries = in.readBoolean();
       this.chunk = DataSerializer.readByteArray(in);
+      hasRVV = in.readBoolean();
     }
-  
+    
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();

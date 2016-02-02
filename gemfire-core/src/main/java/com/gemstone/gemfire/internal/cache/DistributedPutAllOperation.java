@@ -404,7 +404,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation
 
     /**
      * Used to serialize this instances data to <code>out</code>.
-     * Post 7.1, if changes are made to this method make sure that it is backwards
+     * If changes are made to this method make sure that it is backwards
      * compatible by creating toDataPreXX methods. Also make sure that the callers
      * to this method are backwards compatible by creating toDataPreXX methods for
      * them even if they are not changed. <br>

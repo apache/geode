@@ -223,12 +223,7 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
     
     super.toData(out);
     
-    Version ver = InternalDataSerializer.getVersionForDataStream(out);
-    
     out.writeInt(processorId);
-    if (ver.compareTo(Version.GFE_80) < 0) {
-      out.writeLong(System.currentTimeMillis());
-    }
     DataSerializer.writeString(this.rejectionMessage, out);
     out.writeBoolean(this.responderIsAdmin);
 
@@ -248,9 +243,6 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
     }
     
     DataSerializer.writeObject(interfaces, out);
-    if (ver.compareTo(Version.GFE_90) < 0) {
-      DataSerializer.writeObject(new Properties(), out);
-    }
     out.writeInt(distributedSystemId);
     DataSerializer.writeString(redundancyZone, out);
   }
@@ -261,12 +253,7 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
       
     super.fromData(in);
     
-    Version ver = InternalDataSerializer.getVersionForDataStream(in);
-    
     this.processorId = in.readInt();
-    if (ver.compareTo(Version.GFE_80) < 0) {
-      in.readLong();
-    }
     this.rejectionMessage = DataSerializer.readString(in);
     this.responderIsAdmin = in.readBoolean();
 
@@ -295,9 +282,6 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage impl
     } // for
     
     interfaces = (Set)DataSerializer.readObject(in);
-    if (ver.compareTo(Version.GFE_90) < 0) {
-      DataSerializer.readObject(in);
-    }
     distributedSystemId = in.readInt();
     redundancyZone = DataSerializer.readString(in);
   }

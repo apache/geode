@@ -360,12 +360,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
     this.flags = in.readShort();
     setFlags(this.flags, in);
     this.regionPath = DataSerializer.readString(in);
-
-    // extra field post 9.0
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
-        Version.GFE_90) >= 0) {
-      this.isTransactionDistributed = in.readBoolean();
-    }
+    this.isTransactionDistributed = in.readBoolean();
   }
 
   public InternalDistributedMember getTXOriginatorClient() {
@@ -395,12 +390,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
       DataSerializer.writeObject(this.getTXMemberId(),out);
     }
     DataSerializer.writeString(this.regionPath,out);
-
-    // extra field post 9.0
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
-        Version.GFE_90) >= 0) {
-      out.writeBoolean(this.isTransactionDistributed);
-    }
+    out.writeBoolean(this.isTransactionDistributed);
   }
 
   protected short computeCompressedShort() {

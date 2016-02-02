@@ -187,9 +187,7 @@ public class RemoteBridgeServer
     DataSerializer.writeObject(this.loadProbe, out);
     DataSerializer.writePrimitiveLong(this.loadPollInterval, out);
     out.writeInt(this.socketBufferSize);
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_80) >= 0) {
-      out.writeBoolean(this.tcpNoDelay);
-    }
+    out.writeBoolean(this.tcpNoDelay);
     out.writeInt(this.getClientSubscriptionConfig().getCapacity());
     DataSerializer.writeString(this.getClientSubscriptionConfig()
         .getEvictionPolicy(), out);
@@ -219,9 +217,7 @@ public class RemoteBridgeServer
     setLoadProbe((ServerLoadProbe)DataSerializer.readObject(in));
     setLoadPollInterval(DataSerializer.readPrimitiveLong(in));
     this.socketBufferSize = in.readInt();
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_80) >= 0) {
-      this.tcpNoDelay = in.readBoolean();
-    }
+    this.tcpNoDelay = in.readBoolean();
     this.getClientSubscriptionConfig().setCapacity(in.readInt());
     this.getClientSubscriptionConfig().setEvictionPolicy(
         DataSerializer.readString(in));

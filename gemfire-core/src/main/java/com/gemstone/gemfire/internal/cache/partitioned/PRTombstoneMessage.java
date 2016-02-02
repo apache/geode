@@ -58,7 +58,7 @@ public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
 
   private static final Logger logger = LogService.getLogger();
   
-  private static Version[] serializationVersions = new Version[]{ Version.GFE_80 };
+  private static Version[] serializationVersions = null;
 
   private Set<Object> keys;
   private EventID eventID;
@@ -136,36 +136,25 @@ public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
   @Override
   public void fromData(DataInput in) throws IOException,
           ClassNotFoundException {
-    fromDataPre_GFE_8_0_0_0(in);
-    this.eventID = (EventID)DataSerializer.readObject(in);
-  }
-  
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException,
-          ClassNotFoundException {
     super.fromData(in);
     int numKeys = in.readInt();
     this.keys = new HashSet<Object>(numKeys);
     for (int i=0; i<numKeys; i++) {
       this.keys.add(DataSerializer.readObject(in));
     }
+    this.eventID = (EventID)DataSerializer.readObject(in);
   }
   
-
   @Override
   public void toData(DataOutput out) throws IOException {
-    toDataPre_GFE_8_0_0_0(out);
-    DataSerializer.writeObject(this.eventID, out);
-  }
-  
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
     super.toData(out);
     out.writeInt(this.keys.size());
     for (Object key: keys) {
       DataSerializer.writeObject(key, out);
     }
+    DataSerializer.writeObject(this.eventID, out);
   }
-
-
+  
   private static class Response extends PartitionResponse
   {
 //    Set<InternalDistributedMember> forceReattemptSenders = new HashSet<InternalDistributedMember>();

@@ -241,9 +241,7 @@ public class DistributedClearOperation extends DistributedCacheOperation
       this.clearOp = OperationType.values()[in.readByte()];
       this.eventID = (EventID)DataSerializer.readObject(in);
       this.rvv = (RegionVersionVector)DataSerializer.readObject(in);
-      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_80) >= 0) {
-        this.operationTag = (VersionTag<?>)DataSerializer.readObject(in);
-      }
+      this.operationTag = (VersionTag<?>)DataSerializer.readObject(in);
     }
 
     @Override
@@ -253,9 +251,7 @@ public class DistributedClearOperation extends DistributedCacheOperation
       out.writeByte(this.clearOp.ordinal());
       DataSerializer.writeObject(this.eventID, out);
       DataSerializer.writeObject(this.rvv, out);
-      if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_80) >= 0) {
-        DataSerializer.writeObject(this.operationTag, out);
-      }
+      DataSerializer.writeObject(this.operationTag, out);
     }
 
     @Override
