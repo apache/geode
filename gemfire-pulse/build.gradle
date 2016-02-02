@@ -84,8 +84,7 @@ sourceSets {
 }
 
 task copyGemFireVersionFile(type: Copy) {
-  inputs.dir project(':gemfire-core').sourceSets.main.output
-  from project(':gemfire-core').buildDir.absolutePath + "/generated-resources/main/com/gemstone/gemfire/internal/GemFireVersion.properties"
+  from project(':gemfire-core').createVersionPropertiesFile
   into generatedResources
 }
 
