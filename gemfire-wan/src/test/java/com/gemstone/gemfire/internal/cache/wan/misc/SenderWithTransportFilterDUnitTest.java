@@ -36,11 +36,8 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.wan.CompressionInputStream;
-import com.gemstone.gemfire.internal.cache.wan.CompressionOutputStream;
 import com.gemstone.gemfire.internal.cache.wan.InternalGatewaySenderFactory;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.internal.cache.wan.WANTestBase.MyLocatorCallback;
 import com.gemstone.gemfire.test.dunit.VM;
 
 public class SenderWithTransportFilterDUnitTest extends WANTestBase {
@@ -130,7 +127,6 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     fact.setEndPort(port);
     ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
     transportFilters.add(new CheckSumTranportFilter("CheckSumTranportFilter"));
-    transportFilters.add(new CompressionTranportFilter("CompressionTranportFilter"));
     if (!transportFilters.isEmpty()) {
       for (GatewayTransportFilter filter : transportFilters) {
         fact.addGatewayTransportFilter(filter);
@@ -165,7 +161,6 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setBatchSize(batchSize);
       ((InternalGatewaySenderFactory)gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
       ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
-      transportFilters.add(new CompressionTranportFilter("CompressionTranportFilter"));
       transportFilters.add(new CheckSumTranportFilter("CheckSumTranportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
@@ -194,7 +189,6 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       ((InternalGatewaySenderFactory)gateway)
           .setLocatorDiscoveryCallback(new MyLocatorCallback());
       ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
-      transportFilters.add(new CompressionTranportFilter("CompressionTranportFilter"));
       transportFilters.add(new CheckSumTranportFilter("CheckSumTranportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
@@ -215,33 +209,6 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     }
   }
 
-  static class CompressionTranportFilter implements GatewayTransportFilter {
-
-    private String name;
-    
-    public CompressionTranportFilter(String name){
-      this.name = name;
-    }
-    
-    public String toString(){
-      return this.name;
-    }
-    public InputStream getInputStream(InputStream stream) {
-      return new CompressionInputStream(stream);
-      // return new ZipInputStream(stream);
-    }
-
-    public OutputStream getOutputStream(OutputStream stream) {
-      return new CompressionOutputStream(stream);
-      // return new ZipOutputStream(stream);
-    }
-
-    public void close() {
-      // TODO Auto-generated method stub
-    }
-
-  }
-  
   static class CheckSumTranportFilter implements GatewayTransportFilter {
 
     Adler32 checker = new Adler32();
