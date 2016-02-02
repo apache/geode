@@ -195,6 +195,21 @@ task gfshDepsJar (type: Jar, dependsOn: ':gemfire-core:classes') {
   }
 }
 
+
+def docsDir = file("$buildDir/javadocs")
+task docs(type: Javadoc) {
+    source parent.subprojects*.javadoc*.source
+    classpath = files(parent.subprojects*.javadoc*.classpath)
+    title = "Apache Geode ${project.version}"
+    include 'com/gemstone/gemfire/**/'
+    exclude 'com/gemstone/gemfire/internal/**/'
+    exclude 'com/gemstone/gemfire/**/internal/**/'
+    exclude 'com/gemstone/gemfire/**/xml/**/'
+    exclude 'com/gemstone/gemfire/distributed/**/util/**/'
+    exclude 'com/gemstone/gemfire/test/**/'
+    destinationDir = docsDir
+}
+
 gradle.taskGraph.whenReady( { graph ->
   tasks.withType(AbstractArchiveTask).findAll {
     it.name.toLowerCase().contains("dist")
@@ -295,6 +310,10 @@ distributions {
         from (project(":gemfire-web-api").configurations.archives.allArtifacts.files) {
           exclude '*.jar'
         }
+      }
+
+      into ('javadoc') {
+        from docs
       }
 
       into ('tools/Pulse') {
