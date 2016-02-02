@@ -67,9 +67,7 @@ public class DataType implements DSCODE {
             + DSFIDFactory.create(in.readInt(), in).getClass().getName();
       }
       case DS_NO_FIXED_ID:
-        return "com.gemstone.gemfire.internal.DataSerializableFixedID:" + InternalDataSerializer.readClass(in).getName();
-      case SQLF_DVD_ARR:
-        return "com.vmware.sqlfire.internal.iapi.types.DataValueDescriptor";
+        return "com.gemstone.gemfire.internal.DataSerializableFixedID:" + DataSerializer.readClass(in).getName();
       case NULL:
         return "null";
       case NULL_STRING:
@@ -138,21 +136,22 @@ public class DataType implements DSCODE {
         return "java.util.IdentityHashMap";
       case HASH_TABLE:
         return "java.util.Hashtable";
-      case CONCURRENT_HASH_MAP:
-        return "java.util.concurrent.ConcurrentHashMap";
+      //ConcurrentHashMap is written as java.io.serializable
+      //case CONCURRENT_HASH_MAP:
+      //  return "java.util.concurrent.ConcurrentHashMap";
       case PROPERTIES:
         return "java.util.Properties";
       case TIME_UNIT:
         return "java.util.concurrent.TimeUnit";
       case USER_CLASS:
-        // TODO:KIRK
-        return "DataSerializer";
+        byte userClassDSId = in.readByte();
+        return "DataSerializer: with Id:" + userClassDSId;
       case USER_CLASS_2:
-        // TODO:KIRK
-        return ":DataSerializer";
+        short userClass2DSId = in.readShort();
+        return "DataSerializer: with Id:" + userClass2DSId;
       case USER_CLASS_4:
-        // TODO:KIRK
-        return "DataSerializer";
+        int userClass4DSId = in.readInt();
+        return "DataSerializer: with Id:" + userClass4DSId;
       case VECTOR:
         return "java.util.Vector";
       case STACK:
@@ -229,7 +228,7 @@ public class DataType implements DSCODE {
         try {
           GemFireCacheImpl gfc = GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.");
           EnumInfo enumInfo = gfc.getPdxRegistry().getEnumInfoById(enumId);
-          return "PdxRegistry/java.lang.Enum:" + enumInfo.getClass();
+          return "PdxRegistry/java.lang.Enum:" + enumInfo.getClassName();
         } catch(CacheClosedException e) {
           return "PdxRegistry/java.lang.Enum:PdxRegistryClosed";
         }

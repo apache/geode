@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.offheap;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -45,17 +46,32 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.Instantiator;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.internal.DSCODE;
+import com.gemstone.gemfire.internal.DSFIDFactory;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.DataSerializableJUnitTest.DataSerializableImpl;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.admin.remote.ShutdownAllResponse;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.execute.data.CustId;
+import com.gemstone.gemfire.pdx.internal.EnumInfo;
+import com.gemstone.gemfire.pdx.internal.PdxType;
+import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -63,6 +79,9 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * @author Kirk Lund
  */
 @Category(UnitTest.class)
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore("*.UnitTest")
+@PrepareForTest({ InternalInstantiator.class, Instantiator.class, DataSerializer.class, GemFireCacheImpl.class, DSFIDFactory.class })
 public class DataTypeJUnitTest {
 
   @Test
@@ -85,10 +104,31 @@ public class DataTypeJUnitTest {
     String type = DataType.getDataType(bytes);
     assertEquals("com.gemstone.gemfire.internal.DataSerializableFixedID:" + ShutdownAllResponse.class.getName(), type);
   }
-  @Ignore
   @Test
-  public void testDataSerializableFixedIDInt() throws IOException {
-    // impl this if we ever have a Message class that can be instantiated in a unit test
+  public void testDataSerializableFixedIDInt() throws IOException, ClassNotFoundException {
+    Integer someDSFIDInt = new Integer(1);
+    
+    PowerMockito.mockStatic(DSFIDFactory.class);
+    when(DSFIDFactory.create(eq(someDSFIDInt), any())).thenReturn(someDSFIDInt);
+    DSFIDFactory.create(someDSFIDInt, null);
+    
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    DataSerializer.writeByte(DSCODE.DS_FIXED_ID_INT, out);
+    DataSerializer.writeInteger(someDSFIDInt, out);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertEquals("com.gemstone.gemfire.internal.DataSerializableFixedID:" + Integer.class.getName(), type);
+  }
+  @Test
+  public void testDataSerializableFixedIDClass() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    DataSerializer.writeByte(DSCODE.DS_NO_FIXED_ID, out);
+    DataSerializer.writeClass(Integer.class, out);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertEquals("com.gemstone.gemfire.internal.DataSerializableFixedID:" + Integer.class.getName(), type);
   }
   @Test
   public void testNull() throws IOException {
@@ -159,6 +199,16 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.net.InetAddress", type);
+  }
+  @Test
+  public void testBoolean() throws IOException {
+    Boolean value = Boolean.TRUE;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    DataSerializer.writeObject(value, out);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertEquals("java.lang.Boolean", type);
   }
   @Test
   public void testCharacter() throws IOException {
@@ -570,9 +620,106 @@ public class DataTypeJUnitTest {
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Void.class", type);
   }
-  // TODO:USER_DATA_SERIALIZABLE
-  // TODO:USER_DATA_SERIALIZABLE_2
-  // TODO:USER_DATA_SERIALIZABLE_4
+  //TODO: these tests have to corrected once USER_CLASS, USER_CLASS_2, USER_CLASS_4 are implemented.
+  @Test
+  public void getDataTypeShouldReturnUserClass() throws IOException {
+    byte someUserClassId = 1;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.USER_CLASS);
+    out.writeByte(someUserClassId);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertThat(type).isEqualTo("DataSerializer: with Id:" + someUserClassId);
+  }
+  @Test
+  public void getDataTypeShouldReturnUserClass2() throws IOException {
+    short someUserClass2Id = 1;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.USER_CLASS_2);
+    out.writeShort(someUserClass2Id);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertThat(type).isEqualTo("DataSerializer: with Id:" + someUserClass2Id);
+  }
+  @Test
+  public void getDataTypeShouldReturnUserClass4() throws IOException {
+    int someUserClass4Id = 1;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.USER_CLASS_4);
+    out.writeInt(someUserClass4Id);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertThat(type).isEqualTo("DataSerializer: with Id:" + someUserClass4Id);
+  }
+  @Test
+  public void getDataTypeShouldReturnUserDataSeriazliable() throws IOException {
+    Instantiator mockInstantiator = PowerMockito.mock(Instantiator.class);
+    doReturn(CustId.class).when(mockInstantiator).getInstantiatedClass();
+    mockInstantiator.getInstantiatedClass();
+    
+    int someClassId = 1;
+    
+    PowerMockito.mockStatic(InternalInstantiator.class);
+    when(InternalInstantiator.getClassId(mockInstantiator.getClass())).thenReturn(someClassId);
+    when(InternalInstantiator.getInstantiator(someClassId)).thenReturn(mockInstantiator);
+        
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.USER_DATA_SERIALIZABLE);
+    out.writeByte(someClassId);
+    
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    
+    assertThat(type).isEqualTo("com.gemstone.gemfire.Instantiator:com.gemstone.gemfire.internal.cache.execute.data.CustId");
+  }
+  @Test
+  public void getDataTypeShouldReturnUserDataSeriazliable2() throws IOException {
+    Instantiator mockInstantiator = PowerMockito.mock(Instantiator.class);
+    doReturn(CustId.class).when(mockInstantiator).getInstantiatedClass();
+    mockInstantiator.getInstantiatedClass();
+    
+    int someClassId = 1;
+    
+    PowerMockito.mockStatic(InternalInstantiator.class);
+    when(InternalInstantiator.getClassId(mockInstantiator.getClass())).thenReturn(someClassId);
+    when(InternalInstantiator.getInstantiator(someClassId)).thenReturn(mockInstantiator);
+        
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.USER_DATA_SERIALIZABLE_2);
+    out.writeShort(someClassId);
+    
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    
+    assertThat(type).isEqualTo("com.gemstone.gemfire.Instantiator:com.gemstone.gemfire.internal.cache.execute.data.CustId");
+  }
+  @Test
+  public void getDataTypeShouldReturnUserDataSeriazliable4() throws IOException {
+    Instantiator mockInstantiator = PowerMockito.mock(Instantiator.class);
+    doReturn(CustId.class).when(mockInstantiator).getInstantiatedClass();
+    mockInstantiator.getInstantiatedClass();
+    
+    int someClassId = 1;
+    
+    PowerMockito.mockStatic(InternalInstantiator.class);
+    when(InternalInstantiator.getClassId(mockInstantiator.getClass())).thenReturn(someClassId);
+    when(InternalInstantiator.getInstantiator(someClassId)).thenReturn(mockInstantiator);
+        
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.USER_DATA_SERIALIZABLE_4);
+    out.writeInt(someClassId);
+    
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    
+    assertThat(type).isEqualTo("com.gemstone.gemfire.Instantiator:com.gemstone.gemfire.internal.cache.execute.data.CustId");
+  }
   @Test
   public void testDataSerializable() throws IOException {
     DataSerializableImpl value = new DataSerializableImpl(new Random());
@@ -596,9 +743,122 @@ public class DataTypeJUnitTest {
   @SuppressWarnings("serial")
   public static class SerializableClass implements Serializable {
   }
-  // TODO:PDX
-  // TODO:PDX_ENUM
-  // TODO:GEMFIRE_ENUM
+  @Test
+  public void getDataTypeShouldReturnPDXType() throws IOException {
+    int somePdxTypeInt = 1;
+    PdxType somePdxType = mock(PdxType.class);
+    doReturn("PDXType").when(somePdxType).getClassName();
+
+    TypeRegistry mockTypeRegistry = mock(TypeRegistry.class);
+    when(mockTypeRegistry.getType(somePdxTypeInt)).thenReturn(somePdxType);
+
+    GemFireCacheImpl pdxInstance = mock(GemFireCacheImpl.class);
+    when(pdxInstance.getPdxRegistry()).thenReturn(mockTypeRegistry);
+
+    PowerMockito.mockStatic(GemFireCacheImpl.class);
+    when(GemFireCacheImpl.getForPdx(anyString())).thenReturn(pdxInstance);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.PDX);
+    out.writeInt(somePdxTypeInt);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+
+    assertThat(type).isEqualTo("com.gemstone.gemfire.pdx.PdxInstance:PDXType");
+  }
+  @Test
+  public void getDataTypeShouldReturnUnknownIfPDXTypeIsNull() throws IOException {
+    int somePdxTypeInt = 1;
+    PdxType somePdxType = null;
+    
+    TypeRegistry mockTypeRegistry = mock(TypeRegistry.class);
+    when(mockTypeRegistry.getType(somePdxTypeInt)).thenReturn(somePdxType);
+
+    GemFireCacheImpl pdxInstance = mock(GemFireCacheImpl.class);
+    when(pdxInstance.getPdxRegistry()).thenReturn(mockTypeRegistry);
+
+    PowerMockito.mockStatic(GemFireCacheImpl.class);
+    when(GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")).thenReturn(pdxInstance);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.PDX);
+    out.writeInt(somePdxTypeInt);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+
+    assertThat(type).isEqualTo("com.gemstone.gemfire.pdx.PdxInstance: unknown id="+somePdxTypeInt);
+  }
+  @Test
+  public void getDataTypeShouldReturnPDXRegistryClosedForPDXTypeWhenCacheIsClosed() throws IOException {
+    int somePdxTypeInt = 1;
+
+    PowerMockito.mockStatic(GemFireCacheImpl.class);
+    when(GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")).thenThrow(CacheClosedException.class);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.PDX);
+    out.writeInt(somePdxTypeInt);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+
+    assertThat(type).isEqualTo("com.gemstone.gemfire.pdx.PdxInstance:PdxRegistryClosed");
+  }
+  @Test
+  public void getDataTypeShouldReturnPDXEnumType() throws IOException {
+    int somePdxEnumId = 1;
+    EnumInfo somePdxEnumInfo = mock(EnumInfo.class);
+    doReturn("PDXENUM").when(somePdxEnumInfo).getClassName();
+
+    TypeRegistry mockTypeRegistry = mock(TypeRegistry.class);
+    when(mockTypeRegistry.getEnumInfoById(0)).thenReturn(somePdxEnumInfo);
+
+    GemFireCacheImpl pdxInstance = mock(GemFireCacheImpl.class);
+    when(pdxInstance.getPdxRegistry()).thenReturn(mockTypeRegistry);
+
+    PowerMockito.mockStatic(GemFireCacheImpl.class);
+    when(GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")).thenReturn(pdxInstance);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.PDX_ENUM);
+    out.writeInt(somePdxEnumId);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+
+    assertThat(type).isEqualTo("PdxRegistry/java.lang.Enum:PDXENUM");
+  }
+  @Test
+  public void getDataTypeShouldReturnPDXRegistryClosedForEnumTypeWhenCacheIsClosed() throws IOException {
+    int someArrayLength = 1;
+
+    PowerMockito.mockStatic(GemFireCacheImpl.class);
+    when(GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")).thenThrow(CacheClosedException.class);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.PDX_ENUM);
+    out.writeInt(someArrayLength);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+
+    assertThat(type).isEqualTo("PdxRegistry/java.lang.Enum:PdxRegistryClosed");
+  }
+  @Test
+  public void getDataTypeShouldReturnGemfireEnum() throws IOException {
+    PowerMockito.mockStatic(DataSerializer.class);
+    when(DataSerializer.readString(any(DataInput.class))).thenReturn("GEMFIRE_ENUM");
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.GEMFIRE_ENUM);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+
+    assertThat(type).isEqualTo("java.lang.Enum:GEMFIRE_ENUM");
+  }
   // TODO:PDX_INLINE_ENUM
   @Test
   public void testBigInteger() throws IOException {
@@ -629,5 +889,25 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.util.UUID", type);
+  }
+  @Test
+  public void testSQLTimestamp() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(DSCODE.TIMESTAMP);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertEquals("java.sql.Timestamp", type);
+  }
+  @Test
+  public void testUnknownHeaderType() throws IOException {
+    byte unknownType = 0;
+    
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(baos);
+    out.writeByte(unknownType);
+    byte[] bytes = baos.toByteArray();
+    String type = DataType.getDataType(bytes);
+    assertThat(type).isEqualTo("Unknown header byte: " + unknownType);
   }
 }
