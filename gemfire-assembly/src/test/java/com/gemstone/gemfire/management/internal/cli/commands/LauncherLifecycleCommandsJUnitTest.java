@@ -348,9 +348,9 @@ public class LauncherLifecycleCommandsJUnitTest {
 
     assertTrue(String.format("Expected empty; but was (%1$s)", expectedSpringJarNames),
         expectedSpringJarNames.isEmpty());
-    assertEquals(3212, springCoreVersion);
+    assertEquals(424, springCoreVersion);
     assertEquals(191, springDataCommonsVersion);
-    assertEquals(151, springDataGemFireVersion);
+    assertEquals(172, springDataGemFireVersion);
   }
 
   @Test
