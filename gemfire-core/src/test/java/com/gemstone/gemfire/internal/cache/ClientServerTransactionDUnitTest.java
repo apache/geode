@@ -2966,7 +2966,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       }
     });
   }
-
+  
   /**
    * test that re-tried operations from client do not result in multiple ops in tx
    */
@@ -3053,6 +3053,13 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        if (mgr.getTXState() == null) {
+          // oops - different RMI thread this time.  Spit out a suspect string
+          // so that we can remove this log statement & know that the fix of
+          // setting the TXState works
+          getLogWriter().error("no tx state found for this thread");
+          mgr.setTXState(mgr.getHostedTXState(txid));
+        }
         mgr.commit();
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         CacheListener<CustId, Customer>[] clarray = pr.getAttributes().getCacheListeners();
