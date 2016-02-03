@@ -537,7 +537,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm4.invoke(WANTestBase.class, "startSender", new Object[] { "ln" });
 
-    vm4.invoke(WANTestBase.class, "pauseSender", new Object[] { "ln" });
+    vm4.invoke(WANTestBase.class, "pauseSenderAndWaitForDispatcherToPause", new Object[] { "ln" });
 
     vm2.invoke(WANTestBase.class, "createPartitionedRegion", new Object[] {
         testName, null,1, 100, isOffHeap()  });
@@ -552,7 +552,6 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     
     vm4.invoke(WANTestBase.class, "putGivenKeyValue", new Object[] { testName, keyValues });
 
-    pause(5000);
     vm4.invoke(WANTestBase.class, "checkQueueSize", new Object[] { "ln", keyValues.size() });
     for(int i=0;i<500;i++) {
       updateKeyValues.put(i, i+"_updated");
@@ -560,8 +559,6 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     
     vm4.invoke(WANTestBase.class, "putGivenKeyValue", new Object[] { testName, updateKeyValues });
 
-    pause(5000);
-    
     vm4.invoke(WANTestBase.class, "checkQueueSize", new Object[] { "ln", keyValues.size()  + updateKeyValues.size() });
 
     vm2.invoke(WANTestBase.class, "validateRegionSize", new Object[] {
@@ -569,8 +566,6 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     
     vm4.invoke(WANTestBase.class, "putGivenKeyValue", new Object[] { testName, updateKeyValues });
 
-    pause(5000);
-    
     vm4.invoke(WANTestBase.class, "checkQueueSize", new Object[] { "ln", keyValues.size()  + updateKeyValues.size() });
 
     vm4.invoke(WANTestBase.class, "resumeSender", new Object[] { "ln" });
