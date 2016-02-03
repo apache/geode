@@ -114,8 +114,9 @@ public class FragmentJUnitTest {
     expectedException.expect(IllegalStateException.class);
     expectedException.expectMessage("does not address the original slab memory");
 
+    softly.assertThat(System.getProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION")).isEqualTo("true");
     Fragment fragment = new Fragment(1024L, 0);
-    fail("Constructor failed to thorw exception for non-8-byte alignment");
+    fail("Constructor failed to thorw exception non-slab memory address");
   }
 
   @Test
