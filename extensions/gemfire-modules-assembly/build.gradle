@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import org.apache.tools.ant.filters.ReplaceTokens
+
 configurations {
   slf4jDeps
 }
@@ -34,13 +36,19 @@ dependencies {
 
 jar.enabled = false
 
+def getJarArtifact(module) {
+  project(module).configurations.archives.artifacts.findAll {
+    it instanceof PublishArtifact && it.classifier == '' && it.type == 'jar'
+  }.collect { it.file }
+}
+
 def configureTcServerAssembly = {
   archiveName = "Apache_Geode_Modules-${version}-tcServer.zip"
 
   // All client-server files
   into('gemfire-cs/lib') {
-    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
-    from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from getJarArtifact(':extensions/gemfire-modules')
+    from getJarArtifact(':extensions/gemfire-modules-tomcat7')
     from configurations.slf4jDeps
   }
   into('gemfire-cs/bin') {
@@ -50,7 +58,7 @@ def configureTcServerAssembly = {
     from('release/tcserver/gemfire-cs') {
       include 'modules.env'
     }
-    filter { it.replaceAll('@GEMFIRE_MODULES_VERSION@', version) }
+    filter(ReplaceTokens, tokens:['GEMFIRE_MODULES_VERSION': version])
   }
   into('gemfire-cs/conf') {
     from('release/conf') {
@@ -65,7 +73,7 @@ def configureTcServerAssembly = {
     from('release/tcserver/gemfire-cs') {
       include 'configuration-prompts.properties'
       include 'README.txt'
-      filter { it.replaceAll('@VERSION@', version) }
+      filter(ReplaceTokens, tokens:['VERSION': version])
     }
   }
 
@@ -82,8 +90,8 @@ def configureTcServerAssembly = {
   }
   // All peer-to-peer files
   into('gemfire-p2p/lib') {
-    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
-    from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from getJarArtifact(':extensions/gemfire-modules')
+    from getJarArtifact(':extensions/gemfire-modules-tomcat7')
     from configurations.slf4jDeps
     from('release/3rdparty_license') {
       include "open_source_licenses*${version}.txt"
@@ -111,7 +119,7 @@ def configureTcServerAssembly = {
     from('release/tcserver/gemfire-p2p') {
       include 'configuration-prompts.properties'
       include 'README.txt'
-      filter { it.replaceAll('@VERSION@', version) }
+      filter(ReplaceTokens, tokens:['VERSION': version])
     }
   }
 
@@ -159,8 +167,8 @@ task distTomcat(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
 
   // All client-server files
   into('lib') {
-    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
-    from project(':extensions/gemfire-modules-tomcat7').configurations.archives.allArtifacts.files
+    from getJarArtifact(':extensions/gemfire-modules')
+    from getJarArtifact(':extensions/gemfire-modules-tomcat7')
     from configurations.slf4jDeps
   }
   into('bin') {
@@ -180,7 +188,8 @@ task distHibernate(type: Zip, dependsOn: ':extensions/gemfire-modules-hibernate:
   archiveName = "Apache_Geode_Modules-${version}-Hibernate.zip"
 
   into('lib') {
-    from project(':extensions/gemfire-modules-hibernate').configurations.archives.allArtifacts.files
+    from getJarArtifact(':extensions/gemfire-modules')
+    from getJarArtifact(':extensions/gemfire-modules-hibernate')
   }
 }
 
@@ -188,8 +197,8 @@ task distAppServer(type: Zip, dependsOn: ':extensions/gemfire-modules-session:bu
   archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
 
   into('lib') {
-    from project(':extensions/gemfire-modules').configurations.archives.allArtifacts.files
-    from project(':extensions/gemfire-modules-session').configurations.archives.allArtifacts.files
+    from getJarArtifact(':extensions/gemfire-modules')
+    from getJarArtifact(':extensions/gemfire-modules-session')
     from configurations.slf4jDeps
     from configurations.servletApiDeps
   }
@@ -201,10 +210,10 @@ task distAppServer(type: Zip, dependsOn: ':extensions/gemfire-modules-session:bu
       include 'cacheserver.*'
       include 'gemfire.*'
 
-      filter { it.replaceAll('@GEMFIRE_MODULES_VERSION@', version) }
-      filter { it.replaceAll('@SLF4J_VERSION@', project.'slf4j-api.version') }
-      filter { it.replaceAll('@SERVLET_API_VERSION@', project.'javax.servlet-api_version') }
-      filter { it.replaceAll('@GEMFIRE_VERSION@', version) }
+      filter(ReplaceTokens, tokens:['GEMFIRE_MODULES_VERSION': version])
+      filter(ReplaceTokens, tokens:['SLF4J_VERSION': project.'slf4j-api.version'])
+      filter(ReplaceTokens, tokens:['SERVLET_API_VERSION': project.'javax.servlet-api.version'])
+      filter(ReplaceTokens, tokens:['GEMFIRE_VERSION': version])
     }
   }
 
@@ -213,11 +222,11 @@ task distAppServer(type: Zip, dependsOn: ':extensions/gemfire-modules-session:bu
   }
 }
 
-task distTcServer(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
+task distTcServer(type: Zip, dependsOn: [':extensions/gemfire-modules:build', ':extensions/gemfire-modules-tomcat7:build']) {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: ':extensions/gemfire-modules:build') {
+task distTcServer30(type: Zip, dependsOn: [':extensions/gemfire-modules:build', ':extensions/gemfire-modules-tomcat7:build']) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }

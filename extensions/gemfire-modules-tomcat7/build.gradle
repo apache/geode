@@ -24,10 +24,6 @@ test  {
   }
 }
 
-jar {
-  baseName = 'gemfire-modules-tomcat7'
-}
-
 dependencies {
   compile(project(':extensions/gemfire-modules')) {
     // Remove everything related to Tomcat 6.x
@@ -53,5 +49,5 @@ dependencies {
     exclude group: 'org.apache.tomcat', module: 'catalina-ha'
     exclude group: 'org.apache.tomcat', module: 'juli'
   }
-  provided project(path: ':gemfire-junit', configuration: 'testOutput')
+  provided project(path: ':gemfire-junit')
 }

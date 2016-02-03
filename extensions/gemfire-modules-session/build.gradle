@@ -26,7 +26,6 @@ dependencies {
   }
   testCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')
   testCompile(group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.'jetty.version', classifier: 'tests')
-//  testCompile 'org.apache.tomcat:jasper:6.0.29'
 
   provided project(path: ':gemfire-junit')
 }
@@ -35,7 +34,6 @@ jar {
   include '**/session/filter/**/*'
   include '**/session/installer/**/*'
   includeEmptyDirs = false
-  baseName = 'gemfire-modules-session-external'
 
   manifest {
     attributes 'Main-Class': 'com.gemstone.gemfire.modules.session.installer.Installer'

@@ -24,10 +24,6 @@ test  {
   }
 }
 
-jar {
-  baseName = 'gemfire-modules'
-}
-
 dependencies {
   compile project(':gemfire-core')
 

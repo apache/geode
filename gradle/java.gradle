@@ -125,4 +125,10 @@ subprojects {
     compile 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
     compile 'javax.enterprise:cdi-api:' + project.'cdi-api.version'
   }
+
+  jar {
+    // Intended to strip off 'extensions/' from the modules so that artifacts don't end up in libs/extensions/
+    def parts = project.name.split("/")
+    baseName = parts[parts.length - 1]
+  }
 }
