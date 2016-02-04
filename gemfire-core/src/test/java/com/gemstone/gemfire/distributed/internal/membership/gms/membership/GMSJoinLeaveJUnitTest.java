@@ -139,10 +139,12 @@ public class GMSJoinLeaveJUnitTest {
     }
     mockOldMember = new InternalDistributedMember("localhost", 8700, Version.GFE_56);
 
-    if(useTestGMSJoinLeave)
+    if(useTestGMSJoinLeave) {
       gmsJoinLeave = new GMSJoinLeaveTest();
-    else
+    }
+    else {
       gmsJoinLeave = new GMSJoinLeave();
+    }
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
     gmsJoinLeave.started();
@@ -1105,7 +1107,7 @@ public class GMSJoinLeaveJUnitTest {
       super();
     }
     @Override
-    InternalDistributedMember checkIfAvailable(InternalDistributedMember fmbr) {
+    boolean checkIfAvailable(InternalDistributedMember fmbr) {
       if(removeMember != null) {
         try {
           if(removeMember.equals(fmbr)) {
@@ -1114,17 +1116,17 @@ public class GMSJoinLeaveJUnitTest {
           }
         } catch (InterruptedException e) {
         }
-        return fmbr;
-      }else if(leaveMember != null) {
+        return true;
+      } else if(leaveMember != null) {
         try {
-          if(leaveMember.equals(fmbr)) {
+          if (leaveMember.equals(fmbr)) {
             GMSJoinLeaveJUnitTest.this.processLeaveMessage(fmbr);
             Thread.sleep(1000000);
           }
         } catch (InterruptedException e) {
         }
-        return fmbr;
-      }else {
+        return true;
+      } else {
         return super.checkIfAvailable(fmbr);
       }
     }
@@ -1132,7 +1134,6 @@ public class GMSJoinLeaveJUnitTest {
   
   @Test
   public void testRemoveRequestWhileWaitingForFinalResponse() throws Exception {
-    String reason = "testing";
     initMocks(true, true);
     
     gmsJoinLeave.becomeCoordinatorForTest();
@@ -1155,7 +1156,6 @@ public class GMSJoinLeaveJUnitTest {
   
   @Test
   public void testLeaveRequestWhileWaitingForFinalResponse() throws Exception {
-    String reason = "testing";
     initMocks(true, true);
     
     gmsJoinLeave.becomeCoordinatorForTest();

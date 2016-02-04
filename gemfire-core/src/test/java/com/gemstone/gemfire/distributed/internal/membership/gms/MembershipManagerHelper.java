@@ -41,7 +41,7 @@ public class MembershipManagerHelper
   /** returns the JGroupMembershipManager for the given distributed system */
   public static MembershipManager getMembershipManager(DistributedSystem sys) {
     InternalDistributedSystem isys = (InternalDistributedSystem)sys;
-    DistributionManager dm = (DistributionManager)isys.getDistributionManager();
+    DistributionManager dm = (DistributionManager)isys.getDM();
     MembershipManager mgr = dm.getMembershipManager();
     return mgr;
   }

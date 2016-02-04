@@ -32,6 +32,7 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
@@ -565,11 +567,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   @Override
   public boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval) {
-    boolean pinged = doCheckMember((InternalDistributedMember) mbr);
-    if (!pinged && initiateRemoval) {
-      suspect((InternalDistributedMember) mbr, reason);
-    }
-    return pinged;
+    return inlineCheckIfAvailable(localAddress, currentView, initiateRemoval, (InternalDistributedMember)mbr, reason);
   }
 
   public void start() {
@@ -656,9 +654,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               if (GMSHealthMonitor.this.playingDead) {
                 continue;
               }
-              // [bruce] do we really want a timeout on the server-side?
-//              socket.setSoTimeout((int) services.getConfig().getMemberTimeout());
               serverSocketExecutor.execute(new ClientSocketHandler(socket)); //start();  [bruce] I'm seeing a lot of failures due to this thread not being created fast enough, sometimes as long as 30 seconds
+            
+            } catch (RejectedExecutionException e) {
+              // this can happen during shutdown
+
             } catch (IOException e) {
               if (!isStopping) {
                 logger.trace("Unexpected exception", e);
@@ -1095,7 +1095,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         logger.info("received suspect message from {} for {}: {}",
            sender, req.getSuspectMember(), req.getReason());
       }
-      doFinalCheck(sender, sMembers, cv, localAddress);
+      checkIfAvailable(sender, sMembers, cv);
     }// coordinator ends
     else {
 
@@ -1119,7 +1119,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           logger.info("received suspect message from {} for {}: {}",
              sender, req.getSuspectMember(), req.getReason());
         }
-        doFinalCheck(sender, smbr, cv, localAddress);
+        checkIfAvailable(sender, smbr, cv);
       } else {
         recordSuspectRequests(sMembers, cv);
       }
@@ -1148,8 +1148,19 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
   }
 
-  private void doFinalCheck(final InternalDistributedMember initiator,
-      List<SuspectRequest> sMembers, final NetView cv, InternalDistributedMember localAddress) {
+  /**
+   * performs a "final" health check on the member.  If failure-detection
+   * socket information is available for the member (in the view) then
+   * we attempt to connect to its socket and ask if it's the expected member.
+   * Otherwise we send a heartbeat request and wait for a reply.
+   *  
+   * @param initiator
+   * @param sMembers
+   * @param cv
+   * @param initiateRemoval
+   */
+  private void checkIfAvailable(final InternalDistributedMember initiator,
+      List<SuspectRequest> sMembers, final NetView cv) {
 
 //    List<InternalDistributedMember> membersChecked = new ArrayList<>(10);
     try {
@@ -1184,48 +1195,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           @Override
           public void run() {
             try {
-              services.memberSuspected(initiator, mbr, reason);
-              long startTime = System.currentTimeMillis();
-              // for some reason we used to update the timestamp for the member
-              // with the startTime, but we don't want to do that because it looks
-              // like a heartbeat has been received
-
-              logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
-              boolean pinged;
-              int port = cv.getFailureDetectionPort(mbr);
-              if (port <= 0) {
-                logger.info("Unable to locate failure detection port - requesting a heartbeat");
-                if (logger.isDebugEnabled()) {
-                  logger.debug("\ncurrent view: {}\nports: {}", cv, Arrays.toString(cv.getFailureDetectionPorts()));
-                }
-                pinged = GMSHealthMonitor.this.doCheckMember(mbr);
-                GMSHealthMonitor.this.stats.incFinalCheckRequestsSent();
-                GMSHealthMonitor.this.stats.incUdpFinalCheckRequestsSent();
-                if (pinged) {
-                  GMSHealthMonitor.this.stats.incFinalCheckResponsesReceived();
-                  GMSHealthMonitor.this.stats.incUdpFinalCheckResponsesReceived();
-                }
-              } else {
-                pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
-              }
-
-              boolean failed = false;
-              if (!pinged && !isStopping) {
-                TimeStamp ts = memberTimeStamps.get(mbr);
-                if (ts == null || ts.getTime() <= startTime) {
-                  logger.info("Final check failed - requesting removal of suspect member " + mbr);
-                  services.getJoinLeave().remove(mbr, reason);
-                  failed = true;
-                } else {
-                  logger.info("Final check failed but detected recent message traffic for suspect member " + mbr);
-                }
-              }
-              if (!failed) {
-                logger.info("Final check passed for suspect member " + mbr);
-              }
-              // whether it's alive or not, at this point we allow it to
-              // be watched again
-              suspectedMemberInView.remove(mbr);
+              inlineCheckIfAvailable(initiator, cv, true, mbr,
+                  reason);
             } catch (DistributedSystemDisconnectedException e) {
               return;
             } catch (Exception e) {
@@ -1234,6 +1205,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               GMSHealthMonitor.this.suspectedMemberInView.remove(mbr);
             }
           }
+
+          
         });
         //      }// scheduling for final check and removing it..
       }
@@ -1241,6 +1214,59 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 //      membersInFinalCheck.removeAll(membersChecked);
     }
   }
+
+  private boolean inlineCheckIfAvailable(
+      final InternalDistributedMember initiator, final NetView cv,
+      boolean initiateRemoval,
+      final InternalDistributedMember mbr, final String reason) {
+
+    services.memberSuspected(initiator, mbr, reason);
+    long startTime = System.currentTimeMillis();
+    // for some reason we used to update the timestamp for the member
+    // with the startTime, but we don't want to do that because it looks
+    // like a heartbeat has been received
+
+    logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
+    boolean pinged;
+    int port = cv.getFailureDetectionPort(mbr);
+    if (port <= 0) {
+      logger.info("Unable to locate failure detection port - requesting a heartbeat");
+      if (logger.isDebugEnabled()) {
+        logger.debug("\ncurrent view: {}\nports: {}", cv, Arrays.toString(cv.getFailureDetectionPorts()));
+      }
+      pinged = GMSHealthMonitor.this.doCheckMember(mbr);
+      GMSHealthMonitor.this.stats.incFinalCheckRequestsSent();
+      GMSHealthMonitor.this.stats.incUdpFinalCheckRequestsSent();
+      if (pinged) {
+        GMSHealthMonitor.this.stats.incFinalCheckResponsesReceived();
+        GMSHealthMonitor.this.stats.incUdpFinalCheckResponsesReceived();
+      }
+    } else {
+      pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
+    }
+
+    boolean failed = false;
+    if (!pinged && !isStopping) {
+      TimeStamp ts = memberTimeStamps.get(mbr);
+      if (ts == null || ts.getTime() <= startTime) {
+        logger.info("Final check failed - requesting removal of suspect member " + mbr);
+        if (initiateRemoval) {
+          services.getJoinLeave().remove(mbr, reason);
+        }
+        failed = true;
+      } else {
+        logger.info("Final check failed but detected recent message traffic for suspect member " + mbr);
+      }
+    }
+    if (!failed) {
+      logger.info("Final check passed for suspect member " + mbr);
+    }
+    // whether it's alive or not, at this point we allow it to
+    // be watched again
+    suspectedMemberInView.remove(mbr);
+    return !failed;
+  }
+    
   @Override
   public void memberShutdown(DistributedMember mbr, String reason) {
   }

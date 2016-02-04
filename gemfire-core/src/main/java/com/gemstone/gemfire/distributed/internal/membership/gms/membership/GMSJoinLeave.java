@@ -2161,16 +2161,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       filterMembers(mbrs, newLeaves, LEAVE_REQUEST_MESSAGE);   
       
       for (InternalDistributedMember mbr : mbrs) {
-        final InternalDistributedMember fmbr = mbr;
         checkers.add(new Callable<InternalDistributedMember>() {
           @Override
           public InternalDistributedMember call() throws Exception {
             // return the member id if it fails health checks
-            InternalDistributedMember mbr = GMSJoinLeave.this.checkIfAvailable(fmbr);
+            boolean available = GMSJoinLeave.this.checkIfAvailable(mbr);
             
             synchronized (viewRequests) {
-              if(mbr != null)
+              if (available) {
                 mbrs.remove(mbr);
+              }
               viewRequests.notifyAll();
             }
             return mbr;
@@ -2259,14 +2259,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
   
-  InternalDistributedMember checkIfAvailable(InternalDistributedMember fmbr) {
+  boolean checkIfAvailable(InternalDistributedMember fmbr) {
  // return the member id if it fails health checks
     logger.info("checking state of member " + fmbr);
     if (services.getHealthMonitor().checkIfAvailable(fmbr, "Member failed to acknowledge a membership view", false)) {
       logger.info("member " + fmbr + " passed availability check");
-      return fmbr;
+      return true;
     }
     logger.info("member " + fmbr + " failed availability check");
-    return null;
+    return false;
   }
 }

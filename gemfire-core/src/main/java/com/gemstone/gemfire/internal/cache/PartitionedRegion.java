@@ -9760,17 +9760,13 @@ public class PartitionedRegion extends LocalRegion implements
     }
 
     // Include current VM in the status...
-    // remoteInfos.add(new Object[] {
-    // getDistributionManager().getId(),
-    // new Boolean(
-    // getRegionAdvisor().getBucket(bucketId).isHosting())});
     if (getRegionAdvisor().getBucket(bucketId).isHosting()) {
       if (getRegionAdvisor().isPrimaryForBucket(bucketId)) {
-        remoteInfos.add(new Object[] { getDistributionManager().getId(),
+        remoteInfos.add(new Object[] { getSystem().getDM().getId(),
             Boolean.TRUE, "" });
       }
       else {
-        remoteInfos.add(new Object[] { getDistributionManager().getId(),
+        remoteInfos.add(new Object[] { getSystem().getDM().getId(),
             Boolean.FALSE, "" });
       }
     }

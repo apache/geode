@@ -434,9 +434,11 @@ public class ReconnectDUnitTest extends CacheTestCase
           fail("interrupted while waiting for reconnect");
         }
         assertTrue("expected system to be reconnected", ds.getReconnectedSystem() != null);
-        int viewId = MembershipManagerHelper.getMembershipManager(ds.getReconnectedSystem()).getView().getViewId();
-        int memberViewId = ((InternalDistributedMember)ds.getReconnectedSystem().getDistributedMember()).getVmViewId();
-        assertEquals("expected a new ID to be assigned", viewId, memberViewId);
+        int oldViewId = MembershipManagerHelper.getMembershipManager(ds).getLocalMember().getVmViewId();
+        int newViewId = ((InternalDistributedMember)ds.getReconnectedSystem().getDistributedMember()).getVmViewId();
+        if ( !(newViewId > oldViewId) ) {
+          fail("expected a new ID to be assigned.  oldViewId="+oldViewId + "; newViewId=" + newViewId);
+        }
         return ds.getReconnectedSystem().getDistributedMember();
       }
     });

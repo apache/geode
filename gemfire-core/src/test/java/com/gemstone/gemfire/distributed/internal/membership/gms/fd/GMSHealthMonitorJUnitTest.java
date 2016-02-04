@@ -163,30 +163,14 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testHMNextNeighborVerify() throws IOException {
-
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-    gmsHealthMonitor.started();
-
-    gmsHealthMonitor.installView(v);
-
+    installAView();
     Assert.assertEquals(mockMembers.get(4), gmsHealthMonitor.getNextNeighbor());
-
   }
 
   @Test
   public void testHMNextNeighborAfterTimeout() throws Exception {
     System.out.println("testHMNextNeighborAfterTimeout starting");
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-
-//    System.out.printf("memberID is %s view is %s\n", mockMembers.get(3), v);
-    
-    // 3rd is current member
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-    gmsHealthMonitor.started();
-
-    gmsHealthMonitor.installView(v);
+    installAView();
 
     // allow the monitor to give up on the initial "next neighbor" and
     // move on to the one after it
@@ -201,7 +185,7 @@ public class GMSHealthMonitorJUnitTest {
     // neighbor should change to 5th
     System.out.println("testHMNextNeighborAfterTimeout ending");
     Assert.assertEquals("expected " + expected + " but found " + neighbor
-        + ".  view="+v, expected, neighbor);  
+        + ".  view="+joinLeave.getView(), expected, neighbor);  
   }
 
   /**
@@ -210,13 +194,7 @@ public class GMSHealthMonitorJUnitTest {
 
   @Test
   public void testHMNextNeighborBeforeTimeout() throws IOException {
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-
-    // 3rd is current member
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-    gmsHealthMonitor.started();
-
-    gmsHealthMonitor.installView(v);
+    installAView();
 
     //Should we remove these sleeps and force the checkmember directly instead of waiting?
     try {
@@ -228,7 +206,7 @@ public class GMSHealthMonitorJUnitTest {
     // neighbor should be same
     System.out.println("next neighbor is " + gmsHealthMonitor.getNextNeighbor() +
         "\nmy address is " + mockMembers.get(3) +
-        "\nview is " + v);
+        "\nview is " + joinLeave.getView());
 
     Assert.assertEquals(mockMembers.get(4), gmsHealthMonitor.getNextNeighbor());
   }
@@ -238,14 +216,7 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testSuspectMembersCalledThroughMemberCheckThread() throws Exception {
-    System.out.println("testSuspectMembersCalledThroughMemberCheckThread starting");
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-
-    // 3rd is current member
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-    gmsHealthMonitor.started();
-
-    gmsHealthMonitor.installView(v);
+    installAView();
 
     // when the view is installed we start a heartbeat timeout.  After
     // that expires we request a heartbeat
@@ -257,18 +228,23 @@ public class GMSHealthMonitorJUnitTest {
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsSent() > 0);
   }
 
-  /***
-   * checks ping thread didn't sends suspectMembers message before timeout
-   */
-  @Test
-  public void testSuspectMembersNotCalledThroughPingThreadBeforeTimeout() {
+  private void installAView() {
+    System.out.println("testSuspectMembersCalledThroughMemberCheckThread starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
 
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
     gmsHealthMonitor.started();
-    
+
     gmsHealthMonitor.installView(v);
+  }
+
+  /***
+   * checks ping thread didn't sends suspectMembers message before timeout
+   */
+  @Test
+  public void testSuspectMembersNotCalledThroughPingThreadBeforeTimeout() {
+    installAView();
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
 
     try {
@@ -286,12 +262,7 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testSuspectMembersCalledThroughSuspectThread() throws Exception {
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-    
-    // 3rd is current member
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-
-    gmsHealthMonitor.installView(v);
+    installAView();
 
     gmsHealthMonitor.suspect(mockMembers.get(1), "Not responding");
 
@@ -308,12 +279,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testSuspectMembersNotCalledThroughSuspectThreadBeforeTimeout() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-
-    // 3rd is current member
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-
-    gmsHealthMonitor.installView(v);
+    installAView();
 
     gmsHealthMonitor.suspect(mockMembers.get(1), "Not responding");
 
@@ -437,16 +403,19 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testCheckIfAvailableNoHeartBeatDontRemoveMember() {
+    installAView();
     long startTime = System.currentTimeMillis();
-    boolean retVal = gmsHealthMonitor.checkIfAvailable(mockMembers.get(1), "Not responding", false);
+    boolean retVal = gmsHealthMonitor.checkIfAvailable(mockMembers.get(1), "Not responding", true);
     long timeTaken = System.currentTimeMillis() - startTime;
 
-    assertTrue("This should have taken member ping timeout 100ms ", timeTaken >= gmsHealthMonitor.memberTimeout);
     assertFalse("CheckIfAvailable should have return false", retVal);
+    assertTrue("This should have taken member ping timeout 100ms but it took " + timeTaken, timeTaken >= gmsHealthMonitor.memberTimeout);
   }
 
   @Test
   public void testCheckIfAvailableWithSimulatedHeartBeat() {
+    installAView();
+    
     InternalDistributedMember memberToCheck = mockMembers.get(1);
     HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
     fakeHeartbeat.setSender(memberToCheck);
@@ -466,12 +435,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testShutdown() {
 
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-
-    // 3rd is current member
-    when(messenger.getMemberID()).thenReturn(mockMembers.get(3));
-
-    gmsHealthMonitor.installView(v);
+    installAView();
 
     gmsHealthMonitor.stop();
 
