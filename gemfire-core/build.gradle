@@ -122,7 +122,7 @@ task createVersionPropertiesFile {
   doLast {
 
     try {
-      def grgit = org.ajoberstar.grgit.Grgit.open()
+      def grgit = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
       ext.branch = grgit.branch.getCurrent().name
       ext.commitId = grgit.head().id
       ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
