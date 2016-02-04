@@ -46,7 +46,6 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -54,6 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -80,6 +80,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore("*.UnitTest")
 @PrepareForTest({ InternalInstantiator.class, Instantiator.class, DataSerializer.class, GemFireCacheImpl.class, DSFIDFactory.class })
 public class DataTypeJUnitTest {
 
