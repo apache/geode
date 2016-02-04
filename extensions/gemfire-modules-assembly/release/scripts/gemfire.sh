@@ -27,14 +27,13 @@ if [ "x$WINDIR" != "x" ]; then
   exit 1
 fi
 
-if [ ! -f $GEMFIRE/lib/gemfire.jar ]; then
+GEMFIRE_DEP_JAR=$GEMFIRE/lib/gemfire-core-dependencies.jar
+if [ ! -f "$GEMFIRE_DEP_JAR" ]; then
   echo "ERROR: Could not determine GEMFIRE location."
   exit 1
 fi
 
-LOG4J_API=$( ls $GEMFIRE/lib/log4j-api*jar )
-LOG4J_CORE=$( ls $GEMFIRE/lib/log4j-core*jar )
-GEMFIRE_JARS=$GEMFIRE/lib/gemfire.jar:$GEMFIRE/lib/antlr.jar:$LOG4J_API:$LOG4J_CORE
+GEMFIRE_JARS=$GEMFIRE_DEP_JAR
 
 if [ "x$CLASSPATH" != "x" ]; then
   GEMFIRE_JARS=$GEMFIRE_JARS:$CLASSPATH

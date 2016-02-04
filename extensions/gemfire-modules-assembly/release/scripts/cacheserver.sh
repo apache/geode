@@ -33,7 +33,7 @@ fi
 ARGS=( "$@" )
 ARGS_LENGTH=${#ARGS[@]}
 CLASS_ARGS=()
-for (( i==0; i<$ARGS_LENGTH; i++ )); 
+for (( i=0; i<$ARGS_LENGTH; i++ ));
 do
 	if [ "${ARGS[$i]}" == "-d" ]; then
 		i=$(($i+1))
@@ -73,26 +73,19 @@ if [ "x$WINDIR" != "x" ]; then
   exit 1
 fi
 
-if [ ! -f $GEMFIRE/lib/gemfire.jar ]; then
+GEMFIRE_DEP_JAR=$GEMFIRE/lib/gemfire-core-dependencies.jar
+if [ ! -f "$GEMFIRE_DEP_JAR" ]; then
   echo "ERROR: Could not determine GEMFIRE location."
   exit 1
 fi
-
-# Initialize classpath
-
-LOG4J_API=$( ls $GEMFIRE/lib/log4j-api*jar )
-LOG4J_CORE=$( ls $GEMFIRE/lib/log4j-core*jar )
 
 MOD_JAR=`ls $GEMFIRE/lib/gemfire-modules-?.*.jar` 2>/dev/null
 if [ -z "$MOD_JAR" ]; then
   MOD_JAR=$GEMFIRE/lib/gemfire-modules.jar
 fi
 
-# Add GemFire classes
-GEMFIRE_JARS=$GEMFIRE/lib/gemfire.jar:$GEMFIRE/lib/antlr.jar:$LOG4J_API:$LOG4J_CORE
-
 # Add Tomcat classes
-GEMFIRE_JARS=$GEMFIRE_JARS:$MOD_JAR:$TOMCAT_DIR/lib/servlet-api.jar:$TOMCAT_DIR/lib/catalina.jar:$TOMCAT_DIR/lib/tomcat-util.jar:$TOMCAT_DIR/bin/tomcat-juli.jar
+GEMFIRE_JARS=$GEMFIRE_DEP_JAR:$MOD_JAR:$TOMCAT_DIR/lib/servlet-api.jar:$TOMCAT_DIR/lib/catalina.jar:$TOMCAT_DIR/lib/tomcat-util.jar:$TOMCAT_DIR/bin/tomcat-juli.jar
 
 # Add configuration
 GEMFIRE_JARS=$GEMFIRE_JARS:$GEMFIRE/conf
