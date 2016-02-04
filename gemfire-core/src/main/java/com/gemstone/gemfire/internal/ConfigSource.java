@@ -29,10 +29,31 @@ public class ConfigSource implements Serializable {
   public enum Type {API, SYSTEM_PROPERTY, FILE, SECURE_FILE, XML, RUNTIME, LAUNCHER};
   private final Type type;
   private final String description;
-  
-  private ConfigSource(Type t, String d) {
+
+  private ConfigSource(Type t) {
     this.type = t;
-    this.description = d;
+    switch (t) {
+      case API: this.description = "api"; break;
+      case SYSTEM_PROPERTY: this.description = "system property"; break;
+      case FILE: this.description = "file"; break;
+      case SECURE_FILE: this.description = "secure file"; break;
+      case XML: this.description = "cache.xml"; break;
+      case RUNTIME: this.description = "runtime modification"; break;
+      case LAUNCHER: this.description = "launcher"; break;
+      default:
+        this.description = "";
+    }
+  }
+
+  private ConfigSource(String fileName, boolean secure) {
+    if(secure) {
+      this.type = Type.SECURE_FILE;
+      this.description = (fileName==null)?"secure file":fileName;
+    }
+    else {
+      this.type = Type.FILE;
+      this.description = (fileName==null)?"file":fileName;
+    }
   }
   /**
    * @return returns the type of this source
@@ -41,32 +62,20 @@ public class ConfigSource implements Serializable {
     return this.type;
   }
   public String getDescription() {
-    String result = this.description;
-    if (result == null) {
-      switch (getType()) {
-      case API: result = "api"; break;
-      case SYSTEM_PROPERTY: result = "system property"; break;
-      case FILE: result = "file"; break;
-      case SECURE_FILE: result = "secure file"; break;
-      case XML: result = "cache.xml"; break;
-      case RUNTIME: result = "runtime modification"; break;
-      case LAUNCHER: result = "launcher"; break;
-      }
-    }
-    return result;
+    return this.description;
   }
 
-  private static final ConfigSource API_SINGLETON = new ConfigSource(Type.API, null);
-  private static final ConfigSource SYSPROP_SINGLETON = new ConfigSource(Type.SYSTEM_PROPERTY, null);
-  private static final ConfigSource XML_SINGLETON = new ConfigSource(Type.XML, null);
-  private static final ConfigSource RUNTIME_SINGLETON = new ConfigSource(Type.RUNTIME, null);
-  private static final ConfigSource LAUNCHER_SINGLETON = new ConfigSource(Type.LAUNCHER, null);
+  private static final ConfigSource API_SINGLETON = new ConfigSource(Type.API);
+  private static final ConfigSource SYSPROP_SINGLETON = new ConfigSource(Type.SYSTEM_PROPERTY);
+  private static final ConfigSource XML_SINGLETON = new ConfigSource(Type.XML);
+  private static final ConfigSource RUNTIME_SINGLETON = new ConfigSource(Type.RUNTIME);
+  private static final ConfigSource LAUNCHER_SINGLETON = new ConfigSource(Type.LAUNCHER);
   
   public static ConfigSource api() {return API_SINGLETON;}
   public static ConfigSource sysprop() {return SYSPROP_SINGLETON;}
   public static ConfigSource xml() {return XML_SINGLETON;}
   public static ConfigSource runtime() {return RUNTIME_SINGLETON;}
-  public static ConfigSource file(String fileName, boolean secure) {return new ConfigSource(secure ? Type.SECURE_FILE : Type.FILE, fileName);}
+  public static ConfigSource file(String fileName, boolean secure) {return new ConfigSource(fileName, secure);}
   public static ConfigSource launcher() {return LAUNCHER_SINGLETON;}
   
   @Override
@@ -87,14 +96,9 @@ public class ConfigSource implements Serializable {
     if (getClass() != obj.getClass())
       return false;
     ConfigSource other = (ConfigSource) obj;
-    if (description == null) {
-      if (other.description != null)
-        return false;
-    } else if (!description.equals(other.description))
-      return false;
-    if (type != other.type)
-      return false;
-    return true;
+
+    return (type == other.type
+            && description.equals(other.description));
   }
   
   @Override

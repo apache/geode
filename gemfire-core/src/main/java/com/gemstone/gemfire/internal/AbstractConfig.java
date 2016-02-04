@@ -17,30 +17,17 @@
 
 package com.gemstone.gemfire.internal;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeSet;
-
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
-import com.gemstone.gemfire.distributed.internal.AbstractDistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.FlowControlParams;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.io.*;
+import java.lang.reflect.Array;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Provides an implementation of the {@link Config} interface
@@ -70,16 +57,6 @@ public abstract class AbstractConfig implements Config {
    */
   protected boolean _modifiableDefault() {
     return false;
-  }
-
-  /**
-   * Checks to see if the named attribute can be modified.
-   * @throws UnmodifiableException if it is unmodifiable.
-   */
-  protected void _checkIfModifiable(String attName) {
-    if (!isAttributeModifiable(attName)) {
-      throw new UnmodifiableException(_getUnmodifiableMsg(attName));
-    }
   }
   
   /**
@@ -117,7 +94,6 @@ public abstract class AbstractConfig implements Config {
   public Map<String, String> getConfigPropsFromSource(ConfigSource source) {
     Map<String, String> configProps = new HashMap<String, String>();
     String[] validAttributeNames = getAttributeNames();
-    boolean sourceFound = false;
     Map<String, ConfigSource> sm = getAttSourceMap();
     
     for (int i=0; i < validAttributeNames.length; i++) {
@@ -128,14 +104,6 @@ public abstract class AbstractConfig implements Config {
         }
       } else if (!source.equals(sm.get(attName))) {
         continue;
-      } 
-      if (!sourceFound) {
-        sourceFound = true;
-        if (source == null) {
-          //configProps.put(sourceHeader, "### GemFire Properties using default values ###");
-        } else {
-          //configProps.put(sourceHeader, "### GemFire Properties defined with " + source.getDescription() + " ###");
-        }
       }
       configProps.put(attName, this.getAttribute(attName));
     }
@@ -328,12 +296,18 @@ public abstract class AbstractConfig implements Config {
     Object result = getAttributeObject(attName);
     if (result instanceof String) {
       return (String)result;
-    } if (attName.equalsIgnoreCase(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME)) {
+    }
+
+    if (attName.equalsIgnoreCase(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME)) {
       int[] value = (int[])result;
       return ""+value[0]+"-"+value[1];
-    } else if (result.getClass().isArray()) {
+    }
+
+    if (result.getClass().isArray()) {
       return SystemAdmin.join((Object[])result);
-    } else if (result instanceof InetAddress) {
+    }
+
+    if (result instanceof InetAddress) {
       InetAddress addr = (InetAddress)result;
       String addrName = null;
       if (addr.isMulticastAddress() || !SocketCreator.resolve_dns) {
@@ -342,9 +316,9 @@ public abstract class AbstractConfig implements Config {
         addrName = SocketCreator.getHostName(addr);
       }
       return addrName;
-    } else {
-      return result.toString();
     }
+
+    return result.toString();
   }
 
   public ConfigSource getAttributeSource(String attName) {

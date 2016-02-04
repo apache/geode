@@ -46,7 +46,17 @@ public interface LogConfig {
    * property
    */
   public int getLogDiskSpaceLimit();
-  
+
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#name">"name"</a> property
+   * Gets the member's name.
+   * A name is optional and by default empty.
+   * If set it must be unique in the ds.
+   * When set its used by tools to help identify the member.
+   * <p> The default value is: {@link #DEFAULT_NAME}.
+   * @return the system's name.
+   */
   public String getName();
   
   public String toLoggerString();

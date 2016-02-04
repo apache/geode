@@ -17,11 +17,13 @@
    
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.File;
-
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -56,33 +58,23 @@ public final class RuntimeDistributionConfigImpl
   }
 
   ////////////////////  Configuration Methods  ////////////////////
-
   @Override
   public void setLogLevel(int value) {
-    checkLogLevel(value);
-    this.logLevel = value;
+    this.logLevel = (Integer)checkAttribute(LOG_LEVEL_NAME, value);
     getAttSourceMap().put(LOG_LEVEL_NAME, ConfigSource.runtime());
     this.ds.getInternalLogWriter().setLogWriterLevel(value);
     LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
-  @Override
-  public boolean isLogLevelModifiable() {
-    return true;
-  }
   
   @Override
   public void setStatisticSamplingEnabled(boolean value) {
-    checkStatisticSamplingEnabled(value);
-    this.statisticSamplingEnabled = value;
+    this.statisticSamplingEnabled = (Boolean)checkAttribute(STATISTIC_SAMPLING_ENABLED_NAME, value);
     getAttSourceMap().put(STATISTIC_SAMPLING_ENABLED_NAME, ConfigSource.runtime());
   }
-  @Override
-  public boolean isStatisticSamplingEnabledModifiable() {
-    return true;
-  }
+
   @Override
   public void setStatisticSampleRate(int value) {
-    checkStatisticSampleRate(value);
+    value = (Integer)checkAttribute(STATISTIC_SAMPLE_RATE_NAME, value);
     if (value < DEFAULT_STATISTIC_SAMPLE_RATE) {
       // fix 48228
       this.ds.getLogWriter().info("Setting statistic-sample-rate to " + DEFAULT_STATISTIC_SAMPLE_RATE + " instead of the requested " + value + " because VSD does not work with sub-second sampling.");
@@ -90,13 +82,10 @@ public final class RuntimeDistributionConfigImpl
     }
     this.statisticSampleRate = value;
   }
-  @Override
-  public boolean isStatisticSampleRateModifiable() {
-    return true;
-  }
+
   @Override
   public void setStatisticArchiveFile(File value) {
-    checkStatisticArchiveFile(value);
+    value = (File)checkAttribute(STATISTIC_ARCHIVE_FILE_NAME, value);
     if (value == null) {
       value = new File("");
     }
@@ -108,55 +97,42 @@ public final class RuntimeDistributionConfigImpl
     this.statisticArchiveFile = value;
     getAttSourceMap().put(STATISTIC_ARCHIVE_FILE_NAME, ConfigSource.runtime());
   }
-  @Override
-  public boolean isStatisticArchiveFileModifiable() {
-    return true;
-  }
+
 
   @Override
   public void setArchiveDiskSpaceLimit(int value) {
-    checkArchiveDiskSpaceLimit(value);
-    this.archiveDiskSpaceLimit = value;
+    this.archiveDiskSpaceLimit = (Integer)checkAttribute(ARCHIVE_DISK_SPACE_LIMIT_NAME, value);
     getAttSourceMap().put(ARCHIVE_DISK_SPACE_LIMIT_NAME, ConfigSource.runtime());
   }
-  @Override
-  public boolean isArchiveDiskSpaceLimitModifiable() {
-    return true;
-  }
+
   @Override
   public void setArchiveFileSizeLimit(int value) {
-    checkArchiveFileSizeLimit(value);
-    this.archiveFileSizeLimit = value;
+    this.archiveFileSizeLimit = (Integer)checkAttribute(ARCHIVE_FILE_SIZE_LIMIT_NAME, value);
     getAttSourceMap().put(ARCHIVE_FILE_SIZE_LIMIT_NAME, ConfigSource.runtime());
   }
-  @Override
-  public boolean isArchiveFileSizeLimitModifiable() {
-    return true;
-  }
+
   @Override
   public void setLogDiskSpaceLimit(int value) {
-    checkLogDiskSpaceLimit(value);
-    this.logDiskSpaceLimit = value;
+    this.logDiskSpaceLimit = (Integer)checkAttribute(LOG_DISK_SPACE_LIMIT_NAME, value);
     getAttSourceMap().put(LOG_DISK_SPACE_LIMIT_NAME, ConfigSource.runtime());
     LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
-  @Override
-  public boolean isLogDiskSpaceLimitModifiable() {
-    return true;
-  }
+
   @Override
   public void setLogFileSizeLimit(int value) {
-    checkLogFileSizeLimit(value);
-    this.logFileSizeLimit = value;
+    this.logFileSizeLimit = (Integer)checkAttribute(LOG_FILE_SIZE_LIMIT_NAME, value);
     getAttSourceMap().put(this.LOG_FILE_SIZE_LIMIT_NAME, ConfigSource.runtime());
     LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
-  }
-  @Override
-  public boolean isLogFileSizeLimitModifiable() {
-    return true;
   }
 
   public DistributionConfig takeSnapshot() {
     return new DistributionConfigSnapshot(this);
   }
+
+  public List<String> getModifiableAttributes(){
+    String[] modifiables = {HTTP_SERVICE_PORT_NAME,JMX_MANAGER_HTTP_PORT_NAME, ARCHIVE_DISK_SPACE_LIMIT_NAME,
+            ARCHIVE_FILE_SIZE_LIMIT_NAME, LOG_DISK_SPACE_LIMIT_NAME, LOG_FILE_SIZE_LIMIT_NAME,
+            LOG_LEVEL_NAME, STATISTIC_ARCHIVE_FILE_NAME, STATISTIC_SAMPLE_RATE_NAME, STATISTIC_SAMPLING_ENABLED_NAME};
+    return Arrays.asList(modifiables);
+  };
 }

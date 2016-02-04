@@ -16,19 +16,9 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.InvalidValueException;
+import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.AbstractConfig;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.SocketCreator;
@@ -36,6 +26,11 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -54,162 +49,97 @@ public abstract class AbstractDistributionConfig
   extends AbstractConfig
   implements DistributionConfig
 {
-  protected void checkName(String value) {
-    _checkIfModifiable(NAME_NAME);
-  }
-  public boolean isNameModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isEnableNetworkPartitionDetectionModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isDisableAutoReconnectModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isDepartureCorrelationWindowModifiable() {
-    return _modifiableDefault();
-  }
 
-  protected void checkLogFile(File value) {
-    _checkIfModifiable(LOG_FILE_NAME);
-  }
-  public boolean isLogFileModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkLogLevel(int value) {
-    _checkIfModifiable(LOG_LEVEL_NAME);
-    if (value < MIN_LOG_LEVEL) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {LOG_LEVEL_NAME, Integer.valueOf(value), Integer.valueOf(MIN_LOG_LEVEL)}));
+  protected Object checkAttribute(String attName, Object value){
+    // first check to see if this attribute is modifiable, this also checks if the attribute is a valid one.
+    if (!isAttributeModifiable(attName)) {
+      throw new UnmodifiableException(_getUnmodifiableMsg(attName));
     }
-    if (value > MAX_LOG_LEVEL) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {LOG_LEVEL_NAME, Integer.valueOf(value), Integer.valueOf(MAX_LOG_LEVEL)}));
+
+    ConfigAttribute attribute = attributes.get(attName);
+    if(attribute==null){
+      // isAttributeModifiable already checks the validity of the attName, if reached here, then they
+      // must be those special attributes that starts with ssl_system_props or sys_props, no further checking needed
+      return value;
+    }
+    // for integer attribute, do the range check.
+    if(attribute.type().equals(Integer.class)){
+      Integer intValue = (Integer)value;
+      minMaxCheck(attName, intValue, attribute.min(), attribute.max());
+    }
+
+    Method checker = checkers.get(attName);
+    if(checker==null)
+      return value;
+
+    // if specific checker exists for this attribute, call that with the value
+    try {
+      return checker.invoke(this, value);
+    } catch (Exception e) {
+      if(e instanceof RuntimeException){
+        throw (RuntimeException)e;
+      }
+      if(e.getCause() instanceof RuntimeException){
+        throw (RuntimeException)e.getCause();
+      }
+      else
+        throw new InternalGemFireException("error invoking "+checker.getName()+" with value "+value);
     }
   }
 
-  protected void checkStartLocator(String value) {
-    _checkIfModifiable(START_LOCATOR_NAME);
+
+  protected void minMaxCheck(String propName, int value, int minValue, int maxValue) {
+    if (value < minValue) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[]{propName, Integer.valueOf(value), Integer.valueOf(minValue)}));
+    } else if (value > maxValue) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[]{propName, Integer.valueOf(value), Integer.valueOf(maxValue)}));
+    }
+  }
+
+
+  @ConfigAttributeChecker(name=START_LOCATOR_NAME)
+  protected String checkStartLocator(String value) {
     if (value != null && value.trim().length() > 0) {
       // throws IllegalArgumentException if string is malformed
       new DistributionLocatorId(value);
     }
+    return value;
   }
 
-  public boolean isStartLocatorModifiable() {
-    return _modifiableDefault();
-  }
 
-  public boolean isLogLevelModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkTcpPort(int value) {
-    _checkIfModifiable(TCP_PORT_NAME);
-    if (value < MIN_TCP_PORT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {TCP_PORT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_TCP_PORT)}));
-    }
-    if (value > MAX_TCP_PORT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {TCP_PORT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_TCP_PORT)}));
-    }
+  @ConfigAttributeChecker(name=TCP_PORT_NAME)
+  protected int checkTcpPort(int value) {
     if ( getSSLEnabled() && value != 0 ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {TCP_PORT_NAME, Integer.valueOf(value), SSL_ENABLED_NAME}));
     }
     if ( getClusterSSLEnabled() && value != 0 ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {TCP_PORT_NAME, Integer.valueOf(value), CLUSTER_SSL_ENABLED_NAME}));
     }
-  }
-  public boolean isTcpPortModifiable() {
-    return _modifiableDefault();
+    return value;
   }
 
-  protected void checkMcastPort(int value) {
-    _checkIfModifiable(MCAST_PORT_NAME);
-    if (value < MIN_MCAST_PORT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {MCAST_PORT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_MCAST_PORT)}));
-    }
-    if (value > MAX_MCAST_PORT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {MCAST_PORT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_MCAST_PORT)}));
-    }
+  @ConfigAttributeChecker(name=MCAST_PORT_NAME)
+  protected int checkMcastPort(int value) {
     if ( getSSLEnabled() && value != 0 ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {MCAST_PORT_NAME, Integer.valueOf(value), SSL_ENABLED_NAME}));
     }
     if ( getClusterSSLEnabled() && value != 0 ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {MCAST_PORT_NAME, Integer.valueOf(value), CLUSTER_SSL_ENABLED_NAME}));
     }
-
-  }
-  public boolean isMcastPortModifiable() {
-    return _modifiableDefault();
+    return value;
   }
 
-  protected void checkMcastAddress(InetAddress value) {
-    _checkIfModifiable(MCAST_ADDRESS_NAME);
+
+  @ConfigAttributeChecker(name=MCAST_ADDRESS_NAME)
+  protected InetAddress checkMcastAddress(InetAddress value) {
     if (!value.isMulticastAddress()) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_IT_WAS_NOT_A_MULTICAST_ADDRESS.toLocalizedString(new Object[] {MCAST_ADDRESS_NAME, value}));
     }
-  }
-  public boolean isMcastAddressModifiable() {
-    return _modifiableDefault();
+    return value;
   }
 
-  protected void checkMcastTtl(int value) {
-    _checkIfModifiable(MCAST_TTL_NAME);
-    if (value < MIN_MCAST_TTL) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {MCAST_TTL_NAME, Integer.valueOf(value), Integer.valueOf(MIN_MCAST_TTL)}));
-    }
-    if (value > MAX_MCAST_TTL) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {MCAST_TTL_NAME, Integer.valueOf(value), Integer.valueOf(MAX_MCAST_TTL)}));
-    }
-  }
-  public boolean isMcastTtlModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSocketLeaseTime(int value) {
-    _checkIfModifiable(SOCKET_LEASE_TIME_NAME);
-    if (value < MIN_SOCKET_LEASE_TIME) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {SOCKET_LEASE_TIME_NAME, Integer.valueOf(value), Integer.valueOf(MIN_SOCKET_LEASE_TIME)}));
-    }
-    if (value > MAX_SOCKET_LEASE_TIME) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {SOCKET_LEASE_TIME_NAME, Integer.valueOf(value), Integer.valueOf(MAX_SOCKET_LEASE_TIME)}));
-    }
-  }
-  public boolean isSocketLeaseTimeModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSocketBufferSize(int value) {
-    _checkIfModifiable(SOCKET_BUFFER_SIZE_NAME);
-    if (value < MIN_SOCKET_BUFFER_SIZE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {SOCKET_BUFFER_SIZE_NAME, Integer.valueOf(value), Integer.valueOf(MIN_SOCKET_BUFFER_SIZE)}));
-    }
-    if (value > MAX_SOCKET_BUFFER_SIZE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {SOCKET_BUFFER_SIZE_NAME, Integer.valueOf(value), Integer.valueOf(MAX_SOCKET_BUFFER_SIZE)}));
-    }
-  }
-  public boolean isSocketBufferSizeModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkConserveSockets(boolean value) {
-    _checkIfModifiable(CONSERVE_SOCKETS_NAME);
-  }
-  public boolean isConserveSocketsModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkRoles(String value) {
-    _checkIfModifiable(ROLES_NAME);
-  }
-  public boolean isRolesModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkBindAddress(String value) {
-    _checkIfModifiable(BIND_ADDRESS_NAME);
+  @ConfigAttributeChecker(name=BIND_ADDRESS_NAME)
+  protected String checkBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
@@ -217,13 +147,12 @@ public abstract class AbstractDistributionConfig
           .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
           }));
     }
-  }
-  public boolean isBindAddressModifiable() {
-    return _modifiableDefault();
+    return value;
   }
 
-  protected void checkServerBindAddress(String value) {
-    _checkIfModifiable(SERVER_BIND_ADDRESS_NAME);
+
+  @ConfigAttributeChecker(name=SERVER_BIND_ADDRESS_NAME)
+  protected String checkServerBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
@@ -231,66 +160,27 @@ public abstract class AbstractDistributionConfig
           .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
           }));
     }
-  }
-  public boolean isServerBindAddressModifiable() {
-    return _modifiableDefault();
+    return value;
   }
 
-  protected void checkDeployWorkingDir(File value) {
-    _checkIfModifiable(DEPLOY_WORKING_DIR);
-  }
-
-  public boolean isDeployWorkingDirModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkStatisticSamplingEnabled(boolean value) {
-    _checkIfModifiable(STATISTIC_SAMPLING_ENABLED_NAME);
-  }
-  public boolean isStatisticSamplingEnabledModifiable() {
-    return _modifiableDefault();
-  }
-
-  
-  protected void checkStatisticArchiveFile(File value) {
-    _checkIfModifiable(STATISTIC_ARCHIVE_FILE_NAME);
-  }
-  public boolean isStatisticArchiveFileModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkCacheXmlFile(File value) {
-    _checkIfModifiable(CACHE_XML_FILE_NAME);
-  }
-  public boolean isCacheXmlFileModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSSLEnabled(Boolean value) {
-    _checkIfModifiable(SSL_ENABLED_NAME);
+  @ConfigAttributeChecker(name=SSL_ENABLED_NAME)
+  protected Boolean checkSSLEnabled(Boolean value) {
     if ( value.booleanValue() && (getMcastPort() != 0) ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0.toLocalizedString(new Object[] {SSL_ENABLED_NAME, value, MCAST_PORT_NAME}));
     }
+    return value;
   }
-  
-  protected void checkClusterSSLEnabled(Boolean value) {
-    _checkIfModifiable(CLUSTER_SSL_ENABLED_NAME);
+
+  @ConfigAttributeChecker(name=CLUSTER_SSL_ENABLED_NAME)
+  protected Boolean checkClusterSSLEnabled(Boolean value) {
     if ( value.booleanValue() && (getMcastPort() != 0) ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0.toLocalizedString(new Object[] {CLUSTER_SSL_ENABLED_NAME, value, MCAST_PORT_NAME}));
     }
+    return value;
   }
 
-  protected void checkHttpServicePort(int value) {
-    minMaxCheck(HTTP_SERVICE_PORT_NAME, value, 0, 65535);
-  }
-  
-  public boolean isHttpServicePortModifiable() {
-    //Need to set "true" for hydra teststo set REST service port
-    return true;
-  }
-  
-  protected void checkHttpServiceBindAddress(String value) {
-    _checkIfModifiable(HTTP_SERVICE_BIND_ADDRESS_NAME);
+  @ConfigAttributeChecker(name=HTTP_SERVICE_BIND_ADDRESS_NAME)
+  protected String checkHttpServiceBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
@@ -298,400 +188,12 @@ public abstract class AbstractDistributionConfig
           .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
           }));
     }
-  }
-  
-  public boolean isHttpServiceBindAddressModifiable() {
-    return _modifiableDefault();
-  }
-  
-  //Add for HTTP Service SSL Start
-  public boolean isHttpServiceSSLEnabledModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSL(){
-    _checkIfModifiable(HTTP_SERVICE_SSL_ENABLED_NAME);
+    return value;
   }
 
-  public boolean isHttpServiceSSLRequireAuthenticationModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSLRequireAuthentication(){
-    _checkIfModifiable(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME);
-  }
-  
-  public boolean isHttpServiceSSLProtocolsModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSLProtocols(){
-    _checkIfModifiable(HTTP_SERVICE_SSL_PROTOCOLS_NAME);
-  }
-  
-  public boolean isHttpServiceSSLCiphersModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSLCiphers(){
-    _checkIfModifiable(HTTP_SERVICE_SSL_CIPHERS_NAME);
-  }
-  
-  public void checkHttpServiceSSLKeyStore(String value) {
-    _checkIfModifiable(HTTP_SERVICE_SSL_KEYSTORE_NAME);
-  }
-  public boolean isHttpServiceSSLKeyStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSLKeyStoreType(String value) {
-    _checkIfModifiable(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME);
-  }
-  public boolean isHttpServiceSSLKeyStoreTypeModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSLKeyStorePassword(String value) {
-    _checkIfModifiable(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME);
-  }
-  public boolean isHttpServiceSSLKeyStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSLTrustStore(String value) {
-    _checkIfModifiable(HTTP_SERVICE_SSL_TRUSTSTORE_NAME);
-  }
-  public boolean isHttpServiceSSLTrustStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isHttpServiceSSLTrustStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkHttpServiceSSLTrustStorePassword(String value) {
-    _checkIfModifiable(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME);
-  }
-  
-//Add for HTTP Service SSL End
-  
-  
-  
-  protected void checkStartDevRestApi() {
-    _checkIfModifiable(START_DEV_REST_API_NAME);
-  }
 
-  @Override
-  public boolean isStartDevRestApiModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isSSLEnabledModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isClusterSSLEnabledModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkSSLProtocols(String value) {
-    _checkIfModifiable(SSL_PROTOCOLS_NAME);
-  }
-  protected void checkClusterSSLProtocols(String value) {
-    _checkIfModifiable(CLUSTER_SSL_PROTOCOLS_NAME);
-  }
-  public boolean isSSLProtocolsModifiable() {
-    return _modifiableDefault();
-  }
-  public boolean isClusterSSLProtocolsModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkSSLCiphers(String value) {
-    _checkIfModifiable(SSL_CIPHERS_NAME);
-  }
-  protected void checkClusterSSLCiphers(String value) {
-    _checkIfModifiable(CLUSTER_SSL_CIPHERS_NAME);
-  }
-  public boolean isSSLCiphersModifiable() {
-    return _modifiableDefault();
-  }
-  public boolean isClusterSSLCiphersModifiable() {
-    return _modifiableDefault();
-  }
-  public void checkSSLRequireAuthentication(Boolean value) {
-    _checkIfModifiable(SSL_REQUIRE_AUTHENTICATION_NAME);
-  }
-  public void checkClusterSSLRequireAuthentication(Boolean value) {
-    _checkIfModifiable(CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME);
-  }
-  public boolean isSSLRequireAuthenticationModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isClusterSSLRequireAuthenticationModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkClusterSSLKeyStore(String value) {
-    _checkIfModifiable(CLUSTER_SSL_KEYSTORE_NAME);
-  }
-  public boolean isClusterSSLKeyStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkClusterSSLKeyStoreType(String value) {
-    _checkIfModifiable(CLUSTER_SSL_KEYSTORE_TYPE_NAME);
-  }
-  public boolean isClusterSSLKeyStoreTypeModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkClusterSSLKeyStorePassword(String value) {
-    _checkIfModifiable(CLUSTER_SSL_KEYSTORE_PASSWORD_NAME);
-  }
-  public boolean isClusterSSLKeyStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkClusterSSLTrustStore(String value) {
-    _checkIfModifiable(CLUSTER_SSL_TRUSTSTORE_NAME);
-  }
-  public boolean isClusterSSLTrustStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkClusterSSLTrustStorePassword(String value) {
-    _checkIfModifiable(CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME);
-  }
-  
-  public boolean isClusterSSLTrustStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkServerSSLKeyStore(String value) {
-    _checkIfModifiable(SERVER_SSL_KEYSTORE_NAME);
-  }
-  public boolean isServerSSLKeyStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkServerSSLKeyStoreType(String value) {
-    _checkIfModifiable(SERVER_SSL_KEYSTORE_TYPE_NAME);
-  }
-  public boolean isServerSSLKeyStoreTypeModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkServerSSLKeyStorePassword(String value) {
-    _checkIfModifiable(SERVER_SSL_KEYSTORE_PASSWORD_NAME);
-  }
-  public boolean isServerSSLKeyStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkServerSSLTrustStore(String value) {
-    _checkIfModifiable(SERVER_SSL_TRUSTSTORE_NAME);
-  }
-  public boolean isServerSSLTrustStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkServerSSLTrustStorePassword(String value) {
-    _checkIfModifiable(SERVER_SSL_TRUSTSTORE_PASSWORD_NAME);
-  }
-  
-  public boolean isServerSSLTrustStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkJmxManagerSSLKeyStore(String value) {
-    _checkIfModifiable(JMX_MANAGER_SSL_KEYSTORE_NAME);
-  }
-  public boolean isJmxManagerSSLKeyStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkJmxManagerSSLKeyStoreType(String value) {
-    _checkIfModifiable(JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME);
-  }
-  public boolean isJmxManagerSSLKeyStoreTypeModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkJmxManagerSSLKeyStorePassword(String value) {
-    _checkIfModifiable(JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME);
-  }
-  public boolean isJmxManagerSSLKeyStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkJmxManagerSSLTrustStore(String value) {
-    _checkIfModifiable(JMX_MANAGER_SSL_TRUSTSTORE_NAME);
-  }
-  public boolean isJmxManagerSSLTrustStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkJmxManagerSSLTrustStorePassword(String value) {
-    _checkIfModifiable(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME);
-  }
-  
-  public boolean isJmxManagerSSLTrustStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLKeyStore(String value) {
-    _checkIfModifiable(GATEWAY_SSL_KEYSTORE_NAME);
-  }
-  public boolean isGatewaySSLKeyStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLKeyStoreType(String value) {
-    _checkIfModifiable(GATEWAY_SSL_KEYSTORE_TYPE_NAME);
-  }
-  public boolean isGatewaySSLKeyStoreTypeModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLKeyStorePassword(String value) {
-    _checkIfModifiable(GATEWAY_SSL_KEYSTORE_PASSWORD_NAME);
-  }
-  public boolean isGatewaySSLKeyStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLTrustStore(String value) {
-    _checkIfModifiable(GATEWAY_SSL_TRUSTSTORE_NAME);
-  }
-  public boolean isGatewaySSLTrustStoreModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLTrustStorePassword(String value) {
-    _checkIfModifiable(GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME);
-  }
-  
-  public boolean isGatewaySSLTrustStorePasswordModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public void checkMcastSendBufferSizeModifiable() {
-    _checkIfModifiable(MCAST_SEND_BUFFER_SIZE_NAME);
-  }
-
-  public boolean isMcastSendBufferSizeModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkMcastRecvBufferSizeModifiable() {
-    _checkIfModifiable(MCAST_RECV_BUFFER_SIZE_NAME);
-  }
-
-  public boolean isMcastRecvBufferSizeModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkMcastFlowControlModifiable() {
-    _checkIfModifiable(MCAST_FLOW_CONTROL_NAME);
-  }
-
-  public boolean isMcastFlowControlModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkUdpSendBufferSizeModifiable() {
-    _checkIfModifiable(UDP_SEND_BUFFER_SIZE_NAME);
-  }
-
-  public boolean isUdpSendBufferSizeModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkUdpRecvBufferSizeModifiable() {
-    _checkIfModifiable(UDP_RECV_BUFFER_SIZE_NAME);
-  }
-
-  public boolean isUdpRecvBufferSizeModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkUdpFragmentSizeModifiable() {
-    _checkIfModifiable(UDP_FRAGMENT_SIZE_NAME);
-  }
-
-  public boolean isUdpFragmentSizeModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkDisableTcpModifiable() {
-    _checkIfModifiable(DISABLE_TCP_NAME);
-  }
-
-  public boolean isDisableTcpModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkEnableTimeStatisticsModifiable() {
-    _checkIfModifiable(ENABLE_TIME_STATISTICS_NAME);
-  }
-
-  public boolean isEnableTimeStatisticsModifiable() {
-    return _modifiableDefault();
-  }
-
-  public void checkMemberTimeoutModifiable() {
-    _checkIfModifiable(MEMBER_TIMEOUT_NAME);
-  }
-
-  public boolean isMemberTimeoutModifiable() {
-    return _modifiableDefault();
-  }
-
-  public boolean isMembershipPortRangeModifiable() {
-    return _modifiableDefault();
-  }
-
-  public boolean isMaxNumberOfTiesModifiable(){
-    return _modifiableDefault();
-  }
-
-  public boolean isMaxTimeOutModifiable(){
-    return _modifiableDefault();
-  }
-
-  protected void checkStatisticSampleRate(int value) {
-    _checkIfModifiable(STATISTIC_SAMPLE_RATE_NAME);
-    if (value < MIN_STATISTIC_SAMPLE_RATE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {STATISTIC_SAMPLE_RATE_NAME, Integer.valueOf(value), Integer.valueOf(MIN_STATISTIC_SAMPLE_RATE)}));
-    }
-    if (value > MAX_STATISTIC_SAMPLE_RATE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {STATISTIC_SAMPLE_RATE_NAME, Integer.valueOf(value), Integer.valueOf(MAX_STATISTIC_SAMPLE_RATE)}));
-    }
-  }
-  public boolean isStatisticSampleRateModifiable() {
-    return _modifiableDefault();
-  }
-
-  public boolean isDeltaPropagationModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkDeltaPropagationModifiable() {
-    _checkIfModifiable(DELTA_PROPAGATION_PROP_NAME);
-  }
-  
-  protected String checkRemoteLocators(String value) {
-    _checkIfModifiable(REMOTE_LOCATORS_NAME);
-    return value ;
-  }
-  
-  public boolean isDistributedSystemIdModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkDistributedSystemId(int value) {
-    _checkIfModifiable(DISTRIBUTED_SYSTEM_ID_NAME);
+  @ConfigAttributeChecker(name=DISTRIBUTED_SYSTEM_ID_NAME)
+  protected int checkDistributedSystemId(int value) {
     String distributedSystemListener = System
     .getProperty("gemfire.DistributedSystemListener");
     //this check is specific for Jayesh's use case of WAN BootStraping
@@ -707,51 +209,20 @@ public abstract class AbstractDistributionConfig
     if (value > MAX_DISTRIBUTED_SYSTEM_ID) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {DISTRIBUTED_SYSTEM_ID_NAME, Integer.valueOf(value), Integer.valueOf(MAX_DISTRIBUTED_SYSTEM_ID)}));
     }
+    return value;
   }
 
-  public boolean isEnforceUniqueHostModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkEnforceUniqueHostModifiable() {
-    _checkIfModifiable(ENFORCE_UNIQUE_HOST_NAME);
-  }
-  
-  public boolean isRedundancyZoneModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkRedundancyZoneModifiable() {
-    _checkIfModifiable(REDUNDANCY_ZONE_NAME);
-  }
-  
-  protected void checkSSLPropertyModifiable() {
-    _checkIfModifiable(SSL_SYSTEM_PROPS_NAME);
-  }
-  
-  protected boolean isSSLPropertyModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkUserCommandPackages(String value) {
-    _checkIfModifiable(USER_COMMAND_PACKAGES);
-  }
-
-  public boolean isUserCommandPackagesModifiable() {
-    return _modifiableDefault();
-  }
-  
   /**
    * Makes sure that the locator string used to configure discovery is
    * valid.
-   * 
+   *
    * <p>Starting in 4.0, we accept locators in the format
    * "host:port" in addition to the traditional "host:bind-address[port]" format.
    * See bug 32306.
-   * 
+   *
    * <p>Starting in 5.1.0.4, we accept locators in the format
    * "host@bind-address[port]" to allow use of numeric IPv6 addresses
-   * 
+   *
    * @return The locator string in the traditional "host:bind-address[port]"
    *         format.
    *
@@ -759,9 +230,8 @@ public abstract class AbstractDistributionConfig
    *         If <code>value</code> is not a valid locator
    *         configuration
    */
+  @ConfigAttributeChecker(name=LOCATORS_NAME)
   protected String checkLocators(String value) {
-    _checkIfModifiable(LOCATORS_NAME);
-
     // validate locators value
     StringBuffer sb = new StringBuffer();
 
@@ -784,7 +254,7 @@ public abstract class AbstractDistributionConfig
       // starting in 5.1.0.4 we allow '@' as the bind-addr separator
       // to let people use IPv6 numeric addresses (which contain colons)
       int bindAddrIdx = locator.lastIndexOf('@', portIndex - 1);
-      
+
       if (bindAddrIdx < 0) {
         bindAddrIdx = locator.lastIndexOf(':', portIndex - 1);
       }
@@ -870,123 +340,9 @@ public abstract class AbstractDistributionConfig
     return sb.toString();
   }
 
-  public boolean isLocatorsModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isLocatorWaitTimeModifiable() {
-    return _modifiableDefault();
-  }
-
-  public boolean isRemoteLocatorsModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkAckWaitThreshold(int value) {
-    _checkIfModifiable(ACK_WAIT_THRESHOLD_NAME);
-    if (value < MIN_ACK_WAIT_THRESHOLD) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {ACK_WAIT_THRESHOLD_NAME, Integer.valueOf(value), Integer.valueOf(MIN_ACK_WAIT_THRESHOLD)}));
-    }
-    if (value > MAX_ACK_WAIT_THRESHOLD) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {ACK_WAIT_THRESHOLD_NAME, Integer.valueOf(value), Integer.valueOf(MAX_ACK_WAIT_THRESHOLD)}));
-    }
-  }
-  public boolean isAckWaitThresholdModifiable() {
-    return _modifiableDefault();
-  }
-
-
-  protected void checkAckSevereAlertThreshold(int value) {
-    _checkIfModifiable(ACK_SEVERE_ALERT_THRESHOLD_NAME);
-    if (value < MIN_ACK_SEVERE_ALERT_THRESHOLD) {
-      throw new IllegalArgumentException("Could not set \"" + ACK_SEVERE_ALERT_THRESHOLD_NAME + "\" to \"" + value + "\" because its value can not be less than \"" + MIN_ACK_SEVERE_ALERT_THRESHOLD + "\".");
-    }
-    if (value > MAX_ACK_SEVERE_ALERT_THRESHOLD) {
-      throw new IllegalArgumentException("Could not set \"" + ACK_SEVERE_ALERT_THRESHOLD_NAME + "\" to \"" + value + "\" because its value can not be greater than \"" + MAX_ACK_SEVERE_ALERT_THRESHOLD + "\".");
-    }
-  }
-  public boolean isAckSevereAlertThresholdModifiable() {
-    return _modifiableDefault();
-  }
-
-
-  public boolean isArchiveFileSizeLimitModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkArchiveFileSizeLimit(int value) {
-    _checkIfModifiable(ARCHIVE_FILE_SIZE_LIMIT_NAME);
-    if (value < MIN_ARCHIVE_FILE_SIZE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {ARCHIVE_FILE_SIZE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_ARCHIVE_FILE_SIZE_LIMIT)}));
-    }
-    if (value > MAX_ARCHIVE_FILE_SIZE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {ARCHIVE_FILE_SIZE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_ARCHIVE_FILE_SIZE_LIMIT)}));
-    }
-  }
-  public boolean isArchiveDiskSpaceLimitModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkArchiveDiskSpaceLimit(int value) {
-    _checkIfModifiable(ARCHIVE_DISK_SPACE_LIMIT_NAME);
-    if (value < MIN_ARCHIVE_DISK_SPACE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {ARCHIVE_DISK_SPACE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_ARCHIVE_DISK_SPACE_LIMIT)}));
-    }
-    if (value > MAX_ARCHIVE_DISK_SPACE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {ARCHIVE_DISK_SPACE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_ARCHIVE_DISK_SPACE_LIMIT)}));
-    }
-  }
-  public boolean isLogFileSizeLimitModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkLogFileSizeLimit(int value) {
-    _checkIfModifiable(LOG_FILE_SIZE_LIMIT_NAME);
-    if (value < MIN_LOG_FILE_SIZE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {LOG_FILE_SIZE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT)}));
-    }
-    if (value > MAX_LOG_FILE_SIZE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {LOG_FILE_SIZE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)}));
-    }
-  }
-  public boolean isLogDiskSpaceLimitModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkLogDiskSpaceLimit(int value) {
-    _checkIfModifiable(LOG_DISK_SPACE_LIMIT_NAME);
-    if (value < MIN_LOG_DISK_SPACE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {LOG_DISK_SPACE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT)}));
-    }
-    if (value > MAX_LOG_DISK_SPACE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {LOG_DISK_SPACE_LIMIT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)}));
-    }
-  }
-
-  /** a generic method for checking a new integer setting against a min
-      and max value */
-  protected void minMaxCheck(String propName, int value, int minValue, int maxValue) {
-    _checkIfModifiable(propName);
-    if (value < minValue) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {propName, Integer.valueOf(value), Integer.valueOf(minValue)}));
-    }
-    else if (value > maxValue) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {propName, Integer.valueOf(value), Integer.valueOf(maxValue)}));
-    }
-  }
-
-
-  /** check a new multicast send-buffer size setting */
-  protected void checkMcastSendBufferSize(int newSize) {
-    minMaxCheck(MCAST_SEND_BUFFER_SIZE_NAME, newSize,
-      MIN_MCAST_SEND_BUFFER_SIZE, Integer.MAX_VALUE);
-  }
-
-  /** check a new multicast recv-buffer size setting */
-  protected void checkMcastRecvBufferSize(int newSize) {
-    minMaxCheck(MCAST_RECV_BUFFER_SIZE_NAME, newSize,
-      MIN_MCAST_RECV_BUFFER_SIZE, Integer.MAX_VALUE);
-  }
-
   /** check a new mcast flow-control setting */
-  protected void checkMcastFlowControl(FlowControlParams params) {
-    _checkIfModifiable(MCAST_FLOW_CONTROL_NAME);
+  @ConfigAttributeChecker(name=MCAST_FLOW_CONTROL_NAME)
+  protected FlowControlParams checkMcastFlowControl(FlowControlParams params) {
     int value = params.getByteAllowance();
     if (value < MIN_FC_BYTE_ALLOWANCE) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_BYTEALLOWANCE_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {MCAST_FLOW_CONTROL_NAME, Integer.valueOf(value), Integer.valueOf(MIN_FC_BYTE_ALLOWANCE)}));
@@ -1005,33 +361,12 @@ public abstract class AbstractDistributionConfig
     else if (value > MAX_FC_RECHARGE_BLOCK_MS) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGEBLOCKMS_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {MCAST_FLOW_CONTROL_NAME, Integer.valueOf(value), Integer.valueOf(MAX_FC_RECHARGE_BLOCK_MS)}));
     }
+    return params;
   }
 
-  /** check a new udp message fragment size setting */
-  protected void checkUdpFragmentSize(int value) {
-    minMaxCheck(UDP_FRAGMENT_SIZE_NAME, value,
-      MIN_UDP_FRAGMENT_SIZE, MAX_UDP_FRAGMENT_SIZE);
-  }
 
-  /** check a new udp send-buffer size setting */
-  protected void checkUdpSendBufferSize(int newSize) {
-    minMaxCheck(UDP_SEND_BUFFER_SIZE_NAME, newSize,
-      MIN_UDP_SEND_BUFFER_SIZE, Integer.MAX_VALUE);
-  }
-
-  /** check a new multicast recv-buffer size setting */
-  protected void checkUdpRecvBufferSize(int newSize) {
-    minMaxCheck(UDP_RECV_BUFFER_SIZE_NAME, newSize,
-      MIN_UDP_RECV_BUFFER_SIZE, Integer.MAX_VALUE);
-  }
-
-  /** check a new member-timeout setting */
-  protected void checkMemberTimeout(int value) {
-    minMaxCheck(MEMBER_TIMEOUT_NAME, value,
-      MIN_MEMBER_TIMEOUT, MAX_MEMBER_TIMEOUT);
-  }
-
-  protected void checkMembershipPortRange(int[] value) {
+  @ConfigAttributeChecker(name=MEMBERSHIP_PORT_RANGE_NAME)
+  protected int[] checkMembershipPortRange(int[] value) {
     minMaxCheck(MEMBERSHIP_PORT_RANGE_NAME, value[0],
         DEFAULT_MEMBERSHIP_PORT_RANGE[0],
         value[1]);
@@ -1045,117 +380,36 @@ public abstract class AbstractDistributionConfig
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.
           toLocalizedString(new Object[] {MEMBERSHIP_PORT_RANGE_NAME, value[0]+"-"+value[1], Integer.valueOf(3)}));
     }
+    return value;
   }
 
-
-  public boolean isAsyncDistributionTimeoutModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkAsyncDistributionTimeout(int value) {
-    _checkIfModifiable(ASYNC_DISTRIBUTION_TIMEOUT_NAME);
-    if (value < MIN_ASYNC_DISTRIBUTION_TIMEOUT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {ASYNC_DISTRIBUTION_TIMEOUT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_ASYNC_DISTRIBUTION_TIMEOUT)}));
-    }
-    if (value > MAX_ASYNC_DISTRIBUTION_TIMEOUT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {ASYNC_DISTRIBUTION_TIMEOUT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_ASYNC_DISTRIBUTION_TIMEOUT)}));
-    }
-  }
-  public boolean isAsyncQueueTimeoutModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkAsyncQueueTimeout(int value) {
-    _checkIfModifiable(ASYNC_QUEUE_TIMEOUT_NAME);
-    if (value < MIN_ASYNC_QUEUE_TIMEOUT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {ASYNC_QUEUE_TIMEOUT_NAME, Integer.valueOf(value), Integer.valueOf(MIN_ASYNC_QUEUE_TIMEOUT)}));
-    }
-    if (value > MAX_ASYNC_QUEUE_TIMEOUT) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {ASYNC_QUEUE_TIMEOUT_NAME, Integer.valueOf(value), Integer.valueOf(MAX_ASYNC_QUEUE_TIMEOUT)}));
-    }
-  }
-  public boolean isAsyncMaxQueueSizeModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkAsyncMaxQueueSize(int value) {
-    _checkIfModifiable(ASYNC_MAX_QUEUE_SIZE_NAME);
-    if (value < MIN_ASYNC_MAX_QUEUE_SIZE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {ASYNC_MAX_QUEUE_SIZE_NAME, Integer.valueOf(value), Integer.valueOf(MIN_ASYNC_MAX_QUEUE_SIZE)}));
-    }
-    if (value > MAX_ASYNC_MAX_QUEUE_SIZE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {ASYNC_MAX_QUEUE_SIZE_NAME, Integer.valueOf(value), Integer.valueOf(MAX_ASYNC_MAX_QUEUE_SIZE)}));
-    }
-  }
 
   /** @since 5.7 */
-  protected void checkClientConflation(String value) {
+  @ConfigAttributeChecker(name=CLIENT_CONFLATION_PROP_NAME)
+  protected String checkClientConflation(String value) {
     if (! (value.equals(CLIENT_CONFLATION_PROP_VALUE_DEFAULT) ||
             value.equals(CLIENT_CONFLATION_PROP_VALUE_ON) ||
               value.equals(CLIENT_CONFLATION_PROP_VALUE_OFF)) ) {
       throw new IllegalArgumentException("Could not set \"" + CLIENT_CONFLATION_PROP_NAME + "\" to \"" + value + "\" because its value is not recognized");
     }
-  }
-  
-  /** @since 5.7 */
-  public boolean isClientConflationModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkDurableClientId(String value) {
-    _checkIfModifiable(DURABLE_CLIENT_ID_NAME);
+    return value;
   }
 
-  public boolean isDurableClientIdModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkDurableClientTimeout(int value) {
-    _checkIfModifiable(DURABLE_CLIENT_TIMEOUT_NAME);
-  }
-
-  public boolean isDurableClientTimeoutModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSecurityClientAuthInit(String value) {
-    _checkIfModifiable(SECURITY_CLIENT_AUTH_INIT_NAME);
-  }
-
-  public boolean isSecurityClientAuthInitModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSecurityClientAuthenticator(String value) {
-    _checkIfModifiable(SECURITY_CLIENT_AUTHENTICATOR_NAME);
-  }
-
-  public boolean isSecurityClientAuthenticatorModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSecurityClientDHAlgo(String value) {
-    _checkIfModifiable(SECURITY_CLIENT_DHALGO_NAME);
-  }
-
-  public boolean isSecurityClientDHAlgoModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSecurityPeerAuthInit(String value) {
-    _checkIfModifiable(SECURITY_PEER_AUTH_INIT_NAME);
+  @ConfigAttributeChecker(name=SECURITY_PEER_AUTH_INIT_NAME)
+  protected String checkSecurityPeerAuthInit(String value) {
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
       String mcastInfo = MCAST_PORT_NAME + "[" + getMcastPort() + "]";
       throw new IllegalArgumentException(
         LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED
-          .toLocalizedString(new Object[] { 
+          .toLocalizedString(new Object[] {
              SECURITY_PEER_AUTH_INIT_NAME, value, mcastInfo }));
     }
+    return value;
   }
 
-  public boolean isSecurityPeerAuthInitModifiable() {
-    return _modifiableDefault();
-  }
 
-  protected void checkSecurityPeerAuthenticator(String value) {
-    _checkIfModifiable(SECURITY_PEER_AUTHENTICATOR_NAME);
+  @ConfigAttributeChecker(name=SECURITY_PEER_AUTHENTICATOR_NAME)
+  protected String checkSecurityPeerAuthenticator(String value) {
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
        String mcastInfo = MCAST_PORT_NAME + "[" + getMcastPort() + "]";
       throw new IllegalArgumentException(
@@ -1166,219 +420,49 @@ public abstract class AbstractDistributionConfig
             value,
             mcastInfo}));
     }
+    return value;
   }
 
-  public boolean isSecurityPeerAuthenticatorModifiable() {
-    return _modifiableDefault();
-  }
 
-  protected void checkSecurityClientAccessor(String value) {
-    _checkIfModifiable(SECURITY_CLIENT_ACCESSOR_NAME);
-  }
-
-  public boolean isSecurityClientAccessorModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSecurityClientAccessorPP(String value) {
-    _checkIfModifiable(SECURITY_CLIENT_ACCESSOR_PP_NAME);
-  }
-
-  public boolean isSecurityClientAccessorPPModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSecurityLogLevel(int value) {
-    _checkIfModifiable(SECURITY_LOG_LEVEL_NAME);
+  @ConfigAttributeChecker(name=SECURITY_LOG_LEVEL_NAME)
+  protected int checkSecurityLogLevel(int value) {
     if (value < MIN_LOG_LEVEL) {
       throw new IllegalArgumentException(
         LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(
-          new Object[] { 
-              SECURITY_LOG_LEVEL_NAME, 
-              LogWriterImpl.levelToString(value), 
+          new Object[] {
+              SECURITY_LOG_LEVEL_NAME,
+              LogWriterImpl.levelToString(value),
               LogWriterImpl.levelToString(MIN_LOG_LEVEL)}));
     }
     if (value > MAX_LOG_LEVEL) {
       throw new IllegalArgumentException(
         LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(
-        new Object[] { 
-            SECURITY_LOG_LEVEL_NAME, 
-            LogWriterImpl.levelToString(value), 
+        new Object[] {
+            SECURITY_LOG_LEVEL_NAME,
+            LogWriterImpl.levelToString(value),
             LogWriterImpl.levelToString(MAX_LOG_LEVEL)}));
     }
+    return value;
   }
 
-  public boolean isSecurityLogLevelModifiable() {
-    return _modifiableDefault();
-  }
 
-  protected void checkSecurityLogFile(File value) {
-    _checkIfModifiable(SECURITY_LOG_FILE_NAME);
-  }
-
-  public boolean isSecurityLogFileModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkSecurityPeerMembershipTimeout(int value) {
-    _checkIfModifiable(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME);
-    minMaxCheck(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME, value,
-        0, MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT);
-  }
-  
-  public boolean isSecurityPeerMembershipTimeoutModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkSecurity(String key, String value) {
-    _checkIfModifiable(key);
-  }
-
-  public boolean isSecurityModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkRemoveUnresponsiveClientModifiable() { 
-    _checkIfModifiable(REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME); 
-  } 
-
-  public boolean isRemoveUnresponsiveClientModifiable() { 
-    return _modifiableDefault(); 
-  } 
- 
-  /**
-   * @since 7.0
-   */
-  protected void checkGroups(String value) {
-    _checkIfModifiable(GROUPS_NAME);
-  }
-  /**
-   * @since 7.0
-   */
-  public boolean isGroupsModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkJmxManager() {
-    _checkIfModifiable(JMX_MANAGER_NAME);
-  }
-  @Override
-  public boolean isJmxManagerModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkJmxManagerStart() {
-    _checkIfModifiable(JMX_MANAGER_START_NAME);
-  }
-  @Override
-  public boolean isJmxManagerStartModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxSSLManagerEnabled() {
-    _checkIfModifiable(JMX_MANAGER_SSL_NAME);
-  }
-  protected void checkJmxManagerSSLEnabled() {
-    _checkIfModifiable(JMX_MANAGER_SSL_ENABLED_NAME);
-  }
-  public boolean isJmxManagerSSLEnabledModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerSSLCiphers() {
-    _checkIfModifiable(JMX_MANAGER_SSL_CIPHERS_NAME);
-  }
-  public boolean isJmxManagerSSLCiphersModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerSSLProtocols() {
-    _checkIfModifiable(JMX_MANAGER_SSL_PROTOCOLS_NAME);
-  }
-  public boolean isJmxManagerSSLProtocolsModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerSSLRequireAuthentication() {
-    _checkIfModifiable(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME);
-  }
-  public boolean isJmxManagerSSLRequireAuthenticationModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerPort(int value) {
-    minMaxCheck(JMX_MANAGER_PORT_NAME, value, 0, 65535);
-  }
-  @Override
-  public boolean isJmxManagerPortModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerBindAddress(String value) {
-    _checkIfModifiable(JMX_MANAGER_BIND_ADDRESS_NAME);
-  }
-  @Override
-  public boolean isJmxManagerBindAddressModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerHostnameForClients(String value) {
-    _checkIfModifiable(JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME);
-  }
-  @Override
-  public boolean isJmxManagerHostnameForClientsModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerPasswordFile(String value) {
-    _checkIfModifiable(JMX_MANAGER_PASSWORD_FILE_NAME);
-  }
-  @Override
-  public boolean isJmxManagerPasswordFileModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkJmxManagerAccessFile(String value) {
-    _checkIfModifiable(JMX_MANAGER_ACCESS_FILE_NAME);
-  }
-  @Override
-  public boolean isJmxManagerAccessFileModifiable() {
-    return _modifiableDefault();
-  }
-  @Override
-  public boolean isJmxManagerHttpPortModifiable() {
-    //return _modifiableDefault();
-    return isHttpServicePortModifiable();
-  }
-  protected void checkJmxManagerHttpPort(int value) {
-    minMaxCheck(JMX_MANAGER_HTTP_PORT_NAME, value, 0, 65535);
-  }
-  protected void checkJmxManagerUpdateRate(int value) {
-    _checkIfModifiable(JMX_MANAGER_UPDATE_RATE_NAME);
-    if (value < MIN_JMX_MANAGER_UPDATE_RATE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {JMX_MANAGER_UPDATE_RATE_NAME, Integer.valueOf(value), Integer.valueOf(MIN_JMX_MANAGER_UPDATE_RATE)}));
-    }
-    if (value > MAX_JMX_MANAGER_UPDATE_RATE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {JMX_MANAGER_UPDATE_RATE_NAME, Integer.valueOf(value), Integer.valueOf(MAX_JMX_MANAGER_UPDATE_RATE)}));
-    }
-  }
-  @Override
-  public boolean isJmxManagerUpdateRateModifiable() {
-    return _modifiableDefault();
-  }
-  protected void checkMemcachedPort(int value) {
-    minMaxCheck(MEMCACHED_PORT_NAME, value, 0, 65535);
-  }
-  public boolean isMemcachedPortModifiable() {
-    return _modifiableDefault();
-  }
-
-  protected void checkMemcachedProtocol(String protocol) {
+  @ConfigAttributeChecker(name=MEMCACHED_PROTOCOL_NAME)
+  protected String checkMemcachedProtocol(String protocol) {
     if (protocol == null
         || (!protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.ASCII.name()) &&
             !protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.BINARY.name()))) {
       throw new IllegalArgumentException(LocalizedStrings.
           AbstractDistributionConfig_MEMCACHED_PROTOCOL_MUST_BE_ASCII_OR_BINARY.toLocalizedString());
     }
+    return protocol;
   }
 
   public boolean isMemcachedProtocolModifiable() {
     return false;
   }
-  
-  protected void checkMemcachedBindAddress(String value) {
-    _checkIfModifiable(MEMCACHED_BIND_ADDRESS_NAME);
+
+  @ConfigAttributeChecker(name=MEMCACHED_BIND_ADDRESS_NAME)
+  protected String checkMemcachedBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
@@ -1386,92 +470,23 @@ public abstract class AbstractDistributionConfig
           .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
           }));
     }
+    return value;
   }
-  public boolean isMemcachedBindAddressModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkRedisPort(int value) {
-    minMaxCheck(REDIS_PORT_NAME, value, 0, 65535);
-  }
-  protected void checkRedisBindAddress(String value) {
-    _checkIfModifiable(REDIS_BIND_ADDRESS_NAME);
+
+  @ConfigAttributeChecker(name=REDIS_BIND_ADDRESS_NAME)
+  protected String checkRedisBindAddress(String value) {
     if (value != null && value.length() > 0 &&
-        !SocketCreator.isLocalHost(value)) {
+            !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-          .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
-          }));
+              LocalizedStrings.AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
+                      .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
+                      }));
     }
-  }
-  
-  protected void checkRedisPassword(String value) {
-    
-  }
-  
-  public boolean isRedisBindAddressModifiable() {
-    return _modifiableDefault();
+    return value;
   }
 
-  public boolean isRedisPortModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isRedisPasswordModifiable() {
-    return _modifiableDefault();
-  }
-
-  public boolean isOffHeapMemorySizeModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkOffHeapMemorySize(String value) {
-    _checkIfModifiable(OFF_HEAP_MEMORY_SIZE_NAME);
-  }
-  
-  protected void checkEnableSharedConfiguration() {
-    _checkIfModifiable(ENABLE_CLUSTER_CONFIGURATION_NAME);
-  }
-  
-  protected void checkUseSharedConfiguration() {
-    _checkIfModifiable(USE_CLUSTER_CONFIGURATION_NAME);
-  }
-  
-  protected void checkLoadSharedConfigFromDir() {
-    _checkIfModifiable(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME);
-  }
-  
-  protected void checkClusterConfigDir() {
-    _checkIfModifiable(CLUSTER_CONFIGURATION_DIR);
-  }
-  
-  
-  public boolean isEnableSharedConfigurationModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isLoadSharedConfigFromDirModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isUseSharedConfigurationModifiable() {
-    return _modifiableDefault();
-  }
-
-  public boolean isLockMemoryModifiable() {
-    return _modifiableDefault();
-  }
-  
-  public boolean isDistributedTransactionsModifiable() {
-    return _modifiableDefault();
-  }
-  
-  protected void checkLockMemory(final boolean value) {
-    _checkIfModifiable(LOCK_MEMORY_NAME);
-  }
-    
   // AbstractConfig overriding methods
-  
+
   @Override
   protected void checkAttributeName(String attName) {
     if(!attName.startsWith(SECURITY_PREFIX_NAME) && !attName.startsWith(USERDEFINED_PREFIX_NAME)
@@ -1479,1308 +494,149 @@ public abstract class AbstractDistributionConfig
       super.checkAttributeName(attName);
     }
   }
-  
-  
-  
-  // AbstractDistributionConfig methods
-
-  static final String[] dcValidAttributeNames;
-  static {
-    String[] myAtts = new String[] {
-      ACK_WAIT_THRESHOLD_NAME,
-      ACK_SEVERE_ALERT_THRESHOLD_NAME,
-      ARCHIVE_DISK_SPACE_LIMIT_NAME,
-      ARCHIVE_FILE_SIZE_LIMIT_NAME,
-      BIND_ADDRESS_NAME,
-      SERVER_BIND_ADDRESS_NAME,
-      CACHE_XML_FILE_NAME,
-      DEPLOY_WORKING_DIR,
-      LOG_DISK_SPACE_LIMIT_NAME,
-      LOG_FILE_NAME,
-      LOG_FILE_SIZE_LIMIT_NAME,
-      LOG_LEVEL_NAME, LOCATORS_NAME, LOCATOR_WAIT_TIME_NAME, REMOTE_LOCATORS_NAME,
-      MCAST_ADDRESS_NAME, MCAST_PORT_NAME, MCAST_TTL_NAME,
-      MCAST_SEND_BUFFER_SIZE_NAME, MCAST_RECV_BUFFER_SIZE_NAME,
-      MCAST_FLOW_CONTROL_NAME,
-      TCP_PORT_NAME,
-      SOCKET_LEASE_TIME_NAME, SOCKET_BUFFER_SIZE_NAME, CONSERVE_SOCKETS_NAME,
-      NAME_NAME,
-      ROLES_NAME,
-      STATISTIC_ARCHIVE_FILE_NAME, STATISTIC_SAMPLE_RATE_NAME,
-      STATISTIC_SAMPLING_ENABLED_NAME,
-      SSL_ENABLED_NAME,
-      SSL_PROTOCOLS_NAME,
-      SSL_CIPHERS_NAME,
-      SSL_REQUIRE_AUTHENTICATION_NAME,
-      CLUSTER_SSL_ENABLED_NAME,
-      CLUSTER_SSL_PROTOCOLS_NAME,
-      CLUSTER_SSL_CIPHERS_NAME,
-      CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME,
-      CLUSTER_SSL_KEYSTORE_NAME,CLUSTER_SSL_KEYSTORE_TYPE_NAME,CLUSTER_SSL_KEYSTORE_PASSWORD_NAME,CLUSTER_SSL_TRUSTSTORE_NAME,CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME,
-      UDP_SEND_BUFFER_SIZE_NAME, UDP_RECV_BUFFER_SIZE_NAME, UDP_FRAGMENT_SIZE_NAME,
-      DISABLE_TCP_NAME,
-      ENABLE_TIME_STATISTICS_NAME,
-      MEMBER_TIMEOUT_NAME,
-      MEMBERSHIP_PORT_RANGE_NAME,
-      MAX_WAIT_TIME_FOR_RECONNECT_NAME,
-      MAX_NUM_RECONNECT_TRIES,
-      ASYNC_DISTRIBUTION_TIMEOUT_NAME,
-      ASYNC_QUEUE_TIMEOUT_NAME,
-      ASYNC_MAX_QUEUE_SIZE_NAME,
-      START_LOCATOR_NAME,
-      CLIENT_CONFLATION_PROP_NAME,
-      DURABLE_CLIENT_ID_NAME,
-      DURABLE_CLIENT_TIMEOUT_NAME,
-//      DURABLE_CLIENT_KEEP_ALIVE_NAME,
-      ENABLE_NETWORK_PARTITION_DETECTION_NAME,
-      DISABLE_AUTO_RECONNECT_NAME,
-      SECURITY_CLIENT_AUTH_INIT_NAME,
-      SECURITY_CLIENT_AUTHENTICATOR_NAME,
-      SECURITY_CLIENT_DHALGO_NAME,
-      SECURITY_PEER_AUTH_INIT_NAME,
-      SECURITY_PEER_AUTHENTICATOR_NAME,
-      SECURITY_CLIENT_ACCESSOR_NAME,
-      SECURITY_CLIENT_ACCESSOR_PP_NAME,
-      SECURITY_LOG_LEVEL_NAME,
-      SECURITY_LOG_FILE_NAME,
-      SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME,
-      SECURITY_PREFIX_NAME,
-      REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME,
-      DELTA_PROPAGATION_PROP_NAME,
-      DISTRIBUTED_SYSTEM_ID_NAME,
-      ENFORCE_UNIQUE_HOST_NAME,
-      REDUNDANCY_ZONE_NAME,
-      GROUPS_NAME,
-      JMX_MANAGER_NAME,
-      JMX_MANAGER_START_NAME,
-      JMX_MANAGER_PORT_NAME,
-      JMX_MANAGER_SSL_NAME,
-      JMX_MANAGER_SSL_ENABLED_NAME,
-      JMX_MANAGER_SSL_PROTOCOLS_NAME,
-      JMX_MANAGER_SSL_CIPHERS_NAME,
-      JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME,
-      JMX_MANAGER_SSL_KEYSTORE_NAME,JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME,JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME,JMX_MANAGER_SSL_TRUSTSTORE_NAME,JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME,
-      JMX_MANAGER_BIND_ADDRESS_NAME,
-      JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME,
-      JMX_MANAGER_PASSWORD_FILE_NAME,
-      JMX_MANAGER_ACCESS_FILE_NAME,
-      JMX_MANAGER_HTTP_PORT_NAME,
-      JMX_MANAGER_UPDATE_RATE_NAME,
-      MEMCACHED_PORT_NAME,
-      MEMCACHED_PROTOCOL_NAME,
-      MEMCACHED_BIND_ADDRESS_NAME,
-      REDIS_PORT_NAME,
-      REDIS_BIND_ADDRESS_NAME,
-      REDIS_PASSWORD_NAME,
-      USER_COMMAND_PACKAGES,
-      ENABLE_CLUSTER_CONFIGURATION_NAME,
-      USE_CLUSTER_CONFIGURATION_NAME,
-      LOAD_CLUSTER_CONFIG_FROM_DIR_NAME,
-      CLUSTER_CONFIGURATION_DIR,
-      HTTP_SERVICE_PORT_NAME,
-      HTTP_SERVICE_BIND_ADDRESS_NAME,
-      START_DEV_REST_API_NAME,
-      SERVER_SSL_ENABLED_NAME,
-      SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
-      SERVER_SSL_PROTOCOLS_NAME,
-      SERVER_SSL_CIPHERS_NAME,
-      SERVER_SSL_KEYSTORE_NAME,SERVER_SSL_KEYSTORE_TYPE_NAME,SERVER_SSL_KEYSTORE_PASSWORD_NAME,SERVER_SSL_TRUSTSTORE_NAME,SERVER_SSL_TRUSTSTORE_PASSWORD_NAME,
-      GATEWAY_SSL_ENABLED_NAME,
-      GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME,
-      GATEWAY_SSL_PROTOCOLS_NAME,
-      GATEWAY_SSL_CIPHERS_NAME,
-      GATEWAY_SSL_KEYSTORE_NAME,GATEWAY_SSL_KEYSTORE_TYPE_NAME,GATEWAY_SSL_KEYSTORE_PASSWORD_NAME,GATEWAY_SSL_TRUSTSTORE_NAME,GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME,
-      HTTP_SERVICE_SSL_ENABLED_NAME,
-      HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME,
-      HTTP_SERVICE_SSL_PROTOCOLS_NAME,
-      HTTP_SERVICE_SSL_CIPHERS_NAME,
-      HTTP_SERVICE_SSL_KEYSTORE_NAME,HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME,HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME,HTTP_SERVICE_SSL_TRUSTSTORE_NAME,HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME,
-      OFF_HEAP_MEMORY_SIZE_NAME, 
-      LOCK_MEMORY_NAME,
-      DISTRIBUTED_TRANSACTIONS_NAME
-    };
-    List atts = Arrays.asList(myAtts);
-    Collections.sort(atts);
-    dcValidAttributeNames = (String[])atts.toArray(new String[atts.size()]);
-  }
 
   public static boolean isWellKnownAttribute(String attName) {
     return Arrays.binarySearch(dcValidAttributeNames, attName) >= 0;
   }
-  
+
   public void setAttributeObject(String attName, Object attValue, ConfigSource source) {
+    // TODO: the setters is already checking the parameter type, do we still need to do this?
     Class validValueClass = getAttributeType(attName);
     if (attValue != null) {
       // null is a "valid" value for any class
       if (!validValueClass.isInstance(attValue)) {
-        throw new InvalidValueException(LocalizedStrings.AbstractDistributionConfig_0_VALUE_1_MUST_BE_OF_TYPE_2.toLocalizedString(new Object[] {attName, attValue, validValueClass.getName()}));
+        throw new InvalidValueException(LocalizedStrings.AbstractDistributionConfig_0_VALUE_1_MUST_BE_OF_TYPE_2.toLocalizedString(new Object[]{attName, attValue, validValueClass.getName()}));
       }
     }
 
-    if (attName.equalsIgnoreCase(ACK_WAIT_THRESHOLD_NAME)) {
-      this.setAckWaitThreshold(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(ACK_SEVERE_ALERT_THRESHOLD_NAME)) {
-      this.setAckSevereAlertThreshold(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(ARCHIVE_DISK_SPACE_LIMIT_NAME)) {
-      this.setArchiveDiskSpaceLimit(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(ARCHIVE_FILE_SIZE_LIMIT_NAME)) {
-      this.setArchiveFileSizeLimit(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(CACHE_XML_FILE_NAME)) {
-      this.setCacheXmlFile((File)attValue);
-    } else if (attName.equalsIgnoreCase(DEPLOY_WORKING_DIR)) {
-      this.setDeployWorkingDir((File)attValue);
-    } else if (attName.equalsIgnoreCase(LOG_DISK_SPACE_LIMIT_NAME)) {
-      this.setLogDiskSpaceLimit(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(LOG_FILE_NAME)) {
-      this.setLogFile((File)attValue);
-    } else if (attName.equalsIgnoreCase(LOG_FILE_SIZE_LIMIT_NAME)) {
-      this.setLogFileSizeLimit(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(LOG_LEVEL_NAME)) {
-      this.setLogLevel(LogWriterImpl.levelNameToCode((String)attValue));
-    } else if (attName.equalsIgnoreCase(LOCATORS_NAME)) {
-      this.setLocators((String)attValue);
-    } else if (attName.equalsIgnoreCase(LOCATOR_WAIT_TIME_NAME)) {
-      this.setLocatorWaitTime(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(REMOTE_LOCATORS_NAME)) {
-      this.setRemoteLocators((String)attValue);
-    } else if (attName.equalsIgnoreCase(MCAST_ADDRESS_NAME)) {
-      this.setMcastAddress((InetAddress)attValue);
-    } else if (attName.equalsIgnoreCase(BIND_ADDRESS_NAME)) {
-      this.setBindAddress((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_BIND_ADDRESS_NAME)) {
-      this.setServerBindAddress((String)attValue);
-    } else if (attName.equalsIgnoreCase(TCP_PORT_NAME)) {
-      this.setTcpPort(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MCAST_PORT_NAME)) {
-      this.setMcastPort(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MCAST_TTL_NAME)) {
-      this.setMcastTtl(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(SOCKET_LEASE_TIME_NAME)) {
-      this.setSocketLeaseTime(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(SOCKET_BUFFER_SIZE_NAME)) {
-      this.setSocketBufferSize(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(CONSERVE_SOCKETS_NAME)) {
-      this.setConserveSockets(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(ROLES_NAME)) {
-      this.setRoles((String)attValue);
-    } else if (attName.equalsIgnoreCase(NAME_NAME)) {
-      this.setName((String)attValue);
-    } else if (attName.equalsIgnoreCase(STATISTIC_ARCHIVE_FILE_NAME)) {
-      this.setStatisticArchiveFile((File)attValue);
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLE_RATE_NAME)) {
-      this.setStatisticSampleRate(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLING_ENABLED_NAME)) {
-      this.setStatisticSamplingEnabled(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(SSL_ENABLED_NAME)) {
-      this.setSSLEnabled(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(SSL_PROTOCOLS_NAME)) {
-      this.setSSLProtocols((String)attValue);
-    } else if (attName.equalsIgnoreCase(SSL_CIPHERS_NAME)) {
-      this.setSSLCiphers((String)attValue);
-    } else if (attName.equalsIgnoreCase(SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      this.setSSLRequireAuthentication(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_ENABLED_NAME)) {
-      this.setClusterSSLEnabled(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_PROTOCOLS_NAME)) {
-      this.setClusterSSLProtocols((String)attValue);
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_CIPHERS_NAME)) {
-      this.setClusterSSLCiphers((String)attValue);
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      this.setClusterSSLRequireAuthentication(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_NAME)) {
-      this.setClusterSSLKeyStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_TYPE_NAME)) {
-      this.setClusterSSLKeyStoreType((String)attValue);
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      this.setClusterSSLKeyStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_NAME)) {
-      this.setClusterSSLTrustStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      this.setClusterSSLTrustStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(MCAST_SEND_BUFFER_SIZE_NAME)) {
-      this.setMcastSendBufferSize(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MCAST_RECV_BUFFER_SIZE_NAME)) {
-      this.setMcastRecvBufferSize(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(UDP_SEND_BUFFER_SIZE_NAME)) {
-      this.setUdpSendBufferSize(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(UDP_RECV_BUFFER_SIZE_NAME)) {
-      this.setUdpRecvBufferSize(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MCAST_FLOW_CONTROL_NAME)) {
-      this.setMcastFlowControl((FlowControlParams)attValue);
-    } else if (attName.equalsIgnoreCase(UDP_FRAGMENT_SIZE_NAME)) {
-      this.setUdpFragmentSize(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(DISABLE_TCP_NAME)) {
-      this.setDisableTcp(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(ENABLE_TIME_STATISTICS_NAME)) {
-      this.setEnableTimeStatistics(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(MEMBER_TIMEOUT_NAME)) {
-      this.setMemberTimeout(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MEMBERSHIP_PORT_RANGE_NAME)) {
-      this.setMembershipPortRange((int[])attValue);
-    } else if (attName.equalsIgnoreCase(MAX_WAIT_TIME_FOR_RECONNECT_NAME)){
-      this.setMaxWaitTimeForReconnect(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MAX_NUM_RECONNECT_TRIES)){
-      this.setMaxNumReconnectTries(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(ASYNC_DISTRIBUTION_TIMEOUT_NAME)) {
-      this.setAsyncDistributionTimeout(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(ASYNC_QUEUE_TIMEOUT_NAME)) {
-      this.setAsyncQueueTimeout(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(ASYNC_MAX_QUEUE_SIZE_NAME)) {
-      this.setAsyncMaxQueueSize(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(START_LOCATOR_NAME)) {
-      this.setStartLocator((String)attValue);
-    } else if (attName.equalsIgnoreCase(CLIENT_CONFLATION_PROP_NAME)) {
-      this.setClientConflation((String)attValue);
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_ID_NAME)) {
-      this.setDurableClientId((String)attValue);
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_TIMEOUT_NAME)) {
-      this.setDurableClientTimeout(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTH_INIT_NAME)) {
-      this.setSecurityClientAuthInit((String)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTHENTICATOR_NAME)) {
-      this.setSecurityClientAuthenticator((String)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_DHALGO_NAME)) {
-      this.setSecurityClientDHAlgo((String)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTH_INIT_NAME)) {
-      this.setSecurityPeerAuthInit((String)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTHENTICATOR_NAME)) {
-      this.setSecurityPeerAuthenticator((String)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_NAME)) {
-      this.setSecurityClientAccessor((String)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_PP_NAME)) {
-      this.setSecurityClientAccessorPP((String)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)) {
-      this.setSecurityLogLevel(LogWriterImpl.levelNameToCode((String)attValue));
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_FILE_NAME)) {
-      this.setSecurityLogFile((File)attValue);
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)) {
-      this.setSecurityPeerMembershipTimeout(((Integer)attValue).intValue());      
-    } else if (attName.startsWith(SECURITY_PREFIX_NAME)) {
-      this.setSecurity(attName,(String)attValue);
-    } else if (attName.equalsIgnoreCase(ENABLE_NETWORK_PARTITION_DETECTION_NAME)) {
-      this.setEnableNetworkPartitionDetection(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(DISABLE_AUTO_RECONNECT_NAME)) {
-      this.setDisableAutoReconnect(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)) {
-      this.setRemoveUnresponsiveClient(((Boolean)attValue).booleanValue());
-    } else if (attName.startsWith(DELTA_PROPAGATION_PROP_NAME)) {
-      this.setDeltaPropagation((((Boolean)attValue).booleanValue()));    
-    } else if (attName.startsWith(DISTRIBUTED_SYSTEM_ID_NAME)) {
-      this.setDistributedSystemId((Integer)attValue);
-    } else if (attName.startsWith(REDUNDANCY_ZONE_NAME)) {
-      this.setRedundancyZone((String)attValue);
-    } else if (attName.startsWith(ENFORCE_UNIQUE_HOST_NAME)) {
-      this.setEnforceUniqueHost(((Boolean)attValue).booleanValue());
-    } else if (attName.startsWith(USERDEFINED_PREFIX_NAME)) {
+    if (attName.startsWith(USERDEFINED_PREFIX_NAME)) {
       //Do nothing its user defined property.
-    } else if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
-      this.setSSLProperty(attName, (String)attValue);
-    } else if (attName.equalsIgnoreCase(GROUPS_NAME)) {
-      this.setGroups((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_NAME)) {
-      this.setJmxManager((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_START_NAME)) {
-      this.setJmxManagerStart((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_NAME)) {
-      this.setJmxManagerSSL((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_ENABLED_NAME)) {
-      this.setJmxManagerSSLEnabled((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      this.setJmxManagerSSLRequireAuthentication((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_PROTOCOLS_NAME)) {
-      this.setJmxManagerSSLProtocols((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_CIPHERS_NAME)) {
-      this.setJmxManagerSSLCiphers((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_NAME)) {
-      this.setJmxManagerSSLKeyStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)) {
-      this.setJmxManagerSSLKeyStoreType((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      this.setJmxManagerSSLKeyStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_NAME)) {
-      this.setJmxManagerSSLTrustStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      this.setJmxManagerSSLTrustStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PORT_NAME)) {
-      this.setJmxManagerPort(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_BIND_ADDRESS_NAME)) {
-      this.setJmxManagerBindAddress((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)) {
-      this.setJmxManagerHostnameForClients((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PASSWORD_FILE_NAME)) {
-      this.setJmxManagerPasswordFile((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_ACCESS_FILE_NAME)) {
-      this.setJmxManagerAccessFile((String)attValue);
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HTTP_PORT_NAME)) {
-      this.setJmxManagerHttpPort(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_UPDATE_RATE_NAME)) {
-      this.setJmxManagerUpdateRate(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PORT_NAME)) {
-      this.setMemcachedPort(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PROTOCOL_NAME)) {
-      this.setMemcachedProtocol((String)attValue);
-    } else if (attName.equalsIgnoreCase(MEMCACHED_BIND_ADDRESS_NAME)) {
-      this.setMemcachedBindAddress((String)attValue);
-    } else if (attName.equalsIgnoreCase(REDIS_PORT_NAME)) {
-      this.setRedisPort(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
-      this.setRedisBindAddress((String)attValue);
-    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
-      this.setRedisPassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
-      this.setUserCommandPackages((String)attValue);
-    } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
-      this.setEnableClusterConfiguration(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME)) {
-      this.setLoadClusterConfigFromDir(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(USE_CLUSTER_CONFIGURATION_NAME)) {
-      this.setUseSharedConfiguration(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(CLUSTER_CONFIGURATION_DIR)) {
-      this.setClusterConfigDir((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_ENABLED_NAME)) {
-      this.setServerSSLEnabled((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      this.setServerSSLRequireAuthentication((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_PROTOCOLS_NAME)) {
-      this.setServerSSLProtocols((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_CIPHERS_NAME)) {
-      this.setServerSSLCiphers((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_NAME)) {
-      this.setServerSSLKeyStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_TYPE_NAME)) {
-      this.setServerSSLKeyStoreType((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      this.setServerSSLKeyStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_NAME)) {
-      this.setServerSSLTrustStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      this.setServerSSLTrustStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_ENABLED_NAME)) {
-      this.setGatewaySSLEnabled((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      this.setGatewaySSLRequireAuthentication((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_PROTOCOLS_NAME)) {
-      this.setGatewaySSLProtocols((String)attValue);
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_CIPHERS_NAME)) {
-      this.setGatewaySSLCiphers((String)attValue);
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_NAME)) {
-      this.setGatewaySSLKeyStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_TYPE_NAME)) {
-      this.setGatewaySSLKeyStoreType((String)attValue);
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)) {
-      this.setGatewaySSLKeyStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_NAME)) {
-      this.setGatewaySSLTrustStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      this.setGatewaySSLTrustStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_PORT_NAME)) {
-       this.setHttpServicePort(((Integer)attValue).intValue());
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_BIND_ADDRESS_NAME)) {
-      this.setHttpServiceBindAddress((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_ENABLED_NAME)) {
-      this.setHttpServiceSSLEnabled((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      this.setHttpServiceSSLRequireAuthentication((((Boolean)attValue).booleanValue()));
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_PROTOCOLS_NAME)) {
-      this.setHttpServiceSSLProtocols((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_CIPHERS_NAME)) {
-      this.setHttpServiceSSLCiphers((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_NAME)) {
-      this.setHttpServiceSSLKeyStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)) {
-      this.setHttpServiceSSLKeyStoreType((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)) {
-      this.setHttpServiceSSLKeyStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_NAME)) {
-      this.setHttpServiceSSLTrustStore((String)attValue);
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      this.setHttpServiceSSLTrustStorePassword((String)attValue);
-    } else if (attName.equalsIgnoreCase(START_DEV_REST_API_NAME)) {
-      this.setStartDevRestApi(((Boolean)attValue).booleanValue());
-    } else if (attName.equalsIgnoreCase(OFF_HEAP_MEMORY_SIZE_NAME)) {
-      this.setOffHeapMemorySize((String)attValue);
-    } else if (attName.equalsIgnoreCase(LOCK_MEMORY_NAME)) {
-      this.setLockMemory((Boolean)attValue);
-    } else if (attName.equalsIgnoreCase(DISTRIBUTED_TRANSACTIONS_NAME)) {
-      this.setDistributedTransactions(((Boolean)attValue).booleanValue());
-    } else {
+      return;
+    }
+
+    // special case: log-level and security-log-level attributes are String type, but the setter accepts int
+    if(attName.equalsIgnoreCase(LOG_LEVEL_NAME) || attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)){
+      attValue = LogWriterImpl.levelNameToCode((String)attValue);
+    }
+
+    Method setter = setters.get(attName);
+    if (setter == null) {
+      // if we cann't find the defined setter, look for two more special cases
+      if (attName.startsWith(SECURITY_PREFIX_NAME)) {
+        this.setSecurity(attName,(String)attValue);
+        getAttSourceMap().put(attName, source);
+        return;
+      }
+      if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
+        this.setSSLProperty(attName, (String) attValue);
+        getAttSourceMap().put(attName, source);
+        return;
+      }
       throw new InternalGemFireException(LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
     }
+
+    Class[] pTypes = setter.getParameterTypes();
+    if (pTypes.length != 1)
+      throw new InternalGemFireException("the attribute setter must have one and only one parametter");
+
+
+    try {
+      setter.invoke(this, attValue);
+    } catch (Exception e) {
+      if(e instanceof RuntimeException){
+        throw (RuntimeException)e;
+      }
+      if(e.getCause() instanceof RuntimeException){
+        throw (RuntimeException)e.getCause();
+      }
+      else
+        throw new InternalGemFireException("error invoking "+setter.getName()+" with "+attValue, e);
+    }
+
     getAttSourceMap().put(attName, source);
   }
 
   public Object getAttributeObject(String attName) {
     checkAttributeName(attName);
-    if (attName.equalsIgnoreCase(ACK_WAIT_THRESHOLD_NAME)) {
-      return Integer.valueOf(this.getAckWaitThreshold());
-    } else if (attName.equalsIgnoreCase(ACK_SEVERE_ALERT_THRESHOLD_NAME)) {
-      return Integer.valueOf(this.getAckSevereAlertThreshold());
-    } else if (attName.equalsIgnoreCase(ARCHIVE_DISK_SPACE_LIMIT_NAME)) {
-      return Integer.valueOf(this.getArchiveDiskSpaceLimit());
-    } else if (attName.equalsIgnoreCase(ARCHIVE_FILE_SIZE_LIMIT_NAME)) {
-      return Integer.valueOf(this.getArchiveFileSizeLimit());
-    } else if (attName.equalsIgnoreCase(CACHE_XML_FILE_NAME)) {
-      return this.getCacheXmlFile();
-    } else if (attName.equalsIgnoreCase(DEPLOY_WORKING_DIR)) {
-      return this.getDeployWorkingDir();
-    } else if (attName.equalsIgnoreCase(LOG_DISK_SPACE_LIMIT_NAME)) {
-      return Integer.valueOf(this.getLogDiskSpaceLimit());
-    } else if (attName.equalsIgnoreCase(LOG_FILE_NAME)) {
-      return this.getLogFile();
-    } else if (attName.equalsIgnoreCase(LOG_FILE_SIZE_LIMIT_NAME)) {
-      return Integer.valueOf(this.getLogFileSizeLimit());
-    } else if (attName.equalsIgnoreCase(LOG_LEVEL_NAME)) {
+
+    // special case:
+    if (attName.equalsIgnoreCase(LOG_LEVEL_NAME)) {
       return LogWriterImpl.levelToString(this.getLogLevel());
-    } else if (attName.equalsIgnoreCase(LOCATORS_NAME)) {
-      return this.getLocators();
-    } else if (attName.equalsIgnoreCase(LOCATOR_WAIT_TIME_NAME)) {
-      return Integer.valueOf(this.getLocatorWaitTime());
-    } else if (attName.equalsIgnoreCase(REMOTE_LOCATORS_NAME)) {
-      return this.getRemoteLocators();
-    } else if (attName.equalsIgnoreCase(MCAST_ADDRESS_NAME)) {
-      return this.getMcastAddress();
-    } else if (attName.equalsIgnoreCase(BIND_ADDRESS_NAME)) {
-      return this.getBindAddress();
-    } else if (attName.equalsIgnoreCase(SERVER_BIND_ADDRESS_NAME)) {
-      return this.getServerBindAddress();
-    } else if (attName.equalsIgnoreCase(TCP_PORT_NAME)) {
-      return Integer.valueOf(this.getTcpPort());
-    } else if (attName.equalsIgnoreCase(MCAST_PORT_NAME)) {
-      return Integer.valueOf(this.getMcastPort());
-    } else if (attName.equalsIgnoreCase(MCAST_TTL_NAME)) {
-      return Integer.valueOf(this.getMcastTtl());
-    } else if (attName.equalsIgnoreCase(SOCKET_LEASE_TIME_NAME)) {
-      return Integer.valueOf(this.getSocketLeaseTime());
-    } else if (attName.equalsIgnoreCase(SOCKET_BUFFER_SIZE_NAME)) {
-      return Integer.valueOf(this.getSocketBufferSize());
-    } else if (attName.equalsIgnoreCase(CONSERVE_SOCKETS_NAME)) {
-      return Boolean.valueOf(this.getConserveSockets());
-    } else if (attName.equalsIgnoreCase(ROLES_NAME)) {
-      return this.getRoles();
-    } else if (attName.equalsIgnoreCase(NAME_NAME)) {
-      return this.getName();
-    } else if (attName.equalsIgnoreCase(STATISTIC_ARCHIVE_FILE_NAME)) {
-      return this.getStatisticArchiveFile();
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLE_RATE_NAME)) {
-      return Integer.valueOf(this.getStatisticSampleRate());
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLING_ENABLED_NAME)) {
-      return Boolean.valueOf(this.getStatisticSamplingEnabled());
-    } else if (attName.equalsIgnoreCase(SSL_ENABLED_NAME)) {
-      return this.getSSLEnabled() ? Boolean.TRUE : Boolean.FALSE;
-    } else if (attName.equalsIgnoreCase(SSL_PROTOCOLS_NAME)) {
-      return this.getSSLProtocols();
-    } else if (attName.equalsIgnoreCase(SSL_CIPHERS_NAME)) {
-      return this.getSSLCiphers();
-    } else if (attName.equalsIgnoreCase(SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.getSSLRequireAuthentication() ? Boolean.TRUE : Boolean.FALSE;
-    }  else if (attName.equalsIgnoreCase(CLUSTER_SSL_ENABLED_NAME)) {
-      return this.getClusterSSLEnabled() ? Boolean.TRUE : Boolean.FALSE;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_PROTOCOLS_NAME)) {
-      return this.getClusterSSLProtocols();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_CIPHERS_NAME)) {
-      return this.getClusterSSLCiphers();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.getClusterSSLRequireAuthentication() ? Boolean.TRUE : Boolean.FALSE;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_NAME)) {
-      return this.getClusterSSLKeyStore();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.getClusterSSLKeyStoreType();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.getClusterSSLKeyStorePassword();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_NAME)) {
-      return this.getClusterSSLTrustStore();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.getClusterSSLTrustStorePassword();
-    } else if (attName.equalsIgnoreCase(MCAST_SEND_BUFFER_SIZE_NAME)) {
-      return Integer.valueOf(this.getMcastSendBufferSize());
-    } else if (attName.equalsIgnoreCase(MCAST_RECV_BUFFER_SIZE_NAME)) {
-      return Integer.valueOf(this.getMcastRecvBufferSize());
-    } else if (attName.equalsIgnoreCase(UDP_SEND_BUFFER_SIZE_NAME)) {
-      return Integer.valueOf(this.getUdpSendBufferSize());
-    } else if (attName.equalsIgnoreCase(UDP_RECV_BUFFER_SIZE_NAME)) {
-      return Integer.valueOf(this.getUdpRecvBufferSize());
-    } else if (attName.equalsIgnoreCase(MCAST_FLOW_CONTROL_NAME)) {
-      return this.getMcastFlowControl();
-    } else if (attName.equalsIgnoreCase(UDP_FRAGMENT_SIZE_NAME)) {
-      return Integer.valueOf(this.getUdpFragmentSize());
-    } else if (attName.equalsIgnoreCase(DISABLE_TCP_NAME)) {
-      return Boolean.valueOf(this.getDisableTcp());
-    } else if (attName.equalsIgnoreCase(ENABLE_TIME_STATISTICS_NAME)) {
-      return Boolean.valueOf(this.getEnableTimeStatistics());
-    } else if (attName.equalsIgnoreCase(MEMBER_TIMEOUT_NAME)) {
-      return Integer.valueOf(this.getMemberTimeout());
-    } else if (attName.equalsIgnoreCase(MEMBERSHIP_PORT_RANGE_NAME)) {
-      return getMembershipPortRange();
-    } else if (attName.equalsIgnoreCase(MAX_WAIT_TIME_FOR_RECONNECT_NAME)) {
-      return Integer.valueOf(this.getMaxWaitTimeForReconnect());
-    } else if (attName.equalsIgnoreCase(MAX_NUM_RECONNECT_TRIES )) {
-      return Integer.valueOf(this.getMaxNumReconnectTries());
-    } else if (attName.equalsIgnoreCase(ASYNC_DISTRIBUTION_TIMEOUT_NAME)) {
-      return Integer.valueOf(this.getAsyncDistributionTimeout());
-    } else if (attName.equalsIgnoreCase(ASYNC_QUEUE_TIMEOUT_NAME)) {
-      return Integer.valueOf(this.getAsyncQueueTimeout());
-    } else if (attName.equalsIgnoreCase(ASYNC_MAX_QUEUE_SIZE_NAME)) {
-      return Integer.valueOf(this.getAsyncMaxQueueSize());
-    } else if (attName.equalsIgnoreCase(START_LOCATOR_NAME)) {
-      return this.getStartLocator();
-    } else if (attName.equalsIgnoreCase(CLIENT_CONFLATION_PROP_NAME)) {
-      return this.getClientConflation();
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_ID_NAME)) {
-      return this.getDurableClientId();
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_TIMEOUT_NAME)) {
-      return Integer.valueOf(this.getDurableClientTimeout());
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTH_INIT_NAME)) {
-      return this.getSecurityClientAuthInit();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTHENTICATOR_NAME)) {
-      return this.getSecurityClientAuthenticator();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_DHALGO_NAME)) {
-      return this.getSecurityClientDHAlgo();
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTH_INIT_NAME)) {
-      return this.getSecurityPeerAuthInit();
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTHENTICATOR_NAME)) {
-      return this.getSecurityPeerAuthenticator();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_NAME)) {
-      return this.getSecurityClientAccessor();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_PP_NAME)) {
-      return this.getSecurityClientAccessorPP();
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)) {
+    }
+
+    if (attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)) {
       return LogWriterImpl.levelToString(this.getSecurityLogLevel());
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_FILE_NAME)) {
-      return this.getSecurityLogFile();
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)) {
-      return Integer.valueOf(this.getSecurityPeerMembershipTimeout());
-    } else if (attName.startsWith(SECURITY_PREFIX_NAME)) {
-      return this.getSecurity(attName);
-    } else if (attName.equalsIgnoreCase(ENABLE_NETWORK_PARTITION_DETECTION_NAME)) {
-      return Boolean.valueOf(this.getEnableNetworkPartitionDetection());
-    } else if (attName.equalsIgnoreCase(DISABLE_AUTO_RECONNECT_NAME)) {
-      return Boolean.valueOf(this.getDisableAutoReconnect());
-    } else if (attName.equalsIgnoreCase(REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)) {
-       return Boolean.valueOf(this.getRemoveUnresponsiveClient());
-    } else if (attName.equalsIgnoreCase(DELTA_PROPAGATION_PROP_NAME)) {
-      return Boolean.valueOf(this.getDeltaPropagation());
-    } else if (attName.equalsIgnoreCase(DISTRIBUTED_SYSTEM_ID_NAME)) {
-      return Integer.valueOf(this.getDistributedSystemId());
-    } else if (attName.equalsIgnoreCase(ENFORCE_UNIQUE_HOST_NAME)) {
-      return Boolean.valueOf(this.getEnforceUniqueHost());
-    } else if (attName.equalsIgnoreCase(REDUNDANCY_ZONE_NAME)) {
-      return this.getRedundancyZone() == null ? "" : this.getRedundancyZone();
-    } else if (attName.equalsIgnoreCase(GROUPS_NAME)) {
-      return this.getGroups();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_NAME)) {
-      return this.getJmxManager();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_START_NAME)) {
-      return this.getJmxManagerStart();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_NAME)) {
-      return this.getJmxManagerSSL();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_ENABLED_NAME)) {
-      return this.getJmxManagerSSLEnabled();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_CIPHERS_NAME)) {
-      return this.getJmxManagerSSLCiphers();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_PROTOCOLS_NAME)) {
-      return this.getJmxManagerSSLProtocols();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.getJmxManagerSSLRequireAuthentication();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_NAME)) {
-      return this.getJmxManagerSSLKeyStore();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.getJmxManagerSSLKeyStoreType();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.getJmxManagerSSLKeyStorePassword();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_NAME)) {
-      return this.getJmxManagerSSLTrustStore();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.getJmxManagerSSLTrustStorePassword();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PORT_NAME)) {
-      return this.getJmxManagerPort();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_BIND_ADDRESS_NAME)) {
-      return this.getJmxManagerBindAddress();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)) {
-      return this.getJmxManagerHostnameForClients();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PASSWORD_FILE_NAME)) {
-      return this.getJmxManagerPasswordFile();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_ACCESS_FILE_NAME)) {
-      return this.getJmxManagerAccessFile();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HTTP_PORT_NAME)) {
-      return this.getJmxManagerHttpPort();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_UPDATE_RATE_NAME)) {
-      return this.getJmxManagerUpdateRate();
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PORT_NAME)) {
-      return this.getMemcachedPort();
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PROTOCOL_NAME)) {
-      return this.getMemcachedProtocol();
-    } else if (attName.equalsIgnoreCase(MEMCACHED_BIND_ADDRESS_NAME)) {
-      return this.getMemcachedBindAddress();
-    } else if (attName.equalsIgnoreCase(REDIS_PORT_NAME)) {
-      return this.getRedisPort();
-    } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
-      return this.getRedisBindAddress();
-    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
-      return this.getRedisPassword();
-    } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
-      return this.getUserCommandPackages();
-    } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
-      return this.getEnableClusterConfiguration();
-    } else if (attName.equalsIgnoreCase(USE_CLUSTER_CONFIGURATION_NAME)) {
-      return this.getUseSharedConfiguration();
-    } else if (attName.equalsIgnoreCase(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME)) {
-      return this.getLoadClusterConfigFromDir();
-    } else if (attName.equalsIgnoreCase(CLUSTER_CONFIGURATION_DIR)) {
-      return this.getClusterConfigDir();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_ENABLED_NAME)) {
-      return this.getServerSSLEnabled();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_CIPHERS_NAME)) {
-      return this.getServerSSLCiphers();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_PROTOCOLS_NAME)) {
-      return this.getServerSSLProtocols();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.getServerSSLRequireAuthentication();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_NAME)) {
-      return this.getServerSSLKeyStore();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.getServerSSLKeyStoreType();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.getServerSSLKeyStorePassword();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_NAME)) {
-      return this.getServerSSLTrustStore();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.getServerSSLTrustStorePassword();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_ENABLED_NAME)) {
-      return this.getGatewaySSLEnabled();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_CIPHERS_NAME)) {
-      return this.getGatewaySSLCiphers();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_PROTOCOLS_NAME)) {
-      return this.getGatewaySSLProtocols();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.getGatewaySSLRequireAuthentication();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_NAME)) {
-      return this.getGatewaySSLKeyStore();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.getGatewaySSLKeyStoreType();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.getGatewaySSLKeyStorePassword();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_NAME)) {
-      return this.getGatewaySSLTrustStore();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.getGatewaySSLTrustStorePassword();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_PORT_NAME)) {
-       return this.getHttpServicePort();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_BIND_ADDRESS_NAME)) {
-      return this.getHttpServiceBindAddress();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_ENABLED_NAME)) {
-      return this.getHttpServiceSSLEnabled();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_CIPHERS_NAME)) {
-      return this.getHttpServiceSSLCiphers();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_PROTOCOLS_NAME)) {
-      return this.getHttpServiceSSLProtocols();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.getHttpServiceSSLRequireAuthentication();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_NAME)) {
-      return this.getHttpServiceSSLKeyStore();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.getHttpServiceSSLKeyStoreType();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.getHttpServiceSSLKeyStorePassword();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_NAME)) {
-      return this.getHttpServiceSSLTrustStore();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.getHttpServiceSSLTrustStorePassword();
-    } else if (attName.equalsIgnoreCase(START_DEV_REST_API_NAME)) {
-      return this.getStartDevRestApi();
-    } else if (attName.equalsIgnoreCase(OFF_HEAP_MEMORY_SIZE_NAME)) {
-      return this.getOffHeapMemorySize();
-    } else if (attName.equalsIgnoreCase(LOCK_MEMORY_NAME)) {
-      return this.getLockMemory();
-    } else if (attName.equalsIgnoreCase(DISTRIBUTED_TRANSACTIONS_NAME)) {
-      return this.getDistributedTransactions();
-    } else {
+    }
+
+    Method getter = getters.get(attName);
+    if(getter==null) {
+      if (attName.startsWith(SECURITY_PREFIX_NAME)) {
+        return this.getSecurity(attName);
+      }
       throw new InternalGemFireException(LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
     }
+
+    try {
+      return getter.invoke(this);
+    } catch (Exception e) {
+      if(e instanceof RuntimeException){
+        throw (RuntimeException)e;
+      }
+      if(e.getCause() instanceof RuntimeException){
+        throw (RuntimeException)e.getCause();
+      }
+      else
+        throw new InternalGemFireException("error invoking " + getter.getName(), e);
+    }
   }
+
 
   public boolean isAttributeModifiable(String attName) {
     checkAttributeName(attName);
-    if (attName.equalsIgnoreCase(ACK_WAIT_THRESHOLD_NAME)) {
-      return this.isAckWaitThresholdModifiable();
-    } else if (attName.equalsIgnoreCase(ACK_SEVERE_ALERT_THRESHOLD_NAME)) {
-      return this.isAckSevereAlertThresholdModifiable();
-    } else if (attName.equalsIgnoreCase(ARCHIVE_DISK_SPACE_LIMIT_NAME)) {
-      return this.isArchiveDiskSpaceLimitModifiable();
-    } else if (attName.equalsIgnoreCase(ARCHIVE_FILE_SIZE_LIMIT_NAME)) {
-      return this.isArchiveFileSizeLimitModifiable();
-    } else if (attName.equalsIgnoreCase(CACHE_XML_FILE_NAME)) {
-      return this.isCacheXmlFileModifiable();
-    } else if (attName.equalsIgnoreCase(DEPLOY_WORKING_DIR)) {
-      return this.isDeployWorkingDirModifiable();
-    } else if (attName.equalsIgnoreCase(LOG_DISK_SPACE_LIMIT_NAME)) {
-      return this.isLogDiskSpaceLimitModifiable();
-    } else if (attName.equalsIgnoreCase(LOG_FILE_NAME)) {
-      return this.isLogFileModifiable();
-    } else if (attName.equalsIgnoreCase(LOG_FILE_SIZE_LIMIT_NAME)) {
-      return this.isLogFileSizeLimitModifiable();
-    } else if (attName.equalsIgnoreCase(LOG_LEVEL_NAME)) {
-      return this.isLogLevelModifiable();
-    } else if (attName.equalsIgnoreCase(LOCATORS_NAME)) {
-      return this.isLocatorsModifiable();
-    } else if (attName.equalsIgnoreCase(LOCATOR_WAIT_TIME_NAME)) {
-      return this.isLocatorWaitTimeModifiable();
-    } else if (attName.equalsIgnoreCase(REMOTE_LOCATORS_NAME)) {
-      return this.isRemoteLocatorsModifiable();
-    } else if (attName.equalsIgnoreCase(MCAST_ADDRESS_NAME)) {
-      return this.isMcastAddressModifiable();
-    } else if (attName.equalsIgnoreCase(BIND_ADDRESS_NAME)) {
-      return this.isBindAddressModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_BIND_ADDRESS_NAME)) {
-      return this.isServerBindAddressModifiable();
-    } else if (attName.equalsIgnoreCase(TCP_PORT_NAME)) {
-      return this.isTcpPortModifiable();
-    } else if (attName.equalsIgnoreCase(MCAST_PORT_NAME)) {
-      return this.isMcastPortModifiable();
-    } else if (attName.equalsIgnoreCase(MCAST_TTL_NAME)) {
-      return this.isMcastTtlModifiable();
-    } else if (attName.equalsIgnoreCase(SOCKET_LEASE_TIME_NAME)) {
-      return this.isSocketLeaseTimeModifiable();
-    } else if (attName.equalsIgnoreCase(SOCKET_BUFFER_SIZE_NAME)) {
-      return this.isSocketBufferSizeModifiable();
-    } else if (attName.equalsIgnoreCase(CONSERVE_SOCKETS_NAME)) {
-      return this.isConserveSocketsModifiable();
-    } else if (attName.equalsIgnoreCase(ROLES_NAME)) {
-      return this.isRolesModifiable();
-    } else if (attName.equalsIgnoreCase(NAME_NAME)) {
-      return this.isNameModifiable();
-    } else if (attName.equalsIgnoreCase(STATISTIC_ARCHIVE_FILE_NAME)) {
-      return this.isStatisticArchiveFileModifiable();
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLE_RATE_NAME)) {
-      return this.isStatisticSampleRateModifiable();
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLING_ENABLED_NAME)) {
-      return this.isStatisticSamplingEnabledModifiable();
-    } else if (attName.equalsIgnoreCase(SSL_ENABLED_NAME)) {
-      return this.isSSLEnabledModifiable();
-    } else if (attName.equalsIgnoreCase(SSL_PROTOCOLS_NAME)) {
-      return this.isSSLProtocolsModifiable();
-    } else if (attName.equalsIgnoreCase(SSL_CIPHERS_NAME)) {
-      return this.isSSLCiphersModifiable();
-    } else if (attName.equalsIgnoreCase(SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.isSSLRequireAuthenticationModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_ENABLED_NAME)) {
-      return this.isClusterSSLEnabledModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_PROTOCOLS_NAME)) {
-      return this.isClusterSSLProtocolsModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_CIPHERS_NAME)) {
-      return this.isClusterSSLCiphersModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.isClusterSSLRequireAuthenticationModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_NAME)) {
-      return this.isClusterSSLKeyStoreModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.isClusterSSLKeyStoreTypeModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.isClusterSSLKeyStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_NAME)) {
-      return this.isClusterSSLTrustStoreModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.isClusterSSLTrustStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(MCAST_SEND_BUFFER_SIZE_NAME)) {
-      return this.isMcastSendBufferSizeModifiable();
-    } else if (attName.equalsIgnoreCase(MCAST_RECV_BUFFER_SIZE_NAME)) {
-      return this.isMcastRecvBufferSizeModifiable();
-    } else if (attName.equalsIgnoreCase(UDP_SEND_BUFFER_SIZE_NAME)) {
-      return this.isUdpSendBufferSizeModifiable();
-    } else if (attName.equalsIgnoreCase(UDP_RECV_BUFFER_SIZE_NAME)) {
-      return this.isUdpRecvBufferSizeModifiable();
-    } else if (attName.equalsIgnoreCase(MCAST_FLOW_CONTROL_NAME)) {
-      return this.isMcastFlowControlModifiable();
-    } else if (attName.equalsIgnoreCase(UDP_FRAGMENT_SIZE_NAME)) {
-      return this.isUdpFragmentSizeModifiable();
-    } else if (attName.equalsIgnoreCase(DISABLE_TCP_NAME)) {
-      return this.isDisableTcpModifiable();
-    } else if (attName.equalsIgnoreCase(ENABLE_TIME_STATISTICS_NAME)) {
-      return this.isEnableTimeStatisticsModifiable();
-    } else if (attName.equalsIgnoreCase(MEMBER_TIMEOUT_NAME)) {
-      return this.isMemberTimeoutModifiable();
-    } else if (attName.equalsIgnoreCase(MEMBERSHIP_PORT_RANGE_NAME)) {
-      return this.isMembershipPortRangeModifiable();
-    } else if (attName.equalsIgnoreCase(MAX_NUM_RECONNECT_TRIES)) {
-      return this.isMaxNumberOfTiesModifiable();
-    } else if (attName.equalsIgnoreCase(MAX_WAIT_TIME_FOR_RECONNECT_NAME)) {
-      return this.isMaxTimeOutModifiable();
-    } else if (attName.equalsIgnoreCase(ASYNC_DISTRIBUTION_TIMEOUT_NAME)) {
-      return this.isAsyncDistributionTimeoutModifiable();
-    } else if (attName.equalsIgnoreCase(ASYNC_QUEUE_TIMEOUT_NAME)) {
-      return this.isAsyncQueueTimeoutModifiable();
-    } else if (attName.equalsIgnoreCase(ASYNC_MAX_QUEUE_SIZE_NAME)) {
-      return this.isAsyncMaxQueueSizeModifiable();
-    } else if (attName.equalsIgnoreCase(START_LOCATOR_NAME)) {
-      return this.isStartLocatorModifiable();
-    } else if (attName.equalsIgnoreCase(CLIENT_CONFLATION_PROP_NAME)) {
-      return this.isClientConflationModifiable();
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_ID_NAME)) {
-      return this.isDurableClientIdModifiable();
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_TIMEOUT_NAME)) {
-      return this.isDurableClientTimeoutModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTH_INIT_NAME)) {
-      return this.isSecurityClientAuthInitModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTHENTICATOR_NAME)) {
-      return this.isSecurityClientAuthenticatorModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_DHALGO_NAME)) {
-      return this.isSecurityClientDHAlgoModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTH_INIT_NAME)) {
-      return this.isSecurityPeerAuthInitModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTHENTICATOR_NAME)) {
-      return this.isSecurityPeerAuthenticatorModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_NAME)) {
-      return this.isSecurityClientAccessorModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_PP_NAME)) {
-      return this.isSecurityClientAccessorPPModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)) {
-      return this.isSecurityLogLevelModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_FILE_NAME)) {
-      return this.isSecurityLogFileModifiable();
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)) {
-      return this.isSecurityPeerMembershipTimeoutModifiable();
-    } else if (attName.startsWith(SECURITY_PREFIX_NAME)) {
-      return this.isSecurityModifiable();
-    } else if (attName.equalsIgnoreCase(ENABLE_NETWORK_PARTITION_DETECTION_NAME)) {
-      return this.isEnableNetworkPartitionDetectionModifiable();
-    } else if (attName.equalsIgnoreCase(DISABLE_AUTO_RECONNECT_NAME)) {
-      return this.isDisableAutoReconnectModifiable();
-    } else if (attName.equalsIgnoreCase(REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)) {
-      return this.isRemoveUnresponsiveClientModifiable();
-    } else if (attName.equalsIgnoreCase(DELTA_PROPAGATION_PROP_NAME)) {
-      return this.isDeltaPropagationModifiable();
-    } else if (attName.equalsIgnoreCase(DISTRIBUTED_SYSTEM_ID_NAME)) {
-      return this.isDistributedSystemIdModifiable();
-    } else if (attName.equalsIgnoreCase(ENFORCE_UNIQUE_HOST_NAME)) {
-      return this.isEnforceUniqueHostModifiable();
-    } else if (attName.equalsIgnoreCase(REDUNDANCY_ZONE_NAME)) {
-      return this.isRedundancyZoneModifiable();
-    } else if (attName.startsWith(SSL_SYSTEM_PROPS_NAME)) {
-      return this.isSSLPropertyModifiable();
-    } else if (attName.equalsIgnoreCase(GROUPS_NAME)) {
-      return this.isGroupsModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_NAME)) {
-      return this.isJmxManagerModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_START_NAME)) {
-      return this.isJmxManagerStartModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_NAME)) {
-      return this.isJmxManagerSSLModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_ENABLED_NAME)) {
-      return this.isJmxManagerSSLEnabledModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_CIPHERS_NAME)) {
-      return this.isJmxManagerSSLCiphersModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_PROTOCOLS_NAME)) {
-      return this.isJmxManagerSSLProtocolsModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.isJmxManagerSSLRequireAuthenticationModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_NAME)) {
-      return this.isJmxManagerSSLKeyStoreModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.isJmxManagerSSLKeyStoreTypeModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.isJmxManagerSSLKeyStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_NAME)) {
-      return this.isJmxManagerSSLTrustStoreModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.isJmxManagerSSLTrustStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PORT_NAME)) {
-      return this.isJmxManagerPortModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_BIND_ADDRESS_NAME)) {
-      return this.isJmxManagerBindAddressModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)) {
-      return this.isJmxManagerHostnameForClientsModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PASSWORD_FILE_NAME)) {
-      return this.isJmxManagerPasswordFileModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_ACCESS_FILE_NAME)) {
-      return this.isJmxManagerAccessFileModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HTTP_PORT_NAME)) {
-      return this.isJmxManagerHttpPortModifiable();
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_UPDATE_RATE_NAME)) {
-      return this.isJmxManagerUpdateRateModifiable();
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PORT_NAME)) {
-      return this.isMemcachedPortModifiable();
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PROTOCOL_NAME)) {
-      return this.isMemcachedProtocolModifiable();
-    } else if (attName.equalsIgnoreCase(MEMCACHED_BIND_ADDRESS_NAME)) {
-      return this.isMemcachedBindAddressModifiable();
-    } else if (attName.equalsIgnoreCase(REDIS_PORT_NAME)) {
-      return this.isRedisPortModifiable();
-    } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
-      return this.isRedisBindAddressModifiable();
-    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
-      return this.isRedisPasswordModifiable();
-    } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
-      return this.isUserCommandPackagesModifiable();
-    } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
-      return this.isEnableSharedConfigurationModifiable();
-    } else if (attName.equalsIgnoreCase(OFF_HEAP_MEMORY_SIZE_NAME)) {
-      return this.isOffHeapMemorySizeModifiable();
-    } else if (attName.equalsIgnoreCase(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME)) {
-      return this.isLoadSharedConfigFromDirModifiable();
-    } else if (attName.equalsIgnoreCase(USE_CLUSTER_CONFIGURATION_NAME)) {
-      return this.isUseSharedConfigurationModifiable();
-    } else if (attName.equalsIgnoreCase(CLUSTER_CONFIGURATION_DIR)) {
-      return this._modifiableDefault();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_ENABLED_NAME)) {
-      return this.isServerSSLEnabledModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_CIPHERS_NAME)) {
-      return this.isServerSSLCiphersModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_PROTOCOLS_NAME)) {
-      return this.isServerSSLProtocolsModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.isServerSSLRequireAuthenticationModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_NAME)) {
-      return this.isServerSSLKeyStoreModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.isServerSSLKeyStoreTypeModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.isServerSSLKeyStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_NAME)) {
-      return this.isServerSSLTrustStoreModifiable();
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.isServerSSLTrustStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_ENABLED_NAME)) {
-      return this.isGatewaySSLEnabledModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_CIPHERS_NAME)) {
-      return this.isGatewaySSLCiphersModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_PROTOCOLS_NAME)) {
-      return this.isGatewaySSLProtocolsModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.isGatewaySSLRequireAuthenticationModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_NAME)) {
-      return this.isGatewaySSLKeyStoreModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.isGatewaySSLKeyStoreTypeModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.isGatewaySSLKeyStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_NAME)) {
-      return this.isGatewaySSLTrustStoreModifiable();
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.isGatewaySSLTrustStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_PORT_NAME)) {
-       return this.isHttpServicePortModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_BIND_ADDRESS_NAME)) {
-      return this.isHttpServiceBindAddressModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_ENABLED_NAME)) {
-      return this.isHttpServiceSSLEnabledModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_CIPHERS_NAME)) {
-      return this.isHttpServiceSSLCiphersModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_PROTOCOLS_NAME)) {
-      return this.isHttpServiceSSLProtocolsModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return this.isHttpServiceSSLRequireAuthenticationModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_NAME)) {
-      return this.isHttpServiceSSLKeyStoreModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)) {
-      return this.isHttpServiceSSLKeyStoreTypeModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return this.isHttpServiceSSLKeyStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_NAME)) {
-      return this.isHttpServiceSSLTrustStoreModifiable();
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return this.isHttpServiceSSLTrustStorePasswordModifiable();
-    } else if (attName.equalsIgnoreCase(START_DEV_REST_API_NAME)) {
-      return this.isStartDevRestApiModifiable();
-    } else if (attName.equalsIgnoreCase(LOCK_MEMORY_NAME)) {
-      return this.isLockMemoryModifiable();
-    } else if (attName.equals(DISTRIBUTED_TRANSACTIONS_NAME)) {
-      return this.isDistributedTransactionsModifiable();
-    }else {
-      throw new InternalGemFireException(LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
-    }
+    if(getModifiableAttributes().contains(attName))
+      return true;
+
+    if(getUnModifiableAttributes().contains(attName))
+      return false;
+    // otherwise, return the default
+    return _modifiableDefault();
   }
+
+
+  /**
+   * child class can override this method to return a list of modifiable attributes
+   * no matter what the default is
+   * @return an empty list
+     */
+  public List<String> getModifiableAttributes(){
+    String[] modifiables = {HTTP_SERVICE_PORT_NAME,JMX_MANAGER_HTTP_PORT_NAME};
+    return Arrays.asList(modifiables);
+  };
+
+  /**
+   * child class can override this method to return a list of unModifiable attributes
+   * no matter what the default is
+   * @return an empty list
+   */
+  public List<String> getUnModifiableAttributes(){
+    String[] list = {};
+    return Arrays.asList(list);
+  };
+
   public Class getAttributeType(String attName) {
     checkAttributeName(attName);
+    return _getAttributeType(attName);
+  }
 
-    if (attName.equalsIgnoreCase(ACK_WAIT_THRESHOLD_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(ACK_SEVERE_ALERT_THRESHOLD_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(ARCHIVE_DISK_SPACE_LIMIT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(ARCHIVE_FILE_SIZE_LIMIT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(CACHE_XML_FILE_NAME)) {
-      return File.class;
-    } else if (attName.equalsIgnoreCase(DEPLOY_WORKING_DIR)) {
-      return File.class;
-    } else if (attName.equalsIgnoreCase(LOG_DISK_SPACE_LIMIT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(LOG_FILE_NAME)) {
-      return File.class;
-    } else if (attName.equalsIgnoreCase(LOG_FILE_SIZE_LIMIT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(LOG_LEVEL_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(LOCATORS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(LOCATOR_WAIT_TIME_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(REMOTE_LOCATORS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(MCAST_ADDRESS_NAME)) {
-      return InetAddress.class;
-    } else if (attName.equalsIgnoreCase(BIND_ADDRESS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_BIND_ADDRESS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(TCP_PORT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MCAST_PORT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MCAST_TTL_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(SOCKET_LEASE_TIME_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(SOCKET_BUFFER_SIZE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(CONSERVE_SOCKETS_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(ROLES_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(NAME_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(STATISTIC_ARCHIVE_FILE_NAME)) {
-      return File.class;
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLE_RATE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(STATISTIC_SAMPLING_ENABLED_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(SSL_ENABLED_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(SSL_PROTOCOLS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SSL_CIPHERS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_ENABLED_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_PROTOCOLS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_CIPHERS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_TYPE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(MCAST_SEND_BUFFER_SIZE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MCAST_RECV_BUFFER_SIZE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(UDP_SEND_BUFFER_SIZE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(UDP_RECV_BUFFER_SIZE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MCAST_FLOW_CONTROL_NAME)) {
-      return FlowControlParams.class;
-    } else if (attName.equalsIgnoreCase(UDP_FRAGMENT_SIZE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(DISABLE_TCP_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(ENABLE_TIME_STATISTICS_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(MEMBER_TIMEOUT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MEMBERSHIP_PORT_RANGE_NAME)) {
-      return int[].class;
-    } else if (attName.equalsIgnoreCase(MAX_WAIT_TIME_FOR_RECONNECT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MAX_NUM_RECONNECT_TRIES)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(ASYNC_DISTRIBUTION_TIMEOUT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(ASYNC_QUEUE_TIMEOUT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(ASYNC_MAX_QUEUE_SIZE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(START_LOCATOR_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(CLIENT_CONFLATION_PROP_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_ID_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(DURABLE_CLIENT_TIMEOUT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTH_INIT_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_AUTHENTICATOR_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_DHALGO_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTH_INIT_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_AUTHENTICATOR_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_CLIENT_ACCESSOR_PP_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_LOG_FILE_NAME)) {
-      return File.class;
-    } else if (attName.equalsIgnoreCase(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)) {
-      return Integer.class;
-    } else if (attName.startsWith(SECURITY_PREFIX_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(ENABLE_NETWORK_PARTITION_DETECTION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(DISABLE_AUTO_RECONNECT_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(DELTA_PROPAGATION_PROP_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(DISTRIBUTED_SYSTEM_ID_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(ENFORCE_UNIQUE_HOST_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(REDUNDANCY_ZONE_NAME)) {
-      return String.class;
-    } else if (attName.startsWith(USERDEFINED_PREFIX_NAME)) {
-      return String.class;
-    } else if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GROUPS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_START_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_ENABLED_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_CIPHERS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_PROTOCOLS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PORT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_BIND_ADDRESS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_PASSWORD_FILE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_ACCESS_FILE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_HTTP_PORT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(JMX_MANAGER_UPDATE_RATE_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PORT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(MEMCACHED_PROTOCOL_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(MEMCACHED_BIND_ADDRESS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(REDIS_PORT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(REDIS_BIND_ADDRESS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(REDIS_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(USER_COMMAND_PACKAGES)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(ENABLE_CLUSTER_CONFIGURATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(USE_CLUSTER_CONFIGURATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(CLUSTER_CONFIGURATION_DIR)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_ENABLED_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_CIPHERS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_PROTOCOLS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_TYPE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_ENABLED_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_CIPHERS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_PROTOCOLS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_TYPE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_PORT_NAME)) {
-      return Integer.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_BIND_ADDRESS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_ENABLED_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_CIPHERS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_PROTOCOLS_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(START_DEV_REST_API_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(OFF_HEAP_MEMORY_SIZE_NAME)) {
-      return String.class;
-    } else if (attName.equalsIgnoreCase(LOCK_MEMORY_NAME)) {
-      return Boolean.class;
-    } else if (attName.equalsIgnoreCase(DISTRIBUTED_TRANSACTIONS_NAME)) {
-      return Boolean.class;
-    } 
-    else {
+  public static Class _getAttributeType(String attName) {
+    ConfigAttribute ca = attributes.get(attName);
+    if(ca==null){
+      if(attName.startsWith(SECURITY_PREFIX_NAME) || attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME) ){
+        return String.class;
+      }
       throw new InternalGemFireException(LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
     }
+    return ca.type();
   }
 
   protected static final Map dcAttDescriptions;
@@ -3291,71 +1147,15 @@ public abstract class AbstractDistributionConfig
       throw new Error(LocalizedStrings.AbstractDistributionConfig_UNEXPECTED_PROBLEM_GETTING_INETADDRESS_0.toLocalizedString(ex), ex);
     }
   }
-  
-  
-  public boolean isServerSSLEnabledModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkServerSSLEnabled(){
-    _checkIfModifiable(SERVER_SSL_ENABLED_NAME);
-  }
 
-  public boolean isServerSSLRequireAuthenticationModifiable(){
-    return _modifiableDefault();
+/**************************** static initializers to gather all the checkers in this class *************************/
+  static final Map<String, Method> checkers = new HashMap<String, Method>();
+  static{
+    for(Method method:AbstractDistributionConfig.class.getDeclaredMethods()) {
+      if (method.isAnnotationPresent(ConfigAttributeChecker.class)) {
+        ConfigAttributeChecker checker = method.getAnnotation(ConfigAttributeChecker.class);
+        checkers.put(checker.name(), method);
+      }
+    }
   }
-  
-  public void checkServerSSLRequireAuthentication(){
-    _checkIfModifiable(SERVER_SSL_REQUIRE_AUTHENTICATION_NAME);
-  }
-  
-  public boolean isServerSSLProtocolsModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkServerSSLProtocols(){
-    _checkIfModifiable(SERVER_SSL_PROTOCOLS_NAME);
-  }
-
-  public boolean isServerSSLCiphersModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkServerSSLCiphers(){
-    _checkIfModifiable(SERVER_SSL_CIPHERS_NAME);
-  }
-  
-  public boolean isGatewaySSLEnabledModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSL(){
-    _checkIfModifiable(GATEWAY_SSL_ENABLED_NAME);
-  }
-
-  public boolean isGatewaySSLRequireAuthenticationModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLRequireAuthentication(){
-    _checkIfModifiable(GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME);
-  }
-  
-  public boolean isGatewaySSLProtocolsModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLProtocols(){
-    _checkIfModifiable(GATEWAY_SSL_PROTOCOLS_NAME);
-  }
-
-  
-  public boolean isGatewaySSLCiphersModifiable(){
-    return _modifiableDefault();
-  }
-  
-  public void checkGatewaySSLCiphers(){
-    _checkIfModifiable(GATEWAY_SSL_CIPHERS_NAME);
-  }
-  
 }

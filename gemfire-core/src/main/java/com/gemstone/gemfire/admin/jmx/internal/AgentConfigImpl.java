@@ -16,21 +16,6 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.admin.DistributedSystemConfig;
 import com.gemstone.gemfire.admin.DistributionLocatorConfig;
@@ -38,11 +23,17 @@ import com.gemstone.gemfire.admin.internal.DistributedSystemConfigImpl;
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.admin.jmx.Agent;
 import com.gemstone.gemfire.admin.jmx.AgentConfig;
-import com.gemstone.gemfire.distributed.internal.AbstractDistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.util.IOUtils;
+
+import java.io.*;
+import java.net.InetAddress;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * Provides the JMX Agent configuration properties.
