@@ -1,0 +1,356 @@
+/*
+    Bootflat 1.0.1
+    Designed & Built by flathemes, http://www.flathemes.com
+    Licensed under MIT License, http://opensource.org/licenses/mit-license.html
+
+    Thanks for supporting our website and enjoy!
+*/
+/*------------------------------------*\
+    $bubble
+\*------------------------------------*/
+.bubble-body {
+    position: relative;
+    padding: 3px;
+    background-color: #ecf0f1;
+    border-radius: 3px;
+    overflow: visible;
+}
+.pull-left ~ .bubble-body {
+    margin-left: 60px;
+}
+.pull-right ~ .bubble-body {
+    margin-right: 60px;
+}
+.bubble-body .bubble-inner {
+    min-height: 32px;
+    border: 1px solid #d3d7d7;
+    background-color: #fbfbfb;
+}
+.bubble-body .bubble-heading {
+    padding: 0 10px;
+    border-bottom: 1px solid #d3d7d7;
+    background-color: #f4f4f4;
+    font-size: 12px;
+    font-weight: bold;
+    color: #222;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    height: 33px;
+    line-height: 33px;
+}
+.bubble-body .bubble-content {
+    padding: 10px;
+    font-size: 13px;
+    overflow: auto;
+    width: 100%;
+    line-height: 1.7;
+}
+.bubble-body .bubble-inner {
+    margin-bottom: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+}
+.bubble-body .bubble-inner .bubble {
+    margin: 0 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ecf0f1;
+}
+.bubble-body .bubble-inner .bubble .bubble {
+    margin: 0;
+}
+.bubble-body .bubble-inner .bubble-body:before,
+.bubble-body .bubble-inner .bubble-body:after {
+    display: none;
+}
+.bubble-body .bubble-inner .bubble-body,
+.bubble-body .bubble-inner .bubble-inner {
+    padding: 0;
+    border: none;
+    background-color: transparent;
+}
+.bubble-body .bubble-inner .bubble-inner .bubble-heading {
+    padding: 0;
+    border-bottom: none;
+    background-color: transparent;
+    height: auto;
+    line-height: normal;
+}
+.bubble-body .bubble-inner .bubble-inner .bubble-content {
+    padding: 0;
+    font-size: 13px;
+    overflow: auto;
+    width: 100%;
+    line-height: 1.5;
+}
+.bubble-arrow-left:before,
+.bubble-arrow-right:after {
+    position: absolute;
+    top: 15px;
+    content: "";
+    display: block;
+    height: 0;
+    width: 0;
+    border-width: 10px;
+    border-style: solid;
+}
+.bubble-arrow-left:before {
+    border-color: transparent #ecf0f1 transparent transparent;
+    left: -20px;
+}
+.bubble-arrow-right:after {
+    border-color: transparent transparent transparent #ecf0f1;
+    right: -20px;
+}
+/*------------------------------------*\
+    $breadcrumb-arrow
+\*------------------------------------*/
+.breadcrumb-arrow {
+    padding: 0;
+    list-style:none;
+    background-color: #ecf0f1;
+    height:36px;
+    line-height: 36px;
+}
+.breadcrumb-arrow li:first-child a {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+.breadcrumb-arrow li,
+.breadcrumb-arrow li a,
+.breadcrumb-arrow li span{
+    display:-moz-inline-box;
+    display:inline-table;
+    display:inline-block;
+    zoom:1;
+    *display:inline;
+    vertical-align:top;
+}
+.breadcrumb-arrow li:not(:first-child) {
+    margin-left: -5px;
+}
+.breadcrumb-arrow li + li:before {
+    padding: 0;
+    content: "";
+}
+.breadcrumb-arrow li span {
+    padding: 0 10px;
+}
+.breadcrumb-arrow li a,
+.breadcrumb-arrow li:not(:first-child) span {
+    padding:0 10px 0 25px;
+    height:35px;
+    line-height:35px;
+}
+.breadcrumb-arrow li:first-child a {
+    padding: 0 10px;
+}
+.breadcrumb-arrow li a {
+    position:relative;
+    border:1px solid #3da8e3;
+    color:#fff;
+    background-color:#3da8e3;
+    text-decoration:none;
+}
+.breadcrumb-arrow li [class^="icon-"], 
+.breadcrumb-arrow ul li [class*=" icon-"] {
+    top: 0;
+}
+.breadcrumb-arrow-arrow li:first-child a {
+    padding-left:10px;
+}
+.breadcrumb-arrow li a:before,
+.breadcrumb-arrow li a:after {
+    position:absolute;
+    top:0;
+    content:'';
+    width: 0;
+    height: 0;
+    border-top: 17px solid transparent;
+    border-bottom: 17px solid transparent;
+}
+.breadcrumb-arrow li a:before {
+    right: -10px;
+    border-left-width: 10px;
+    border-left-style:solid;
+    border-left-color:#3da8e3;
+    z-index:3;
+}
+.breadcrumb-arrow li a:after{
+    right: -11px;
+    border-left: 10px solid #2980b9;
+    z-index:2;
+}
+.breadcrumb-arrow li a:hover,
+.breadcrumb-arrow li a:focus {
+    background-color:#3598ce;
+    border: 1px solid #3598ce;
+}
+.breadcrumb-arrow li a:hover:before,
+.breadcrumb-arrow li a:focus:before {
+    border-left-color: #3598ce;
+}
+.breadcrumb-arrow li a:active {
+    background-color:#2980b9;
+    border: 1px solid #2980b9;
+}
+.breadcrumb-arrow li a:active:before,
+.breadcrumb-arrow li a:active:after {
+    border-left-color:#2980b9;
+}
+.breadcrumb-arrow li span{
+    color:#bdc3c7;
+}
+/*------------------------------------*\
+    $nav-tabs-panel
+\*------------------------------------*/
+.nav-tabs-panel,
+.nav-tabs-panel.nav-justified {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #2986b9;
+    background-color: #ecf0f1;
+}
+.nav-tabs-panel .tab-default,
+.nav-tabs-panel.nav-justified .tab-default {
+    margin-right: 0;
+    padding: 11px 15px;
+    border-bottom: none;
+    color: #292929;
+}
+.nav-tabs-panel.nav-justified .active .tab-default,
+.nav-tabs-panel.nav-justified .active .tab-default:hover,
+.nav-tabs-panel.nav-justified .active .tab-default:focus,
+.nav-tabs-panel .active .tab-default,
+.nav-tabs-panel .active .tab-default:hover,
+.nav-tabs-panel .active .tab-default:focus {
+    border-color: transparent transparent #2986b9 transparent;
+    border-bottom-style:solid;
+    border-width: 0 0 3px 0;
+    color: #fff;
+    background-color: #3da8e3;
+    -webkit-border-radius: 0;
+       -moz-border-radius: 0;
+            border-radius: 0;
+}
+.nav-tabs-panel li a:hover,
+.nav-tabs-panel li a:focus {
+    border-color: transparent transparent transparent;
+    background-color: transparent;
+}
+.nav-tabs-panel .open .dropdown-toggle,
+.nav-tabs-panel li.dropdown.open.active a:hover,
+.nav-tabs-panel li.dropdown.open.active a:focus {
+    color: #292929;
+    background-color: transparent;
+    border-color: transparent;
+}
+.nav-tabs-panel .dropdown-toggle .caret,
+.nav-tabs-panel .dropdown-toggle:hover .caret,
+.nav-tabs-panel .dropdown-toggle:focus .caret,
+.nav-tabs-panel li.dropdown.open .caret,
+.nav-tabs-panel li.dropdown.open.active .caret,
+.nav-tabs-panel li.dropdown.open a:hover .caret,
+.nav-tabs-panel li.dropdown.open a:focus .caret {
+    border-top-color: #292929;
+    border-bottom-color: #292929;
+}
+.nav-tabs-panel .active .dropdown-toggle .caret {
+    border-top-color: #fff;
+    border-bottom-color: #fff;
+}
+.nav-tabs-panel .dropdown-menu {
+    margin-top: 1px;
+}
+.nav-tabs-panel .dropdown-menu li a {
+    background-color: transparent;
+}
+.nav-tabs-panel .dropdown-menu li.active a {
+    background-color: #2986b9;
+}
+.nav-tabs-panel .dropdown-menu li a:hover,
+.nav-tabs-panel .dropdown-menu li a:focus {
+    background-color: #2986b9;
+}
+/*------------------------------------*\
+    $tabs-below
+\*------------------------------------*/
+.tabs-below .nav-tabs-panel {
+    margin-top: 15px;
+    margin-bottom: 0;
+    border-top: 1px solid #2986b9;
+    border-bottom:none;
+}
+.tabs-below .nav-tabs-panel li {
+    margin-top: 0;
+}
+.tabs-below .nav-tabs-panel li a:hover,
+.tabs-below .nav-tabs-panel li a:focus {
+    border-top-color: transparent;
+}
+.tabs-below .nav-tabs-panel .active .tab-default,
+.tabs-below .nav-tabs-panel .active .tab-default:hover,
+.tabs-below .nav-tabs-panel .active .tab-default:focus {
+    border-bottom-color: #2986b9;
+}
+.tabs-below .nav-tabs-panel .dropdown-menu {
+    -webkit-border-radius: 4px 4px 0 0;
+    -moz-border-radius: 4px 4px 0 0;
+    border-radius: 4px 4px 0 0;
+}
+/*------------------------------------*\
+    $tabs-left and $tabs-right
+\*------------------------------------*/
+.tabs-left .nav-tabs-panel,
+.tabs-right .nav-tabs-panel {
+    position: relative;
+    border-bottom: none;
+    z-index: 20;
+}
+.tabs-left .nav-tabs-panel li,
+.tabs-right .nav-tabs-panel li {
+    float: none;
+}
+.tabs-left .nav-tabs-panel li .tab-default,
+.tabs-right .nav-tabs-panel li .tab-default {
+    min-width: 39px;
+    margin-bottom:0;
+}
+.tabs-left .nav-tabs-panel li .tab-default:hover,
+.tabs-left .nav-tabs-panel li .tab-default:focus,
+.tabs-right .nav-tabs-panel li .tab-default:hover,
+.tabs-right .nav-tabs-panel li .tab-default:focus {
+    border-color: transparent;
+}
+.tabs-left .nav-tabs-panel {
+    float: left;
+    margin-right: 15px;
+    border-right: 1px solid #2986b9;
+}
+.tabs-left .nav-tabs-panel li a {
+    margin-right: 0;
+}
+.tabs-left .nav-tabs-panel .active .tab-default,
+.tabs-left .nav-tabs-panel .active .tab-default:hover,
+.tabs-left .nav-tabs-panel .active .tab-default:focus {
+    border-color: transparent transparent transparent #2986b9;
+    border-style: solid;
+    border-width: 0 0 0 3px;
+}
+.tabs-right .nav-tabs-panel {
+    float: right;
+    margin-left: 15px;
+    border-left: 1px solid #2986b9;
+}
+.tabs-right .nav-tabs-panel li a {
+    margin-left: 0;
+}
+.tabs-right .nav-tabs-panel .active .tab-default,
+.tabs-right .nav-tabs-panel .active .tab-default:hover,
+.tabs-right .nav-tabs-panel .active .tab-default:focus {
+    border-color: transparent #2986b9 transparent transparent;
+    border-style: solid;
+    border-width: 0 3px 0 0;
+}
+
+
