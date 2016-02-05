@@ -30,10 +30,10 @@ import com.gemstone.gemfire.test.junit.Retry;
  * RetryRule can be used globally for all tests in a test case by specifying a 
  * retryCount when instantiating it:
  * <pre>
- * @Rule
+ * {@literal @}Rule
  * public final RetryRule retryRule = new RetryRule(3);
  * 
- * @Test
+ * {@literal @}Test
  * public void shouldBeRetriedUntilPasses() {
  *   ...
  * }
@@ -42,13 +42,13 @@ import com.gemstone.gemfire.test.junit.Retry;
  * The above will result in 3 retries for every test in the test case.
  * </p> 
  * RetryRule can be used locally for specific tests by annotating the test 
- * method with @Rule and specifying a retryCount for that test:
+ * method with {@literal @}Rule and specifying a retryCount for that test:
  * <pre>
- * @Rule
+ * {@literal @}Rule
  * public final RetryRule retryRule = new RetryRule();
  * 
- * @Test
- * @Retry(3)
+ * {@literal @}Test
+ * {@literal @}Retry(3)
  * public void shouldBeRetriedUntilPasses() {
  *   ...
  * }
