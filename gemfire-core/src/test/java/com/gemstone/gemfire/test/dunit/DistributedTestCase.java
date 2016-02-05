@@ -755,6 +755,7 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     closeCache();
     
     SocketCreator.resolve_dns = true;
+    SocketCreator.resetHostNameCache();
     CacheCreation.clearThreadLocals();
     System.getProperties().remove("gemfire.log-level");
     System.getProperties().remove("jgroups.resolve_dns");
@@ -774,8 +775,6 @@ public abstract class DistributedTestCase extends TestCase implements java.io.Se
     DistributionMessageObserver.setInstance(null);
     QueryObserverHolder.reset();
     DiskStoreObserver.setInstance(null);
-    System.getProperties().remove("gemfire.log-level");
-    System.getProperties().remove("jgroups.resolve_dns");
     
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {
       InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();

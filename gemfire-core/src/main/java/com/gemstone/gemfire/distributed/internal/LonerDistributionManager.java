@@ -842,10 +842,10 @@ public class LonerDistributionManager implements DM {
    * @param newPort the new port to use
    */
   public void updateLonerPort(int newPort) {
-    this.logger.config(LocalizedStrings.LonerDistributionmanager_CHANGING_PORT_FROM_TO,
-        new Object[]{this.lonerPort, newPort});
     this.lonerPort = newPort;
     this.getId().setPort(this.lonerPort);
+    this.logger.config(LocalizedStrings.LonerDistributionmanager_CHANGING_PORT_FROM_TO,
+        new Object[]{this.lonerPort, newPort, getId()});
   }
   public boolean isCurrentMember(InternalDistributedMember p_id) {
     return getId().equals(p_id);

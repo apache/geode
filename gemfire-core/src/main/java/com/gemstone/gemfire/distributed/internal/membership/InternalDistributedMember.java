@@ -784,7 +784,7 @@ public final class InternalDistributedMember
         sb.append(vmStr);
         sb.append(")");
       }
-      if (netMbr.preferredForCoordinator()) {
+      if (vmKind != DistributionManager.LONER_DM_TYPE && netMbr.preferredForCoordinator()) {
         sb.append("<ec>");
       }
       if (this.vmViewId >= 0) {

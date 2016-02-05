@@ -1020,7 +1020,7 @@ class ParentLocalizedStrings {
   public static final StringId SystemAdmin_MONITOR_OPTION_HELP = new StringId(2005, "-monitor Causes the stats command to keep periodically checking its statistic archives for updates.");
 
   public static final StringId CacheFactory_0_EXISTING_CACHE_WITH_DIFFERENT_CACHE_CONFIG =  new StringId(2006, "Existing cache has different cache configuration, it has:\n{0}");
-  public static final StringId LonerDistributionmanager_CHANGING_PORT_FROM_TO = new StringId(2007, "Updating membership port.  Port changed from {0} to {1}.");
+  public static final StringId LonerDistributionmanager_CHANGING_PORT_FROM_TO = new StringId(2007, "Updating membership port.  Port changed from {0} to {1}.  ID is now {2}");
   public static final StringId ManagerLogWriter_ROLLING_CURRENT_LOG_TO_0 = new StringId(2008, "Rolling current log to {0}");
   
   public static final StringId ExecuteFunction66_TRANSACTIONAL_FUNCTION_WITHOUT_RESULT = new StringId(2009, " Function invoked within transactional context, but hasResults() is false; ordering of transactional operations cannot be guaranteed.  This message is only issued once by a server.");

@@ -45,6 +45,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
@@ -80,7 +81,6 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   public void setUp() throws Exception {
     super.setUp();
-    getSystem();
   }
   
   public void tearDown2() throws Exception {
@@ -225,6 +225,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   public void testSynchronousEvents() throws Exception {
+    getSystem();
     InternalClientMembership.setForceSynchronous(true);
     try {
       doTestBasicEvents();
@@ -238,6 +239,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    * Tests event notification methods on ClientMembership.
    */
   public void testBasicEvents() throws Exception {
+    getSystem();
     doTestBasicEvents();
   }
   
@@ -419,6 +421,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     final String[] memberId = new String[1];
     final boolean[] isClient = new boolean[1];
     
+    getSystem();
+
     ClientMembershipListener listener = new ClientMembershipListener() {
       public synchronized void memberJoined(ClientMembershipEvent event) {
         fired[0] = true;
@@ -471,6 +475,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     final String[] memberId = new String[NUM_LISTENERS];
     final boolean[] isClient = new boolean[NUM_LISTENERS];
     
+    getSystem();
+
     final ClientMembershipListener[] listeners = new ClientMembershipListener[NUM_LISTENERS];
     for (int i = 0; i < NUM_LISTENERS; i++) {
       final int whichListener = i;
@@ -727,6 +733,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    * crashes or departs gracefully, the client will detect this as a crash.
    */
   public void testClientMembershipEventsInClient() throws Exception {
+    getSystem();
     addExpectedException("IOException");
     final boolean[] fired = new boolean[3];
     final DistributedMember[] member = new DistributedMember[3];

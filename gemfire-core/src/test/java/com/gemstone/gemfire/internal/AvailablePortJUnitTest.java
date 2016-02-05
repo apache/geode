@@ -67,6 +67,7 @@ public class AvailablePortJUnitTest {
     socket = new ServerSocket();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     socket.bind(new InetSocketAddress((InetAddress)null, port));
+    System.out.println("bind addr="+System.getProperty("gemfire.bind-address"));
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
   }
   

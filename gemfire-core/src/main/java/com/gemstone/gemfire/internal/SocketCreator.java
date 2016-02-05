@@ -133,7 +133,7 @@ public class SocketCreator {
   private static boolean useIPv6Addresses = !Boolean.getBoolean("java.net.preferIPv4Stack") &&
   		Boolean.getBoolean("java.net.preferIPv6Addresses");
   
-  private static final Map hostNames = new HashMap();
+  private static final Map<InetAddress, String> hostNames = new HashMap<>();
   
   /** flag to force always using DNS (regardless of the fact that these lookups can hang) */
   public static final boolean FORCE_DNS_USE = Boolean.getBoolean("gemfire.forceDnsUse");
@@ -376,6 +376,14 @@ public class SocketCreator {
     }
     return result;
   }
+  
+  /**
+   * Reset the hostNames caches
+   */
+  public static synchronized void resetHostNameCache() {
+    hostNames.clear();
+  }
+  
   // -------------------------------------------------------------------------
   //   Initializers (change SocketCreator state)
   // -------------------------------------------------------------------------
