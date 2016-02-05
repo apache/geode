@@ -105,7 +105,7 @@ import com.gemstone.gemfire.pdx.internal.ConvertableToBytes;
 // which checks for RegionEntry classes of GFE and validates the same with its 
 // own classes.
 
-abstract class AbstractRegionMap implements RegionMap {
+public abstract class AbstractRegionMap implements RegionMap {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -1953,6 +1953,23 @@ abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
+  /**
+   * If true then invalidates that throw EntryNotFoundException
+   * or that are already invalid will first call afterInvalidate on CacheListeners. 
+   * The old value on the event passed to afterInvalidate will be null.
+   */
+  public static boolean FORCE_INVALIDATE_EVENT = Boolean.getBoolean("gemfire.FORCE_INVALIDATE_EVENT");
+
+  /**
+   * If the FORCE_INVALIDATE_EVENT flag is true
+   * then invoke callbacks on the given event.
+   */
+  void forceInvalidateEvent(EntryEventImpl event) {
+    if (FORCE_INVALIDATE_EVENT) {
+      event.invokeCallbacks(_getOwner(), false, false);
+    }
+  }
+  
   public final boolean invalidate(EntryEventImpl event,
       boolean invokeCallbacks, boolean forceNewEntry, boolean forceCallbacks)
       throws EntryNotFoundException
@@ -2019,6 +2036,7 @@ abstract class AbstractRegionMap implements RegionMap {
                         // that's okay - when writing an invalid into a disk, the
                         // region has been cleared (including this token)
                       }
+                      forceInvalidateEvent(event);
                     } else {
                       owner.cacheWriteBeforeInvalidate(event, invokeCallbacks, forceNewEntry);
                       if (owner.concurrencyChecksEnabled && event.noVersionReceivedFromServer()) {
@@ -2247,6 +2265,7 @@ abstract class AbstractRegionMap implements RegionMap {
                   if (event.getVersionTag() != null && owner.getVersionVector() != null) {
                     owner.getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(), event.getVersionTag());
                   }
+                  forceInvalidateEvent(event);
                 }
                 else { // previous value not invalid
                   event.setRegionEntry(re);
@@ -2313,6 +2332,7 @@ abstract class AbstractRegionMap implements RegionMap {
             // is in region, do nothing
           }
           if (!entryExisted) {
+            forceInvalidateEvent(event);
             owner.checkEntryNotFound(event.getKey());
           }
         } // while(retry)

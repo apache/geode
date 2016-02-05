@@ -19,6 +19,7 @@ package com.gemstone.gemfire.cache30;
 import com.gemstone.gemfire.cache.*;
 //import com.gemstone.gemfire.cache.util.*;
 //import java.util.*;
+import com.gemstone.gemfire.internal.cache.AbstractRegionMap;
 
 /**
  * An abstract class whose test methods test the functionality of
@@ -234,11 +235,79 @@ public abstract class CacheListenerTestCase
     Region region =
       createRegion(name, factory.create());
 
+    // Does not exist so should not invoke listener
+    try {
+      region.invalidate(key);
+      fail("expected EntryNotFoundException");
+    } catch (EntryNotFoundException expected) {
+    }
+    assertFalse(listener.wasInvoked());
+
     region.create(key, value);
     assertTrue(listener.wasInvoked());
     region.invalidate(key);
     assertTrue(listener.wasInvoked());
+
+    // already invalid so should not invoke listener
+    region.invalidate(key);
+    assertFalse(listener.wasInvoked());
   }
+  
+  public void testCacheListenerAfterInvalidateWithForce() throws CacheException {
+    AbstractRegionMap.FORCE_INVALIDATE_EVENT = true;
+    try {
+      String name = this.getUniqueName();
+      final Object key = this.getUniqueName();
+      final Object value = new Integer(42);
+
+      TestCacheListener listener = new TestCacheListener() {
+          int invalidateCount = 0;
+          public void afterCreate2(EntryEvent event) {
+            // This method will get invoked when the region is populated
+          }
+
+          public void afterInvalidate2(EntryEvent event) {
+            invalidateCount++;
+            assertEquals(key, event.getKey());
+            if (invalidateCount == 2) {
+              assertEquals(value, event.getOldValue());
+            } else {
+              assertNull(event.getOldValue());
+            }
+            assertNull(event.getNewValue());
+            assertFalse(event.isLoad());
+            assertFalse(event.isLocalLoad());
+            assertFalse(event.isNetLoad());
+            assertFalse(event.isNetSearch());
+          }
+        };
+
+      AttributesFactory factory =
+        new AttributesFactory(getRegionAttributes());
+      factory.setCacheListener(listener);
+      Region region =
+        createRegion(name, factory.create());
+
+      // Does not exist but should still invoke listener
+      try {
+        region.invalidate(key);
+        fail("expected EntryNotFoundException");
+      } catch (EntryNotFoundException expected) {
+      }
+      assertTrue(listener.wasInvoked());
+
+      region.create(key, value);
+      assertTrue(listener.wasInvoked());
+      region.invalidate(key);
+      assertTrue(listener.wasInvoked());
+      // already invalid but should still invoke listener
+      region.invalidate(key);
+      assertTrue(listener.wasInvoked());
+    } finally {
+      AbstractRegionMap.FORCE_INVALIDATE_EVENT = false;
+    }
+  }
+
 
   /**
    * Tests that the <code>CacheListener</code> is called after a region

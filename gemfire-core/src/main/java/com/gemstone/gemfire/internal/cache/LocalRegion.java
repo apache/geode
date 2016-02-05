@@ -804,11 +804,11 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  public final IndexUpdater getIndexUpdater() {
+  public IndexUpdater getIndexUpdater() {
     return this.entries.getIndexUpdater();
   }
 
-  final boolean isCacheClosing()
+  boolean isCacheClosing()
   {
     return this.cache.isClosed();
   }
