@@ -19,18 +19,14 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 configurations {
   slf4jDeps
-}
-
-configurations {
   servletApiDeps
+  moduleDistOutputs
 }
 
 dependencies {
   slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
-}
 
-dependencies {
   servletApiDeps 'javax.servlet:servlet-api:2.5'
 }
 
@@ -231,4 +227,14 @@ task distTcServer30(type: Zip, dependsOn: [':extensions/gemfire-modules:build', 
   configure(configureTcServer30Assembly)
 }
 
+dependencies {
+  moduleDistOutputs distTcServer.outputs.files
+  moduleDistOutputs distTcServer30.outputs.files
+  moduleDistOutputs distHibernate.outputs.files
+  moduleDistOutputs distAppServer.outputs.files
+  moduleDistOutputs distTomcat.outputs.files
+}
+
 task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distHibernate', 'distAppServer'])
+
+build.dependsOn dist

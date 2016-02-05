@@ -323,6 +323,10 @@ distributions {
           exclude '*.jar'
         }
       }
+
+      into ('tools/Modules') {
+        from (project(':extensions/gemfire-modules-assembly').configurations.moduleDistOutputs.files)
+      }
     }
   }
 }
@@ -341,3 +345,5 @@ integrationTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
+
+installDist.dependsOn ':extensions/gemfire-modules-assembly:dist'
