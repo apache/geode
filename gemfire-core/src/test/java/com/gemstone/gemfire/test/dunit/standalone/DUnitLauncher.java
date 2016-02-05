@@ -53,6 +53,7 @@ import batterytest.greplogs.ExpectedStrings;
 import batterytest.greplogs.LogConsumer;
 
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -265,8 +266,11 @@ public class DUnitLauncher {
         p.setProperty("enable-cluster-configuration", "false");
         //Tell the locator it's the first in the system for
         //faster boot-up
-        
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+        // disable auto-reconnect - tests fly by so fast that it will never be
+        // able to do so successfully anyway
+        p.setProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+        
         try {
           Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);
         } finally {
