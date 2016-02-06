@@ -367,9 +367,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public void contactedBy(InternalDistributedMember sender) {
     TimeStamp cTS = new TimeStamp(currentTimeStamp);
     cTS = memberTimeStamps.putIfAbsent(sender, cTS);
-//    if (cTS != null) {
-//      cTS.setTimeStamp(currentTimeStamp);
-//    }
+    if (cTS != null) {
+      cTS.setTimeStamp(currentTimeStamp);
+    }
     if (suspectedMemberInView.remove(sender) != null) {
       logger.info("No longer suspecting {}", sender);
     }
