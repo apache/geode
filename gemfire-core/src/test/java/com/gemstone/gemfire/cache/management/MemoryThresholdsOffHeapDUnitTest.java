@@ -245,14 +245,12 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM server1 = host.getVM(0);
     final VM server2 = host.getVM(1);
     
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    final int port2 = ports[1];
     final String regionName = "offHeapDisabledThresholds";
 
-    startCacheServer(server1, port1, 0f, 0f,
+    //set port to 0 in-order for system to pickup a random port.
+    startCacheServer(server1, 0, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, 0f, 0f,
+    startCacheServer(server2, 0, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
