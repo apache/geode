@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.modules.session;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
 import com.gemstone.gemfire.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 import com.meterware.httpunit.GetMethodWebRequest;
@@ -49,9 +50,12 @@ public abstract class TestSessionsBase {
 
   private static DeltaSessionManager sessionManager;
 
+  private static int port;
+
   // Set up the servers we need
   public static void setupServer(DeltaSessionManager manager) throws Exception {
-    server = new EmbeddedTomcat("/test", 7890, "JVM-1");
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    server = new EmbeddedTomcat("/test", port, "JVM-1");
 
     PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
     p2pListener.setProperty("mcast-port", "0");
@@ -91,7 +95,7 @@ public abstract class TestSessionsBase {
   @Test
   public void testSanity() throws Exception {
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", "null");
     WebResponse response = wc.getResponse(req);
@@ -117,7 +121,7 @@ public abstract class TestSessionsBase {
     servlet.getServletContext().setAttribute("callback", c);
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
     req.setParameter("param", "callback");
@@ -142,7 +146,7 @@ public abstract class TestSessionsBase {
     servlet.getServletContext().setAttribute("callback", c);
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
     req.setParameter("param", "callback");
@@ -163,7 +167,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
     req.setParameter("cmd", QueryCommand.SET.name());
     req.setParameter("param", key);
     req.setParameter("value", value);
@@ -220,7 +224,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Set an attribute
     req.setParameter("cmd", QueryCommand.SET.name());
@@ -254,7 +258,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Set an attribute
     req.setParameter("cmd", QueryCommand.SET.name());
@@ -295,7 +299,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Set an attribute
     req.setParameter("cmd", QueryCommand.SET.name());
@@ -326,7 +330,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Set an attribute
     req.setParameter("cmd", QueryCommand.SET.name());
@@ -347,7 +351,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Set an attribute
     req.setParameter("cmd", QueryCommand.SET.name());
@@ -384,7 +388,7 @@ public abstract class TestSessionsBase {
     servlet.getServletContext().setAttribute("callback", c);
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Execute the callback
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
@@ -412,7 +416,7 @@ public abstract class TestSessionsBase {
     servlet.getServletContext().setAttribute("callback", c);
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Execute the callback
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
@@ -437,7 +441,7 @@ public abstract class TestSessionsBase {
     servlet.getServletContext().setAttribute("callback", c);
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Execute the callback
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
@@ -472,7 +476,7 @@ public abstract class TestSessionsBase {
     servlet.getServletContext().setAttribute("callback", c);
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Execute the callback
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
