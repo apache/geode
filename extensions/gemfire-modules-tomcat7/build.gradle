@@ -50,4 +50,5 @@ dependencies {
     exclude group: 'org.apache.tomcat', module: 'juli'
   }
   provided project(path: ':gemfire-junit')
+  provided project(path: ':gemfire-core', configuration: 'testOutput')
 }
