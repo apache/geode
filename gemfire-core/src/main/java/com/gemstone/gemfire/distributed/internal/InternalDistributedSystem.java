@@ -778,7 +778,8 @@ public class InternalDistributedSystem
    * @since 5.7
    */
   private void endInitLocator() throws IOException {
-    if (startedLocator != null) {
+    InternalLocator loc = this.startedLocator;
+    if (loc != null) {
       String locatorString = this.originalConfig.getStartLocator();
 //      DistributionLocatorId locId = new DistributionLocatorId(locatorString);
       boolean finished = false;
@@ -787,14 +788,14 @@ public class InternalDistributedSystem
         // start server location services in order to be able to log information
         // about the use of cache servers
         //      if(locId.isServerLocator()) {
-        this.startedLocator.startServerLocation(this);
+        loc.startServerLocation(this);
         //      }
       
-        this.startedLocator.endStartLocator(this);
+        loc.endStartLocator(this);
         finished = true;
       } finally {
         if (!finished) {
-          this.startedLocator.stop();
+          loc.stop();
         }
       }
     }
