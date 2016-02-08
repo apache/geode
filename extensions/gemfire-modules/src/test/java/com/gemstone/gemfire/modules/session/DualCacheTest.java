@@ -26,18 +26,25 @@ import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
-import junit.framework.TestCase;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  */
 @Category(IntegrationTest.class)
-public class DualCacheTest extends TestCase {
+public class DualCacheTest {
 
   /**
    * Check that our session persists. The values we pass in as query params are used to set attributes on the session.
    */
+  @Ignore("Ignored while refactoring")
+  @Test
   public void testSessionFailover() throws Exception {
     String key = "value_testSessionFailover";
     String value = "Foo";
