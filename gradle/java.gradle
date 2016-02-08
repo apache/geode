@@ -127,8 +127,9 @@ subprojects {
   }
 
   jar {
-    // Intended to strip off 'extensions/' from the modules so that artifacts don't end up in libs/extensions/
-    def parts = project.name.split("/")
-    baseName = parts[parts.length - 1]
+    baseName = sanitizedName()
   }
+
 }
+
+
